@@ -40,10 +40,10 @@ from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
 from iaso.models.instances import Instance, InstanceFile, InstanceLock
 from iaso.models.microplanning import Assignment, Planning
-from iaso.models.team import Team
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.models.pages import Page
 from iaso.models.project import Project
+from iaso.models.team import Team
 
 
 def flatten(l):

@@ -8,8 +8,8 @@ from iaso.api.common import (
 from iaso.api.teams.serializers import NestedTeamSerializer
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 from iaso.models.microplanning import Assignment, Planning
-from iaso.models.team import Team
 from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.models.team import Team
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):

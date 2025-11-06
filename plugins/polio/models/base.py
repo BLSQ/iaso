@@ -35,9 +35,9 @@ from iaso.models import Group, OrgUnit
 from iaso.models.base import Account
 from iaso.models.entity import UserNotAuthError
 from iaso.models.json_config import Config
-from iaso.models.team import Team
 from iaso.models.project import Project
 from iaso.models.task import Task
+from iaso.models.team import Team
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,

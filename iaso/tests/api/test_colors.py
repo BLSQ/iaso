@@ -1,6 +1,6 @@
 from iaso import models as m
-from iaso.constants import COLOR_CHOICES, DISPERSED_COLOR_ORDER
 from iaso.test import APITestCase
+from iaso.utils.colors import COLOR_CHOICES, DISPERSED_COLOR_ORDER
 
 
 class ColorsApiTestCase(APITestCase):
@@ -123,4 +123,3 @@ class ColorsApiTestCase(APITestCase):
             # Check label is string
             self.assertIsInstance(color["label"], str)
             self.assertTrue(len(color["label"]) > 0)
-

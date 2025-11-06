@@ -557,9 +557,6 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(r[0]["name"], self.team2.name)
 
         # Fetch the list of teams with a filter on multiple projects
-        response = self.client.get(
-            f"/api/teams/?projects={self.project2.id},{self.project1.id}", format="json"
-        )
+        response = self.client.get(f"/api/teams/?projects={self.project2.id},{self.project1.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)
-

@@ -55,4 +55,3 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
             queryset = queryset.filter(path__descendants=ancestor.path)
 
         return queryset
-

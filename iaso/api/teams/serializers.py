@@ -142,4 +142,3 @@ class TeamSerializer(serializers.ModelSerializer):
             validated_data["type"] = expected_type
 
         return validated_data
-

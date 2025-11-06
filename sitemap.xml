@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
         <loc>NoneAWS-Deployment.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="NoneAWS-Deployment.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/AWS-Deployment.html"/>
@@ -10,7 +10,7 @@
     </url>
     <url>
         <loc>NoneAzure-Storage-Configuration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="NoneAzure-Storage-Configuration.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/Azure-Storage-Configuration.html"/>
@@ -18,7 +18,7 @@
     </url>
     <url>
         <loc>Noneindex.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Noneindex.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/index.html"/>
@@ -26,7 +26,7 @@
     </url>
     <url>
         <loc>Nonedecisions/0000-use-one-api-endpoint-per-operation.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonedecisions/0000-use-one-api-endpoint-per-operation.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/decisions/0000-use-one-api-endpoint-per-operation.html"/>
@@ -34,7 +34,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/openhexa-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/openhexa-integration.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/openhexa-integration.html"/>
@@ -42,7 +42,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/add_new_permission/add_new_permission.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/add_new_permission/add_new_permission.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/add_new_permission/add_new_permission.html"/>
@@ -50,7 +50,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
@@ -58,7 +58,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html"/>
@@ -66,7 +66,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/contribute/contribute.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/contribute/contribute.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/contribute/contribute.html"/>
@@ -74,7 +74,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
@@ -82,7 +82,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/create_entity_workflow/create_entity_workflow.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
@@ -90,7 +90,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
@@ -98,7 +98,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/create_mobile_reports/create_mobile_reports.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
@@ -106,7 +106,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html"/>
@@ -114,7 +114,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/debug_backend/debug_backend.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/debug_backend/debug_backend.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/debug_backend/debug_backend.html"/>
@@ -122,7 +122,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/deploy/deploy.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/deploy/deploy.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/deploy/deploy.html"/>
@@ -130,7 +130,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/embed_superset/embed_superset.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/embed_superset/embed_superset.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/embed_superset/embed_superset.html"/>
@@ -138,7 +138,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
@@ -146,7 +146,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
@@ -154,7 +154,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
@@ -162,7 +162,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/manually_test_enketo/manually_test_enketo.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/manually_test_enketo/manually_test_enketo.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/manually_test_enketo/manually_test_enketo.html"/>
@@ -170,7 +170,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/openhexa-integration/openhexa-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/openhexa-integration/openhexa-integration.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/openhexa-integration/openhexa-integration.html"/>
@@ -178,7 +178,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html"/>
@@ -186,7 +186,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/rebuild_front/rebuild_front.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/rebuild_front/rebuild_front.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/rebuild_front/rebuild_front.html"/>
@@ -194,7 +194,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/run_docs_locally/run_docs_locally.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
@@ -202,7 +202,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/setup_dev_env/setup_dev_env.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/setup_dev_env/setup_dev_env.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/setup_dev_env/setup_dev_env.html"/>
@@ -210,7 +210,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/setup_dev_env/setuper.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/setup_dev_env/setuper.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/setup_dev_env/setuper.html"/>
@@ -218,7 +218,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/use_iaso_apis/use_iaso_apis.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
@@ -226,7 +226,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/use_plugins/use_plugins.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_plugins/use_plugins.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_plugins/use_plugins.html"/>
@@ -234,7 +234,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/use_tranlations/use_translations.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_tranlations/use_translations.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_tranlations/use_translations.html"/>
@@ -242,7 +242,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html"/>
@@ -250,7 +250,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/API/entity.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/entity.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/entity.html"/>
@@ -258,7 +258,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/API/org_unit_change_request_configuration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/org_unit_change_request_configuration.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/org_unit_change_request_configuration.html"/>
@@ -266,7 +266,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/API/org_unit_registry.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/org_unit_registry.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/org_unit_registry.html"/>
@@ -274,7 +274,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/API/payments/payments.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/payments/payments.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/payments/payments.html"/>
@@ -282,7 +282,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/analytics/plausible-setup.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/analytics/plausible-setup.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/analytics/plausible-setup.html"/>
@@ -290,7 +290,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/audit/audit.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/audit/audit.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/audit/audit.html"/>
@@ -298,7 +298,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/background_tasks/background_tasks.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/background_tasks/background_tasks.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/background_tasks/background_tasks.html"/>
@@ -306,7 +306,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/campaigns/subactivities.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/campaigns/subactivities.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/campaigns/subactivities.html"/>
@@ -314,7 +314,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/campaigns/vaccine_management.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/campaigns/vaccine_management.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/campaigns/vaccine_management.html"/>
@@ -322,7 +322,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/clamav/clamav.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/clamav/clamav.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/clamav/clamav.html"/>
@@ -330,7 +330,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/data_model_glossary/data_model_glossary.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/data_model_glossary/data_model_glossary.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/data_model_glossary/data_model_glossary.html"/>
@@ -338,7 +338,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/doc_setup/doc_setup.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/doc_setup/doc_setup.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/doc_setup/doc_setup.html"/>
@@ -346,7 +346,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/docker/docker.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/docker/docker.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/docker/docker.html"/>
@@ -354,7 +354,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/entities_in_iaso/entities_in_iaso.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/entities_in_iaso/entities_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/entities_in_iaso/entities_in_iaso.html"/>
@@ -362,7 +362,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/entities_in_iaso/entity_deduplication.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/entities_in_iaso/entity_deduplication.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/entities_in_iaso/entity_deduplication.html"/>
@@ -370,7 +370,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/env_variables/env_variables.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/env_variables/env_variables.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/env_variables/env_variables.html"/>
@@ -378,7 +378,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/front-end_reference/front-end_reference.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/front-end_reference/front-end_reference.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/front-end_reference/front-end_reference.html"/>
@@ -386,7 +386,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/guidelines/back-end/back-end.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/back-end/back-end.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/guidelines/back-end/back-end.html"/>
@@ -394,7 +394,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/guidelines/front-end/front-end.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/front-end/front-end.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/guidelines/front-end/front-end.html"/>
@@ -402,7 +402,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/guidelines/git/git.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/git/git.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/guidelines/git/git.html"/>
@@ -410,7 +410,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/public_registry/public_registry.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/public_registry/public_registry.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/public_registry/public_registry.html"/>
@@ -418,7 +418,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html"/>
@@ -426,7 +426,7 @@
     </url>
     <url>
         <loc>Nonepages/dev/reference/vector_control/vector_control.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/vector_control/vector_control.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/vector_control/vector_control.html"/>
@@ -434,7 +434,7 @@
     </url>
     <url>
         <loc>Nonepages/users/FAQ/faq.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/FAQ/faq.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/FAQ/faq.html"/>
@@ -442,7 +442,7 @@
     </url>
     <url>
         <loc>Nonepages/users/how_to/convert_docx_to_md/convert_docx_to_md.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/convert_docx_to_md/convert_docx_to_md.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/convert_docx_to_md/convert_docx_to_md.html"/>
@@ -450,7 +450,7 @@
     </url>
     <url>
         <loc>Nonepages/users/how_to/create_new_documentation_page/create_new_documentation_page.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/create_new_documentation_page/create_new_documentation_page.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.html"/>
@@ -458,7 +458,7 @@
     </url>
     <url>
         <loc>Nonepages/users/how_to/edit_documentation/edit_documentation.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/edit_documentation/edit_documentation.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/edit_documentation/edit_documentation.html"/>
@@ -466,7 +466,7 @@
     </url>
     <url>
         <loc>Nonepages/users/how_to/run_ETL/run_ETL.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL/run_ETL.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/run_ETL/run_ETL.html"/>
@@ -474,7 +474,7 @@
     </url>
     <url>
         <loc>Nonepages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html"/>
@@ -482,7 +482,7 @@
     </url>
     <url>
         <loc>Nonepages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
@@ -490,7 +490,7 @@
     </url>
     <url>
         <loc>Nonepages/users/reference/how_we_work/how_we_work.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/how_we_work/how_we_work.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/how_we_work/how_we_work.html"/>
@@ -498,7 +498,7 @@
     </url>
     <url>
         <loc>Nonepages/users/reference/iaso_concepts/iaso_concepts.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_concepts/iaso_concepts.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_concepts/iaso_concepts.html"/>
@@ -506,7 +506,7 @@
     </url>
     <url>
         <loc>Nonepages/users/reference/iaso_mobile/iaso_mobile.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_mobile/iaso_mobile.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_mobile/iaso_mobile.html"/>
@@ -514,7 +514,7 @@
     </url>
     <url>
         <loc>Nonepages/users/reference/iaso_modules/iaso_modules.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_modules/iaso_modules.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_modules/iaso_modules.html"/>
@@ -522,7 +522,7 @@
     </url>
     <url>
         <loc>Nonepages/users/reference/iaso_web/user_guide.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_web/user_guide.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_web/user_guide.html"/>
@@ -530,7 +530,7 @@
     </url>
     <url>
         <loc>Nonepages/users/reference/interop/interop.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/interop/interop.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/interop/interop.html"/>
@@ -538,7 +538,7 @@
     </url>
     <url>
         <loc>Nonefr/AWS-Deployment.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/AWS-Deployment.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="NoneAWS-Deployment.html"/>
@@ -546,7 +546,7 @@
     </url>
     <url>
         <loc>Nonefr/Azure-Storage-Configuration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/Azure-Storage-Configuration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="NoneAzure-Storage-Configuration.html"/>
@@ -554,7 +554,7 @@
     </url>
     <url>
         <loc>Nonefr/index.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/index.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Noneindex.html"/>
@@ -562,7 +562,7 @@
     </url>
     <url>
         <loc>Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonedecisions/0000-use-one-api-endpoint-per-operation.html"/>
@@ -570,7 +570,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/openhexa-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/openhexa-integration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/openhexa-integration.html"/>
@@ -578,7 +578,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/add_new_permission/add_new_permission.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/add_new_permission/add_new_permission.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/add_new_permission/add_new_permission.html"/>
@@ -586,7 +586,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
@@ -594,7 +594,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html"/>
@@ -602,7 +602,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/contribute/contribute.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/contribute/contribute.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/contribute/contribute.html"/>
@@ -610,7 +610,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
@@ -618,7 +618,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
@@ -626,7 +626,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
@@ -634,7 +634,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
@@ -642,7 +642,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html"/>
@@ -650,7 +650,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/debug_backend/debug_backend.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/debug_backend/debug_backend.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/debug_backend/debug_backend.html"/>
@@ -658,7 +658,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/deploy/deploy.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/deploy/deploy.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/deploy/deploy.html"/>
@@ -666,7 +666,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/embed_superset/embed_superset.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/embed_superset/embed_superset.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/embed_superset/embed_superset.html"/>
@@ -674,7 +674,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
@@ -682,7 +682,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
@@ -690,7 +690,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
@@ -698,7 +698,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/manually_test_enketo/manually_test_enketo.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/manually_test_enketo/manually_test_enketo.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/manually_test_enketo/manually_test_enketo.html"/>
@@ -706,7 +706,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/openhexa-integration/openhexa-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/openhexa-integration/openhexa-integration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/openhexa-integration/openhexa-integration.html"/>
@@ -714,7 +714,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html"/>
@@ -722,7 +722,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/rebuild_front/rebuild_front.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/rebuild_front/rebuild_front.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/rebuild_front/rebuild_front.html"/>
@@ -730,7 +730,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/run_docs_locally/run_docs_locally.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
@@ -738,7 +738,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/setup_dev_env/setup_dev_env.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/setup_dev_env/setup_dev_env.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/setup_dev_env/setup_dev_env.html"/>
@@ -746,7 +746,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/setup_dev_env/setuper.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/setup_dev_env/setuper.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/setup_dev_env/setuper.html"/>
@@ -754,7 +754,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/use_iaso_apis/use_iaso_apis.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
@@ -762,7 +762,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/use_plugins/use_plugins.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_plugins/use_plugins.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_plugins/use_plugins.html"/>
@@ -770,7 +770,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/use_tranlations/use_translations.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_tranlations/use_translations.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_tranlations/use_translations.html"/>
@@ -778,7 +778,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html"/>
@@ -786,7 +786,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/API/entity.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/entity.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/entity.html"/>
@@ -794,7 +794,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/API/org_unit_change_request_configuration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/org_unit_change_request_configuration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/org_unit_change_request_configuration.html"/>
@@ -802,7 +802,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/API/org_unit_registry.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/org_unit_registry.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/org_unit_registry.html"/>
@@ -810,7 +810,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/API/payments/payments.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/payments/payments.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/payments/payments.html"/>
@@ -818,7 +818,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/analytics/plausible-setup.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/analytics/plausible-setup.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/analytics/plausible-setup.html"/>
@@ -826,7 +826,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/audit/audit.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/audit/audit.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/audit/audit.html"/>
@@ -834,7 +834,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/background_tasks/background_tasks.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/background_tasks/background_tasks.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/background_tasks/background_tasks.html"/>
@@ -842,7 +842,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/campaigns/subactivities.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/campaigns/subactivities.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/campaigns/subactivities.html"/>
@@ -850,7 +850,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/campaigns/vaccine_management.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/campaigns/vaccine_management.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/campaigns/vaccine_management.html"/>
@@ -858,7 +858,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/clamav/clamav.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/clamav/clamav.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/clamav/clamav.html"/>
@@ -866,7 +866,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/data_model_glossary/data_model_glossary.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/data_model_glossary/data_model_glossary.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/data_model_glossary/data_model_glossary.html"/>
@@ -874,7 +874,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/doc_setup/doc_setup.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/doc_setup/doc_setup.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/doc_setup/doc_setup.html"/>
@@ -882,7 +882,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/docker/docker.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/docker/docker.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/docker/docker.html"/>
@@ -890,7 +890,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/entities_in_iaso/entities_in_iaso.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/entities_in_iaso/entities_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/entities_in_iaso/entities_in_iaso.html"/>
@@ -898,7 +898,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/entities_in_iaso/entity_deduplication.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/entities_in_iaso/entity_deduplication.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/entities_in_iaso/entity_deduplication.html"/>
@@ -906,7 +906,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/env_variables/env_variables.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/env_variables/env_variables.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/env_variables/env_variables.html"/>
@@ -914,7 +914,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/front-end_reference/front-end_reference.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/front-end_reference/front-end_reference.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/front-end_reference/front-end_reference.html"/>
@@ -922,7 +922,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/guidelines/back-end/back-end.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/guidelines/back-end/back-end.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/back-end/back-end.html"/>
@@ -930,7 +930,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/guidelines/front-end/front-end.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/guidelines/front-end/front-end.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/front-end/front-end.html"/>
@@ -938,7 +938,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/guidelines/git/git.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/guidelines/git/git.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/git/git.html"/>
@@ -946,7 +946,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/public_registry/public_registry.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/public_registry/public_registry.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/public_registry/public_registry.html"/>
@@ -954,7 +954,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html"/>
@@ -962,7 +962,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/vector_control/vector_control.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/vector_control/vector_control.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/vector_control/vector_control.html"/>
@@ -970,7 +970,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/FAQ/faq.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/FAQ/faq.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/FAQ/faq.html"/>
@@ -978,7 +978,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/how_to/convert_docx_to_md/convert_docx_to_md.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/convert_docx_to_md/convert_docx_to_md.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/convert_docx_to_md/convert_docx_to_md.html"/>
@@ -986,7 +986,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/create_new_documentation_page/create_new_documentation_page.html"/>
@@ -994,7 +994,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/how_to/edit_documentation/edit_documentation.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/edit_documentation/edit_documentation.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/edit_documentation/edit_documentation.html"/>
@@ -1002,7 +1002,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/how_to/run_ETL/run_ETL.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/run_ETL/run_ETL.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL/run_ETL.html"/>
@@ -1010,7 +1010,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html"/>
@@ -1018,7 +1018,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
@@ -1026,7 +1026,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/how_we_work/how_we_work.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/how_we_work/how_we_work.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/how_we_work/how_we_work.html"/>
@@ -1034,7 +1034,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/iaso_concepts/iaso_concepts.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/iaso_concepts/iaso_concepts.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_concepts/iaso_concepts.html"/>
@@ -1042,7 +1042,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/iaso_mobile/iaso_mobile.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/iaso_mobile/iaso_mobile.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_mobile/iaso_mobile.html"/>
@@ -1050,7 +1050,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/iaso_modules/iaso_modules.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/iaso_modules/iaso_modules.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_modules/iaso_modules.html"/>
@@ -1058,7 +1058,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/iaso_web/user_guide.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/iaso_web/user_guide.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_web/user_guide.html"/>
@@ -1066,7 +1066,7 @@
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/interop/interop.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/interop/interop.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/interop/interop.html"/>
@@ -1074,7 +1074,7 @@
     </url>
     <url>
         <loc>Nonees/AWS-Deployment.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/AWS-Deployment.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="NoneAWS-Deployment.html"/>
@@ -1082,7 +1082,7 @@
     </url>
     <url>
         <loc>Nonees/Azure-Storage-Configuration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/Azure-Storage-Configuration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="NoneAzure-Storage-Configuration.html"/>
@@ -1090,7 +1090,7 @@
     </url>
     <url>
         <loc>Nonees/index.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/index.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Noneindex.html"/>
@@ -1098,7 +1098,7 @@
     </url>
     <url>
         <loc>Nonees/decisions/0000-use-one-api-endpoint-per-operation.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/decisions/0000-use-one-api-endpoint-per-operation.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonedecisions/0000-use-one-api-endpoint-per-operation.html"/>
@@ -1106,7 +1106,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/openhexa-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/openhexa-integration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/openhexa-integration.html"/>
@@ -1114,7 +1114,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/add_new_permission/add_new_permission.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/add_new_permission/add_new_permission.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/add_new_permission/add_new_permission.html"/>
@@ -1122,7 +1122,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
@@ -1130,7 +1130,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html"/>
@@ -1138,7 +1138,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/contribute/contribute.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/contribute/contribute.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/contribute/contribute.html"/>
@@ -1146,7 +1146,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
@@ -1154,7 +1154,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
@@ -1162,7 +1162,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
@@ -1170,7 +1170,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
@@ -1178,7 +1178,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html"/>
@@ -1186,7 +1186,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/debug_backend/debug_backend.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/debug_backend/debug_backend.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/debug_backend/debug_backend.html"/>
@@ -1194,7 +1194,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/deploy/deploy.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/deploy/deploy.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/deploy/deploy.html"/>
@@ -1202,7 +1202,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/embed_superset/embed_superset.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/embed_superset/embed_superset.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/embed_superset/embed_superset.html"/>
@@ -1210,7 +1210,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
@@ -1218,7 +1218,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
@@ -1226,7 +1226,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
@@ -1234,7 +1234,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/manually_test_enketo/manually_test_enketo.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/manually_test_enketo/manually_test_enketo.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/manually_test_enketo/manually_test_enketo.html"/>
@@ -1242,7 +1242,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/openhexa-integration/openhexa-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/openhexa-integration/openhexa-integration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/openhexa-integration/openhexa-integration.html"/>
@@ -1250,7 +1250,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html"/>
@@ -1258,7 +1258,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/rebuild_front/rebuild_front.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/rebuild_front/rebuild_front.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/rebuild_front/rebuild_front.html"/>
@@ -1266,7 +1266,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/run_docs_locally/run_docs_locally.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
@@ -1274,7 +1274,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/setup_dev_env/setup_dev_env.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/setup_dev_env/setup_dev_env.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/setup_dev_env/setup_dev_env.html"/>
@@ -1282,7 +1282,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/setup_dev_env/setuper.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/setup_dev_env/setuper.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/setup_dev_env/setuper.html"/>
@@ -1290,7 +1290,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/use_iaso_apis/use_iaso_apis.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
@@ -1298,7 +1298,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/use_plugins/use_plugins.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_plugins/use_plugins.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_plugins/use_plugins.html"/>
@@ -1306,7 +1306,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/use_tranlations/use_translations.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_tranlations/use_translations.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_tranlations/use_translations.html"/>
@@ -1314,7 +1314,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html"/>
@@ -1322,7 +1322,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/API/entity.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/entity.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/entity.html"/>
@@ -1330,7 +1330,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/API/org_unit_change_request_configuration.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/org_unit_change_request_configuration.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/org_unit_change_request_configuration.html"/>
@@ -1338,7 +1338,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/API/org_unit_registry.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/org_unit_registry.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/org_unit_registry.html"/>
@@ -1346,7 +1346,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/API/payments/payments.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/payments/payments.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/payments/payments.html"/>
@@ -1354,7 +1354,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/analytics/plausible-setup.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/analytics/plausible-setup.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/analytics/plausible-setup.html"/>
@@ -1362,7 +1362,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/audit/audit.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/audit/audit.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/audit/audit.html"/>
@@ -1370,7 +1370,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/background_tasks/background_tasks.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/background_tasks/background_tasks.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/background_tasks/background_tasks.html"/>
@@ -1378,7 +1378,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/campaigns/subactivities.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/campaigns/subactivities.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/campaigns/subactivities.html"/>
@@ -1386,7 +1386,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/campaigns/vaccine_management.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/campaigns/vaccine_management.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/campaigns/vaccine_management.html"/>
@@ -1394,7 +1394,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/clamav/clamav.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/clamav/clamav.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/clamav/clamav.html"/>
@@ -1402,7 +1402,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/data_model_glossary/data_model_glossary.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/data_model_glossary/data_model_glossary.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/data_model_glossary/data_model_glossary.html"/>
@@ -1410,7 +1410,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/doc_setup/doc_setup.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/doc_setup/doc_setup.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/doc_setup/doc_setup.html"/>
@@ -1418,7 +1418,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/docker/docker.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/docker/docker.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/docker/docker.html"/>
@@ -1426,7 +1426,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/entities_in_iaso/entities_in_iaso.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/entities_in_iaso/entities_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/entities_in_iaso/entities_in_iaso.html"/>
@@ -1434,7 +1434,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/entities_in_iaso/entity_deduplication.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/entities_in_iaso/entity_deduplication.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/entities_in_iaso/entity_deduplication.html"/>
@@ -1442,7 +1442,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/env_variables/env_variables.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/env_variables/env_variables.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/env_variables/env_variables.html"/>
@@ -1450,7 +1450,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/front-end_reference/front-end_reference.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/front-end_reference/front-end_reference.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/front-end_reference/front-end_reference.html"/>
@@ -1458,7 +1458,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/guidelines/back-end/back-end.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/guidelines/back-end/back-end.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/back-end/back-end.html"/>
@@ -1466,7 +1466,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/guidelines/front-end/front-end.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/guidelines/front-end/front-end.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/front-end/front-end.html"/>
@@ -1474,7 +1474,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/guidelines/git/git.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/guidelines/git/git.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/guidelines/git/git.html"/>
@@ -1482,7 +1482,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/public_registry/public_registry.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/public_registry/public_registry.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/public_registry/public_registry.html"/>
@@ -1490,7 +1490,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html"/>
@@ -1498,7 +1498,7 @@
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/vector_control/vector_control.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/vector_control/vector_control.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/vector_control/vector_control.html"/>
@@ -1506,7 +1506,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/FAQ/faq.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/FAQ/faq.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/FAQ/faq.html"/>
@@ -1514,7 +1514,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/convert_docx_to_md/convert_docx_to_md.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/convert_docx_to_md/convert_docx_to_md.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/convert_docx_to_md/convert_docx_to_md.html"/>
@@ -1522,7 +1522,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/create_new_documentation_page/create_new_documentation_page.html"/>
@@ -1530,7 +1530,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/edit_documentation/edit_documentation.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/edit_documentation/edit_documentation.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/edit_documentation/edit_documentation.html"/>
@@ -1538,7 +1538,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/run_ETL/run_ETL.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/run_ETL/run_ETL.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL/run_ETL.html"/>
@@ -1546,7 +1546,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html"/>
@@ -1554,7 +1554,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
@@ -1562,7 +1562,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/reference/how_we_work/how_we_work.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/how_we_work/how_we_work.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/how_we_work/how_we_work.html"/>
@@ -1570,7 +1570,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/reference/iaso_concepts/iaso_concepts.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_concepts/iaso_concepts.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_concepts/iaso_concepts.html"/>
@@ -1578,7 +1578,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/reference/iaso_mobile/iaso_mobile.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_mobile/iaso_mobile.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_mobile/iaso_mobile.html"/>
@@ -1586,7 +1586,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/reference/iaso_modules/iaso_modules.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_modules/iaso_modules.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_modules/iaso_modules.html"/>
@@ -1594,7 +1594,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/reference/iaso_web/user_guide.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/iaso_web/user_guide.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/iaso_web/user_guide.html"/>
@@ -1602,7 +1602,7 @@
     </url>
     <url>
         <loc>Nonees/pages/users/reference/interop/interop.html</loc>
-        <lastmod>2025-11-05</lastmod>
+        <lastmod>2025-11-06</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/interop/interop.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/interop/interop.html"/>

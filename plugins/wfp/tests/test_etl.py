@@ -75,20 +75,60 @@ class ETLTestCase(TestCase):
         self.assertEqual(beneficiaries[0].entity_id, 22)
         self.assertEqual(beneficiaries[1].entity_id, 23)
         self.assertEqual(beneficiaries[2].entity_id, 24)
+        self.assertEqual(beneficiaries[3].entity_id, 25)
         self.assertEqual(Beneficiary.objects.count(), 4)
 
         journeys = Journey.objects.bulk_create(
-            Journey(
-                beneficiary=beneficiary,
-                programme_type="U5",
-                admission_criteria="muac",
-                admission_type="new_case",
-                nutrition_programme=random.choice(["TSFP", "OTP"]),
-                exit_type="cured",
-                start_date=datetime(2025, 8, 8),
-                end_date=datetime(2025, 8, 31),
-            )
-            for beneficiary in beneficiaries
+            [
+                Journey(
+                    beneficiary=beneficiaries[0],
+                    programme_type="U5",
+                    admission_criteria="muac",
+                    admission_type="new_case",
+                    nutrition_programme="TSFP",
+                    exit_type="cured",
+                    start_date=datetime(2025, 8, 1),
+                    end_date=datetime(2025, 8, 29),
+                    duration=(datetime(2025, 9, 12) - datetime(2025, 8, 1)).days,
+                    instance_id=1,
+                ),
+                Journey(
+                    beneficiary=beneficiaries[1],
+                    programme_type="U5",
+                    admission_criteria="muac",
+                    admission_type="new_case",
+                    nutrition_programme="OTP",
+                    exit_type="cured",
+                    start_date=datetime(2025, 8, 5),
+                    end_date=datetime(2025, 8, 19),
+                    duration=(datetime(2025, 8, 19) - datetime(2025, 8, 5)).days,
+                    instance_id=100,
+                ),
+                Journey(
+                    beneficiary=beneficiaries[2],
+                    programme_type="U5",
+                    admission_criteria="muac",
+                    admission_type="new_case",
+                    nutrition_programme="TSFP",
+                    exit_type="cured",
+                    start_date=datetime(2025, 8, 8),
+                    end_date=datetime(2025, 8, 31),
+                    duration=(datetime(2025, 8, 31) - datetime(2025, 8, 8)).days,
+                    instance_id=72,
+                ),
+                Journey(
+                    beneficiary=beneficiaries[3],
+                    programme_type="U5",
+                    admission_criteria="muac",
+                    admission_type="new_case",
+                    nutrition_programme="OTP",
+                    exit_type="cured",
+                    start_date=datetime(2025, 8, 1),
+                    end_date=datetime(2025, 8, 31),
+                    duration=(datetime(2025, 8, 31) - datetime(2025, 8, 1)).days,
+                    instance_id=1012,
+                ),
+            ]
         )
         self.assertEqual(journeys[0].beneficiary.entity_id, 22)
         self.assertEqual(journeys[1].beneficiary.entity_id, 23)
@@ -99,23 +139,104 @@ class ETLTestCase(TestCase):
         orgUnit = OrgUnit(id=9854, name="TEST Malakia PHCC", created_at=datetime.utcnow())
         orgUnit.save()
 
-        for journey in journeys:
-            visit_count = random.randint(1, 6)
-            for visit_number in range(visit_count):
-                visit = Visit(
-                    date=datetime(2025, 8, 8),
-                    number=visit_number,
-                    org_unit=orgUnit,
-                    instance_id=random.randint(1, journey.id),
-                    journey=journey,
-                    muac_size=random.randint(12, 25),
+        journey_1_visits = [
+            Visit(
+                date=datetime(2025, 8, 1),
+                number=0,
+                org_unit=orgUnit,
+                instance_id=1,
+                journey=journeys[0],
+                muac_size=10,
+                whz_color="Red",
+            ),
+            Visit(
+                date=datetime(2025, 8, 1) + timedelta(days=14),
+                number=1,
+                org_unit=orgUnit,
+                instance_id=2,
+                journey=journeys[0],
+                muac_size=random.randint(12, 25),
+                whz_color="Yellow",
+            ),
+            Visit(
+                date=datetime(2025, 8, 15) + timedelta(days=14),
+                number=2,
+                org_unit=orgUnit,
+                instance_id=3,
+                journey=journeys[0],
+                muac_size=11.6,
+                whz_color="Yellow",
+            ),
+            Visit(
+                date=datetime(2025, 8, 29) + timedelta(days=14),
+                number=2,
+                org_unit=orgUnit,
+                instance_id=4,
+                journey=journeys[0],
+                muac_size=12.5,
+                whz_color="Green",
+            ),
+        ]
+        visits_beneficiary_1 = Visit.objects.bulk_create(journey_1_visits)
+        self.assertEqual(len(visits_beneficiary_1), 4)
+        print("VISITS BEN 1 ", visits_beneficiary_1)
+        assistance_types = [
+            {"type": "Soap", "quantity": 1},
+            {"type": "Mosquito Net", "quantity": 1},
+            {"type": "rusf", "quantity": 14},
+            {"type": "rutf", "quantity": 28},
+        ]
+        for visit in visits_beneficiary_1:
+            steps = Step.objects.bulk_create(
+                Step(
+                    visit=visit,
+                    assistance_type=assistance_type["type"],
+                    quantity_given=assistance_type["quantity"],
+                    instance_id=visit.instance_id,
                 )
-                visit.save()
-                for ration in ["RUSF", "RUTF", "CSB++", ""]:
-                    step = Step(
-                        assistance_type=ration,
-                        quantity_given=random.randint(1, 20),
-                        visit=visit,
-                        instance_id=visit.instance_id,
-                    )
-                    step.save()
+                for assistance_type in assistance_types
+            )
+            self.assertEqual(len(steps), 4)
+
+        journey_2_visits = [
+            Visit(
+                date=datetime(2025, 8, 5),
+                number=1,
+                org_unit=orgUnit,
+                instance_id=101,
+                journey=journeys[1],
+                muac_size=random.randint(12, 25),
+                whz_color="Yellow",
+            ),
+            Visit(
+                date=datetime(2025, 8, 5) + timedelta(days=7),
+                number=2,
+                org_unit=orgUnit,
+                instance_id=102,
+                journey=journeys[1],
+                muac_size=11.6,
+                whz_color="Yellow",
+            ),
+            Visit(
+                date=datetime(2025, 8, 12) + timedelta(days=7),
+                number=2,
+                org_unit=orgUnit,
+                instance_id=103,
+                journey=journeys[1],
+                muac_size=12.5,
+                whz_color="Green",
+            ),
+        ]
+        visits_beneficiary_2 = Visit.objects.bulk_create(journey_2_visits)
+        self.assertEqual(len(visits_beneficiary_2), 3)
+        for visit in visits_beneficiary_2:
+            steps = Step.objects.bulk_create(
+                Step(
+                    visit=visit,
+                    assistance_type=assistance_type["type"],
+                    quantity_given=assistance_type["quantity"],
+                    instance_id=visit.instance_id,
+                )
+                for assistance_type in assistance_types
+            )
+            self.assertEqual(len(steps), 4)

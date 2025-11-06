@@ -29,10 +29,10 @@ export const AnalyseAction: FunctionComponent<Props> = ({
     const handleClick = useCallback(() => {
         startAnalyse({
             algorithm: latestAnalysis?.algorithm,
-            entity_type_id: latestAnalysis?.metadata.entity_type_id,
-            fields: latestAnalysis?.metadata.fields,
+            entity_type_id: latestAnalysis?.entity_type_id,
+            fields: latestAnalysis?.fields,
             parameters: Object.entries(
-                latestAnalysis?.metadata.parameters as unknown as Parameters,
+                latestAnalysis?.parameters as unknown as Parameters,
             ).map(([name, value]) => ({ name, value })),
         });
     }, [latestAnalysis, startAnalyse]);

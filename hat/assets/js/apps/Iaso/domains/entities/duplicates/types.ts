@@ -70,13 +70,27 @@ export type Analysis = {
     id: number;
     algorithm: string;
     created_at?: string; // DateTime
+    started_at?: string; // DateTime
     finished_at?: string; // DateTime
-    metadata: {
-        fields: string[];
-        parameters: Record<string, string>;
-        entity_type_id: string;
-    };
+    status: string;
+    parameters: Record<string, string>;
+    fields: string[];
+    entity_type_id: string;
     task: number;
+    created_by: {
+        id: number;
+        name: string;
+    };
+};
+
+export type AnalysisList = {
+    count: number;
+    has_previous: boolean;
+    has_next: boolean;
+    page: number;
+    pages: number;
+    limit: number;
+    results: Analysis[];
 };
 
 export type Parameters = { name: string; value: string | number }[];

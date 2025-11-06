@@ -9,10 +9,10 @@ import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { PaginationParams } from 'Iaso/types/general';
 import { useStatusOptions } from '../../../domains/tasks/hooks/useStatusOptions';
 import { ALGORITHM_DROPDOWN } from '../constants';
-import { DuplicatesGETParams } from '../duplicates/hooks/api/useGetDuplicates';
+import { DuplicateAnalysesGETParams } from '../duplicates/hooks/api/useGetDuplicateAnalyses';
 import MESSAGES from '../duplicates/messages';
 
-type Params = PaginationParams & DuplicatesGETParams;
+type Params = PaginationParams & DuplicateAnalysesGETParams;
 
 type Props = {
     params: Params;

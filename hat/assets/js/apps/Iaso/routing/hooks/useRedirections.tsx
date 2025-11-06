@@ -1,4 +1,4 @@
-import React, { ReactElement, useMemo } from 'react';
+    import React, { ReactElement, useMemo } from 'react';
 import { getSort } from 'bluesquare-components';
 import { Route } from 'react-router-dom';
 import { useGetColors } from 'Iaso/hooks/useGetColors';
@@ -93,6 +93,10 @@ export const useRedirections: RedirectionsMethod = ({
             {
                 path: `/${baseUrls.entityDuplicates}`,
                 to: `/${baseUrls.entityDuplicates}${getPaginationParams()}`,
+            },
+            {
+                path: `/${baseUrls.entityDuplicateAnalyses}`,
+                to: `/${baseUrls.entityDuplicateAnalyses}${getPaginationParams('-created_at')}`,
             },
             {
                 path: `/${baseUrls.groups}`,

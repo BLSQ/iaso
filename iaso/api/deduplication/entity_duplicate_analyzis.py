@@ -6,7 +6,13 @@ from rest_framework.response import Response
 
 import iaso.models.base as base
 
-from iaso.api.common import HasPermission, ModelViewSet, Paginator
+from iaso.api.common import HasPermission, ModelViewSet, Paginator, TimestampField
+from iaso.api.deduplication.filters import (
+    AnalysesAlgorithmFilterBackend,
+    AnalysesStartDateEndDateFilterBackend,
+    AnalysesStatusFilterBackend,
+    AnalysesUsersFilterBackend,
+)
 from iaso.models import EntityDuplicateAnalyzis, EntityType
 from iaso.models.deduplication import PossibleAlgorithms
 from iaso.permissions.core_permissions import (
@@ -58,12 +64,12 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(source="task.status", choices=base.STATUS_TYPE_CHOICES)
-    started_at = serializers.DateTimeField(source="task.started_at")
+    started_at = TimestampField(read_only=True, source="task.started_at")
     created_by = UserNestedSerializer(source="task.launcher")
     entity_type_id = serializers.SerializerMethodField()
     fields = serializers.SerializerMethodField(method_name="get_the_fields")  # type: ignore
     parameters = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(source="task.created_at")
+    created_at = TimestampField(read_only=True, source="task.created_at")
 
     def get_entity_type_id(self, obj):
         return obj.metadata["entity_type_id"]
@@ -104,7 +110,11 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
 
     filter_backends = [
         filters.OrderingFilter,
+        AnalysesAlgorithmFilterBackend,
         DjangoFilterBackend,
+        AnalysesStartDateEndDateFilterBackend,
+        AnalysesStatusFilterBackend,
+        AnalysesUsersFilterBackend,
     ]
     ordering_fields = ["created_at", "finished_at", "id"]
     results_key = "results"
@@ -112,7 +122,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        return EntityDuplicateAnalyzis.objects.filter(task__account=user_account).select_related("task__created_by")
+        return EntityDuplicateAnalyzis.objects.filter(task__account=user_account).select_related("task").all()
 
     def get_permissions(self):
         permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_DUPLICATES_READ_PERMISSION)]
@@ -121,7 +131,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action == "retrieve":
+        if self.action == "retrieve" or self.action == "list":
             return EntityDuplicateAnalyzisDetailSerializer
         return EntityDuplicateAnalyzisSerializer
 

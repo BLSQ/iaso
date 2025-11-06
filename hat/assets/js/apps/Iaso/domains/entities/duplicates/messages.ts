@@ -166,6 +166,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.storages.reset',
         defaultMessage: 'Reset',
     },
+    result_message: {
+        id: 'iaso.label.result_message',
+        defaultMessage: 'Result Message',
+    },
     search: {
         id: 'iaso.search',
         defaultMessage: 'Search',
@@ -239,8 +243,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Unmatched fields remaining',
     },
     user: {
-        defaultMessage: 'user',
+        defaultMessage: 'User',
         id: 'iaso.user',
+    },
+    viewAnalysis: {
+        defaultMessage: 'View details',
+        id: 'iaso.label.entities.duplicate-analysis.view',
     },
 });
 

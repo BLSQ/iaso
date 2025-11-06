@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             model_name="team",
             name="color",
             field=models.CharField(
-                default="#f44336",
+                default="#ef5350",  # Red 400 - COLOR_CHOICES[0][0]
                 max_length=7,
             ),
         ),

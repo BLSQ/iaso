@@ -66,7 +66,12 @@ class PlanningTestCase(APITestCase):
                 "id": self.planning.id,
                 "name": "planning1",
                 "team": self.planning.team_id,
-                "team_details": {"id": self.team1.id, "name": self.team1.name, "deleted_at": self.team1.deleted_at},
+                "team_details": {
+                    "id": self.team1.id,
+                    "name": self.team1.name,
+                    "deleted_at": self.team1.deleted_at,
+                    "color": self.team1.color,
+                },
                 "project": self.planning.project.id,
                 "project_details": {
                     "id": self.planning.project.id,

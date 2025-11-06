@@ -44,12 +44,16 @@ const postTeam = async (body: SaveTeamQuery) => {
     return postRequest(endpoint, convertToApi(body));
 };
 
-export const useSaveTeam = (type: 'create' | 'edit'): UseMutationResult => {
+export const useSaveTeam = (
+    type: 'create' | 'edit',
+    showSuccessSnackBar = true,
+): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editTeam = useSnackMutation({
         mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
-        invalidateQueryKey: ['teamsList'],
+        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
         ignoreErrorCodes,
+        showSuccessSnackBar,
     });
     const createTeam = useSnackMutation({
         mutationFn: (data: SaveTeamQuery) => postTeam(data),

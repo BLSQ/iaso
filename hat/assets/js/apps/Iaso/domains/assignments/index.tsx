@@ -19,6 +19,7 @@ import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineConfig } from '../openHexa/hooks/useGetPipelineConfig';
 import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
+import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
@@ -96,7 +97,6 @@ export const Assignments: FunctionComponent = () => {
         isLoadingAssignments,
         isTeamsFetched,
         setProfiles,
-        setTeams,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -107,6 +107,8 @@ export const Assignments: FunctionComponent = () => {
         selectedItem,
     });
     const isLoading = isLoadingPlanning || isSaving;
+
+    const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
 
     const setItemColor = (color, itemId) => {
         // TODO: improve this
@@ -124,17 +126,10 @@ export const Assignments: FunctionComponent = () => {
             }
         }
         if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-            const itemIndex = teams?.findIndex(
-                team => team.original.id === itemId,
-            );
-            if (itemIndex !== undefined && teams) {
-                const newTeams = [...teams];
-                newTeams[itemIndex] = {
-                    ...newTeams[itemIndex],
-                    color,
-                };
-                setTeams(newTeams);
-            }
+            saveTeam({
+                id: itemId,
+                color,
+            });
         }
     };
     const { data: hasPipelineConfig } = useGetPipelineConfig();

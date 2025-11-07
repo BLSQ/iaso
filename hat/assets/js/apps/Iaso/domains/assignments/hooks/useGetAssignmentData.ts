@@ -7,11 +7,17 @@ import {
 import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { useBoundState } from '../../../hooks/useBoundState';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import {
+    DropdownTeamsOptions,
+    SubTeam,
+    User,
+    Team,
+} from '../../teams/types/team';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 import { Locations } from '../types/locations';
 import { ChildrenOrgUnits } from '../types/orgUnit';
 import { Planning } from '../types/planning';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 import {
     AssignmentsResult,
@@ -21,7 +27,7 @@ import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
 import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
 import { useGetPlanning } from './requests/useGetPlanning';
 import { ProfileWithColor, useGetProfiles } from './requests/useGetProfiles';
-import { useGetTeams } from './requests/useGetTeams';
+
 import {
     useBulkSaveAssignments,
     useSaveAssignment,
@@ -79,8 +85,10 @@ export const useGetAssignmentData = ({
         data?: Planning;
         isLoading: boolean;
     } = useGetPlanning(planningId);
-    const { data: teams = [], isFetched: isTeamsFetched } = useGetTeams(
-        planning?.team,
+    const { data: teams = [], isFetched: isTeamsFetched } = useGetTeamsDropdown(
+        { ancestor: `${planning?.team}` },
+        undefined,
+        planning?.team ? true : false,
     );
     const [profiles, setProfiles] = useBoundState<ProfileWithColor[]>(
         [],

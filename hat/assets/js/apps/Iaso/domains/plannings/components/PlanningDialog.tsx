@@ -24,9 +24,9 @@ import {
 } from '../../../libs/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetPublishingStatusOptions } from '../constants';
 import { useGetForms } from '../hooks/requests/useGetForms';
-import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
     convertAPIErrorsToState,
     SavePlanningQuery,
@@ -145,9 +145,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
         values?.project,
     );
-    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams(
-        values?.project,
-    );
+    const { data: teamsDropdown, isFetching: isFetchingTeams } =
+        useGetTeamsDropdown({
+            project: values?.project,
+        });
     // TODO filter out by team and forms
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
@@ -198,8 +199,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         if (
             teamsDropdown &&
             !teamsDropdown?.find(
-                team =>
-                    parseInt(team.original?.project, 10) === values?.project,
+                team => team.original?.project === values?.project,
             )
         ) {
             setFieldValue('selectedTeam', null);
@@ -246,7 +246,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 type="select"
                                 keyValue="project"
                                 onChange={onChange}
-                                value={values.project}
+                                value={
+                                    isFetchingProjects
+                                        ? undefined
+                                        : values.project
+                                }
                                 errors={getErrors('project')}
                                 label={MESSAGES.project}
                                 required

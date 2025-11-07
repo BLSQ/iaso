@@ -2,8 +2,8 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
+import { Team } from '../../../teams/types/team';
 import { AssignmentApi } from '../../types/assigment';
-import { Team } from '../../types/team';
 
 type Option = {
     planning: string | undefined;

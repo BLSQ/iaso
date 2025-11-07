@@ -2,8 +2,8 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { DropdownOptions } from '../../../../types/utils';
-import { Project } from '../../types/project';
 import MESSAGES from '../../../plannings/messages';
+import { Project } from '../../types/project';
 
 export const useGetProjectsDropDown = (): UseQueryResult<
     DropdownOptions<number>[],
@@ -11,7 +11,7 @@ export const useGetProjectsDropDown = (): UseQueryResult<
 > => {
     return useSnackQuery({
         queryKey: ['projects'],
-        queryFn: () => getRequest('/api/projects'),
+        queryFn: () => getRequest('/api/projects/'),
         snackErrorMsg: MESSAGES.projectsError,
         options: {
             select: data => {

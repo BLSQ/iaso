@@ -6,10 +6,10 @@ import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 
 import { Profile } from '../../../utils/usersUtils';
+import { SubTeam, Team, User } from '../../teams/types/team';
 import MESSAGES from '../messages';
 import { AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 import { getTeamUserName } from '../utils';
 

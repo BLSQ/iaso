@@ -265,33 +265,3 @@ export const useGetUsersDropDown = (
         },
     );
 };
-
-const getTeams = async (): Promise<Team[]> => {
-    return getRequest('/api/teams/') as Promise<Team[]>;
-};
-
-export const useGetTeamsDropdown = (): UseQueryResult<
-    DropdownTeamsOptions[],
-    Error
-> => {
-    const queryKey: any[] = ['teamsList'];
-    // @ts-ignore
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getTeams(),
-        options: {
-            select: teams => {
-                if (!teams) return [];
-                return teams
-                    .filter(team => team.type === 'TEAM_OF_USERS')
-                    .map(team => {
-                        return {
-                            value: team.id,
-                            label: team.name,
-                            original: team,
-                        };
-                    });
-            },
-        },
-    });
-};

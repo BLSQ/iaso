@@ -1,5 +1,5 @@
-import { UseQueryResult } from 'react-query';
 import { Pagination } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
@@ -14,17 +14,6 @@ type TeamList = Pagination & {
     results: Team[];
 };
 
-const getTeamsDropdown = async (
-    options: TeamParams | TeamFilterParams,
-): Promise<Team[]> => {
-    const { ...params } = (options as Record<string, any>) ?? {};
-    if (params.select) {
-        delete params.select;
-    }
-
-    const url = makeUrlWithParams('/api/teams/', params);
-    return getRequest(url) as Promise<Team[]>;
-};
 const getTeams = async (
     options: TeamParams | TeamFilterParams,
 ): Promise<TeamList> => {
@@ -51,16 +40,28 @@ export const useGetTeams = (
     });
 };
 
+const getTeamsDropdown = async (
+    options: TeamParams | TeamFilterParams,
+): Promise<Team[]> => {
+    const { ...params } = (options as Record<string, any>) ?? {};
+    if (params.select) {
+        delete params.select;
+    }
+
+    const url = makeUrlWithParams('/api/teams/', params);
+    return getRequest(url) as Promise<Team[]>;
+};
 export const useGetTeamsDropdown = (
     options: TeamParams | TeamFilterParams,
-    currentTeamId?: number | undefined,
+    currentTeamId?: number,
+    enabled = true,
 ): UseQueryResult<DropdownTeamsOptions[], Error> => {
-    const queryKey: any[] = ['teamsList', options];
-    // @ts-ignore
+    const queryKey: any[] = ['teamsList', options, currentTeamId];
     return useSnackQuery({
         queryKey,
         queryFn: () => getTeamsDropdown(options),
         options: {
+            enabled,
             select: teams => {
                 if (!teams) return [];
                 const filteredTeams = teams.filter(
@@ -68,9 +69,10 @@ export const useGetTeamsDropdown = (
                 );
                 return filteredTeams.map(team => {
                     return {
-                        value: team.id,
+                        value: team.id.toString(),
                         label: team.name,
                         original: team,
+                        color: team.color,
                     };
                 });
             },

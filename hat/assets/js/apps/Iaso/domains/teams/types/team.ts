@@ -26,6 +26,7 @@ export type Team = {
     created_at: string;
     deleted_at?: string;
     parent?: number;
+    color: string;
 };
 export type TeamFilterParams = {
     dateTo?: string;
@@ -33,6 +34,7 @@ export type TeamFilterParams = {
     project?: number;
     type?: TeamType;
     managers?: User;
+    ancestor?: string;
 };
 
 export type TeamParams = UrlParams &
@@ -44,4 +46,5 @@ export type DropdownTeamsOptions = {
     label: string;
     value: string;
     original: Team;
+    color: string;
 };

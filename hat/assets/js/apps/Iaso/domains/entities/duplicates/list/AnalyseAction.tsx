@@ -1,15 +1,15 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import moment from 'moment';
-import { Button, Box, Tooltip, Grid } from '@mui/material';
 import Autorenew from '@mui/icons-material/Autorenew';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Button, Box, Tooltip, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import { useStartAnalyse } from '../hooks/api/analyzes';
-import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 import MESSAGES from '../messages';
 import { Analysis, Parameters } from '../types';
 import { AnalysisModal } from './AnalysisModal';
+import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 
 type Props = {
     latestAnalysis: Analysis | undefined;

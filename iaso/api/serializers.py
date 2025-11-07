@@ -1,5 +1,3 @@
-import decimal
-
 from django.db import models
 from django.db.models import Q
 from rest_framework import serializers
@@ -8,7 +6,6 @@ from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import TimestampField
 from iaso.api.query_params import APP_ID
 from iaso.models import Group, OrgUnit, OrgUnitType
-from iaso.utils.serializer.rounded_decimal_field import RoundedDecimalField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 
 
@@ -261,13 +258,6 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="uuid")
 
     name = serializers.CharField(required=False, allow_null=True)
-    accuracy = RoundedDecimalField(
-        max_digits=7,
-        decimal_places=2,
-        rounding=decimal.ROUND_HALF_UP,
-        required=False,
-        allow_null=True,
-    )
     location = ThreeDimPointField(required=False, allow_null=True, write_only=True)
 
     # internal non-model fields
@@ -280,7 +270,6 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "accuracy",
             "location",
             "created_at",
             "parent_lookup",
@@ -321,7 +310,6 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
 
         processed_data["id"] = data.get("id")
         processed_data["name"] = data.get("name")
-        processed_data["accuracy"] = data.get("accuracy")
         processed_data["created_at"] = data.get("created_at")
 
         return super().to_internal_value(processed_data)
@@ -345,23 +333,11 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
         if org_unit_type_id is not None:
             data["org_unit_type_id"] = org_unit_type_id
 
+        timestamp = data.pop("created_at", None)
+        if timestamp:
+            try:
+                data["source_created_at"] = timestamp_to_utc_datetime(int(timestamp))
+            except (ValueError, TypeError):
+                raise serializers.ValidationError({"created_at": "Invalid timestamp."})
+
         return data
-
-    def create(self, validated_data):
-        """Implement get_or_create logic and set model fields not provided by the client."""
-        uuid = validated_data.pop("uuid")
-        org_unit, created = OrgUnit.objects.get_or_create(uuid=uuid)
-
-        if not created:
-            return None  # only handle new org units
-
-        created_at = validated_data.pop("created_at", None)
-
-        for attr, value in validated_data.items():
-            setattr(org_unit, attr, value)
-
-        if created_at:
-            org_unit.source_created_at = timestamp_to_utc_datetime(int(created_at))
-
-        org_unit.save()
-        return org_unit

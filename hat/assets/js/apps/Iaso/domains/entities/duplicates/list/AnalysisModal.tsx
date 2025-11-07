@@ -1,4 +1,3 @@
-import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -6,23 +5,29 @@ import React, {
     useState,
 } from 'react';
 import { Grid } from '@mui/material';
-import MESSAGES from '../messages';
-import { AnalysisModalButton } from './AnalysisModalButton';
+import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent';
+import { formatLabel } from '../../../instances/utils';
+import { ALGORITHM_DROPDOWN } from '../../constants';
+import { useGetFormForEntityType } from '../../entityTypes/hooks/requests/forms';
 import { useGetEntityTypesDropdown } from '../../hooks/requests';
 import { useStartAnalyse } from '../hooks/api/analyzes';
-import { ALGORITHM_DROPDOWN } from '../../constants';
-import { formatLabel } from '../../../instances/utils';
-import { useGetFormForEntityType } from '../../entityTypes/hooks/requests/forms';
-import AnalysisModalParameters from './AnalysisModalParameters';
+import MESSAGES from '../messages';
 import { Parameters } from '../types';
+import { AnalysisModalButton } from './AnalysisModalButton';
+import AnalysisModalParameters from './AnalysisModalParameters';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
+    onApply: () => void;
 };
 
-const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
+const AnalysisModal: FunctionComponent<Props> = ({
+    closeDialog,
+    isOpen,
+    onApply,
+}) => {
     const [entityType, setEntityType] = useState(null);
     const [algorithm, setAlgorithm] = useState(null);
     const [entityTypeFields, setEntityTypeFields] = useState([]);
@@ -41,8 +46,15 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             entity_type_id: entityType,
             fields: entityTypeFields,
             parameters,
-        });
-    }, [startAnalyse, algorithm, entityType, entityTypeFields, parameters]);
+        }).then(() => onApply());
+    }, [
+        startAnalyse,
+        onApply,
+        algorithm,
+        entityType,
+        entityTypeFields,
+        parameters,
+    ]);
 
     const handleChangeEntityType = value => {
         const filteredEntityType = entityTypesDropdown?.find(

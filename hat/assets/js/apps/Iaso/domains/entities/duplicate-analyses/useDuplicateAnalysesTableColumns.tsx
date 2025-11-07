@@ -1,12 +1,30 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
+import { useStartAnalyse } from '../duplicates/hooks/api/analyzes';
 import MESSAGES from '../duplicates/messages';
+import { Parameters } from '../duplicates/types';
 import { ActionCell } from './ActionCell';
 import { StatusCell } from './StatusCell';
 
-export const useDuplicateAnalysesTableColumns = (): Column[] => {
+export const useDuplicateAnalysesTableColumns = (
+    onRelaunchCompleted: () => void,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const { mutateAsync: startAnalyse } = useStartAnalyse();
+    const handleRelaunch = useCallback(
+        ({ algorithm, entity_type_id, fields, parameters }) => {
+            startAnalyse({
+                algorithm: algorithm,
+                entity_type_id: entity_type_id,
+                fields: fields,
+                parameters: Object.entries(
+                    parameters as unknown as Parameters,
+                ).map(([name, value]) => ({ name, value })),
+            }).then(onRelaunchCompleted);
+        },
+        [startAnalyse, onRelaunchCompleted],
+    );
     return useMemo(() => {
         const columns = [
             {
@@ -46,15 +64,17 @@ export const useDuplicateAnalysesTableColumns = (): Column[] => {
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
+                    const original = settings.row.original;
                     return (
                         <ActionCell
-                            analysisId={settings.row.original.id}
-                            status={settings.row.original.status}
+                            analysisId={original.id}
+                            status={original.status}
+                            onRelaunch={() => handleRelaunch(original)}
                         />
                     );
                 },
             },
         ];
         return columns;
-    }, [formatMessage]);
+    }, [formatMessage, handleRelaunch]);
 };

@@ -8,13 +8,14 @@ import MESSAGES from '../duplicates/messages';
 type Props = {
     analysisId: number;
     status: string;
+    onRelaunch: () => void;
 };
 
-export const ActionCell: FC<Props> = ({ analysisId, status }) => {
+export const ActionCell: FC<Props> = ({ analysisId, status, onRelaunch }) => {
     return (
         <>
             <IconButton
-                url={`/${baseUrls.stockRulesVersions}/versionId/${analysisId}`}
+                onClick={onRelaunch}
                 overrideIcon={HistoryIcon}
                 tooltipMessage={MESSAGES.relaunchAnalysis}
                 disabled={status === 'RUNNING'}

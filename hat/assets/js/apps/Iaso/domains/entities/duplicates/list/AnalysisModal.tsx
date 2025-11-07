@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 import { Grid } from '@mui/material';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
+import { noOp } from 'Iaso/utils';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { formatLabel } from '../../../instances/utils';
 import { ALGORITHM_DROPDOWN } from '../../constants';
@@ -20,13 +21,13 @@ import AnalysisModalParameters from './AnalysisModalParameters';
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    onApply: () => void;
+    onApply?: () => void;
 };
 
 const AnalysisModal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
-    onApply,
+    onApply = noOp,
 }) => {
     const [entityType, setEntityType] = useState(null);
     const [algorithm, setAlgorithm] = useState(null);

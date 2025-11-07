@@ -31,13 +31,12 @@ export const DuplicateAnalyses: FC = () => {
     const theme = useTheme();
     const style = useMemo(() => commonStyles(theme), [theme]);
     const params = useParamsObject(baseUrl) as unknown as Params;
-    const columns = useDuplicateAnalysesTableColumns();
-
     const {
         data,
         isFetching: isFetchingAnalysis,
         refetch: setForceRefresh,
     } = useGetDuplicateAnalyses({ params });
+    const columns = useDuplicateAnalysesTableColumns(setForceRefresh);
 
     const { results, pages, count } = (data as AnalysisList) ?? defaultData;
 

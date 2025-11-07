@@ -560,3 +560,160 @@ class TeamAPITestCase(APITestCase):
         response = self.client.get(f"/api/teams/?projects={self.project2.id},{self.project1.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)
+
+    def test_dropdown_endpoint_basic(self):
+        """Test the dropdown endpoint returns minimal data"""
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/teams/dropdown/", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(len(r), 2)
+
+        # Check that only the expected fields are present
+        team_data = r[0]
+        expected_fields = {"id", "name", "color", "type", "project"}
+        self.assertEqual(set(team_data.keys()), expected_fields)
+
+        # Check that project is just an ID
+        self.assertIn("project", team_data)
+        self.assertIsInstance(team_data["project"], int)
+
+        # Verify it doesn't include heavy fields from regular serializer
+        self.assertNotIn("project_details", team_data)
+        self.assertNotIn("users", team_data)
+        self.assertNotIn("users_details", team_data)
+        self.assertNotIn("sub_teams", team_data)
+        self.assertNotIn("sub_teams_details", team_data)
+        self.assertNotIn("manager", team_data)
+        self.assertNotIn("description", team_data)
+
+    def test_dropdown_endpoint_with_search(self):
+        """Test dropdown endpoint works with search filter"""
+        self.client.force_authenticate(self.user)
+
+        Team.objects.create(project=self.project1, name="searchable_team", manager=self.user)
+        Team.objects.create(project=self.project1, name="another_team", manager=self.user)
+
+        response = self.client.get("/api/teams/dropdown/?search=searchable", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["name"], "searchable_team")
+
+    def test_dropdown_endpoint_with_project_filter(self):
+        """Test dropdown endpoint works with project filter"""
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/teams/dropdown/?projects={self.project1.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["project"], self.project1.id)
+
+    def test_dropdown_endpoint_with_type_filter(self):
+        """Test dropdown endpoint works with type filter"""
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
+        )
+        team_users = Team.objects.create(
+            project=self.project1, name="team_users", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+        team_teams = Team.objects.create(
+            project=self.project1, name="team_teams", manager=ash_ketchum, type=TeamType.TEAM_OF_TEAMS
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/teams/dropdown/?types={TeamType.TEAM_OF_USERS}", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        # Should only return TEAM_OF_USERS
+        team_ids = [team["id"] for team in r]
+        self.assertIn(team_users.id, team_ids)
+        self.assertNotIn(team_teams.id, team_ids)
+
+    def test_dropdown_endpoint_with_manager_filter(self):
+        """Test dropdown endpoint works with manager filter"""
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
+        )
+        team_ash = Team.objects.create(project=self.project1, name="team_ash", manager=ash_ketchum)
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/teams/dropdown/?managers={ash_ketchum.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["id"], team_ash.id)
+
+    def test_dropdown_endpoint_with_ancestor_filter(self):
+        """Test dropdown endpoint works with ancestor filter"""
+        self.client.force_authenticate(self.user)
+
+        parent_team = Team.objects.create(project=self.project1, name="parent_team", manager=self.user)
+        child_team = Team.objects.create(
+            project=self.project1, name="child_team", manager=self.user, parent=parent_team
+        )
+        grandchild_team = Team.objects.create(
+            project=self.project1, name="grandchild_team", manager=self.user, parent=child_team
+        )
+        other_team = Team.objects.create(project=self.project1, name="other_team", manager=self.user)
+
+        response = self.client.get(f"/api/teams/dropdown/?ancestor={parent_team.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        team_ids = sorted([team["id"] for team in r])
+        expected_ids = sorted([parent_team.id, child_team.id, grandchild_team.id])
+        self.assertEqual(team_ids, expected_ids)
+        self.assertNotIn(other_team.id, team_ids)
+
+    def test_dropdown_endpoint_respects_deletion_status(self):
+        """Test dropdown endpoint respects soft delete"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        team = Team.objects.create(project=self.project1, name="deletable_team", manager=self.user)
+
+        # Team should appear in dropdown
+        response = self.client.get("/api/teams/dropdown/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        team_ids = [t["id"] for t in r]
+        self.assertIn(team.id, team_ids)
+
+        # Delete the team
+        response = self.client.delete(f"/api/teams/{team.id}/", format="json")
+        self.assertJSONResponse(response, 204)
+
+        # Team should not appear in dropdown by default
+        response = self.client.get("/api/teams/dropdown/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        team_ids = [t["id"] for t in r]
+        self.assertNotIn(team.id, team_ids)
+
+        # Team should appear when using deletion_status=all
+        response = self.client.get("/api/teams/dropdown/?deletion_status=all", format="json")
+        r = self.assertJSONResponse(response, 200)
+        team_ids = [t["id"] for t in r]
+        self.assertIn(team.id, team_ids)
+
+    def test_dropdown_endpoint_with_color(self):
+        """Test dropdown endpoint includes color field"""
+        team_with_color = Team.objects.create(
+            project=self.project1, name="colored_team", manager=self.user, color="#FF5733"
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/teams/dropdown/", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        colored_team_data = next(team for team in r if team["id"] == team_with_color.id)
+        self.assertEqual(colored_team_data["color"], "#FF5733")
+
+    def test_dropdown_endpoint_unauthorized(self):
+        """Test dropdown endpoint requires authentication"""
+        response = self.client.get("/api/teams/dropdown/", format="json")
+        self.assertEqual(response.status_code, 401)

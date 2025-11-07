@@ -85,6 +85,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
         );
     const { data: profilesDropdown, isFetching: isFetchingProfiles } =
         useGetProfilesDropdown();
+
     const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
     const {

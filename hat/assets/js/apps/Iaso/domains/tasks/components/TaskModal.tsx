@@ -1,6 +1,15 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import { Box, CircularProgress, Grid, IconButton } from '@mui/material';
+import {
+    Box,
+    CircularProgress,
+    Grid,
+    IconButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+} from '@mui/material';
 import { AlertModal, makeFullModal, useSafeIntl } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
@@ -8,15 +17,33 @@ import { TaskBaseInfo } from 'Iaso/domains/tasks/components/TaskBaseInfo';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
 import { useGetLogs, useGetTask } from 'Iaso/domains/tasks/hooks/api';
 import { Task } from 'Iaso/domains/tasks/types';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
+
+type TaskParams = {
+    label: string;
+    value: any;
+};
+
+const styles: SxStyles = {
+    table: {
+        tableLayout: 'fixed',
+    },
+};
 
 export type Props = {
     task: Task<any>;
     isOpen: boolean;
+    taskParams?: TaskParams[];
     closeDialog: () => void;
 };
 
-const TaskModal: FunctionComponent<Props> = ({ task, isOpen, closeDialog }) => {
+const TaskModal: FunctionComponent<Props> = ({
+    task,
+    isOpen,
+    closeDialog,
+    taskParams = [],
+}) => {
     const queryClient = useQueryClient();
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
     const [isRunning, setRunning] = useState(false);
@@ -29,7 +56,6 @@ const TaskModal: FunctionComponent<Props> = ({ task, isOpen, closeDialog }) => {
         }
     }, [data, task, setRunning, queryClient]);
     const { data: fetchedTask } = useGetTask(task.id);
-
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [data, messagesEndRef]);
@@ -42,11 +68,31 @@ const TaskModal: FunctionComponent<Props> = ({ task, isOpen, closeDialog }) => {
             maxWidth="md"
         >
             <Grid container spacing={2}>
-                <Grid item xs={8}>
+                <Grid item xs={6}>
                     <WidgetPaper title={formatMessage(MESSAGES.task)}>
                         <TaskBaseInfo size="small" task={fetchedTask ?? task} />
                     </WidgetPaper>
                 </Grid>
+                {taskParams && taskParams.length > 0 ? (
+                    <Grid item xs={6}>
+                        <WidgetPaper title={formatMessage(MESSAGES.params)}>
+                            <Table
+                                size={'small'}
+                                data-test="task-base-info"
+                                sx={styles.table}
+                            >
+                                <TableBody>
+                                    {taskParams.map(p => (
+                                        <TableRow key={p.label}>
+                                            <TableCell>{p.label}</TableCell>
+                                            <TableCell>{p.value}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </WidgetPaper>
+                    </Grid>
+                ) : null}
             </Grid>
 
             <Box

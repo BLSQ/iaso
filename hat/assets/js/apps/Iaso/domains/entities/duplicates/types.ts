@@ -79,7 +79,7 @@ export type Analysis = {
     task: number;
     created_by: {
         id: number;
-        name: string;
+        username: string;
     };
 };
 

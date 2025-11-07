@@ -89,6 +89,7 @@ export const useGetAssignmentData = ({
         { ancestor: `${planning?.team}` },
         undefined,
         planning?.team ? true : false,
+        true,
     );
     const [profiles, setProfiles] = useBoundState<ProfileWithColor[]>(
         [],

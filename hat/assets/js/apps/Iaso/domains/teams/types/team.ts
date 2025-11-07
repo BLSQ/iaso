@@ -28,6 +28,15 @@ export type Team = {
     parent?: number;
     color: string;
 };
+
+export type TeamDropdown = {
+    id: number;
+    name: string;
+    color: string;
+    type?: TeamType;
+    project: number;
+};
+
 export type TeamFilterParams = {
     dateTo?: string;
     dateFrom?: string;
@@ -45,6 +54,6 @@ export type TeamParams = UrlParams &
 export type DropdownTeamsOptions = {
     label: string;
     value: string;
-    original: Team;
+    original: TeamDropdown;
     color: string;
 };

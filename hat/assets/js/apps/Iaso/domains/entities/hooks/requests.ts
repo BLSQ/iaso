@@ -3,7 +3,7 @@ import { Pagination, UrlParams } from 'bluesquare-components';
 import moment from 'moment';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { ParamsWithAccountId } from 'Iaso/routing/hooks/useParamsObject';
-import { apiDateFormat } from 'Iaso/utils/dates.ts';
+import { apiDateFormat } from 'Iaso/utils/dates';
 import {
     deleteRequest,
     getRequest,
@@ -17,7 +17,7 @@ import { makeUrlWithParams } from '../../../libs/utils';
 import { DropdownOptions } from '../../../types/utils';
 import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { PaginatedInstances } from '../../instances/types/instance';
-import { DropdownTeamsOptions, Team } from '../../teams/types/team';
+import { Team } from '../../teams/types/team';
 import { Location } from '../components/ListMap';
 import MESSAGES from '../messages';
 import { Entity } from '../types/entity';

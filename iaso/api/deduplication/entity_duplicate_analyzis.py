@@ -66,6 +66,8 @@ class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(source="task.status", choices=base.STATUS_TYPE_CHOICES)
     started_at = TimestampField(read_only=True, source="task.started_at")
     created_by = UserNestedSerializer(source="task.launcher")
+    task_id = serializers.IntegerField(source="task.id")
+    result_message = serializers.CharField(source="task.progress_message")
     entity_type_id = serializers.SerializerMethodField()
     fields = serializers.SerializerMethodField(method_name="get_the_fields")  # type: ignore
     parameters = serializers.SerializerMethodField()
@@ -94,6 +96,8 @@ class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
             "finished_at",
             "created_at",
             "finished_at",
+            "task_id",
+            "result_message",
         ]
 
 

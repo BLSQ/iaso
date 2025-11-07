@@ -25,6 +25,12 @@ export const useDuplicateAnalysesTableColumns = (
         },
         [startAnalyse, onRelaunchCompleted],
     );
+
+    const openTaskDetails = useCallback(
+        (task_id, status) => alert(task_id + ' ' + status),
+        [],
+    );
+
     return useMemo(() => {
         const columns = [
             {
@@ -67,14 +73,14 @@ export const useDuplicateAnalysesTableColumns = (
                     const original = settings.row.original;
                     return (
                         <ActionCell
-                            analysisId={original.id}
                             status={original.status}
                             onRelaunch={() => handleRelaunch(original)}
+                            taskId={original.task_id}
                         />
                     );
                 },
             },
         ];
         return columns;
-    }, [formatMessage, handleRelaunch]);
+    }, [formatMessage, handleRelaunch, openTaskDetails]);
 };

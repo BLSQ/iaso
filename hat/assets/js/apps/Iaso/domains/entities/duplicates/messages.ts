@@ -246,10 +246,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'User',
         id: 'iaso.label.user',
     },
-    viewAnalysis: {
-        defaultMessage: 'View details',
-        id: 'iaso.label.entities.duplicate-analysis.view',
-    },
 });
 
 export default MESSAGES;

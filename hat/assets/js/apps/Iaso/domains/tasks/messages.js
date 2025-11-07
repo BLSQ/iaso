@@ -143,8 +143,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.exportMobileAppDownloadBtn',
     },
     params: {
-        defaultMessage: 'Params',
-        id: 'iaso.label.params',
+        defaultMessage: 'Parameters',
+        id: 'iaso.label.parameters',
     },
 });
 

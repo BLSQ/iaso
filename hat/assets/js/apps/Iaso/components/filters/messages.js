@@ -34,7 +34,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Text search',
     },
     user: {
-        id: 'iaso.forms.userLabel',
+        id: 'iaso.label.user',
         defaultMessage: 'User',
     },
 });

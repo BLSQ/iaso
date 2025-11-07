@@ -585,6 +585,7 @@
     "iaso.label.download": "Download",
     "iaso.label.downloadXml": "Download XML",
     "iaso.label.draft": "Draft",
+    "iaso.label.duplicateAnalyses": "Duplicate Analyses",
     "iaso.label.duplicates": "Duplicates",
     "iaso.label.edit": "Edit",
     "iaso.label.editableFields": "Editable fields",

@@ -586,6 +586,7 @@
     "iaso.label.download": "Télécharger",
     "iaso.label.downloadXml": "Télécharger XML",
     "iaso.label.draft": "Ébauche",
+    "iaso.label.duplicateAnalyses": "Analyses de doublon",
     "iaso.label.duplicates": "Doublons",
     "iaso.label.edit": "Édition",
     "iaso.label.editableFields": "Champs éditables",

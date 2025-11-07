@@ -54,7 +54,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Created',
     },
     duplicateAnalyses: {
-        id: 'iaso.label.duplicate-analyses',
+        id: 'iaso.label.duplicateAnalyses',
         defaultMessage: 'Duplicate Analyses',
     },
     duplicates: {
@@ -211,7 +211,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Start date from',
     },
     status: {
-        id: 'ias.label.status',
+        id: 'iaso.label.status',
         defaultMessage: 'Status',
     },
     submissionTitle: {
@@ -244,7 +244,7 @@ const MESSAGES = defineMessages({
     },
     user: {
         defaultMessage: 'User',
-        id: 'iaso.user',
+        id: 'iaso.label.user',
     },
     viewAnalysis: {
         defaultMessage: 'View details',

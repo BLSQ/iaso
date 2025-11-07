@@ -187,7 +187,7 @@ const MESSAGES = defineMessages({
     },
     entityDuplicateAnalysesTitle: {
         defaultMessage: 'Duplicate Analyses',
-        id: 'iaso.label.duplicate-analyses',
+        id: 'iaso.label.duplicateAnalyses',
     },
     modules: {
         defaultMessage: 'Modules',

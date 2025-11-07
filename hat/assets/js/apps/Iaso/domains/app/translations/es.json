@@ -539,6 +539,7 @@
     "iaso.label.download": "Descargar",
     "iaso.label.downloadXml": "Descargar XML",
     "iaso.label.draft": "Borrador",
+    "iaso.label.duplicateAnalyses": "Análisis duplicado",
     "iaso.label.duplicates": "Duplicados",
     "iaso.label.edit": "Editar",
     "iaso.label.editableFields": "Campos editables",

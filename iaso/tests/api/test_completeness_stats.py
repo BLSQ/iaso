@@ -12,7 +12,7 @@ from django.contrib.auth.models import Permission, User
 
 from iaso.models import Account, Form, Instance, OrgUnit, OrgUnitType
 from iaso.models.base import Profile
-from iaso.models.microplanning import Team
+from iaso.models.team import Team
 from iaso.test import APITestCase
 
 

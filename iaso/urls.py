@@ -63,7 +63,7 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
-from .api.microplanning.views import AssignmentViewSet, PlanningViewSet, TeamViewSet
+from .api.microplanning.views import AssignmentViewSet, PlanningViewSet
 from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
@@ -113,6 +113,7 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
+from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
@@ -204,7 +205,7 @@ router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="enti
 router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entityduplicates")
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
-router.register(r"microplanning/teams", TeamViewSet, basename="teams")
+router.register(r"teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")

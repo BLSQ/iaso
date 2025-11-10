@@ -267,8 +267,6 @@ class DataSourceVersionsSynchronization(models.Model):
         self.clean_data_source_versions()
 
     def clean_data_source_versions(self) -> None:
-        if self.source_version_to_update.data_source_id != self.source_version_to_compare_with.data_source_id:
-            raise ValidationError("The two versions to compare must be linked to the same data source.")
         if self.source_version_to_update.pk == self.source_version_to_compare_with.pk:
             raise ValidationError("The two versions to compare must be different.")
 

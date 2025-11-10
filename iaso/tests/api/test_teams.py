@@ -561,6 +561,98 @@ class TeamAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)
 
+    def test_create_team_with_valid_color(self):
+        """Test creating a team with a valid hex color"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "colored_team",
+            "project": self.project1.id,
+            "manager": self.user.id,
+            "color": "#ff5733",
+            "sub_teams": [],
+            "users": [],
+        }
+
+        response = self.client.post("/api/teams/", data=data, format="json")
+        r = self.assertJSONResponse(response, 201)
+        self.assertEqual(r["color"], "#FF5733")  # Normalized to uppercase
+
+    def test_create_team_with_invalid_color_no_hash(self):
+        """Test that creating a team without # in color fails"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "bad_color_team",
+            "project": self.project1.id,
+            "manager": self.user.id,
+            "color": "ff5733",  # Missing #
+            "sub_teams": [],
+            "users": [],
+        }
+
+        response = self.client.post("/api/teams/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("color", response.json())
+
+    def test_create_team_with_invalid_color_wrong_length(self):
+        """Test that creating a team with wrong color length fails"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "bad_color_team",
+            "project": self.project1.id,
+            "manager": self.user.id,
+            "color": "#fff",  # Too short
+            "sub_teams": [],
+            "users": [],
+        }
+
+        response = self.client.post("/api/teams/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("color", response.json())
+
+    def test_create_team_with_invalid_color_characters(self):
+        """Test that creating a team with invalid hex characters fails"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "bad_color_team",
+            "project": self.project1.id,
+            "manager": self.user.id,
+            "color": "#gghhii",  # Invalid hex characters
+            "sub_teams": [],
+            "users": [],
+        }
+
+        response = self.client.post("/api/teams/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("color", response.json())
+
+    def test_patch_team_color(self):
+        """Test updating a team's color"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        update_data = {"color": "#00ff00"}
+        response = self.client.patch(f"/api/teams/{self.team1.id}/", data=update_data, format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["color"], "#00FF00")  # Normalized to uppercase
+
     def test_dropdown_endpoint_basic(self):
         """Test the dropdown endpoint returns minimal data"""
         self.client.force_authenticate(self.user)

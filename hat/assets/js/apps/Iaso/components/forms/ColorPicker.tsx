@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import {
     FormLabel,
     Box,
@@ -70,21 +75,26 @@ export const ColorPicker: FunctionComponent<Props> = ({
         setOpen(prev => !prev);
     };
 
-    const handleChangeColor = newColor => {
-        setOpen(false);
-        onChangeColor(newColor.hex);
-    };
+    const handleChangeColor = useCallback(
+        newColor => {
+            setOpen(false);
+            onChangeColor(newColor.hex);
+        },
+        [onChangeColor],
+    );
 
-    const handleClickAway = () => {
+    const handleClickAway = useCallback(() => {
         if (open) {
             setOpen(false);
         }
-    };
-    const displayedColors = useMemo(() => {
-        return (colors ? colors : (apiColors ?? [])).filter(color => {
-            return color.toLowerCase() !== currentColor.toLowerCase();
-        });
-    }, [colors, apiColors, currentColor]);
+    }, [open]);
+    const displayedColors = useMemo(
+        () =>
+            (colors ? colors : (apiColors ?? [])).filter(
+                color => color.toLowerCase() !== currentColor.toLowerCase(),
+            ),
+        [colors, apiColors, currentColor],
+    );
     return (
         <Box>
             <Box display="flex" alignItems="center">

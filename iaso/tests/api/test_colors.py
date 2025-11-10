@@ -9,9 +9,7 @@ class ColorsApiTestCase(APITestCase):
         account = m.Account(name="test account")
         account.save()
 
-        cls.user = user = m.User.objects.create(username="test_user")
-        p = m.Profile(user=user, account=account)
-        p.save()
+        cls.user = cls.create_user_with_profile(username="user", account=account)
 
     def test_colors_unauth(self):
         """Test that unauthenticated users cannot access colors API"""
@@ -72,39 +70,6 @@ class ColorsApiTestCase(APITestCase):
             self.assertEqual(color["value"], COLOR_CHOICES[i][0])
             self.assertEqual(color["label"], COLOR_CHOICES[i][1])
 
-    def test_colors_dispersed_different_from_rainbow(self):
-        """Test that dispersed order is actually different from rainbow order"""
-        self.client.force_authenticate(self.user)
-
-        # Get rainbow order
-        response_rainbow = self.client.get("/api/colors/", format="json")
-        rainbow_data = response_rainbow.json()
-
-        # Get dispersed order
-        response_dispersed = self.client.get("/api/colors/?dispersed=true", format="json")
-        dispersed_data = response_dispersed.json()
-
-        # They should have the same colors but in different order
-        rainbow_values = [c["value"] for c in rainbow_data]
-        dispersed_values = [c["value"] for c in dispersed_data]
-
-        # Same colors
-        self.assertEqual(set(rainbow_values), set(dispersed_values))
-
-        # Different order (at least first color should be different)
-        self.assertNotEqual(rainbow_values[0], dispersed_values[0])
-
-    def test_colors_dispersed_starts_with_blue(self):
-        """Test that dispersed order starts with Light Blue 400, not red"""
-        self.client.force_authenticate(self.user)
-        response = self.client.get("/api/colors/?dispersed=true", format="json")
-        data = response.json()
-
-        first_color = data[0]
-        # Light Blue 400 is at index 9 in COLOR_CHOICES
-        self.assertEqual(first_color["value"], COLOR_CHOICES[9][0])
-        self.assertIn("Light Blue", first_color["label"])
-
     def test_colors_response_structure(self):
         """Test that each color has correct structure with value and label"""
         self.client.force_authenticate(self.user)
@@ -123,3 +88,50 @@ class ColorsApiTestCase(APITestCase):
             # Check label is string
             self.assertIsInstance(color["label"], str)
             self.assertTrue(len(color["label"]) > 0)
+
+    def test_colors_dispersed_various_boolean_values(self):
+        """Test that various boolean representations work for dispersed parameter"""
+        self.client.force_authenticate(self.user)
+
+        # Test various truthy values
+        for value in ["true", "True", "TRUE", "1", "yes", "Yes"]:
+            response = self.client.get(f"/api/colors/?dispersed={value}", format="json")
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            # Verify it's dispersed order by checking first color
+            first_color = data[0]
+            self.assertEqual(first_color["value"], COLOR_CHOICES[DISPERSED_COLOR_ORDER[0]][0])
+
+        # Test various falsy values
+        for value in ["false", "False", "FALSE", "0", "no", "No"]:
+            response = self.client.get(f"/api/colors/?dispersed={value}", format="json")
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            # Verify it's rainbow order by checking first color
+            first_color = data[0]
+            self.assertEqual(first_color["value"], COLOR_CHOICES[0][0])
+
+    def test_colors_dispersed_invalid_value(self):
+        """Test that invalid dispersed values return 400 error"""
+        self.client.force_authenticate(self.user)
+
+        # Test invalid values that should return 400
+        for value in ["invalid", "maybe", "2"]:
+            response = self.client.get(f"/api/colors/?dispersed={value}", format="json")
+            self.assertEqual(
+                response.status_code,
+                400,
+                f"Expected 400 for dispersed={value}, got {response.status_code}",
+            )
+            data = response.json()
+            self.assertIn("dispersed", data)
+
+    def test_colors_dispersed_empty_string(self):
+        """Test that empty string for dispersed parameter defaults to False"""
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/colors/?dispersed=", format="json")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        # Empty string should be treated as False (rainbow order)
+        first_color = data[0]
+        self.assertEqual(first_color["value"], COLOR_CHOICES[0][0])

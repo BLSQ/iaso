@@ -484,6 +484,7 @@ class ListCampaignSerializer(CampaignSerializer):
             "is_test",
             "is_preventive",
             "on_hold",
+            "is_planned",
         ]
         read_only_fields = fields
 

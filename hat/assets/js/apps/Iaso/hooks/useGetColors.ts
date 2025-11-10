@@ -35,7 +35,11 @@ export const getColor = (
 ): string => {
     if (!colors) return 'transparent';
     if (colors.length === 0) return 'transparent';
-    return colors.filter(color => !usedColors?.includes(color))[
-        i % colors.length
-    ];
+
+    const availableColors = colors.filter(
+        color => !usedColors?.includes(color),
+    );
+    if (availableColors.length === 0) return 'transparent';
+
+    return availableColors[i % availableColors.length];
 };

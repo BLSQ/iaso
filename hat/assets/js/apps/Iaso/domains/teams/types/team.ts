@@ -5,6 +5,7 @@ export type SubTeam = {
     id: number;
     name: string;
     deleted_at?: string;
+    color: string;
 };
 
 export type User = {

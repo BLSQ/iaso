@@ -455,6 +455,7 @@ export type CampaignListItem = {
     is_test: boolean;
     on_hold?: boolean;
     is_preventive: boolean;
+    is_planned: boolean;
 };
 
 export type DefaultCampaignValues = {

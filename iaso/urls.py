@@ -43,6 +43,7 @@ from .api.enketo import (
     enketo_edit_url,
     enketo_form_download,
     enketo_form_list,
+    enketo_instance_files,
     enketo_public_create_url,
     enketo_public_launch,
 )
@@ -259,6 +260,9 @@ urlpatterns: URLList = [
     path("enketo/formList", view=enketo_form_list, name="enketo-form-list"),
     path("enketo/formDownload/", view=enketo_form_download, name="enketo_form_download"),
     path("enketo/submission", view=EnketoSubmissionAPIView.as_view(), name="enketo-submission"),
+    path(
+        "enketo/instance_files/<instance_file_id>/<file_name>", view=enketo_instance_files, name="enketo-instance-files"
+    ),
     path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
 ]
 

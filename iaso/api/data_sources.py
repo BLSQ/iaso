@@ -207,7 +207,7 @@ class TestCredentialSerializer(serializers.Serializer):
             if err.code == 401:
                 self.raise_exception("dhis2_password")
             self.raise_exception("dhis2_url", err.description)
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as err2:
             self.raise_exception("dhis2_url")
         except Exception as err:
             logging.exception(err)
@@ -217,9 +217,10 @@ class TestCredentialSerializer(serializers.Serializer):
         try:
             response = requests.get(dhis2_system_info_api, auth=(dhis2_login, password)).json()
             # dependending on the version the field url is not always the same
-            if "instanceBaseUrl" in response and response["instanceBaseUrl"] != dhis2_url:
-                self.raise_exception("dhis2_url")
-            if "contextPath" in response and response["contextPath"] != dhis2_url:
+            if "contextPath" in response:
+                if response["contextPath"] != dhis2_url:
+                    self.raise_exception("dhis2_url")
+            elif "instanceBaseUrl" in response and response["instanceBaseUrl"] != dhis2_url:
                 self.raise_exception("dhis2_url")
             # just in case both fields are empty, at least verify that we have a version field
             if "version" not in response:

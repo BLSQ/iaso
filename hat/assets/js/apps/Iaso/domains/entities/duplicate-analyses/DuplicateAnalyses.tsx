@@ -20,6 +20,7 @@ import { useDuplicateAnalysesTableColumns } from './useDuplicateAnalysesTableCol
 type Params = PaginationParams & DuplicateAnalysesGETParams;
 
 const baseUrl = baseUrls.entityDuplicateAnalyses;
+const defaultSorted = [{ id: 'created_at', desc: true }];
 const defaultData = {
     results: [],
     pages: 1,
@@ -57,7 +58,7 @@ export const DuplicateAnalyses: FC = () => {
                         marginTop={false}
                         data={results}
                         pages={pages}
-                        // defaultSorted={defaultSorted}
+                        defaultSorted={defaultSorted}
                         columns={columns}
                         count={count ?? 0}
                         baseUrl={baseUrl}

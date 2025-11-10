@@ -42,7 +42,6 @@ export const useDuplicateAnalysesTableColumns = (
                 Header: formatMessage(MESSAGES.algorithm),
                 accessor: 'algorithm',
                 resizable: false,
-                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.status),

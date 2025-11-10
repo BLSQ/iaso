@@ -80,11 +80,13 @@ export const ColorPicker: FunctionComponent<Props> = ({
             setOpen(false);
         }
     };
-    const displayedColors = useMemo(() => {
-        return (colors ? colors : (apiColors ?? [])).filter(color => {
-            return color.toLowerCase() !== currentColor.toLowerCase();
-        });
-    }, [colors, apiColors, currentColor]);
+    const displayedColors = useMemo(
+        () =>
+            (colors ? colors : (apiColors ?? [])).filter(
+                color => color.toLowerCase() !== currentColor.toLowerCase(),
+            ),
+        [colors, apiColors, currentColor],
+    );
     return (
         <Box>
             <Box display="flex" alignItems="center">

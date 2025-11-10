@@ -25,8 +25,5 @@ export const useGetDuplicateAnalyses = ({
         queryKey: ['analysis', params],
         queryFn: () =>
             getRequest(`/api/entityduplicates_analyzes/?${queryString}`),
-        options: {
-            // refetchInterval: 10000,
-        },
     });
 };

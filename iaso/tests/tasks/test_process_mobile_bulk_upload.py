@@ -221,6 +221,43 @@ class ProcessMobileBulkUploadTest(TestCase):
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
 
+    def test_org_unit_already_exists(self):
+        self._create_zip_file()
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+        self.assertEqual(m.InstanceFile.objects.count(), 0)
+
+        # create the same org unit as in the fixture
+        existing_org_unit = m.OrgUnit.objects.create(
+            uuid="9dcb6991-c72c-416d-ba38-4556c62b400f",
+            name="New Org Unit",
+            org_unit_type_id=5,
+            parent_id=4,
+            version_id=2,
+        )
+        orginal_updated_at = existing_org_unit.updated_at
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # check that task ran without errors
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # The org unit wasn't modified
+        ou = m.OrgUnit.objects.get(name="New Org Unit")
+        self.assertIsNotNone(ou)
+        self.assertEqual(ou.updated_at, orginal_updated_at)
+
     def test_success_when_user_is_none(self):
         self.api_import.user = None
         self.api_import.save()

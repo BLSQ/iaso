@@ -222,14 +222,13 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
 
         algo_name = data["algorithm"]
         default_parameters = get_deduplication_aglo_default_parameters(algo_name=algo_name)
-
         algo_params = {
             "entity_type_id": data["entity_type_id"],
             "fields": data["fields"],
             "parameters": default_parameters | {param["name"]: param["value"] for param in data["parameters"]},
         }
 
-        task = run_deduplication_algo(algo=algo_name, algo_params=algo_params, user=request.user)
+        task = run_deduplication_algo(algo_name=algo_name, algo_params=algo_params, user=request.user)
 
         analyze = EntityDuplicateAnalyzis.objects.create(algorithm=algo_name, metadata=algo_params, task=task)
         analyze.save()

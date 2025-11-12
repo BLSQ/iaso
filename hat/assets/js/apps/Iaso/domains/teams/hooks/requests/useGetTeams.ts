@@ -14,6 +14,7 @@ import {
 const getTeam = async (teamId: number): Promise<Team> => {
     return getRequest(`/api/teams/${teamId}/`) as Promise<Team>;
 };
+
 export const useGetTeam = (teamId: number): UseQueryResult<Team, Error> => {
     return useSnackQuery({
         queryKey: ['team', teamId],

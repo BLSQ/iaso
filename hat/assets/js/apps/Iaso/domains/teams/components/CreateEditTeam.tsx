@@ -1,16 +1,20 @@
-import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
+import React, { FunctionComponent, useMemo, useEffect } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     useSafeIntl,
-    IconButton,
     IntlFormatMessage,
+    ConfirmCancelModal,
+    makeFullModal,
 } from 'bluesquare-components';
-// @ts-ignore
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { useGetColors } from 'Iaso/hooks/useGetColors';
+import { DropdownOptions } from 'Iaso/types/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import {
@@ -30,29 +34,12 @@ import {
 import MESSAGES from '../messages';
 import { DropdownTeamsOptions } from '../types/team';
 import { useTeamValidation } from '../validation';
-
 type ModalMode = 'create' | 'edit';
 
 type Props = Partial<SaveTeamQuery> & {
     dialogType: ModalMode;
-};
-
-const makeRenderTrigger = (dialogType: 'create' | 'edit') => {
-    if (dialogType === 'create') {
-        return ({ openDialog }) => (
-            <AddButton
-                dataTestId="create-plannning-button"
-                onClick={openDialog}
-            />
-        );
-    }
-    return ({ openDialog }) => (
-        <IconButton
-            onClick={openDialog}
-            icon="edit"
-            tooltipMessage={MESSAGES.edit}
-        />
-    );
+    isOpen: boolean;
+    closeDialog: () => void;
 };
 
 const formatTitle = (
@@ -69,7 +56,7 @@ const formatTitle = (
     }
 };
 
-export const CreateEditTeam: FunctionComponent<Props> = ({
+const CreateEditTeam: FunctionComponent<Props> = ({
     dialogType,
     id,
     name,
@@ -80,10 +67,13 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     type,
     users,
     parent,
+    isOpen,
+    closeDialog,
+    color,
 }) => {
+    const { data: colors } = useGetColors();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const [closeModal, setCloseModal] = useState<any>();
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
     const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
@@ -105,7 +95,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<SaveTeamQuery>, any>({
         mutationFn: saveTeam,
         onSuccess: () => {
-            closeModal.closeDialog();
+            closeDialog();
             formik.resetForm();
         },
         convertError: convertAPIErrorsToState,
@@ -124,6 +114,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             type,
             users: users || [],
             parent,
+            color,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -143,10 +134,6 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
 
-    const renderTrigger = useMemo(
-        () => makeRenderTrigger(dialogType),
-        [dialogType],
-    );
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
@@ -185,22 +172,21 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     );
     return (
         <FormikProvider value={formik}>
-            {/* @ts-ignore */}
-            <ConfirmCancelDialogComponent
+            <ConfirmCancelModal
+                dataTestId="create-team-modal"
+                id="create-team-modal"
+                open={isOpen}
+                closeDialog={closeDialog}
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => {
-                    setCloseModal({ closeDialog });
-                    handleSubmit();
-                }}
-                onCancel={closeDialog => {
+                onConfirm={handleSubmit}
+                onCancel={() => {
                     resetForm();
-                    closeDialog();
                 }}
                 maxWidth="xs"
+                onClose={() => null}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                renderTrigger={renderTrigger}
             >
                 <InputComponent
                     keyValue="name"
@@ -219,7 +205,9 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     errors={getErrors('manager')}
                     label={MESSAGES.manager}
                     required
-                    options={profilesDropdown}
+                    options={
+                        profilesDropdown as any as DropdownOptions<number>[]
+                    }
                     loading={isFetchingProfiles}
                 />
                 <InputComponent
@@ -259,6 +247,16 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
+                <Box mt={2}>
+                    {colors && (
+                        <ColorPicker
+                            currentColor={values.color ?? colors[0]}
+                            onChangeColor={color =>
+                                setFieldValue('color', color)
+                            }
+                        />
+                    )}
+                </Box>
                 {values.type === TEAM_OF_USERS && (
                     <InputComponent
                         type="select"
@@ -269,7 +267,9 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                         value={values.users}
                         errors={getErrors('users')}
                         label={MESSAGES.users}
-                        options={profilesDropdown}
+                        options={
+                            profilesDropdown as any as DropdownOptions<number>[]
+                        }
                         loading={isFetchingProfiles}
                         multi
                     />
@@ -300,7 +300,11 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     loading={isFetchingTeams}
                     multi={false}
                 />
-            </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
         </FormikProvider>
     );
 };
+const AddTeamModal = makeFullModal(CreateEditTeam, AddButton);
+const EditTeamModal = makeFullModal(CreateEditTeam, EditIconButton);
+
+export { AddTeamModal, EditTeamModal };

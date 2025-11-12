@@ -88,11 +88,13 @@ export const ColorPicker: FunctionComponent<Props> = ({
             setOpen(false);
         }
     }, [open]);
-    const usedColors = useMemo(() => {
-        return (colors ? colors : (apiColors ?? [])).filter(
-            color => color !== currentColor,
-        );
-    }, [colors, apiColors, currentColor]);
+    const displayedColors = useMemo(
+        () =>
+            (colors ? colors : (apiColors ?? [])).filter(
+                color => color.toLowerCase() !== currentColor.toLowerCase(),
+            ),
+        [colors, apiColors, currentColor],
+    );
     return (
         <Box>
             <Box display="flex" alignItems="center">
@@ -119,7 +121,7 @@ export const ColorPicker: FunctionComponent<Props> = ({
                             title={
                                 <TwitterPicker
                                     width="100%"
-                                    colors={usedColors}
+                                    colors={displayedColors}
                                     color={currentColor}
                                     onChangeComplete={handleChangeColor}
                                     triangle="hide"

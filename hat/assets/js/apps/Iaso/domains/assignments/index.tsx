@@ -19,6 +19,7 @@ import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineConfig } from '../openHexa/hooks/useGetPipelineConfig';
 import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
+import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
@@ -95,7 +96,7 @@ export const Assignments: FunctionComponent = () => {
         isFetchingChildrenOrgunits,
         isLoadingAssignments,
         isTeamsFetched,
-        setItemColor,
+        setProfiles,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -107,6 +108,30 @@ export const Assignments: FunctionComponent = () => {
     });
     const isLoading = isLoadingPlanning || isSaving;
 
+    const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
+
+    const setItemColor = (color, itemId) => {
+        // TODO: improve this
+        if (currentTeam?.type === 'TEAM_OF_USERS') {
+            const itemIndex = profiles.findIndex(
+                profile => profile.user_id === itemId,
+            );
+            if (itemIndex !== undefined) {
+                const newProfiles = [...profiles];
+                newProfiles[itemIndex] = {
+                    ...newProfiles[itemIndex],
+                    color,
+                };
+                setProfiles(newProfiles);
+            }
+        }
+        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+            saveTeam({
+                id: itemId,
+                color,
+            });
+        }
+    };
     const { data: hasPipelineConfig } = useGetPipelineConfig();
     const handleSaveAssignment = useCallback(
         (selectedOrgUnit: AssignmentUnit) => {

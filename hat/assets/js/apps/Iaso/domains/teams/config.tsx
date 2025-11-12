@@ -3,7 +3,7 @@ import React, { ReactElement } from 'react';
 import { Column, IntlFormatMessage } from 'bluesquare-components';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { ProjectChip } from '../projects/components/ProjectChip';
-import { CreateEditTeam } from './components/CreateEditTeam';
+import { EditTeamModal } from './components/CreateEditTeam';
 import { TypeCell } from './components/TypeCell';
 import { UsersTeamsCell } from './components/UsersTeamsCell';
 import MESSAGES from './messages';
@@ -62,7 +62,7 @@ export const teamColumns = (
                 return (
                     // TODO: limit to user permissions
                     <>
-                        <CreateEditTeam
+                        <EditTeamModal
                             dialogType="edit"
                             id={settings.row.original.id}
                             name={settings.row.original.name}
@@ -73,6 +73,8 @@ export const teamColumns = (
                             type={settings.row.original.type}
                             users={settings.row.original.users}
                             parent={settings.row.original.parent}
+                            color={settings.row.original.color}
+                            iconProps={{}}
                         />
                         <DeleteDialog
                             keyName="team"

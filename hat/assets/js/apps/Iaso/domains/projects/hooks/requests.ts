@@ -97,5 +97,5 @@ export const useSave = (): UseMutationResult =>
                 : postRequest('/api/apps/', body),
         undefined,
         undefined,
-        ['projects-paginated'],
+        ['projects-paginated', 'projects-dropdown'],
     );

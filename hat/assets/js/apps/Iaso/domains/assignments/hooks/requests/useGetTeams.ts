@@ -16,7 +16,7 @@ const getTeams = async (ancestor: number): Promise<Teams> => {
 export const useGetTeams = (
     ancestor: number | undefined,
 ): UseQueryResult<Array<DropdownTeamsOptions>, Error> => {
-    const queryKey: any[] = ['teams'];
+    const queryKey: any[] = ['teamsDropdown'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(ancestor), undefined, {
         enabled: Boolean(ancestor),

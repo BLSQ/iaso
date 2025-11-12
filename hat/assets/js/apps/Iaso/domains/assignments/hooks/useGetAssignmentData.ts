@@ -59,7 +59,7 @@ type Result = {
     isFetchingChildrenOrgunits: boolean;
     isLoadingAssignments: boolean;
     isTeamsFetched: boolean;
-    setItemColor: (color: string, itemId: number) => void;
+    setProfiles: (profiles: ProfileWithColor[]) => void;
 };
 
 export const useGetAssignmentData = ({
@@ -79,12 +79,8 @@ export const useGetAssignmentData = ({
         data?: Planning;
         isLoading: boolean;
     } = useGetPlanning(planningId);
-    const { data: dataTeams = [], isFetched: isTeamsFetched } = useGetTeams(
+    const { data: teams = [], isFetched: isTeamsFetched } = useGetTeams(
         planning?.team,
-    );
-    const [teams, setTeams] = useBoundState<DropdownTeamsOptions[] | undefined>(
-        [],
-        dataTeams,
     );
     const [profiles, setProfiles] = useBoundState<ProfileWithColor[]>(
         [],
@@ -163,85 +159,27 @@ export const useGetAssignmentData = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    return useMemo(() => {
-        const setItemColor = (color, itemId) => {
-            // TODO: improve this
-            if (currentTeam?.type === 'TEAM_OF_USERS') {
-                const itemIndex = profiles.findIndex(
-                    profile => profile.user_id === itemId,
-                );
-                if (itemIndex !== undefined) {
-                    const newProfiles = [...profiles];
-                    newProfiles[itemIndex] = {
-                        ...newProfiles[itemIndex],
-                        color,
-                    };
-                    setProfiles(newProfiles);
-                }
-            }
-            if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-                const itemIndex = teams?.findIndex(
-                    team => team.original.id === itemId,
-                );
-                if (itemIndex !== undefined && teams) {
-                    const newTeams = [...teams];
-                    newTeams[itemIndex] = {
-                        ...newTeams[itemIndex],
-                        color,
-                    };
-                    setTeams(newTeams);
-                }
-            }
-        };
-        return {
-            planning,
-            assignments,
-            allAssignments,
-            saveAssignment,
-            teams,
-            profiles,
-            orgunitTypes,
-            childrenOrgunits,
-            orgUnits,
-            orgUnitsList,
-            sidebarData,
-            isFetchingOrgUnits,
-            isFetchingOrgUnitsList,
-            isLoadingPlanning,
-            isSaving: isBulkSaving || isSaving,
-            isFetchingOrgunitTypes:
-                !orgUnitTypeHierarchy || isFetchingOrgunitTypes,
-            isFetchingChildrenOrgunits,
-            isLoadingAssignments,
-            isTeamsFetched,
-            setItemColor,
-            saveMultiAssignments,
-        };
-    }, [
-        allAssignments,
+    return {
+        planning,
         assignments,
+        allAssignments,
+        saveAssignment,
+        teams,
+        profiles,
+        orgunitTypes,
         childrenOrgunits,
-        currentTeam?.type,
-        isBulkSaving,
-        isFetchingChildrenOrgunits,
-        isFetchingOrgUnits,
-        isFetchingOrgUnitsList,
-        isFetchingOrgunitTypes,
-        isLoadingAssignments,
-        isLoadingPlanning,
-        isSaving,
-        isTeamsFetched,
         orgUnits,
         orgUnitsList,
-        orgunitTypes,
-        planning,
-        profiles,
-        saveAssignment,
+        sidebarData,
+        isFetchingOrgUnits,
+        isFetchingOrgUnitsList,
+        isLoadingPlanning,
+        isSaving: isBulkSaving || isSaving,
+        isFetchingOrgunitTypes: !orgUnitTypeHierarchy || isFetchingOrgunitTypes,
+        isFetchingChildrenOrgunits,
+        isLoadingAssignments,
+        isTeamsFetched,
         saveMultiAssignments,
         setProfiles,
-        setTeams,
-        sidebarData,
-        teams,
-        orgUnitTypeHierarchy,
-    ]);
+    };
 };

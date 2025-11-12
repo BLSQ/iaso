@@ -7,6 +7,7 @@ from timeit import default_timer as timer
 from dhis2 import Api, RequestException
 from django.core.paginator import Paginator
 from django.utils import timezone
+from packaging.version import InvalidVersion, Version
 
 import iaso.models as models
 
@@ -18,6 +19,13 @@ from .value_formatter import format_value
 
 
 logger = logging.getLogger(__name__)
+
+
+def is_version_gte(v, ref="2.42"):
+    try:
+        return Version(v) >= Version(ref)
+    except InvalidVersion:
+        return False
 
 
 def parse_description(dhis2_exception):
@@ -359,22 +367,34 @@ class EventHandler(BaseHandler):
         exception = None
         # from real life posting lots of "batch" of large events
         # can be really problematic, switching to one by one export
+
+        # 2.42 and upper are removing deprecated endpoints and change a few things
+        #   async is the default (since we post 1 event, we force the import to be synchronous)
+        #   eventDate is now occuredAt
+        #
+        actual_version = api.get("system/info").json()["version"]
+        new_version = is_version_gte(actual_version, ref="2.42")
+        path = "tracker" if new_version else "events"
+        extra_params = "?async=false" if new_version else ""
         for event in data:
+            if new_version:
+                event["occurredAt"] = event["eventDate"]
+
             try:
                 payload = {"events": [event]}
                 self.logger.debug(json.dumps(payload, indent=2))
-                resp = api.post("events", payload).json()
+                resp = api.post(f"{path}{extra_params}", payload).json()
                 self.logger.debug(str(resp))
 
                 exception = self.handle_exception({"response": resp}, "transient")
                 if exception:
                     # fake it to behave like a bad request
-                    raise RequestException(409, api.base_url + "/events", json.dumps(resp))
+                    raise RequestException(409, api.base_url + f"/{path}", json.dumps(resp))
 
                 export_log = ExportLog()
                 export_log.sent = payload
                 export_log.received = resp
-                export_log.url = api.base_url + "/events"
+                export_log.url = api.base_url + f"/{path}"
                 export_log.http_status = 200
                 export_log.save()
 

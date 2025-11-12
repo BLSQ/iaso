@@ -19,8 +19,7 @@ import {
 
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 
-import { getChipColors } from 'Iaso/constants/chipColors';
-
+import { getColor } from 'Iaso/hooks/useGetColors';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 import { apiDateFormat } from 'Iaso/utils/dates';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
@@ -51,6 +50,7 @@ type Props = {
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
+    colors: string[];
 };
 
 const retrieveSourceFromVersionId = (
@@ -82,6 +82,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     setHasLocationLimitError,
     locationLimit,
     setLocationLimit,
+    colors,
 }) => {
     // STATES
     const [dataSourceId, setDataSourceId] = useState<number | undefined>(
@@ -191,7 +192,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     const currentColor = filters?.color
         ? `#${filters.color}`
-        : getChipColors(searchIndex);
+        : getColor(searchIndex, colors);
 
     // HOOKS
     const instancesOptions = useInstancesOptions();

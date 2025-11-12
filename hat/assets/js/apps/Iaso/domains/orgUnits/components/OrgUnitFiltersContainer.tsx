@@ -19,10 +19,10 @@ import {
 import classnames from 'classnames';
 
 import { isEqual } from 'lodash';
+import { getColor } from 'Iaso/hooks/useGetColors';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { SearchButton } from '../../../components/SearchButton';
 
-import { getChipColors } from '../../../constants/chipColors';
 import { baseUrls } from '../../../constants/urls';
 
 import { ORG_UNITS } from '../../../utils/permissions';
@@ -40,6 +40,7 @@ type Props = {
     onSearch: (searches: any) => void;
     currentTab: string;
     counts: Count[];
+    colors: string[];
 };
 
 const baseUrl = baseUrls.orgUnits;
@@ -75,6 +76,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     currentTab,
     paramsSearches,
     counts,
+    colors,
 }) => {
     const currentUser = useCurrentUser();
     const redirectTo = useRedirectTo();
@@ -158,19 +160,20 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         }
     }, [params.searches]);
 
+    const defaultColor = getColor(
+        searches.length + 1,
+        colors,
+        searches.map(search => `#${search.color}`),
+    );
     const defaultItem = useMemo(
         () => ({
             validation_status: 'all',
-            color: getChipColors(
-                searches.length + 1,
-                false,
-                searches.map(search => `#${search.color}`),
-            ).replace('#', ''),
+            color: defaultColor.replace('#', ''),
             source: defaultSource && defaultSource.id,
             version: defaultVersion?.id,
             isAdded: true,
         }),
-        [searches, defaultSource, defaultVersion],
+        [defaultColor, defaultSource, defaultVersion?.id],
     );
     return (
         <>
@@ -224,6 +227,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             setHasLocationLimitError={setHasLocationLimitError}
                             locationLimit={locationLimit}
                             setLocationLimit={setLocationLimit}
+                            colors={colors}
                         />
                     </Box>
                 ))}

@@ -25,6 +25,7 @@ from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
 from .api.check_version import CheckVersionViewSet
+from .api.colors import colors_list
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
@@ -290,6 +291,7 @@ urlpatterns = urlpatterns + [
     path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
+    path("colors/", colors_list, name="colors"),
     path("", include(router.urls)),
 ]
 # External Auth

@@ -7,12 +7,14 @@ import {
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-// @ts-ignore
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { useGetColors } from 'Iaso/hooks/useGetColors';
+import { DropdownOptions } from 'Iaso/types/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import {

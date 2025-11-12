@@ -1,4 +1,4 @@
-    import React, { ReactElement, useMemo } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import { getSort } from 'bluesquare-components';
 import { Route } from 'react-router-dom';
 import { useGetColors } from 'Iaso/hooks/useGetColors';

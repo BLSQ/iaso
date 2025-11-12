@@ -16,6 +16,10 @@ COPY requirements.txt /opt/app/requirements.txt
 COPY requirements-dev.txt /opt/app/requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
+# Uncomment to debug snt-malaria budgeting
+# RUN pip uninstall -y snt-malaria-budgeting || true
+
+
 # don't copy app we mount everything afterwards for hot reloading anyway
 #COPY . /opt/app
 

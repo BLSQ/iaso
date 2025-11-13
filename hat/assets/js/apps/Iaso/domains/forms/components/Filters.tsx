@@ -20,29 +20,27 @@ import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/h
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { baseUrl } from '../config';
-import { Params } from '../index';
 import MESSAGES from '../messages';
+import { FormsParams } from '../types/forms';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 type Props = {
-    params: Params;
+    params: FormsParams;
 };
 
 const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
-    const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({
-            baseUrl,
-            params,
-            withPagination: false,
-            searchActive: 'isSearchActive',
-            searchAlwaysEnabled: true,
-        });
+    const { filters, handleSearch, handleChange } = useFilterState({
+        baseUrl,
+        params,
+        withPagination: false,
+        searchAlwaysEnabled: true,
+    });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const handleShowDeleted = useCallback(
         (key, value) => {
@@ -151,11 +149,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                             </Button>
                         </DisplayIfUserHasPerm>
                         <SearchButton
-                            disabled={
-                                (!filtersUpdated &&
-                                    params?.isSearchActive === 'true') ||
-                                textSearchError
-                            }
+                            disabled={textSearchError}
                             onSearch={handleSearch}
                         />
                     </Box>

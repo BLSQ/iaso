@@ -4,14 +4,13 @@ import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink'
 import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
 import { useFormsTableColumns } from '../config';
 import { tableDefaults, useGetForms } from '../hooks/useGetForms';
-import MESSAGES from '../messages';
+import { FormsParams } from '../types/forms';
 
 type Props = {
     baseUrl: string;
-    params: Record<string, any>;
+    params: FormsParams;
     paramsPrefix?: string;
     tableDefaults?: { order?: string; limit?: number; page?: number };
-    isSearchActive: boolean;
 };
 
 export const FormsTable: FunctionComponent<Props> = ({
@@ -19,20 +18,20 @@ export const FormsTable: FunctionComponent<Props> = ({
     params,
     paramsPrefix,
     tableDefaults: tableDefaultsProp,
-    isSearchActive,
 }) => {
     const columns = useFormsTableColumns({
         showDeleted: params?.showDeleted === 'true',
         orgUnitId: params?.orgUnitId,
+        params,
     }) as Column[];
-    const apiParams = usePrefixedParams(paramsPrefix, params);
+    const apiParams = usePrefixedParams(paramsPrefix, params) as FormsParams;
 
     const { data: forms, isFetching: isLoadingForms } = useGetForms(
         apiParams,
         tableDefaultsProp
             ? { ...tableDefaults, ...tableDefaultsProp }
             : tableDefaults,
-        isSearchActive,
+        true,
     );
     const defaultLimit = tableDefaultsProp?.limit ?? tableDefaults.limit;
     return (
@@ -50,9 +49,6 @@ export const FormsTable: FunctionComponent<Props> = ({
                 defaultPageSize: forms?.limit ?? defaultLimit,
                 ...apiParams, // need to force render when these change to avoid desync between params and url
             }}
-            noDataMessage={
-                !isSearchActive ? MESSAGES.searchToSeeForms : undefined
-            }
             columnSelectorButtonType="button"
             columnSelectorEnabled
             columnSelectorUseExternalState

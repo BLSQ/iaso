@@ -1,23 +1,36 @@
-import React, { useMemo } from 'react';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import React, { ChangeEvent, useMemo, useState, useCallback } from 'react';
+import {
+    Column,
+    ColumnSelectorHiddenProps,
+    IconButton,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { UserCell } from 'Iaso/components/Cells/UserCell';
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
-import { baseUrls } from '../../../constants/urls.ts';
-import * as Permission from '../../../utils/permissions.ts';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser, User } from '../../../utils/usersUtils';
 import {
     userHasAccessToModule,
     userHasOneOfPermissions,
     userHasPermission,
 } from '../../users/utils';
-import { FormActions } from '../components/FormActions.tsx';
+import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import MESSAGES from '../messages';
-import { UserCell } from 'Iaso/components/Cells/UserCell';
 
 export const baseUrl = baseUrls.forms;
 
-export const useFormVersionsTableColumns = (formId, periodType) => {
+type FormVersionsTableColumnsProps = {
+    formId: string;
+    periodType: string;
+};
+
+export const useFormVersionsTableColumns = ({
+    formId,
+    periodType,
+}: FormVersionsTableColumnsProps): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
@@ -81,10 +94,10 @@ export const useFormVersionsTableColumns = (formId, periodType) => {
                                         tooltipMessage={MESSAGES.edit}
                                     />
                                 )}
-                                // onConfirmed={() => setForceRefresh(true)}
+                                onConfirmed={() => {}}
                                 formVersion={settings.row.original}
                                 periodType={periodType}
-                                formId={formId}
+                                formId={parseInt(formId, 10)}
                                 titleMessage={{
                                     ...MESSAGES.updateFormVersion,
                                     values: {
@@ -103,7 +116,7 @@ export const useFormVersionsTableColumns = (formId, periodType) => {
     );
 };
 
-const getActionsColWidth = user => {
+const getActionsColWidth = (user: User): number => {
     const baseWidth = 50;
     let width = baseWidth * 2;
     if (
@@ -120,15 +133,48 @@ const getActionsColWidth = user => {
     return width;
 };
 
+type FormsTableColumnsProps = {
+    orgUnitId: string;
+    showDeleted: boolean;
+};
+
+const DEFAULT_VISIBLE_COLUMNS = [
+    'projects',
+    'name',
+    'created_at',
+    'updated_at',
+    'instance_updated_at',
+    'org_unit_types',
+    'actions',
+];
+
 export const useFormsTableColumns = ({
     orgUnitId,
     showDeleted,
-    showInstancesCount,
-}) => {
+}: FormsTableColumnsProps): Column[] => {
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(
+        DEFAULT_VISIBLE_COLUMNS,
+    );
     const user = useCurrentUser();
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
 
     const { formatMessage } = useSafeIntl();
+    const getToggleHiddenProps = useCallback(
+        (columnId: string): ColumnSelectorHiddenProps => {
+            return {
+                checked: columnId ? visibleColumns.includes(columnId) : false,
+                onChange: (_event: ChangeEvent<HTMLInputElement>) => {
+                    if (!columnId) return;
+                    setVisibleColumns(prev =>
+                        prev.includes(columnId)
+                            ? prev.filter(c => c !== columnId)
+                            : [...prev, columnId],
+                    );
+                },
+            };
+        },
+        [visibleColumns],
+    );
 
     return useMemo(() => {
         const cols = [
@@ -136,26 +182,32 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 accessor: 'projects',
                 Cell: settings => <ProjectChips projects={settings.value} />,
+                getToggleHiddenProps: () => getToggleHiddenProps('projects'),
             },
             {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
-                align: 'left',
+                align: 'left' as const,
+                getToggleHiddenProps: () => getToggleHiddenProps('name'),
             },
             {
                 Header: formatMessage(MESSAGES.created_at),
                 accessor: 'created_at',
                 Cell: DateTimeCell,
+                getToggleHiddenProps: () => getToggleHiddenProps('created_at'),
             },
             {
                 Header: formatMessage(MESSAGES.updated_at),
                 accessor: 'updated_at',
                 Cell: DateTimeCell,
+                getToggleHiddenProps: () => getToggleHiddenProps('updated_at'),
             },
             {
                 Header: formatMessage(MESSAGES.instance_updated_at),
                 accessor: 'instance_updated_at',
                 Cell: DateTimeCell,
+                getToggleHiddenProps: () =>
+                    getToggleHiddenProps('instance_updated_at'),
             },
             {
                 Header: formatMessage(MESSAGES.type),
@@ -165,6 +217,8 @@ export const useFormsTableColumns = ({
                     settings.row.original.org_unit_types
                         .map(o => o.short_name)
                         .join(', '),
+                getToggleHiddenProps: () =>
+                    getToggleHiddenProps('org_unit_types'),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -183,19 +237,15 @@ export const useFormsTableColumns = ({
                         />
                     );
                 },
+                getToggleHiddenProps: () => getToggleHiddenProps('actions'),
             },
         ];
-        if (showInstancesCount) {
-            cols.splice(6, 0, {
-                Header: formatMessage(MESSAGES.records),
-                accessor: 'instances_count',
-            });
-        }
         if (showDeleted) {
             cols.splice(1, 0, {
                 Header: formatMessage(MESSAGES.deleted_at),
                 accessor: 'deleted_at',
                 Cell: DateTimeCell,
+                getToggleHiddenProps: () => getToggleHiddenProps('deleted_at'),
             });
         }
         return cols;
@@ -205,7 +255,7 @@ export const useFormsTableColumns = ({
         orgUnitId,
         showDeleted,
         user,
-        showInstancesCount,
+        getToggleHiddenProps,
     ]);
 };
 

@@ -53,6 +53,9 @@ export const FormsTable: FunctionComponent<Props> = ({
             noDataMessage={
                 !isSearchActive ? MESSAGES.searchToSeeForms : undefined
             }
+            columnSelectorButtonType="button"
+            columnSelectorEnabled
+            columnSelectorUseExternalState
         />
     );
 };

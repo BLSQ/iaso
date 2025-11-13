@@ -51,13 +51,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         },
         [handleChange],
     );
-    const handleShowInstancesCount = useCallback(
-        (key, value) => {
-            const valueForParam = value ? 'true' : undefined;
-            handleChange(key, valueForParam);
-        },
-        [handleChange],
-    );
     const { data: planningsDropdownOptions } = useGetPlanningsOptions();
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
@@ -134,15 +127,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         value={filters.showDeleted === 'true'}
                         type="checkbox"
                         label={MESSAGES.showDeleted}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="showInstancesCount"
-                        onChange={handleShowInstancesCount}
-                        value={filters.showInstancesCount === 'true'}
-                        type="checkbox"
-                        label={MESSAGES.showInstancesCount}
                     />
                 </Grid>
                 <Grid item xs={12} md={6}>

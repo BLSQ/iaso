@@ -25,7 +25,6 @@ export type Params = {
     planning?: string;
     projectsIds?: string;
     isSearchActive?: string;
-    showInstancesCount?: string;
 };
 
 const Forms: FunctionComponent = () => {

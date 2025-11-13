@@ -31,10 +31,7 @@ const FIELDS_PARAMS = [
 ];
 
 const getForms = params => {
-    const fields =
-        params.showInstancesCount === 'true'
-            ? `${FIELDS_PARAMS.join(',')},instances_count`
-            : FIELDS_PARAMS.join(',');
+    const fields = FIELDS_PARAMS.join(',');
 
     const queryString = new URLSearchParams({
         ...params,

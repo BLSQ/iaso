@@ -24,9 +24,7 @@ export const FormsTable: FunctionComponent<Props> = ({
     const columns = useFormsTableColumns({
         showDeleted: params?.showDeleted === 'true',
         orgUnitId: params?.orgUnitId,
-        showInstancesCount: params?.showInstancesCount === 'true',
     }) as Column[];
-
     const apiParams = usePrefixedParams(paramsPrefix, params);
 
     const { data: forms, isFetching: isLoadingForms } = useGetForms(

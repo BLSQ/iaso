@@ -706,6 +706,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.validationErrorCount',
         defaultMessage: '{count} validation error(s) found',
     },
+    instances_count: {
+        id: 'iaso.forms.instances_count',
+        defaultMessage: 'Number of submissions',
+    },
     projectsInfo: {
         id: 'iaso.forms.projectsInfo',
         defaultMessage:
@@ -719,9 +723,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.fitToFormsBounds',
         defaultMessage: 'Fit map to submissions bounds',
     },
-    searchToSeeForms: {
-        id: 'iaso.forms.searchToSeeForms',
-        defaultMessage: 'Click "Search" button to see forms',
+    showInstancesCount: {
+        id: 'iaso.forms.showInstancesCount',
+        defaultMessage: 'Show instance count',
     },
     queryTab: {
         id: 'blsq.queryBuilder.queryTab',

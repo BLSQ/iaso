@@ -3,24 +3,29 @@ import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { Form } from '../types/forms';
+import { FormsParams } from '../types/forms';
 
+export const DEFAULT_VISIBLE_COLUMNS = [
+    'projects',
+    'name',
+    'created_at',
+    'updated_at',
+    'instance_updated_at',
+    'org_unit_types',
+    'actions',
+];
 const FIELDS_PARAMS = [
     'id',
-    'name',
     'form_id',
     'device_field',
     'location_field',
-    'org_unit_types',
     'org_unit_type_ids',
-    'projects',
     'project_ids',
     'period_type',
     'single_per_period',
     'periods_before_allowed',
     'periods_after_allowed',
     'latest_form_version',
-    'instance_updated_at',
-    'created_at',
     'updated_at',
     'deleted_at',
     'derived',
@@ -30,9 +35,8 @@ const FIELDS_PARAMS = [
     'has_mappings',
 ];
 
-const getForms = params => {
-    const fields = FIELDS_PARAMS.join(',');
-
+const getForms = (params: FormsParams) => {
+    const fields = `${params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS},${FIELDS_PARAMS}`;
     const queryString = new URLSearchParams({
         ...params,
         fields,
@@ -56,7 +60,7 @@ type FormResponse = {
     pages: number;
 };
 export const useGetForms = (
-    params,
+    params: FormsParams,
     defaults = tableDefaults,
     enabled = false,
 ): UseQueryResult<FormResponse, Error> => {
@@ -64,9 +68,12 @@ export const useGetForms = (
     if (safeParams?.accountId) {
         delete safeParams.accountId;
     }
+    if (safeParams?.fields) {
+        safeParams.fields = safeParams.fields.replace(',actions', '');
+    }
     return useSnackQuery({
         queryKey: ['forms', safeParams],
-        queryFn: () => getForms({ ...safeParams }),
+        queryFn: () => getForms({ ...safeParams } as unknown as FormsParams),
         options: {
             staleTime: 60000,
             cacheTime: 60000,

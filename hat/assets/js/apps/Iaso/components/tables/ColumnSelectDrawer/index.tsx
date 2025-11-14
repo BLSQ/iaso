@@ -22,7 +22,7 @@ import { MESSAGES } from './messages';
 
 import { useStyles } from './styles';
 
-type Option = {
+export type Option = {
     active: boolean;
     disabled: boolean;
     key: string;
@@ -54,6 +54,7 @@ type Props = {
     minColumns?: number;
     disabled: boolean;
     disabledMessage?: string;
+    handleApplyOptions?: () => void;
 };
 
 const filterResults = (searchString: string, options: Option[]): Option[] => {
@@ -76,6 +77,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     minColumns = 2,
     disabled,
     disabledMessage,
+    handleApplyOptions,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -142,7 +144,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                 </Button>
             )}
             <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
-                <Box className={classes.root} sx={{ overflowY: 'auto' }}>
+                <Box className={classes.root}>
                     <div className={classes.toolbar}>
                         <Tooltip title={formatMessage(MESSAGES.close)}>
                             <IconButton onClick={toggleDrawer(false)}>
@@ -178,7 +180,14 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                         )}
                     </div>
                     <Divider />
-                    <div className={classes.list} id="ColumnsSelectDrawer-list">
+                    <div
+                        className={
+                            handleApplyOptions
+                                ? classes.listWithApply
+                                : classes.list
+                        }
+                        id="ColumnsSelectDrawer-list"
+                    >
                         <List>
                             {displayedOptions.map(o => (
                                 <InView key={o.key}>
@@ -227,6 +236,25 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                             ))}
                         </List>
                     </div>
+                    {handleApplyOptions && (
+                        <Box
+                            sx={{
+                                height: theme => theme.spacing(8),
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                padding: theme => theme.spacing(2),
+                            }}
+                        >
+                            <Button
+                                onClick={handleApplyOptions}
+                                variant="contained"
+                                color="primary"
+                                size="small"
+                            >
+                                {formatMessage(MESSAGES.apply)}
+                            </Button>
+                        </Box>
+                    )}
                 </Box>
             </Drawer>
         </>

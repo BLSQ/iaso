@@ -1,10 +1,9 @@
-import React, { ChangeEvent, useMemo, useCallback, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
     Column,
-    ColumnSelectorHiddenProps,
+    formatThousand,
     IconButton,
     useSafeIntl,
-    useRedirectToReplace,
 } from 'bluesquare-components';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
@@ -19,7 +18,6 @@ import {
 } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
-import { DEFAULT_VISIBLE_COLUMNS } from '../hooks/useGetForms';
 import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
 
@@ -145,48 +143,11 @@ type FormsTableColumnsProps = {
 export const useFormsTableColumns = ({
     orgUnitId,
     showDeleted,
-    params,
-}: FormsTableColumnsProps): {
-    columns: Column[];
-    handleChangeVisibleColumns: (columnId: string) => void;
-} => {
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(
-        params?.fields ? params.fields.split(',') : DEFAULT_VISIBLE_COLUMNS,
-    );
-    // const visibleColumns = useMemo(() => {
-    //     return params?.fields
-    //         ? params.fields.split(',')
-    //         : DEFAULT_VISIBLE_COLUMNS;
-    // }, [params?.fields]);
-    const redirectToReplace = useRedirectToReplace();
-    const handleChangeVisibleColumns = useCallback(() => {
-        redirectToReplace(baseUrl, {
-            ...params,
-            fields: visibleColumns.join(','),
-        });
-    }, [params, redirectToReplace, visibleColumns]);
+}: FormsTableColumnsProps): Column[] => {
     const user = useCurrentUser();
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
 
     const { formatMessage } = useSafeIntl();
-    const getToggleHiddenProps = useCallback(
-        (columnId: string): ColumnSelectorHiddenProps => {
-            return {
-                checked: visibleColumns.includes(columnId),
-                // onChange: (_event: ChangeEvent<HTMLInputElement>) =>
-                //     setVisibleColumns(columnId),
-                onChange: (_event: ChangeEvent<HTMLInputElement>) => {
-                    if (!columnId) return;
-                    setVisibleColumns(prev =>
-                        prev.includes(columnId)
-                            ? prev.filter(c => c !== columnId)
-                            : [...prev, columnId],
-                    );
-                },
-            };
-        },
-        [visibleColumns, setVisibleColumns],
-    );
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -194,67 +155,47 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects',
                 accessor: 'projects',
-                isVisible: visibleColumns.includes('projects'),
                 Cell: settings => <ProjectChips projects={settings.value} />,
-                getToggleHiddenProps: () => getToggleHiddenProps('projects'),
             },
             {
                 Header: formatMessage(MESSAGES.name),
                 id: 'name',
                 accessor: 'name',
                 align: 'left' as const,
-                isVisible: visibleColumns.includes('name'),
-                getToggleHiddenProps: () => getToggleHiddenProps('name'),
             },
             {
                 Header: formatMessage(MESSAGES.created_at),
                 id: 'created_at',
                 accessor: 'created_at',
                 Cell: DateTimeCell,
-                isVisible: visibleColumns.includes('created_at'),
-                getToggleHiddenProps: () => getToggleHiddenProps('created_at'),
             },
             {
                 Header: formatMessage(MESSAGES.updated_at),
                 accessor: 'updated_at',
                 id: 'updated_at',
                 Cell: DateTimeCell,
-                isVisible: visibleColumns.includes('updated_at'),
-                getToggleHiddenProps: () => getToggleHiddenProps('updated_at'),
             },
             {
                 Header: formatMessage(MESSAGES.instance_updated_at),
                 accessor: 'instance_updated_at',
                 id: 'instance_updated_at',
                 Cell: DateTimeCell,
-                isVisible: visibleColumns.includes('instance_updated_at'),
-                getToggleHiddenProps: () =>
-                    getToggleHiddenProps('instance_updated_at'),
             },
             {
                 Header: formatMessage(MESSAGES.type),
                 sortable: false,
                 accessor: 'org_unit_types',
                 id: 'org_unit_types',
-                isVisible: visibleColumns.includes('org_unit_types'),
-                Cell: settings => {
-                    if (settings.row.original.org_unit_types) {
-                        return settings.row.original.org_unit_types
-                            .map(o => o.short_name)
-                            .join(', ');
-                    }
-                    return '';
-                },
-                getToggleHiddenProps: () =>
-                    getToggleHiddenProps('org_unit_types'),
+                Cell: settings =>
+                    settings.row.original.org_unit_types
+                        .map(o => o.short_name)
+                        .join(', '),
             },
             {
                 Header: formatMessage(MESSAGES.instances_count),
                 id: 'instances_count',
-                isVisible: visibleColumns.includes('instances_count'),
                 accessor: 'instances_count',
-                getToggleHiddenProps: () =>
-                    getToggleHiddenProps('instances_count'),
+                Cell: settings => formatThousand(settings.value),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -263,7 +204,6 @@ export const useFormsTableColumns = ({
                 width: getActionsColWidth(user),
                 id: 'actions',
                 accessor: 'actions',
-                isVisible: visibleColumns.includes('actions'),
                 Cell: settings => {
                     return (
                         <FormActions
@@ -283,21 +223,10 @@ export const useFormsTableColumns = ({
                 id: 'deleted_at',
                 accessor: 'deleted_at',
                 Cell: DateTimeCell,
-                isVisible: visibleColumns.includes('deleted_at'),
-                getToggleHiddenProps: () => getToggleHiddenProps('deleted_at'),
             });
         }
-        return { columns: cols, handleChangeVisibleColumns };
-    }, [
-        formatMessage,
-        visibleColumns,
-        user,
-        showDeleted,
-        getToggleHiddenProps,
-        orgUnitId,
-        hasDhis2Module,
-        handleChangeVisibleColumns,
-    ]);
+        return cols;
+    }, [formatMessage, user, showDeleted, orgUnitId, hasDhis2Module]);
 };
 
 export const requiredFields = [

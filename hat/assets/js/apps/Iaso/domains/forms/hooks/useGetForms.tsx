@@ -12,7 +12,6 @@ export const DEFAULT_VISIBLE_COLUMNS = [
     'created_at',
     'updated_at',
     'org_unit_types',
-    'actions',
 ];
 const FIELDS_PARAMS = [
     'id',
@@ -37,9 +36,7 @@ const FIELDS_PARAMS = [
 
 const getForms = (params: FormsParams) => {
     const fields = `${
-        params.fields
-            ? params.fields
-            : DEFAULT_VISIBLE_COLUMNS.filter(p => p !== 'actions').join(',')
+        params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS.join(',')
     },${FIELDS_PARAMS}`;
     const queryString = new URLSearchParams({
         ...params,

@@ -1,21 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
-import { useQueryString } from '../../hooks/useApiParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { Filters } from './components/Filters';
 import { FormsTable } from './components/FormsTable';
-import { tableDefaults, useGetForms } from './hooks/useGetForms';
+import { useGetForms } from './hooks/useGetForms';
 import MESSAGES from './messages';
 import { FormsParams } from './types/forms';
 
 const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
-
-const dwnldBaseUrl = '/api/forms';
 
 const Forms: FunctionComponent = () => {
     const baseUrl = baseUrls.forms;
@@ -30,29 +26,16 @@ const Forms: FunctionComponent = () => {
         undefined,
         true,
     );
-    const downloadQueryString = useQueryString(
-        { ...params, all: 'true' },
-        tableDefaults,
-    );
-    const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
-    const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
 
     return (
         <>
             <TopBar title={formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Filters params={params} />
-                <Box mt={4}>
-                    <Grid container spacing={2} justifyContent="flex-end">
-                        <DownloadButtonsComponent
-                            variant="outlined"
-                            xlsxUrl={xlsxUrl}
-                            csvUrl={csvUrl}
-                            disabled={isLoadingForms || !forms?.forms?.length}
-                        />
-                    </Grid>
-                </Box>
-
+                <Filters
+                    params={params}
+                    forms={forms}
+                    isLoadingForms={isLoadingForms}
+                />
                 <FormsTable baseUrl={baseUrl} params={params} />
             </Box>
         </>

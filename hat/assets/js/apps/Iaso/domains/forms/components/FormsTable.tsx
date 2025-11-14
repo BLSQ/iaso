@@ -19,11 +19,11 @@ export const FormsTable: FunctionComponent<Props> = ({
     paramsPrefix,
     tableDefaults: tableDefaultsProp,
 }) => {
-    const columns = useFormsTableColumns({
+    const { columns, handleChangeVisibleColumns } = useFormsTableColumns({
         showDeleted: params?.showDeleted === 'true',
         orgUnitId: params?.orgUnitId,
         params,
-    }) as Column[];
+    });
     const apiParams = usePrefixedParams(paramsPrefix, params) as FormsParams;
 
     const { data: forms, isFetching: isLoadingForms } = useGetForms(
@@ -52,6 +52,7 @@ export const FormsTable: FunctionComponent<Props> = ({
             columnSelectorButtonType="button"
             columnSelectorEnabled
             columnSelectorUseExternalState
+            handleChangeVisibleColumns={handleChangeVisibleColumns}
         />
     );
 };

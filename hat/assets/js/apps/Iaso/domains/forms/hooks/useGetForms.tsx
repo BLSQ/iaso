@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
@@ -10,7 +11,6 @@ export const DEFAULT_VISIBLE_COLUMNS = [
     'name',
     'created_at',
     'updated_at',
-    'instance_updated_at',
     'org_unit_types',
     'actions',
 ];
@@ -36,7 +36,11 @@ const FIELDS_PARAMS = [
 ];
 
 const getForms = (params: FormsParams) => {
-    const fields = `${params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS},${FIELDS_PARAMS}`;
+    const fields = `${
+        params.fields
+            ? params.fields
+            : DEFAULT_VISIBLE_COLUMNS.filter(p => p !== 'actions').join(',')
+    },${FIELDS_PARAMS}`;
     const queryString = new URLSearchParams({
         ...params,
         fields,
@@ -50,7 +54,7 @@ export const tableDefaults = {
     page: 1,
 };
 
-type FormResponse = {
+export type FormResponse = {
     limit: number;
     count: number;
     forms: Form[];
@@ -69,11 +73,21 @@ export const useGetForms = (
         delete safeParams.accountId;
     }
     if (safeParams?.fields) {
-        safeParams.fields = safeParams.fields.replace(',actions', '');
+        delete safeParams.fields;
     }
+    const fields = useMemo(
+        () =>
+            params?.fields
+                ?.split(',')
+                .filter(p => p !== 'actions')
+                .sort()
+                .join(','),
+        [params?.fields],
+    );
     return useSnackQuery({
-        queryKey: ['forms', safeParams],
-        queryFn: () => getForms({ ...safeParams } as unknown as FormsParams),
+        queryKey: ['forms', safeParams, fields],
+        queryFn: () =>
+            getForms({ ...safeParams, fields } as unknown as FormsParams),
         options: {
             staleTime: 60000,
             cacheTime: 60000,

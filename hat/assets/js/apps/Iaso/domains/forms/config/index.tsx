@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useMemo, useCallback } from 'react';
+import React, { ChangeEvent, useMemo, useCallback, useState } from 'react';
 import {
     Column,
     ColumnSelectorHiddenProps,
@@ -146,25 +146,25 @@ export const useFormsTableColumns = ({
     orgUnitId,
     showDeleted,
     params,
-}: FormsTableColumnsProps): Column[] => {
-    const visibleColumns = useMemo(() => {
-        return params?.fields
-            ? params.fields.split(',')
-            : DEFAULT_VISIBLE_COLUMNS;
-    }, [params?.fields]);
-    const redirectToReplace = useRedirectToReplace();
-    const setVisibleColumns = useCallback(
-        (columnId: string) => {
-            const columns = visibleColumns.includes(columnId)
-                ? visibleColumns.filter(c => c !== columnId)
-                : [...visibleColumns, columnId];
-            redirectToReplace(baseUrl, {
-                ...params,
-                fields: columns.join(','),
-            });
-        },
-        [params, redirectToReplace, visibleColumns],
+}: FormsTableColumnsProps): {
+    columns: Column[];
+    handleChangeVisibleColumns: (columnId: string) => void;
+} => {
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(
+        params?.fields ? params.fields.split(',') : DEFAULT_VISIBLE_COLUMNS,
     );
+    // const visibleColumns = useMemo(() => {
+    //     return params?.fields
+    //         ? params.fields.split(',')
+    //         : DEFAULT_VISIBLE_COLUMNS;
+    // }, [params?.fields]);
+    const redirectToReplace = useRedirectToReplace();
+    const handleChangeVisibleColumns = useCallback(() => {
+        redirectToReplace(baseUrl, {
+            ...params,
+            fields: visibleColumns.join(','),
+        });
+    }, [params, redirectToReplace, visibleColumns]);
     const user = useCurrentUser();
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
 
@@ -173,8 +173,16 @@ export const useFormsTableColumns = ({
         (columnId: string): ColumnSelectorHiddenProps => {
             return {
                 checked: visibleColumns.includes(columnId),
-                onChange: (_event: ChangeEvent<HTMLInputElement>) =>
-                    setVisibleColumns(columnId),
+                // onChange: (_event: ChangeEvent<HTMLInputElement>) =>
+                //     setVisibleColumns(columnId),
+                onChange: (_event: ChangeEvent<HTMLInputElement>) => {
+                    if (!columnId) return;
+                    setVisibleColumns(prev =>
+                        prev.includes(columnId)
+                            ? prev.filter(c => c !== columnId)
+                            : [...prev, columnId],
+                    );
+                },
             };
         },
         [visibleColumns, setVisibleColumns],
@@ -229,10 +237,14 @@ export const useFormsTableColumns = ({
                 accessor: 'org_unit_types',
                 id: 'org_unit_types',
                 isVisible: visibleColumns.includes('org_unit_types'),
-                Cell: settings =>
-                    settings.row.original.org_unit_types
-                        .map(o => o.short_name)
-                        .join(', '),
+                Cell: settings => {
+                    if (settings.row.original.org_unit_types) {
+                        return settings.row.original.org_unit_types
+                            .map(o => o.short_name)
+                            .join(', ');
+                    }
+                    return '';
+                },
                 getToggleHiddenProps: () =>
                     getToggleHiddenProps('org_unit_types'),
             },
@@ -249,6 +261,7 @@ export const useFormsTableColumns = ({
                 resizable: false,
                 sortable: false,
                 width: getActionsColWidth(user),
+                id: 'actions',
                 accessor: 'actions',
                 isVisible: visibleColumns.includes('actions'),
                 Cell: settings => {
@@ -274,7 +287,7 @@ export const useFormsTableColumns = ({
                 getToggleHiddenProps: () => getToggleHiddenProps('deleted_at'),
             });
         }
-        return cols;
+        return { columns: cols, handleChangeVisibleColumns };
     }, [
         formatMessage,
         visibleColumns,
@@ -283,6 +296,7 @@ export const useFormsTableColumns = ({
         getToggleHiddenProps,
         orgUnitId,
         hasDhis2Module,
+        handleChangeVisibleColumns,
     ]);
 };
 

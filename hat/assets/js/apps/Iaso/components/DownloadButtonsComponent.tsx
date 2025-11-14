@@ -23,7 +23,7 @@ type Props = {
     xlsxUrl?: string;
     gpkgUrl?: string;
     disabled?: boolean;
-    variant?: 'contained' | 'outlined';
+    variant?: 'contained' | 'outlined' | 'text';
 };
 
 const DownloadButtonsComponent: FunctionComponent<Props> = ({

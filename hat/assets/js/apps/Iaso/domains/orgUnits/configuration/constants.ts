@@ -1,6 +1,5 @@
 export const apiUrlOUCRC = '/api/orgunits/changes/configs/';
 export const apiUrlOUCRCCheckAvailability = `${apiUrlOUCRC}check_availability/`;
-export const apiUrlForms = '/api/forms/';
 export const editableFields = [
     'name',
     // 'aliases',  commented out because right now the feature is not ready yet

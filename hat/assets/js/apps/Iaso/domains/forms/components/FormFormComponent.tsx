@@ -400,7 +400,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         <Grid item>
                             <LinkWithLocation
                                 className={classes.linkWithIcon}
-                                to={`/${baseUrls.instances}/formIds/${currentForm.id.value}/tab/list/isSearchActive/true`}
+                                to={`/${baseUrls.instances}/formIds/${currentForm.id.value}/tab/list`}
                             >
                                 <FormatListBulleted />
                                 {formatMessage(MESSAGES.records)}

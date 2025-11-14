@@ -1,26 +1,30 @@
+import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { Form } from '../types/forms';
+import { FormsParams } from '../types/forms';
 
+export const DEFAULT_VISIBLE_COLUMNS = [
+    'projects',
+    'name',
+    'created_at',
+    'updated_at',
+    'org_unit_types',
+];
 const FIELDS_PARAMS = [
     'id',
-    'name',
     'form_id',
     'device_field',
     'location_field',
-    'org_unit_types',
     'org_unit_type_ids',
-    'projects',
     'project_ids',
     'period_type',
     'single_per_period',
     'periods_before_allowed',
     'periods_after_allowed',
     'latest_form_version',
-    'instance_updated_at',
-    'created_at',
     'updated_at',
     'deleted_at',
     'derived',
@@ -30,12 +34,10 @@ const FIELDS_PARAMS = [
     'has_mappings',
 ];
 
-const getForms = params => {
-    const fields =
-        params.showInstancesCount === 'true'
-            ? `${FIELDS_PARAMS.join(',')},instances_count`
-            : FIELDS_PARAMS.join(',');
-
+const getForms = (params: FormsParams) => {
+    const fields = `${
+        params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS.join(',')
+    },${FIELDS_PARAMS}`;
     const queryString = new URLSearchParams({
         ...params,
         fields,
@@ -49,7 +51,7 @@ export const tableDefaults = {
     page: 1,
 };
 
-type FormResponse = {
+export type FormResponse = {
     limit: number;
     count: number;
     forms: Form[];
@@ -59,7 +61,7 @@ type FormResponse = {
     pages: number;
 };
 export const useGetForms = (
-    params,
+    params: FormsParams,
     defaults = tableDefaults,
     enabled = false,
 ): UseQueryResult<FormResponse, Error> => {
@@ -67,9 +69,22 @@ export const useGetForms = (
     if (safeParams?.accountId) {
         delete safeParams.accountId;
     }
+    if (safeParams?.fields) {
+        delete safeParams.fields;
+    }
+    const fields = useMemo(
+        () =>
+            params?.fields
+                ?.split(',')
+                .filter(p => p !== 'actions')
+                .sort()
+                .join(','),
+        [params?.fields],
+    );
     return useSnackQuery({
-        queryKey: ['forms', safeParams],
-        queryFn: () => getForms({ ...safeParams }),
+        queryKey: ['forms', safeParams, fields],
+        queryFn: () =>
+            getForms({ ...safeParams, fields } as unknown as FormsParams),
         options: {
             staleTime: 60000,
             cacheTime: 60000,

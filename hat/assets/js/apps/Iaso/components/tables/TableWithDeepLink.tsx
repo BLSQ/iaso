@@ -1,9 +1,9 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     Table,
     TableComponentProps,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 
 type TableWithDeepLinkProps = TableComponentProps & {

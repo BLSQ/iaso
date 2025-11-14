@@ -1,15 +1,15 @@
 /* eslint-disable react/no-array-index-key */
 import React, { ReactElement, useMemo } from 'react';
-import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MergeIcon from '@mui/icons-material/Merge';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { Box } from '@mui/material';
+import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
-import { DuplicateCell } from './DuplicateCell';
-import { formatLabel } from '../../../instances/utils';
 import { baseUrls } from '../../../../constants/urls';
+import { formatLabel } from '../../../instances/utils';
 import MESSAGES from '../messages';
+import { DuplicateCell } from './DuplicateCell';
 
 export const useDuplicationTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

@@ -14,6 +14,7 @@ import {
 } from 'bluesquare-components';
 
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -28,8 +29,6 @@ import {
     useSearchDataSourceVersionsSynchronization,
 } from '../../../dataSources/hooks/useGetDataSourceVersionsSynchronizationDropdown';
 import { useDefaultSourceVersion } from '../../../dataSources/utils';
-import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
 import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
@@ -82,7 +81,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: forms, isFetching: isLoadingForms } = useGetForms();
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
 
@@ -258,14 +256,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             const joined = Array.isArray(newValue)
                 ? newValue.join(',')
                 : newValue;
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
-
-    const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
             handleChange(keyValue, joined);
         },
         [handleChange],
@@ -537,14 +527,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2}>
-                    <AsyncSelect
+                    <UserAsyncSelect
                         keyValue="userIds"
-                        label={MESSAGES.user}
-                        value={selectedUsers ?? ''}
-                        onChange={handleChangeUsers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
+                        handleChange={handleChange}
+                        filterUsers={filters.userIds}
                     />
                 </Box>
                 <InputComponent

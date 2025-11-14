@@ -1,13 +1,11 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
-import { AsyncSelect } from '../../../components/forms/AsyncSelect';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
-import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import MESSAGES from '../messages';
@@ -23,16 +21,8 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const { data: selectedManagers } = useGetProfilesDropdown(filters.managers);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const handleChangeManagers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
 
     return (
         <Grid container spacing={2}>
@@ -48,14 +38,11 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
                 <Box mt={2}>
-                    <AsyncSelect
+                    <UserAsyncSelect
                         keyValue="managers"
+                        handleChange={handleChange}
+                        filterUsers={filters.managers}
                         label={MESSAGES.manager}
-                        value={selectedManagers ?? ''}
-                        onChange={handleChangeManagers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
                     />
                 </Box>
             </Grid>

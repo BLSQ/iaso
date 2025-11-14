@@ -1,18 +1,16 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import DatesRange from '../../../components/filters/DatesRange';
-import { AsyncSelect } from '../../../components/forms/AsyncSelect';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
-import { DropdownOptions } from '../../../types/utils';
-import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
 
 import { useGetTaskTypes } from '../hooks/api';
+import { useStatusOptions } from '../hooks/useStatusOptions';
 import MESSAGES from '../messages';
 import { TaskParams } from '../types';
 
@@ -25,29 +23,8 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl, params });
 
     const { data: taskTypes, isLoading: loadingTaskTypes } = useGetTaskTypes();
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.users);
-    const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
 
-    const statusOptions: DropdownOptions<string>[] = useMemo(() => {
-        return [
-            'RUNNING',
-            'QUEUED',
-            'SUCCESS',
-            'KILLED',
-            'SKIPPED',
-            'EXPORTED',
-            'ERRORED',
-        ].map(status => ({
-            label: formatMessage(MESSAGES[status.toLowerCase()]),
-            value: status,
-        }));
-    }, [formatMessage]);
+    const statusOptions = useStatusOptions();
 
     return (
         <Grid container spacing={2}>
@@ -90,14 +67,9 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
 
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2}>
-                    <AsyncSelect
-                        keyValue="users"
-                        label={MESSAGES.user}
-                        value={selectedUsers ?? ''}
-                        onChange={handleChangeUsers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
+                    <UserAsyncSelect
+                        handleChange={handleChange}
+                        filterUsers={filters.users}
                     />
                 </Box>
             </Grid>

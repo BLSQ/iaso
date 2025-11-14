@@ -1,13 +1,13 @@
 import { UseQueryResult } from 'react-query';
+import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { PaginationParams } from '../../../../../types/general';
+import { formatParams } from '../../../../../utils/requests';
 import {
     DuplicateData,
     DuplicateDetailData,
     DuplicatesList,
 } from '../../types';
-import { getRequest } from '../../../../../libs/Api';
-import { formatParams } from '../../../../../utils/requests';
 
 const apiUrl = '/api/entityduplicates';
 

@@ -16,17 +16,15 @@ import {
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
 import { useFilterState } from '../../hooks/useFilterState';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
 import { PLANNING_READ, PLANNING_WRITE } from '../../utils/permissions';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
-import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from '../orgUnits/hooks/requests/useGetGroups';
@@ -86,7 +84,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         defaultVersion: 'true',
     });
 
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     // React to org unit type filtering, if the type is not available anymore
@@ -150,13 +147,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-    const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
     const messages = {
         [PERIOD_TYPE_PLACEHOLDER]: MESSAGES.periodPlaceHolder,
         [NO_PERIOD]: MESSAGES.noPeriodPlaceHolder,
@@ -265,14 +255,10 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
                 <Grid item xs={12} md={3}>
                     <Box mt={2}>
-                        <AsyncSelect
+                        <UserAsyncSelect
+                            handleChange={handleChange}
+                            filterUsers={filters.userIds}
                             keyValue="userIds"
-                            label={MESSAGES.user}
-                            value={selectedUsers ?? ''}
-                            onChange={handleChangeUsers}
-                            debounceTime={500}
-                            multi
-                            fetchOptions={input => getUsersDropDown(input)}
                         />
                     </Box>
                     <InputComponent

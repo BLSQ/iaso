@@ -9,7 +9,7 @@ export type Props = {
     task: Task<any>;
 };
 
-const getTranslatedStatusMessage = (
+export const getTranslatedStatusMessage = (
     formatMessage: (record: Record<string, string>) => string,
     status: string,
 ): string => {
@@ -19,7 +19,7 @@ const getTranslatedStatusMessage = (
         : status;
 };
 
-const getStatusColor = (
+export const getStatusColor = (
     status: string,
 ): 'info' | 'success' | 'error' | 'warning' => {
     if (['QUEUED', 'RUNNING'].includes(status)) {

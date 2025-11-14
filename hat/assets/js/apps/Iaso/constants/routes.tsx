@@ -14,6 +14,7 @@ import { Details as DataSourceDetail } from '../domains/dataSources/details';
 import Devices from '../domains/devices';
 import { Entities } from '../domains/entities';
 import { Details as EntityDetail } from '../domains/entities/details';
+import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/DuplicateAnalyses';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
@@ -353,6 +354,15 @@ export const entityDuplicatesPath = {
     ],
     element: <Duplicates />,
 };
+export const entityDuplicateAnalysesPath = {
+    baseUrl: baseUrls.entityDuplicateAnalyses,
+    routerUrl: `${baseUrls.entityDuplicateAnalyses}/*`,
+    permissions: [
+        Permission.ENTITIES_DUPLICATE_READ,
+        Permission.ENTITIES_DUPLICATE_WRITE,
+    ],
+    element: <DuplicateAnalyses />,
+};
 export const entityDuplicatesDetailsPath = {
     baseUrl: baseUrls.entityDuplicateDetails,
     routerUrl: `${baseUrls.entityDuplicateDetails}/*`,
@@ -524,6 +534,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     entityDetailsPath,
     entityDuplicatesPath,
     entityDuplicatesDetailsPath,
+    entityDuplicateAnalysesPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,

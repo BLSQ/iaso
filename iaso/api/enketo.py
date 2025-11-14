@@ -1,8 +1,10 @@
+import os
+
 from logging import getLogger
 from uuid import uuid4
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -261,9 +263,8 @@ def _build_url_for_edition(request, instance, user_id=None):
         # but in development
         #   the file.url is just a path
         #    we use the current request to resolve the host and swap to iaso internal name
-
+        url_with_secret = request.build_absolute_uri(url_with_secret)
         if enketo_settings().get("ENKETO_DEV"):
-            url_with_secret = request.build_absolute_uri(url_with_secret)
             url_with_secret = url_with_secret.replace("localhost:8081", "iaso:8081")
 
         return url_with_secret
@@ -363,6 +364,34 @@ def enketo_form_download(request):
     xml_string = i.form.latest_version.file.read().decode("utf-8")
     injected_xml = inject_instance_id_in_form(xml_string, i.id)
     return HttpResponse(injected_xml, content_type="application/xml")
+
+
+@api_view(["GET", "HEAD"])
+@permission_classes([permissions.AllowAny])
+def enketo_instance_files(request, instance_file_id, file_name):
+    instance_file = get_object_or_404(InstanceFile, pk=instance_file_id)
+    file_field = instance_file.file
+
+    filename = os.path.basename(file_field.name)
+    if file_name != filename:
+        return HttpResponse("File not found with that file name.", status=404)
+
+    # Using file_field.open() is storage-agnostic
+    try:
+        file_iterator = file_field.open("rb")
+    except FileNotFoundError:
+        return HttpResponse("File not found", status=404)
+
+    response = StreamingHttpResponse(file_iterator, content_type="application/octet-stream")
+
+    # Set Content-Disposition header to suggest a filename to the browser.
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    # For some storage backends (like S3), the file size is available.
+    if hasattr(file_field, "size"):
+        response["Content-Length"] = file_field.size
+
+    return response
 
 
 class EnketoSubmissionAPIView(APIView):

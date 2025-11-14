@@ -23,7 +23,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Exists, OuterRef, Prefetch, Q
+from django.db.models import Exists, OuterRef, Prefetch, Q, Subquery
 
 from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import EntityDuplicate, ValidationStatus
@@ -103,12 +103,23 @@ class ProjectNotFoundError(ValidationError):
 
 
 class EntityQuerySet(models.QuerySet):
-    def filter_for_mobile_entity(self, limit_date=None, json_content=None):
+    def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None):
+        instances = Instance.objects.all()
+
+        if org_units_qs is not None:
+            instances = instances.filter(org_unit__in=org_units_qs)
+
         if limit_date:
             try:
-                self = self.filter(instances__updated_at__gte=limit_date)
+                instances = instances.filter(updated_at__gte=limit_date)
             except ValidationError:
                 raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
+
+        return self.filter(id__in=Subquery(instances.values("entity_id").distinct()))
+
+    def filter_for_mobile_entity(self, limit_date=None, json_content=None):
+        if limit_date:
+            self = self._filter_entities_with_instances(limit_date=limit_date)
 
         if json_content:
             try:
@@ -140,7 +151,7 @@ class EntityQuerySet(models.QuerySet):
         # we give all entities having an instance linked to the one of the org units allowed for the current user
         if profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-            self = self.filter(instances__org_unit__in=orgunits)
+            self = self._filter_entities_with_instances(org_units_qs=orgunits)
 
         return self
 

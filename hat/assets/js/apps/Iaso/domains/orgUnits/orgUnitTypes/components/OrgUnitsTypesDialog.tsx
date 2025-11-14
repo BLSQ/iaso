@@ -20,6 +20,7 @@ import { isUndefined, mapValues } from 'lodash';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useFormState } from '../../../../hooks/form';
@@ -31,8 +32,6 @@ import {
 } from '../../../../utils/forms';
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
-import { Form } from '../../../forms/types/forms';
-import { useGetFormsByProjects } from '../../../instances/hooks';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import {
     userHasOneOfPermissions,
@@ -43,6 +42,19 @@ import { requiredFields } from '../config/requiredFields';
 import { useGetOrgUnitTypesDropdownOptions } from '../hooks/useGetOrgUnitTypesDropdownOptions';
 import { useSaveOrgUnitType } from '../hooks/useSaveOrgUnitType';
 import MESSAGES from '../messages';
+
+type FormDropdownOption = {
+    value: number;
+    label: string;
+    original: {
+        id: number;
+        name: string;
+        projects: {
+            id: number;
+            name: string;
+        }[];
+    };
+};
 
 const styles = {
     warningMessage: theme => ({
@@ -93,9 +105,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(mapOrgUnitType(orgUnitType));
 
-    const [allForms, setAllForms] = useState<Form[]>();
-    const { data } = useGetFormsByProjects();
-    const dataForms = data && data.forms;
+    const [allForms, setAllForms] = useState<FormDropdownOption[]>();
+    const { data: dataForms } = useGetFormsDropdownOptions({
+        extraFields: ['projects'],
+    });
 
     const formStateUpdated = useRef(null);
     const projectsEmptyUpdated = useRef(null);
@@ -121,22 +134,31 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         });
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
-    const getFilteredForms = (projects, forms) => {
+    const getFilteredForms = (
+        projects,
+        forms: FormDropdownOption[],
+    ): FormDropdownOption[] | undefined => {
         return forms?.filter(form => {
-            const formProjects = form.projects.map(project => project.id);
+            const formProjects = form.original.projects.map(
+                project => project.id,
+            );
             const sameProjectsIds = intersection(projects, formProjects);
             if (!isEmpty(sameProjectsIds)) {
                 return formProjects;
             }
-            return null;
+            return undefined;
         });
     };
 
     const getFormPerProjects = useCallback(
         projects => {
-            let forms = [];
+            let forms: FormDropdownOption[] = [];
             if (projects) {
-                forms = getFilteredForms(projects, dataForms);
+                forms =
+                    getFilteredForms(
+                        projects,
+                        (dataForms as FormDropdownOption[]) || [],
+                    ) || [];
             }
             setFieldValue('reference_forms_ids', []);
             return forms;
@@ -147,7 +169,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     const updateFormState = () => {
         if (formStateUpdated.current !== formState) {
             setAllForms(
-                getFilteredForms(formState.project_ids.value, dataForms),
+                getFilteredForms(
+                    formState.project_ids.value,
+                    (dataForms as FormDropdownOption[]) || [],
+                ),
             );
 
             formStateUpdated.current = formState;
@@ -174,7 +199,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     useEffect(() => {
         if (isUndefined(allForms) && !isEmpty(formState.project_ids.value)) {
             setAllForms(
-                getFilteredForms(formState.project_ids.value, dataForms),
+                getFilteredForms(
+                    formState.project_ids.value,
+                    (dataForms as FormDropdownOption[]) || [],
+                ) || [],
             );
         }
     }, [dataForms, formState.project_ids.value, allForms]);
@@ -244,6 +272,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         ],
     );
 
+    const resetForm = useCallback(() => {
+        setFormState(mapOrgUnitType(orgUnitType));
+    }, [orgUnitType, setFormState]);
+
     const onConfirm = useCallback(
         (closeDialog: () => void) => {
             try {
@@ -278,7 +310,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 }
             }
         },
-        [formState, formatMessage, saveType, setFieldErrors],
+        [formState, formatMessage, resetForm, saveType, setFieldErrors],
     );
     const hasPermission =
         userHasOneOfPermissions(
@@ -286,9 +318,6 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             currentUser,
         ) && userHasPermission(Permission.FORMS, currentUser);
 
-    const resetForm = () => {
-        setFormState(mapOrgUnitType(orgUnitType));
-    };
     const subUnitTypes: DropdownOptions<string>[] = useMemo(
         () =>
             allOrgUnitTypes?.filter(
@@ -422,13 +451,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                         errors={formState.reference_forms_ids.errors}
                         type="select"
                         disabled={projectsEmpty}
-                        options={
-                            allForms &&
-                            allForms.map(form => ({
-                                value: form.id,
-                                label: form.name,
-                            }))
-                        }
+                        options={allForms || []}
                         label={referenceFormsMessage}
                     />
                 )}

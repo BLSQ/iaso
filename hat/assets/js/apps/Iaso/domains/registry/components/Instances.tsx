@@ -1,9 +1,3 @@
-import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
-import {
-    Column,
-    useRedirectToReplace,
-    useSafeIntl,
-} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -11,6 +5,13 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
+import {
+    Column,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -20,6 +21,9 @@ import * as Permissions from '../../../utils/permissions';
 import { Form } from '../../forms/types/forms';
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
+import PeriodPicker from '../../periods/components/PeriodPicker';
+import { periodTypeOptions } from '../../periods/constants';
+import { Period } from '../../periods/models';
 import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import { useGetForms } from '../hooks/useGetForms';
@@ -30,9 +34,6 @@ import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 import { ActionCell } from './ActionCell';
 import { MissingInstanceDialog } from './MissingInstanceDialog';
-import { periodTypeOptions } from '../../periods/constants';
-import PeriodPicker from '../../periods/components/PeriodPicker';
-import { Period } from '../../periods/models';
 
 type Props = {
     isLoading: boolean;
@@ -49,7 +50,7 @@ export const Instances: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
-    let { formIds, tab, periodType, startPeriod, endPeriod } = params;
+    const { formIds, tab, periodType, startPeriod, endPeriod } = params;
     const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
         if (subOrgUnitTypes.length > 0) {
             if (tab) {
@@ -110,10 +111,17 @@ export const Instances: FunctionComponent<Props> = ({
     );
 
     const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
-        orgUnitTypeIds: currentType?.id,
-    });
-    const currentForm: Form | undefined = useMemo(() => {
+    // const { data: formsList, isFetching: isFetchingForms } = useGetForms({
+    //     orgUnitTypeIds: currentType?.id,
+    // });
+    const { data: formsList, isFetching: isFetchingForms } =
+        useGetFormsDropdownOptions({
+            params: {
+                orgUnitTypeIds: currentType?.id,
+            },
+            extraFields: ['period_type', 'label_keys', 'org_unit_type_ids'],
+        });
+    const currentForm: Partial<Form> | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
     useEffect(() => {
@@ -258,7 +266,6 @@ export const Instances: FunctionComponent<Props> = ({
                                             instanceMetasFields={
                                                 INSTANCE_METAS_FIELDS
                                             }
-                                            // eslint-disable-next-line react/no-unstable-nested-components
                                             getActionCell={settings => (
                                                 <ActionCell
                                                     settings={settings}

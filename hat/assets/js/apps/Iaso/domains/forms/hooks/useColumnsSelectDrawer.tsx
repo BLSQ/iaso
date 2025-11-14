@@ -45,7 +45,6 @@ export const useColumnsSelectDrawer = (
             .filter(field => field !== 'actions')
             .sort()
             .join(',') === visibleColumnsKeys.sort().join(',');
-    console.log('applyDisabled', applyDisabled);
     const visibleColumns = useMemo(() => {
         return columns.filter(
             column =>

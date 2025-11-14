@@ -1,24 +1,21 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Paper, ClickAwayListener, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 
-import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
-import { DropdownTeamsOptions } from '../types/team';
-import { AssignmentsApi } from '../types/assigment';
-
-import { OrgUnitPopupLine } from './OrgUnitPopupLine';
-import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-import { AlreadyAssigned } from './AlreadyAssigned';
-import { UsersTeamsCell } from './UsersTeamsCell';
 import { Profile } from '../../../utils/usersUtils';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import { DropdownTeamsOptions } from '../../teams/types/team';
+import MESSAGES from '../messages';
+import { AssignmentsApi } from '../types/assigment';
+import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
 import { getOrgUnitAssignation } from '../utils';
-
+import { AlreadyAssigned } from './AlreadyAssigned';
 import { OrgUnitPath } from './OrgUnitPath';
-
-import MESSAGES from '../messages';
+import { OrgUnitPopupLine } from './OrgUnitPopupLine';
+import { UsersTeamsCell } from './UsersTeamsCell';
 
 type Props = {
     top: number;

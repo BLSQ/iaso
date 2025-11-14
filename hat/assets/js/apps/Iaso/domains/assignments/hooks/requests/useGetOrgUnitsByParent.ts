@@ -5,12 +5,12 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 import { makeUrlWithParams } from '../../../../libs/utils';
-import { getOrgUnitAssignation } from '../../utils';
 
+import { Profile } from '../../../../utils/usersUtils';
+import { DropdownTeamsOptions, SubTeam, User } from '../../../teams/types/team';
 import { AssignmentsApi } from '../../types/assigment';
 import { ChildrenOrgUnits } from '../../types/orgUnit';
-import { Profile } from '../../../../utils/usersUtils';
-import { DropdownTeamsOptions, SubTeam, User } from '../../types/team';
+import { getOrgUnitAssignation } from '../../utils';
 
 type Props = {
     orgUnitParentId: number | undefined;

@@ -24,6 +24,7 @@ import {
     getShapesBounds,
 } from '../../../utils/map/mapUtils';
 import { Profile } from '../../../utils/usersUtils';
+import { DropdownTeamsOptions } from '../../teams/types/team';
 import {
     disabledColor,
     parentColor,
@@ -31,7 +32,6 @@ import {
 } from '../constants/colors';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
-import { DropdownTeamsOptions } from '../types/team';
 import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
 import { MapLegend } from './MapLegend';
 import { OrgUnitPopup } from './OrgUnitPopup';

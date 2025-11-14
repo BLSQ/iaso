@@ -105,6 +105,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.teams.parentTeam',
         defaultMessage: 'Parent team',
     },
+    color: {
+        id: 'iaso.label.color',
+        defaultMessage: 'Color',
+    },
 });
 
 export default MESSAGES;

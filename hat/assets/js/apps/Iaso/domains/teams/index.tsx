@@ -9,8 +9,7 @@ import { useActiveParams } from '../../routing/hooks/useActiveParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { AddTeamModal } from './components/CreateEditTeam';
 import { TeamFilters } from './components/TeamFilters';
-import { teamColumns } from './config';
-import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
+import { useTeamColumns } from './config';
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import MESSAGES from './messages';
 import { TeamParams } from './types/team';
@@ -26,8 +25,8 @@ export const Teams: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetTeams(apiParams);
-    const { mutate: deleteTeam } = useDeleteTeam();
     const defaultSorted = [{ id: 'id', desc: true }];
+    const columns = useTeamColumns();
 
     return (
         <>
@@ -45,10 +44,12 @@ export const Teams: FunctionComponent = () => {
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={defaultSorted}
-                    columns={teamColumns(formatMessage, deleteTeam)}
+                    columns={columns}
                     count={data?.count ?? 0}
                     params={apiParams}
                     extraProps={{ loading: isFetching }}
+                    expanded={{}}
+                    getObjectId={() => ''}
                 />
             </Box>
         </>

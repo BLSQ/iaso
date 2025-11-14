@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import {
     Box,
     Button,
@@ -9,27 +16,23 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, Table, useSafeIntl } from 'bluesquare-components';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
 
+import { getStickyTableHeadStyles } from '../../../styles/utils';
 import { Profile } from '../../../utils/usersUtils';
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import {
+    DropdownTeamsOptions,
+    SubTeam,
+    Team,
+    User,
+} from '../../teams/types/team';
+import { useColumns } from '../configs/ParentDialogColumns';
+import MESSAGES from '../messages';
 import { SaveAssignmentQuery } from '../types/assigment';
 import { ChildrenOrgUnits } from '../types/orgUnit';
 import { Planning } from '../types/planning';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
-
-import { useColumns } from '../configs/ParentDialogColumns';
 
 import { getMultiSaveParams, getTeamUserName } from '../utils';
-
-import { getStickyTableHeadStyles } from '../../../styles/utils';
-import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
-import MESSAGES from '../messages';
 
 type Props = {
     currentTeam: Team | undefined;

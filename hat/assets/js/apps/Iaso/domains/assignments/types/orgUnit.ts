@@ -1,7 +1,7 @@
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { AssignmentApi } from './assigment';
-import { DropdownTeamsOptions } from './team';
+import { DropdownTeamsOptions } from '../../teams/types/team';
 import { AssignedUser } from '../utils';
+import { AssignmentApi } from './assigment';
 
 export type ChildrenOrgUnitsArrayItem = OrgUnit & {
     assignment?: AssignmentApi | undefined;

@@ -7,9 +7,9 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
 
+import { DropdownTeamsOptions } from '../../teams/types/team';
 import MESSAGES from '../messages';
 import { AssignmentParams } from '../types/assigment';
-import { DropdownTeamsOptions } from '../types/team';
 
 type Props = {
     params: AssignmentParams;

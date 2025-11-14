@@ -20,6 +20,7 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineConfig } from '../openHexa/hooks/useGetPipelineConfig';
 import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
 import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
+import { Team, SubTeam, User } from '../teams/types/team';
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
@@ -31,7 +32,6 @@ import MESSAGES from './messages';
 import { OpenhexaIntegrationDrawer } from './sampling/OpenhexaIntegrationDrawer';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { AssignmentUnit } from './types/locations';
-import { Team, SubTeam, User } from './types/team';
 import { getSaveParams } from './utils';
 
 const useStyles = makeStyles(theme => ({

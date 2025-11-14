@@ -1,17 +1,22 @@
+import React, { FunctionComponent, MouseEvent, useCallback } from 'react';
 import { Box, Divider } from '@mui/material';
 import { Column, Table, useRedirectTo } from 'bluesquare-components';
 import Color from 'color';
 import get from 'lodash/get';
-import React, { FunctionComponent, MouseEvent, useCallback } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { getStickyTableHeadStyles } from '../../../styles/utils';
 import { Profile } from '../../../utils/usersUtils';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import {
+    DropdownTeamsOptions,
+    SubTeam,
+    Team,
+    User,
+} from '../../teams/types/team';
 import { useColumns } from '../configs/AssignmentsListTabColumns';
 import { parentColor } from '../constants/colors';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 type Order = {
     id: string;

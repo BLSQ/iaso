@@ -5,12 +5,12 @@ import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUni
 import { Profile } from '../../../utils/usersUtils';
 
 import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { DropdownTeamsOptions, Team } from '../../teams/types/team';
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 import { Planning } from '../types/planning';
-import { DropdownTeamsOptions, Team } from '../types/team';
 
 import { AssignmentsMap } from './AssignmentsMap';
 

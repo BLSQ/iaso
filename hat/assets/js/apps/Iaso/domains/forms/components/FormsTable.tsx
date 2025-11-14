@@ -34,8 +34,13 @@ export const FormsTable: FunctionComponent<Props> = ({
         true,
     );
 
-    const { options, setOptions, visibleColumns, handleApplyOptions } =
-        useColumnsSelectDrawer(columns, params, baseUrl);
+    const {
+        options,
+        setOptions,
+        visibleColumns,
+        handleApplyOptions,
+        applyDisabled,
+    } = useColumnsSelectDrawer(columns, params, baseUrl);
 
     const defaultLimit = tableDefaultsProp?.limit ?? tableDefaults.limit;
     return (
@@ -47,6 +52,7 @@ export const FormsTable: FunctionComponent<Props> = ({
                     handleApplyOptions={handleApplyOptions}
                     minColumns={2}
                     disabled={isLoadingForms}
+                    applyDisabled={applyDisabled}
                 />
             </Box>
             <TableWithDeepLink

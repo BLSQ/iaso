@@ -14,6 +14,7 @@ export const useColumnsSelectDrawer = (
     setOptions: (options: Option[]) => void;
     visibleColumns: Column[];
     handleApplyOptions: () => void;
+    applyDisabled: boolean;
 } => {
     const [visibleColumnsKeys, setVisibleColumnsKeys] = useState<string[]>(
         params?.fields?.split(',') ?? DEFAULT_VISIBLE_COLUMNS,
@@ -39,6 +40,12 @@ export const useColumnsSelectDrawer = (
             'actions',
         ];
     }, [params.fields]);
+    const applyDisabled =
+        fields
+            .filter(field => field !== 'actions')
+            .sort()
+            .join(',') === visibleColumnsKeys.sort().join(',');
+    console.log('applyDisabled', applyDisabled);
     const visibleColumns = useMemo(() => {
         return columns.filter(
             column =>
@@ -59,5 +66,6 @@ export const useColumnsSelectDrawer = (
         setOptions,
         visibleColumns,
         handleApplyOptions,
+        applyDisabled,
     };
 };

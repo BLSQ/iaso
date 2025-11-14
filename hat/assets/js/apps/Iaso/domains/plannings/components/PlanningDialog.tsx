@@ -12,6 +12,7 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
@@ -25,7 +26,6 @@ import {
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetPublishingStatusOptions } from '../constants';
-import { useGetForms } from '../hooks/requests/useGetForms';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
     convertAPIErrorsToState,
@@ -142,9 +142,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         validateField,
     } = formik;
 
-    const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
-        values?.project,
-    );
+    const { data: formsDropdown, isFetching: isFetchingForms } =
+        useGetFormsDropdownOptions({
+            params: {
+                projectId: values?.project,
+            },
+        });
     const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams(
         values?.project,
     );

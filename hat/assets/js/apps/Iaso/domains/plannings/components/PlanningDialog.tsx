@@ -189,8 +189,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         if (
             // Separating the check on formsDropDown and the find to skip the effect as long as forms haven't been fetched
             formsDropdown &&
-            !formsDropdown?.find(form =>
-                form.original?.project_ids.includes(values?.project),
+            !formsDropdown?.find(
+                form =>
+                    values?.project &&
+                    form.original?.project_ids?.includes(values?.project),
             )
         ) {
             setFieldValue('forms', null);

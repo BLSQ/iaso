@@ -20,7 +20,7 @@ export type UseGetFormsDropdownParams = {
      * Query parameters to pass to the API
      * Common params:
      * - orgUnitTypeIds: number | number[] | string - Filter by org unit type
-     * - projectId: number - Filter by project
+     * - projectIds: number - Filter by project - comma separated list of project ids
      * - order: string - Sort order (default: 'name')
      * - any other API-supported params
      */

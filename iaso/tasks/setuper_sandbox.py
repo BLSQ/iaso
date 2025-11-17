@@ -76,7 +76,7 @@ def recreate_account(self, account_name):
         logger.exception(f"An unexpected error occurred: {e}")
 
 
-@task_decorator(task_name="Sandbox account")
+@task_decorator(task_name="setuper_sandbox")
 def setuper_sandbox(name="admin"):
     logger.warning(f" .... Resetting {name} account and its data! ...")
     current_datetime = int(datetime.now().timestamp())

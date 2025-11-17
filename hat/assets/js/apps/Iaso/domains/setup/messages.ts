@@ -6,7 +6,7 @@ export const MESSAGES = defineMessages({
         id: 'iaso.setup.welcome',
     },
     accountSetup: {
-        defaultMessage: 'Account setup',
+        defaultMessage: 'Setup a new account',
         id: 'iaso.setup.accountSetup',
     },
     account_name: {

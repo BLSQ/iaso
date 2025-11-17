@@ -47,14 +47,12 @@ type Props = {
     periodType?: string;
     formId?: number;
     titleMessage: IntlMessage;
-    onConfirmed: () => any;
     renderTrigger: any;
 };
 
 const FormVersionsDialogComponent: FunctionComponent<Props> = ({
     formVersion = emptyVersion,
     formId = 0,
-    onConfirmed = () => null,
     periodType = '',
     titleMessage,
     ...dialogProps
@@ -112,7 +110,6 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                     setIsLoading(false);
                     // FIXME TS seems to think formVersion.id is always either null or undefined
                     setFormState(emptyVersionFromId(formVersion.id));
-                    onConfirmed();
                     openSnackBar(succesfullSnackBar());
                     queryClient.invalidateQueries([
                         'formVersions',

@@ -1,23 +1,37 @@
 import React, { useMemo } from 'react';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    formatThousand,
+    IconButton,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { UserCell } from 'Iaso/components/Cells/UserCell';
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
-import { baseUrls } from '../../../constants/urls.ts';
-import * as Permission from '../../../utils/permissions.ts';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser, User } from '../../../utils/usersUtils';
 import {
     userHasAccessToModule,
     userHasOneOfPermissions,
     userHasPermission,
 } from '../../users/utils';
-import { FormActions } from '../components/FormActions.tsx';
+import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import MESSAGES from '../messages';
-import { UserCell } from 'Iaso/components/Cells/UserCell';
+import { FormsParams } from '../types/forms';
 
 export const baseUrl = baseUrls.forms;
 
-export const useFormVersionsTableColumns = (formId, periodType) => {
+type FormVersionsTableColumnsProps = {
+    formId: string;
+    periodType: string;
+};
+
+export const useFormVersionsTableColumns = ({
+    formId,
+    periodType,
+}: FormVersionsTableColumnsProps): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
@@ -81,10 +95,9 @@ export const useFormVersionsTableColumns = (formId, periodType) => {
                                         tooltipMessage={MESSAGES.edit}
                                     />
                                 )}
-                                // onConfirmed={() => setForceRefresh(true)}
                                 formVersion={settings.row.original}
                                 periodType={periodType}
-                                formId={formId}
+                                formId={parseInt(formId, 10)}
                                 titleMessage={{
                                     ...MESSAGES.updateFormVersion,
                                     values: {
@@ -103,7 +116,7 @@ export const useFormVersionsTableColumns = (formId, periodType) => {
     );
 };
 
-const getActionsColWidth = user => {
+const getActionsColWidth = (user: User): number => {
     const baseWidth = 50;
     let width = baseWidth * 2;
     if (
@@ -120,57 +133,75 @@ const getActionsColWidth = user => {
     return width;
 };
 
+type FormsTableColumnsProps = {
+    orgUnitId: string;
+    showDeleted: boolean;
+    params?: FormsParams;
+};
+
 export const useFormsTableColumns = ({
     orgUnitId,
     showDeleted,
-    showInstancesCount,
-}) => {
+}: FormsTableColumnsProps): Column[] => {
     const user = useCurrentUser();
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
 
     const { formatMessage } = useSafeIntl();
 
     return useMemo(() => {
-        const cols = [
+        const cols: Column[] = [
             {
                 Header: formatMessage(MESSAGES.projects),
+                id: 'projects',
                 accessor: 'projects',
                 Cell: settings => <ProjectChips projects={settings.value} />,
             },
             {
                 Header: formatMessage(MESSAGES.name),
+                id: 'name',
                 accessor: 'name',
-                align: 'left',
+                align: 'left' as const,
             },
             {
                 Header: formatMessage(MESSAGES.created_at),
+                id: 'created_at',
                 accessor: 'created_at',
                 Cell: DateTimeCell,
             },
             {
                 Header: formatMessage(MESSAGES.updated_at),
                 accessor: 'updated_at',
+                id: 'updated_at',
                 Cell: DateTimeCell,
             },
             {
                 Header: formatMessage(MESSAGES.instance_updated_at),
                 accessor: 'instance_updated_at',
+                id: 'instance_updated_at',
                 Cell: DateTimeCell,
             },
             {
                 Header: formatMessage(MESSAGES.type),
                 sortable: false,
                 accessor: 'org_unit_types',
+                id: 'org_unit_types',
                 Cell: settings =>
                     settings.row.original.org_unit_types
                         .map(o => o.short_name)
                         .join(', '),
             },
             {
+                Header: formatMessage(MESSAGES.instances_count),
+                id: 'instances_count',
+                accessor: 'instances_count',
+                Cell: settings => formatThousand(settings.value),
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
                 width: getActionsColWidth(user),
+                id: 'actions',
                 accessor: 'actions',
                 Cell: settings => {
                     return (
@@ -185,28 +216,16 @@ export const useFormsTableColumns = ({
                 },
             },
         ];
-        if (showInstancesCount) {
-            cols.splice(6, 0, {
-                Header: formatMessage(MESSAGES.records),
-                accessor: 'instances_count',
-            });
-        }
         if (showDeleted) {
             cols.splice(1, 0, {
                 Header: formatMessage(MESSAGES.deleted_at),
+                id: 'deleted_at',
                 accessor: 'deleted_at',
                 Cell: DateTimeCell,
             });
         }
         return cols;
-    }, [
-        formatMessage,
-        hasDhis2Module,
-        orgUnitId,
-        showDeleted,
-        user,
-        showInstancesCount,
-    ]);
+    }, [formatMessage, user, showDeleted, orgUnitId, hasDhis2Module]);
 };
 
 export const requiredFields = [

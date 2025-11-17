@@ -81,7 +81,7 @@ export const useGetFormsDropdownOptions = (
     }, [allFields, params]);
 
     const queryKey = useMemo(
-        () => ['forms', 'dropdown', queryParams],
+        () => ['formsdropdown', queryParams],
         [queryParams],
     );
 

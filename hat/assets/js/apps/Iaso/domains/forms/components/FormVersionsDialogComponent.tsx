@@ -1,15 +1,15 @@
-import { Box, Grid, Typography } from '@mui/material';
-import {
-    IntlMessage,
-    LoadingSpinner,
-    useSafeIntl,
-} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useMemo,
     useState,
 } from 'react';
+import { Box, Grid, Typography } from '@mui/material';
+import {
+    IntlMessage,
+    LoadingSpinner,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { ErrorsPopper } from '../../../components/forms/ErrorsPopper';
@@ -17,11 +17,11 @@ import FileInputComponent from '../../../components/forms/FileInputComponent';
 import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 import { useFormState } from '../../../hooks/form';
+import { Nullable, Optional } from '../../../types/utils';
 import PeriodPicker from '../../periods/components/PeriodPicker';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
 import MESSAGES from '../messages';
 import { createFormVersion, updateFormVersion } from '../requests';
-import { Nullable, Optional } from '../../../types/utils';
 
 const emptyVersion = {
     id: null,
@@ -114,7 +114,10 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                     setFormState(emptyVersionFromId(formVersion.id));
                     onConfirmed();
                     openSnackBar(succesfullSnackBar());
-                    queryClient.invalidateQueries(['formVersions', formId]);
+                    queryClient.invalidateQueries([
+                        'formVersions',
+                        `formVersions-${formId}`,
+                    ]);
                 } catch (error) {
                     setIsLoading(false);
                     if (error.status === 400) {

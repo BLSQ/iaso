@@ -159,20 +159,17 @@ const FormDetail: FunctionComponent = () => {
         try {
             savedFormData = await saveForm;
             openSnackBar(succesfullSnackBar());
+            queryClient.invalidateQueries([
+                'forms',
+                'formsdropdown',
+                `formVersions-${params.formId}`,
+            ]);
+
             if (!isUpdate) {
+                queryClient.invalidateQueries([`form-${savedFormData.id}`]);
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,
                 });
-            } else {
-                queryClient.resetQueries([
-                    'formDetailsForInstance',
-                    `${savedFormData.id}`,
-                ]);
-                queryClient.resetQueries(['forms']);
-                queryClient.invalidateQueries([
-                    'formVersions',
-                    parseInt(params.formId, 10),
-                ]);
             }
         } catch (error) {
             if (error.status === 400) {

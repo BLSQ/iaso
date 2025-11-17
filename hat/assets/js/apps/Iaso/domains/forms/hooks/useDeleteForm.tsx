@@ -1,4 +1,4 @@
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import { deleteRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
 import MESSAGES from '../messages';
@@ -7,9 +7,16 @@ const deleteForm = (id: number) => {
     return deleteRequest(`/api/forms/${id}/`);
 };
 
-export const useDeleteForm = (): UseMutationResult =>
-    useSnackMutation({
+export const useDeleteForm = (): UseMutationResult => {
+    const queryClient = useQueryClient();
+    return useSnackMutation({
         mutationFn: deleteForm,
         snackSuccessMessage: MESSAGES.formDeleted,
-        invalidateQueryKey: 'forms',
+        invalidateQueryKey: ['forms', 'formsdropdown'],
+        options: {
+            onSuccess: (_, variables: number) => {
+                queryClient.invalidateQueries([`form-${variables}`]);
+            },
+        },
     });
+};

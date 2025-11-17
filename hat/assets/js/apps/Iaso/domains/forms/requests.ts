@@ -16,7 +16,7 @@ export const useGetForm = (
     fields?: string | undefined,
     appId?: string,
 ): UseQueryResult<Form, Error> => {
-    const queryKey: any[] = ['form', formId];
+    const queryKey: any[] = ['form', `form-${formId}`];
     if (fields) {
         queryKey.push(fields);
     }

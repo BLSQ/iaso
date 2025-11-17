@@ -1,5 +1,5 @@
-import { useRedirectTo } from 'bluesquare-components';
 import { useCallback } from 'react';
+import { useRedirectTo } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import snackMessages from '../../../components/snackBars/messages';
 import { baseUrls } from '../../../constants/urls';
@@ -53,7 +53,6 @@ export const useLinkOrgUnitToReferenceSubmission = ({
 };
 
 type FormOrgUnitTypes = {
-    // eslint-disable-next-line camelcase
     org_unit_type_ids: number[];
     period_type: string | null;
     id: number;
@@ -70,7 +69,7 @@ export const useGetFormDefForInstance = (
     formId: number | string | undefined,
 ): UseQueryResult<FormDef, Error> => {
     return useSnackQuery(
-        ['form', formId, 'org_unit_types'],
+        ['form', `form-${formId}`, 'org_unit_types'],
         () =>
             getRequest(
                 `/api/forms/${formId}/?fields=org_unit_type_ids,period_type`,

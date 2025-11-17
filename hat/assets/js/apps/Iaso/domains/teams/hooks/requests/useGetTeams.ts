@@ -17,7 +17,7 @@ const getTeam = async (teamId: number): Promise<Team> => {
 
 export const useGetTeam = (teamId: number): UseQueryResult<Team, Error> => {
     return useSnackQuery({
-        queryKey: ['team', teamId],
+        queryKey: ['team', `team-${teamId}`],
         queryFn: () => getTeam(teamId),
         options: {
             enabled: Boolean(teamId),
@@ -40,7 +40,7 @@ const getTeams = async (
         delete params.select;
     }
 
-    const url = makeUrlWithParams('/api/teams', params);
+    const url = makeUrlWithParams('/api/teams/', params);
     return getRequest(url) as Promise<TeamList>;
 };
 

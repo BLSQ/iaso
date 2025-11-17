@@ -55,7 +55,7 @@ type Props = {
     disabled: boolean;
     disabledMessage?: string;
     handleApplyOptions?: () => void;
-    applyDisabled?: boolean;
+    isDisabled?: boolean;
 };
 
 const filterResults = (searchString: string, options: Option[]): Option[] => {
@@ -79,7 +79,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     disabled,
     disabledMessage,
     handleApplyOptions,
-    applyDisabled,
+    isDisabled,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -252,7 +252,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                 variant="contained"
                                 color="primary"
                                 size="small"
-                                disabled={applyDisabled}
+                                disabled={isDisabled}
                             >
                                 {formatMessage(MESSAGES.apply)}
                             </Button>

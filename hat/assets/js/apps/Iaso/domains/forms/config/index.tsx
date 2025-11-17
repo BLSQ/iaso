@@ -95,7 +95,6 @@ export const useFormVersionsTableColumns = ({
                                         tooltipMessage={MESSAGES.edit}
                                     />
                                 )}
-                                onConfirmed={() => {}}
                                 formVersion={settings.row.original}
                                 periodType={periodType}
                                 formId={parseInt(formId, 10)}

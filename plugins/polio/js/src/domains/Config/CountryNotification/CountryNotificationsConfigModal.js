@@ -3,12 +3,12 @@ import { isEqual } from 'lodash';
 import { arrayOf, func, number, object, string } from 'prop-types';
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useFormState } from 'Iaso/hooks/form';
-import { usePutCountryMutation } from './requests';
-import MESSAGES from '../../../constants/messages';
-import { useGetTeamsDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams.ts';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { TeamType } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants.ts';
+import { useGetTeamsDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams.ts';
+import MESSAGES from '../../../constants/messages';
+import { usePutCountryMutation } from './requests';
 
 const makeDropDownListItem = user => {
     const userName =

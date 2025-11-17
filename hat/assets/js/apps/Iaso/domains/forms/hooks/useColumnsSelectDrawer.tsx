@@ -19,6 +19,7 @@ export const useColumnsSelectDrawer = (
     const [visibleColumnsKeys, setVisibleColumnsKeys] = useState<string[]>(
         params?.fields?.split(',') ?? DEFAULT_VISIBLE_COLUMNS,
     );
+
     const options = useMemo(() => {
         return columns
             .filter(column => column.id && column.id !== 'actions')

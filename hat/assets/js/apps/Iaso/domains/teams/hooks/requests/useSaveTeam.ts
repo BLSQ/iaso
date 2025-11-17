@@ -1,6 +1,7 @@
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
+import { Team } from '../../types/team';
 
 type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
 
@@ -49,15 +50,21 @@ export const useSaveTeam = (
     showSuccessSnackBar = true,
 ): UseMutationResult => {
     const ignoreErrorCodes = [400];
+    const queryClient = useQueryClient();
     const editTeam = useSnackMutation({
         mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
         invalidateQueryKey: ['teamsList', 'teamsDropdown'],
         ignoreErrorCodes,
         showSuccessSnackBar,
+        options: {
+            onSuccess: (data: Team) => {
+                queryClient.invalidateQueries(['team', `team-${data.id}`]);
+            },
+        },
     });
     const createTeam = useSnackMutation({
         mutationFn: (data: SaveTeamQuery) => postTeam(data),
-        invalidateQueryKey: ['teamsList'],
+        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
         ignoreErrorCodes,
     });
 

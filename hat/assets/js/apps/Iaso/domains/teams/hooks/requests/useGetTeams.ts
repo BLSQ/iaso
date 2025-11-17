@@ -17,7 +17,7 @@ const getTeam = async (teamId: number): Promise<Team> => {
 
 export const useGetTeam = (teamId: number): UseQueryResult<Team, Error> => {
     return useSnackQuery({
-        queryKey: ['team', teamId],
+        queryKey: ['team', `team-${teamId}`],
         queryFn: () => getTeam(teamId),
         options: {
             enabled: Boolean(teamId),

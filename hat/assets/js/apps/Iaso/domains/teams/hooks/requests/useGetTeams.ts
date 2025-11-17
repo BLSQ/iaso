@@ -40,7 +40,7 @@ const getTeams = async (
         delete params.select;
     }
 
-    const url = makeUrlWithParams('/api/teams', params);
+    const url = makeUrlWithParams('/api/teams/', params);
     return getRequest(url) as Promise<TeamList>;
 };
 

@@ -26,7 +26,6 @@ import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models';
 import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
-import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 import { useGetOrgUnitType } from '../hooks/useGetOrgUnitType';
 import MESSAGES from '../messages';
@@ -111,9 +110,7 @@ export const Instances: FunctionComponent<Props> = ({
     );
 
     const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
-    // const { data: formsList, isFetching: isFetchingForms } = useGetForms({
-    //     orgUnitTypeIds: currentType?.id,
-    // });
+
     const { data: formsList, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions({
             params: {

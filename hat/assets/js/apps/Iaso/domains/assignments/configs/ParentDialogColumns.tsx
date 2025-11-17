@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 
 import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 
-import { SubTeam, User } from '../types/team';
-
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import { SubTeam, User } from '../../teams/types/team';
+
 import { CheckBoxCell } from '../components/CheckBoxCell';
 
 import MESSAGES from '../messages';

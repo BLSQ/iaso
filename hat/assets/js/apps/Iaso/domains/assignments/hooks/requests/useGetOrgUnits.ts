@@ -10,9 +10,9 @@ import { makeUrlWithParams } from '../../../../libs/utils';
 import { Profile } from '../../../../utils/usersUtils';
 import { OrgUnit, PaginatedOrgUnits } from '../../../orgUnits/types/orgUnit';
 
+import { DropdownTeamsOptions } from '../../../teams/types/team';
 import { AssignmentsApi } from '../../types/assigment';
 import { BaseLocation, Locations } from '../../types/locations';
-import { DropdownTeamsOptions } from '../../types/team';
 
 import { getOrgUnitAssignation } from '../../utils';
 

@@ -178,3 +178,14 @@ export type FormDataType = {
     legend_threshold?: FieldError<ScaleThreshold>;
     change_request_mode: FieldError<ChangeRequestModeType>;
 };
+export type FormsParams = {
+    pageSize: string;
+    order: string;
+    page: string;
+    search?: string;
+    showDeleted?: string;
+    planning?: string;
+    projectsIds?: string;
+    fields?: string;
+    orgUnitId: string;
+};

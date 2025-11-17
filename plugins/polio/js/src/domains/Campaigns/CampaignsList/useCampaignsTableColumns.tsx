@@ -7,6 +7,7 @@ import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/compo
 import MESSAGES from '../../../constants/messages';
 import { CampaignListItem } from '../../../constants/types';
 import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
+import { CampaignCategoryCell } from './CampaignCategoryCell';
 
 type Args = {
     showOnlyDeleted: boolean;
@@ -80,27 +81,7 @@ export const useCampaignsTableColumns = ({
                 Header: formatMessage(MESSAGES.campaignCategory),
                 accessor: 'campaign_category',
                 sortable: false,
-                Cell: ({
-                    row: { original },
-                }: {
-                    row: { original: CampaignListItem };
-                }): string => {
-                    let campaignCategory;
-                    if (original.on_hold) {
-                        campaignCategory = original.is_preventive
-                            ? `${formatMessage(MESSAGES.campaignOnHold)} - ${formatMessage(MESSAGES.preventiveShort)}`
-                            : formatMessage(MESSAGES.campaignOnHold);
-                    } else if (original.is_test) {
-                        campaignCategory = original.is_preventive
-                            ? `${formatMessage(MESSAGES.testCampaign)} - ${formatMessage(MESSAGES.preventiveShort)}`
-                            : formatMessage(MESSAGES.testCampaign);
-                    } else {
-                        campaignCategory = original.is_preventive
-                            ? formatMessage(MESSAGES.preventiveShort)
-                            : formatMessage(MESSAGES.regular);
-                    }
-                    return campaignCategory;
-                },
+                Cell: CampaignCategoryCell,
             },
             {
                 Header: formatMessage(MESSAGES.status),

@@ -14,10 +14,7 @@ export const useDeleteTeam = (): UseMutationResult => {
         snackErrorMsg: MESSAGES.deleteError,
         options: {
             onSuccess: (_, variables: Team) => {
-                queryClient.invalidateQueries([
-                    'team',
-                    `team-${variables?.id}`,
-                ]);
+                queryClient.invalidateQueries(['team', `team-${variables.id}`]);
             },
         },
     });

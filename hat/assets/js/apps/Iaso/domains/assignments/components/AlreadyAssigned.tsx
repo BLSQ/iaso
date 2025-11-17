@@ -2,14 +2,13 @@ import React, { FunctionComponent } from 'react';
 
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
-import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
-
 import { getDisplayName } from '../../../utils/usersUtils';
-import { getParentTeam } from '../utils';
 
-import { DropdownTeamsOptions } from '../types/team';
+import { DropdownTeamsOptions } from '../../teams/types/team';
 
 import MESSAGES from '../messages';
+import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
+import { getParentTeam } from '../utils';
 
 type Props = {
     item: OrgUnitShape | OrgUnitMarker;

@@ -4,20 +4,20 @@ import React, {
     useCallback,
     useMemo,
 } from 'react';
-import get from 'lodash/get';
-import { useSafeIntl, Column, useRedirectTo } from 'bluesquare-components';
 import { Checkbox, Box, Tooltip } from '@mui/material';
-import { AssignmentParams, AssignmentsApi } from '../types/assigment';
-import { AssignmentUnit } from '../types/locations';
-import { DropdownTeamsOptions, Team } from '../types/team';
-import { getOrgUnitAssignation } from '../utils';
-import { Profile } from '../../../utils/usersUtils';
-import { UsersTeamsCell } from '../components/UsersTeamsCell';
-import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-import MESSAGES from '../messages';
-import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { useSafeIntl, Column, useRedirectTo } from 'bluesquare-components';
+import get from 'lodash/get';
 import { baseUrls } from '../../../constants/urls';
 import { SxStyles } from '../../../types/general';
+import { Profile } from '../../../utils/usersUtils';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { DropdownTeamsOptions, Team } from '../../teams/types/team';
+import { UsersTeamsCell } from '../components/UsersTeamsCell';
+import MESSAGES from '../messages';
+import { AssignmentParams, AssignmentsApi } from '../types/assigment';
+import { AssignmentUnit } from '../types/locations';
+import { getOrgUnitAssignation } from '../utils';
 
 const getParentCount = (
     orgUnit: AssignmentUnit | ParentOrgUnit,

@@ -72,9 +72,6 @@ export const useGetFormsDropdownOptions = (
         () => [...DEFAULT_FIELDS, ...extraFields],
         [extraFields],
     );
-    if (params.projectId) {
-        allFields.push('project_ids');
-    }
     const queryParams = useMemo(() => {
         return {
             fields: allFields.join(','),
@@ -101,15 +98,7 @@ export const useGetFormsDropdownOptions = (
             select: data => {
                 if (!data?.forms) return [];
 
-                let forms = data.forms;
-
-                // Client-side project filtering if projectId is provided
-                // and backend doesn't support it directly
-                if (params.projectId !== undefined) {
-                    forms = forms.filter((form: Form) =>
-                        form.project_ids.includes(params.projectId),
-                    );
-                }
+                const forms = data.forms;
 
                 return forms.map((form: Form) => ({
                     value: form.id,

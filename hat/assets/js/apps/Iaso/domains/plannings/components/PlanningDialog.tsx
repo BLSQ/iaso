@@ -144,8 +144,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
 
     const { data: formsDropdown, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions({
+            extraFields: ['project_ids'],
             params: {
-                projectId: values?.project,
+                projectsIds: values?.project,
             },
         });
     const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams(

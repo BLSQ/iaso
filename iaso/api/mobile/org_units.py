@@ -78,9 +78,12 @@ class ReferenceInstancesSerializer(serializers.ModelSerializer):
 
 
 class MobileOrgUnitSerializer(serializers.ModelSerializer):
+    app_id = None
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Do not include the geo_json if not requested
+        self.app_id = kwargs["context"].get("app_id")
         if not kwargs["context"].get("include_geo_json"):
             self.fields.pop("geo_json")
 
@@ -119,11 +122,13 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
     def get_org_unit_type_name(org_unit: OrgUnit):
         return org_unit.org_unit_type.name if org_unit.org_unit_type else None
 
-    @staticmethod
-    def get_parent_id(org_unit: OrgUnit):
+    def get_parent_id(self, org_unit: OrgUnit):
+        parent = org_unit.parent
         return (
             org_unit.parent_id
-            if org_unit.parent is None or org_unit.parent.validation_status == OrgUnit.VALIDATION_VALID
+            if parent is None
+            or parent.validation_status == OrgUnit.VALIDATION_VALID
+            and (self.app_id is None or any(p.app_id == self.app_id for p in parent.org_unit_type.projects.all()))
             else None
         )
 
@@ -214,41 +219,46 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        app_id = self.get_app_id()
 
         limit_download_to_roots = False
 
+        project = Project.objects.get_for_user_and_app_id(user, app_id)
         if user and not user.is_anonymous:
-            limit_download_to_roots = Project.objects.get_for_user_and_app_id(user, app_id).has_feature(
-                FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS
-            )
+            limit_download_to_roots = project.has_feature(FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS)
 
         if limit_download_to_roots:
-            org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
+            org_units = OrgUnit.objects.filter_for_user_and_project(self.request.user, project)
         else:
-            org_units = OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
+            org_units = OrgUnit.objects.filter_for_user_and_project(None, project)
         queryset = (
             org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")
-            .prefetch_related("parent", "org_unit_type", "groups")
-            .select_related("org_unit_type")
+            .prefetch_related("parent__org_unit_type__projects", "groups")
+            .select_related("org_unit_type", "parent", "parent__org_unit_type")
         )
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
-            queryset = queryset.annotate(geo_json=RawSQL("ST_AsGeoJson(COALESCE(simplified_geom, geom))::json", []))
+            queryset = queryset.annotate(
+                geo_json=RawSQL("ST_AsGeoJson(COALESCE(iaso_orgunit.simplified_geom, iaso_orgunit.geom))::json", [])
+            )
 
         return queryset
 
     def get_serializer_context(self) -> Dict[str, Any]:
         context = super().get_serializer_context()
         context["include_geo_json"] = self.check_include_geo_json()
+        context["app_id"] = self.get_app_id()
         return context
 
     def check_include_geo_json(self):
         return self.request.query_params.get("shapes", "") == "true"
 
+    def get_app_id(self):
+        return AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+
     def list(self, request, *args, **kwargs):
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        app_id = self.get_app_id()
         if not app_id:
             return Response()
 
@@ -258,8 +268,8 @@ class MobileOrgUnitViewSet(ModelViewSet):
             queryset = (
                 OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
                 .order_by("path")
-                .prefetch_related("parent", "org_unit_type", "groups")
-                .select_related("org_unit_type")
+                .prefetch_related("parent__org_unit_type__projects", "groups")
+                .select_related("org_unit_type", "parent", "parent__org_unit_type")
                 .filter(id__in=ids)
             )
             if len(queryset) != len(ids):
@@ -293,7 +303,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
     @safe_api_import("orgUnit")
     def create(self, _, request):
         data = sorted(request.data, key=lambda ou: float(ou["created_at"]))
-        new_org_units = import_org_units(data, request.user, request.query_params.get(APP_ID))
+        new_org_units = import_org_units(data, request.user, self.get_app_id())
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     @action(detail=False, methods=["GET"])

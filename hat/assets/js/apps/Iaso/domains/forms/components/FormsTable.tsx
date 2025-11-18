@@ -22,7 +22,6 @@ export const FormsTable: FunctionComponent<Props> = ({
     tableDefaults: tableDefaultsProp,
     displayColumnsSelectDrawer = true,
 }) => {
-    console.log('displayColumnsSelectDrawer', displayColumnsSelectDrawer);
     const columns = useFormsTableColumns({
         showDeleted: params?.showDeleted === 'true',
         orgUnitId: params?.orgUnitId,

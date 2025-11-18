@@ -7,7 +7,6 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { LinkToForm } from 'Iaso/domains/forms/components/LinkToForm';
 import { useGetImpacts } from 'Iaso/domains/stock/hooks/useGetImpacts';
 import {
-    Status,
     StockItemRule,
     StockItemRuleDto,
     StockRulesVersion,

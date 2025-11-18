@@ -33,6 +33,7 @@ export const RoundDates: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
+        values,
         initialValues,
     } = useFormikContext<CampaignFormValues>();
     const currentStartDate = rounds?.[roundIndex]?.started_at;
@@ -45,6 +46,9 @@ export const RoundDates: FunctionComponent<Props> = ({
             initialValues?.rounds?.find(round => round.number === roundNumber)
                 ?.ended_at,
     );
+    const isPlanned =
+        values?.is_planned ||
+        rounds.some(rnd => rnd.number === roundNumber && rnd.is_planned);
     const save = ({ startDate, endDate, reason_for_delay }, helpers) => {
         setParentFieldValue(`rounds[${roundIndex}]`, {
             ...rounds[roundIndex],
@@ -86,7 +90,7 @@ export const RoundDates: FunctionComponent<Props> = ({
 
     return (
         <>
-            {!hasInitialData && (
+            {(!hasInitialData || isPlanned) && (
                 <>
                     <Field
                         label={formatMessage(MESSAGES.startDate)}
@@ -105,7 +109,7 @@ export const RoundDates: FunctionComponent<Props> = ({
                     />
                 </>
             )}
-            {hasInitialData && (
+            {hasInitialData && !isPlanned && (
                 <FormikProvider value={formik}>
                     <Box mb={2}>
                         <Divider />

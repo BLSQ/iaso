@@ -470,6 +470,18 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
+                <InputWithInfos
+                    infos={formatMessage(MESSAGES.searchOrgUnitInfos)}
+                >
+                    <InputComponent
+                        type="text"
+                        clearable
+                        keyValue="org_unit"
+                        value={filters.org_unit}
+                        onChange={handleChange}
+                        labelString={formatMessage(MESSAGES.orgUnit)}
+                    />
+                </InputWithInfos>
                 <Box id="ou-tree-input">
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
@@ -490,18 +502,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <InputWithInfos
-                    infos={formatMessage(MESSAGES.searchOrgUnitInfos)}
-                >
-                    <InputComponent
-                        type="text"
-                        clearable
-                        keyValue="org_unit"
-                        value={filters.org_unit}
-                        onChange={handleChange}
-                        labelString={formatMessage(MESSAGES.orgUnit)}
-                    />
-                </InputWithInfos>
                 <InputComponent
                     type="select"
                     multi

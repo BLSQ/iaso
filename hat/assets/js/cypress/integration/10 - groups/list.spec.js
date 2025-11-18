@@ -1,18 +1,18 @@
 /// <reference types="cypress" />
 
+import { formatThousand } from 'bluesquare-components';
 import moment from 'moment';
 
-import { formatThousand } from 'bluesquare-components';
+import { search, searchWithForbiddenChars } from '../../constants/search';
+import emptyFixture from '../../fixtures/groups/empty.json';
 import listFixture from '../../fixtures/groups/list-page1.json';
 import listFixture2 from '../../fixtures/groups/list-page2.json';
-import emptyFixture from '../../fixtures/groups/empty.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 
-import { testPermission } from '../../support/testPermission';
-import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
+import { testPermission } from '../../support/testPermission';
 import { testSearchField } from '../../support/testSearchField';
-import { search, searchWithForbiddenChars } from '../../constants/search';
+import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/configuration/groups`;
@@ -154,6 +154,9 @@ describe('Groups', () => {
     describe('Search field', () => {
         beforeEach(() => {
             goToPage({});
+            cy.waitForReactState(['@getGroups'], '#search-search', {
+                visible: true,
+            });
         });
         testSearchField(search, searchWithForbiddenChars);
     });
@@ -161,29 +164,28 @@ describe('Groups', () => {
     describe('Search button', () => {
         beforeEach(() => {
             goToPage({});
+            cy.waitForReactState(
+                ['@getGroups'],
+                '[data-test="search-button"]',
+                { visible: true },
+            );
         });
         it('should be disabled', () => {
-            cy.wait('@getGroups').then(() => {
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', 'disabled');
-            });
+            cy.get('[data-test="search-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', 'disabled');
         });
         it('should be enabled while searching', () => {
-            cy.wait('@getGroups').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
+            cy.get('#search-search').type(search);
+            cy.get('[data-test="search-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', undefined);
         });
         it('action should deep link search', () => {
-            cy.wait('@getGroups').then(() => {
-                cy.get('#search-search').type(search);
+            cy.get('#search-search').type(search);
 
-                cy.get('[data-test="search-button"]').click();
-                cy.url().should('contain', `/search/${search}`);
-            });
+            cy.get('[data-test="search-button"]').click();
+            cy.url().should('contain', `/search/${search}`);
         });
     });
 
@@ -245,7 +247,7 @@ describe('Groups', () => {
         it('should contain a link redirecting to the right org unit', () => {
             cy.wait('@getGroups').then(() => {
                 const href =
-                    '/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searchActive/true/searches/[{"validation_status":"all", "color":"f4511e", "group":"1", "source": null}]';
+                    '/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searchActive/true/searches/[{"validation_status":"all", "color":"42a5f5", "group":"1", "source": null}]';
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
                 const orgUnitLinkCol = row.find('td').eq(6);
@@ -257,110 +259,103 @@ describe('Groups', () => {
     describe('Dialog', () => {
         beforeEach(() => {
             goToPage({});
+            cy.waitForReactState(['@getGroups'], 'table', { visible: true });
         });
 
         it('should display empty group dialog on create', () => {
             // this will be tested when creation will be enabled
-            cy.wait('@getGroups').then(() => {
-                cy.get('[data-test="add-group-button"]').click();
-                cy.get('[data-test="groups-dialog"]').should('be.visible');
+            cy.get('[data-test="add-group-button"]').click();
+            cy.get('[data-test="groups-dialog"]').should('be.visible');
 
-                cy.testInputValue('#input-text-name', '');
-                cy.testInputValue('#input-text-source_ref', '');
-            });
+            cy.testInputValue('#input-text-name', '');
+            cy.testInputValue('#input-text-source_ref', '');
         });
 
         it('should display correct group infos', () => {
-            cy.wait('@getGroups').then(() => {
-                const index = 0;
-                openDialogForIndex(index);
+            const index = 0;
+            openDialogForIndex(index);
 
-                cy.testInputValue(
-                    '#input-text-name',
-                    listFixture.groups[index].name,
-                );
-                cy.testInputValue(
-                    '#input-text-source_ref',
-                    listFixture.groups[index].source_ref,
-                );
-            });
+            cy.testInputValue(
+                '#input-text-name',
+                listFixture.groups[index].name,
+            );
+            cy.testInputValue(
+                '#input-text-source_ref',
+                listFixture.groups[index].source_ref,
+            );
         });
 
         it('should save correctly', () => {
-            cy.wait('@getGroups').then(() => {
-                const index = 0;
-                openDialogForIndex(index);
-                const newGroup = {
-                    id: listFixture.groups[index].id,
-                    name: 'sacha',
-                    source_ref: 'gt15',
-                };
-                const newGroups = [...listFixture.groups];
-                cy.log('modify group in the list with new name and new ref');
-                newGroups[index] = {
-                    ...listFixture.groups[index],
-                    ...newGroup,
-                };
-                const newList = {
-                    ...listFixture,
-                    groups: newGroups,
-                };
+            const index = 0;
+            openDialogForIndex(index);
+            const newGroup = {
+                id: listFixture.groups[index].id,
+                name: 'sacha',
+                source_ref: 'gt15',
+            };
+            const newGroups = [...listFixture.groups];
+            cy.log('modify group in the list with new name and new ref');
+            newGroups[index] = {
+                ...listFixture.groups[index],
+                ...newGroup,
+            };
+            const newList = {
+                ...listFixture,
+                groups: newGroups,
+            };
 
-                mockSaveCall(
-                    'PATCH',
-                    index,
-                    `/api/groups/${listFixture.groups[index].id}/`,
-                    newGroup,
-                );
-                testDialogContent(newGroup);
-                mockListCall('getGroupsAfterSave', newList);
+            mockSaveCall(
+                'PATCH',
+                index,
+                `/api/groups/${listFixture.groups[index].id}/`,
+                newGroup,
+            );
+            testDialogContent(newGroup);
+            mockListCall('getGroupsAfterSave', newList);
 
-                cy.get('.MuiDialogActions-root').find('button').last().click();
-                cy.wait('@saveGroup').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                    cy.wait('@getGroupsAfterSave').then(() => {
-                        cy.wrap(interceptFlagGroups).should('eq', true);
-                        testRowContent(0, newList.groups[index], true);
-                    });
+            cy.get('.MuiDialogActions-root').find('button').last().click();
+            cy.wait('@saveGroup').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+                cy.wait('@getGroupsAfterSave').then(() => {
+                    cy.wrap(interceptFlagGroups).should('eq', true);
+                    testRowContent(0, newList.groups[index], true);
                 });
             });
         });
 
         it('should create correctly', () => {
-            cy.wait('@getGroups').then(() => {
-                const index = 0;
-                cy.get('[data-test="add-group-button"]').click();
-                let newGroup = {
-                    name: 'create',
-                    source_ref: 'zu18',
-                };
-                testDialogContent(newGroup);
+            const index = 0;
+            cy.get('[data-test="add-group-button"]').click();
+            let newGroup = {
+                name: 'create',
+                source_ref: 'zu18',
+            };
+            testDialogContent(newGroup);
 
-                mockSaveCall('POST', index, '/api/groups/', newGroup);
-                cy.log(
-                    'set default source version and updated at created by the backend + create fake id',
-                );
-                newGroup = {
-                    ...listFixture.groups[2],
-                    ...newGroup,
-                    id: 999,
-                };
-                const newList = {
-                    ...listFixture,
-                };
-                cy.log(
-                    'inject new group to the new list of groups that will be mocked',
-                );
-                newList.groups.unshift(newGroup);
-                mockListCall('getGroupsAfterCreate', newList);
+            mockSaveCall('POST', index, '/api/groups/', newGroup);
+            cy.log(
+                'set default source version and updated at created by the backend + create fake id',
+            );
+            newGroup = {
+                ...listFixture.groups[2],
+                ...newGroup,
+                id: 999,
+            };
+            const newList = {
+                ...listFixture,
+            };
+            cy.log(
+                'inject new group to the new list of groups that will be mocked',
+            );
+            newList.groups.unshift(newGroup);
+            mockListCall('getGroupsAfterCreate', newList);
 
-                cy.get('.MuiDialogActions-root').find('button').last().click();
-                cy.wait('@saveGroup').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                    cy.wait('@getGroupsAfterCreate').then(() => {
-                        cy.wrap(interceptFlagGroups).should('eq', true);
-                        testRowContent(0, newGroup);
-                    });
+            cy.get('.MuiDialogActions-root').find('button').last().click();
+            cy.wait('@saveGroup').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+                cy.wait('@getGroupsAfterCreate').then(() => {
+                    cy.wrap(interceptFlagGroups).should('eq', true);
+                    testRowContent(0, newGroup);
                 });
             });
         });
@@ -369,51 +364,51 @@ describe('Groups', () => {
     describe('Save button in Dialog', () => {
         beforeEach(() => {
             goToPage({});
+            cy.waitForReactState(['@getGroups'], 'table', { visible: true });
         });
 
         it('should be disabled if name value is an empty string', () => {
-            cy.wait('@getGroups').then(() => {
-                // on create
-                cy.get('[data-test="add-group-button"]').click();
-                cy.get('[data-test="groups-dialog"]').should('be.visible');
-                cy.get('.MuiDialogActions-root')
-                    .find('button')
-                    .last()
-                    .as('saveButton');
-                cy.get('@saveButton').should('be.disabled');
+            // on create
+            cy.get('[data-test="add-group-button"]').click();
+            cy.get('[data-test="groups-dialog"]').should('be.visible');
+            cy.get('.MuiDialogActions-root')
+                .find('button')
+                .last()
+                .as('saveButton');
+            cy.get('@saveButton').should('be.disabled');
 
-                const name = 'Lucius';
-                cy.get('#input-text-name').type(name).clear();
-                cy.testInputValue('#input-text-name', '');
-                cy.get('.MuiDialogActions-root')
-                    .find('button')
-                    .last()
-                    .as('saveButton');
-                cy.get('@saveButton').should('be.disabled');
-                cy.get('.MuiDialogActions-root')
-                    .find('button')
-                    .first()
-                    .as('cancelButton');
-                cy.get('@cancelButton').click();
+            const name = 'Lucius';
+            cy.get('#input-text-name').type(name).clear();
+            cy.testInputValue('#input-text-name', '');
+            cy.get('.MuiDialogActions-root')
+                .find('button')
+                .last()
+                .as('saveButton');
+            cy.get('@saveButton').should('be.disabled');
+            cy.get('.MuiDialogActions-root')
+                .find('button')
+                .first()
+                .as('cancelButton');
+            cy.get('@cancelButton').click();
 
-                // on edit
-                table = cy.get('table');
-                row = table.find('tbody').find('tr').eq(0);
-                const actionCol = row.find('td').last();
-                actionCol.find('button').first().as('editButton');
-                cy.get('@editButton').click();
-                cy.get('[data-test="groups-dialog"]').should('be.visible');
-                cy.get('@saveButton').should('not.be.disabled');
+            // on edit
+            table = cy.get('table');
+            row = table.find('tbody').find('tr').eq(0);
+            const actionCol = row.find('td').last();
+            actionCol.find('button').first().as('editButton');
+            cy.get('@editButton').click();
+            cy.get('[data-test="groups-dialog"]').should('be.visible');
+            cy.get('@saveButton').should('not.be.disabled');
 
-                cy.get('#input-text-name').clear();
-                cy.get('@saveButton').should('be.disabled');
-            });
+            cy.get('#input-text-name').clear();
+            cy.get('@saveButton').should('be.disabled');
         });
     });
 
     describe('Delete dialog', () => {
         beforeEach(() => {
             goToPage({});
+            cy.waitForReactState(['@getGroups'], 'table', { visible: true });
             const index = 0;
             table = cy.get('table');
             row = table.find('tbody').find('tr').eq(index);
@@ -424,107 +419,100 @@ describe('Groups', () => {
         });
 
         it('should open delete dialog', () => {
-            cy.wait('@getGroups').then(() => {
-                cy.get('@deleteDialog').should('be.visible');
-            });
+            cy.get('@deleteDialog').should('be.visible');
         });
         it('should delete group on confirm', () => {
-            cy.wait('@getGroups').then(() => {
-                interceptFlag = false;
-                const index = 0;
-                cy.intercept(
-                    {
-                        method: 'DELETE',
-                        pathname: `/api/groups/${listFixture.groups[index].id}/`,
-                    },
-                    req => {
-                        interceptFlag = true;
-                        req.reply({
-                            statusCode: 200,
-                        });
-                    },
-                ).as('deleteGroup');
-                interceptFlagGroups = false;
-                cy.intercept(
-                    {
-                        method: 'GET',
-                        pathname: '/api/groups',
-                        query: defaultQuery,
-                    },
-                    req => {
-                        interceptFlagGroups = true;
-                        req.reply({
-                            statusCode: 200,
-                            body: listFixture,
-                        });
-                    },
-                ).as('getGroupsAfterDelete');
-                cy.get('@deleteDialog')
-                    .parent()
-                    .parent()
-                    .find('button')
-                    .last()
-                    .as('confirmDeleteButton')
-                    .click();
-                cy.wait('@deleteGroup').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
-                cy.wait('@getGroupsAfterDelete').then(() => {
-                    cy.wrap(interceptFlagGroups).should('eq', true);
-                });
+            interceptFlag = false;
+            const index = 0;
+            cy.intercept(
+                {
+                    method: 'DELETE',
+                    pathname: `/api/groups/${listFixture.groups[index].id}/`,
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                    });
+                },
+            ).as('deleteGroup');
+            interceptFlagGroups = false;
+            cy.intercept(
+                {
+                    method: 'GET',
+                    pathname: '/api/groups',
+                    query: defaultQuery,
+                },
+                req => {
+                    interceptFlagGroups = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: listFixture,
+                    });
+                },
+            ).as('getGroupsAfterDelete');
+            cy.get('@deleteDialog')
+                .parent()
+                .parent()
+                .find('button')
+                .last()
+                .as('confirmDeleteButton')
+                .click();
+            cy.wait('@deleteGroup').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+            });
+            cy.wait('@getGroupsAfterDelete').then(() => {
+                cy.wrap(interceptFlagGroups).should('eq', true);
             });
         });
         it('should close delete dialog on cancel', () => {
-            cy.wait('@getGroups').then(() => {
-                cy.get('@deleteDialog')
-                    .parent()
-                    .parent()
-                    .find('button')
-                    .first()
-                    .as('cancelDeleteButton')
-                    .click();
-                cy.get('#delete-dialog-group').should('not.exist');
-            });
+            cy.get('@deleteDialog')
+                .parent()
+                .parent()
+                .find('button')
+                .first()
+                .as('cancelDeleteButton')
+                .click();
+            cy.get('#delete-dialog-group').should('not.exist');
         });
     });
 
     describe('Api', () => {
         beforeEach(() => {
             goToPage({ emptyFixture });
+            cy.waitForReactState(['@getGroups'], '#search-search', {
+                visible: true,
+            });
         });
 
         it('should be called with base params', () => {
-            cy.wait('@getGroups').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
-            });
+            cy.wrap(interceptFlag).should('eq', true);
         });
         it('should be called with search params', () => {
-            cy.wait('@getGroups').then(() => {
-                interceptFlag = false;
-                cy.intercept(
-                    {
-                        method: 'GET',
-                        pathname: '/api/groups',
-                        query: {
-                            limit: '20',
-                            order: 'name',
-                            page: '1',
-                            search,
-                        },
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'GET',
+                    pathname: '/api/groups',
+                    query: {
+                        limit: '20',
+                        order: 'name',
+                        page: '1',
+                        search,
                     },
-                    req => {
-                        interceptFlag = true;
-                        req.reply({
-                            statusCode: 200,
-                            body: emptyFixture,
-                        });
-                    },
-                ).as('getEntitySearch');
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]').click();
-                cy.wait('@getEntitySearch').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: emptyFixture,
+                    });
+                },
+            ).as('getEntitySearch');
+            cy.get('#search-search').type(search);
+            cy.get('[data-test="search-button"]').click();
+            cy.wait('@getEntitySearch').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
             });
         });
     });

@@ -312,16 +312,16 @@ describe('Users', () => {
                     cy.wrap(interceptFlag).should('eq', true);
                     cy.wrap(xhr.request.query).should('deep.equal', {
                         limit: '20',
-                        location: '3',
-                        managedUsersOnly: 'true',
                         order: 'user__username',
-                        orgUnitTypes: '11',
                         page: '1',
+                        search: 'ZELDA',
+                        orgUnitTypes: '11',
+                        location: '3',
                         permissions: 'iaso_assignments,iaso_polio_budget',
                         projects: '1,2',
-                        search: 'ZELDA',
-                        teams: '25,26',
                         userRoles: '5,8',
+                        teams: '29,30',
+                        managedUsersOnly: 'true',
                     });
                 });
             });

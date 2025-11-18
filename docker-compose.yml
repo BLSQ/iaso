@@ -31,6 +31,8 @@ services:
             - ./notebooks:/opt/notebooks
             # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
             - ../bluesquare-components:/opt/bluesquare-components
+            # Optional Used to load dev snt-malaria-budgeting Python package.
+            - ../snt-malaria-budgeting:/opt/snt_malaria_budgeting
         links: &hat_links
             - db
         environment: &hat_environment

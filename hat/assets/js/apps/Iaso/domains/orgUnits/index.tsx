@@ -14,10 +14,10 @@ import {
 } from 'bluesquare-components';
 import { useNavigate } from 'react-router-dom';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { SxStyles } from 'Iaso/types/general';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
@@ -111,7 +111,7 @@ export const OrgUnits: FunctionComponent = () => {
         enabled: tab === 'map' && isSearchActive,
     });
     // REQUESTS HOOKS
-
+    const { data: colors } = useGetColors(true);
     const getSearchColor = useCallback(
         currentSearchIndex => {
             const currentSearch = searches[currentSearchIndex];
@@ -120,13 +120,13 @@ export const OrgUnits: FunctionComponent = () => {
                 currentColor = currentSearch.color;
             }
             if (!currentColor) {
-                currentColor = getChipColors(currentSearchIndex);
+                currentColor = getColor(currentSearchIndex, colors);
             } else {
                 currentColor = `#${currentColor}`;
             }
             return currentColor;
         },
-        [searches],
+        [searches, colors],
     );
 
     const onSearch = useCallback(
@@ -174,6 +174,7 @@ export const OrgUnits: FunctionComponent = () => {
                     currentTab={tab}
                     paramsSearches={searches || []}
                     counts={(!isLoading && orgUnitsData?.counts) || []}
+                    colors={colors || []}
                 />
                 {tab === 'list' &&
                     orgUnitsData &&

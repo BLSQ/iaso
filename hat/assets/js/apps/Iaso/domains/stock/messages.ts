@@ -69,9 +69,17 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Created',
         id: 'iaso.forms.created_at',
     },
+    createdBy: {
+        defaultMessage: 'Created by',
+        id: 'iaso.forms.created_by',
+    },
     projectsError: {
         defaultMessage: 'An error occurred while fetching projects list',
         id: 'iaso.snackBar.fetchProjectsError',
+    },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.instance.titleSingle',
     },
     submissions: {
         defaultMessage: 'Submissions',
@@ -88,6 +96,10 @@ const MESSAGES = defineMessages({
     projects: {
         defaultMessage: 'Projects',
         id: 'iaso.label.projects',
+    },
+    orgUnit: {
+        defaultMessage: 'Org unit',
+        id: 'iaso.label.orgUnitSingle',
     },
     orgUnitsTypes: {
         defaultMessage: 'Org unit types',
@@ -204,6 +216,34 @@ const MESSAGES = defineMessages({
     infos: {
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
+    },
+    value: {
+        defaultMessage: 'Value',
+        id: 'iaso.label.value',
+    },
+    stockItem: {
+        defaultMessage: 'Stock Item',
+        id: 'iaso.label.stockItem',
+    },
+    stockItems: {
+        defaultMessage: 'Stock Items',
+        id: 'iaso.label.stockItems',
+    },
+    createdDateFrom: {
+        defaultMessage: 'Creation date from',
+        id: 'iaso.label.createdDateFrom',
+    },
+    createdDateTo: {
+        defaultMessage: 'Creation date to',
+        id: 'iaso.label.createdDateTo',
+    },
+    valueFrom: {
+        defaultMessage: 'Value from',
+        id: 'iaso.label.valueFrom',
+    },
+    valueTo: {
+        defaultMessage: 'Value to',
+        id: 'iaso.label.valueTo',
     },
 });
 

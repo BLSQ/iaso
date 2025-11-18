@@ -312,7 +312,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             for scope in campaign_scopes:
                 vaccine = scope.get("vaccine", "")
                 org_units = scope.get("group", {}).get("org_units")
-                scope, created = instance.scopes.get_or_create(vaccine=vaccine)
+                scope, _ = instance.scopes.get_or_create(vaccine=vaccine)
                 source_version_id = None
                 name = f"scope for campaign {instance.obr_name} - {vaccine or ''}"
                 if org_units:
@@ -484,6 +484,7 @@ class ListCampaignSerializer(CampaignSerializer):
             "is_test",
             "is_preventive",
             "on_hold",
+            "is_planned",
         ]
         read_only_fields = fields
 
@@ -529,58 +530,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "no_regret_fund_amount",
             "payment_mode",
             "rounds",
-            "created_at",
-            "updated_at",
-            "district_count",
-            "top_level_org_unit_name",
-            "top_level_org_unit_id",
-            "is_preventive",
-            "account",
-            "outbreak_declaration_date",
-            "campaign_types",
-        ]
-        read_only_fields = fields
-
-
-class SmallCampaignSerializer(CampaignSerializer):
-    campaign_types = CampaignTypeSerializer(many=True, required=False)
-
-    class Meta:
-        model = Campaign
-        # TODO: refactor to avoid duplication with AnonymousCampaignSerializer?
-        fields = [
-            "id",
-            "epid",
-            "obr_name",
-            "gpei_coordinator",
-            "gpei_email",
-            "description",
-            "initial_org_unit",
-            "creation_email_send_at",
-            "onset_at",
-            "cvdpv2_notified_at",
-            "pv_notified_at",
-            "pv2_notified_at",
-            "virus",
-            "vaccines",
-            "detection_status",
-            "detection_responsible",
-            "detection_first_draft_submitted_at",
-            "risk_assessment_status",
-            "risk_assessment_responsible",
-            "investigation_at",
-            "risk_assessment_first_draft_submitted_at",
-            "risk_assessment_rrt_oprtt_approval_at",
-            "ag_nopv_group_met_at",
-            "dg_authorized_at",
-            "verification_score",
-            "budget_status",
-            "who_disbursed_to_co_at",
-            "who_disbursed_to_moh_at",
-            "unicef_disbursed_to_co_at",
-            "unicef_disbursed_to_moh_at",
-            "no_regret_fund_amount",
-            "payment_mode",
             "created_at",
             "updated_at",
             "district_count",
@@ -837,10 +786,8 @@ class CampaignViewSet(ModelViewSet):
         on_hold = self.request.query_params.get("on_hold", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
-        is_embedded = self.request.query_params.get("is_embedded", "false")
         campaigns = queryset
-        if is_embedded == "true":
-            campaigns = campaigns.filter(is_planned=False)
+
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
         if on_hold == "false":
@@ -849,7 +796,7 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=True).filter(is_planned=False)
         if campaign_category == "on_hold":
             campaigns = campaigns.filter(on_hold=True).filter(is_planned=False)
-        if campaign_category == "is_planned" and is_embedded == "false":
+        if campaign_category == "is_planned":
             campaigns = campaigns.filter(is_planned=True)
         if campaign_category == "regular" and on_hold == "true":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(is_planned=False)

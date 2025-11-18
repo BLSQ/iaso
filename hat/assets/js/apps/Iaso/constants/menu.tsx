@@ -18,6 +18,7 @@ import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
 import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
 import Input from '@mui/icons-material/Input';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
@@ -360,6 +361,12 @@ const menuItems = (
                     key: 'duplicates',
                     icon: props => <FileCopyIcon {...props} />,
                 },
+                {
+                    label: formatMessage(MESSAGES.entityDuplicateAnalysesTitle),
+                    permissions: paths.entityDuplicatesPath.permissions,
+                    key: 'duplicate-analyses',
+                    icon: props => <QueryStatsIcon {...props} />,
+                },
             ],
         },
         {
@@ -370,9 +377,22 @@ const menuItems = (
         },
         {
             label: formatMessage(MESSAGES.stockManagement),
-            key: 'stock/stockkeepingunits',
-            permissions: paths.stockKeepingUnitsPath.permissions,
+            key: 'stock',
             icon: props => <InventoryOutlined {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.skus),
+                    permissions: paths.stockKeepingUnitsPath.permissions,
+                    key: 'stockkeepingunits',
+                    icon: props => <CategoryIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.stockItems),
+                    permissions: paths.stockItemsPath.permissions,
+                    key: 'items',
+                    icon: props => <InventoryIcon {...props} />,
+                },
+            ],
         },
     ];
 };

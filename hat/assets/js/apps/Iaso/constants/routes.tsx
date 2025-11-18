@@ -2,6 +2,7 @@ import React, { ReactElement } from 'react';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
+import { StockItems } from 'Iaso/domains/stock/items';
 import { StockRulesVersions } from 'Iaso/domains/stock/versions';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
@@ -13,6 +14,7 @@ import { Details as DataSourceDetail } from '../domains/dataSources/details';
 import Devices from '../domains/devices';
 import { Entities } from '../domains/entities';
 import { Details as EntityDetail } from '../domains/entities/details';
+import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/DuplicateAnalyses';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
@@ -352,6 +354,15 @@ export const entityDuplicatesPath = {
     ],
     element: <Duplicates />,
 };
+export const entityDuplicateAnalysesPath = {
+    baseUrl: baseUrls.entityDuplicateAnalyses,
+    routerUrl: `${baseUrls.entityDuplicateAnalyses}/*`,
+    permissions: [
+        Permission.ENTITIES_DUPLICATE_READ,
+        Permission.ENTITIES_DUPLICATE_WRITE,
+    ],
+    element: <DuplicateAnalyses />,
+};
 export const entityDuplicatesDetailsPath = {
     baseUrl: baseUrls.entityDuplicateDetails,
     routerUrl: `${baseUrls.entityDuplicateDetails}/*`,
@@ -429,7 +440,12 @@ export const stockRulesVersionsPath = {
     permissions: [Permission.STOCK_MANAGEMENT],
     element: <StockRulesVersions />,
 };
-
+export const stockItemsPath = {
+    baseUrl: baseUrls.stockItems,
+    routerUrl: `${baseUrls.stockItems}/*`,
+    permissions: [Permission.STOCK_MANAGEMENT],
+    element: <StockItems />,
+};
 export const pipelineListPath = {
     baseUrl: baseUrls.pipelineList,
     routerUrl: `${baseUrls.pipelineList}/*`,
@@ -518,6 +534,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     entityDetailsPath,
     entityDuplicatesPath,
     entityDuplicatesDetailsPath,
+    entityDuplicateAnalysesPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,
@@ -531,6 +548,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     lotsPaymentsPath,
     stockKeepingUnitsPath,
     stockRulesVersionsPath,
+    stockItemsPath,
     bonusPath,
     pipelineDetailsPath,
     pipelineListPath,

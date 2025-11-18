@@ -34,7 +34,7 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     );
     cy.intercept(
         'GET',
-        '/api/microplanning/teams/?type=TEAM_OF_USERS',
+        '/api/teams/?type=TEAM_OF_USERS',
         teamsList,
     );
     cy.intercept(

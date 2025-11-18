@@ -1,3 +1,9 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid } from '@mui/material';
 import {
     useRedirectTo,
@@ -6,19 +12,13 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import TopBar from '../../components/nav/TopBarComponent';
-import { getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { SxStyles } from '../../types/general';
-import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
+import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
 import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
@@ -74,7 +74,7 @@ export const Registry: FunctionComponent = () => {
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
-
+    const { data: colors } = useGetColors(true);
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
     const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
         useGetOrgUnit(selectedChildrenId);
@@ -97,13 +97,13 @@ export const Registry: FunctionComponent = () => {
         const options =
             orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
                 ...subType,
-                color: getOtChipColors(index) as string,
+                color: getColor(index, colors),
                 orgUnits: orgUnitMapChildren.filter(
                     subOrgUnit => subOrgUnit.org_unit_type_id === subType.id,
                 ),
             })) || [];
         return orderBy(options, [f => f.depth], ['asc']);
-    }, [orgUnit, orgUnitMapChildren]);
+    }, [orgUnit, orgUnitMapChildren, colors]);
 
     useSkipEffectOnMount(() => {
         setSelectedChildrenId(undefined);

@@ -289,3 +289,34 @@ Cypress.Commands.add('isLeftOf', (leftElement, rightElement) => {
                 );
         });
 });
+
+/**
+ * Wait for React state to be fully hydrated after API calls complete.
+ * This command waits for a stable indicator that the component is ready.
+ * 
+ * @param {string[]} apiAliases - Array of API call aliases to wait for (e.g., ['@getForm', '@getFormVersions'])
+ * @param {string} [stableSelector] - Optional selector to verify component is ready (e.g., '#input-text-name')
+ * @param {*} [expectedCondition] - Optional condition to check (e.g., { value: 'FORM 1' } or { exists: true })
+ * 
+ * @example
+ * cy.waitForReactState(['@getForm'], '#input-text-name', { value: 'FORM 1' });
+ * cy.waitForReactState(['@getForm'], '[data-test="save-button"]', { exists: true });
+ */
+Cypress.Commands.add('waitForReactState', (apiAliases, stableSelector, expectedCondition = {}) => {
+    cy.wait(apiAliases);
+    
+    if (stableSelector) {
+        const element = cy.get(stableSelector);
+        
+        if (expectedCondition.value !== undefined) {
+            element.should('have.value', expectedCondition.value);
+        } else if (expectedCondition.exists !== undefined) {
+            element.should(expectedCondition.exists ? 'exist' : 'not.exist');
+        } else if (expectedCondition.visible !== undefined) {
+            element.should(expectedCondition.visible ? 'be.visible' : 'not.be.visible');
+        } else {
+            // Default: just ensure element exists and is visible
+            element.should('be.visible');
+        }
+    }
+});

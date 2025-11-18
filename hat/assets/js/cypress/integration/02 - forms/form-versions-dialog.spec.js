@@ -29,14 +29,18 @@ describe('Form Versions Dialog', () => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');
         cy.intercept('GET', '/api/profiles/me/**', superUser);
-        cy.intercept('GET', '/api/forms/1/**', form);
+        cy.intercept('GET', '/api/forms/1/**', form).as('getForm');
         cy.intercept(
             'GET',
             '/api/formversions/?form_id=1&order=-version_id&limit=20&page=1',
             formVersionsResponse,
         ).as('getFormVersions');
         cy.visit(baseUrl);
-        cy.wait('@getFormVersions');
+        cy.waitForReactState(
+            ['@getFormVersions', '@getForm'],
+            '#input-text-name',
+            { value: 'FORM 1' },
+        );
     });
 
     describe('Dialog Opening', () => {

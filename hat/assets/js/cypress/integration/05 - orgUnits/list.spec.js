@@ -8,7 +8,7 @@ import {
 import { testSearchField } from '../../support/testSearchField';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"000000"}]`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list/accountId/1/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"000000"}]`;
 
 const dataSourceSeeds = Array(11)
     .fill()

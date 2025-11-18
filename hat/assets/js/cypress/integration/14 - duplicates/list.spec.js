@@ -32,11 +32,7 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
             time: 1000000,
         },
     );
-    cy.intercept(
-        'GET',
-        '/api/teams/?type=TEAM_OF_USERS',
-        teamsList,
-    );
+    cy.intercept('GET', '/api/teams/?type=TEAM_OF_USERS', teamsList);
     cy.intercept(
         'GET',
 
@@ -82,14 +78,15 @@ describe('Duplicate entities list', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
+            cy.waitForReactState(['@getDuplicates'], '#search-search', {
+                visible: true,
+            });
         });
         it('should enabled search button', () => {
-            cy.wait('@getDuplicates').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
+            cy.get('#search-search').type(search);
+            cy.get('[data-test="search-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', undefined);
         });
     });
 
@@ -97,29 +94,28 @@ describe('Duplicate entities list', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
+            cy.waitForReactState(
+                ['@getDuplicates'],
+                '[data-test="search-button"]',
+                { visible: true },
+            );
         });
         it('should be disabled', () => {
-            cy.wait('@getDuplicates').then(() => {
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', 'disabled');
-            });
+            cy.get('[data-test="search-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', 'disabled');
         });
         it('should be enabled while searching', () => {
             cy.get('#search-search').type(search);
-            cy.wait('@getDuplicates').then(() => {
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
+            cy.get('[data-test="search-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', undefined);
         });
         it('action should deep link search', () => {
-            cy.wait('@getDuplicates', { timeout: 10000 }).then(() => {
-                cy.get('#search-search').type(search);
+            cy.get('#search-search').type(search);
 
-                cy.get('[data-test="search-button"]').click();
-                cy.url().should('contain', `/search/${search}`);
-            });
+            cy.get('[data-test="search-button"]').click();
+            cy.url().should('contain', `/search/${search}`);
         });
     });
 
@@ -194,46 +190,50 @@ describe('Duplicate entities list', () => {
         it('should be called with search params', () => {
             mockPage(superUser);
             cy.visit(baseUrl);
-            cy.wait('@getDuplicates').then(() => {
-                interceptFlag = false;
-                cy.intercept(
-                    'GET',
-                    // eslint-disable-next-line max-len
-                    '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=%5B%223%22%5D&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=26&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20',
-                    req => {
-                        interceptFlag = true;
-                        req.reply({
-                            statusCode: 200,
-                            body: emptyFixture,
-                        });
-                    },
-                ).as('getDuplicateSearch');
-                cy.get('#search-search').type(search);
-                cy.fillSingleSelect('#submitter_team', 1);
-                cy.fillSingleSelect('#form', 0);
-                cy.fillMultiSelect('#fields', [0, 1], false);
-                cy.fillSingleSelect('#submitter', 1);
-                cy.fillSingleSelect('#algorithm', 0);
-                cy.fillSingleSelect('#similarity', 1);
-                cy.fillMultiSelect('#entity_type', [2, 3], false);
-                cy.get('[data-test="start-date"] input').type(20052010, {
-                    force: true,
-                });
-                cy.get('[data-test="end-date"] input').type(25052010, {
-                    force: true,
-                });
-                cy.get('#check-box-ignored').check({
-                    force: true,
-                });
-                cy.get('#check-box-merged').check({
-                    force: true,
-                });
-                cy.fillTreeView('#ou-tree-input', 2, false);
+            cy.waitForReactState(['@getDuplicates'], '#search-search', {
+                visible: true,
+            });
+            interceptFlag = false;
+            cy.intercept(
+                'GET',
+                // eslint-disable-next-line max-len
+                '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=%5B%223%22%5D&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=30&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20',
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: emptyFixture,
+                    });
+                },
+            ).as('getDuplicateSearch');
+            cy.get('#search-search').type(search);
+            cy.fillSingleSelect('#submitter_team', 1);
+            cy.fillSingleSelect('#form', 0);
+            cy.fillMultiSelect('#fields', [0, 1], false);
+            cy.fillSingleSelect('#submitter', 1);
+            cy.fillSingleSelect('#algorithm', 0);
+            cy.fillSingleSelect('#similarity', 1);
+            cy.fillMultiSelect('#entity_type', [2, 3], false);
+            cy.get('[data-test="start-date"] input').type(20052010, {
+                force: true,
+            });
+            cy.get('[data-test="end-date"] input').type(25052010, {
+                force: true,
+            });
+            cy.get('#check-box-ignored').check({
+                force: true,
+            });
+            cy.get('#check-box-merged').check({
+                force: true,
+            });
+            cy.fillTreeView('#ou-tree-input', 2, false);
 
-                cy.get('[data-test="search-button"]').click();
-                cy.wait('@getDuplicateSearch').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
+            cy.get('[data-test="search-button"]')
+                .should('be.visible')
+                .should('not.be.disabled')
+                .click();
+            cy.wait('@getDuplicateSearch').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
             });
         });
     });

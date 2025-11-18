@@ -286,43 +286,43 @@ describe('Users', () => {
         });
         it('should be called with search params', () => {
             goToPage(superUser, {}, emptyFixture);
-            cy.wait('@getUsers').then(() => {
-                interceptFlag = false;
-                cy.intercept('GET', '/api/profiles/**/*', req => {
-                    req.continue(res => {
-                        interceptFlag = true;
-                        res.send({ fixture: emptyFixture });
-                    });
-                }).as('getUsersSearch');
+            cy.waitForReactState(['@getUsers'], '#search-search', {
+                visible: true,
+            });
+            interceptFlag = false;
+            cy.intercept('GET', '/api/profiles/**/*', req => {
+                req.continue(res => {
+                    interceptFlag = true;
+                    res.send({ fixture: emptyFixture });
+                });
+            }).as('getUsersSearch');
 
-                cy.get('#search-search').type(search);
-                cy.fillMultiSelect('#permissions', [0, 1], false);
-                cy.fillSingleSelect('#orgUnitTypes', 1);
-                cy.fillMultiSelect('#projectsIds', [0, 1], false);
-                cy.fillMultiSelect('#userRoles', [0, 1], false);
-                cy.fillTreeView(
-                    '#ou-tree-input',
-                    orgUnitTreeIndexSearch,
-                    false,
-                );
-                cy.fillMultiSelect('#teamsIds', [0, 1], false);
+            cy.get('#search-search').type(search);
+            cy.fillMultiSelect('#permissions', [0, 1], false);
+            cy.fillSingleSelect('#orgUnitTypes', 1);
+            cy.fillMultiSelect('#projectsIds', [0, 1], false);
+            cy.fillMultiSelect('#userRoles', [0, 1], false);
+            cy.fillTreeView('#ou-tree-input', orgUnitTreeIndexSearch, false);
+            cy.fillMultiSelect('#teamsIds', [0, 1], false);
 
-                cy.get('[data-test="search-button"]').click();
-                cy.wait('@getUsersSearch').then(xhr => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                    cy.wrap(xhr.request.query).should('deep.equal', {
-                        limit: '20',
-                        order: 'user__username',
-                        page: '1',
-                        search: 'ZELDA',
-                        orgUnitTypes: '11',
-                        location: '3',
-                        permissions: 'iaso_assignments,iaso_polio_budget',
-                        projects: '1,2',
-                        userRoles: '5,8',
-                        teams: '29,30',
-                        managedUsersOnly: 'true',
-                    });
+            cy.get('[data-test="search-button"]')
+                .should('be.visible')
+                .should('not.be.disabled')
+                .click();
+            cy.wait('@getUsersSearch').then(xhr => {
+                cy.wrap(interceptFlag).should('eq', true);
+                cy.wrap(xhr.request.query).should('deep.equal', {
+                    limit: '20',
+                    order: 'user__username',
+                    page: '1',
+                    search: 'ZELDA',
+                    orgUnitTypes: '11',
+                    location: '3',
+                    permissions: 'iaso_assignments,iaso_polio_budget',
+                    projects: '1,2',
+                    userRoles: '5,8',
+                    teams: '29,30',
+                    managedUsersOnly: 'true',
                 });
             });
         });

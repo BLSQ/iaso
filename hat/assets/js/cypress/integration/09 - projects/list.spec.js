@@ -230,7 +230,7 @@ describe('Projects', () => {
                     app_id: 'pacman',
                     name: 'superman',
                     old_app_id: listFixture.projects[theIndex].app_id,
-                    color: '#1976D2',
+                    color: '#000000',
                 };
                 const newProjects = [...listFixture.projects];
                 newProjects[theIndex] = {

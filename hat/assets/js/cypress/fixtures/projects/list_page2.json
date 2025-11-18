@@ -37,7 +37,8 @@
             "id": 2,
             "name": "Projet 2",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         },
         {
             "app_id": "app_id_3",
@@ -46,7 +47,8 @@
             "id": 3,
             "name": "Projet 3",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         }
 
     ]

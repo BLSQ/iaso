@@ -8,7 +8,7 @@ import {
 import { testSearchField } from '../../support/testSearchField';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"000000"}]`;
 
 const dataSourceSeeds = Array(11)
     .fill()
@@ -36,7 +36,11 @@ const goToPage = () => {
         fixture: 'groups/list.json',
     });
     cy.intercept('GET', '/sockjs-node/**');
+    cy.intercept('GET', '/api/colors/?dispersed=true', {
+        fixture: 'colors-dispersed.json',
+    }).as('getColorsDispersed');
     cy.visit(baseUrl);
+    cy.wait('@getColorsDispersed');
 };
 
 describe('OrgUnits', () => {

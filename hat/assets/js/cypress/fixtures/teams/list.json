@@ -19,7 +19,8 @@
         "manager": 5,
         "parent": null,
         "sub_teams": [],
-        "sub_teams_details": []
+        "sub_teams_details": [],
+        "color": "#000000"
     },
     {
         "id": 26,
@@ -34,7 +35,8 @@
         "manager": 5,
         "parent": null,
         "sub_teams": [],
-        "sub_teams_details": []
+        "sub_teams_details": [],
+        "color": "#000000"
     },
     {
         "id": 27,
@@ -49,7 +51,8 @@
         "manager": 5,
         "parent": null,
         "sub_teams": [],
-        "sub_teams_details": []
+        "sub_teams_details": [],
+        "color": "#000000"
     },
     {
         "id": 28,
@@ -64,7 +67,8 @@
         "manager": 5,
         "parent": null,
         "sub_teams": [],
-        "sub_teams_details": []
+        "sub_teams_details": [],
+        "color": "#000000"
     },
     {
         "id": 29,
@@ -79,7 +83,8 @@
         "manager": 5,
         "parent": null,
         "sub_teams": [],
-        "sub_teams_details": []
+        "sub_teams_details": [],
+        "color": "#000000"
     },
     {
         "id": 30,
@@ -94,7 +99,8 @@
         "manager": 5,
         "parent": null,
         "sub_teams": [],
-        "sub_teams_details": []
+        "sub_teams_details": [],
+        "color": "#000000"
     },
     {
         "id": 38,
@@ -109,6 +115,7 @@
         "manager": 5,
         "parent": null,
         "sub_teams": [],
-        "sub_teams_details": []
+        "sub_teams_details": [],
+        "color": "#000000"
     }
 ]

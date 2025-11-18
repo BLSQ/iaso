@@ -29,25 +29,15 @@ const mockPage = (
     cy.intercept('GET', '/api/entitytypes/?order=name', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
-    cy.intercept('GET', '/api/teams/*', {
+    cy.intercept('GET', '/api/teams/**/*', {
         fixture: 'teams/list.json',
-    });
+    }).as('getTeams');
     cy.intercept('GET', '/api/profiles', {
         fixture: 'profiles/list-not-paginated.json',
     });
-    const options = {
-        method: 'GET',
-        pathname: '/api/entities',
-    };
-    const query = {
-        ...defaultQuery,
-        ...formQuery,
-    };
-    cy.intercept({ ...options, query }, req => {
-        req.continue(res => {
-            interceptFlag = true;
-            res.send({ fixture });
-        });
+    cy.intercept('GET', '/api/entities/**/*', req => {
+        interceptFlag = true;
+        req.reply({ fixture });
     }).as('getEntities');
 };
 
@@ -55,10 +45,12 @@ describe('Entities', () => {
     it('Filter button action should deep link search and call api with same params', () => {
         mockPage();
         cy.visit(baseUrl);
+        cy.waitForReactState(['@getEntities', '@getEntitiesTypes']);
         cy.get('[data-test="search-button"]')
             .invoke('attr', 'disabled')
             .should('equal', 'disabled');
         interceptFlag = false;
+        // order_columns=last_saved_instance&search=ZELDA&orgUnitId=3&dateFrom=2022-03-10&dateTo=2022-03-20&created_by_id=5&created_by_team_id=29&limit=20&page=1&tab=list
         cy.intercept(
             {
                 method: 'GET',
@@ -82,7 +74,7 @@ describe('Entities', () => {
             },
         ).as('getEntities');
 
-        cy.intercept('GET', '/api/profiles', {
+        cy.intercept('GET', '/api/profiles/**/*', {
             fixture: 'profiles/list-not-paginated.json',
         }).as('getProfiles');
         cy.intercept('GET', '/api/orgunits/3', {
@@ -93,36 +85,37 @@ describe('Entities', () => {
         cy.get('[data-test="end-date"] input').type('20032022');
         cy.fillSingleSelect('#submitterTeamId', 0);
 
-        cy.wait('@getProfiles').then(() => {
-            cy.fillSingleSelect('#submitterId', 0);
-            cy.fillTreeView('#ou-tree-input', 2, false);
+        cy.fillSingleSelect('#submitterId', 0);
+        cy.fillTreeView('#ou-tree-input', 2, false);
 
-            cy.get('[data-test="search-button"]').click();
-            cy.url().should(
-                'contain',
-                `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/`,
-            );
+        cy.get('[data-test="search-button"]').click();
+        cy.url().should(
+            'contain',
+            `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/`,
+        );
 
-            cy.wait('@getEntities').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
-            });
+        cy.wait('@getEntities').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
         });
     });
 
     it('submitter team and submitter filters should be linked', () => {
         mockPage();
         cy.visit(baseUrl);
+        cy.intercept('GET', '/api/profiles/', {
+            fixture: 'profiles/list-not-paginated.json',
+        }).as('getProfiles');
+        cy.waitForReactState(
+            ['@getEntities', '@getEntitiesTypes', '@getTeams', '@getProfiles'],
+            '#submitterTeamId',
+            { visible: true },
+        );
         cy.testInputValue('#submitterTeamId', '');
         cy.testInputValue('#submitterId', '');
         cy.fillSingleSelect('#submitterId', 0);
         cy.testInputValue('#submitterId', 'oneFistPunch (Bruce Lee) ');
-        cy.intercept('GET', '/api/profiles', {
-            fixture: 'profiles/list-not-paginated.json',
-        }).as('getProfiles');
         cy.fillSingleSelect('#submitterTeamId', 0);
-        cy.wait('@getProfiles').then(() => {
-            cy.testInputValue('#submitterId', '');
-        });
+        cy.testInputValue('#submitterId', '');
     });
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {
@@ -179,6 +172,11 @@ describe('Entities', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
+            cy.waitForReactState(
+                ['@getEntities', '@getEntitiesTypes'],
+                '#submitterTeamId',
+                { visible: true },
+            );
         });
         testSearchField(search, searchWithForbiddenChars);
     });
@@ -196,12 +194,11 @@ describe('Entities', () => {
             });
         });
         it('should be enabled while searching', () => {
+            cy.waitForReactState(['@getEntities', '@getEntitiesTypes']);
             cy.get('#search-search').type(search);
-            cy.wait('@getEntities').then(() => {
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
+            cy.get('[data-test="search-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', undefined);
         });
 
         it('action should deep link search', () => {

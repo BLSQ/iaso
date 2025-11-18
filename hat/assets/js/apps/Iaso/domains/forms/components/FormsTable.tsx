@@ -12,6 +12,7 @@ type Props = {
     params: FormsParams;
     paramsPrefix?: string;
     tableDefaults?: { order?: string; limit?: number; page?: number };
+    displayColumnsSelectDrawer?: boolean;
 };
 
 export const FormsTable: FunctionComponent<Props> = ({
@@ -19,7 +20,9 @@ export const FormsTable: FunctionComponent<Props> = ({
     params,
     paramsPrefix,
     tableDefaults: tableDefaultsProp,
+    displayColumnsSelectDrawer = true,
 }) => {
+    console.log('displayColumnsSelectDrawer', displayColumnsSelectDrawer);
     const columns = useFormsTableColumns({
         showDeleted: params?.showDeleted === 'true',
         orgUnitId: params?.orgUnitId,
@@ -45,16 +48,18 @@ export const FormsTable: FunctionComponent<Props> = ({
     const defaultLimit = tableDefaultsProp?.limit ?? tableDefaults.limit;
     return (
         <>
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-                <ColumnsSelectDrawer
-                    options={options}
-                    setOptions={setOptions}
-                    handleApplyOptions={handleApplyOptions}
-                    minColumns={2}
-                    disabled={isLoadingForms}
-                    isDisabled={isDisabled}
-                />
-            </Box>
+            {displayColumnsSelectDrawer && (
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <ColumnsSelectDrawer
+                        options={options}
+                        setOptions={setOptions}
+                        handleApplyOptions={handleApplyOptions}
+                        minColumns={2}
+                        disabled={isLoadingForms}
+                        isDisabled={isDisabled}
+                    />
+                </Box>
+            )}
             <TableWithDeepLink
                 baseUrl={baseUrl}
                 defaultSorted={[{ id: 'name', desc: false }]}

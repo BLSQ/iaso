@@ -28,7 +28,8 @@
             "id": 1,
             "name": "Test2.35.3",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         },
         {
             "app_id": "app_id_1",
@@ -37,7 +38,8 @@
             "id": 2,
             "name": "Projet 2",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         },
         {
             "app_id": "app_id_3",
@@ -46,7 +48,8 @@
             "id": 3,
             "name": "Projet 3",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         },
         {
             "app_id": "app_id_4",
@@ -55,7 +58,8 @@
             "id": 4,
             "name": "Projet 4",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         },
         {
             "app_id": "app_id_5",
@@ -64,7 +68,8 @@
             "id": 5,
             "name": "Projet 5",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         },
         {
             "app_id": "app_id_6",
@@ -73,7 +78,8 @@
             "id": 6,
             "name": "Projet 6",
             "needs_authentication": false,
-            "updated_at": 1643364006.59441
+            "updated_at": 1643364006.59441,
+            "color": "#000000"
         }
     ]
 }

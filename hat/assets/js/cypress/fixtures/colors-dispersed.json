@@ -1,0 +1,139 @@
+
+[
+    {
+        "value": "#42a5f5",
+        "label": "Light Blue 400"
+    },
+    {
+        "value": "#d4e157",
+        "label": "Lime 400"
+    },
+    {
+        "value": "#8d6e63",
+        "label": "Brown 400"
+    },
+    {
+        "value": "#7b1fa2",
+        "label": "Purple 700"
+    },
+    {
+        "value": "#26c6da",
+        "label": "Cyan 400"
+    },
+    {
+        "value": "#ffca28",
+        "label": "Amber 400"
+    },
+    {
+        "value": "#ef5350",
+        "label": "Red 400"
+    },
+    {
+        "value": "#37474f",
+        "label": "Blue Grey 800"
+    },
+    {
+        "value": "#ec407a",
+        "label": "Pink 400"
+    },
+    {
+        "value": "#00695c",
+        "label": "Teal 800"
+    },
+    {
+        "value": "#827717",
+        "label": "Lime 900"
+    },
+    {
+        "value": "#f4511e",
+        "label": "Deep Orange 600"
+    },
+    {
+        "value": "#6a1b9a",
+        "label": "Purple 900"
+    },
+    {
+        "value": "#1976D2",
+        "label": "Default color"
+    },
+    {
+        "value": "#ff8f00",
+        "label": "Amber 800"
+    },
+    {
+        "value": "#78909c",
+        "label": "Blue Grey 400"
+    },
+    {
+        "value": "#b71c1c",
+        "label": "Red 900"
+    },
+    {
+        "value": "#26a69a",
+        "label": "Teal 400"
+    },
+    {
+        "value": "#ff9800",
+        "label": "Orange 500"
+    },
+    {
+        "value": "#5d4037",
+        "label": "Brown 700"
+    },
+    {
+        "value": "#4527a0",
+        "label": "Deep Purple 800"
+    },
+    {
+        "value": "#78909c",
+        "label": "Blue grey 400"
+    },
+    {
+        "value": "#689f38",
+        "label": "Green 400"
+    },
+    {
+        "value": "#424242",
+        "label": "Grey 800"
+    },
+    {
+        "value": "#d81b60",
+        "label": "Pink 600"
+    },
+    {
+        "value": "#00838f",
+        "label": "Cyan 800"
+    },
+    {
+        "value": "#f57c00",
+        "label": "Orange 700"
+    },
+    {
+        "value": "#fbc02d",
+        "label": "Yellow 700"
+    },
+    {
+        "value": "#5c6bc0",
+        "label": "Indigo 400"
+    },
+    {
+        "value": "#2e7d32",
+        "label": "Green 800"
+    },
+    {
+        "value": "#c2185b",
+        "label": "Pink 700"
+    },
+    {
+        "value": "#558b2f",
+        "label": "Light Green 800"
+    },
+    {
+        "value": "#d84315",
+        "label": "Deep Orange 800"
+    },
+    {
+        "value": "#000000",
+        "label": "Black"
+    }
+]

@@ -91,13 +91,20 @@ describe('Forms details', () => {
         });
         it('Save button is disabled if no name', () => {
             cy.wait(['@getForm', '@getFormVersions']);
-            cy.get('#input-text-name').as('nameInput').clear();
+            // Wait for React's useEffect to finish populating the form state
+            cy.get('#input-text-name')
+                .as('nameInput')
+                .should('have.value', 'FORM 1');
+            // Now clear it
+            cy.get('@nameInput').clear();
             cy.get('[data-id="form-detail-confirm"]')
                 .invoke('attr', 'disabled')
                 .should('eq', 'disabled');
         });
         it('Save button is disabled if period type but no single per period', () => {
             cy.wait(['@getForm', '@getFormVersions']);
+            // Wait for React's useEffect to finish populating the form state
+            cy.get('#input-text-name').should('have.value', 'FORM 1');
             cy.fillSingleSelect('#period_type', 2);
             cy.get('[data-id="form-detail-confirm"]')
                 .invoke('attr', 'disabled')
@@ -118,6 +125,8 @@ describe('Forms details', () => {
                 // org_unit_type_ids: [1],
             };
             cy.wait(['@getForm', '@getFormVersions']);
+            // Wait for React's useEffect to finish populating the form state
+            cy.get('#input-text-name').should('have.value', 'FORM 1');
 
             cy.fillTextField('#input-text-name', newName);
 

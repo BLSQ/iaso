@@ -1,0 +1,67 @@
+[
+    {
+        "id": 3,
+        "name": "Campagne Carte Sanitaire",
+        "team_details": {
+            "id": 49,
+            "name": "Team of Teams",
+            "deleted_at": null,
+            "color": "#26c6da"
+        },
+        "team": 49,
+        "org_unit": 196425,
+        "org_unit_details": {
+            "id": 196425,
+            "name": "Burkina Faso test",
+            "org_unit_type": 37
+        },
+        "forms": [
+            27
+        ],
+        "project": 15,
+        "project_details": {
+            "id": 15,
+            "name": "Planning",
+            "color": "#ef5350"
+        },
+        "description": "",
+        "published_at": "2025-11-06T11:08:00Z",
+        "started_at": "2025-04-16",
+        "ended_at": "2026-04-16",
+        "pipeline_uuids": []
+    },
+    {
+        "id": 4,
+        "name": "test",
+        "team_details": {
+            "id": 43,
+            "name": "TEAM alpha",
+            "deleted_at": null,
+            "color": "#B71C1C"
+        },
+        "team": 43,
+        "org_unit": 196425,
+        "org_unit_details": {
+            "id": 196425,
+            "name": "Burkina Faso test",
+            "org_unit_type": 37
+        },
+        "forms": [
+            26
+        ],
+        "project": 57,
+        "project_details": {
+            "id": 57,
+            "name": "Auto-planning",
+            "color": "#00838f"
+        },
+        "description": "",
+        "published_at": null,
+        "started_at": null,
+        "ended_at": null,
+        "pipeline_uuids": [
+            "29f8c6cd-9176-4c2d-b373-ec2d23256efb",
+            "f2bbb20d-0170-4b73-af08-e24390859571"
+        ]
+    }
+]

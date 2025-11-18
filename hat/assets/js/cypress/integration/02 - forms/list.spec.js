@@ -21,7 +21,7 @@ const goToPage = (
 ) => {
     cy.login();
     cy.intercept('GET', '/sockjs-node/**');
-    cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    cy.intercept('GET', '/api/profiles/me/**', fakeUser).as('getProfile');
     cy.intercept('GET', '/api/forms/**', {
         fixture,
     }).as('getForms');
@@ -32,8 +32,14 @@ const goToPage = (
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
     }).as('getProject');
+    cy.intercept('GET', '/api/plannings', {
+        fixture: 'plannings/list.json',
+    }).as('getPlannings');
     cy.intercept('GET', '/dashboard/media/forms/*.xls').as('downloadXls');
     cy.intercept('GET', '/dashboard/media/forms/*.xml').as('downloadXml');
+    cy.intercept('GET', '/api/colors/?dispersed=true', {
+        fixture: 'colors-dispersed.json',
+    }).as('getColorsDispersed');
     const urlToVisit = urlParams ? `${baseUrl}${urlParams}` : baseUrl;
     cy.visit(urlToVisit);
 };
@@ -52,6 +58,17 @@ describe('Forms', () => {
 
         it('click on create button should redirect to form creation url', () => {
             goToPage();
+            cy.waitForReactState(
+                [
+                    '@getColorsDispersed',
+                    '@getForms',
+                    '@getTypes',
+                    '@getProject',
+                    '@getProfile',
+                ],
+                '[data-test="add-form-button"]',
+                { visible: true },
+            );
             cy.get('[data-test=add-form-button]').click();
             cy.url().should(
                 'eq',
@@ -61,12 +78,23 @@ describe('Forms', () => {
         describe('Top bar and table', () => {
             beforeEach(() => {
                 goToPage(superUser);
+                cy.waitForReactState(
+                    [
+                        '@getColorsDispersed',
+                        '@getForms',
+                        '@getTypes',
+                        '@getProject',
+                        '@getProfile',
+                    ],
+                    'table',
+                    { visible: true },
+                );
             });
             testTopBar(baseUrl, 'Forms', false);
             testTablerender({
                 baseUrl,
                 rows: 11,
-                columns: 7,
+                columns: 6,
                 apiKey: 'forms',
                 searchButton: '[data-test="search-button"]',
             });
@@ -91,7 +119,18 @@ describe('Forms', () => {
                     is_superuser: false,
                 };
                 goToPage(fakeUser);
-                cy.get('[data-test="add-form-button"]').should('exist').click();
+                cy.waitForReactState(
+                    [
+                        '@getColorsDispersed',
+                        '@getForms',
+                        '@getTypes',
+                        '@getProject',
+                        '@getProfile',
+                    ],
+                    '[data-test="add-form-button"]',
+                    { visible: true },
+                );
+                cy.get('[data-test="add-form-button"]').click();
                 // check that button redirects to creation page
                 cy.url().should(
                     'eq',
@@ -127,7 +166,7 @@ describe('Forms', () => {
                 cy.get('[data-test="search-button"]').click();
                 cy.url().should(
                     'eq',
-                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/search/${search}/isSearchActive/true`,
+                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/search/${search}`,
                 );
             });
         });
@@ -139,7 +178,7 @@ describe('Forms', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.forms.length);
-                rows.eq(0).find('td').should('have.length', 7);
+                rows.eq(0).find('td').should('have.length', 6);
             });
 
             describe('Action column', () => {
@@ -192,7 +231,7 @@ describe('Forms', () => {
                         cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(1);
-                        const latestCol = row.find('td').eq(6);
+                        const latestCol = row.find('td').eq(5);
                         latestCol.find('button').eq(5).should('not.exist');
                     });
 
@@ -200,7 +239,7 @@ describe('Forms', () => {
                         cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
-                        const latestCol = row.find('td').eq(6);
+                        const latestCol = row.find('td').eq(5);
                         latestCol.find('button').eq(5);
                         cy.get('a')
                             .filter((index, element) => {
@@ -215,7 +254,7 @@ describe('Forms', () => {
                         cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
-                        const latestCol = row.find('td').eq(6);
+                        const latestCol = row.find('td').eq(5);
                         latestCol.find('button').eq(5).click();
                         cy.get('ul').get('li').eq(0).should('have.text', 'XLS');
                         cy.get('ul').get('li').eq(1).should('have.text', 'XML');
@@ -306,7 +345,7 @@ describe('Forms', () => {
                         projectsIds: '1,2',
                         search: 'ZELDA',
                         showDeleted: 'true',
-                        fields: 'id,name,form_id,device_field,location_field,org_unit_types,org_unit_type_ids,projects,project_ids,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,instance_updated_at,created_at,updated_at,deleted_at,derived,label_keys,possible_fields,legend_threshold,has_mappings',
+                        fields: 'created_at,name,org_unit_types,projects,updated_at,id,form_id,device_field,location_field,org_unit_type_ids,project_ids,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,updated_at,deleted_at,derived,label_keys,possible_fields,legend_threshold,has_mappings',
                     });
                 });
             });

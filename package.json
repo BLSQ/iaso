@@ -70,7 +70,7 @@
         "abortcontroller-polyfill": "^1.7.5",
         "array-flat-polyfill": "^1.0.1",
         "babel-plugin-formatjs": "^10.3.4",
-        "bluesquare-components": "github:BLSQ/bluesquare-components",
+        "bluesquare-components": "github:BLSQ/bluesquare-components#IA-4606_remove_use_debounce",
         "classnames": "^2.2.6",
         "color": "^3.1.2",
         "dom-to-pdf": "^0.3.1",
@@ -104,7 +104,6 @@
         "recharts": "^2.2",
         "typescript": "^5.7.2",
         "url-search-params-polyfill": "^8.2.5",
-        "use-debounce": "^7.0.0",
         "video.js": "^7.20.3",
         "yup": "^0.32.9"
     },

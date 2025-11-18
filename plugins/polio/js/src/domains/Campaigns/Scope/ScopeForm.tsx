@@ -1,9 +1,12 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab } from '@mui/material';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    useSkipEffectOnMount,
+    useDebounce,
+} from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import { useDebounce } from 'use-debounce';
 
 import { BooleanInput } from '../../../components/Inputs';
 

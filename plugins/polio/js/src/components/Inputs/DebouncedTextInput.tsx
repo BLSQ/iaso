@@ -7,8 +7,7 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import { useDebounce } from 'use-debounce';
-import { useSkipEffectOnMount } from 'bluesquare-components';
+import { useSkipEffectOnMount, useDebounce } from 'bluesquare-components';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = {
@@ -54,7 +53,7 @@ export const DebouncedTextInput: FunctionComponent<Props> = ({
     const parsedValue =
         typeof field?.value === 'number'
             ? `${field.value}`
-            : field?.value ?? '';
+            : (field?.value ?? '');
     const prevValue = useRef<string>();
     const prevDebounced = useRef();
     const [textValue, setTextValue] = useState(parsedValue);

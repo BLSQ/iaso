@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group
 
 from iaso import models as m
-from iaso.models.microplanning import Team
+from iaso.models.team import Team
 from iaso.test import TestCase
 
 

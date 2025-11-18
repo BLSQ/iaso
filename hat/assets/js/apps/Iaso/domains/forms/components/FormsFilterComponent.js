@@ -1,4 +1,3 @@
-/* eslint-disable react/function-component-definition */
 import React, { useMemo, useCallback } from 'react';
 
 import { Box, Typography, Grid } from '@mui/material';
@@ -12,7 +11,7 @@ import {
 import L from 'leaflet';
 import PropTypes from 'prop-types';
 
-import { getChipColors } from '../../../constants/chipColors';
+import { useGetColors, getColor } from 'Iaso/hooks/useGetColors';
 
 import { useGetInstances } from '../hooks/useGetInstances';
 
@@ -29,6 +28,7 @@ export const FormsFilterComponent = ({
         orgUnitId: currentOrgUnit?.id,
     });
 
+    const { data: colors } = useGetColors(true);
     const forms = useMemo(() => {
         const newForms = [];
         if (data?.instances) {
@@ -43,7 +43,7 @@ export const FormsFilterComponent = ({
                         newForms.push({
                             id: i.form_id,
                             name: i.form_name,
-                            color: getChipColors(newForms.length, true),
+                            color: getColor(newForms.length, colors),
                             instances: [i],
                         });
                     } else {
@@ -53,7 +53,7 @@ export const FormsFilterComponent = ({
             });
         }
         return newForms;
-    }, [data]);
+    }, [data, colors]);
 
     const computedBounds = useMemo(() => {
         const latLngs = formsSelected

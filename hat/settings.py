@@ -96,6 +96,7 @@ LEARN_MORE_URL = os.environ.get("LEARN_MORE_URL", None)
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
 USE_CELERY = os.environ.get("USE_CELERY", "")
+DATASET_ID = os.environ.get("DATASET_ID", None)
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
 DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() == "true"

@@ -23,7 +23,7 @@ import getDisplayName from '../../utils/usersUtils';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
 import { formatLabel } from '../instances/utils';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
-import { filterOrgUnitsByGroupUrl } from '../orgUnits/utils';
+import { useFilterOrgUnitsByGroupUrl } from '../orgUnits/utils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
 import MESSAGES from './messages';
 import { ExtraColumn } from './types/fields';
@@ -36,6 +36,7 @@ export const useStaticColumns = (): Array<Column> => {
     const getValue = useGetFieldValue();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
+    const filterOrgUnitsByGroupUrl = useFilterOrgUnitsByGroupUrl();
     return [
         {
             Header: formatMessage(MESSAGES.id),

@@ -1,13 +1,11 @@
+import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
-import MESSAGES from '../messages';
-import { baseUrl } from '../config';
-import { AsyncSelect } from '../../../components/forms/AsyncSelect';
-import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
 import { SearchButton } from '../../../components/SearchButton';
+import { useFilterState } from '../../../hooks/useFilterState';
+import { baseUrl } from '../config';
+import MESSAGES from '../messages';
 
 type Params = {
     order: string;
@@ -25,13 +23,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             baseUrl,
             params,
         });
-    const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
-            handleChange(keyValue, newValue?.value);
-        },
-        [handleChange],
-    );
-    const { data: selectedUser } = useGetProfilesDropdown(filters.userId);
 
     return (
         <Grid container spacing={2}>
@@ -63,14 +54,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
                 <Box mt={2}>
-                    <AsyncSelect
-                        clearable
+                    <UserAsyncSelect
                         keyValue="userId"
                         label={MESSAGES.users}
-                        value={selectedUser ?? ''}
-                        onChange={handleChangeUsers}
-                        debounceTime={500}
-                        fetchOptions={input => getUsersDropDown(input)}
+                        filterUsers={filters.userId}
+                        multi={false}
+                        handleChange={handleChange}
                     />
                 </Box>
             </Grid>

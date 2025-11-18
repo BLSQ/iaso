@@ -15,7 +15,6 @@ const baseUrl = `${siteBaseUrl}/dashboard/forms/list`;
 let table;
 let row;
 const goToPage = (
-    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     urlParams,
     fixture = 'forms/list.json',
@@ -252,19 +251,6 @@ describe('Forms', () => {
                         'true',
                     );
                 });
-            });
-        });
-        describe('Instance count column', () => {
-            it('should be visible show instance count is enabled', () => {
-                goToPage({
-                    ...superUser,
-                    permissions: [Permission.INSTANCES],
-                });
-                cy.get('#check-box-showInstancesCount').check();
-                cy.get('[data-test="search-button"]').click();
-                table = cy.get('table');
-                const rows = table.find('tbody').find('tr');
-                rows.eq(0).find('td').should('have.length', 8);
             });
         });
     });

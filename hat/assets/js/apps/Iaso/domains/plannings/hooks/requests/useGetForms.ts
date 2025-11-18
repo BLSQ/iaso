@@ -6,7 +6,7 @@ import { FETCHING_ABORTED } from '../../../../libs/constants';
 import { DropdownOptions } from '../../../../types/utils';
 
 const getForms = async (signal?: AbortSignal) =>
-    getRequest('/api/forms', signal).then(async forms => {
+    getRequest('/api/forms/', signal).then(async forms => {
         // return null if fetching aborted, so subsequent 'then()' can be returned early (see SingleTable)
         if (forms?.message === FETCHING_ABORTED) return null;
         return forms;

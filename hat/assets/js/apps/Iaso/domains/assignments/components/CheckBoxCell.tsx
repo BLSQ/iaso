@@ -1,9 +1,9 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Checkbox, Tooltip } from '@mui/material';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
+import { SubTeam, User } from '../../teams/types/team';
 import MESSAGES from '../messages';
 import { ChildrenOrgUnitsArrayItem } from '../types/orgUnit';
-import { SubTeam, User } from '../types/team';
 
 type Props = {
     orgUnit: ChildrenOrgUnitsArrayItem;

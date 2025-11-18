@@ -62,8 +62,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
-            'showInstancesCount',
-            'isSearchActive',
+            'fields',
             ...paginationPathParams,
         ],
     },
@@ -448,6 +447,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'entities/duplicates/details',
         params: ['accountId', 'entities', ...paginationPathParams],
     },
+    entityDuplicateAnalyses: {
+        url: 'entities/duplicate-analyses',
+        params: [
+            'accountId',
+            'users',
+            'status',
+            'algorithm',
+            'start_date',
+            'end_date',
+            ...paginationPathParams,
+        ],
+    },
     pages: {
         url: 'pages',
         params: [
@@ -582,6 +593,23 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'formId',
         ],
     },
+    stockItems: {
+        url: 'stock/items',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'id',
+            'sku',
+            'orgUnit',
+            'value',
+            'question',
+            'impact',
+            'created_at_after',
+            'created_at_before',
+            'value_from',
+            'value_to',
+        ],
+    },
     hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
@@ -669,6 +697,7 @@ type IasoBaseUrls = {
     entityTypes: string;
     entityDuplicates: string;
     entityDuplicateDetails: string;
+    entityDuplicateAnalyses: string;
     pages: string;
     planning: string;
     assignments: string;
@@ -681,6 +710,7 @@ type IasoBaseUrls = {
     lotsPayments: string;
     stockKeepingUnits: string;
     stockRulesVersions: string;
+    stockItems: string;
     hidden: string;
     error401: string;
     error403: string;

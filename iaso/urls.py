@@ -25,6 +25,7 @@ from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
 from .api.check_version import CheckVersionViewSet
+from .api.colors import colors_list
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
@@ -43,6 +44,7 @@ from .api.enketo import (
     enketo_edit_url,
     enketo_form_download,
     enketo_form_list,
+    enketo_instance_files,
     enketo_public_create_url,
     enketo_public_launch,
 )
@@ -63,7 +65,7 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
-from .api.microplanning.views import AssignmentViewSet, PlanningViewSet, TeamViewSet
+from .api.microplanning.views import AssignmentViewSet, PlanningViewSet
 from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
@@ -113,6 +115,7 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
+from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
@@ -204,7 +207,7 @@ router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="enti
 router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entityduplicates")
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
-router.register(r"microplanning/teams", TeamViewSet, basename="teams")
+router.register(r"teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
@@ -258,6 +261,9 @@ urlpatterns: URLList = [
     path("enketo/formList", view=enketo_form_list, name="enketo-form-list"),
     path("enketo/formDownload/", view=enketo_form_download, name="enketo_form_download"),
     path("enketo/submission", view=EnketoSubmissionAPIView.as_view(), name="enketo-submission"),
+    path(
+        "enketo/instance_files/<instance_file_id>/<file_name>", view=enketo_instance_files, name="enketo-instance-files"
+    ),
     path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
 ]
 
@@ -289,6 +295,7 @@ urlpatterns = urlpatterns + [
     path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
+    path("colors/", colors_list, name="colors"),
     path("", include(router.urls)),
 ]
 # External Auth

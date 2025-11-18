@@ -41,8 +41,9 @@ from iaso.models.base import AccountFeatureFlag
 from iaso.models.comment import CommentIaso
 from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
-from iaso.models.microplanning import Planning, Team
+from iaso.models.microplanning import Planning
 from iaso.models.pages import Page
+from iaso.models.team import Team
 
 
 """
@@ -62,7 +63,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
-        dhis2_version = "stable-" + dhis2_version.replace(".", "-")
+        prefix = "stable-" if dhis2_version.startswith("2") else ""
+        dhis2_version = prefix + dhis2_version.replace(".", "-")
         dhis2_url = f"https://play.im.dhis2.org/{dhis2_version}"
         print(dhis2_url)
         response = requests.get(dhis2_url)

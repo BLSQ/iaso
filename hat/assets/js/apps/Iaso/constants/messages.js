@@ -185,6 +185,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Duplicates',
         id: 'iaso.label.duplicates',
     },
+    entityDuplicateAnalysesTitle: {
+        defaultMessage: 'Duplicate Analyses',
+        id: 'iaso.label.duplicateAnalyses',
+    },
     modules: {
         defaultMessage: 'Modules',
         id: 'iaso.label.modules',
@@ -232,6 +236,14 @@ const MESSAGES = defineMessages({
     accountSetup: {
         defaultMessage: 'Setup a new account',
         id: 'iaso.setup.accountSetup',
+    },
+    skus: {
+        defaultMessage: 'Stock Keeping Units',
+        id: 'iaso.label.stockkeepingunits',
+    },
+    stockItems: {
+        defaultMessage: 'Stock entries',
+        id: 'iaso.label.stockItems',
     },
 });
 

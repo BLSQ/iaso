@@ -90,7 +90,8 @@ from ..models import (
     WorkflowVersion,
 )
 from ..models.data_store import JsonDataStore
-from ..models.microplanning import Assignment, Planning, Team
+from ..models.microplanning import Assignment, Planning
+from ..models.team import Team
 from ..utils.gis import convert_2d_point_to_3d
 
 

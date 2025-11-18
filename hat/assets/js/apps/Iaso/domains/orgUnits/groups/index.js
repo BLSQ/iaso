@@ -9,16 +9,16 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
-import TopBar from '../../../components/nav/TopBarComponent';
-import { Filters } from './components/Filters';
-import GroupsDialog from './components/GroupsDialog';
-import tableColumns from './config';
-import MESSAGES from './messages';
-import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
-import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
 import DownloadButtonsComponent from 'Iaso/components/DownloadButtonsComponent';
 import { usePrepareGroupExportUrls } from 'Iaso/domains/orgUnits/groups/hooks/usePrepareGroupExportUrls';
+import TopBar from '../../../components/nav/TopBarComponent';
+import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
+import { Filters } from './components/Filters';
+import GroupsDialog from './components/GroupsDialog';
+import { useTableColumns } from './config';
+import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -34,7 +34,7 @@ const Groups = () => {
     const { mutate: deleteGroup, isLoading: deleting } = useDeleteGroups();
     const { mutateAsync: saveGroup, isLoading: saving } = useSaveGroups();
     const { csvUrl, xlsxUrl } = usePrepareGroupExportUrls(params);
-
+    const tableColumns = useTableColumns(params, deleteGroup, saveGroup);
     const isLoading = isFetching || deleting || saving;
     return (
         <>
@@ -83,12 +83,7 @@ const Groups = () => {
                     data={data?.groups ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={tableColumns(
-                        formatMessage,
-                        params,
-                        deleteGroup,
-                        saveGroup,
-                    )}
+                    columns={tableColumns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}

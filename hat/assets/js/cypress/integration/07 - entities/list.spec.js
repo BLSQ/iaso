@@ -29,7 +29,7 @@ const mockPage = (
     cy.intercept('GET', '/api/entitytypes/?order=name', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
-    cy.intercept('GET', '/api/microplanning/teams/*', {
+    cy.intercept('GET', '/api/teams/*', {
         fixture: 'teams/list.json',
     });
     cy.intercept('GET', '/api/profiles', {

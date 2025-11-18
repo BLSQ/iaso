@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Chip, Box, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import Color from 'color';
 
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import MESSAGES from '../messages';
@@ -23,33 +24,48 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
         <Box pt={1}>
             {type === TEAM_OF_TEAMS && (
                 <>
-                    {subTeamsDetails.map(team => (
-                        <Box key={team.id} pl={1} pb={1} display="inline-block">
-                            {team.deleted_at && (
-                                <Tooltip
-                                    arrow
-                                    title={formatMessage(MESSAGES.teamDeleted)}
-                                    placement="bottom"
-                                >
-                                    <Box>
-                                        <Chip
-                                            label={team.name}
-                                            size="small"
-                                            color="primary"
-                                            disabled
-                                        />
-                                    </Box>
-                                </Tooltip>
-                            )}
-                            {!team.deleted_at && (
-                                <Chip
-                                    label={team.name}
-                                    size="small"
-                                    color="primary"
-                                />
-                            )}
-                        </Box>
-                    ))}
+                    {subTeamsDetails.map(team => {
+                        const chipStyle = {
+                            backgroundColor: team.color,
+                            color: Color(team.color).isDark()
+                                ? 'white'
+                                : 'black',
+                        };
+                        return (
+                            <Box
+                                key={team.id}
+                                pl={1}
+                                pb={1}
+                                display="inline-block"
+                            >
+                                {team.deleted_at && (
+                                    <Tooltip
+                                        arrow
+                                        title={formatMessage(
+                                            MESSAGES.teamDeleted,
+                                        )}
+                                        placement="bottom"
+                                    >
+                                        <Box>
+                                            <Chip
+                                                label={team.name}
+                                                size="small"
+                                                sx={chipStyle}
+                                                disabled
+                                            />
+                                        </Box>
+                                    </Tooltip>
+                                )}
+                                {!team.deleted_at && (
+                                    <Chip
+                                        label={team.name}
+                                        size="small"
+                                        sx={chipStyle}
+                                    />
+                                )}
+                            </Box>
+                        );
+                    })}
                 </>
             )}
             {type === TEAM_OF_USERS && (
@@ -59,7 +75,7 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
                             <Chip
                                 size="small"
                                 label={user.username}
-                                color="secondary"
+                                color="primary"
                             />
                         </Box>
                     ))}

@@ -158,21 +158,16 @@ const FormDetail: FunctionComponent = () => {
         let savedFormData;
         try {
             savedFormData = await saveForm;
+            queryClient.invalidateQueries(['forms']);
+            queryClient.invalidateQueries(['formsdropdown']);
             openSnackBar(succesfullSnackBar());
+
             if (!isUpdate) {
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,
                 });
             } else {
-                queryClient.resetQueries([
-                    'formDetailsForInstance',
-                    `${savedFormData.id}`,
-                ]);
-                queryClient.resetQueries(['forms']);
-                queryClient.invalidateQueries([
-                    'formVersions',
-                    parseInt(params.formId, 10),
-                ]);
+                queryClient.invalidateQueries(`form-${savedFormData.id}`);
             }
         } catch (error) {
             if (error.status === 400) {
@@ -238,7 +233,6 @@ const FormDetail: FunctionComponent = () => {
         }
         return singlePerPeriodValue;
     }, [form]);
-
     return (
         <>
             <TopBar

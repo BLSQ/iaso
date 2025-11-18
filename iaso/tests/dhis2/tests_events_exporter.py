@@ -40,6 +40,24 @@ from iaso.models import (
 )
 
 
+def mock_system_info_old_dhis2_version():
+    responses.add(
+        responses.GET,
+        "https://dhis2.com/api/system/info.json",  # don't understand why this .json is necessary
+        json={"version": "2.39"},
+        status=200,
+    )
+
+
+def mock_system_info_newer_dhis2_version():
+    responses.add(
+        responses.GET,
+        "https://dhis2.com/api/system/info.json",  # don't understand why this .json is necessary
+        json={"version": "2.42"},
+        status=200,
+    )
+
+
 def load_dhis2_fixture(mapping_file):
     with open("./iaso/tests/fixtures/dhis2/" + mapping_file) as json_file:
         return json.load(json_file)
@@ -305,9 +323,35 @@ class DataValueExporterTests(TestCase):
             launcher=self.user,
         )
         # mock expected calls
-
+        mock_system_info_old_dhis2_version()
         responses.add(
             responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
+        )
+
+        DataValueExporter().export_instances(export_request, self.task)
+        self.expect_logs(EXPORTED)
+
+        instance.refresh_from_db()
+        self.assertIsNotNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_event_export_works_newer_tracker_api(self):
+        mapping_version = MappingVersion(
+            name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(self.form)
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+        # mock expected calls
+        mock_system_info_newer_dhis2_version()
+        responses.add(
+            responses.POST, "https://dhis2.com/api/tracker", json=load_dhis2_fixture("datavalues-ok.json"), status=200
         )
 
         DataValueExporter().export_instances(export_request, self.task)
@@ -336,7 +380,7 @@ class DataValueExporterTests(TestCase):
             launcher=self.user,
         )
         # mock expected calls
-
+        mock_system_info_old_dhis2_version()
         responses.add(
             responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
         )
@@ -362,7 +406,7 @@ class DataValueExporterTests(TestCase):
             launcher=self.user,
         )
         # mock expected calls
-
+        mock_system_info_old_dhis2_version()
         responses.add(
             responses.POST,
             "https://dhis2.com/api/events",
@@ -396,6 +440,7 @@ class DataValueExporterTests(TestCase):
             launcher=self.user,
         )
         # mock expected calls
+        mock_system_info_old_dhis2_version()
 
         responses.add(
             responses.POST,
@@ -430,7 +475,7 @@ class DataValueExporterTests(TestCase):
             launcher=self.user,
         )
         # mock expected calls
-
+        mock_system_info_old_dhis2_version()
         responses.add(
             responses.POST,
             "https://dhis2.com/api/events",

@@ -1,24 +1,51 @@
 import React, { ReactElement } from 'react';
-
-import { Column, IntlFormatMessage } from 'bluesquare-components';
+import { Box } from '@mui/material';
+import { Column, useSafeIntl } from 'bluesquare-components';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { ProjectChip } from '../projects/components/ProjectChip';
-import { CreateEditTeam } from './components/CreateEditTeam';
+import { EditTeamModal } from './components/CreateEditTeam';
 import { TypeCell } from './components/TypeCell';
 import { UsersTeamsCell } from './components/UsersTeamsCell';
+import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
+import { useSaveTeam } from './hooks/requests/useSaveTeam';
 import MESSAGES from './messages';
 
-import { Team } from './types/team';
-
-export const teamColumns = (
-    formatMessage: IntlFormatMessage,
-    deleteTeam: (team: Team) => void,
-): Column[] => {
+export const useTeamColumns = (): Column[] => {
+    const { mutate: deleteTeam } = useDeleteTeam();
+    const { formatMessage } = useSafeIntl();
+    const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
     return [
         {
             Header: 'Id',
             accessor: 'id',
             width: 80,
+        },
+        {
+            Header: formatMessage(MESSAGES.color),
+            accessor: 'color',
+            id: 'color',
+            width: 10,
+            sortable: false,
+            Cell: settings => (
+                <Box display="flex" justifyContent="center">
+                    <ColorPicker
+                        currentColor={settings.row.original.color}
+                        displayLabel={false}
+                        onChangeColor={color =>
+                            saveTeam({
+                                id: settings.row.original.id,
+                                color,
+                            })
+                        }
+                    />
+                </Box>
+            ),
+        },
+        {
+            Header: formatMessage(MESSAGES.name),
+            accessor: 'name',
+            id: 'name',
         },
         {
             Header: formatMessage(MESSAGES.project),
@@ -27,11 +54,6 @@ export const teamColumns = (
             Cell: settings => (
                 <ProjectChip project={settings.row.original.project_details} />
             ),
-        },
-        {
-            Header: formatMessage(MESSAGES.name),
-            accessor: 'name',
-            id: 'name',
         },
         {
             Header: formatMessage(MESSAGES.type),
@@ -62,7 +84,7 @@ export const teamColumns = (
                 return (
                     // TODO: limit to user permissions
                     <>
-                        <CreateEditTeam
+                        <EditTeamModal
                             dialogType="edit"
                             id={settings.row.original.id}
                             name={settings.row.original.name}
@@ -73,6 +95,8 @@ export const teamColumns = (
                             type={settings.row.original.type}
                             users={settings.row.original.users}
                             parent={settings.row.original.parent}
+                            color={settings.row.original.color}
+                            iconProps={{}}
                         />
                         <DeleteDialog
                             keyName="team"

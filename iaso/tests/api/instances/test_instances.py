@@ -19,7 +19,8 @@ from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
 from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
-from iaso.models.microplanning import Planning, Team
+from iaso.models.microplanning import Planning
+from iaso.models.team import Team
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,

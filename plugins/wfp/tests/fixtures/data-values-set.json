@@ -1,0 +1,94 @@
+[
+    {
+        "dataSet": "DATASET_DHIS2_ID",
+        "period": "202508",
+        "orgUnit": "OU_DHIS2_ID",
+        "status": "SUCCESS",
+        "dataValues": [
+            {
+                "dataElement": "w4nwIlw6Okb",
+                "categoryOptionCombo": "MTrn7hYw91L",
+                "value": 3
+            },
+            {
+                "dataElement": "w4nwIlw6Okb",
+                "categoryOptionCombo": "QsEZ1cISs62",
+                "value": 0
+            },
+            {
+                "dataElement": "w4nwIlw6Okb",
+                "categoryOptionCombo": "jo847NoZ40e",
+                "value": 2
+            },
+            {
+                "dataElement": "w4nwIlw6Okb",
+                "categoryOptionCombo": "XsjPXECqmLy",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "dataSet": "DATASET_DHIS2_ID",
+        "period": "202509",
+        "orgUnit": "OU_DHIS2_ID",
+        "status": "SUCCESS",
+        "dataValues": [
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "E02TuYa4Y0E",
+                "value": 3
+            },
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "Ad1FdN2tKlA",
+                "value": 1
+            },
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "Kx5HXXDyFTh",
+                "value": 2
+            },
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "Qnd1bDi04CU",
+                "value": 2
+            }
+        ]
+    },
+    {
+        "dataSet": "DATASET_DHIS2_ID",
+        "period": "202509",
+        "orgUnit": "1010006",
+        "status": "ERROR",
+        "dataValues": [
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "E02TuYa4Y0E",
+                "value": 3
+            },
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "Ad1FdN2tKlA",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "dataSet": "DATASET_DHIS2_ID",
+        "period": "202509",
+        "orgUnit": null,
+        "status": "WARNING",
+        "dataValues": [
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "E02TuYa4Y0E",
+                "value": 3
+            },
+            {
+                "dataElement": "wWGcSv10BOM",
+                "categoryOptionCombo": "Ad1FdN2tKlA",
+                "value": 1
+            }
+        ]
+    }
+]

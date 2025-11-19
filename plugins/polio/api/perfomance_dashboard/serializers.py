@@ -8,6 +8,7 @@ from plugins.polio.models.performance_dashboard import PerformanceDashboard
 
 logger = logging.getLogger(__name__)
 
+
 class UserNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -50,7 +51,10 @@ class PerformanceDashboardListSerializer(serializers.ModelSerializer):
             "updated_at",
             "updated_by",
         ]
-        read_only_fields = ["account"] # Account will be set automatically by the view or create method
+        read_only_fields = [
+            "account"
+        ]  # Account will be set automatically by the view or create method
+
 
 class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
     # Expect the country ID for write operations
@@ -109,20 +113,32 @@ class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
                 # print(f"User's profile: {profile}")  # DEBUG
                 # print(f"User's account: {profile.account}")  # DEBUG
                 validated_data["created_by"] = request.user
-                validated_data["account"] = profile.account # Ensure account is set here
+                validated_data["account"] = (
+                    profile.account
+                )  # Ensure account is set here
             except AttributeError as e:
                 # print(f"ERROR getting profile or account: {e}")  # DEBUG
-                logger.error(f"User {request.user} does not have an iaso_profile or account: {e}")
+                logger.error(
+                    f"User {request.user} does not have an iaso_profile or account: {e}"
+                )
                 raise serializers.ValidationError("User profile or account not found.")
             except Exception as e:
                 # print(f"UNEXPECTED ERROR getting profile or account: {e}")  # DEBUG
-                logger.error(f"Unexpected error getting profile/account for {request.user}: {e}")
-                raise serializers.ValidationError("Unexpected error encountered while fetching profile/account.")
+                logger.error(
+                    f"Unexpected error getting profile/account for {request.user}: {e}"
+                )
+                raise serializers.ValidationError(
+                    "Unexpected error encountered while fetching profile/account."
+                )
         else:
             # This should ideally not happen if permissions are checked correctly before the serializer
             # print("ERROR: Request or authenticated user not available in context.")
-            logger.error("Request or authenticated user not available in context during creation.")
-            raise serializers.ValidationError("Request context or authenticated user missing.")
+            logger.error(
+                "Request or authenticated user not available in context during creation."
+            )
+            raise serializers.ValidationError(
+                "Request context or authenticated user missing."
+            )
 
         # print(f"Validated data BEFORE saving: {validated_data}")  # DEBUG
         # Call the parent create method with the updated validated_data
@@ -131,7 +147,7 @@ class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Set updated_by automatically from the request user
         request = self.context.get("request")
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
+        if request and hasattr(request, "user") and request.user.is_authenticated:
             validated_data["updated_by"] = request.user
         # Note: account is typically not changed during an update
         return super().update(instance, validated_data)

@@ -2,14 +2,18 @@ import django_filters
 from rest_framework import filters, permissions, viewsets
 
 from plugins.polio.api.perfomance_dashboard.serializers import (
-    PerformanceDashboardListSerializer, PerformanceDashboardWriteSerializer)
+    PerformanceDashboardListSerializer,
+    PerformanceDashboardWriteSerializer,
+)
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
 
 from .filters import PerformanceDashboardFilter
 from .pagination import PerformanceDashboardPagination
-from .permissions import (HasPerformanceDashboardAdminPermission,
-                          HasPerformanceDashboardReadOnlyPermission,
-                          HasPerformanceDashboardWritePermission)
+from .permissions import (
+    HasPerformanceDashboardAdminPermission,
+    HasPerformanceDashboardReadOnlyPermission,
+    HasPerformanceDashboardWritePermission,
+)
 
 
 class PerformanceDashboardViewSet(viewsets.ModelViewSet):
@@ -27,11 +31,15 @@ class PerformanceDashboardViewSet(viewsets.ModelViewSet):
     - **Non-admin**: Can create and update plans.
     - **Admin**: Can delete plans.
     """
+
     # The serializer_class is removed because 'get_serializer_class' is implemented
     # DRF will call get_serializer_clas() instead of looking for this attribute
     # serializer_class =
     pagination_class = PerformanceDashboardPagination
-    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filter_backends = [
+        filters.OrderingFilter,
+        django_filters.rest_framework.DjangoFilterBackend,
+    ]
     filterset_class = PerformanceDashboardFilter
     ordering_fields = ["date", "country__name", "status", "antigen", "updated_at"]
     http_method_names = ["get", "post", "patch", "delete"]
@@ -67,11 +75,11 @@ class PerformanceDashboardViewSet(viewsets.ModelViewSet):
         Dynamically returns the appropriate serializer class based on the action.
         """
         if self.action in ["list", "retrieve"]:
-        # For read-only actions (GET), use the serializer that shows detailed, nested data.
+            # For read-only actions (GET), use the serializer that shows detailed, nested data.
             return PerformanceDashboardListSerializer
 
         if self.action in ["create", "update", "partial_update"]:
-        # For write actions (POST, PATCH), use the serializer that accepts simple IDs.
+            # For write actions (POST, PATCH), use the serializer that accepts simple IDs.
             return PerformanceDashboardWriteSerializer
         # As a fallback, you can return the default serializer
 
@@ -85,7 +93,7 @@ class PerformanceDashboardViewSet(viewsets.ModelViewSet):
         # Call the parent implementation to get the default context
         context = super().get_serializer_context()
         # Explicitly add the request object to the context
-        context['request'] = self.request
+        context["request"] = self.request
         return context
 
     # def create(self, request, *args, **kwargs):
@@ -102,4 +110,3 @@ class PerformanceDashboardViewSet(viewsets.ModelViewSet):
     #     # and should pass the context (including request) automatically,
     #     # or now explicitly via get_serializer_context
     #     return super().create(request, *args, **kwargs)
-

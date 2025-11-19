@@ -1,6 +1,8 @@
 from rest_framework import status
-from .common_test_data import PerformanceDashboardAPIBase
+
 from plugins.polio.models import performance_dashboard as p
+
+from .common_test_data import PerformanceDashboardAPIBase
 
 
 class PerformanceDashboardPermissionsAPITestCase(PerformanceDashboardAPIBase):

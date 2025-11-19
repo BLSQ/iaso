@@ -2,9 +2,12 @@ import datetime
 
 from iaso import models as m
 from iaso.models import Account
-from plugins.polio.models import performance_dashboard as p
-from plugins.polio.permissions import POLIO_PERFORMANCE_ADMIN_PERMISSION, POLIO_PERFORMANCE_READ_ONLY_PERMISSION, POLIO_PERFORMANCE_NON_ADMIN_PERMISSION
 from iaso.test import APITestCase
+from plugins.polio.models import performance_dashboard as p
+from plugins.polio.permissions import (POLIO_PERFORMANCE_ADMIN_PERMISSION,
+                                       POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+                                       POLIO_PERFORMANCE_READ_ONLY_PERMISSION)
+
 
 class PerformanceDashboardAPIBase(APITestCase):
     """"

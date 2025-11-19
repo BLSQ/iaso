@@ -324,9 +324,5 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             return Response(response_data)
 
-        except ValidationError:
-            # Configuration not properly set up - this is expected, not an error
-            return Response({"configured": False})
-        except Exception:
-            # Any other unexpected error - still return False without logging to Sentry
+        except (ValidationError, Exception):
             return Response({"configured": False})

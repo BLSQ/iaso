@@ -17,7 +17,7 @@ export const useGetFormVersions = ({ formId, params }) => {
     );
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['formVersions', `formVersions-${formId}`, queryString],
+        queryKey: ['formVersions', formId, queryString],
         queryFn: () => getRequest(`${apiUrl}/?${queryString}`),
         options: {
             keepPreviousData: true,

@@ -69,7 +69,7 @@ export const useGetFormDefForInstance = (
     formId: number | string | undefined,
 ): UseQueryResult<FormDef, Error> => {
     return useSnackQuery(
-        ['form', `form-${formId}`, 'org_unit_types'],
+        ['forms', formId, 'org_unit_types'],
         () =>
             getRequest(
                 `/api/forms/${formId}/?fields=org_unit_type_ids,period_type`,

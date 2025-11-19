@@ -111,10 +111,7 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                     // FIXME TS seems to think formVersion.id is always either null or undefined
                     setFormState(emptyVersionFromId(formVersion.id));
                     openSnackBar(succesfullSnackBar());
-                    queryClient.invalidateQueries([
-                        'formVersions',
-                        `formVersions-${formId}`,
-                    ]);
+                    queryClient.invalidateQueries(['formVersions', formId]);
                 } catch (error) {
                     setIsLoading(false);
                     if (error.status === 400) {

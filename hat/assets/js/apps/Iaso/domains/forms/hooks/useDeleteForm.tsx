@@ -15,7 +15,7 @@ export const useDeleteForm = (): UseMutationResult => {
         invalidateQueryKey: ['forms'],
         options: {
             onSuccess: (_, variables: number) => {
-                queryClient.invalidateQueries([`form-${variables}`]);
+                queryClient.invalidateQueries(['forms', variables]);
             },
         },
     });

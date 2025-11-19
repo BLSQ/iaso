@@ -1,4 +1,4 @@
-import { UseMutationResult, useQueryClient } from 'react-query';
+import { UseMutationResult } from 'react-query';
 import { restoreRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
 import MESSAGES from '../messages';
@@ -8,15 +8,9 @@ const restoreForm = (id: number) => {
 };
 
 export const useRestoreForm = (): UseMutationResult => {
-    const queryClient = useQueryClient();
     return useSnackMutation({
         mutationFn: restoreForm,
         snackSuccessMessage: MESSAGES.formRestored,
         invalidateQueryKey: ['forms'],
-        options: {
-            onSuccess: (_, variables: number) => {
-                queryClient.invalidateQueries([`form-${variables}`]);
-            },
-        },
     });
 };

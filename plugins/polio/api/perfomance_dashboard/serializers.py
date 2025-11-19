@@ -1,8 +1,9 @@
 import logging
+
 from rest_framework import serializers
+
 from iaso.api.common import TimestampField
 from iaso.models import OrgUnit, User
-from iaso.models.base import Account
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
 
 logger = logging.getLogger(__name__)
@@ -101,7 +102,7 @@ class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         # print(f"Request object: {request}")  # DEBUG
 
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
+        if request and hasattr(request, "user") and request.user.is_authenticated:
             # print(f"User is authenticated: {request.user}")  # DEBUG
             try:
                 profile = request.user.iaso_profile

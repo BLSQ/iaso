@@ -1,9 +1,8 @@
 from rest_framework import permissions
-from plugins.polio.permissions import (
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_READ_ONLY_PERMISSION,
-)
+
+from plugins.polio.permissions import (POLIO_PERFORMANCE_ADMIN_PERMISSION,
+                                       POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+                                       POLIO_PERFORMANCE_READ_ONLY_PERMISSION)
 
 
 class HasPerformanceDashboardReadOnlyPermission(permissions.BasePermission):

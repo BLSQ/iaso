@@ -44,11 +44,18 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
                         isLoading={isLoading}
                     />
                     {!isBopv && (
-                        <PaperTableRow
-                            label={formatMessage(MESSAGES.unusableDoses)}
-                            value={data?.total_unusable_doses}
-                            isLoading={isLoading}
-                        />
+                        <>
+                            <PaperTableRow
+                                label={formatMessage(MESSAGES.unusableDoses)}
+                                value={data?.total_unusable_doses}
+                                isLoading={isLoading}
+                            />
+                            <PaperTableRow
+                                label={formatMessage(MESSAGES.unusableVials)}
+                                value={data?.total_unusable_vials}
+                                isLoading={isLoading}
+                            />
+                        </>
                     )}
                     <PaperTableRow
                         label={formatMessage(MESSAGES.earmarked_doses)}

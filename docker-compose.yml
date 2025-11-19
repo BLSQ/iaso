@@ -91,6 +91,7 @@ services:
             WFP_AUTH_ACCOUNT:
             WFP_AUTH_CLIENT_ID:
             WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
+            USE_CELERY:
         logging: &iaso_logging
             driver: 'json-file'
             options:

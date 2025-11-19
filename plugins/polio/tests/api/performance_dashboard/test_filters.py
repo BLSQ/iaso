@@ -44,36 +44,6 @@ class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
         self.assertIn(self.dashboard_1.id, result_ids)
         self.assertIn(self.dashboard_8.id, result_ids)
 
-    # def test_filter_by_antigen(self):
-    #     """
-    #     Test that we can filter dashboards by antigen.
-    #     """
-    #     # There are 2 dashboards with 'nOPV2' antigen
-    #     params = {"antigen": "nOPV2"}
-    #     response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL, data=params)
-    #     self.assertJSONResponse(response, status.HTTP_200_OK)
-    #     response_data = response.json()
-    #     self.assertEqual(response_data["count"], 5)
-    #
-    #     result_ids = {item["id"] for item in response_data["results"]}
-    #     self.assertIn(self.dashboard_4.id, result_ids)
-    #     self.assertIn(self.dashboard_8.id, result_ids)
-    #
-    # def test_filter_by_date_range(self):
-    #     """
-    #     Test that we can filter dashboards by a date range.
-    #     """
-    #     # There are 2 dashboards between Feb 1 and Mar 31, 2023
-    #     params = {"date_from": "2023-02-01", "date_to": "2023-03-31"}
-    #     response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL, data=params)
-    #     self.assertJSONResponse(response, status.HTTP_200_OK)
-    #     response_data = response.json()
-    #     self.assertEqual(response_data["count"], 2)
-    #
-    #     result_ids = {item["id"] for item in response_data["results"]}
-    #     self.assertIn(self.dashboard_konoha_final_nopv2.id, result_ids)
-    #     self.assertIn(self.dashboard_suna_commented_bopv.id, result_ids)
-    #
     def test_filter_by_search(self):
         """
         Test that we can search by country name.
@@ -88,18 +58,6 @@ class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
         result_ids = {item["id"] for item in response_data["results"]}
         self.assertIn(self.dashboard_2.id, result_ids)
         self.assertIn(self.dashboard_7.id, result_ids)
-    #
-    # def test_filter_by_multiple_filters(self):
-    #     """
-    #     Test that we can combine multiple filters.
-    #     """
-    #     # There is 1 dashboard for Suna with 'draft' status
-    #     params = {"country_id": self.suna.id, "status": "draft"}
-    #     response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL, data=params)
-    #     self.assertJSONResponse(response, status.HTTP_200_OK)
-    #     response_data = response.json()
-    #     self.assertEqual(response_data["count"], 1)
-    #     self.assertEqual(response_data["results"][0]["id"], self.dashboard_suna_draft_nopv2.id)
 
     def test_filter_by_country_block(self):
         """

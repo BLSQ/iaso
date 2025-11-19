@@ -141,7 +141,6 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
             formState.xls_file.value,
             formVersion.id,
             setFormState,
-            onConfirmed,
             queryClient,
             setFieldErrors,
         ],

@@ -233,7 +233,6 @@ const FormDetail: FunctionComponent = () => {
         }
         return singlePerPeriodValue;
     }, [form]);
-
     return (
         <>
             <TopBar

@@ -312,7 +312,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             for scope in campaign_scopes:
                 vaccine = scope.get("vaccine", "")
                 org_units = scope.get("group", {}).get("org_units")
-                scope, created = instance.scopes.get_or_create(vaccine=vaccine)
+                scope, _ = instance.scopes.get_or_create(vaccine=vaccine)
                 source_version_id = None
                 name = f"scope for campaign {instance.obr_name} - {vaccine or ''}"
                 if org_units:

@@ -250,3 +250,50 @@ class CustomOrderingFilter(filters.OrderingFilter):
                     new_ordering.append(field)
             return new_ordering
         return ordering
+
+
+class AnalysesStartDateEndDateFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+
+        if start_date:
+            try:
+                queryset = queryset.filter(created_at__gte=date_string_to_start_of_day(start_date))
+            except ValueError:
+                pass
+
+        if end_date:
+            try:
+                queryset = queryset.filter(created_at__lte=date_string_to_end_of_day(end_date))
+            except ValueError:
+                pass
+
+        return queryset
+
+
+class AnalysesAlgorithmFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        algorithm = request.query_params.get("algorithm")
+
+        if algorithm:
+            queryset = queryset.filter(algorithm=algorithm)
+
+        return queryset
+
+
+class AnalysesStatusFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        status = request.query_params.get("status")
+        if status:
+            queryset = queryset.filter(task__status=status)
+        return queryset
+
+
+class AnalysesUsersFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        users = request.GET.get("users", None)
+        if users:
+            users_ids = [int(val) for val in users.split(",") if val.isnumeric()]
+            return queryset.filter(Q(task__created_by_id__in=users_ids) | Q(task__launcher_id__in=users_ids))
+        return queryset

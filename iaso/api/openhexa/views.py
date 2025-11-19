@@ -313,7 +313,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 return Response({"configured": False})
 
             account = request.user.iaso_profile.account
-            *_, workspace = get_openhexa_config(account)
+            *_, workspace = get_openhexa_config(account, silent=True)
 
             # If we reach here, config is valid
             response_data = {"configured": True}
@@ -325,8 +325,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
             return Response(response_data)
 
         except ValidationError:
-            # Configuration not properly set up
+            # Configuration not properly set up - this is expected, not an error
             return Response({"configured": False})
-        except Exception as e:
-            logger.exception(f"Error checking OpenHexa config: {str(e)}")
+        except Exception:
+            # Any other unexpected error - still return False without logging to Sentry
             return Response({"configured": False})

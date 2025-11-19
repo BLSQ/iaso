@@ -112,11 +112,11 @@ class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
             except AttributeError as e:
                 # print(f"ERROR getting profile or account: {e}")  # DEBUG
                 logger.error(f"User {request.user} does not have an iaso_profile or account: {e}")
-                raise serializers.ValidationError(f"User profile or account not found: {e}")
+                raise serializers.ValidationError("User profile or account not found.")
             except Exception as e:
                 # print(f"UNEXPECTED ERROR getting profile or account: {e}")  # DEBUG
                 logger.error(f"Unexpected error getting profile/account for {request.user}: {e}")
-                raise serializers.ValidationError(f"Unexpected error getting profile/account: {e}")
+                raise serializers.ValidationError("Unexpected error encountered while fetching profile/account.")
         else:
             # This should ideally not happen if permissions are checked correctly before the serializer
             # print("ERROR: Request or authenticated user not available in context.")

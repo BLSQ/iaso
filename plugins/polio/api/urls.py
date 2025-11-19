@@ -65,9 +65,11 @@ from plugins.polio.tasks.api.refresh_im_data import (
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 from plugins.polio.tasks.api.refresh_preparedness_dashboard_data import RefreshPreparednessDataViewset
 from plugins.polio.tasks.api.refresh_vrf_dashboard_data import RefreshVrfDataViewset
+from plugins.polio.api.perfomance_dashboard.views import PerformanceDashboardViewSet
 
 
 router = routers.SimpleRouter()
+router.register(r"polio/performance_dashboard", PerformanceDashboardViewSet, basename="performance_dashboard")
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaigns_subactivities", SubActivityViewSet, basename="campaigns_subactivities")

@@ -12,7 +12,7 @@ export const useDeleteForm = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: deleteForm,
         snackSuccessMessage: MESSAGES.formDeleted,
-        invalidateQueryKey: ['forms', 'formsdropdown'],
+        invalidateQueryKey: ['forms'],
         options: {
             onSuccess: (_, variables: number) => {
                 queryClient.invalidateQueries([`form-${variables}`]);

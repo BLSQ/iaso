@@ -12,7 +12,7 @@ export const useRestoreForm = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: restoreForm,
         snackSuccessMessage: MESSAGES.formRestored,
-        invalidateQueryKey: ['forms', 'formsdropdown'],
+        invalidateQueryKey: ['forms'],
         options: {
             onSuccess: (_, variables: number) => {
                 queryClient.invalidateQueries([`form-${variables}`]);

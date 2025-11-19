@@ -80,10 +80,7 @@ export const useGetFormsDropdownOptions = (
         };
     }, [allFields, params]);
 
-    const queryKey = useMemo(
-        () => ['formsdropdown', queryParams],
-        [queryParams],
-    );
+    const queryKey = useMemo(() => ['forms', queryParams], [queryParams]);
 
     const url = makeUrlWithParams('/api/forms/', queryParams);
 

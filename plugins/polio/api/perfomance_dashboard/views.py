@@ -95,18 +95,3 @@ class PerformanceDashboardViewSet(viewsets.ModelViewSet):
         # Explicitly add the request object to the context
         context["request"] = self.request
         return context
-
-    # def create(self, request, *args, **kwargs):
-    #     print("--- Inside ViewSet create method ---")  # DEBUG
-    #     print(f"ViewSet's self.request: {self.request}")  # DEBUG
-    #     print(f"Request from args: {request}")  # DEBUG
-    #     print(f"Is user authenticated? {request.user.is_authenticated}")  # DEBUG
-    #     if hasattr(request.user, 'iaso_profile'):
-    #         print(f"User's account from view: {request.user.iaso_profile.account}")  # DEBUG
-    #     else:
-    #         print("User has no iaso_profile")  # DEBUG
-    #
-    #     # Call the parent create method which handles serializer instantiation
-    #     # and should pass the context (including request) automatically,
-    #     # or now explicitly via get_serializer_context
-    #     return super().create(request, *args, **kwargs)

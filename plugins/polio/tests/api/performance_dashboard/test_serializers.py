@@ -28,7 +28,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         self.assertIn("date", data)
         self.assertIn("status", data)
         self.assertIn("antigen", data)
-        self.assertIn("country", data)
+
         self.assertIn("created_by", data)
 
         # Check that the values are correct
@@ -36,8 +36,8 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         self.assertEqual(data["status"], dashboard.status)
 
         # Check that nested objects are serialized correctly
-        self.assertEqual(data["country"]["id"], dashboard.country.id)
-        self.assertEqual(data["country"]["name"], dashboard.country.name)
+
+        self.assertEqual(data["country_name"], dashboard.country.name)
         self.assertEqual(data["created_by"]["username"], dashboard.created_by.username)
 
     def test_write_serializer_create_success(self):

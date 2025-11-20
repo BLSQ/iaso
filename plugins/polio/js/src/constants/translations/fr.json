@@ -870,5 +870,12 @@
     "iaso.polio.validation.onsetAfterNotificationError": "La date de début doit précéder la date de notification virus",
     "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "La date de début doit précéder la date de déclaration de l'épidémie",
     "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "La date de notification virus doit précéder la déclaration de l'épidémie",
-    "iaso.task.label.gotoLqasForCountry": "Voir la page LQAS"
+    "iaso.task.label.gotoLqasForCountry": "Voir la page LQAS",
+    "iaso.polio.performanceDashboard": "Tableau des performances",
+    "iaso.polio.performance.delete": "Effacer les données de performance: {name}",
+    "iaso.polio.performance.deleteWarning": "Voulez-vous vraiment supprimer cette entrée ?",
+    "iaso.polio.performance.add": "Ajouter une donnée de performance",
+    "iaso.polio.performance.status.draft": "Brouillon",
+    "iaso.polio.performance.status.commented": "Commenté",
+    "iaso.polio.performance.status.final": "Final"
 }

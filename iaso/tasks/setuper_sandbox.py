@@ -1,4 +1,5 @@
 import logging
+import subprocess
 
 from datetime import datetime
 
@@ -56,16 +57,16 @@ def map_data_source(data_sources, current_timestamp):
     )
 
 
-def change_data_source_name(self, data_source, current_timestamp):
+def change_data_source_name(data_source, current_timestamp):
     data_source.name = f"{data_source.name}{current_timestamp}"
     data_source.save()
     return data_source
 
 
-def recreate_account(self, account_name):
+def recreate_account(account_name):
     try:
-        command = ["python3", "setuper/setuper.py", "--additional_projects", "-n", f"{account_name}"]
-        process = subprocess.run(command, check=True)
+        command = ["python3", "setuper/setuper.py", "--additional_projects", "-n", account_name]
+        process = subprocess.run(command, capture_output=True, text=True)
         logger.info(f"Stdout:\n{process.stdout}")
         if process.stderr:
             logger.error(f"Stderr:\n{process.stderr}")
@@ -77,12 +78,15 @@ def recreate_account(self, account_name):
 
 
 @task_decorator(task_name="setuper_sandbox")
-def setuper_sandbox(name="admin"):
+def setuper_sandbox(name, task=None):
     logger.warning(f" .... Resetting {name} account and its data! ...")
     current_datetime = int(datetime.now().timestamp())
-    new_name = f"{name}{current_datetime}"
-    logger.info(f"Renaming current account {name} to {new_name}")
-    account = Account.objects.filter(name=name).first()
+    account_name = name
+    if isinstance(name, list):
+        account_name = name[0]
+    new_name = f"{account_name}{current_datetime}"
+    logger.info(f"Renaming current account {account_name} to {new_name}")
+    account = Account.objects.filter(name=account_name).first()
     if account is not None:
         account.name = new_name
         account.save()
@@ -104,4 +108,4 @@ def setuper_sandbox(name="admin"):
 
         logger.warning(f"Reset {name} account!")
 
-        recreate_account(name)
+    recreate_account(account_name)

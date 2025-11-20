@@ -578,21 +578,21 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         </>
                     )}
                     {/* Markers section  */}
-                    <>
-                        <SelectedMarkers
-                            data={mappedOrgUnitTypesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                        <SelectedMarkers
-                            data={mappedSourcesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
 
-                        <FormsMarkers
-                            forms={state.formsSelected.value}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                    </>
+                    <SelectedMarkers
+                        data={mappedOrgUnitTypesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+                    <SelectedMarkers
+                        data={mappedSourcesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
+                    <FormsMarkers
+                        forms={state.formsSelected.value}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
                     {hasMarker && (
                         <CurrentOrgUnitMarker
                             isEdit={state.currentOption.value === 'edit'}

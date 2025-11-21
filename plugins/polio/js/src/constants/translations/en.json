@@ -880,5 +880,8 @@
     "iaso.polio.performance.status.commented": "Commented",
     "iaso.polio.performance.status.final": "Final",
     "iaso.polio.antigen": "Antigen",
-    "iaso.label.edit": "Edit"
+    "iaso.label.edit": "Edit",
+    "iaso.polio.validation.invalidDate": "Invalid date",
+    "iaso.polio.validation.fieldRequired": "This field is required",
+    "iaso.polio.performance.edit": "Edit Performance Data"
 }

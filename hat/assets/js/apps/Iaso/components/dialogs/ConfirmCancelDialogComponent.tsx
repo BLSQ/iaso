@@ -79,16 +79,17 @@ export const ConfirmCancelActions: FunctionComponent<ActionProps> = ({
 };
 
 type Props = {
-    allowConfirm: boolean;
+    allowConfirm?: boolean;
     onConfirm: (closeDialog: () => void) => void;
     onCancel?: (closeDialog: () => void) => void;
-    maxWidth: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-    onClosed: () => void;
-    onOpen: () => void;
+    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    onClosed?: () => void;
+    onOpen?: () => void;
     id?: string;
     dataTestId?: string;
     confirmMessage?: IntlMessage;
     cancelMessage?: IntlMessage;
+    titleMessage?: IntlMessage;
     additionalButton?: boolean;
     additionalMessage?: IntlMessage | null;
     onAdditionalButtonClick?: (closeDialog: () => void) => void | null;
@@ -98,6 +99,7 @@ type Props = {
     }: {
         openDialog: () => void;
     }) => React.JSX.Element;
+    children?: React.JSX.Element;
 };
 
 /** @deprecated */
@@ -118,6 +120,8 @@ const ConfirmCancelDialogComponent: FunctionComponent<Props> = ({
     maxWidth = 'sm',
     onClosed = () => {},
     onOpen = () => {},
+    children,
+    titleMessage,
 }) => {
     return (
         <DialogComponent
@@ -141,6 +145,8 @@ const ConfirmCancelDialogComponent: FunctionComponent<Props> = ({
             onOpen={onOpen}
             onClosed={onClosed}
             renderTrigger={renderTrigger}
+            children={children}
+            titleMessage={titleMessage}
         />
     );
 };

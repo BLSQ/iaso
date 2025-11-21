@@ -1,22 +1,22 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, FunctionComponent } from 'react';
 import EventIcon from '@mui/icons-material/Event';
 import { Grid, useTheme, useMediaQuery, Box, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-
 import {
-    injectIntl,
+    useSafeIntl,
     IconButton,
     FormControl,
     useSkipEffectOnMount,
+    IntlMessage,
 } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import {
     getUrlParamDateObject,
     dateFormat,
     getLocaleDateFormat,
-} from '../../utils/dates.ts';
-import MESSAGES from './messages';
+} from '../../utils/dates.js';
+import MESSAGES from './messages.js';
+import { Moment } from 'moment';
 
 const useStyles = makeStyles(theme => ({
     clearDateButton: {
@@ -57,29 +57,49 @@ const useCurrentBreakPointSpacing = (xs, sm, md, lg) => {
  *
  */
 
-const DatesRange = ({
-    dateFrom,
-    dateTo,
-    onChangeDate,
-    intl: { formatMessage },
-    labelTo,
-    labelFrom,
-    xs,
-    sm,
-    md,
-    lg,
+type Props = {
+    onChangeDate?: (keyValue: string, date?: string) => void;
+    dateFrom?: string;
+    dateTo?: string;
+    labelTo?: IntlMessage;
+    labelFrom?: IntlMessage;
+    xs?: number;
+    sm?: number;
+    md?: number;
+    lg?: number;
+    keyDateFrom?: string;
+    keyDateTo?: string;
+    errors?: [any[], any[]];
+    blockInvalidDates?: boolean;
+    marginTop?: number;
+    dateFromRequired?: boolean;
+    dateToRequired?: boolean;
+    disabled?: boolean;
+};
+
+const DatesRange: FunctionComponent<Props> = ({
+    dateFrom = '',
+    dateTo = '',
+    onChangeDate = () => null,
+    labelTo = MESSAGES.to,
+    labelFrom = MESSAGES.from,
+    xs = 6,
+    sm = 6,
+    md = 6,
+    lg = 6,
     keyDateFrom = 'dateFrom',
     keyDateTo = 'dateTo',
-    errors,
-    blockInvalidDates,
-    marginTop,
+    errors = [[], []],
+    blockInvalidDates = true,
+    marginTop = 2,
     dateFromRequired = false,
     dateToRequired = false,
     disabled = false,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const [from, setFrom] = useState(dateFrom);
-    const [to, setTo] = useState(dateTo);
+    const [from, setFrom] = useState<string | Moment | null>(dateFrom);
+    const [to, setTo] = useState<string | Moment | null>(dateTo);
 
     const handleChange = useCallback(
         (keyValue, date) => {
@@ -127,6 +147,7 @@ const DatesRange = ({
                                 shrink: Boolean(from),
                             }}
                             InputProps={{
+                                //@ts-ignore
                                 'data-test': 'start-date',
                             }}
                             KeyboardButtonProps={{
@@ -225,47 +246,4 @@ const DatesRange = ({
     );
 };
 
-DatesRange.defaultProps = {
-    dateFrom: '',
-    dateTo: '',
-    onChangeDate: () => null,
-    labelTo: MESSAGES.to,
-    labelFrom: MESSAGES.from,
-    xs: 6,
-    sm: 6,
-    md: 6,
-    lg: 6,
-    keyDateFrom: 'dateFrom',
-    keyDateTo: 'dateTo',
-    errors: [[], []],
-    blockInvalidDates: true,
-    marginTop: 2,
-    dateFromRequired: false,
-    dateToRequired: false,
-    disabled: false,
-};
-
-DatesRange.propTypes = {
-    onChangeDate: PropTypes.func,
-    dateFrom: PropTypes.string,
-    dateTo: PropTypes.string,
-    intl: PropTypes.object.isRequired,
-    labelTo: PropTypes.object,
-    labelFrom: PropTypes.object,
-    xs: PropTypes.number,
-    sm: PropTypes.number,
-    md: PropTypes.number,
-    lg: PropTypes.number,
-    keyDateFrom: PropTypes.string,
-    keyDateTo: PropTypes.string,
-    errors: PropTypes.array,
-    blockInvalidDates: PropTypes.bool,
-    marginTop: PropTypes.number,
-    dateFromRequired: PropTypes.bool,
-    dateToRequired: PropTypes.bool,
-    disabled: PropTypes.bool,
-};
-
-const DatesRangeIntl = injectIntl(DatesRange);
-
-export default DatesRangeIntl;
+export default DatesRange;

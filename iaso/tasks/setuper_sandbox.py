@@ -90,22 +90,22 @@ def setuper_sandbox(name, task=None):
     if account is not None:
         account.name = new_name
         account.save()
-        profiles = Profile.objects.filter(account=account)
-        logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {name}")
-        updated_users = update_users_profiles(profiles, new_name)
-        logger.info(f"Disabled {len(updated_users)} users")
+    profiles = Profile.objects.filter(account=account)
+    logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {account_name}")
+    updated_users = update_users_profiles(profiles, new_name)
+    logger.info(f"Disabled {len(updated_users)} users")
 
-        projects = Project.objects.filter(account=account)
-        logger.info(f"Renaming app id for all {len(projects)} projects belong to account {name}")
-        projects_to_updated = map_project(projects, new_name)
-        updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])
-        logger.info(f"Renamed app id for all {updated_projects} projects")
+    projects = Project.objects.filter(account=account)
+    logger.info(f"Renaming app id for all {len(projects)} projects belong to account {account_name}")
+    projects_to_updated = map_project(projects, new_name)
+    updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])
+    logger.info(f"Renamed app id for all {updated_projects} projects")
 
-        data_sources = DataSource.objects.filter(projects__account=account).distinct()
-        logger.info(f"Renaming all {len(data_sources)} data_sources belong to account {name}")
-        rename_data_sources = map_data_source(data_sources, current_datetime)
-        logger.info(f"Renamed all {len(rename_data_sources)} data_sources")
+    data_sources = DataSource.objects.filter(projects__account=account).distinct()
+    logger.info(f"Renaming all {len(data_sources)} data_sources belong to account {account_name}")
+    rename_data_sources = map_data_source(data_sources, current_datetime)
+    logger.info(f"Renamed all {len(rename_data_sources)} data_sources")
 
-        logger.warning(f"Reset {name} account!")
+    logger.warning(f"Reset {account_name} account!")
 
     recreate_account(account_name)

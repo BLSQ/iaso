@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
-
 import {
     ListItemIcon,
     ListItem,
@@ -10,21 +9,18 @@ import {
     List,
     Box,
 } from '@mui/material';
-import { withStyles } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-
-import PropTypes from 'prop-types';
 import {
     commonStyles,
     theme as muiTheme,
     useSafeIntl,
 } from 'bluesquare-components';
-
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     listItemIcon: {
         minWidth: 35,
@@ -34,18 +30,26 @@ const styles = theme => ({
         textDecoration: 'none',
         display: 'flex',
     },
-});
+}));
 
-function MenuItem(props) {
-    const {
-        onClick,
-        menuItem,
-        location,
-        classes,
-        subMenuLevel,
-        currentPath,
-        url,
-    } = props;
+type Props = {
+    location: Record<string, any>;
+    menuItem: Record<string, any>;
+    onClick: (path: string, url?: string) => void;
+    subMenuLevel?: number;
+    currentPath?: string;
+    url?: string;
+};
+
+const MenuItem: FunctionComponent<Props> = ({
+    onClick,
+    menuItem,
+    location,
+    subMenuLevel = 1,
+    currentPath = '',
+    url = '',
+}) => {
+    const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
     const urlLink = url;
     const { formatMessage } = useSafeIntl();
@@ -59,7 +63,7 @@ function MenuItem(props) {
         : path === activePath;
     const fullPath = `${
         menuItem.extraPath
-            ? `${path}/accountId/${currentUser.account.id}${menuItem.extraPath}`
+            ? `${path}/accountId/${currentUser.account?.id}${menuItem.extraPath}`
             : path
     }`;
     const [open, setOpen] = React.useState(isMenuActive);
@@ -94,6 +98,8 @@ function MenuItem(props) {
                     <ListItemText
                         primary={
                             <Box pl={menuItem.icon ? 0 : 2}>
+                                {/* type prop should be variant. Check impact on UI layout before changing */}
+                                {/* @ts-ignore */}
                                 <Typography type="body2" color={color}>
                                     {menuItem.label.defaultMessage &&
                                         menuItem.label.id &&
@@ -120,7 +126,6 @@ function MenuItem(props) {
                                 ) {
                                     return (
                                         <MenuItem
-                                            classes={classes}
                                             key={subMenu.mapKey || subMenu.key}
                                             menuItem={subMenu}
                                             url={subMenu.url}
@@ -130,7 +135,6 @@ function MenuItem(props) {
                                             subMenuLevel={subMenuLevel + 1}
                                             location={location}
                                             currentPath={path}
-                                            currentUser={currentUser}
                                         />
                                     );
                                 }
@@ -164,6 +168,8 @@ function MenuItem(props) {
                 <ListItemText
                     primary={
                         <Box pl={menuItem.icon ? 0 : 2}>
+                            {/* type prop should be variant. Check impact on UI layout before changing */}
+                            {/* @ts-ignore */}
                             <Typography type="body2" color={color}>
                                 {menuItem.label.defaultMessage &&
                                     menuItem.label.id &&
@@ -178,22 +184,6 @@ function MenuItem(props) {
             </ListItem>
         </Link>
     );
-}
-
-MenuItem.defaultProps = {
-    subMenuLevel: 1,
-    currentPath: '',
-    url: '',
 };
 
-MenuItem.propTypes = {
-    location: PropTypes.object.isRequired,
-    menuItem: PropTypes.object.isRequired,
-    onClick: PropTypes.func.isRequired,
-    classes: PropTypes.object.isRequired,
-    subMenuLevel: PropTypes.number,
-    currentPath: PropTypes.string,
-    url: PropTypes.string,
-};
-
-export default withStyles(styles)(MenuItem);
+export default MenuItem;

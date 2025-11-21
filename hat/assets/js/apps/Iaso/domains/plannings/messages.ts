@@ -173,6 +173,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.pipelines',
         defaultMessage: 'Pipelines',
     },
+    targetOrgUnitType: {
+        id: 'iaso.label.targetOrgUnitType',
+        defaultMessage: 'Assignments level',
+    },
+    targetOrgUnitTypeInfos: {
+        id: 'iaso.label.targetOrgUnitTypeInfos',
+        defaultMessage: 'Select the target geography first',
+    },
 });
 
 export default MESSAGES;

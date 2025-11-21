@@ -1,30 +1,36 @@
-import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
-import { Chip } from '@mui/material';
-import { withStyles } from '@mui/styles';
+import React, { FunctionComponent, useCallback } from 'react';
 import Add from '@mui/icons-material/Add';
 import Cancel from '@mui/icons-material/Cancel';
+import { Chip } from '@mui/material';
+import { makeStyles, withStyles } from '@mui/styles';
 
 import {
     translateOptions,
-    injectIntl,
+    useSafeIntl,
     commonStyles,
+    DropdownOptions,
 } from 'bluesquare-components';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     marginLeft: {
         marginLeft: theme.spacing(1),
     },
-});
+}));
 
-function ChipListComponent({
+type Props<T extends string | boolean | number> = {
+    options: DropdownOptions<T>[];
+    value: T[];
+    onChange: (value: T[]) => void;
+};
+
+export const ChipListComponent = <T extends string | boolean | number>({
     options,
     value,
-    classes,
     onChange,
-    intl: { formatMessage },
-}) {
+}: Props<T>) => {
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     const toggleChip = useCallback(
         chipValue => {
             const newValue = value.includes(chipValue)
@@ -53,18 +59,4 @@ function ChipListComponent({
             })}
         </div>
     );
-}
-ChipListComponent.propTypes = {
-    classes: PropTypes.object.isRequired,
-    options: PropTypes.array.isRequired,
-    value: PropTypes.arrayOf(
-        PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.bool,
-            PropTypes.number,
-        ]),
-    ).isRequired,
-    onChange: PropTypes.func.isRequired,
-    intl: PropTypes.object.isRequired,
 };
-export default injectIntl(withStyles(styles)(ChipListComponent));

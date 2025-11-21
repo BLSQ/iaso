@@ -1,5 +1,5 @@
-import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
-import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
+import { postRequest } from 'Iaso/libs/Api';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 /* Submission Creation workflow
@@ -21,7 +21,7 @@ export const createInstance = payload => {
             window.location = createRequest.edit_url;
         },
         err => {
-            openSnackBar(errorSnackBar(null, 'Enketo', err));
+            openSnackBar(errorSnackBar(undefined, 'Enketo', err));
         },
     );
 };
@@ -39,7 +39,7 @@ export const createExportRequest = (filterParams, selection) => {
         }
     }
     return postRequest('/api/exportrequests/', filters)
-        .then(exportRequest => {
+        .then(_ => {
             openSnackBar(succesfullSnackBar('createExportRequestSuccess'));
         })
         .catch(err => {

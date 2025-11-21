@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 
 import {
     displayDateFromTimestamp,
@@ -7,14 +7,14 @@ import {
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
-import * as Permission from '../../utils/permissions.ts';
-import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
-import { LinkToForm } from '../forms/components/LinkToForm.tsx';
+import * as Permission from '../../utils/permissions';
+import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
+import { LinkToForm } from '../forms/components/LinkToForm';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
-import { OrgUnitLabel } from '../orgUnits/components/OrgUnitLabel.tsx';
+import { OrgUnitLabel } from '../orgUnits/components/OrgUnitLabel';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
-import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
+import { LinkToPlanning } from '../plannings/components/LinkToPlanning';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { userHasOneOfPermissions, userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
@@ -100,7 +100,10 @@ export const INSTANCE_MAP_METAS_FIELDS = [
     },
 ];
 
-const OrgUnitLabelHyperLink = ({ value }) => {
+type Props = {
+    value: any;
+};
+const OrgUnitLabelHyperLink: FunctionComponent<Props> = ({ value }) => {
     const currentUser = useCurrentUser();
     const showOrgUnitLink =
         userHasOneOfPermissions(
@@ -116,10 +119,6 @@ const OrgUnitLabelHyperLink = ({ value }) => {
             )}
         </OrgUnitTooltip>
     );
-};
-
-OrgUnitLabelHyperLink.propTypes = {
-    value: PropTypes.object.isRequired,
 };
 
 export const INSTANCE_METAS_FIELDS = [

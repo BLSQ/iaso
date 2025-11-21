@@ -1,7 +1,5 @@
-import React, { useMemo, useCallback } from 'react';
-
+import React, { useMemo, useCallback, FunctionComponent } from 'react';
 import { Box, Typography, Grid } from '@mui/material';
-
 import {
     Select,
     useSafeIntl,
@@ -9,15 +7,18 @@ import {
     IconButton,
 } from 'bluesquare-components';
 import L from 'leaflet';
-import PropTypes from 'prop-types';
-
 import { useGetColors, getColor } from 'Iaso/hooks/useGetColors';
-
 import { useGetInstances } from '../hooks/useGetInstances';
-
 import MESSAGES from '../messages';
 
-export const FormsFilterComponent = ({
+type Props = {
+    formsSelected: any[];
+    setFormsSelected: React.Dispatch<React.SetStateAction<any>>;
+    currentOrgUnit: Record<string, any>;
+    map: Record<string, any>;
+};
+
+export const FormsFilterComponent: FunctionComponent<Props> = ({
     setFormsSelected,
     formsSelected,
     currentOrgUnit,
@@ -122,16 +123,3 @@ export const FormsFilterComponent = ({
         </Box>
     );
 };
-
-FormsFilterComponent.defaultProps = {
-    setFormsSelected: () => null,
-};
-
-FormsFilterComponent.propTypes = {
-    formsSelected: PropTypes.array.isRequired,
-    setFormsSelected: PropTypes.func,
-    currentOrgUnit: PropTypes.object.isRequired,
-    map: PropTypes.object.isRequired,
-};
-
-export default FormsFilterComponent;

@@ -43,7 +43,7 @@ export const useGetInstancesFilesCount = params =>
     useSnackQuery({
         queryKey: ['instances', 'files', 'count', params],
         queryFn: () => getRequest(getFileCountUrl(params)),
-        snackMessage: snackMessages.fetchInstanceLocationError,
+        snackErrorMsg: snackMessages.fetchInstanceLocationError,
         options: {
             keepPreviousData: true,
             cacheTime: 60000,

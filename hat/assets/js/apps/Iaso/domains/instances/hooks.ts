@@ -1,10 +1,10 @@
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 import MESSAGES from './messages';
 
 export const useGetForms = () => {
     const params = {
-        all: true,
+        all: 'true',
         order: 'name',
         fields: 'name,period_type,label_keys,id,latest_form_version',
     };
@@ -17,7 +17,7 @@ export const useGetForms = () => {
 
 export const useGetFormsByProjects = () => {
     const params = {
-        all: true,
+        all: 'true',
         order: 'name',
         fields: 'name,period_type,label_keys,id,projects',
     };

@@ -1,18 +1,28 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Box, Button } from '@mui/material';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import FormVersionsDialog from './FormVersionsDialogComponent';
-import { baseUrls } from '../../../constants/urls.ts';
+import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
-import { FormVersionsTable } from './FormVersionsTable.tsx';
+import { FormVersionsTable } from './FormVersionsTable';
 
 const baseUrl = baseUrls.formDetail;
-const FormVersionsComponent = ({ periodType, formId, params }) => {
+
+type Props = {
+    params: Record<string, any>;
+    periodType?: string;
+    formId?: number;
+};
+
+const FormVersionsComponent: FunctionComponent<Props> = ({
+    periodType = PERIOD_TYPE_DAY,
+    formId,
+    params,
+}) => {
     const { formatMessage } = useSafeIntl();
     if (!formId) return null;
     const templateUrl = `${
@@ -56,17 +66,6 @@ const FormVersionsComponent = ({ periodType, formId, params }) => {
             />
         </Box>
     );
-};
-
-FormVersionsComponent.defaultProps = {
-    periodType: PERIOD_TYPE_DAY,
-    formId: null,
-};
-
-FormVersionsComponent.propTypes = {
-    periodType: PropTypes.string,
-    formId: PropTypes.number,
-    params: PropTypes.object.isRequired,
 };
 
 export default FormVersionsComponent;

@@ -877,5 +877,7 @@
     "iaso.polio.performance.add": "Ajouter une donnée de performance",
     "iaso.polio.performance.status.draft": "Brouillon",
     "iaso.polio.performance.status.commented": "Commenté",
-    "iaso.polio.performance.status.final": "Final"
+    "iaso.polio.performance.status.final": "Final",
+    "iaso.polio.antigen": "Antigen",
+    "iaso.label.edit": "Modifier"
 }

@@ -871,5 +871,14 @@
     "iaso.polio.validation.onsetAfterNotificationError": "Date of onset should be before virus notification",
     "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "Date of onset should be before outbreak declaration",
     "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration",
-    "iaso.task.label.gotoLqasForCountry": "See LQAS page"
+    "iaso.task.label.gotoLqasForCountry": "See LQAS page",
+    "iaso.polio.performanceDashboard": "Performance Dashboard",
+    "iaso.polio.performance.delete": "Delete Performance Data: {name}",
+    "iaso.polio.performance.deleteWarning": "Are you sure you want to delete this entry?",
+    "iaso.polio.performance.add": "Add Performance Data",
+    "iaso.polio.performance.status.draft": "Draft",
+    "iaso.polio.performance.status.commented": "Commented",
+    "iaso.polio.performance.status.final": "Final",
+    "iaso.polio.antigen": "Antigen",
+    "iaso.label.edit": "Edit"
 }

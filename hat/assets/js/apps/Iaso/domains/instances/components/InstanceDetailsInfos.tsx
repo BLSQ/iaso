@@ -1,15 +1,17 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import get from 'lodash/get';
-
 import { useSafeIntl } from 'bluesquare-components';
 import InstanceDetailsField from './InstanceDetailsField';
-
 import MESSAGES from '../messages';
 
-const InstanceDetailsInfos = ({
+type Props = {
+    currentInstance: any;
+    fieldsToHide?: any[];
+    instance_metas_fields: any;
+};
+const InstanceDetailsInfos: FunctionComponent<Props> = ({
     currentInstance,
-    fieldsToHide,
+    fieldsToHide = [],
     instance_metas_fields,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -35,7 +37,7 @@ const InstanceDetailsInfos = ({
                             MESSAGES[
                                 'labelKey' in f
                                     ? f.labelKey
-                                    : f.translationKey ?? f.key
+                                    : (f.translationKey ?? f.key)
                             ],
                         )}
                         valueTitle={
@@ -49,13 +51,4 @@ const InstanceDetailsInfos = ({
     );
 };
 
-InstanceDetailsInfos.defaultProps = {
-    fieldsToHide: [],
-};
-
-InstanceDetailsInfos.propTypes = {
-    currentInstance: PropTypes.object.isRequired,
-    fieldsToHide: PropTypes.array,
-    instance_metas_fields: PropTypes.array.isRequired,
-};
 export default InstanceDetailsInfos;

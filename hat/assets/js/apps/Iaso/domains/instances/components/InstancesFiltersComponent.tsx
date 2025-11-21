@@ -10,37 +10,35 @@ import {
     useSkipEffectOnMount,
     InputWithInfos,
 } from 'bluesquare-components';
-import PropTypes from 'prop-types';
-
 import DatesRange from '../../../components/filters/DatesRange';
-import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
-import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect';
+import InputComponent from '../../../components/forms/InputComponent';
+import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { Popper } from '../../forms/fields/components/Popper.tsx';
-import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
-import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
-import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
+import { Popper } from '../../forms/fields/components/Popper';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
+import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace';
+import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
+import PeriodPicker from '../../periods/components/PeriodPicker';
 import { periodTypeOptions } from '../../periods/constants';
-import { Period } from '../../periods/models.ts';
+import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
 
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { INSTANCE_STATUSES } from '../constants';
 
 import { useGetForms } from '../hooks';
-import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
-import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
+import { getUsersDropDown } from '../hooks/requests/getUsersDropDown';
+import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown';
 import MESSAGES from '../messages';
-import { parseJson } from '../utils/jsonLogicParse.ts';
+import { parseJson } from '../utils/jsonLogicParse';
 
-import { ColumnSelect } from './ColumnSelect.tsx';
+import { ColumnSelect } from './ColumnSelect';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -64,10 +62,24 @@ const filterDefault = params => ({
     mapResults: params.mapResults ? 3000 : params.mapResults,
 });
 
+type Props = {
+    params: any;
+    onSearch: (params: any) => void;
+    setFormIds: React.Dispatch<React.SetStateAction<any>>;
+    setTableColumns: React.Dispatch<React.SetStateAction<any>>;
+    baseUrl: string;
+    tab: string;
+    tableColumns: any[];
+    labelKeys: any[];
+    periodType?: string;
+    possibleFields?: any[];
+    formDetails?: any;
+};
+
 const InstancesFiltersComponent = ({
     params,
     onSearch,
-    possibleFields,
+    possibleFields = [],
     setFormIds,
     periodType,
     setTableColumns,
@@ -585,25 +597,6 @@ const InstancesFiltersComponent = ({
             </Grid>
         </div>
     );
-};
-
-InstancesFiltersComponent.defaultProps = {
-    possibleFields: [],
-    periodType: undefined,
-    formDetails: undefined,
-};
-
-InstancesFiltersComponent.propTypes = {
-    params: PropTypes.object.isRequired,
-    onSearch: PropTypes.func.isRequired,
-    setFormIds: PropTypes.func.isRequired,
-    setTableColumns: PropTypes.func.isRequired,
-    baseUrl: PropTypes.string.isRequired,
-    tab: PropTypes.string.isRequired,
-    tableColumns: PropTypes.array.isRequired,
-    labelKeys: PropTypes.array.isRequired,
-    periodType: PropTypes.string,
-    possibleFields: PropTypes.array,
 };
 
 export default InstancesFiltersComponent;

@@ -1,14 +1,11 @@
+import React, { useState, FunctionComponent } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { DialogContentText } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import PropTypes from 'prop-types';
-import React, { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { bulkDelete } from '../actions';
-
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(() => ({
@@ -18,8 +15,19 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
-const DeleteInstanceDialog = ({
-    selection,
+type Props = {
+    selection: { selectCount: number; filters?: any };
+    filters: Record<string, any>;
+    setForceRefresh: () => void;
+    resetSelection: () => void;
+    isUnDeleteAction: boolean;
+};
+
+const DeleteInstanceDialog: FunctionComponent<Props> = ({
+    selection = {
+        selectCount: 0,
+        filters: undefined,
+    },
     filters,
     setForceRefresh,
     resetSelection,
@@ -69,20 +77,6 @@ const DeleteInstanceDialog = ({
             </DialogContentText>
         </ConfirmCancelDialogComponent>
     );
-};
-
-DeleteInstanceDialog.defaultProps = {
-    selection: {
-        selectCount: 0,
-        filters: undefined,
-    },
-};
-DeleteInstanceDialog.propTypes = {
-    selection: PropTypes.object,
-    filters: PropTypes.object.isRequired,
-    setForceRefresh: PropTypes.func.isRequired,
-    resetSelection: PropTypes.func.isRequired,
-    isUnDeleteAction: PropTypes.bool.isRequired,
 };
 
 export default DeleteInstanceDialog;

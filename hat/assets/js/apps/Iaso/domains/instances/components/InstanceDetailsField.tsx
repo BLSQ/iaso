@@ -1,11 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Grid, Typography } from '@mui/material';
-import { withStyles } from '@mui/styles';
-
+import { makeStyles } from '@mui/styles';
 import { textPlaceholder, commonStyles } from 'bluesquare-components';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         padding: theme.spacing(2),
@@ -21,16 +19,24 @@ const styles = theme => ({
     value: {
         wordBreak: 'break-all',
     },
-});
+}));
 
-const InstanceDetailsField = ({
-    classes,
+type Props = {
+    renderValue?: any;
+    label: string;
+    value?: any;
+    Icon?: any;
+    valueTitle: any;
+};
+
+const InstanceDetailsField: FunctionComponent<Props> = ({
     label,
     value,
     Icon,
-    valueTitle,
+    valueTitle = '',
     renderValue,
 }) => {
+    const classes: Record<string, string> = useStyles();
     return (
         <Grid container spacing={1}>
             <Grid xs={5} item>
@@ -68,19 +74,4 @@ const InstanceDetailsField = ({
     );
 };
 
-InstanceDetailsField.defaultProps = {
-    Icon: null,
-    valueTitle: '',
-    value: null,
-    renderValue: null,
-};
-
-InstanceDetailsField.propTypes = {
-    classes: PropTypes.object.isRequired,
-    renderValue: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-    label: PropTypes.string.isRequired,
-    value: PropTypes.any,
-    Icon: PropTypes.object,
-    valueTitle: PropTypes.oneOfType([PropTypes.node, PropTypes.string]),
-};
-export default withStyles(styles)(InstanceDetailsField);
+export default InstanceDetailsField;

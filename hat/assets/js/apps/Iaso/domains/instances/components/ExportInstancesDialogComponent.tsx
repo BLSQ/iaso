@@ -1,14 +1,16 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-
-import { injectIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { createExportRequest } from '../actions';
-
 import MESSAGES from '../messages';
 
-const ExportInstancesDialogComponent = ({
+type Props = {
+    getFilters: () => any;
+    renderTrigger: (openDialog: () => void) => React.JSX.Element;
+    selection?: Record<string, any>;
+};
+
+const ExportInstancesDialogComponent: FunctionComponent<Props> = ({
     getFilters,
     renderTrigger,
     selection,
@@ -54,14 +56,5 @@ const ExportInstancesDialogComponent = ({
         </ConfirmCancelDialogComponent>
     );
 };
-ExportInstancesDialogComponent.defaultProps = {
-    selection: null,
-};
 
-ExportInstancesDialogComponent.propTypes = {
-    getFilters: PropTypes.func.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    selection: PropTypes.object,
-};
-
-export default injectIntl(ExportInstancesDialogComponent);
+export default ExportInstancesDialogComponent;

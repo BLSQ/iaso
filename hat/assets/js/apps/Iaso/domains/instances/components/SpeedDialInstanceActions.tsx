@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { makeStyles } from '@mui/styles';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import PropTypes from 'prop-types';
 import EditIcon from '@mui/icons-material/Settings';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
@@ -20,10 +19,19 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const SpeedDialInstanceActions = props => {
-    const { onActionSelected, speedDialClasses, actions } = props;
+type Props = {
+    actions: any[];
+    onActionSelected: (action: any) => void;
+    speedDialClasses?: string;
+};
+
+const SpeedDialInstanceActions: FunctionComponent<Props> = ({
+    onActionSelected,
+    speedDialClasses = '',
+    actions,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const [open, setOpen] = React.useState(false);
 
     const handleOpen = () => {
@@ -63,15 +71,6 @@ const SpeedDialInstanceActions = props => {
             </SpeedDial>
         </div>
     );
-};
-
-SpeedDialInstanceActions.propTypes = {
-    actions: PropTypes.array.isRequired,
-    onActionSelected: PropTypes.func.isRequired,
-    speedDialClasses: PropTypes.string,
-};
-SpeedDialInstanceActions.defaultProps = {
-    speedDialClasses: '',
 };
 
 export default SpeedDialInstanceActions;

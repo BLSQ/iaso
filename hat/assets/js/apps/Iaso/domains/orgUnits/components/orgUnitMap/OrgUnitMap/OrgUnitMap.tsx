@@ -35,7 +35,7 @@ import {
 } from '../../../../../utils/map/mapUtils';
 import * as Permission from '../../../../../utils/permissions';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
-import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
+import { FormsFilterComponent } from '../../../../forms/components/FormsFilterComponent';
 import { userHasPermission } from '../../../../users/utils';
 import MESSAGES from '../../../messages';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';

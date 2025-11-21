@@ -1,8 +1,8 @@
+import React from 'react';
 import Info from '@mui/icons-material/Info';
 import { Box, Container, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { ClassNameMap } from 'notistack';
-import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import TopBar from '../nav/TopBarComponent';
 

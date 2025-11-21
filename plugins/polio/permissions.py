@@ -179,7 +179,7 @@ POLIO_PERFORMANCE_READ_ONLY_PERMISSION = PolioPermission(
 )
 POLIO_PERFORMANCE_NON_ADMIN_PERMISSION = PolioPermission(
     codename="iaso_polio_performance_non_admin",
-    label=_("Polio Performance"),
+    label=_("Polio Performance Non Admin"),
     module=MODULE_POLIO_PROJECT,
     ui_group=PERMISSION_GROUP_POLIO,
     ui_category="iaso_polio_performance_permissions",

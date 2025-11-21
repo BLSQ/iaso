@@ -79,7 +79,7 @@ def recreate_account(account_name):
 
 
 @task_decorator(task_name="setuper_sandbox")
-def setuper_sandbox(name, task=None):
+def setuper_sandbox(name="admin", task=None):
     ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
     if ENABLE_SETUPER_SANDBOX:
         logger.warning(f" .... Resetting {name} account and its data! ...")

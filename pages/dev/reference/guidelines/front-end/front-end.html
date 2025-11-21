@@ -817,6 +817,60 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#react-query-best-practices" class="md-nav__link">
+    React Query Best Practices
+  </a>
+  
+    <nav class="md-nav" aria-label="React Query Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-key-structure" class="md-nav__link">
+    Query Key Structure
+  </a>
+  
+    <nav class="md-nav" aria-label="Query Key Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recommended-pattern" class="md-nav__link">
+    Recommended Pattern
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invalidation-scopes" class="md-nav__link">
+    Invalidation Scopes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-keys-for-filtered-lists" class="md-nav__link">
+    Query Keys for Filtered Lists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    Common Patterns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#remarks" class="md-nav__link">
     Remarks
   </a>
@@ -1137,6 +1191,111 @@ export const useSkipEffectOnMount = (func:Function, deps:Array&lt;unknown&gt;) =
     }, deps);
 };
 
+</code></pre>
+<h2 id="react-query-best-practices">React Query Best Practices<a class="headerlink" href="#react-query-best-practices" title="Permanent link">#</a></h2>
+<h3 id="query-key-structure">Query Key Structure<a class="headerlink" href="#query-key-structure" title="Permanent link">#</a></h3>
+<p>Query keys in React Query use hierarchical matching for cache invalidation. Following a consistent structure is critical for maintainability and performance.</p>
+<h4 id="recommended-pattern">Recommended Pattern<a class="headerlink" href="#recommended-pattern" title="Permanent link">#</a></h4>
+<pre><code class="language-typescript">// List queries - plural noun
+['forms']
+['orgUnits']
+['users']
+
+// Individual item - [resource, id]
+['forms', formId]  // formId as number, not string
+['orgUnits', orgUnitId]
+
+// Nested data - [resource, id, property]
+['forms', formId, 'possible_fields']
+['forms', formId, 'versions']
+['orgUnits', orgUnitId, 'children']
+</code></pre>
+<p><strong>Key Principles:</strong></p>
+<ol>
+<li><strong>Use raw values, not prefixed strings</strong>: Use <code>['forms', 123]</code> not <code>['forms', 'form-123']</code></li>
+<li><strong>Use numbers directly</strong>: Use <code>formId</code> (number) not <code>`form-${formId}`</code> (string)</li>
+<li><strong>Consistent hierarchy</strong>: Always follow <code>[resource, id, property]</code> pattern</li>
+<li><strong>Plural for lists, singular for instances</strong>: <code>['forms']</code> for list, but nested keys can be singular</li>
+</ol>
+<h4 id="invalidation-scopes">Invalidation Scopes<a class="headerlink" href="#invalidation-scopes" title="Permanent link">#</a></h4>
+<pre><code class="language-typescript">// Invalidate ALL forms-related queries (list, details, dropdowns, all IDs)
+queryClient.invalidateQueries(['forms']);
+
+// Invalidate only form #123 and its nested data
+queryClient.invalidateQueries(['forms', 123]);
+// Matches: ['forms', 123], ['forms', 123, 'possible_fields'], ['forms', 123, 'versions']
+// Does NOT match: ['forms'], ['forms', 456]
+
+// Invalidate specific nested property only
+queryClient.invalidateQueries(['forms', 123, 'possible_fields']);
+// Matches only: ['forms', 123, 'possible_fields']
+</code></pre>
+<h4 id="query-keys-for-filtered-lists">Query Keys for Filtered Lists<a class="headerlink" href="#query-keys-for-filtered-lists" title="Permanent link">#</a></h4>
+<p>When building queries with multiple parameters (pagination, filters, sorting), use the params object directly in the query key:</p>
+<pre><code class="language-typescript">// ✅ GOOD - params object in query key
+const apiParams = useApiParams(tableParams, tableDefaults);
+const queryString = new URLSearchParams(apiParams).toString();
+
+useSnackQuery({
+    queryKey: ['forms', apiParams],  // Object handles order automatically
+    queryFn: () =&gt; getRequest(`/api/forms/?${queryString}`),
+});
+
+// ❌ BAD - query string in key (parameter order creates duplicate cache entries)
+useSnackQuery({
+    queryKey: ['forms', queryString],  // 'page=1&amp;limit=10' vs 'limit=10&amp;page=1' = different keys!
+    queryFn: () =&gt; getRequest(`/api/forms/?${queryString}`),
+});
+</code></pre>
+<p><strong>Benefits:</strong>
+- React Query normalizes object keys, preventing duplicate cache entries due to parameter order
+- Easier to invalidate selectively (e.g., all pages for a specific filter)
+- More readable and maintainable</p>
+<h4 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">#</a></h4>
+<p><strong>After mutation, invalidate related queries:</strong></p>
+<pre><code class="language-typescript">// Creating a new form
+useMutation({
+    mutationFn: createForm,
+    onSuccess: () =&gt; {
+        queryClient.invalidateQueries(['forms']); // Refresh the list
+    }
+});
+
+// Updating an existing form
+useMutation({
+    mutationFn: updateForm,
+    onSuccess: (data, variables) =&gt; {
+        // Option 1: Invalidate everything (list + all details)
+        queryClient.invalidateQueries(['forms']);
+
+        // Option 2: Only invalidate this specific form (if list doesn't show form details)
+        // queryClient.invalidateQueries(['forms', variables.id]);
+    }
+});
+
+// Deleting a form
+useMutation({
+    mutationFn: deleteForm,
+    onSuccess: () =&gt; {
+        queryClient.invalidateQueries(['forms']); // Only refresh list
+    }
+});
+</code></pre>
+<p><strong>Using nested query keys:</strong></p>
+<pre><code class="language-typescript">// In your hook
+export const useGetPossibleFields = (formId: number) =&gt; {
+    return useSnackQuery({
+        queryKey: ['forms', formId, 'possible_fields'],
+        queryFn: () =&gt; getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+        options: {
+            enabled: Boolean(formId),
+        },
+    });
+};
+
+// When form is updated, invalidate all its data
+queryClient.invalidateQueries(['forms', formId]); 
+// This invalidates 'possible_fields', 'versions', etc.
 </code></pre>
 <h2 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">#</a></h2>
 <ul>

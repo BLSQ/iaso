@@ -1,32 +1,44 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import React, { FunctionComponent } from 'react';
 import { Button, DialogActions } from '@mui/material';
-import { withStyles } from '@mui/styles';
-
+import { makeStyles } from '@mui/styles';
+import { FormattedMessage } from 'react-intl';
 import DialogComponent from './DialogComponent';
 import MESSAGES from './messages';
+import { IntlMessage } from 'bluesquare-components';
 
-const actionStyles = theme => ({
+const useActionStyles = makeStyles(theme => ({
     action: {
         paddingBottom: theme.spacing(2),
         paddingRight: theme.spacing(2),
     },
-});
+}));
 
-function RawConfirmCancelActions({
-    classes,
+type ActionProps = {
+    closeDialog: () => void;
+    allowConfirm: boolean;
+    onConfirm: (closeDialog: () => void) => void;
+    onCancel: (closeDialog: () => void) => void;
+    confirmMessage: IntlMessage;
+    cancelMessage: IntlMessage;
+    additionalButton?: boolean;
+    additionalMessage?: IntlMessage | null;
+    onAdditionalButtonClick?: (closeDialog: () => void) => void | null;
+    allowConfimAdditionalButton?: boolean | null;
+};
+/** @deprecated */
+export const ConfirmCancelActions: FunctionComponent<ActionProps> = ({
     closeDialog,
     allowConfirm,
     onConfirm,
     confirmMessage,
     onCancel,
     cancelMessage,
-    additionalButton,
-    additionalMessage,
-    onAdditionalButtonClick,
-    allowConfimAdditionalButton,
-}) {
+    additionalButton = false,
+    additionalMessage = null,
+    onAdditionalButtonClick = null,
+    allowConfimAdditionalButton = null,
+}) => {
+    const classes = useActionStyles();
     return (
         <DialogActions className={classes.action}>
             <Button
@@ -64,44 +76,48 @@ function RawConfirmCancelActions({
                 )}
         </DialogActions>
     );
-}
-RawConfirmCancelActions.defaultProps = {
-    additionalButton: false,
-    additionalMessage: null,
-    onAdditionalButtonClick: null,
-    allowConfimAdditionalButton: null,
 };
-RawConfirmCancelActions.propTypes = {
-    classes: PropTypes.object.isRequired,
-    closeDialog: PropTypes.func.isRequired,
-    allowConfirm: PropTypes.bool.isRequired,
-    onConfirm: PropTypes.func.isRequired,
-    confirmMessage: PropTypes.object.isRequired, // TODO: make a message prop type
-    onCancel: PropTypes.func.isRequired,
-    cancelMessage: PropTypes.object.isRequired, // TODO: make a message prop type
-    additionalButton: PropTypes.bool,
-    additionalMessage: PropTypes.object || null,
-    onAdditionalButtonClick: PropTypes.func || null,
-    allowConfimAdditionalButton: PropTypes.bool,
+
+type Props = {
+    allowConfirm: boolean;
+    onConfirm: (closeDialog: () => void) => void;
+    onCancel?: (closeDialog: () => void) => void;
+    maxWidth: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    onClosed: () => void;
+    onOpen: () => void;
+    id?: string;
+    dataTestId?: string;
+    confirmMessage?: IntlMessage;
+    cancelMessage?: IntlMessage;
+    additionalButton?: boolean;
+    additionalMessage?: IntlMessage | null;
+    onAdditionalButtonClick?: (closeDialog: () => void) => void | null;
+    allowConfimAdditionalButton?: boolean | null;
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;
 };
-export const ConfirmCancelActions = withStyles(actionStyles)(
-    RawConfirmCancelActions,
-);
+
 /** @deprecated */
 /** Use `ConfirmCancelModal` from bluesquare-components instead */
-const ConfirmCancelDialogComponent = ({
-    allowConfirm,
+const ConfirmCancelDialogComponent: FunctionComponent<Props> = ({
+    renderTrigger,
+    dataTestId = '',
     onConfirm,
-    confirmMessage,
-    onCancel,
-    cancelMessage,
-    additionalButton,
+    allowConfirm = true,
+    onCancel = closeDialog => closeDialog(),
+    confirmMessage = MESSAGES.yes,
+    cancelMessage = MESSAGES.no,
+    additionalButton = false,
+    allowConfimAdditionalButton,
     additionalMessage,
     onAdditionalButtonClick,
-    allowConfimAdditionalButton,
     id,
-    dataTestId,
-    ...dialogProps
+    maxWidth = 'sm',
+    onClosed = () => {},
+    onOpen = () => {},
 }) => {
     return (
         <DialogComponent
@@ -121,40 +137,12 @@ const ConfirmCancelDialogComponent = ({
                     allowConfimAdditionalButton={allowConfimAdditionalButton}
                 />
             )}
-            {...dialogProps}
+            maxWidth={maxWidth}
+            onOpen={onOpen}
+            onClosed={onClosed}
+            renderTrigger={renderTrigger}
         />
     );
-};
-ConfirmCancelDialogComponent.defaultProps = {
-    allowConfirm: true,
-    onCancel: closeDialog => closeDialog(),
-    confirmMessage: MESSAGES.yes,
-    cancelMessage: MESSAGES.no,
-    maxWidth: 'sm',
-    onClosed: () => {},
-    onOpen: () => {},
-    additionalButton: false,
-    additionalMessage: null,
-    onAdditionalButtonClick: null,
-    allowConfimAdditionalButton: null,
-    id: undefined,
-    dataTestId: '',
-};
-ConfirmCancelDialogComponent.propTypes = {
-    allowConfirm: PropTypes.bool,
-    onConfirm: PropTypes.func.isRequired,
-    confirmMessage: PropTypes.object, // TODO: make a message prop type
-    onCancel: PropTypes.func,
-    cancelMessage: PropTypes.object, // TODO: make a message prop type
-    maxWidth: PropTypes.string,
-    onClosed: PropTypes.func,
-    onOpen: PropTypes.func,
-    additionalButton: PropTypes.bool,
-    additionalMessage: PropTypes.object || null,
-    onAdditionalButtonClick: PropTypes.func || null,
-    allowConfimAdditionalButton: PropTypes.bool,
-    id: PropTypes.string,
-    dataTestId: PropTypes.string,
 };
 
 export default ConfirmCancelDialogComponent;

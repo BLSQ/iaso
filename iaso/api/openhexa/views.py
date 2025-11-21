@@ -313,7 +313,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 return Response({"configured": False})
 
             account = request.user.iaso_profile.account
-            *_, workspace = get_openhexa_config(account, silent=True)
+            *_, workspace = get_openhexa_config(account)
 
             # If we reach here, config is valid
             response_data = {"configured": True}

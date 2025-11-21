@@ -32,9 +32,7 @@ class PerformanceDashboardListSerializer(serializers.ModelSerializer):
     # For read operations, we want to display the country's name
     country_name = serializers.CharField(source="country.name", read_only=True)
     # For write operations (create/update), we expect the country ID
-    country_id = serializers.PrimaryKeyRelatedField(
-        source="country", queryset=OrgUnit.objects.all(), write_only=True
-    )
+    country_id = serializers.PrimaryKeyRelatedField(source="country", queryset=OrgUnit.objects.all(), write_only=True)
 
     class Meta:
         model = PerformanceDashboard
@@ -51,16 +49,12 @@ class PerformanceDashboardListSerializer(serializers.ModelSerializer):
             "updated_at",
             "updated_by",
         ]
-        read_only_fields = [
-            "account"
-        ]  # Account will be set automatically by the view or create method
+        read_only_fields = ["account"]  # Account will be set automatically by the view or create method
 
 
 class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
     # Expect the country ID for write operations
-    country_id = serializers.PrimaryKeyRelatedField(
-        source="country", queryset=OrgUnit.objects.all(), write_only=True
-    )
+    country_id = serializers.PrimaryKeyRelatedField(source="country", queryset=OrgUnit.objects.all(), write_only=True)
 
     class Meta:
         model = PerformanceDashboard
@@ -73,7 +67,6 @@ class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
         ]
         # read_only_fields = ["account"] # No longer needed here
 
-
     def create(self, validated_data):
         request = self.context.get("request")
 
@@ -81,29 +74,17 @@ class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
             try:
                 profile = request.user.iaso_profile
                 validated_data["created_by"] = request.user
-                validated_data["account"] = (
-                    profile.account
-                )  # Ensure account is set here
+                validated_data["account"] = profile.account  # Ensure account is set here
             except AttributeError as e:
-                logger.error(
-                    f"User {request.user} does not have an iaso_profile or account: {e}"
-                )
+                logger.error(f"User {request.user} does not have an iaso_profile or account: {e}")
                 raise serializers.ValidationError("User profile or account not found.")
             except Exception as e:
-                logger.error(
-                    f"Unexpected error getting profile/account for {request.user}: {e}"
-                )
-                raise serializers.ValidationError(
-                    "Unexpected error encountered while fetching profile/account."
-                )
+                logger.error(f"Unexpected error getting profile/account for {request.user}: {e}")
+                raise serializers.ValidationError("Unexpected error encountered while fetching profile/account.")
         else:
             # This should ideally not happen if permissions are checked correctly before the serializer
-            logger.error(
-                "Request or authenticated user not available in context during creation."
-            )
-            raise serializers.ValidationError(
-                "Request context or authenticated user missing."
-            )
+            logger.error("Request or authenticated user not available in context during creation.")
+            raise serializers.ValidationError("Request context or authenticated user missing.")
 
         # Call the parent create method with the updated validated_data
         return super().create(validated_data)

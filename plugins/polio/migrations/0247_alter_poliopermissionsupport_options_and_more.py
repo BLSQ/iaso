@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0352_alter_account_modules"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -165,12 +164,8 @@ class Migration(migrations.Migration):
                 "verbose_name": "Performance Dashboard",
                 "ordering": ["-date", "country__name"],
                 "indexes": [
-                    models.Index(
-                        fields=["account"], name="polio_perfo_account_aa3e44_idx"
-                    ),
-                    models.Index(
-                        fields=["country"], name="polio_perfo_country_1ff62b_idx"
-                    ),
+                    models.Index(fields=["account"], name="polio_perfo_account_aa3e44_idx"),
+                    models.Index(fields=["country"], name="polio_perfo_country_1ff62b_idx"),
                 ],
             },
         ),

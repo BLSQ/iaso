@@ -24,6 +24,7 @@ class PerformanceDashboardQuerySet(QuerySet):
         profile = user.iaso_profile
         return self.filter(account=profile.account)
 
+
 class PerformanceDashboard(SoftDeletableModel):
     class Status(models.TextChoices):
         DRAFT = "draft", _("Draft")
@@ -38,12 +39,7 @@ class PerformanceDashboard(SoftDeletableModel):
         related_name="performance_dashboard",
     )
     antigen = models.CharField(max_length=20, choices=VACCINES)
-    account = models.ForeignKey(
-    Account,
-    on_delete=models.CASCADE,
-    related_name="performance_dashboard",
-    null=False
-    )
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="performance_dashboard", null=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
@@ -74,8 +70,8 @@ class PerformanceDashboard(SoftDeletableModel):
         indexes = [
             models.Index(fields=["account"]),
             models.Index(fields=["country"]),
-
         ]
+
     # No unique constraint specified in the ticket, so omitting for now.
     def __str__(self):
-            return f"{self.country.name} - {self.date} - {self.antigen()}"
+        return f"{self.country.name} - {self.date} - {self.antigen()}"

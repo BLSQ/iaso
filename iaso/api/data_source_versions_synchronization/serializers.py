@@ -96,8 +96,6 @@ class DataSourceVersionsSynchronizationSerializer(DynamicFieldsModelSerializer):
         source_version_to_update = validated_data["source_version_to_update"]
         source_version_to_compare_with = validated_data["source_version_to_compare_with"]
 
-        if source_version_to_update.data_source_id != source_version_to_compare_with.data_source_id:
-            raise serializers.ValidationError("The two versions to compare must be linked to the same data source.")
         if source_version_to_update.pk == source_version_to_compare_with.pk:
             raise serializers.ValidationError("The two versions to compare must be different.")
 

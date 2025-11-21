@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import HelpOutline from '@mui/icons-material/HelpOutline';
 import NotAuthorized from '@mui/icons-material/NotInterested';
 import { Paper, Container, Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import PropTypes from 'prop-types';
+
 import { FormattedMessage } from 'react-intl';
 import TopBar from '../nav/TopBarComponent';
 
@@ -12,13 +12,24 @@ import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     icon: {
+        //@ts-ignore
         color: theme.palette.ligthGray.border,
         fontWeight: 'light',
         fontSize: 150,
     },
 }));
 
-const PageError = ({ errorCode, displayMenuButton, customMessage }) => {
+type Props = {
+    errorCode: string;
+    displayMenuButton: boolean;
+    customMessage?: string;
+};
+
+const PageError: FunctionComponent<Props> = ({
+    errorCode,
+    displayMenuButton = true,
+    customMessage,
+}) => {
     const classes = useStyles();
     return (
         <>
@@ -28,6 +39,8 @@ const PageError = ({ errorCode, displayMenuButton, customMessage }) => {
             />
             <Box mt={5}>
                 <Container maxWidth="md">
+                    {/* p prop is unknonw. Check it doesn't break the page before removing */}
+                    {/* @ts-ignore */}
                     <Paper p={3}>
                         <Box
                             py={6}
@@ -115,17 +128,6 @@ const PageError = ({ errorCode, displayMenuButton, customMessage }) => {
             </Box>
         </>
     );
-};
-
-PageError.defaultProps = {
-    displayMenuButton: true,
-    customMessage: null,
-};
-
-PageError.propTypes = {
-    errorCode: PropTypes.string.isRequired,
-    displayMenuButton: PropTypes.bool,
-    customMessage: PropTypes.string,
 };
 
 export default PageError;

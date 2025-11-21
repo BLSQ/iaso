@@ -130,3 +130,67 @@ class PlanningPipelineIntegrationTestCase(APITestCase):
         # Reload from database
         self.planning.refresh_from_db()
         self.assertEqual(self.planning.pipeline_uuids, test_uuids)
+
+    def test_target_org_unit_type_nullable(self):
+        """Test that target_org_unit_type can be null."""
+        self.assertIsNone(self.planning.target_org_unit_type)
+
+        self.planning.target_org_unit_type = None
+        self.planning.save()
+        self.planning.refresh_from_db()
+        self.assertIsNone(self.planning.target_org_unit_type)
+
+    def test_target_org_unit_type_assignment(self):
+        """Test assigning target_org_unit_type to planning."""
+        target_type = OrgUnitType.objects.create(name="Health Post")
+        target_type.projects.add(self.project)
+
+        self.planning.target_org_unit_type = target_type
+        self.planning.save()
+
+        self.planning.refresh_from_db()
+        self.assertEqual(self.planning.target_org_unit_type, target_type)
+        self.assertEqual(self.planning.target_org_unit_type.name, "Health Post")
+
+    def test_target_org_unit_type_reverse_relation(self):
+        """Test the reverse relation from OrgUnitType to Planning."""
+        target_type = OrgUnitType.objects.create(name="Clinic")
+        target_type.projects.add(self.project)
+
+        planning1 = Planning.objects.create(
+            name="Planning 1",
+            project=self.project,
+            team=self.team,
+            org_unit=self.org_unit,
+            target_org_unit_type=target_type,
+            created_by=self.user,
+        )
+        planning2 = Planning.objects.create(
+            name="Planning 2",
+            project=self.project,
+            team=self.team,
+            org_unit=self.org_unit,
+            target_org_unit_type=target_type,
+            created_by=self.user,
+        )
+
+        target_plannings = target_type.target_plannings.all()
+        self.assertEqual(target_plannings.count(), 2)
+        self.assertIn(planning1, target_plannings)
+        self.assertIn(planning2, target_plannings)
+
+    def test_target_org_unit_type_protect_on_delete(self):
+        """Test that deleting an OrgUnitType with plannings raises ProtectedError."""
+        from django.db.models import ProtectedError
+
+        target_type = OrgUnitType.objects.create(name="Hospital")
+        target_type.projects.add(self.project)
+
+        self.planning.target_org_unit_type = target_type
+        self.planning.save()
+
+        with self.assertRaises(ProtectedError):
+            target_type.delete()
+
+        self.planning.refresh_from_db()
+        self.assertEqual(self.planning.target_org_unit_type, target_type)

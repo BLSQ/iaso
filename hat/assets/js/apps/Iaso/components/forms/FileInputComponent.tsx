@@ -6,7 +6,6 @@ import {
     FormControl as FormControlComponent,
     IntlMessage,
 } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import MESSAGES from '../../domains/forms/messages';
 
 type Props = {

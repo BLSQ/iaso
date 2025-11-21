@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, FunctionComponent } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
@@ -6,15 +6,14 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import PropTypes from 'prop-types';
-import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
-import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import { LangSwitch } from '../../domains/home/components/LangSwitch';
+import { useSidebar } from '../../domains/app/contexts/SideBarContext.js';
+import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext';
+import { LangSwitch } from '../../domains/home/components/LangSwitch.js';
 import { useFindCustomComponent } from '../../plugins/hooks/customComponents';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { CurrentUserInfos } from './CurrentUser/index.tsx';
-import { HomePageButton } from './HomePageButton.tsx';
-import { LogoutButton } from './LogoutButton.tsx';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { CurrentUserInfos } from './CurrentUser/index';
+import { HomePageButton } from './HomePageButton';
+import { LogoutButton } from './LogoutButton';
 
 const styles = theme => ({
     menuButton: {
@@ -41,15 +40,23 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-function TopBar(props) {
-    const {
-        title,
-        children,
-        displayBackButton,
-        goBack,
-        displayMenuButton,
-        disableShadow,
-    } = props;
+type Props = {
+    title?: string;
+    children?: React.ReactNode;
+    displayBackButton?: boolean;
+    goBack?: () => void;
+    displayMenuButton?: boolean;
+    disableShadow?: boolean;
+};
+
+const TopBar: FunctionComponent<Props> = ({
+    title = '',
+    children,
+    displayBackButton = false,
+    goBack = () => null,
+    displayMenuButton = true,
+    disableShadow = false,
+}) => {
     const classes = useStyles();
 
     const { APP_TITLE } = useContext(ThemeConfigContext);
@@ -168,24 +175,6 @@ function TopBar(props) {
             {children}
         </AppBar>
     );
-}
-
-TopBar.defaultProps = {
-    children: null,
-    displayBackButton: false,
-    goBack: () => null,
-    title: '',
-    displayMenuButton: true,
-    disableShadow: false,
-};
-
-TopBar.propTypes = {
-    title: PropTypes.string,
-    children: PropTypes.any,
-    displayBackButton: PropTypes.bool,
-    goBack: PropTypes.func,
-    displayMenuButton: PropTypes.bool,
-    disableShadow: PropTypes.bool,
 };
 
 export default TopBar;

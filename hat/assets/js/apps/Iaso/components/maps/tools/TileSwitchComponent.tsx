@@ -1,21 +1,18 @@
-import React from 'react';
-
+import React, { FunctionComponent } from 'react';
+import RadioButtonChecked from '@mui/icons-material/RadioButtonChecked';
+import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
+import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
-import RadioButtonChecked from '@mui/icons-material/RadioButtonChecked';
-import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
-import Box from '@mui/material/Box';
-
-import PropTypes from 'prop-types';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
-
 import tiles from '../../../constants/mapTiles';
+import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
 
 import MESSAGES from '../messages';
 
+//@ts-ignore
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...innerDrawerStyles(theme),
@@ -42,10 +39,16 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-function TileSwitchComponent(props) {
-    const { currentTile } = props;
+type Props = {
+    currentTile: Record<string, any>;
+    setCurrentTile: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+};
+const TileSwitchComponent: FunctionComponent<Props> = ({
+    currentTile,
+    setCurrentTile,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     return (
         <Box py={2} component="div">
             <List className={classes.list}>
@@ -58,7 +61,7 @@ function TileSwitchComponent(props) {
                             className={classes.listItem}
                             key={key}
                             button
-                            onClick={() => props.setCurrentTile(tile)}
+                            onClick={() => setCurrentTile(tile)}
                         >
                             {isCurrentTile && (
                                 <RadioButtonChecked
@@ -83,11 +86,6 @@ function TileSwitchComponent(props) {
             </List>
         </Box>
     );
-}
-
-TileSwitchComponent.propTypes = {
-    currentTile: PropTypes.object.isRequired,
-    setCurrentTile: PropTypes.func.isRequired,
 };
 
 export default TileSwitchComponent;

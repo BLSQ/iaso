@@ -27,6 +27,7 @@ export const PerformanceDashboardTable: FunctionComponent<Props> = ({
             extraProps={{
                 loading: isFetching,
                 params,
+                defaultPageSize: 10,
             }}
         />
     );

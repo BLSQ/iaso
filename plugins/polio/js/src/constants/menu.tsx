@@ -1,6 +1,7 @@
 import React from 'react';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import CalendarToday from '@mui/icons-material/CalendarToday';
 import DonutSmallIcon from '@mui/icons-material/DonutSmall';
 import ExtensionIcon from '@mui/icons-material/Extension';
@@ -40,6 +41,7 @@ import {
     stockManagementPath,
     supplychainPath,
     vaccineRepositoryPath,
+    performanceDashboardPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -143,6 +145,12 @@ export const menu: MenuItem[] = [
                         key: 'stockmanagement',
                         permissions: stockManagementPath.permissions,
                         icon: props => <StorageIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.performanceDashboard,
+                        key: 'performanceDashboard',
+                        permissions: performanceDashboardPath.permissions,
+                        icon: props => <BarChartIcon {...props} />,
                     },
                     {
                         label: MESSAGES.vaccineRepository,

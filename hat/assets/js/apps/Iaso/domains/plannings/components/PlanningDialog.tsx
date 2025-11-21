@@ -12,6 +12,7 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
@@ -26,7 +27,6 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetPublishingStatusOptions } from '../constants';
-import { useGetForms } from '../hooks/requests/useGetForms';
 import {
     convertAPIErrorsToState,
     SavePlanningQuery,
@@ -142,9 +142,13 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         validateField,
     } = formik;
 
-    const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
-        values?.project,
-    );
+    const { data: formsDropdown, isFetching: isFetchingForms } =
+        useGetFormsDropdownOptions({
+            extraFields: ['project_ids'],
+            params: {
+                projectsIds: values?.project,
+            },
+        });
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown({
             project: values?.project,
@@ -186,8 +190,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         if (
             // Separating the check on formsDropDown and the find to skip the effect as long as forms haven't been fetched
             formsDropdown &&
-            !formsDropdown?.find(form =>
-                form.original?.project_ids.includes(values?.project),
+            !formsDropdown?.find(
+                form =>
+                    values?.project &&
+                    form.original?.project_ids?.includes(values?.project),
             )
         ) {
             setFieldValue('forms', null);

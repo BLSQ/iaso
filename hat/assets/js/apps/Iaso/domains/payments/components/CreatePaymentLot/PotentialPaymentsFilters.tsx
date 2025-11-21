@@ -3,26 +3,23 @@ import React, {
     FunctionComponent,
     SetStateAction,
     useCallback,
-    useMemo,
 } from 'react';
 import { Box, Grid } from '@mui/material';
 import { selectionInitialState, useSafeIntl } from 'bluesquare-components';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import DatesRange from '../../../../components/filters/DatesRange';
-import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { useFilterState } from '../../../../hooks/useFilterState';
-import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
 import { Selection } from '../../../orgUnits/types/selection';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
-import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
 import MESSAGES from '../../messages';
 import { PotentialPaymentParams, PotentialPayment } from '../../types';
-import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 
 const baseUrl = baseUrls.potentialPayments;
 type Props = {
@@ -38,17 +35,10 @@ export const PotentialPaymentsFilters: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    const { data: forms, isFetching: isLoadingForms } = useGetForms();
+    const { data: formOptions, isFetching: isLoadingForms } =
+        useGetFormsDropdownOptions();
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
-    const formOptions = useMemo(
-        () =>
-            forms?.map(form => ({
-                label: form.name,
-                value: form.id,
-            })) || [],
-        [forms],
-    );
     const onSearch = useCallback(() => {
         setSelection(selectionInitialState);
         handleSearch();

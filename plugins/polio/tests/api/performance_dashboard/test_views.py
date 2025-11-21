@@ -42,7 +42,9 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # PATCH (update) should be forbidden
-        response = self.client.patch(f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/", data={}, format="json")
+        response = self.client.patch(
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/", data={}, format="json"
+        )
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # DELETE should be forbidden
@@ -62,7 +64,9 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
 
         # Update should be allowed
         update_data = {"status": "final"}
-        response = self.client.patch(f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/", data=update_data, format="json")
+        response = self.client.patch(
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/", data=update_data, format="json"
+        )
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Delete should be forbidden
@@ -83,7 +87,7 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         """
         Test that a user can only list dashboards from their own account.
         """
-        self.client.force_authenticate(self.user_Hashirama) # User from Hokage account
+        self.client.force_authenticate(self.user_Hashirama)  # User from Hokage account
         response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -116,7 +120,11 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
 
         # Check that an ID from a *different* account is NOT present
         # dashboard_7 belongs to account_akatsuki and should NOT be visible to user_Hashirama
-        self.assertNotIn(self.dashboard_3.id, result_ids,"Dashboard from another account (Akatsuki) should not be listed for Hokage user")
+        self.assertNotIn(
+            self.dashboard_3.id,
+            result_ids,
+            "Dashboard from another account (Akatsuki) should not be listed for Hokage user",
+        )
 
     def test_create_sets_audit_fields_correctly(self):
         """

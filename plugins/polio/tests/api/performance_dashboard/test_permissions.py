@@ -9,6 +9,7 @@ class PerformanceDashboardPermissionsAPITestCase(PerformanceDashboardAPIBase):
     """
     Test cases for permissions on the Performance Dashboard API endpoint.
     """
+
     def test_list_unauthenticated_returns_401(self):
         """
         Unauthenticated users should not be able to list dashboards.
@@ -43,7 +44,9 @@ class PerformanceDashboardPermissionsAPITestCase(PerformanceDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # PATCH (update) should be forbidden
-        response = self.client.patch(f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_1.id}/", data={}, format="json")
+        response = self.client.patch(
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_1.id}/", data={}, format="json"
+        )
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # DELETE should be forbidden
@@ -72,9 +75,8 @@ class PerformanceDashboardPermissionsAPITestCase(PerformanceDashboardAPIBase):
         # PATCH (update) should be allowed
         update_data = {"status": "final"}
         response = self.client.patch(
-            f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_1.id}/",
-            data=update_data,
-            format="json")
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_1.id}/", data=update_data, format="json"
+        )
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # DELETE should be forbidden

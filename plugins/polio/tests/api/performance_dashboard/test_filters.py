@@ -73,4 +73,3 @@ class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
         result_ids = {item["id"] for item in response_data["results"]}
         self.assertIn(self.dashboard_2.id, result_ids)
         self.assertIn(self.dashboard_7.id, result_ids)
-

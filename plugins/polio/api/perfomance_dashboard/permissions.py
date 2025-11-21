@@ -28,9 +28,9 @@ class HasPerformanceDashboardWritePermission(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.has_perm(
-            POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name()
-        ) or request.user.has_perm(POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name())
+        return request.user.has_perm(POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
+            POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name()
+        )
 
 
 class HasPerformanceDashboardAdminPermission(permissions.BasePermission):

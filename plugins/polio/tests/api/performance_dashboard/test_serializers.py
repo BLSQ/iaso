@@ -53,12 +53,12 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
             "status": "draft",
             "antigen": "bOPV",
             "country_id": self.konoha.id,
-
         }
         # Ensure the user has an iaso_profile and an account
         if not hasattr(self.user_Hashirama, "iaso_profile"):
             self.user_Hashirama.iaso_profile = m.IasoProfile.objects.create(
-                user=self.user_Hashirama,account=self.account_hokage)
+                user=self.user_Hashirama, account=self.account_hokage
+            )
             self.user_Hashirama.save()
         # We need to mock a request to pass in the context,
         # because the serializer's create method needs it to get the user and account.

@@ -107,23 +107,22 @@ const formIsValid = form => {
     );
 };
 
-
 type Props = {
     renderTrigger: ({
         openDialog,
     }: {
         openDialog: () => void;
-    }) => React.JSX.Element;,
-    defaultSourceVersion?: Record<string,any>,
-    sourceCredentials?: Record<string,any>,
-    initialData?: Record<string,any>,
-}
+    }) => React.JSX.Element;
+    defaultSourceVersion?: Record<string, any>;
+    sourceCredentials?: Record<string, any>;
+    initialData?: Record<string, any>;
+};
 
 export const DataSourceDialogComponent = ({
     defaultSourceVersion,
     initialData,
     renderTrigger,
-    sourceCredentials={},
+    sourceCredentials = {},
 }) => {
     const [form, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialForm());
@@ -280,7 +279,7 @@ export const DataSourceDialogComponent = ({
                             errors={form.credentials.errors}
                             label={MESSAGES.dhisName}
                             onChange={setCredentials}
-                            type='text'
+                            type="text"
                         />
                         <InputComponent
                             value={form.credentials.value.dhis_url}
@@ -288,7 +287,7 @@ export const DataSourceDialogComponent = ({
                             errors={urlErrors}
                             label={MESSAGES.dhisUrl}
                             onChange={setCredentials}
-                            type='text'
+                            type="text"
                         />
                         <InputComponent
                             value={form.credentials.value.dhis_login}
@@ -296,7 +295,7 @@ export const DataSourceDialogComponent = ({
                             errors={form.credentials_dhis2_login?.errors}
                             label={MESSAGES.dhisLogin}
                             onChange={setCredentials}
-                            type='text'
+                            type="text"
                         />
                         <InputComponent
                             value={form.credentials.value.dhis_password}

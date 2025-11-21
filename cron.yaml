@@ -19,5 +19,5 @@ cron:
    url: "/tasks/launch_task/plugins.polio.tasks.archive_vaccine_stock_for_rounds.archive_vaccine_stock_for_rounds/polio_cron_task_user/"
    schedule: "0 2 * * *"
  - name: 'setuper_sandbox'
-   url: '/tasks/launch_task/tasks.setuper_sandbox.setuper_sandbox/cron_task_sandbox_user/'
+   url: '/tasks/launch_task/iaso.tasks.setuper_sandbox.setuper_sandbox/cron_task_sandbox_user/'
    schedule: '0 4 * * *'

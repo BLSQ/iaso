@@ -1,8 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 
-function StarSvg(props) {
-    const { starColor, starBgColor, starWidth } = props;
+type Props = { starColor?: string; starBgColor?: string; starWidth?: string };
+
+const StarSvg: FunctionComponent<Props> = ({
+    starColor = '#F3D110',
+    starBgColor = 'white',
+    starWidth = '20px',
+}) => {
     return (
         <svg
             style={{
@@ -29,18 +33,6 @@ function StarSvg(props) {
             </g>
         </svg>
     );
-}
-
-StarSvg.defaultProps = {
-    starColor: '#F3D110',
-    starBgColor: 'white',
-    starWidth: '20px',
-};
-
-StarSvg.propTypes = {
-    starColor: PropTypes.string,
-    starBgColor: PropTypes.string,
-    starWidth: PropTypes.string,
 };
 
 export default StarSvg;

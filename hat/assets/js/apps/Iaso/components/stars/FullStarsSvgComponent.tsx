@@ -1,11 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-
-import { withStyles } from '@mui/styles';
+import React, { FunctionComponent } from 'react';
 import StarFull from '@mui/icons-material/Star';
 import StarOutlined from '@mui/icons-material/StarBorderOutlined';
+import { makeStyles } from '@mui/styles';
 
-const styles = () => ({
+const useStyles = makeStyles({
     star: {
         color: '#F3D110',
         position: 'relative',
@@ -13,10 +11,13 @@ const styles = () => ({
         margin: '0 -2px',
     },
 });
-
-function FullStarsSvg(props) {
-    const { classes, score, starsCount } = props;
-    const stars = [];
+type Props = {
+    score: number;
+    starsCount?: number;
+};
+const FullStarsSvg: FunctionComponent<Props> = ({ score, starsCount = 5 }) => {
+    const classes = useStyles();
+    const stars: any[] = [];
 
     for (let i = 0; i < score; i += 1) {
         stars.push(<StarFull className={classes.star} key={`${i}-pos`} />);
@@ -25,16 +26,6 @@ function FullStarsSvg(props) {
         stars.push(<StarOutlined className={classes.star} key={`${i}-neg`} />);
     }
     return stars;
-}
-
-FullStarsSvg.defaultProps = {
-    starsCount: 5,
 };
 
-FullStarsSvg.propTypes = {
-    classes: PropTypes.object.isRequired,
-    score: PropTypes.number.isRequired,
-    starsCount: PropTypes.number,
-};
-
-export default withStyles(styles)(FullStarsSvg);
+export default FullStarsSvg;

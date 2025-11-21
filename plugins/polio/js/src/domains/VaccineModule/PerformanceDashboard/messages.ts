@@ -5,10 +5,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.performanceDashboard',
         defaultMessage: 'Performance Dashboard',
     },
-    performanceDashboardDescription: {
-        id: 'iaso.polio.performanceDashboardDescription',
-        defaultMessage: 'This is a placeholder for the Performance Dashboard.',
-    },
     country: {
         id: 'iaso.polio.table.label.country',
         defaultMessage: 'Country',

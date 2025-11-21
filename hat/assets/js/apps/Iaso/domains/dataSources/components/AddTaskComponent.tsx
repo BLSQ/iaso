@@ -1,20 +1,24 @@
+import React, {
+    useState,
+    useMemo,
+    useCallback,
+    FunctionComponent,
+} from 'react';
 import { Grid, Typography } from '@mui/material';
 import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
-import PropTypes from 'prop-types';
-import React, { useState, useMemo, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
-import { baseUrls } from '../../../constants/urls.ts';
+import { baseUrls } from '../../../constants/urls';
 import { useFormState } from '../../../hooks/form';
-import { useSnackMutation } from '../../../libs/apiHooks.ts';
-import MESSAGES from '../messages';
+import { useSnackMutation } from '../../../libs/apiHooks';
 import { sendDhisOuImporterRequest } from '../requests';
-import { VersionDescription } from './VersionDescription.tsx';
+import { VersionDescription } from './VersionDescription';
 import { userHasPermission } from '../../users/utils';
-import * as Permission from '../../../utils/permissions.ts';
+import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import MESSAGES from '../messages';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -27,11 +31,22 @@ const initialFormState = sourceCredentials => {
     };
 };
 
-const AddTask = ({
+type Props = {
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;
+    sourceId: number;
+    sourceVersionNumber?: number;
+    sourceCredentials?: Record<string, any>;
+};
+
+export const AddTask: FunctionComponent<Props> = ({
     renderTrigger,
     sourceId,
     sourceVersionNumber,
-    sourceCredentials,
+    sourceCredentials = {},
 }) => {
     const currentUser = useCurrentUser();
     const [form, setFormField, , setFormState] = useFormState(
@@ -261,15 +276,3 @@ const AddTask = ({
         </ConfirmCancelDialogComponent>
     );
 };
-AddTask.defaultProps = {
-    sourceCredentials: {},
-    sourceVersionNumber: null,
-};
-AddTask.propTypes = {
-    renderTrigger: PropTypes.func.isRequired,
-    sourceId: PropTypes.number.isRequired,
-    sourceVersionNumber: PropTypes.number,
-    sourceCredentials: PropTypes.object,
-};
-
-export { AddTask };

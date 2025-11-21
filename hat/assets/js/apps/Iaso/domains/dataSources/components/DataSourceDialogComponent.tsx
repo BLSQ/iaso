@@ -1,10 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useCallback, FunctionComponent } from 'react';
 import { Box, Button, Grid, Typography } from '@mui/material';
-
 import * as Permission from '../../../utils/permissions';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
+import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -13,15 +11,24 @@ import { merge } from 'lodash';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useFormState } from '../../../hooks/form';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
-import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors.ts';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors';
 import { userHasPermission, userHasAccessToModule } from '../../users/utils';
 
-const ProjectSelectorIds = ({
+type SelectorProps = {
+    keyValue: string;
+    value: any[];
+    onChange: (key: string, value: number[]) => void;
+    label: any;
+    fieldHasBeenChanged: boolean;
+    errors?: any[];
+};
+
+const ProjectSelectorIds: FunctionComponent<SelectorProps> = ({
     keyValue,
     value,
     onChange,
-    errors,
+    errors = [],
     label,
     fieldHasBeenChanged,
 }) => {
@@ -49,20 +56,11 @@ const ProjectSelectorIds = ({
     );
 };
 
-ProjectSelectorIds.defaultProps = {
-    errors: [],
-};
-
-ProjectSelectorIds.propTypes = {
-    keyValue: PropTypes.string.isRequired,
-    value: PropTypes.array.isRequired,
-    onChange: PropTypes.func.isRequired,
-    errors: PropTypes.array,
-    label: PropTypes.any.isRequired,
-    fieldHasBeenChanged: PropTypes.bool.isRequired,
-};
-
-const initialForm = (defaultSourceVersion, initialData, sourceCredentials) => {
+const initialForm = (
+    defaultSourceVersion?: any,
+    initialData?: any,
+    sourceCredentials?: any,
+) => {
     const values = {
         id: null,
         name: '',
@@ -109,11 +107,23 @@ const formIsValid = form => {
     );
 };
 
+
+type Props = {
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;,
+    defaultSourceVersion?: Record<string,any>,
+    sourceCredentials?: Record<string,any>,
+    initialData?: Record<string,any>,
+}
+
 export const DataSourceDialogComponent = ({
     defaultSourceVersion,
     initialData,
     renderTrigger,
-    sourceCredentials,
+    sourceCredentials={},
 }) => {
     const [form, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialForm());
@@ -270,6 +280,7 @@ export const DataSourceDialogComponent = ({
                             errors={form.credentials.errors}
                             label={MESSAGES.dhisName}
                             onChange={setCredentials}
+                            type='text'
                         />
                         <InputComponent
                             value={form.credentials.value.dhis_url}
@@ -277,6 +288,7 @@ export const DataSourceDialogComponent = ({
                             errors={urlErrors}
                             label={MESSAGES.dhisUrl}
                             onChange={setCredentials}
+                            type='text'
                         />
                         <InputComponent
                             value={form.credentials.value.dhis_login}
@@ -284,6 +296,7 @@ export const DataSourceDialogComponent = ({
                             errors={form.credentials_dhis2_login?.errors}
                             label={MESSAGES.dhisLogin}
                             onChange={setCredentials}
+                            type='text'
                         />
                         <InputComponent
                             value={form.credentials.value.dhis_password}
@@ -291,7 +304,7 @@ export const DataSourceDialogComponent = ({
                             errors={userPasswordErrors}
                             label={MESSAGES.dhisPassword}
                             onChange={setCredentials}
-                            password
+                            type="password"
                         />
                         {checkDhis2.isLoading && <LoadingSpinner />}
                         <Button
@@ -315,18 +328,6 @@ export const DataSourceDialogComponent = ({
             </Grid>
         </ConfirmCancelDialogComponent>
     );
-};
-
-DataSourceDialogComponent.defaultProps = {
-    initialData: null,
-    defaultSourceVersion: null,
-    sourceCredentials: {},
-};
-DataSourceDialogComponent.propTypes = {
-    initialData: PropTypes.object,
-    renderTrigger: PropTypes.func.isRequired,
-    defaultSourceVersion: PropTypes.object,
-    sourceCredentials: PropTypes.object,
 };
 
 export default DataSourceDialogComponent;

@@ -5,10 +5,10 @@ import { IntlMessage } from 'bluesquare-components';
 type Props = {
     fields: {
         keyValue: string;
-        password: boolean;
+        password?: boolean;
         label: IntlMessage;
         value: any;
-        errors: any[];
+        errors?: any[];
         onChange: (key: string, bvalue: any) => void;
     }[];
 };

@@ -1,21 +1,25 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+    useCallback,
+    useMemo,
+    useState,
+    FunctionComponent,
+} from 'react';
 import AddBox from '@mui/icons-material/AddBoxOutlined';
 import Public from '@mui/icons-material/Public';
 import { Button, DialogActions, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    IconButton,
     commonStyles,
     DHIS2Svg,
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
-import PropTypes from 'prop-types';
+
 import { FormattedMessage } from 'react-intl';
 import { userHasAccessToModule } from 'Iaso/domains/users/utils';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns';
 import MESSAGES from '../messages';
 import {
     getSortedSourceVersions,
@@ -24,9 +28,10 @@ import {
     handleSort,
     handleTableParamsChange,
 } from '../utils';
-import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { DataSource } from '../types/dataSources';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {
@@ -35,7 +40,19 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const VersionsDialog = ({ renderTrigger, source }) => {
+type Props = {
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;
+    source: DataSource;
+};
+
+export const VersionsDialog: FunctionComponent<Props> = ({
+    renderTrigger,
+    source,
+}) => {
     const { spanStyle, ...classes } = useStyles();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -109,7 +126,6 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             dataTestId="versions-dialog-modal"
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
-            classes={classes}
             maxWidth="md"
             renderActions={({ closeDialog }) => (
                 <DialogActions className={classes.action}>
@@ -189,17 +205,3 @@ const VersionsDialog = ({ renderTrigger, source }) => {
         </DialogComponent>
     );
 };
-
-VersionsDialog.propTypes = {
-    renderTrigger: PropTypes.func.isRequired,
-    source: PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-        versions: PropTypes.array.isRequired,
-        credentials: PropTypes.object,
-        projects: PropTypes.array.isRequired,
-    }).isRequired,
-};
-VersionsDialog.defaultProps = {};
-
-export { VersionsDialog };

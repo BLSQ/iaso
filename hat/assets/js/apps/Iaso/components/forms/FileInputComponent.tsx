@@ -1,29 +1,40 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import OutlinedInput from '@mui/material/OutlinedInput';
-
 import {
-    injectIntl,
+    useSafeIntl,
     InputLabel as InputLabelComponent,
     FormControl as FormControlComponent,
+    IntlMessage,
 } from 'bluesquare-components';
+import PropTypes from 'prop-types';
 import MESSAGES from '../../domains/forms/messages';
 
-function FileInputComponent({
-    intl,
+type Props = {
+    keyValue: string;
+    onChange: (keyValue: string, file: any) => void;
+    errors?: string[];
+    label?: IntlMessage;
+    labelString?: string;
+    disabled?: boolean;
+    required?: boolean;
+    multiple?: boolean;
+};
+
+const FileInputComponent: FunctionComponent<Props> = ({
     keyValue,
-    label,
-    labelString,
-    disabled,
     onChange,
-    required,
-    errors,
-    multiple,
-}) {
+    label,
+    labelString = '',
+    disabled = false,
+    required = false,
+    errors = [],
+    multiple = false,
+}) => {
+    const { formatMessage } = useSafeIntl();
     const labelText =
         labelString !== ''
             ? labelString
-            : intl.formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
+            : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
 
     const hasErrors = errors.length > 0;
 
@@ -51,24 +62,6 @@ function FileInputComponent({
             />
         </FormControlComponent>
     );
-}
-FileInputComponent.defaultProps = {
-    errors: [],
-    label: undefined,
-    labelString: '',
-    disabled: false,
-    required: false,
-    multiple: false,
 };
-FileInputComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
-    keyValue: PropTypes.string.isRequired,
-    errors: PropTypes.arrayOf(PropTypes.string),
-    label: PropTypes.object,
-    labelString: PropTypes.string,
-    disabled: PropTypes.bool,
-    onChange: PropTypes.func.isRequired,
-    required: PropTypes.bool,
-    multiple: PropTypes.bool,
-};
-export default injectIntl(FileInputComponent);
+
+export default FileInputComponent;

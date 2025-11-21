@@ -1,23 +1,35 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, FunctionComponent } from 'react';
 import { DialogContentText } from '@mui/material';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import PropTypes from 'prop-types';
+import {
+    IconButton as IconButtonComponent,
+    IntlMessage,
+} from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 
 import MESSAGES from './messages';
 
-export default function DeleteDialog({
+type Props = {
+    titleMessage: IntlMessage;
+    message: IntlMessage;
+    onConfirm: () => void;
+    iconColor?: string;
+    keyName?: string;
+    Trigger: React.ComponentType<any>;
+    triggerProps: Record<string, any>;
+    disabled?: boolean;
+};
+
+const DeleteDialog: FunctionComponent<Props> = ({
     titleMessage,
-    message,
     onConfirm,
-    disabled,
-    keyName,
-    iconColor,
-    Trigger,
-    triggerProps,
-}) {
+    message = null,
+    disabled = false,
+    keyName = 'key',
+    iconColor = 'action',
+    Trigger = null,
+    triggerProps = {},
+}) => {
     const closeThenOnConfirm = useCallback(
         closeDialog => {
             closeDialog();
@@ -60,23 +72,6 @@ export default function DeleteDialog({
             </div>
         </ConfirmCancelDialogComponent>
     );
-}
+};
 
-DeleteDialog.defaultProps = {
-    disabled: false,
-    keyName: 'key',
-    message: null,
-    iconColor: 'action',
-    Trigger: null,
-    triggerProps: {},
-};
-DeleteDialog.propTypes = {
-    titleMessage: PropTypes.object.isRequired,
-    message: PropTypes.object,
-    onConfirm: PropTypes.func.isRequired,
-    disabled: PropTypes.bool,
-    keyName: PropTypes.string,
-    iconColor: PropTypes.string,
-    Trigger: PropTypes.elementType,
-    triggerProps: PropTypes.object,
-};
+export default DeleteDialog;

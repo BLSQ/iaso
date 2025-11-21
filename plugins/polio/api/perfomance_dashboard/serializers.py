@@ -2,9 +2,9 @@ import logging
 
 from rest_framework import serializers
 
-from iaso.api.common import TimestampField
 from iaso.models import OrgUnit, User
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
+
 
 logger = logging.getLogger(__name__)
 

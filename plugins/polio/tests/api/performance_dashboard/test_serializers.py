@@ -3,7 +3,9 @@ from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from plugins.polio.api.perfomance_dashboard.serializers import (
-    PerformanceDashboardListSerializer, PerformanceDashboardWriteSerializer)
+    PerformanceDashboardListSerializer,
+    PerformanceDashboardWriteSerializer,
+)
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
 
 from .common_test_data import PerformanceDashboardAPIBase
@@ -54,7 +56,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
 
         }
         # Ensure the user has an iaso_profile and an account
-        if not hasattr(self.user_Hashirama, 'iaso_profile'):
+        if not hasattr(self.user_Hashirama, "iaso_profile"):
             self.user_Hashirama.iaso_profile = m.IasoProfile.objects.create(
                 user=self.user_Hashirama,account=self.account_hokage)
             self.user_Hashirama.save()

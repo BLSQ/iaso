@@ -37,6 +37,7 @@ from plugins.polio.api.lqas_im.lqas_im_dropdowns import (
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
 from plugins.polio.api.notifications.views import NotificationViewSet
+from plugins.polio.api.perfomance_dashboard.views import PerformanceDashboardViewSet
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
 from plugins.polio.api.rounds.round import RoundViewSet
@@ -65,7 +66,6 @@ from plugins.polio.tasks.api.refresh_im_data import (
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 from plugins.polio.tasks.api.refresh_preparedness_dashboard_data import RefreshPreparednessDataViewset
 from plugins.polio.tasks.api.refresh_vrf_dashboard_data import RefreshVrfDataViewset
-from plugins.polio.api.perfomance_dashboard.views import PerformanceDashboardViewSet
 
 
 router = routers.SimpleRouter()

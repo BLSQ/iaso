@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { FunctionComponent } from 'react';
 import { defineMessages, FormattedMessage } from 'react-intl';
 

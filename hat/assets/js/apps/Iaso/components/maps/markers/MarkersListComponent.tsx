@@ -1,7 +1,7 @@
 import React, { Fragment, FunctionComponent } from 'react';
 import { isValidCoordinate } from '../../../utils/map/mapUtils';
 import CircleMarkerComponent from './CircleMarkerComponent';
-import MarkerComponent from './MarkerComponent.js';
+import MarkerComponent from './MarkerComponent';
 
 type Props = {
     items?: Record<string, any>[];

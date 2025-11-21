@@ -9,6 +9,7 @@ export const useAppLocales = () => {
             label: config.label,
         }))
         .filter(({ code: langCode }) =>
+            //@ts-ignore
             window.AVAILABLE_LANGUAGES.includes(langCode),
         );
 };

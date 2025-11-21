@@ -14,8 +14,8 @@ import {
     getUrlParamDateObject,
     dateFormat,
     getLocaleDateFormat,
-} from '../../utils/dates.js';
-import MESSAGES from './messages.js';
+} from '../../utils/dates';
+import MESSAGES from './messages';
 import { Moment } from 'moment';
 
 const useStyles = makeStyles(theme => ({

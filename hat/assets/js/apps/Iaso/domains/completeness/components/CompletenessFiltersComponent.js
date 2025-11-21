@@ -1,9 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
-
-import InputComponent from '../../../components/forms/InputComponent';
+import PropTypes from 'prop-types';
 import ChipListComponent from '../../../components/chips/ChipListComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 import { periodTypeOptions, instanceStatusOptions } from '../config';
 import MESSAGES from '../messages';
 

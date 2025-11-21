@@ -1,8 +1,8 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import Add from '@mui/icons-material/Add';
 import Cancel from '@mui/icons-material/Cancel';
 import { Chip } from '@mui/material';
-import { makeStyles, withStyles } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 
 import {
     translateOptions,
@@ -24,7 +24,7 @@ type Props<T extends string | boolean | number> = {
     onChange: (value: T[]) => void;
 };
 
-export const ChipListComponent = <T extends string | boolean | number>({
+const ChipListComponent = <T extends string | boolean | number>({
     options,
     value,
     onChange,
@@ -60,3 +60,5 @@ export const ChipListComponent = <T extends string | boolean | number>({
         </div>
     );
 };
+
+export default ChipListComponent;

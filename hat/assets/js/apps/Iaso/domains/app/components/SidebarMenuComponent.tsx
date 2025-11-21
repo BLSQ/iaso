@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import {
@@ -13,26 +13,21 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import { withStyles } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
-
 import { Link } from 'react-router-dom';
-
-import { DOC_URL, useMenuItems } from '../../../constants/menu.tsx';
-import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
-
-import { baseUrls } from '../../../constants/urls.ts';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { DOC_URL, useMenuItems } from '../../../constants/menu';
+import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
+import { baseUrls } from '../../../constants/urls';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
-import { useSidebar } from '../contexts/SideBarContext.tsx';
-import { LogoAndTitle } from './LogoAndTitle.tsx';
+import { useSidebar } from '../contexts/SideBarContext';
+import { LogoAndTitle } from './LogoAndTitle';
 import MenuItem from './MenuItemComponent';
-
 import MESSAGES from './messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     toolbar: {
         ...theme.mixins.toolbar,
@@ -80,9 +75,12 @@ const styles = theme => ({
         display: 'flex',
         alignItems: 'center',
     },
-});
+}));
 
-const SidebarMenu = ({ classes, location }) => {
+type Props = { location: any };
+
+const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
+    const classes: Record<string, string> = useStyles();
     const { toggleSidebar, isOpen } = useSidebar();
     const onClick = url => {
         toggleSidebar();
@@ -91,7 +89,7 @@ const SidebarMenu = ({ classes, location }) => {
         }
     };
     const currentUser = useCurrentUser();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = useMenuItems();
     const theme = useTheme();
@@ -147,13 +145,11 @@ const SidebarMenu = ({ classes, location }) => {
                             <Tooltip
                                 classes={{ popper: classes.popperFixed }}
                                 placement="bottom"
-                                title={`${intl.formatMessage(
-                                    MESSAGES.source,
-                                )}: ${
+                                title={`${formatMessage(MESSAGES.source)}: ${
                                     (defaultSourceVersion.source &&
                                         defaultSourceVersion.source.name) ||
                                     '-'
-                                }, ${intl.formatMessage(MESSAGES.version)} ${
+                                }, ${formatMessage(MESSAGES.version)} ${
                                     (defaultSourceVersion.version &&
                                         defaultSourceVersion.version.number) ||
                                     '-'
@@ -170,7 +166,7 @@ const SidebarMenu = ({ classes, location }) => {
                 <Tooltip
                     classes={{ popper: classes.popperFixed }}
                     placement="bottom-start"
-                    title={intl.formatMessage(MESSAGES.viewUserManual)}
+                    title={formatMessage(MESSAGES.viewUserManual)}
                 >
                     <Typography
                         variant="body2"
@@ -183,7 +179,7 @@ const SidebarMenu = ({ classes, location }) => {
                             rel="noreferrer"
                             className={classes.link}
                         >
-                            {intl.formatMessage(MESSAGES.userManual)}
+                            {formatMessage(MESSAGES.userManual)}
                         </a>
                     </Typography>
                 </Tooltip>
@@ -191,7 +187,7 @@ const SidebarMenu = ({ classes, location }) => {
                     size="small"
                     color="inherit"
                     href="/logout-iaso"
-                    aria-label={<FormattedMessage {...MESSAGES.logout} />}
+                    aria-label={formatMessage(MESSAGES.logout)}
                 >
                     <ExitIcon className={classes.smallButtonIcon} />
                     <FormattedMessage {...MESSAGES.logout} />
@@ -201,9 +197,4 @@ const SidebarMenu = ({ classes, location }) => {
     );
 };
 
-SidebarMenu.propTypes = {
-    classes: PropTypes.object.isRequired,
-    location: PropTypes.object.isRequired,
-};
-
-export default withStyles(styles)(SidebarMenu);
+export default SidebarMenu;

@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 
 from datetime import datetime
@@ -79,33 +80,37 @@ def recreate_account(account_name):
 
 @task_decorator(task_name="setuper_sandbox")
 def setuper_sandbox(name, task=None):
-    logger.warning(f" .... Resetting {name} account and its data! ...")
-    current_datetime = int(datetime.now().timestamp())
-    account_name = name
-    if isinstance(name, list):
-        account_name = name[0]
-    new_name = f"{account_name}{current_datetime}"
-    logger.info(f"Renaming current account {account_name} to {new_name}")
-    account = Account.objects.filter(name=account_name).first()
-    if account is not None:
-        account.name = new_name
-        account.save()
-    profiles = Profile.objects.filter(account=account)
-    logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {account_name}")
-    updated_users = update_users_profiles(profiles, new_name)
-    logger.info(f"Disabled {len(updated_users)} users")
+    ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
+    if ENABLE_SETUPER_SANDBOX:
+        logger.warning(f" .... Resetting {name} account and its data! ...")
+        current_datetime = int(datetime.now().timestamp())
+        account_name = name
+        if isinstance(name, list):
+            account_name = name[0]
+        new_name = f"{account_name}{current_datetime}"
+        logger.info(f"Renaming current account {account_name} to {new_name}")
+        account = Account.objects.filter(name=account_name).first()
+        if account is not None:
+            account.name = new_name
+            account.save()
+        profiles = Profile.objects.filter(account=account)
+        logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {account_name}")
+        updated_users = update_users_profiles(profiles, new_name)
+        logger.info(f"Disabled {len(updated_users)} users")
 
-    projects = Project.objects.filter(account=account)
-    logger.info(f"Renaming app id for all {len(projects)} projects belong to account {account_name}")
-    projects_to_updated = map_project(projects, new_name)
-    updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])
-    logger.info(f"Renamed app id for all {updated_projects} projects")
+        projects = Project.objects.filter(account=account)
+        logger.info(f"Renaming app id for all {len(projects)} projects belong to account {account_name}")
+        projects_to_updated = map_project(projects, new_name)
+        updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])
+        logger.info(f"Renamed app id for all {updated_projects} projects")
 
-    data_sources = DataSource.objects.filter(projects__account=account).distinct()
-    logger.info(f"Renaming all {len(data_sources)} data_sources belong to account {account_name}")
-    rename_data_sources = map_data_source(data_sources, current_datetime)
-    logger.info(f"Renamed all {len(rename_data_sources)} data_sources")
+        data_sources = DataSource.objects.filter(projects__account=account).distinct()
+        logger.info(f"Renaming all {len(data_sources)} data_sources belong to account {account_name}")
+        rename_data_sources = map_data_source(data_sources, current_datetime)
+        logger.info(f"Renamed all {len(rename_data_sources)} data_sources")
 
-    logger.warning(f"Reset {account_name} account!")
+        logger.warning(f"Reset {account_name} account!")
 
-    recreate_account(account_name)
+        recreate_account(account_name)
+    else:
+        logger.info("No setuper sandbox task")

@@ -1,16 +1,24 @@
-import React, { Fragment, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import React, { Fragment, useCallback, FunctionComponent } from 'react';
 import { useRedirectToReplace } from 'bluesquare-components';
-import InputComponent from '../forms/InputComponent.tsx';
-import { useObjectState } from '../../hooks/useObjectState.ts';
+import { useObjectState } from '../../hooks/useObjectState.js';
+import InputComponent from '../forms/InputComponent.js';
 
-export const FiltersComponent = ({
+type Props = {
+    filters?: any[];
+    params: Record<string, string>;
+    baseUrl?: string;
+    onEnterPressed?: () => void;
+    onFilterChanged?: (value?: any, urlKey?: string) => void;
+    redirectOnChange?: boolean;
+};
+
+export const FiltersComponent: FunctionComponent<Props> = ({
     params,
-    baseUrl,
-    redirectOnChange,
-    onFilterChanged,
+    baseUrl = '',
     filters,
-    onEnterPressed,
+    redirectOnChange = true,
+    onFilterChanged = () => null,
+    onEnterPressed = () => null,
 }) => {
     const [state, setState] = useObjectState();
     const redirectToReplace = useRedirectToReplace();
@@ -202,19 +210,4 @@ export const FiltersComponent = ({
             })}
         </section>
     );
-};
-FiltersComponent.defaultProps = {
-    baseUrl: '',
-    onEnterPressed: () => null,
-    onFilterChanged: () => null,
-    redirectOnChange: true,
-};
-
-FiltersComponent.propTypes = {
-    filters: PropTypes.array.isRequired,
-    params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string,
-    onEnterPressed: PropTypes.func,
-    onFilterChanged: PropTypes.func,
-    redirectOnChange: PropTypes.bool,
 };

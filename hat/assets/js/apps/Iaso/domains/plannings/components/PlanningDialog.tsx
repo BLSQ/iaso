@@ -333,7 +333,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     />
                     <Grid container spacing={2}>
                         <Grid xs={6} item>
-                            {/* <InputComponent
+                            <InputComponent
                                 type="select"
                                 keyValue="selectedTeam"
                                 onChange={onChange}
@@ -352,7 +352,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                           )
                                         : undefined
                                 }
-                            /> */}
+                            />
                         </Grid>
                         <Grid xs={6} item>
                             <InputWithInfos

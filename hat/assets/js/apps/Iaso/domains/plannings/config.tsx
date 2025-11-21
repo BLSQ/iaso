@@ -11,7 +11,9 @@ import { baseUrls } from '../../constants/urls';
 import { PLANNING_WRITE } from '../../utils/permissions';
 import { Planning } from '../assignments/types/planning';
 import { ProjectChip } from '../projects/components/ProjectChip';
+import { TeamChip } from '../teams/components/TeamChip';
 import { EditPlanning, DuplicatePlanning } from './components/PlanningDialog';
+import { PlanningStatusChip } from './components/PlanningStatusChip';
 import MESSAGES from './messages';
 
 const getAssignmentUrl = (planning: Planning): string => {
@@ -63,17 +65,17 @@ export const usePlanningColumns = (
                 Header: formatMessage(MESSAGES.team),
                 accessor: 'team',
                 id: 'team',
-                Cell: settings => settings.row.original.team_details.name,
+                Cell: settings => (
+                    <TeamChip team={settings.row.original.team_details} />
+                ),
             },
             {
-                Header: formatMessage(MESSAGES.published),
+                Header: formatMessage(MESSAGES.publishingStatus),
                 accessor: 'status',
                 id: 'status',
-                Cell: settings => {
-                    if (settings.row.original.status === 'published')
-                        return formatMessage(MESSAGES.yes);
-                    return formatMessage(MESSAGES.no);
-                },
+                Cell: settings => (
+                    <PlanningStatusChip status={settings.row.original.status} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),

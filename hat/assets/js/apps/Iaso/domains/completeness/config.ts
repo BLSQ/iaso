@@ -1,16 +1,12 @@
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
-import React from 'react';
 
 import {
     formatThousand,
-    HeaderRowIcon,
-    IconButton,
-    LinkWithLocation,
     textPlaceholder,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls.ts';
+import { baseUrls } from '../../constants/urls';
 
 import { INSTANCE_STATUSES } from '../instances/constants';
 import {

@@ -1,8 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Grid, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import {
     commonStyles,
     LoadingSpinner,
@@ -10,8 +8,8 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
-import { postRequest } from 'Iaso/libs/Api.ts';
-import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
+import { postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../../../components/snackBars/messages';
@@ -53,7 +51,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const CompletenessPeriodComponent = ({
+type Props = {
+    period: Record<string, any>;
+    forms: Record<string, any>[];
+    activeInstanceStatuses: string[];
+    activePeriodType: string;
+};
+
+const CompletenessPeriodComponent: FunctionComponent<Props> = ({
     activeInstanceStatuses,
     period,
     forms,
@@ -70,7 +75,7 @@ const CompletenessPeriodComponent = ({
     );
 
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     // FIXME: doesn't seem to be actually used
     const onSelectCell = (form, status, selectedPeriod) => {
         redirectTo(baseUrls.instances, {
@@ -131,13 +136,6 @@ const CompletenessPeriodComponent = ({
             </section>
         </Paper>
     );
-};
-
-CompletenessPeriodComponent.propTypes = {
-    period: PropTypes.object.isRequired,
-    forms: PropTypes.arrayOf(PropTypes.object).isRequired,
-    activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
-    activePeriodType: PropTypes.string.isRequired,
 };
 
 export default CompletenessPeriodComponent;

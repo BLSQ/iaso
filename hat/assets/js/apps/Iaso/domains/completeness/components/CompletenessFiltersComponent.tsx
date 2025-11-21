@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
-import PropTypes from 'prop-types';
 import ChipListComponent from '../../../components/chips/ChipListComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { periodTypeOptions, instanceStatusOptions } from '../config';
 import MESSAGES from '../messages';
 
-function CompletenessFiltersComponent({
+type Props = {
+    activePeriodType: string;
+    setActivePeriodType: React.Dispatch<React.SetStateAction<any>>;
+    activeInstanceStatuses: string[];
+    setActiveInstanceStatuses: React.Dispatch<React.SetStateAction<any>>;
+};
+
+const CompletenessFiltersComponent: FunctionComponent<Props> = ({
     activePeriodType,
     setActivePeriodType,
     activeInstanceStatuses,
     setActiveInstanceStatuses,
-}) {
+}) => {
     return (
         <Grid container spacing={2}>
             <Grid item xs={3}>
@@ -35,11 +41,6 @@ function CompletenessFiltersComponent({
             </Grid>
         </Grid>
     );
-}
-CompletenessFiltersComponent.propTypes = {
-    activePeriodType: PropTypes.string.isRequired,
-    setActivePeriodType: PropTypes.func.isRequired,
-    activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
-    setActiveInstanceStatuses: PropTypes.func.isRequired,
 };
+
 export default CompletenessFiltersComponent;

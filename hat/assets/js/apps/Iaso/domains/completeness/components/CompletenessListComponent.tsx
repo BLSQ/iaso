@@ -1,8 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useMemo, FunctionComponent } from 'react';
 import { Box } from '@mui/material';
-import { withStyles } from '@mui/styles';
-
+import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 import CompletenessFiltersComponent from './CompletenessFiltersComponent';
 import CompletenessPeriodComponent from './CompletenessPeriodComponent';
@@ -10,9 +8,16 @@ import { PERIOD_TYPE_QUARTER } from '../../periods/constants';
 import { INSTANCE_STATUSES } from '../../instances/constants';
 import { groupCompletenessData } from '../utils';
 
-const styles = theme => commonStyles(theme);
+const useStyles = makeStyles(theme => commonStyles(theme));
 
-const CompletenessListComponent = ({ classes, completenessList }) => {
+type Props = {
+    completenessList: Record<string, any>[];
+};
+
+const CompletenessListComponent: FunctionComponent<Props> = ({
+    completenessList,
+}) => {
+    const classes: Record<string, string> = useStyles();
     const [activePeriodType, setActivePeriodType] =
         useState(PERIOD_TYPE_QUARTER);
     const [activeInstanceStatuses, setActiveInstanceStatuses] =
@@ -32,6 +37,7 @@ const CompletenessListComponent = ({ classes, completenessList }) => {
                 setActiveInstanceStatuses={setActiveInstanceStatuses}
             />
             <div className={classes.marginTop}>
+                {/* FIXME either bad typing or incorrect use of map */}
                 {groupedCompletenessData.map(({ period, forms }) => (
                     <CompletenessPeriodComponent
                         key={period.periodString}
@@ -45,8 +51,5 @@ const CompletenessListComponent = ({ classes, completenessList }) => {
         </Box>
     );
 };
-CompletenessListComponent.propTypes = {
-    classes: PropTypes.object.isRequired,
-    completenessList: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
-export default withStyles(styles)(CompletenessListComponent);
+
+export default CompletenessListComponent;

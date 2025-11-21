@@ -29,6 +29,8 @@ export type PlanningApi = {
     org_unit_details: OrgUnitDetails;
     form?: [number];
     project_details: { name: string; id: number };
+    target_org_unit_type?: number;
+    target_org_unit_type_details?: { name: string; id: number };
 };
 
 type Planning = PlanningApi & {

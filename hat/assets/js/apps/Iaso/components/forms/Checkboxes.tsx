@@ -1,11 +1,26 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import InputComponent from './InputComponent';
+import { IntlMessage } from 'bluesquare-components';
 
-const Checkboxes = ({ checkboxes, inline }) => {
+type Checkbox = {
+    keyValue: string;
+    label: IntlMessage | undefined;
+    value: unknown;
+    onChange: (arg0: any) => void;
+};
+
+type Props = {
+    checkboxes: Checkbox[];
+    inline?: boolean;
+};
+
+export const Checkboxes: FunctionComponent<Props> = ({
+    checkboxes,
+    inline = false,
+}) => {
     const style = inline ? { display: 'inlineFlex' } : { display: 'grid' };
-    const boxes = checkboxes.map(checkbox => (
+    const boxes = checkboxes.map((checkbox: Checkbox) => (
         <InputComponent
             key={checkbox.keyValue}
             keyValue={checkbox.keyValue}
@@ -21,13 +36,3 @@ const Checkboxes = ({ checkboxes, inline }) => {
 
     return <Box style={{ ...style }}>{boxes}</Box>;
 };
-
-Checkboxes.defaultProps = {
-    inline: false,
-};
-
-Checkboxes.propTypes = {
-    checkboxes: PropTypes.array.isRequired,
-    inline: PropTypes.bool,
-};
-export { Checkboxes };

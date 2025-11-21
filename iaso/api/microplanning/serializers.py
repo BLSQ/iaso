@@ -45,7 +45,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
-        self.fields["target_org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account)
+        self.fields["target_org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
 
     class Meta:
         model = Planning

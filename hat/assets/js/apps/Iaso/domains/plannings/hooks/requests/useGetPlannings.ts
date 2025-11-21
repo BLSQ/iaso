@@ -1,5 +1,6 @@
 import { Pagination } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
+import { Planning } from 'Iaso/domains/assignments/types/planning';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
@@ -15,26 +16,6 @@ export type OrgUnitDetails = {
     id: number;
     name: string;
     org_unit_type?: number;
-};
-
-export type PlanningApi = {
-    id: number;
-    name: string;
-    description?: string;
-    team: number;
-    team_details: { name: string; id: number };
-    published_at?: string;
-    started_at?: string;
-    ended_at?: string;
-    org_unit_details: OrgUnitDetails;
-    form?: [number];
-    project_details: { name: string; id: number };
-    target_org_unit_type?: number;
-    target_org_unit_type_details?: { name: string; id: number };
-};
-
-type Planning = PlanningApi & {
-    status?: 'published' | 'draft';
 };
 
 type PlanningList = Pagination & {
@@ -90,15 +71,13 @@ export const useGetPlannings = (
     });
 };
 
-const getPlanningsOptions = async (
-    formIds?: string,
-): Promise<PlanningApi[]> => {
+const getPlanningsOptions = async (formIds?: string): Promise<Planning[]> => {
     const apiParams: Record<string, any> = {};
     if (formIds) {
         apiParams.form_ids = formIds;
     }
     const url = makeUrlWithParams(endpoint, apiParams);
-    return getRequest(url) as Promise<PlanningApi[]>;
+    return getRequest(url) as Promise<Planning[]>;
 };
 export const useGetPlanningsOptions = (
     formIds?: string,

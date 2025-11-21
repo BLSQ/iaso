@@ -4,16 +4,17 @@ import {
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
+import { ColumnCell } from 'Iaso/types/general';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../constants/urls';
 import { PLANNING_WRITE } from '../../utils/permissions';
+import { Planning } from '../assignments/types/planning';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { EditPlanning, DuplicatePlanning } from './components/PlanningDialog';
-import { PlanningApi } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
 
-const getAssignmentUrl = (planning: PlanningApi): string => {
+const getAssignmentUrl = (planning: Planning): string => {
     return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
 };
 export const usePlanningColumns = (
@@ -79,12 +80,14 @@ export const usePlanningColumns = (
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: (settings): ReactElement => {
+                Cell: ({
+                    row: { original: planning },
+                }: ColumnCell<Planning>): ReactElement => {
                     return (
                         // TODO: limit to user permissions
                         <section>
                             <IconButtonComponent
-                                url={getAssignmentUrl(settings.row.original)}
+                                url={getAssignmentUrl(planning)}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewPlanning}
                                 size="small"
@@ -95,28 +98,7 @@ export const usePlanningColumns = (
                                 <EditPlanning
                                     type="edit"
                                     iconProps={{}}
-                                    id={settings.row.original.id}
-                                    name={settings.row.original?.name}
-                                    selectedTeam={settings.row.original?.team}
-                                    selectedOrgUnit={
-                                        settings.row.original?.org_unit
-                                    }
-                                    startDate={
-                                        settings.row.original?.started_at
-                                    }
-                                    endDate={settings.row.original?.ended_at}
-                                    forms={settings.row.original?.forms ?? []}
-                                    publishingStatus={
-                                        settings.row.original?.status
-                                    }
-                                    project={settings.row.original?.project}
-                                    description={
-                                        settings.row.original?.description
-                                    }
-                                    pipelineUuids={
-                                        settings.row.original?.pipeline_uuids ??
-                                        []
-                                    }
+                                    planning={planning}
                                 />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
@@ -125,27 +107,7 @@ export const usePlanningColumns = (
                                 <DuplicatePlanning
                                     iconProps={{}}
                                     type="copy"
-                                    name={settings.row.original?.name}
-                                    selectedTeam={settings.row.original?.team}
-                                    selectedOrgUnit={
-                                        settings.row.original?.org_unit
-                                    }
-                                    startDate={
-                                        settings.row.original?.started_at
-                                    }
-                                    endDate={settings.row.original?.ended_at}
-                                    forms={settings.row.original?.forms ?? []}
-                                    publishingStatus={
-                                        settings.row.original?.status
-                                    }
-                                    project={settings.row.original?.project}
-                                    description={
-                                        settings.row.original?.description
-                                    }
-                                    pipelineUuids={
-                                        settings.row.original?.pipeline_uuids ??
-                                        []
-                                    }
+                                    planning={planning}
                                 />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
@@ -155,19 +117,18 @@ export const usePlanningColumns = (
                                     titleMessage={{
                                         ...MESSAGES.deletePlanning,
                                         values: {
-                                            planningName:
-                                                settings.row.original.name,
+                                            planningName: planning.name,
                                         },
                                     }}
                                     message={{
                                         ...MESSAGES.deleteWarning,
                                         values: {
-                                            name: settings.row.original.name,
+                                            name: planning.name,
                                         },
                                     }}
                                     disabled={false}
                                     onConfirm={() =>
-                                        deletePlanning(settings.row.original.id)
+                                        deletePlanning(planning.id)
                                     }
                                     keyName="delete-planning"
                                 />

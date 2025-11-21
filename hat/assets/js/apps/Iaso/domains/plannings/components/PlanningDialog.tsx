@@ -1,20 +1,26 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Box, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
     AddButton,
     IntlFormatMessage,
     useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
+    InputWithInfos,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { Planning } from 'Iaso/domains/assignments/types/planning';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
+import {
+    flattenHierarchy,
+    useGetOrgUnitTypesHierarchy,
+} from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
 import DatesRange from '../../../components/filters/DatesRange';
@@ -37,8 +43,9 @@ import MESSAGES from '../messages';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
-type Props = Partial<SavePlanningQuery> & {
+type Props = {
     type: ModalMode;
+    planning?: Planning;
     closeDialog: () => void;
     isOpen: boolean;
 };
@@ -75,20 +82,26 @@ const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
 
 export const CreateEditPlanning: FunctionComponent<Props> = ({
     type,
-    id,
-    name,
-    startDate,
-    endDate,
-    selectedOrgUnit,
-    selectedTeam,
-    forms,
-    project,
-    description,
-    publishingStatus,
-    pipelineUuids,
+    planning,
     closeDialog,
     isOpen,
 }) => {
+    const {
+        id,
+        name,
+        started_at: startDate,
+        ended_at: endDate,
+        org_unit: selectedOrgUnit,
+        org_unit_details: selectedOrgUnitDetails,
+        team: selectedTeam,
+        forms,
+        project,
+        description,
+        published_at,
+        pipeline_uuids: pipelineUuids,
+        target_org_unit_type: targetOrgUnitType,
+    } = planning ?? {};
+    const publishingStatus = published_at ? 'published' : 'draft';
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: savePlanning } = useSavePlanning(type);
     const {
@@ -103,12 +116,17 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
 
         convertError: convertAPIErrorsToState,
     });
-
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: config } = useGetPipelineConfig();
     const hasPipelineConfig = config?.configured;
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
         useGetPipelinesDropdown(Boolean(hasPipelineConfig));
+    const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypesHierarchy(selectedOrgUnitDetails?.org_unit_type);
+    const orgunitTypes = useMemo(
+        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
+        [orgUnitTypeHierarchy],
+    );
     const formik = useFormik({
         initialValues: {
             id,
@@ -122,6 +140,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             description,
             publishingStatus: publishingStatus ?? 'draft',
             pipelineUuids,
+            targetOrgUnitType,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -227,7 +246,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     closeDialog();
                 }}
                 closeDialog={closeDialog}
-                maxWidth="md"
+                maxWidth="sm"
                 onClose={() => null}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
@@ -235,7 +254,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                 dataTestId={`${id ?? 'create'}-planning-dialog`}
             >
                 <>
-                    <Grid container id="top-row" spacing={2}>
+                    <Grid container spacing={2}>
                         <Grid xs={6} item>
                             <InputComponent
                                 keyValue="name"
@@ -265,81 +284,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             />
                         </Grid>
                     </Grid>
-                    <Grid container id="middle-row" spacing={2}>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="selectedTeam"
-                                onChange={onChange}
-                                value={values.selectedTeam}
-                                errors={getErrors('selectedTeam')}
-                                label={MESSAGES.team}
-                                required
-                                options={teamsDropdown}
-                                loading={isFetchingTeams}
-                                disabled={!values.project}
-                                helperText={
-                                    showTeamHelperText
-                                        ? formatMessage(
-                                              MESSAGES.teamSelectHelperText,
-                                          )
-                                        : undefined
-                                }
-                            />
-                        </Grid>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="forms"
-                                onChange={(keyValue, value) =>
-                                    onChange(
-                                        keyValue,
-                                        commaSeparatedIdsToArray(value),
-                                    )
-                                }
-                                value={values.forms}
-                                errors={getErrors('forms')}
-                                label={MESSAGES.forms}
-                                required
-                                multi
-                                options={formsDropdown}
-                                loading={isFetchingForms}
-                                disabled={!values.project}
-                                helperText={
-                                    showFormsHelperText
-                                        ? formatMessage(
-                                              MESSAGES.formSelectHelperText,
-                                          )
-                                        : undefined
-                                }
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container id="last-row" spacing={2}>
-                        <Grid item xs={6}>
-                            <Box mt={1}>
-                                <Field
-                                    required
-                                    component={OrgUnitSelect}
-                                    label={formatMessage(
-                                        MESSAGES.selectOrgUnit,
-                                    )}
-                                    name="selectedOrgUnit"
-                                    errors={getErrors('selectedOrgUnit')}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                keyValue="description"
-                                onChange={onChange}
-                                value={values.description}
-                                errors={getErrors('description')}
-                                type="text"
-                                label={MESSAGES.description}
-                            />
-                        </Grid>
-                    </Grid>
                     <DatesRange
                         onChangeDate={onChangeDate}
                         dateFrom={values.startDate}
@@ -350,43 +294,116 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         keyDateTo="endDate"
                         errors={[getErrors('startDate'), getErrors('endDate')]}
                         blockInvalidDates={false}
-                        marginTop={0}
+                        marginTop={2}
                     />
-
+                    <InputComponent
+                        keyValue="description"
+                        onChange={onChange}
+                        value={values.description}
+                        errors={getErrors('description')}
+                        type="text"
+                        label={MESSAGES.description}
+                    />
+                    <InputComponent
+                        type="select"
+                        keyValue="forms"
+                        onChange={(keyValue, value) =>
+                            onChange(keyValue, commaSeparatedIdsToArray(value))
+                        }
+                        value={values.forms}
+                        errors={getErrors('forms')}
+                        label={MESSAGES.forms}
+                        required
+                        multi
+                        options={formsDropdown}
+                        loading={isFetchingForms}
+                        disabled={!values.project}
+                        helperText={
+                            showFormsHelperText
+                                ? formatMessage(MESSAGES.formSelectHelperText)
+                                : undefined
+                        }
+                    />
+                    <Field
+                        required
+                        component={OrgUnitSelect}
+                        label={formatMessage(MESSAGES.selectOrgUnit)}
+                        name="selectedOrgUnit"
+                        errors={getErrors('selectedOrgUnit')}
+                    />
                     <Grid container spacing={2}>
-                        {hasPipelineConfig && (
-                            <Grid item xs={6}>
+                        <Grid xs={6} item>
+                            {/* <InputComponent
+                                type="select"
+                                keyValue="selectedTeam"
+                                onChange={onChange}
+                                value={values.selectedTeam}
+                                errors={getErrors('selectedTeam')}
+                                label={MESSAGES.team}
+                                required
+                                options={teamsDropdown || []}
+                                loading={isFetchingTeams}
+                                withMarginTop={false}
+                                disabled={!values.project}
+                                helperText={
+                                    showTeamHelperText
+                                        ? formatMessage(
+                                              MESSAGES.teamSelectHelperText,
+                                          )
+                                        : undefined
+                                }
+                            /> */}
+                        </Grid>
+                        <Grid xs={6} item>
+                            <InputWithInfos
+                                infos={formatMessage(
+                                    MESSAGES.targetOrgUnitTypeInfos,
+                                )}
+                            >
                                 <InputComponent
                                     type="select"
-                                    multi
-                                    keyValue="pipelineUuids"
-                                    onChange={(keyValue, value) =>
-                                        onChange(
-                                            keyValue,
-                                            value ? value.split(',') : [],
-                                        )
-                                    }
-                                    loading={isFetchingPipelineUuids}
-                                    options={pipelineUuidsOptions}
-                                    value={values.pipelineUuids}
-                                    errors={getErrors('pipelineUuids')}
-                                    label={MESSAGES.pipelines}
+                                    keyValue="targetOrgUnitType"
+                                    label={MESSAGES.targetOrgUnitType}
+                                    onChange={onChange}
+                                    withMarginTop={false}
+                                    errors={getErrors('targetOrgUnitType')}
+                                    value={values.targetOrgUnitType}
+                                    disabled={!values.selectedOrgUnit}
+                                    options={orgunitTypes || []}
+                                    loading={isFetchingOrgunitTypes}
                                 />
-                            </Grid>
-                        )}
-                        <Grid item xs={6}>
-                            <InputComponent
-                                type="radio"
-                                keyValue="publishingStatus"
-                                onChange={onChange}
-                                value={values.publishingStatus}
-                                errors={getErrors('publishingStatus')}
-                                label={MESSAGES.publishingStatus}
-                                options={publishingStatusOptions}
-                                required
-                            />
+                            </InputWithInfos>
                         </Grid>
                     </Grid>
+
+                    {hasPipelineConfig && (
+                        <InputComponent
+                            type="select"
+                            multi
+                            keyValue="pipelineUuids"
+                            onChange={(keyValue, value) =>
+                                onChange(
+                                    keyValue,
+                                    value ? value.split(',') : [],
+                                )
+                            }
+                            loading={isFetchingPipelineUuids}
+                            options={pipelineUuidsOptions}
+                            value={values.pipelineUuids}
+                            errors={getErrors('pipelineUuids')}
+                            label={MESSAGES.pipelines}
+                        />
+                    )}
+                    <InputComponent
+                        type="radio"
+                        keyValue="publishingStatus"
+                        onChange={onChange}
+                        value={values.publishingStatus}
+                        errors={getErrors('publishingStatus')}
+                        label={MESSAGES.publishingStatus}
+                        options={publishingStatusOptions}
+                        required
+                    />
                 </>
             </ConfirmCancelModal>
         </FormikProvider>

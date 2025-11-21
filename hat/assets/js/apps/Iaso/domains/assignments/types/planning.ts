@@ -14,7 +14,7 @@ type OrgUnitDetail = {
 export type Planning = {
     id: number;
     name: string;
-    team_details: Team;
+    team_details: Partial<Team>;
     team: number;
     org_unit: number;
     forms: Array<number>;

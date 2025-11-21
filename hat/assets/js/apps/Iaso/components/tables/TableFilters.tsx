@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { defineMessages, FormattedMessage } from 'react-intl';
 
 import SearchIcon from '@mui/icons-material/Search';
@@ -24,31 +24,45 @@ const useStyles = makeStyles(theme => ({
         },
     },
     icon: {
+        //@ts-ignore
         color: theme.palette.ligthGray.border,
         fontWeight: 'light',
         fontSize: 150,
     },
 }));
 
-const Filters = ({
+type Props = {
+    params: Record<string, any>;
+    onSearch: (value: any) => void;
+    redirectTo: (url: string, params: Record<string, any>) => void;
+    baseUrl?: string;
+    filters?: any[];
+    defaultFiltersUpdated?: boolean;
+    toggleActiveSearch?: boolean;
+    extraComponent?: React.ReactNode;
+    paramsPrefix?: string;
+    filtersColumnsCount?: number;
+};
+
+const Filters: FunctionComponent<Props> = ({
     params,
-    baseUrl,
     redirectTo,
     onSearch,
-    filters,
-    defaultFiltersUpdated,
-    toggleActiveSearch,
-    extraComponent,
-    paramsPrefix,
-    filtersColumnsCount,
+    paramsPrefix = '',
+    baseUrl = '',
+    filters = [],
+    defaultFiltersUpdated = false,
+    toggleActiveSearch = false,
+    extraComponent = <></>,
+    filtersColumnsCount = 3,
 }) => {
     const [filtersUpdated, setFiltersUpdated] = React.useState(
         !defaultFiltersUpdated,
     );
 
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const handleSearch = () => {
-        let tempParams = null;
+        let tempParams: Record<string, any> | null = null;
         if (filtersUpdated) {
             setFiltersUpdated(false);
             tempParams = {
@@ -56,7 +70,10 @@ const Filters = ({
                 page: 1,
                 [getParamsKey(paramsPrefix, 'page')]: 1,
             };
+            // TS compiler wrongly thinks tempParams can be null at this point
+            //@ts-ignore
             if (!tempParams.searchActive && toggleActiveSearch) {
+                //@ts-ignore
                 tempParams.searchActive = true;
             }
             redirectTo(baseUrl, tempParams);
@@ -67,7 +84,7 @@ const Filters = ({
     return (
         <Grid container spacing={2}>
             {Array(filtersColumnsCount)
-                .fill()
+                .fill(undefined)
                 .map((x, i) => i + 1)
                 .map(column => (
                     <Grid
@@ -112,29 +129,6 @@ const Filters = ({
             </Grid>
         </Grid>
     );
-};
-
-Filters.defaultProps = {
-    baseUrl: '',
-    filters: [],
-    defaultFiltersUpdated: false,
-    toggleActiveSearch: false,
-    extraComponent: <></>,
-    paramsPrefix: null,
-    filtersColumnsCount: 3,
-};
-
-Filters.propTypes = {
-    params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string,
-    onSearch: PropTypes.func.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    filters: PropTypes.array,
-    defaultFiltersUpdated: PropTypes.bool,
-    toggleActiveSearch: PropTypes.bool,
-    extraComponent: PropTypes.node,
-    paramsPrefix: PropTypes.string,
-    filtersColumnsCount: PropTypes.number,
 };
 
 export default Filters;

@@ -1,11 +1,8 @@
+import React, { FunctionComponent } from 'react';
 import { Button, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
-
-import PropTypes from 'prop-types';
-
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useSnackbar } from 'notistack';
+import { SnackbarKey, useSnackbar } from 'notistack';
 import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
@@ -26,7 +23,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const SnackBarErrorMessage = ({ errorLog, id }) => {
+type Props = {
+    errorLog: any;
+    id: SnackbarKey | undefined;
+};
+
+const SnackBarErrorMessage: FunctionComponent<Props> = ({ errorLog, id }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { closeSnackbar } = useSnackbar();
@@ -55,6 +57,7 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
     return (
         <>
             <Tooltip
+                // @ts-ignore
                 size="small"
                 title={
                     <pre className={classes.errorMessage}>{errorMessage}</pre>
@@ -86,15 +89,6 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
             />
         </>
     );
-};
-
-SnackBarErrorMessage.defaultProps = {
-    errorLog: null,
-    id: null,
-};
-SnackBarErrorMessage.propTypes = {
-    errorLog: PropTypes.any,
-    id: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
 };
 
 export default SnackBarErrorMessage;

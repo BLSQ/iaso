@@ -1,27 +1,35 @@
-import React, { Fragment } from 'react';
-
-import PropTypes from 'prop-types';
-
-import { isValidCoordinate } from '../../../utils/map/mapUtils.ts';
-
+import React, { Fragment, FunctionComponent } from 'react';
+import { isValidCoordinate } from '../../../utils/map/mapUtils';
 import CircleMarkerComponent from './CircleMarkerComponent';
-import MarkerComponent from './MarkerComponent';
+import MarkerComponent from './MarkerComponent.js';
 
-const MarkersListComponent = props => {
-    const {
-        items,
-        onMarkerClick,
-        PopupComponent,
-        TooltipComponent,
-        customMarker,
-        popupProps,
-        markerProps,
-        isCircle,
-        tooltipProps,
-        onContextmenu,
-        onDblclick,
-    } = props;
+type Props = {
+    items?: Record<string, any>[];
+    PopupComponent?: any;
+    TooltipComponent?: React.ComponentType<any>;
+    customMarker?: Record<string, any>;
+    onMarkerClick: (item: any) => void;
+    isCircle?: boolean;
+    onDblclick?: (event: any, item: any) => void;
+    markerProps?: (item: any) => any;
+    popupProps?: (item: any) => any;
+    tooltipProps?: (item: any) => any;
+    onContextmenu?: (event: any, item: any) => void;
+};
 
+const MarkersListComponent: FunctionComponent<Props> = ({
+    items = [],
+    PopupComponent,
+    TooltipComponent,
+    customMarker,
+    onMarkerClick = () => null,
+    isCircle = false,
+    onDblclick = () => {},
+    markerProps = () => {},
+    popupProps = () => {},
+    tooltipProps = () => {},
+    onContextmenu = () => {},
+}) => {
     return items.map(i => {
         if (
             !i.latitude ||
@@ -60,34 +68,6 @@ const MarkersListComponent = props => {
             </Fragment>
         );
     });
-};
-
-MarkersListComponent.defaultProps = {
-    items: [],
-    PopupComponent: null,
-    TooltipComponent: undefined,
-    customMarker: null,
-    popupProps: () => {},
-    markerProps: () => {},
-    tooltipProps: () => {},
-    isCircle: false,
-    onContextmenu: () => {},
-    onMarkerClick: () => null,
-    onDblclick: () => {},
-};
-
-MarkersListComponent.propTypes = {
-    items: PropTypes.array,
-    onMarkerClick: PropTypes.func,
-    PopupComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
-    TooltipComponent: PropTypes.elementType,
-    customMarker: PropTypes.object,
-    tooltipProps: PropTypes.func,
-    popupProps: PropTypes.func,
-    markerProps: PropTypes.func,
-    isCircle: PropTypes.bool,
-    onContextmenu: PropTypes.func,
-    onDblclick: PropTypes.func,
 };
 
 export default MarkersListComponent;

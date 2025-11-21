@@ -1,13 +1,10 @@
-import React, { useCallback, useState } from 'react';
-
-import PropTypes from 'prop-types';
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { commonStyles, IntlMessage } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import { withStyles } from '@mui/styles';
-import { commonStyles } from 'bluesquare-components';
-
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         overflow: 'visible',
@@ -19,7 +16,7 @@ const styles = theme => ({
         overflow: 'visible',
         paddingBottom: theme.spacing(2),
     },
-});
+}));
 
 const normalizedMessage = CompOrMessage => {
     if (!CompOrMessage) {
@@ -31,19 +28,40 @@ const normalizedMessage = CompOrMessage => {
     return CompOrMessage;
 };
 
-function DialogComponent({
-    classes,
+type Props = {
+    children?: React.ReactNode;
+    titleMessage?: IntlMessage | string | React.ReactNode;
+    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;
+    renderActions: ({
+        closeDialog,
+    }: {
+        closeDialog: () => void;
+    }) => React.JSX.Element;
+    onClosed?: () => void;
+    onOpen?: () => void;
+    id?: string;
+    dataTestId?: string;
+    defaultOpen?: boolean;
+};
+/** deprecated */
+const DialogComponent: FunctionComponent<Props> = ({
     children,
     titleMessage,
     renderActions,
     renderTrigger,
-    maxWidth,
-    onClosed,
-    onOpen,
+    maxWidth = 'sm',
+    onClosed = () => {},
+    onOpen = () => {},
     id,
-    dataTestId,
-    defaultOpen,
-}) {
+    dataTestId = '',
+    defaultOpen = false,
+}) => {
+    const classes = useStyles();
     // we use the renderDialog flag in addition to the open flag to control whether to render the full dialog
     // content, or only the trigger (to avoid rendering multiple heavy contents in list)
     const [open, setOpen] = useState(defaultOpen);
@@ -74,7 +92,7 @@ function DialogComponent({
                     classes={{
                         paper: classes.paper,
                     }}
-                    onClose={(event, reason) => {
+                    onClose={(_, reason) => {
                         if (reason === 'backdropClick') {
                             closeDialog();
                         }
@@ -96,36 +114,6 @@ function DialogComponent({
             )}
         </>
     );
-}
-DialogComponent.defaultProps = {
-    maxWidth: 'sm',
-    onClosed: () => {},
-    onOpen: () => {},
-    titleMessage: null,
-    id: undefined,
-    dataTestId: '',
-    children: null,
-    defaultOpen: false,
 };
-DialogComponent.propTypes = {
-    classes: PropTypes.object.isRequired,
-    children: PropTypes.node,
-    titleMessage: PropTypes.oneOfType([
-        PropTypes.shape({
-            id: PropTypes.string.isRequired,
-            defaultMessage: PropTypes.string,
-            values: PropTypes.object,
-        }),
-        PropTypes.node,
-        PropTypes.string, // untranslated not recommended
-    ]),
-    maxWidth: PropTypes.string,
-    renderActions: PropTypes.func.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    onClosed: PropTypes.func,
-    onOpen: PropTypes.func,
-    id: PropTypes.string,
-    dataTestId: PropTypes.string,
-    defaultOpen: PropTypes.bool,
-};
-export default withStyles(styles)(DialogComponent);
+
+export default DialogComponent;

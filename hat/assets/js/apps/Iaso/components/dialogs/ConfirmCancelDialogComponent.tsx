@@ -89,7 +89,7 @@ type Props = {
     dataTestId?: string;
     confirmMessage?: IntlMessage;
     cancelMessage?: IntlMessage;
-    titleMessage?: IntlMessage;
+    titleMessage?: IntlMessage | string | React.ReactNode;
     additionalButton?: boolean;
     additionalMessage?: IntlMessage | null;
     onAdditionalButtonClick?: (closeDialog: () => void) => void | null;

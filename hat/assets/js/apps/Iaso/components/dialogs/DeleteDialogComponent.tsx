@@ -10,7 +10,7 @@ import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 import MESSAGES from './messages';
 
 type Props = {
-    titleMessage: IntlMessage;
+    titleMessage: IntlMessage | string | React.ReactNode;
     message: IntlMessage;
     onConfirm: () => void;
     iconColor?: string;

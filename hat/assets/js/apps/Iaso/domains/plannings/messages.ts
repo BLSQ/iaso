@@ -14,8 +14,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.publishingStatus',
     },
     all: {
-        defaultMessage: 'All',
-        id: 'iaso.label.all',
+        defaultMessage: 'Show all',
+        id: 'iaso.label.showAll',
     },
     draft: {
         defaultMessage: 'Draft',
@@ -180,6 +180,10 @@ const MESSAGES = defineMessages({
     targetOrgUnitTypeInfos: {
         id: 'iaso.label.targetOrgUnitTypeInfos',
         defaultMessage: 'Select the target geography first',
+    },
+    status: {
+        id: 'iaso.label.status',
+        defaultMessage: 'Status',
     },
 });
 

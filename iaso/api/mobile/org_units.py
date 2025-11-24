@@ -223,7 +223,11 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         limit_download_to_roots = False
 
-        project = Project.objects.get_for_user_and_app_id(user, app_id)
+        try:
+            project = Project.objects.get_for_user_and_app_id(user, app_id)
+        except Project.DoesNotExist:
+            return OrgUnit.objects.none()
+
         if user and not user.is_anonymous:
             limit_download_to_roots = project.has_feature(FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS)
 

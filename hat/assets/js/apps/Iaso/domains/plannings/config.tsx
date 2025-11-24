@@ -1,29 +1,15 @@
-import React, { ReactElement, useMemo } from 'react';
-import {
-    Column,
-    IconButton as IconButtonComponent,
-    useSafeIntl,
-} from 'bluesquare-components';
-import { ColumnCell } from 'Iaso/types/general';
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { baseUrls } from '../../constants/urls';
-import { PLANNING_WRITE } from '../../utils/permissions';
-import { Planning } from '../assignments/types/planning';
+import React, { useMemo } from 'react';
+import { Column, useSafeIntl } from 'bluesquare-components';
+
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
-import { EditPlanning, DuplicatePlanning } from './components/PlanningDialog';
+import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
 import MESSAGES from './messages';
 
-const getAssignmentUrl = (planning: Planning): string => {
-    return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
-};
-export const usePlanningColumns = (
-    deletePlanning: (id: number) => void,
-): Column[] => {
+export const usePlanningColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
+    return useMemo<Column[]>(
         () => [
             {
                 Header: 'Id',
@@ -70,7 +56,7 @@ export const usePlanningColumns = (
                 ),
             },
             {
-                Header: formatMessage(MESSAGES.publishingStatus),
+                Header: formatMessage(MESSAGES.status),
                 accessor: 'status',
                 id: 'status',
                 Cell: settings => (
@@ -82,64 +68,9 @@ export const usePlanningColumns = (
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: ({
-                    row: { original: planning },
-                }: ColumnCell<Planning>): ReactElement => {
-                    return (
-                        // TODO: limit to user permissions
-                        <section>
-                            <IconButtonComponent
-                                url={getAssignmentUrl(planning)}
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.viewPlanning}
-                                size="small"
-                            />
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <EditPlanning
-                                    type="edit"
-                                    iconProps={{}}
-                                    planning={planning}
-                                />
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <DuplicatePlanning
-                                    iconProps={{}}
-                                    type="copy"
-                                    planning={planning}
-                                />
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <DeleteDialog
-                                    titleMessage={{
-                                        ...MESSAGES.deletePlanning,
-                                        values: {
-                                            planningName: planning.name,
-                                        },
-                                    }}
-                                    message={{
-                                        ...MESSAGES.deleteWarning,
-                                        values: {
-                                            name: planning.name,
-                                        },
-                                    }}
-                                    disabled={false}
-                                    onConfirm={() =>
-                                        deletePlanning(planning.id)
-                                    }
-                                    keyName="delete-planning"
-                                />
-                            </DisplayIfUserHasPerm>
-                        </section>
-                    );
-                },
+                Cell: settings => <ActionsCell {...settings} />,
             },
         ],
-        [deletePlanning, formatMessage],
+        [formatMessage],
     );
 };

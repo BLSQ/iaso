@@ -17,6 +17,7 @@ import { Planning } from 'Iaso/domains/assignments/types/planning';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
+import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import {
     flattenHierarchy,
     useGetOrgUnitTypesHierarchy,
@@ -92,7 +93,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         started_at: startDate,
         ended_at: endDate,
         org_unit: selectedOrgUnit,
-        org_unit_details: selectedOrgUnitDetails,
         team: selectedTeam,
         forms,
         project,
@@ -121,12 +121,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const hasPipelineConfig = config?.configured;
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
         useGetPipelinesDropdown(Boolean(hasPipelineConfig));
-    const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesHierarchy(selectedOrgUnitDetails?.org_unit_type);
-    const orgunitTypes = useMemo(
-        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
-        [orgUnitTypeHierarchy],
-    );
+
     const formik = useFormik({
         initialValues: {
             id,
@@ -147,7 +142,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         validationSchema: schema,
         onSubmit: save,
     });
-
     const {
         values,
         setFieldValue,
@@ -161,6 +155,14 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         validateField,
     } = formik;
 
+    const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
+        useGetOrgUnit(values.selectedOrgUnit?.toString());
+    const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypesHierarchy(rootorgunit?.org_unit_type_id);
+    const orgunitTypes = useMemo(
+        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
+        [orgUnitTypeHierarchy],
+    );
     const { data: formsDropdown, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions({
             extraFields: ['project_ids'],
@@ -331,7 +333,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         name="selectedOrgUnit"
                         errors={getErrors('selectedOrgUnit')}
                     />
-                    <Grid container spacing={2}>
+                    <Grid container spacing={2} mt={-4}>
                         <Grid xs={6} item>
                             <InputComponent
                                 type="select"
@@ -343,7 +345,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 required
                                 options={teamsDropdown || []}
                                 loading={isFetchingTeams}
-                                withMarginTop={false}
                                 disabled={!values.project}
                                 helperText={
                                     showTeamHelperText
@@ -365,12 +366,19 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                     keyValue="targetOrgUnitType"
                                     label={MESSAGES.targetOrgUnitType}
                                     onChange={onChange}
-                                    withMarginTop={false}
                                     errors={getErrors('targetOrgUnitType')}
-                                    value={values.targetOrgUnitType}
+                                    value={
+                                        isFetchingOrgunitTypes ||
+                                        isFetchingRootOrgUnit
+                                            ? undefined
+                                            : values.targetOrgUnitType
+                                    }
                                     disabled={!values.selectedOrgUnit}
                                     options={orgunitTypes || []}
-                                    loading={isFetchingOrgunitTypes}
+                                    loading={
+                                        isFetchingOrgunitTypes ||
+                                        isFetchingRootOrgUnit
+                                    }
                                 />
                             </InputWithInfos>
                         </Grid>

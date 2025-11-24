@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Grid } from '@mui/material';
+import { Grid, Box, Paper } from '@mui/material';
 import {
     AddButton,
     IntlFormatMessage,
@@ -22,6 +22,7 @@ import {
     flattenHierarchy,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { SxStyles } from 'Iaso/types/general';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
 import DatesRange from '../../../components/filters/DatesRange';
@@ -43,6 +44,17 @@ import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
 
 type ModalMode = 'create' | 'edit' | 'copy';
+
+const styles: SxStyles = {
+    paper: {
+        px: 2,
+        pb: 2,
+        mt: 2,
+        border: theme =>
+            // @ts-ignore
+            `1px solid ${theme.palette.border.main}`,
+    },
+};
 
 type Props = {
     type: ModalMode;
@@ -202,11 +214,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     });
     const titleMessage = formatTitle(type, formatMessage);
 
-    const showTeamHelperText =
-        getErrors('selectedTeam').length === 0 && !values.project;
-    const showFormsHelperText =
-        getErrors('forms').length === 0 && !values.project;
-
     useEffect(() => {
         if (
             // Separating the check on formsDropDown and the find to skip the effect as long as forms haven't been fetched
@@ -248,171 +255,184 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     closeDialog();
                 }}
                 closeDialog={closeDialog}
-                maxWidth="sm"
+                maxWidth="lg"
                 onClose={() => null}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 id={`${id ?? 'create'}-planning-dialog`}
                 dataTestId={`${id ?? 'create'}-planning-dialog`}
             >
-                <>
+                <Box mt={1}>
                     <Grid container spacing={2}>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                keyValue="name"
-                                onChange={onChange}
-                                value={values.name}
-                                errors={getErrors('name')}
-                                type="text"
-                                label={MESSAGES.name}
-                                required
-                            />
-                        </Grid>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="project"
-                                onChange={onChange}
-                                value={
-                                    isFetchingProjects
-                                        ? undefined
-                                        : values.project
-                                }
-                                errors={getErrors('project')}
-                                label={MESSAGES.project}
-                                required
-                                options={projectsDropdown}
-                                loading={isFetchingProjects}
-                            />
-                        </Grid>
-                    </Grid>
-                    <DatesRange
-                        onChangeDate={onChangeDate}
-                        dateFrom={values.startDate}
-                        dateTo={values.endDate}
-                        labelFrom={MESSAGES.startDatefrom}
-                        labelTo={MESSAGES.endDateUntil}
-                        keyDateFrom="startDate"
-                        keyDateTo="endDate"
-                        errors={[getErrors('startDate'), getErrors('endDate')]}
-                        blockInvalidDates={false}
-                        marginTop={2}
-                    />
-                    <InputComponent
-                        keyValue="description"
-                        onChange={onChange}
-                        value={values.description}
-                        errors={getErrors('description')}
-                        type="text"
-                        label={MESSAGES.description}
-                    />
-                    <InputComponent
-                        type="select"
-                        keyValue="forms"
-                        onChange={(keyValue, value) =>
-                            onChange(keyValue, commaSeparatedIdsToArray(value))
-                        }
-                        value={values.forms}
-                        errors={getErrors('forms')}
-                        label={MESSAGES.forms}
-                        required
-                        multi
-                        options={formsDropdown}
-                        loading={isFetchingForms}
-                        disabled={!values.project}
-                        helperText={
-                            showFormsHelperText
-                                ? formatMessage(MESSAGES.formSelectHelperText)
-                                : undefined
-                        }
-                    />
-                    <Field
-                        required
-                        component={OrgUnitSelect}
-                        label={formatMessage(MESSAGES.selectOrgUnit)}
-                        name="selectedOrgUnit"
-                        errors={getErrors('selectedOrgUnit')}
-                    />
-                    <Grid container spacing={2} mt={-4}>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="selectedTeam"
-                                onChange={onChange}
-                                value={values.selectedTeam}
-                                errors={getErrors('selectedTeam')}
-                                label={MESSAGES.team}
-                                required
-                                options={teamsDropdown || []}
-                                loading={isFetchingTeams}
-                                disabled={!values.project}
-                                helperText={
-                                    showTeamHelperText
-                                        ? formatMessage(
-                                              MESSAGES.teamSelectHelperText,
-                                          )
-                                        : undefined
-                                }
-                            />
-                        </Grid>
-                        <Grid xs={6} item>
+                        <Grid xs={12} md={6} item>
+                            <Grid container spacing={2}>
+                                <Grid xs={12} item>
+                                    <InputComponent
+                                        keyValue="name"
+                                        onChange={onChange}
+                                        value={values.name}
+                                        errors={getErrors('name')}
+                                        type="text"
+                                        label={MESSAGES.name}
+                                        required
+                                        withMarginTop={false}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <InputWithInfos
+                                infos={formatMessage(
+                                    MESSAGES.projectSelectHelperText,
+                                )}
+                            >
+                                <Box sx={styles.paper}>
+                                    <Grid container spacing={2}>
+                                        <Grid xs={6} item>
+                                            <InputComponent
+                                                type="select"
+                                                keyValue="project"
+                                                onChange={onChange}
+                                                value={
+                                                    isFetchingProjects
+                                                        ? undefined
+                                                        : values.project
+                                                }
+                                                errors={getErrors('project')}
+                                                label={MESSAGES.project}
+                                                required
+                                                options={projectsDropdown}
+                                                loading={isFetchingProjects}
+                                            />
+                                        </Grid>
+                                        <Grid xs={6} item>
+                                            <InputComponent
+                                                type="select"
+                                                keyValue="selectedTeam"
+                                                onChange={onChange}
+                                                value={values.selectedTeam}
+                                                errors={getErrors(
+                                                    'selectedTeam',
+                                                )}
+                                                label={MESSAGES.team}
+                                                required
+                                                options={teamsDropdown || []}
+                                                loading={isFetchingTeams}
+                                                disabled={!values.project}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                    <InputComponent
+                                        type="select"
+                                        keyValue="forms"
+                                        onChange={(keyValue, value) =>
+                                            onChange(
+                                                keyValue,
+                                                commaSeparatedIdsToArray(value),
+                                            )
+                                        }
+                                        value={values.forms}
+                                        errors={getErrors('forms')}
+                                        label={MESSAGES.forms}
+                                        required
+                                        multi
+                                        options={formsDropdown}
+                                        loading={isFetchingForms}
+                                        disabled={!values.project}
+                                    />
+                                </Box>
+                            </InputWithInfos>
                             <InputWithInfos
                                 infos={formatMessage(
                                     MESSAGES.targetOrgUnitTypeInfos,
                                 )}
                             >
-                                <InputComponent
-                                    type="select"
-                                    keyValue="targetOrgUnitType"
-                                    label={MESSAGES.targetOrgUnitType}
-                                    onChange={onChange}
-                                    errors={getErrors('targetOrgUnitType')}
-                                    value={
-                                        isFetchingOrgunitTypes ||
-                                        isFetchingRootOrgUnit
-                                            ? undefined
-                                            : values.targetOrgUnitType
-                                    }
-                                    disabled={!values.selectedOrgUnit}
-                                    options={orgunitTypes || []}
-                                    loading={
-                                        isFetchingOrgunitTypes ||
-                                        isFetchingRootOrgUnit
-                                    }
-                                />
+                                <Box sx={styles.paper}>
+                                    <Field
+                                        required
+                                        component={OrgUnitSelect}
+                                        label={formatMessage(
+                                            MESSAGES.selectOrgUnit,
+                                        )}
+                                        name="selectedOrgUnit"
+                                        errors={getErrors('selectedOrgUnit')}
+                                    />
+                                    <InputComponent
+                                        type="select"
+                                        keyValue="targetOrgUnitType"
+                                        label={MESSAGES.targetOrgUnitType}
+                                        onChange={onChange}
+                                        errors={getErrors('targetOrgUnitType')}
+                                        value={
+                                            isFetchingOrgunitTypes ||
+                                            isFetchingRootOrgUnit
+                                                ? undefined
+                                                : values.targetOrgUnitType
+                                        }
+                                        disabled={!values.selectedOrgUnit}
+                                        options={orgunitTypes || []}
+                                        loading={
+                                            isFetchingOrgunitTypes ||
+                                            isFetchingRootOrgUnit
+                                        }
+                                    />
+                                </Box>
                             </InputWithInfos>
                         </Grid>
-                    </Grid>
 
-                    {hasPipelineConfig && (
-                        <InputComponent
-                            type="select"
-                            multi
-                            keyValue="pipelineUuids"
-                            onChange={(keyValue, value) =>
-                                onChange(
-                                    keyValue,
-                                    value ? value.split(',') : [],
-                                )
-                            }
-                            loading={isFetchingPipelineUuids}
-                            options={pipelineUuidsOptions}
-                            value={values.pipelineUuids}
-                            errors={getErrors('pipelineUuids')}
-                            label={MESSAGES.pipelines}
-                        />
-                    )}
-                    <InputComponent
-                        type="radio"
-                        keyValue="publishingStatus"
-                        onChange={onChange}
-                        value={values.publishingStatus}
-                        errors={getErrors('publishingStatus')}
-                        label={MESSAGES.publishingStatus}
-                        options={publishingStatusOptions}
-                        required
-                    />
-                </>
+                        <Grid xs={12} md={6} item>
+                            <DatesRange
+                                onChangeDate={onChangeDate}
+                                dateFrom={values.startDate}
+                                dateTo={values.endDate}
+                                labelFrom={MESSAGES.startDatefrom}
+                                labelTo={MESSAGES.endDateUntil}
+                                keyDateFrom="startDate"
+                                keyDateTo="endDate"
+                                errors={[
+                                    getErrors('startDate'),
+                                    getErrors('endDate'),
+                                ]}
+                                blockInvalidDates={false}
+                                marginTop={0}
+                            />
+                            <InputComponent
+                                keyValue="description"
+                                onChange={onChange}
+                                value={values.description}
+                                errors={getErrors('description')}
+                                type="textarea"
+                                label={MESSAGES.description}
+                            />
+                            {hasPipelineConfig && (
+                                <InputComponent
+                                    type="select"
+                                    multi
+                                    keyValue="pipelineUuids"
+                                    onChange={(keyValue, value) =>
+                                        onChange(
+                                            keyValue,
+                                            value ? value.split(',') : [],
+                                        )
+                                    }
+                                    loading={isFetchingPipelineUuids}
+                                    options={pipelineUuidsOptions}
+                                    value={values.pipelineUuids}
+                                    errors={getErrors('pipelineUuids')}
+                                    label={MESSAGES.pipelines}
+                                />
+                            )}
+                            <InputComponent
+                                type="radio"
+                                keyValue="publishingStatus"
+                                onChange={onChange}
+                                value={values.publishingStatus}
+                                errors={getErrors('publishingStatus')}
+                                label={MESSAGES.publishingStatus}
+                                options={publishingStatusOptions}
+                                required
+                            />
+                        </Grid>
+                    </Grid>
+                </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );

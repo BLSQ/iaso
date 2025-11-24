@@ -91,7 +91,7 @@ const MESSAGES = defineMessages({
     },
     selectOrgUnit: {
         id: 'iaso.plannings.label.selectOrgUnit',
-        defaultMessage: 'Please select org unit',
+        defaultMessage: 'Target geography',
     },
     duplicatePlanning: {
         id: 'iaso.plannings.label.duplicatePlanning',
@@ -157,9 +157,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.error.label.publishedWithoutEndDate',
         defaultMessage: 'End date must be set when publishing',
     },
-    formSelectHelperText: {
-        id: 'iaso.label.formSelectHelperText',
-        defaultMessage: 'You must select a project before selecting a form',
+    projectSelectHelperText: {
+        id: 'iaso.label.projectSelectHelperText',
+        defaultMessage: 'You must select a project before',
     },
     teamSelectHelperText: {
         id: 'iaso.label.teamSelectHelperText',

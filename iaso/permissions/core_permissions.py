@@ -15,6 +15,7 @@ from iaso.modules import (
     MODULE_PAYMENTS,
     MODULE_PLANNING,
     MODULE_REGISTRY,
+    MODULE_STOCK,
 )
 from iaso.permissions.base import IasoPermission
 
@@ -280,7 +281,7 @@ CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION = CorePermission(
 CORE_STOCK_MANAGEMENT_PERMISSION = CorePermission(
     codename="iaso_stock_management",
     label=_("Stock management"),
-    module=MODULE_DEFAULT,
+    module=MODULE_STOCK,
     ui_group=PERMISSION_GROUP_ADMIN,
 )
 CORE_STORAGE_PERMISSION = CorePermission(

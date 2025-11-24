@@ -983,6 +983,7 @@
     "iaso.modules.registry": "Registre",
     "iaso.modules.saas": "SaaS",
     "iaso.modules.status": "Status",
+    "iaso.modules.stock_management": "Gestion des stocks",
     "iaso.modules.title": "Modules",
     "iaso.modules.trypelim_project": "Projet Trypelim",
     "iaso.openHexa.label.pipelineDetails": "Détails de la pipeline",

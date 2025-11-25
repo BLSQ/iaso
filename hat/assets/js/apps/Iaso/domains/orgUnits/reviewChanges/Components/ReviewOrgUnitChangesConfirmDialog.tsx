@@ -42,6 +42,7 @@ type Props = {
     onClose: () => void;
     isApproved: boolean;
     isPartiallyApproved: boolean;
+    isRejected: boolean;
     approvedFields: string[];
     isNewOrgUnit: boolean;
 };
@@ -52,20 +53,21 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
     onClose,
     isApproved,
     isPartiallyApproved,
+    isRejected,
     approvedFields,
     isNewOrgUnit,
 }) => {
     const [comment, setComment] = useState<string | undefined>();
     const { formatMessage } = useSafeIntl();
     const titleMessage = useMemo(() => {
+        if (isRejected) {
+            return formatMessage(MESSAGES.addRejectionComment);
+        }
         if (isPartiallyApproved) {
             return formatMessage(MESSAGES.addPartiallyApprovedComment);
         }
-        if (isApproved) {
-            return '';
-        }
-        return formatMessage(MESSAGES.addRejectionComment);
-    }, [isApproved, isPartiallyApproved, formatMessage]);
+        return '';
+    }, [isPartiallyApproved, isRejected, formatMessage]);
 
     const reviewOrgUnitChangesCommentDialogButtons = useMemo(() => {
         return createChangesConfirmDialogButtons({

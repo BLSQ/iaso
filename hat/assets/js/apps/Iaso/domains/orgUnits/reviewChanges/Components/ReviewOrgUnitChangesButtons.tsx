@@ -37,6 +37,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     }, [isNewOrgUnit, changeRequest, selectedFields]);
 
     const [isApproved, setIsApproved] = useState<boolean>(false);
+    const [isRejected, setIsRejected] = useState<boolean>(false);
     const isPartiallyApproved = Boolean(
         changeRequest?.requested_fields &&
             changeRequest?.requested_fields.length > approvedFields.length &&
@@ -54,6 +55,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                 isApproved={isApproved}
                 approvedFields={approvedFields}
                 isNewOrgUnit={isNewOrgUnit}
+                isRejected={isRejected}
             />
             <Box display="flex" justifyContent="flex-end" m={2}>
                 {isNew && (
@@ -63,6 +65,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                                 data-test="reject-button"
                                 onClick={() => {
                                     setIsApproved(false);
+                                    setIsRejected(true);
                                     setIsConfirmDialogOpen(true);
                                 }}
                                 variant="contained"
@@ -77,6 +80,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                                 data-test="confirm-button"
                                 onClick={() => {
                                     setIsApproved(true);
+                                    setIsRejected(false);
                                     setIsConfirmDialogOpen(true);
                                 }}
                                 variant="contained"

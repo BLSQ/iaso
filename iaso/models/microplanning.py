@@ -3,7 +3,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 
-from iaso.models import Form, OrgUnit, Project
+from iaso.models.forms import Form
+from iaso.models.org_unit import OrgUnit, OrgUnitType
+from iaso.models.project import Project
 from iaso.models.team import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
@@ -27,6 +29,9 @@ class Planning(SoftDeletableModel):
     forms = models.ManyToManyField(Form, related_name="plannings")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
+    target_org_unit_type = models.ForeignKey(
+        OrgUnitType, on_delete=models.PROTECT, related_name="target_plannings", null=True, blank=True
+    )
     published_at = models.DateTimeField(null=True, blank=True)
     pipeline_uuids = ArrayField(
         models.CharField(max_length=36),

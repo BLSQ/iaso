@@ -368,7 +368,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
                 "progress_message": "Task completed",
                 "progress_value": 100,
                 "end_value": 100,
-                "result_data": {"result": "success", "data": "test data"},
+                "result": {"result": "success", "data": "test data"},
             },
             format="json",
         )

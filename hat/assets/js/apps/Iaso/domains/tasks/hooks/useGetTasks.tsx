@@ -30,3 +30,16 @@ export const useGetTasks = ({
         },
     });
 };
+
+export const useGetTaskDetails = (
+    taskId?: number,
+): UseQueryResult<Task<any>, Error> => {
+    return useSnackQuery({
+        queryKey: ['tasks', taskId],
+        queryFn: () => getRequest(`/api/tasks/${taskId}/`),
+        options: {
+            retry: false,
+            enabled: Boolean(taskId),
+        },
+    });
+};

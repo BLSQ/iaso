@@ -4,6 +4,8 @@ import React, {
     useEffect,
     useState,
     useMemo,
+    Dispatch,
+    SetStateAction,
 } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
@@ -18,7 +20,6 @@ import {
     Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { useQueryClient } from 'react-query';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
 import { LQASForm } from 'Iaso/domains/assignments/sampling/customForms/LQASForm';
@@ -45,6 +46,7 @@ type Props = {
     disabledMessage?: string;
     orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     isFetchingOrgunitTypes: boolean;
+    setExtraFilters: Dispatch<SetStateAction<Record<string, any>>>;
 };
 
 const styles: SxStyles = {
@@ -90,9 +92,9 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     disabledMessage,
     orgunitTypes,
     isFetchingOrgunitTypes,
+    setExtraFilters,
 }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
     const [parameterValues, setParameterValues] = useState<
         ParameterValues | undefined
@@ -133,21 +135,14 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const isPipelineActive =
         (!taskStatus || taskStatus === 'RUNNING' || taskStatus === 'QUEUED') &&
         currentStep === 2;
-    const handleEndTask = useCallback(() => {
-        queryClient.invalidateQueries(['assignmentsList']);
-    }, [queryClient]);
 
     const { data: taskLogs, isFetching: isFetchingTaskLogs } = useGetLogs(
         taskId,
         isPipelineActive,
     );
-
     useEffect(() => {
         if (taskLogs && taskLogs.status !== taskStatus) {
             setTaskStatus(taskLogs.status);
-            if (taskLogs.status === 'SUCCESS') {
-                handleEndTask();
-            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [taskLogs]);
@@ -182,6 +177,12 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         setParameterValues(undefined);
         setAllowConfirm(false);
     }, []);
+
+    const handleReset = () => {
+        setCurrentStep(1);
+        setTaskStatus(undefined);
+    };
+
     useEffect(() => {
         if (isSubmitting && !isLaunchingTask) {
             setIsSubmitting(false);
@@ -268,7 +269,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                     <Button
                                         size="small"
                                         variant="contained"
-                                        onClick={() => setCurrentStep(1)}
+                                        onClick={handleReset}
                                         disabled={
                                             isPipelineActive || isLaunchingTask
                                         }
@@ -335,6 +336,9 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                             isFetchingOrgunitTypes={
                                                 isFetchingOrgunitTypes
                                             }
+                                            taskStatus={taskStatus ?? 'QUEUED'}
+                                            setExtraFilters={setExtraFilters}
+                                            taskId={taskId}
                                         />
                                     )}
                                     {/* Custom pipeline code - this should be changed */}

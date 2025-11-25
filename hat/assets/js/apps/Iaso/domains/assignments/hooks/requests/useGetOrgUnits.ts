@@ -155,18 +155,14 @@ type Props = {
     currentType?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
     order?: string;
     search?: string;
-};
-
-type PropsByOrgUnitTypeId = {
-    orgUnitTypeId?: number;
-    projectId?: number;
-    excludedOrgUnitParentIds?: string;
+    extraFilters?: Record<string, any>;
 };
 
 export const useGetOrgUnitsByOrgUnitTypeId = ({
     orgUnitTypeId,
     projectId,
     excludedOrgUnitParentIds,
+    extraFilters = {},
 }: PropsByOrgUnitTypeId): UseQueryResult<OrgUnit[], Error> => {
     return useSnackQuery({
         queryKey: [
@@ -204,6 +200,7 @@ export const useGetOrgUnits = ({
     currentType,
     order,
     search,
+    extraFilters = {},
 }: Props): UseQueryResult<Locations, Error> => {
     const params: Record<string, any> = useMemo(
         () => ({
@@ -218,8 +215,9 @@ export const useGetOrgUnits = ({
             orgUnitParentIds: orgUnitParentIds?.join(','),
             orgUnitTypeId: baseOrgunitType,
             search,
+            ...extraFilters,
         }),
-        [baseOrgunitType, order, orgUnitParentIds, search],
+        [baseOrgunitType, order, orgUnitParentIds, search, extraFilters],
     );
 
     const select = useCallback(

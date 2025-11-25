@@ -924,6 +924,7 @@
     "iaso.modules.polio_project": "Proyecto Polio",
     "iaso.modules.registry": "Registro",
     "iaso.modules.status": "Estado",
+    "iaso.modules.stock_management": "Gestión de existencias",
     "iaso.modules.title": "Módulos",
     "iaso.modules.trypelim_project": "Proyecto Trypelim",
     "iaso.orgUnitChangeRequestConfigs.title.confirmSuppression": "¿Eliminar configuración para {project} - {orgUnitType}?",

@@ -173,7 +173,13 @@ def _handle_success_status(task: Task, pipeline_id: str, run_status: str) -> boo
         logger.info(
             f"Pipeline {pipeline_id} succeeded in OpenHEXA with status: {run_status}, updating task {task.pk} to SUCCESS"
         )
-        task.report_success("Pipeline completed successfully")
+        task.refresh_from_db()
+        task.status = SUCCESS
+        task.ended_at = timezone.now()
+        if not task.progress_message or task.progress_message == "":
+            task.progress_message = "Pipeline completed successfully"
+        task.create_log_entry_if_needed("Pipeline completed successfully")
+        task.save(update_fields=["status", "ended_at", "progress_message"])
 
     return True
 

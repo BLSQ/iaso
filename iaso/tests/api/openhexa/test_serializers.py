@@ -31,7 +31,7 @@ class TaskUpdateSerializerTestCase(TestCase, IasoTestCaseMixin):
             "progress_message": "Task completed",
             "progress_value": 100,
             "end_value": 100,
-            "result_data": {"result": "success"},
+            "result": {"result": "success"},
         }
         serializer = TaskUpdateSerializer(data=data)
         self.assertTrue(serializer.is_valid())
@@ -55,7 +55,7 @@ class TaskUpdateSerializerTestCase(TestCase, IasoTestCaseMixin):
         self.assertEqual(serializer.data["progress_message"], "Task completed")
         self.assertEqual(serializer.data["progress_value"], 100)
         self.assertEqual(serializer.data["end_value"], 100)
-        self.assertEqual(serializer.data["result_data"], {"result": "success"})
+        self.assertEqual(serializer.data["result"], {"result": "success"})
 
     def test_missing_task_id(self):
         """Test serializer with missing task_id."""
@@ -107,7 +107,7 @@ class TaskUpdateSerializerTestCase(TestCase, IasoTestCaseMixin):
         self.assertEqual(serializer.data["progress_message"], "Processing...")
         self.assertEqual(serializer.data["progress_value"], 50)
         self.assertEqual(serializer.data["end_value"], 100)
-        self.assertEqual(serializer.data["result_data"], {"step": "halfway"})
+        self.assertEqual(serializer.data["result"], {"step": "halfway"})
 
     def test_serializer_with_task_instance_and_data_update(self):
         """Test updating a Task instance using serializer data."""
@@ -122,7 +122,7 @@ class TaskUpdateSerializerTestCase(TestCase, IasoTestCaseMixin):
             "progress_message": "Completed successfully",
             "progress_value": 100,
             "end_value": 100,
-            "result_data": {"final_result": "success"},
+            "result": {"final_result": "success"},
         }
 
         # Validate the update data
@@ -141,7 +141,7 @@ class TaskUpdateSerializerTestCase(TestCase, IasoTestCaseMixin):
         updated_serializer = TaskUpdateSerializer(self.task)
         self.assertEqual(updated_serializer.data["status"], "SUCCESS")
         self.assertEqual(updated_serializer.data["progress_message"], "Completed successfully")
-        self.assertEqual(updated_serializer.data["result_data"], {"final_result": "success"})
+        self.assertEqual(updated_serializer.data["result"], {"final_result": "success"})
 
 
 class TaskResponseSerializerTestCase(TestCase):

@@ -532,6 +532,71 @@ class PlanningTestCase(APITestCase):
         self.assertIn("target_org_unit_type", r)
         self.assertEqual(r["target_org_unit_type"][0], "planningAndTargetOrgUnitType")
 
+    def test_planning_target_org_unit_type_no_descendants(self):
+        """Test that creating planning with target_org_unit_type but no descendant org units fails."""
+        source = DataSource.objects.create(name="Test Source")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+
+        org_unit_type_no_descendants = OrgUnitType.objects.create(name="Type With No Descendants")
+        org_unit_type_no_descendants.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root", org_unit_type=self.org_unit.org_unit_type)
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "Planning with No Matching Descendants",
+            "org_unit": root_org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id],
+            "target_org_unit_type": org_unit_type_no_descendants.id,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("target_org_unit_type", r)
+        self.assertEqual(r["target_org_unit_type"][0], "noOrgUnitsOfTypeInHierarchy")
+
+    def test_planning_target_org_unit_type_with_valid_descendants(self):
+        """Test that creating planning with target_org_unit_type and valid descendants succeeds."""
+        source = DataSource.objects.create(name="Test Source 2")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=2)
+
+        target_type = OrgUnitType.objects.create(name="Health Post")
+        target_type.projects.add(self.project1)
+
+        parent_type = OrgUnitType.objects.create(name="District")
+        parent_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="District 1", org_unit_type=parent_type)
+        OrgUnit.objects.create(version=version, name="Health Post 1", org_unit_type=target_type, parent=root_org_unit)
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "Planning with Valid Descendants",
+            "org_unit": root_org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id],
+            "target_org_unit_type": target_type.id,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        r = response.json()
+        self.assertEqual(r["target_org_unit_type"], target_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
+
 
 class AssignmentAPITestCase(APITestCase):
     fixtures = ["user.yaml"]

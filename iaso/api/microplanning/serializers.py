@@ -118,6 +118,10 @@ class PlanningSerializer(serializers.ModelSerializer):
             target_type_projects = target_org_unit_type.projects.all()
             if project not in target_type_projects:
                 validation_errors["target_org_unit_type"] = "planningAndTargetOrgUnitType"
+            else:
+                descendant_org_units = OrgUnit.objects.descendants(org_unit).filter(org_unit_type=target_org_unit_type)
+                if not descendant_org_units.exists():
+                    validation_errors["target_org_unit_type"] = "noOrgUnitsOfTypeInHierarchy"
 
         if validation_errors:
             raise serializers.ValidationError(validation_errors)

@@ -19,7 +19,6 @@ export const ActionsCell: FunctionComponent<ColumnCell<Planning>> = ({
 }) => {
     const { mutateAsync: deletePlanning } = useDeletePlanning();
     return (
-        // TODO: limit to user permissions
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
                 <EditPlanning type="edit" iconProps={{}} planning={planning} />

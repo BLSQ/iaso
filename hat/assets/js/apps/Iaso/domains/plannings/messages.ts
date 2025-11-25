@@ -137,6 +137,16 @@ const MESSAGES = defineMessages({
         id: 'iaso.error.label.planningAndTeams',
         defaultMessage: 'Planning and teams must be in the same project',
     },
+    planningAndTargetOrgUnitType: {
+        id: 'iaso.error.label.planningAndTargetOrgUnitType',
+        defaultMessage:
+            'Planning and target org unit type must be in the same project',
+    },
+    noOrgUnitsOfTypeInHierarchy: {
+        id: 'iaso.error.label.noOrgUnitsOfTypeInHierarchy',
+        defaultMessage:
+            'No org units of this type exist below the selected org unit',
+    },
     planningsError: {
         id: 'iaso.snackBar.fetchPlanningsError',
         defaultMessage: 'An error occurred while fetching plannings list',
@@ -159,7 +169,7 @@ const MESSAGES = defineMessages({
     },
     projectSelectHelperText: {
         id: 'iaso.label.projectSelectHelperText',
-        defaultMessage: 'You must select a project before',
+        defaultMessage: 'You must select a project first',
     },
     orgUnit: {
         id: 'iaso.label.orgUnitSingle',

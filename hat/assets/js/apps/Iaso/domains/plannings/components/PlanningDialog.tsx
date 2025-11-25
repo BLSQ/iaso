@@ -181,11 +181,16 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             params: {
                 projectsIds: values?.project,
             },
+            enabled: Boolean(values?.project),
         });
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown({
-            project: values?.project,
-        });
+        useGetTeamsDropdown(
+            {
+                project: values?.project,
+            },
+            undefined,
+            Boolean(values?.project),
+        );
     // TODO filter out by team and forms
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
@@ -193,6 +198,16 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
+        if (keyValue === 'project') {
+            setFieldValue('selectedTeam', null);
+            setFieldTouched('selectedTeam', false);
+            setFieldValue('forms', null);
+            setFieldTouched('forms', false);
+        }
+        if (keyValue === 'selectedOrgUnit') {
+            setFieldValue('targetOrgUnitType', null);
+            setFieldTouched('targetOrgUnitType', false);
+        }
         // Reset validation from server to not block the user.
         // If this is not called, even changing a field won't mark the form as valid.
         validateField(keyValue);

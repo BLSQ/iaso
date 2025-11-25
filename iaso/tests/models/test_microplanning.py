@@ -1,3 +1,5 @@
+from django.db.models import ProtectedError
+
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Project, SourceVersion, Team
 from iaso.models.microplanning import Planning
 from iaso.test import APITestCase
@@ -181,7 +183,6 @@ class PlanningPipelineIntegrationTestCase(APITestCase):
 
     def test_target_org_unit_type_protect_on_delete(self):
         """Test that deleting an OrgUnitType with plannings raises ProtectedError."""
-        from django.db.models import ProtectedError
 
         target_type = OrgUnitType.objects.create(name="Hospital")
         target_type.projects.add(self.project)

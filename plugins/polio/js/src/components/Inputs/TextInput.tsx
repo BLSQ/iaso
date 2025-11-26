@@ -1,16 +1,26 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { TextField } from '@mui/material';
 import { get } from 'lodash';
-import PropTypes from 'prop-types';
-import React, { useCallback } from 'react';
 
-export const TextInput = ({
+type Props = {
+    field?: Record<string, any>;
+    form?: Record<string, any>;
+    value?: any;
+    touchOnFocus?: boolean;
+    shrinkLabel?: boolean;
+    required?: boolean;
+    className?: string;
+};
+export const TextInput: FunctionComponent<Props> = ({
     field = {},
     form = {},
+    className,
     value,
     touchOnFocus = true,
     shrinkLabel = true,
+    required = false,
     ...props
-} = {}) => {
+}) => {
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
@@ -43,22 +53,7 @@ export const TextInput = ({
             value={field.value ?? value ?? ''}
             error={hasError}
             helperText={hasError ? get(form.errors, field.name) : undefined}
+            className={className}
         />
     );
-};
-
-TextInput.defaultProps = {
-    field: {},
-    form: {},
-    value: undefined,
-    touchOnFocus: true,
-    shrinkLabel: true,
-};
-
-TextInput.propTypes = {
-    field: PropTypes.object,
-    form: PropTypes.object,
-    value: PropTypes.any,
-    touchOnFocus: PropTypes.bool,
-    shrinkLabel: PropTypes.bool,
 };

@@ -1,5 +1,6 @@
 import { getRequest, putRequest } from 'Iaso/libs/Api';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { UseMutationResult } from 'react-query';
 
 export const useGetCountryUsersGroup = params => {
     const searchParams = new URLSearchParams({
@@ -24,7 +25,7 @@ export const useGetCountryUsersGroup = params => {
     );
 };
 
-export const usePutCountryMutation = () =>
+export const usePutCountryMutation = (): UseMutationResult =>
     useSnackMutation(
         async ({ id, users, language, teams }) =>
             putRequest(`/api/polio/countryusersgroup/${id}/`, {

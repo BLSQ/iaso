@@ -1,20 +1,30 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { DatePicker } from 'bluesquare-components';
 import { get } from 'lodash';
-import { apiDateFormat } from 'Iaso/utils/dates.ts';
+import { apiDateFormat } from 'Iaso/utils/dates';
 
 import MESSAGES from '../../constants/messages';
 
-export const DateInput = ({
+type Props = {
+    field: Record<string, any>;
+    form: Record<string, any>;
+    label: string;
+    required?: boolean;
+    disabled?: boolean;
+    clearable?: boolean;
+    onChange?: (fieldName: string, date: Date) => void;
+    onBlur?: () => void;
+};
+
+export const DateInput: FunctionComponent<Props> = ({
     field,
     form,
     label,
-    required,
-    disabled,
+    required = false,
+    disabled = false,
     onChange = () => {},
-    onBlur,
+    onBlur = () => {},
     clearable = true,
 }) => {
     const hasError =
@@ -37,27 +47,9 @@ export const DateInput = ({
                         date ? date.format(apiDateFormat) : null,
                     );
                 }}
-                onBlur={onBlur}
+                onBlur={onBlur} // TODO fix typing in bluesquare-components
                 clearable={clearable}
             />
         </Box>
     );
-};
-DateInput.defaultProps = {
-    required: false,
-    disabled: false,
-    onChange: () => {},
-    onBlur: undefined,
-    clearable: true,
-};
-
-DateInput.propTypes = {
-    field: PropTypes.object.isRequired,
-    form: PropTypes.object.isRequired,
-    label: PropTypes.string.isRequired,
-    required: PropTypes.bool,
-    disabled: PropTypes.bool,
-    clearable: PropTypes.bool,
-    onChange: PropTypes.func,
-    onBlur: PropTypes.func,
 };

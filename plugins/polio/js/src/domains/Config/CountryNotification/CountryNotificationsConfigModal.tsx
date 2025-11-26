@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { isEqual } from 'lodash';
-import { arrayOf, func, number, object, string } from 'prop-types';
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useFormState } from 'Iaso/hooks/form';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
-import { TeamType } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants.ts';
-import { useGetTeamsDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams.ts';
+import { TeamType } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants';
+import { useGetTeamsDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams';
 import MESSAGES from '../../../constants/messages';
 import { usePutCountryMutation } from './requests';
+import { User } from 'Iaso/utils/usersUtils';
 
 const makeDropDownListItem = user => {
     const userName =
@@ -34,15 +34,30 @@ const initialState = (language, users, teams) => ({
     teams: teams ?? [],
 });
 
-export const CountryNotificationsConfigModal = ({
+type Props = {
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;
+    countryId: number;
+    users: number[];
+    allLanguages: Record<string, any>[];
+    countryName: string;
+    language?: string;
+    allUsers?: User[];
+    teams?: Record<string, any>[];
+};
+
+export const CountryNotificationsConfigModal: FunctionComponent<Props> = ({
     renderTrigger,
     countryId,
     countryName,
-    language,
+    language = '',
     users,
-    allUsers,
+    allUsers = [],
     allLanguages,
-    teams,
+    teams = [],
 }) => {
     const [config, setConfig] = useFormState(
         initialState(language, users, teams),
@@ -146,21 +161,4 @@ export const CountryNotificationsConfigModal = ({
             </div>
         </ConfirmCancelDialogComponent>
     );
-};
-
-CountryNotificationsConfigModal.propTypes = {
-    renderTrigger: func.isRequired,
-    countryId: number.isRequired,
-    language: string,
-    users: arrayOf(number).isRequired,
-    allUsers: arrayOf(object),
-    allLanguages: arrayOf(object).isRequired,
-    countryName: string.isRequired,
-    teams: arrayOf(object),
-};
-
-CountryNotificationsConfigModal.defaultProps = {
-    allUsers: [],
-    language: '',
-    teams: [],
 };

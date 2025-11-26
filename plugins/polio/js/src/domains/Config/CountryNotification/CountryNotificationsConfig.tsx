@@ -3,9 +3,9 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { CountryNotificationsConfigTable } from './Table/CountryNotificationsConfigTable';
-import { baseUrls } from '../../../constants/urls.ts';
+import { baseUrls } from '../../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

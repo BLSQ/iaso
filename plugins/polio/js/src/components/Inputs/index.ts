@@ -3,4 +3,4 @@ export * from './DateInput';
 export * from './Select';
 export * from './PaymentField';
 export * from './BooleanInput';
-export * from './NumberInput.tsx';
+export * from './NumberInput';

@@ -1,11 +1,15 @@
 import { CircularProgress, Tooltip, Typography } from '@mui/material';
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { useCountryUsersGroup } from '../../../Config/CountryNotification/requests';
 import MESSAGES from '../../../../constants/messages';
 
-export const EmailListForCountry = ({ countryId }) => {
+type Props = {
+    countryId?: number;
+};
+export const EmailListForCountry: FunctionComponent<Props> = ({
+    countryId,
+}) => {
     const { formatMessage } = useSafeIntl();
 
     const { data: cug, isLoading: cugIsLoading } =
@@ -30,12 +34,4 @@ export const EmailListForCountry = ({ countryId }) => {
             </Typography>
         </Tooltip>
     );
-};
-
-EmailListForCountry.defaultProps = {
-    countryId: null,
-};
-
-EmailListForCountry.propTypes = {
-    countryId: PropTypes.number,
 };

@@ -1,11 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import { object } from 'prop-types';
-import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
-import MESSAGES from '../../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { baseUrls } from '../../../../constants/urls.ts';
+import { baseUrls } from '../../../../constants/urls';
+import MESSAGES from '../../../../constants/messages';
 
 const makeUserNameToDisplay = user => {
     if (user.email) return ` ${user.email}`;
@@ -19,8 +18,12 @@ const allLanguages = [
     { value: 'FR', label: 'FR' },
     { value: 'PT', label: 'PT' },
 ];
-
-export const CountryNotificationsConfigTable = ({ params }) => {
+type Props = {
+    params: Record<string, any>;
+};
+export const CountryNotificationsConfigTable: FunctionComponent<Props> = ({
+    params,
+}) => {
     const { formatMessage } = useSafeIntl();
     const tableParams = useMemo(
         () => ({
@@ -63,7 +66,6 @@ export const CountryNotificationsConfigTable = ({ params }) => {
             Cell: settings => {
                 return (
                     <CountryNotificationsConfigModal
-                        onConfirm={() => null}
                         countryId={settings.row.original.id}
                         countryName={settings.row.original.country_name}
                         language={settings.row.original.language}
@@ -100,8 +102,4 @@ export const CountryNotificationsConfigTable = ({ params }) => {
             }}
         />
     );
-};
-
-CountryNotificationsConfigTable.propTypes = {
-    params: object.isRequired,
 };

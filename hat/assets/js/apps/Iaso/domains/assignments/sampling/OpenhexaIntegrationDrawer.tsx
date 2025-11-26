@@ -244,7 +244,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                         </Grid>
                     </Paper>
                     <Box position="relative" sx={styles.container}>
-                        {(isFetchingPipeline || isPipelineActive) && (
+                        {isFetchingPipeline && (
                             <LoadingSpinner absolute fixed={false} />
                         )}
                         <Box

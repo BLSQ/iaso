@@ -4,7 +4,6 @@ import {
     displayDateFromTimestamp,
     textPlaceholder,
 } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 import * as Permission from '../../utils/permissions';

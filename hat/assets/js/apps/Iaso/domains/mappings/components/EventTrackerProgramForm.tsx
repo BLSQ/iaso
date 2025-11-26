@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
-import PropTypes from 'prop-types';
 import { useSafeIntl } from 'bluesquare-components';
 import { Button } from '@mui/material';
 import Dhis2Search from './Dhis2SearchComponent';
@@ -8,7 +7,13 @@ import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import ObjectDumper from './ObjectDumper';
 
-const EventTrackerProgramForm = ({
+type Props = {
+    dataSourceId: number;
+    repeatGroupMapping: any;
+    onConfirmedQuestionMapping: Function;
+};
+
+const EventTrackerProgramForm: FunctionComponent<Props> = ({
     dataSourceId,
     repeatGroupMapping,
     onConfirmedQuestionMapping,
@@ -113,12 +118,6 @@ const EventTrackerProgramForm = ({
             </Grid>
         </Grid>
     );
-};
-// TODO verify those types
-EventTrackerProgramForm.propTypes = {
-    dataSourceId: PropTypes.number.isRequired,
-    repeatGroupMapping: PropTypes.any.isRequired,
-    onConfirmedQuestionMapping: PropTypes.func.isRequired,
 };
 
 export default EventTrackerProgramForm;

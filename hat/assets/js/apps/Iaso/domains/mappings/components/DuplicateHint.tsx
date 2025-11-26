@@ -1,11 +1,18 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Alert from '@mui/lab/Alert';
 import { useSafeIntl } from 'bluesquare-components';
 import { isNeverMapped } from '../question_mappings';
 import MESSAGES from '../messages';
 
-export const DuplicateHint = ({ mapping, mappingVersion }) => {
+type Props = {
+    mapping?: Record<string, any>;
+    mappingVersion: Record<string, any>;
+};
+
+export const DuplicateHint = ({
+    mapping = {} as Record<string, any>,
+    mappingVersion,
+}) => {
     const { formatMessage } = useSafeIntl();
     if (isNeverMapped(mapping) || Object.keys(mapping).length === 0) {
         return null;
@@ -32,11 +39,4 @@ export const DuplicateHint = ({ mapping, mappingVersion }) => {
             })}
         </Alert>
     );
-};
-DuplicateHint.defaultProps = {
-    mapping: {},
-};
-DuplicateHint.propTypes = {
-    mapping: PropTypes.object,
-    mappingVersion: PropTypes.object.isRequired,
 };

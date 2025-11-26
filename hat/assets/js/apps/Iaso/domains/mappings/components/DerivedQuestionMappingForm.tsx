@@ -1,8 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import ObjectDumper from './ObjectDumper';
 
-const DerivedQuestionMappingForm = ({ question, mappingVersion }) => (
+type Props = {
+    question: Record<string, any>;
+    mappingVersion: Record<string, any>;
+};
+
+const DerivedQuestionMappingForm: FunctionComponent<Props> = ({
+    question,
+    mappingVersion,
+}) => (
     <>
         <h2>Aggregation</h2>
         {mappingVersion.derivate_settings.aggregations
@@ -12,10 +19,5 @@ const DerivedQuestionMappingForm = ({ question, mappingVersion }) => (
             ))}
     </>
 );
-
-DerivedQuestionMappingForm.propTypes = {
-    question: PropTypes.object.isRequired,
-    mappingVersion: PropTypes.object.isRequired,
-};
 
 export default DerivedQuestionMappingForm;

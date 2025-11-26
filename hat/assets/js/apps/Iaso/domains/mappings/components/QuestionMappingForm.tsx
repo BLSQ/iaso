@@ -1,6 +1,5 @@
+import React, { FunctionComponent } from 'react';
 import Alert from '@mui/lab/Alert';
-import PropTypes from 'prop-types';
-import React from 'react';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { Button } from '@mui/material';
@@ -164,8 +163,20 @@ const Dhis2ProgramDataElementSearch = ({
         />
     );
 };
+type Props = {
+    mapping: Record<string, any>;
+    question: Record<string, any>;
+    mappingVersion: Record<string, any>;
+    indexedQuestions: Record<string, any>;
+    onConfirmedQuestionMapping: Function;
+    onUnmapQuestionMapping: Function;
+    onNeverMapQuestionMapping: Function;
+    hesabuDescriptor?: any[];
+    fieldOptions?: any[];
+    fieldTypeOptions?: any[];
+};
 
-const QuestionMappingForm = ({
+const QuestionMappingForm: FunctionComponent<Props> = ({
     mapping,
     question,
     mappingVersion,
@@ -173,9 +184,9 @@ const QuestionMappingForm = ({
     onConfirmedQuestionMapping,
     onUnmapQuestionMapping,
     onNeverMapQuestionMapping,
-    hesabuDescriptor,
-    fieldOptions, // should be ordered so state is initalized with 1st element
-    fieldTypeOptions, // should be ordered so state is initalized with 1st element
+    hesabuDescriptor = [],
+    fieldOptions = [], // should be ordered so state is initalized with 1st element
+    fieldTypeOptions = [], // should be ordered so state is initalized with 1st element
 }) => {
     const questionMapping =
         mapping.question_mappings[Descriptor.getKey(question)] || {};
@@ -431,22 +442,4 @@ const QuestionMappingForm = ({
     );
 };
 
-QuestionMappingForm.defaultProps = {
-    hesabuDescriptor: [],
-    fieldOptions: [],
-    fieldTypeOptions: [],
-};
-
-QuestionMappingForm.propTypes = {
-    mapping: PropTypes.object.isRequired,
-    question: PropTypes.object.isRequired,
-    mappingVersion: PropTypes.object.isRequired,
-    indexedQuestions: PropTypes.object.isRequired,
-    onConfirmedQuestionMapping: PropTypes.func.isRequired,
-    onUnmapQuestionMapping: PropTypes.func.isRequired,
-    onNeverMapQuestionMapping: PropTypes.func.isRequired,
-    hesabuDescriptor: PropTypes.array,
-    fieldOptions: PropTypes.array,
-    fieldTypeOptions: PropTypes.array,
-};
 export default QuestionMappingForm;

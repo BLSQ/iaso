@@ -1,9 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-
+import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 
-const ObjectDumper = ({ object }) => {
+type Props = {
+    object?: Record<string, any> | null;
+};
+const ObjectDumper: FunctionComponent<Props> = ({ object = null }) => {
     if (object === undefined || object === null) {
         return <div />;
     }
@@ -23,14 +24,6 @@ const ObjectDumper = ({ object }) => {
                 ))}
         </div>
     );
-};
-
-ObjectDumper.defaultProps = {
-    object: null,
-};
-
-ObjectDumper.propTypes = {
-    object: PropTypes.object,
 };
 
 export default ObjectDumper;

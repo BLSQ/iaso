@@ -1,5 +1,9 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 
+import {
+    Rotate90DegreesCwOutlined,
+    Rotate90DegreesCcwOutlined,
+} from '@mui/icons-material';
 import ArrowLeft from '@mui/icons-material/ArrowCircleLeftRounded';
 import ArrowRight from '@mui/icons-material/ArrowCircleRightRounded';
 import Close from '@mui/icons-material/Close';
@@ -11,7 +15,7 @@ import {
     IconButton,
     Typography,
 } from '@mui/material';
-import { ShortFile } from '../../domains/instances/types/instance';
+import { ShortFile } from 'Iaso/domains/instances/types/instance';
 import { ImageGalleryLink } from './ImageGalleryLink';
 
 const whiteBg = {
@@ -94,10 +98,20 @@ const styles = {
         color: 'white',
     },
     infos: {
-        color: 'white',
         position: 'absolute',
         top: theme => theme.spacing(0.5),
+        left: theme => theme.spacing(1),
+    },
+    extra_infos: {
+        position: 'absolute',
+        color: 'white',
+        top: theme => theme.spacing(0.5),
         right: theme => theme.spacing(1),
+    },
+    actions: {
+        position: 'absolute',
+        bottom: theme => theme.spacing(0.5),
+        center: theme => theme.spacing(1),
     },
 };
 
@@ -108,6 +122,7 @@ type Props = {
     setCurrentIndex?: (index: number) => void;
     url?: string | null;
     urlLabel?: { id: string; defaultMessage: string } | undefined;
+    getInfos?: (image: ShortFile) => React.ReactNode;
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };
 
@@ -118,8 +133,10 @@ const ImageGallery: FunctionComponent<Props> = ({
     setCurrentIndex = () => null,
     url,
     urlLabel,
+    getInfos = () => null,
     getExtraInfos = () => null,
 }) => {
+    const [rotation, setRotation] = useState(0);
     const currentImg = imageList[currentIndex];
     if (!currentImg) return null;
     const currentImgSrc = currentImg.path;
@@ -141,7 +158,10 @@ const ImageGallery: FunctionComponent<Props> = ({
                 {currentIndex > 0 && (
                     <IconButton
                         sx={styles.prevButton}
-                        onClick={() => setCurrentIndex(currentIndex - 1)}
+                        onClick={() => {
+                            setRotation(0);
+                            setCurrentIndex(currentIndex - 1);
+                        }}
                     >
                         <ArrowLeft sx={styles.navIcon} />
                     </IconButton>
@@ -149,7 +169,10 @@ const ImageGallery: FunctionComponent<Props> = ({
                 {currentIndex + 1 < imageList.length && (
                     <IconButton
                         sx={styles.nextButton}
-                        onClick={() => setCurrentIndex(currentIndex + 1)}
+                        onClick={() => {
+                            setRotation(0);
+                            setCurrentIndex(currentIndex + 1);
+                        }}
                     >
                         <ArrowRight sx={styles.navIcon} />
                     </IconButton>
@@ -160,14 +183,32 @@ const ImageGallery: FunctionComponent<Props> = ({
                 >
                     <Close sx={styles.closeIcon} />
                 </IconButton>
-                <ImageGalleryLink url={url} urlLabel={urlLabel} />
-                <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
                 {currentIndex + 1 > 1 && (
                     <Typography variant="h6" sx={styles.count}>
                         {`${currentIndex + 1} / ${imageList.length}`}
                     </Typography>
                 )}
-                <img style={styles.image} alt="" src={currentImgSrc} />
+                <img
+                    style={{
+                        ...styles.image,
+                        transitionDuration: '0.8s',
+                        transitionProperty: 'transform',
+                        transform: `rotate(${rotation}deg)`,
+                    }}
+                    alt=""
+                    src={currentImgSrc}
+                />
+                <ImageGalleryLink url={url} urlLabel={urlLabel} />
+                <Box sx={styles.infos}>{getInfos(currentImg)}</Box>
+                <Box sx={styles.extra_infos}>{getExtraInfos(currentImg)}</Box>
+                <Box sx={styles.actions}>
+                    <IconButton onClick={() => setRotation(rotation - 90)}>
+                        <Rotate90DegreesCcwOutlined />
+                    </IconButton>
+                    <IconButton onClick={() => setRotation(rotation + 90)}>
+                        <Rotate90DegreesCwOutlined />
+                    </IconButton>
+                </Box>
             </DialogContent>
         </Dialog>
     );

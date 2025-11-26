@@ -1671,6 +1671,7 @@
     "iaso.users.removeProjects": "Remove from project(s)",
     "iaso.users.removeRoles": "Remove user role(s)",
     "iaso.users.removeTeams": "Remove from team(s)",
+    "iaso.users.searchParams": "Use prefix “refs:” for dhis2 ID search, “ids:” for internal profile ID. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd”",
     "iaso.users.selectAllHelperText": "Leave empty to select all",
     "iaso.users.selectedOrgUnits": "Org units selected",
     "iaso.users.update": "Update user",

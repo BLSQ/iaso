@@ -3,7 +3,6 @@ import React, {
     useCallback,
     useEffect,
     useState,
-    useMemo,
     Dispatch,
     SetStateAction,
 } from 'react';
@@ -20,25 +19,20 @@ import {
     Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
-import { LQASForm } from 'Iaso/domains/assignments/sampling/customForms/LQASForm';
-import { Parameters } from 'Iaso/domains/openHexa/components/Parameters';
-import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
-import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
 import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
 
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
-import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
 import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 import { Planning } from '../types/planning';
-import { StatusInfos } from './StatusInfos';
+import { PipelineInfos } from './components/PipelineInfos';
+import { PipelineSelect } from './components/PipelineSelect';
 
 type Props = {
     planning: Planning;
@@ -71,19 +65,6 @@ const styles: SxStyles = {
     paper: {
         p: 2,
     },
-    taskLogs: {
-        borderRadius: 1,
-    },
-    taskLogsContainer: {
-        p: 3,
-        border: '1px solid #e0e0e0',
-        minHeight: '120px',
-        borderRadius: 2,
-        backgroundColor: '#fafafa',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
 };
 
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
@@ -111,10 +92,6 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
 
     const { formatMessage } = useSafeIntl();
 
-    const { data: config } = useGetPipelineConfig();
-    const lQAS_code = config?.lqas_pipeline_code;
-    const { data, isFetching: isFetchingPipelineUuids } =
-        useGetPipelinesDropdown();
     const { data: pipeline, isFetching: isFetchingPipeline } =
         useGetPipelineDetails(selectedPipelineId, [
             'task_id',
@@ -146,22 +123,6 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [taskLogs]);
-    const pipelineUuidsOptions = useMemo(
-        () =>
-            data?.filter(pipeline =>
-                planning.pipeline_uuids.includes(pipeline.value),
-            ),
-        [data, planning.pipeline_uuids],
-    );
-    const handleParameterChange = useCallback(
-        (parameterName: string, value: any) => {
-            setParameterValues?.(prev => ({
-                ...prev,
-                [parameterName]: value,
-            }));
-        },
-        [setParameterValues],
-    );
     const handleSubmit = useCallback(() => {
         setIsSubmitting(true);
         setCurrentStep(2);
@@ -286,7 +247,6 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                         {(isFetchingPipeline || isPipelineActive) && (
                             <LoadingSpinner absolute fixed={false} />
                         )}
-                        {/* Step 1: Pipeline selection and parameters */}
                         <Box
                             sx={
                                 currentStep !== 1
@@ -294,94 +254,29 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                     : undefined
                             }
                         >
-                            <InputComponent
-                                type="select"
-                                keyValue="pipeline"
-                                loading={isFetchingPipelineUuids}
-                                options={pipelineUuidsOptions}
-                                value={
-                                    isFetchingPipelineUuids
-                                        ? undefined
-                                        : selectedPipelineId
-                                }
-                                onChange={handleChangePipeline}
-                                label={MESSAGES.pipeline}
-                                required
-                                disabled={
-                                    isFetchingPipelineUuids ||
-                                    planning.pipeline_uuids.length === 1
-                                }
+                            <PipelineSelect
+                                planning={planning}
+                                selectedPipelineId={selectedPipelineId}
+                                handleChangePipeline={handleChangePipeline}
+                                pipeline={pipeline}
+                                parameterValues={parameterValues}
+                                setParameterValues={setParameterValues}
+                                setAllowConfirm={setAllowConfirm}
+                                orgunitTypes={orgunitTypes}
+                                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                                setExtraFilters={setExtraFilters}
+                                taskStatus={taskStatus}
+                                taskId={taskId}
                             />
-                            {pipeline && (
-                                <>
-                                    {!pipeline.currentVersion?.parameters && (
-                                        <Typography
-                                            variant="body2"
-                                            sx={styles.typography}
-                                        >
-                                            {formatMessage(
-                                                MESSAGES.noParameters,
-                                            )}
-                                        </Typography>
-                                    )}
-                                    {pipeline.code === lQAS_code && (
-                                        <LQASForm
-                                            planning={planning}
-                                            setAllowConfirm={setAllowConfirm}
-                                            parameterValues={parameterValues}
-                                            handleParameterChange={
-                                                handleParameterChange
-                                            }
-                                            orgunitTypes={orgunitTypes}
-                                            isFetchingOrgunitTypes={
-                                                isFetchingOrgunitTypes
-                                            }
-                                            taskStatus={taskStatus ?? 'QUEUED'}
-                                            setExtraFilters={setExtraFilters}
-                                            taskId={taskId}
-                                        />
-                                    )}
-                                    {/* Custom pipeline code - this should be changed */}
-                                    {pipeline.code !== lQAS_code && (
-                                        <Parameters
-                                            parameters={
-                                                pipeline.currentVersion
-                                                    ?.parameters
-                                            }
-                                            parameterValues={parameterValues}
-                                            setParameterValues={
-                                                setParameterValues
-                                            }
-                                            setAllowConfirm={setAllowConfirm}
-                                        />
-                                    )}
-                                </>
-                            )}
                         </Box>
                         {currentStep === 2 && (
-                            <Box sx={styles.taskLogsContainer}>
-                                {error && (
-                                    <StatusInfos
-                                        status="ERRORED"
-                                        message={error.details.error}
-                                    />
-                                )}
-                                {taskLogs && (
-                                    <StatusInfos status={taskLogs.status} />
-                                )}
-                                {taskId &&
-                                    taskLogs &&
-                                    taskLogs?.logs?.length > 0 && (
-                                        <Box sx={styles.taskLogs}>
-                                            <TaskLogMessages
-                                                messages={taskLogs.logs}
-                                                isFetching={isFetchingTaskLogs}
-                                                isRunning={isPipelineActive}
-                                                displayLoader={false}
-                                            />
-                                        </Box>
-                                    )}
-                            </Box>
+                            <PipelineInfos
+                                error={error}
+                                taskLogs={taskLogs}
+                                isFetchingTaskLogs={isFetchingTaskLogs}
+                                isPipelineActive={isPipelineActive}
+                                taskId={taskId}
+                            />
                         )}
                     </Box>
                 </Box>

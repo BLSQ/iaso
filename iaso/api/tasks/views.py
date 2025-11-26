@@ -114,6 +114,8 @@ class TaskSourceViewSet(ModelViewSet):
         response = {
             "status": task.status,
             "logs": serializer.data,
+            "end_value": task.end_value,
+            "progress_value": task.progress_value,
         }
         return Response(response)
 

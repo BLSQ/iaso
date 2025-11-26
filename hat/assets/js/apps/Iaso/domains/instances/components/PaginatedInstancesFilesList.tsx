@@ -8,16 +8,17 @@ import React, {
 import { Box, Tab, TablePagination, Tabs } from '@mui/material';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import InstanceFileInfoComponent from 'Iaso/domains/instances/components/InstanceFileInfoComponent';
 import { useGetInstance } from 'Iaso/domains/registry/hooks/useGetInstances';
+import { SxStyles } from 'Iaso/types/general';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
 
-import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
 import { useGetInstancesFiles, useGetInstancesFilesCount } from '../requests';
-import { Instance } from '../types/instance';
+import { Instance, ShortFile } from '../types/instance';
 import InstancePopover from './InstancePopoverComponent';
 
 interface ExtraInfoComponentProps {
@@ -27,6 +28,18 @@ interface ExtraInfoComponentProps {
 const ExtraInfoComponent: React.FC<ExtraInfoComponentProps> = ({
     instanceDetail,
 }) => <InstancePopover instanceDetail={instanceDetail} />;
+
+const InfoComponent = ({ filePath, instanceDetail }) => {
+    if (instanceDetail == null) {
+        return null;
+    }
+    return (
+        <InstanceFileInfoComponent
+            filePath={filePath}
+            instanceDetail={instanceDetail}
+        />
+    );
+};
 
 const minTabHeight = 'calc(100vh - 500px)';
 
@@ -123,7 +136,7 @@ export const PaginatedInstancesFilesList: FunctionComponent<
         TYPES_MAP[tab],
     );
 
-    const diplayedFiles = useMemo(() => {
+    const displayedFiles = useMemo(() => {
         if (loadingFiles) {
             return [];
         }
@@ -141,14 +154,14 @@ export const PaginatedInstancesFilesList: FunctionComponent<
     const handleSetCurrentIndex = useCallback(
         (fileIndex?: number) => {
             if (fileIndex !== undefined) {
-                const instanceId = diplayedFiles[fileIndex]?.itemId;
+                const instanceId = displayedFiles[fileIndex]?.itemId;
                 if (instanceId) {
                     setCurrentInstanceId(instanceId);
                 }
             }
             setCurrentImageIndex(fileIndex);
         },
-        [diplayedFiles],
+        [displayedFiles],
     );
 
     const handleOpenLightbox = useCallback(
@@ -163,6 +176,26 @@ export const PaginatedInstancesFilesList: FunctionComponent<
         handleSetCurrentIndex();
         setViewerIsOpen(false);
     }, [handleSetCurrentIndex]);
+
+    const handleDocumentsClicked = useCallback(
+        (filePath: string) => {
+            const file = displayedFiles.find(f => {
+                return f.path == filePath;
+            });
+            if (file != null) {
+                setCurrentInstanceId(file.itemId);
+            }
+            return InfoComponent({
+                filePath,
+                instanceDetail: currentInstance,
+            });
+        },
+        [currentInstance, displayedFiles],
+    );
+
+    const currentInstanceUrl = currentInstance
+        ? `/forms/submission/instanceId/${currentInstance.id}`
+        : undefined;
 
     return (
         <Box sx={styles.root}>
@@ -200,10 +233,10 @@ export const PaginatedInstancesFilesList: FunctionComponent<
             )}
             {!loadingFiles && (
                 <>
-                    {diplayedFiles.length === 0 && (
+                    {displayedFiles.length === 0 && (
                         <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>
                     )}
-                    {diplayedFiles.length > 0 && (
+                    {displayedFiles.length > 0 && (
                         <>
                             <Box
                                 sx={
@@ -213,33 +246,67 @@ export const PaginatedInstancesFilesList: FunctionComponent<
                                 }
                             >
                                 <LazyImagesList
-                                    imageList={diplayedFiles}
+                                    imageList={displayedFiles}
                                     onImageClick={handleOpenLightbox}
                                 />
                             </Box>
                             {tab === 'videos' && (
                                 <Box sx={styles.tabContainer} mt={2}>
-                                    <VideosList videoList={diplayedFiles} />
+                                    <VideosList videoList={displayedFiles} />
                                 </Box>
                             )}
                             {tab === 'docs' && (
                                 <Box sx={styles.tabContainer}>
-                                    <DocumentsList docsList={diplayedFiles} />
+                                    <DocumentsList
+                                        docsList={displayedFiles}
+                                        url={currentInstanceUrl}
+                                        urlLabel={
+                                            MESSAGES.formSubmissionLinkLabel
+                                        }
+                                        getInfos={(filePath: string) =>
+                                            handleDocumentsClicked(filePath)
+                                        }
+                                        getExtraInfos={() =>
+                                            ExtraInfoComponent({
+                                                instanceDetail: currentInstance,
+                                            })
+                                        }
+                                    />
                                 </Box>
                             )}
                             {tab === 'others' && (
                                 <Box sx={styles.tabContainer}>
-                                    <DocumentsList docsList={diplayedFiles} />
+                                    <DocumentsList
+                                        docsList={displayedFiles}
+                                        url={currentInstanceUrl}
+                                        urlLabel={
+                                            MESSAGES.formSubmissionLinkLabel
+                                        }
+                                        getInfos={(filePath: string) =>
+                                            handleDocumentsClicked(filePath)
+                                        }
+                                        getExtraInfos={() =>
+                                            ExtraInfoComponent({
+                                                instanceDetail: currentInstance,
+                                            })
+                                        }
+                                    />
                                 </Box>
                             )}
                             {viewerIsOpen && (
                                 <ImageGallery
-                                    imageList={diplayedFiles}
+                                    imageList={displayedFiles}
                                     closeLightbox={handleCloseLightbox}
                                     setCurrentIndex={handleSetCurrentIndex}
                                     currentIndex={currentImageIndex || 0}
-                                    url={`/forms/submission/instanceId/${diplayedFiles[0]?.itemId}`}
+                                    url={currentInstanceUrl}
                                     urlLabel={MESSAGES.formSubmissionLinkLabel}
+                                    getInfos={(file: ShortFile) =>
+                                        InfoComponent({
+                                            filePath: file.path,
+                                            instanceDetail: currentInstance,
+                                        })
+                                    }
                                     getExtraInfos={() =>
                                         ExtraInfoComponent({
                                             instanceDetail: currentInstance,

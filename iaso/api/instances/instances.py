@@ -13,7 +13,8 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, Prefetch, Q, QuerySet
+from django.db.models import Case, Count, F, Prefetch, Q, QuerySet, TextField, Value, When
+from django.db.models.functions import Cast, Concat, JSONObject, Replace
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -39,6 +40,7 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
 from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
@@ -139,18 +141,6 @@ class HasInstanceBulkPermission(permissions.BasePermission):
         )
 
 
-class InstanceFileSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    instance_id = serializers.IntegerField()
-    file = serializers.FileField(use_url=True)
-    created_at = TimestampField(read_only=True)
-    file_type = serializers.SerializerMethodField()
-    name = serializers.CharField(read_only=True)
-
-    def get_file_type(self, obj):
-        return get_file_type(obj.file)
-
-
 class OrgUnitNestedSerializer(OrgUnitSerializer):
     class Meta:
         model = OrgUnit
@@ -159,6 +149,23 @@ class OrgUnitNestedSerializer(OrgUnitSerializer):
             "id",
             "name",
         ]
+
+
+class InstanceFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    instance_id = serializers.IntegerField()
+    file = serializers.FileField(use_url=True)
+    created_at = TimestampField(read_only=True)
+    file_type = serializers.SerializerMethodField()
+    name = serializers.CharField(read_only=True)
+    submitted_at = TimestampField(source="instance.created_at", read_only=True)
+    org_unit = OrgUnitNestedSerializer(source="instance.org_unit", read_only=True)
+    question_name = serializers.CharField(source="question", read_only=True)
+    question_id = serializers.CharField(source="key_name", read_only=True)
+    form_name = serializers.CharField(source="instance.form.name", read_only=True)
+
+    def get_file_type(self, obj):
+        return get_file_type(obj.file)
 
 
 # For readonly use
@@ -229,7 +236,54 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @action(["GET"], detail=False)
     def attachments(self, request):
-        queryset = self._get_filtered_attachments_queryset(request)
+        queryset = self._get_filtered_attachments_queryset(request).order_by("created_at")
+
+        queryset = (
+            queryset.select_related("instance", "instance__org_unit", "instance__form")
+            .annotate(
+                jpg_name=Concat(
+                    RegexpReplace(Replace(F("name"), Value('"'), Value("")), Value("\.[^.]+$"), Value("")),
+                    Value(".jpg"),
+                    output_field=TextField(),
+                )
+            )
+            # $.keyvalue() converts {"image": "x.jpg"} into [{"key": "image", "value": "x.jpg"}]
+            .annotate(
+                key_name=JsonbPathQueryFirst(
+                    "instance__json",
+                    # STEP B: Conditionally choose the JSONPath expression
+                    Cast(
+                        Case(
+                            # IF name ends with .webp -> Use Regex Search
+                            When(
+                                name__endswith=".webp",
+                                then=Value(
+                                    '$.** ? (@.type() == "object").keyvalue() ? (@.value == $name || @.value == $jpg_name).key'
+                                ),
+                            ),
+                            # ELSE -> Use Strict Equality (Faster and Safer)
+                            default=Value('$.** ? (@.type() == "object").keyvalue() ? (@.value == $name).key'),
+                        ),
+                        output_field=JsonPathField(),  # Ensure this casts to 'jsonpath' type
+                    ),
+                    # STEP C: Pass BOTH variables ($name and $pattern)
+                    # The JSONPath will simply use the one referenced in the string selected above.
+                    JSONObject(name=F("name"), jpg_name=F("jpg_name")),
+                )
+            )
+            # $.** -> Recursive descent (look everywhere)
+            # ?      -> Filter
+            # @.name -> The 'name' key of the current node
+            # .label -> If match found, return the 'label' key
+            .annotate(
+                question=JsonbPathQueryFirst(
+                    "instance__form_version__form_descriptor",
+                    Value("$.** ? (@.name == $key_name).label"),
+                    JSONObject(key_name=F("key_name")),
+                    output_field=TextField(),
+                )
+            )
+        )
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)

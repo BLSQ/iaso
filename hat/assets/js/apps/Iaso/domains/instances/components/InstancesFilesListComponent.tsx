@@ -4,15 +4,16 @@ import { Box, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
+import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
+import { errorSnackBar } from 'Iaso/constants/snackBars';
+import InstanceFileInfoComponent from 'Iaso/domains/instances/components/InstanceFileInfoComponent';
+import { getRequest } from 'Iaso/libs/Api';
+import { SortedFiles, sortFilesType } from 'Iaso/utils/filesUtils';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
 
-import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
-import { errorSnackBar } from '../../../constants/snackBars';
-import { getRequest } from '../../../libs/Api';
-import { SortedFiles, sortFilesType } from '../../../utils/filesUtils';
 import MESSAGES from '../messages';
 import { Instance, ShortFile } from '../types/instance';
 import InstancePopover from './InstancePopoverComponent';
@@ -53,6 +54,18 @@ const fetchInstanceDetail = instanceId =>
 const ExtraInfoComponent = ({ instanceDetail }) => (
     <InstancePopover instanceDetail={instanceDetail} />
 );
+
+const InfoComponent = (filePath: string, instanceDetail?: Instance) => {
+    if (instanceDetail == null) {
+        return null;
+    }
+    return (
+        <InstanceFileInfoComponent
+            filePath={filePath}
+            instanceDetail={instanceDetail}
+        />
+    );
+};
 
 type Props = {
     instanceDetail?: Instance;
@@ -173,12 +186,34 @@ const InstancesFilesList: FunctionComponent<Props> = ({
             )}
             {tab === 'docs' && (
                 <div className={classes.tabContainer}>
-                    <DocumentsList docsList={sortedFiles.docs} maxWidth={3} />
+                    <DocumentsList
+                        getInfos={(filePath: string) =>
+                            InfoComponent(filePath, currentInstance)
+                        }
+                        getExtraInfos={() =>
+                            ExtraInfoComponent({
+                                instanceDetail: currentInstance,
+                            })
+                        }
+                        docsList={sortedFiles.docs}
+                        maxWidth={3}
+                    />
                 </div>
             )}
             {tab === 'others' && (
                 <div className={classes.tabContainer}>
-                    <DocumentsList docsList={sortedFiles.others} maxWidth={3} />
+                    <DocumentsList
+                        getInfos={(filePath: string) =>
+                            InfoComponent(filePath, currentInstance)
+                        }
+                        getExtraInfos={() =>
+                            ExtraInfoComponent({
+                                instanceDetail: currentInstance,
+                            })
+                        }
+                        docsList={sortedFiles.others}
+                        maxWidth={3}
+                    />
                 </div>
             )}
             {viewerIsOpen && (
@@ -195,6 +230,9 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                             : null
                     }
                     urlLabel={urlLabel}
+                    getInfos={(file: ShortFile) =>
+                        InfoComponent(file.path, currentInstance)
+                    }
                     getExtraInfos={() =>
                         ExtraInfoComponent({ instanceDetail: currentInstance })
                     }

@@ -1,6 +1,6 @@
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import snackMessages from '../../components/snackBars/messages';
-import { getRequest } from '../../libs/Api';
-import { useSnackQuery } from '../../libs/apiHooks';
 import { getFileUrl, getFileCountUrl } from './utils';
 
 export const fetchFormDetailsForInstance = formId =>
@@ -32,6 +32,11 @@ export const useGetInstancesFiles = (params, rowsPerPage, page, type) =>
                     results: data.results.map(instanceFile => ({
                         itemId: instanceFile.instance_id,
                         createdAt: instanceFile.created_at,
+                        submittedAt: instanceFile.submitted_at,
+                        formName: instanceFile.form_name,
+                        questionName: instanceFile.question_name,
+                        questionId: instanceFile.question_id,
+                        orgUnit: instanceFile.org_unit,
                         path: instanceFile.file,
                     })),
                 };

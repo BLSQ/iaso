@@ -40,7 +40,6 @@ type Props = {
     submitChangeRequest: SubmitChangeRequest;
     open: boolean;
     onClose: () => void;
-    isApproved: boolean;
     isPartiallyApproved: boolean;
     isRejected: boolean;
     approvedFields: string[];
@@ -51,7 +50,6 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
     submitChangeRequest,
     open,
     onClose,
-    isApproved,
     isPartiallyApproved,
     isRejected,
     approvedFields,
@@ -74,7 +72,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
             comment,
             onClose,
             submitChangeRequest,
-            isApproved,
+            isApproved: !isRejected,
             isPartiallyApproved,
             approvedFields,
         });
@@ -82,7 +80,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
         approvedFields,
         comment,
         onClose,
-        isApproved,
+        isRejected,
         isPartiallyApproved,
         submitChangeRequest,
     ]);
@@ -97,7 +95,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
             closeDialog={onClose}
             buttons={() => reviewOrgUnitChangesCommentDialogButtons}
         >
-            {(!isApproved || isPartiallyApproved) && (
+            {(isRejected || isPartiallyApproved) && (
                 <InputComponent
                     type="textarea"
                     keyValue=""
@@ -107,7 +105,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
                     withMarginTop={false}
                 />
             )}
-            {isApproved && !isPartiallyApproved && (
+            {!isRejected && !isPartiallyApproved && (
                 <>
                     <p>
                         {formatMessage(

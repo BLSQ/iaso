@@ -351,33 +351,34 @@ class ProfileAPITestCase(APITestCase):
 
         response_csv = response.getvalue().decode("utf-8")
 
-        expected_csv = (
-            "username,"
-            "password,"
-            "email,"
-            "first_name,"
-            "last_name,"
-            "orgunit,"
-            "orgunit__source_ref,"
-            "profile_language,"
-            "dhis2_id,"
-            "organization,"
-            "permissions,"
-            "user_roles,"
-            "projects,"
-            "phone_number,"
-            "editable_org_unit_types\r\n"
+        expected_csv = "".join(
+            [
+                "user_profile_id,",
+                "username,"
+                "password,"
+                "email,"
+                "first_name,"
+                "last_name,"
+                "orgunit,"
+                "orgunit__source_ref,"
+                "profile_language,"
+                "dhis2_id,"
+                "organization,"
+                "permissions,"
+                "user_roles,"
+                "projects,"
+                "phone_number,"
+                "editable_org_unit_types\r\n",
+            ]
         )
 
-        expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += (
-            f'jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
-        )
-        expected_csv += f"jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f"{self.jane.id},janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
+        expected_csv += f'{self.john.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
+        expected_csv += f'{self.jim.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
+        expected_csv += f"{self.jam.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
+        expected_csv += f"{self.jom.id},jom,,,,,,,fr,,,,,,,\r\n"
+        expected_csv += f"{self.jum.id},jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
+        expected_csv += f'{self.user_managed_geo_limit.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -392,6 +393,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(
             excel_columns,
             [
+                "user_profile_id",
                 "username",
                 "password",
                 "email",
@@ -413,6 +415,15 @@ class ProfileAPITestCase(APITestCase):
         self.assertDictEqual(
             excel_data,
             {
+                "user_profile_id": {
+                    0: self.jane.id,
+                    1: self.john.id,
+                    2: self.jim.id,
+                    3: self.jam.id,
+                    4: self.jom.id,
+                    5: self.jum.id,
+                    6: self.user_managed_geo_limit.id,
+                },
                 "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
                 "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},

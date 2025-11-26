@@ -1,23 +1,20 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-
+import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { getOrgUnitGroups, useGetStatusMessage } from '../utils';
-
 import OrgUnitsSmallInfosRow from './OrgUnitsSmallInfosRow';
-import { getOrgUnitParentsString } from './TreeView/utils.tsx';
+import { getOrgUnitParentsString } from './TreeView/utils';
+import { OrgUnit } from '../types/orgUnit';
 
-const OrgUnitsSmallInfos = ({ orgUnit }) => {
+type Props = {
+    orgUnit: OrgUnit;
+};
+const OrgUnitsSmallInfos: FunctionComponent<Props> = ({ orgUnit }) => {
     const { formatMessage } = useSafeIntl();
     const getStatusMessage = useGetStatusMessage();
     return (
         <>
-            <OrgUnitsSmallInfosRow
-                label="Id"
-                value={`${orgUnit.id}`}
-                isLarge={!orgUnit.parent}
-            />
+            <OrgUnitsSmallInfosRow label="Id" value={`${orgUnit.id}`} />
             {orgUnit.parent && (
                 <OrgUnitsSmallInfosRow
                     label={formatMessage(MESSAGES.parentsMulti)}
@@ -56,10 +53,6 @@ const OrgUnitsSmallInfos = ({ orgUnit }) => {
             )}
         </>
     );
-};
-
-OrgUnitsSmallInfos.propTypes = {
-    orgUnit: PropTypes.object.isRequired,
 };
 
 export default OrgUnitsSmallInfos;

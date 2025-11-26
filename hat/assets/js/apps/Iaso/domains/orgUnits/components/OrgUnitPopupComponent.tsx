@@ -1,3 +1,4 @@
+import React, { createRef, FunctionComponent } from 'react';
 import {
     Box,
     Card,
@@ -18,17 +19,17 @@ import {
 } from 'bluesquare-components';
 import classNames from 'classnames';
 import moment from 'moment';
-import PropTypes from 'prop-types';
-import React, { createRef } from 'react';
 import { Popup } from 'react-leaflet';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import { usePopupState } from '../../../utils/map/usePopupState';
 import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
-import MESSAGES from '../messages.ts';
+import MESSAGES from '../messages';
 import { LinkToOrgUnit } from './LinkToOrgUnit';
-import { baseUrls } from '../../../constants/urls.ts';
+import { baseUrls } from '../../../constants/urls';
+import { OrgUnit } from '../types/orgUnit';
 
+//@ts-ignore
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...mapPopupStyles(theme),
@@ -60,14 +61,21 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const OrgUnitPopupComponent = ({
-    displayUseLocation,
-    replaceLocation,
+type Props = {
+    displayUseLocation?: boolean;
+    replaceLocation?: (orgUnit?: OrgUnit) => void;
+    titleMessage?: string;
+    orgUnitId: number;
+};
+
+const OrgUnitPopupComponent: FunctionComponent<Props> = ({
+    displayUseLocation = false,
+    replaceLocation = () => {},
     titleMessage,
     orgUnitId,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const popup = createRef();
     const isOpen = usePopupState(popup);
     const { data: currentOrgUnit } = useGetOrgUnitDetail(
@@ -183,19 +191,6 @@ const OrgUnitPopupComponent = ({
             )}
         </Popup>
     );
-};
-
-OrgUnitPopupComponent.defaultProps = {
-    displayUseLocation: false,
-    replaceLocation: () => {},
-    titleMessage: null,
-};
-
-OrgUnitPopupComponent.propTypes = {
-    displayUseLocation: PropTypes.bool,
-    replaceLocation: PropTypes.func,
-    titleMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    orgUnitId: PropTypes.number.isRequired,
 };
 
 export default OrgUnitPopupComponent;

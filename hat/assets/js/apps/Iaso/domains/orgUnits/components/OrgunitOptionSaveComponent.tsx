@@ -1,24 +1,30 @@
-import React, { Fragment } from 'react';
+import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
-
 import { Button, Box } from '@mui/material';
-import { withStyles } from '@mui/styles';
-
-import PropTypes from 'prop-types';
-
+import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
-
+import { OrgUnit } from '../types/orgUnit';
 import MESSAGES from '../messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     button: {
         width: '100%',
     },
-});
+}));
 
-function OrgunitOptionSaveComponent(props) {
-    const { saveDisabled, classes, resetOrgUnit, saveOrgUnit } = props;
+type Props = {
+    orgUnit: OrgUnit;
+    resetOrgUnit: () => void;
+    saveDisabled: boolean;
+    saveOrgUnit: () => void;
+};
+const OrgunitOptionSaveComponent: FunctionComponent<Props> = ({
+    saveDisabled,
+    resetOrgUnit,
+    saveOrgUnit,
+}) => {
+    const classes: Record<string, string> = useStyles();
     return (
         <>
             <Box mb={2}>
@@ -44,14 +50,6 @@ function OrgunitOptionSaveComponent(props) {
             </Button>
         </>
     );
-}
-
-OrgunitOptionSaveComponent.propTypes = {
-    classes: PropTypes.object.isRequired,
-    orgUnit: PropTypes.object.isRequired,
-    resetOrgUnit: PropTypes.func.isRequired,
-    saveDisabled: PropTypes.bool.isRequired,
-    saveOrgUnit: PropTypes.func.isRequired,
 };
 
-export default withStyles(styles)(OrgunitOptionSaveComponent);
+export default OrgunitOptionSaveComponent;

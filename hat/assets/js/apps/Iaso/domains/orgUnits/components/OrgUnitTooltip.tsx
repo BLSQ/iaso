@@ -1,8 +1,8 @@
-import React, { createElement } from 'react';
-import PropTypes from 'prop-types';
+import React, { createElement, FunctionComponent, ReactNode } from 'react';
 import { Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import OrgUnitsSmallInfos from './OrgUnitsSmallInfos';
+import { OrgUnit } from '../types/orgUnit';
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -13,13 +13,20 @@ const useStyles = makeStyles(() => ({
         cursor: 'pointer',
     },
 }));
+type Props = {
+    orgUnit: OrgUnit;
+    children?: ReactNode | null;
+    domComponent?: string;
+    enterDelay?: number;
+    enterNextDelay?: number;
+};
 
-const OrgUnitTooltip = ({
+const OrgUnitTooltip: FunctionComponent<Props> = ({
     orgUnit,
-    children,
-    domComponent,
-    enterDelay,
-    enterNextDelay,
+    children = null,
+    domComponent = 'section',
+    enterDelay = 500,
+    enterNextDelay = 500,
 }) => {
     const classes = useStyles();
     return (
@@ -37,20 +44,6 @@ const OrgUnitTooltip = ({
             )}
         </Tooltip>
     );
-};
-OrgUnitTooltip.defaultProps = {
-    children: null,
-    domComponent: 'section',
-    enterDelay: 500,
-    enterNextDelay: 500,
-};
-
-OrgUnitTooltip.propTypes = {
-    orgUnit: PropTypes.object.isRequired,
-    children: PropTypes.object,
-    domComponent: PropTypes.string,
-    enterDelay: PropTypes.number,
-    enterNextDelay: PropTypes.number,
 };
 
 export default OrgUnitTooltip;

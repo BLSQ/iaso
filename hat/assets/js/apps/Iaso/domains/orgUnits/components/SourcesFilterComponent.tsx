@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
-
 import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
-
-import { fetchAssociatedOrgUnits } from '../requests';
-
+import { ExtendedDataSource, fetchAssociatedOrgUnits } from '../requests';
 import { getSourcesWithoutCurrentSource } from '../utils';
-
 import MESSAGES from '../../forms/messages';
+import { OrgUnit } from '../types/orgUnit';
 
-const SourcesFilterComponent = ({
+type Props = {
+    sourcesSelected: ExtendedDataSource[];
+    setSourcesSelected: React.Dispatch<
+        React.SetStateAction<ExtendedDataSource[]>
+    >;
+    currentSources: any[];
+    currentOrgUnit: OrgUnit;
+    loadingSelectedSources?: boolean;
+};
+
+const SourcesFilterComponent: FunctionComponent<Props> = ({
     sourcesSelected,
     setSourcesSelected,
     currentSources,
     currentOrgUnit,
-    loadingSelectedSources,
+    loadingSelectedSources = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [isLoading, setIsLoading] = useState(loadingSelectedSources);
@@ -75,18 +80,6 @@ const SourcesFilterComponent = ({
             />
         </Box>
     );
-};
-
-SourcesFilterComponent.defaultProps = {
-    loadingSelectedSources: false,
-};
-
-SourcesFilterComponent.propTypes = {
-    sourcesSelected: PropTypes.array.isRequired,
-    setSourcesSelected: PropTypes.func.isRequired,
-    currentSources: PropTypes.array.isRequired,
-    currentOrgUnit: PropTypes.object.isRequired,
-    loadingSelectedSources: PropTypes.bool,
 };
 
 export default SourcesFilterComponent;

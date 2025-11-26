@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FunctionComponent } from 'react';
 import get from 'lodash/get';
-import PropTypes from 'prop-types';
 import { Grid } from '@mui/material';
 import { userHasPermission } from '../../../users/utils';
-import { useCurrentUser } from '../../../../utils/usersUtils.ts';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
-import * as Permission from '../../../../utils/permissions.ts';
+import * as Permission from '../../../../utils/permissions';
+import { IntlMessage } from 'bluesquare-components';
 
 const initialGroup = currentGroup => {
     return {
@@ -24,7 +24,18 @@ const initialGroup = currentGroup => {
     };
 };
 
-const GroupDialog = ({
+type Props = {
+    titleMessage: IntlMessage;
+    renderTrigger: ({
+        openDialog,
+    }: {
+        openDialog: () => void;
+    }) => React.JSX.Element;
+    initialData?: Record<string, any>;
+    saveGroup: (group: any) => Promise<any>;
+};
+
+const GroupDialog: FunctionComponent<Props> = ({
     titleMessage,
     initialData,
     renderTrigger,
@@ -134,14 +145,4 @@ const GroupDialog = ({
     );
 };
 
-GroupDialog.defaultProps = {
-    initialData: null,
-};
-
-GroupDialog.propTypes = {
-    titleMessage: PropTypes.object.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    initialData: PropTypes.object,
-    saveGroup: PropTypes.func.isRequired,
-};
 export default GroupDialog;

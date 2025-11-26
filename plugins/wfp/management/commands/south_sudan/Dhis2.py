@@ -2,18 +2,16 @@ import json
 
 from dhis2 import Api, RequestException
 
-from iaso.models.base import ExternalCredentials
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
 
 class Dhis2:
-    def sync_data(self, type):
+    def sync_data(self, type, external_credential):
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         monthly_data = entity_type.aggregating_data_to_push_to_dhis2(account)
-        external_credentials = ExternalCredentials.objects.filter(account=account).first()
-        api = Api(external_credentials.url, external_credentials.login, external_credentials.password)
+        api = Api(external_credential.url, external_credential.login, external_credential.password)
 
         results = []
         for dataValueSet in monthly_data:
@@ -43,12 +41,14 @@ class Dhis2:
             synced_data.org_unit_dhis2_id = dataValueSet["orgUnit"]
             synced_data.org_unit_id = dataValueSet["orgUnitId"]
             synced_data.response = response
-            synced_data.status = response["response"]["status"]
+            synced_data.status = response.get("status")
+            if response.get("response") is not None:
+                synced_data.status = response["response"]["status"]
             synced_data.account = account
             results.append(synced_data)
 
         return results
 
-    def save_dhis2_sync_results(self, type):
-        results = self.sync_data(type)
+    def save_dhis2_sync_results(self, type, external_credential):
+        results = self.sync_data(type, external_credential)
         return Dhis2SyncResults.objects.bulk_create(results)

@@ -59,6 +59,11 @@ def create_instance_file(instance, file_name, file):
 @authentication_classes([])
 @permission_classes([])
 def form_upload(request: HttpRequest) -> HttpResponse:
+    """
+    This endpoint is called when uploading instances "manually" (not in bulk).
+    It should be the second call (after POST /api/instances/) but sometimes, it is not (network error...).
+    This endpoint takes the empty instance (no actual files) created by the previous call and fills it with missing data.
+    """
     main_file = request.FILES["xml_submission_file"]
     instances = Instance.objects.filter(file_name=main_file.name)
     i: Instance

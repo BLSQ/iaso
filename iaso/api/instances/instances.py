@@ -933,6 +933,11 @@ class InstancesViewSet(viewsets.ViewSet):
 
 
 def import_data(instances, user, app_id):
+    """
+    This function creates empty instances (without files) and should be called first when uploading new instances.
+    Sometimes, due to some network issues, this function might not properly be called and the instances are created by
+    the second endpoint (POST /sync/form_upload/).
+    """
     project = Project.objects.get_for_user_and_app_id(user, app_id)
 
     for instance_data in instances:
@@ -943,7 +948,7 @@ def import_data(instances, user, app_id):
 
         # Get or create instance based on file_name - this "get or create" logic is important:
         # it is possible (although it won't happen often) that the instance has already been created by the
-        # POST /sync/ endpoint.
+        # POST /sync/form_upload/ endpoint.
         file_name = ntpath.basename(instance_data.get("file", None))
         instance, _ = Instance.objects.get_or_create(file_name=file_name)
 

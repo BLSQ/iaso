@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     errorCode: string;
-    displayMenuButton: boolean;
+    displayMenuButton?: boolean;
     customMessage?: string;
 };
 

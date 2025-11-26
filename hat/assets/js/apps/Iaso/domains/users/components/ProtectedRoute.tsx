@@ -1,20 +1,26 @@
+import React, { useEffect, FunctionComponent, ReactNode } from 'react';
 import * as Sentry from '@sentry/browser';
-import PropTypes from 'prop-types';
-import React, { useEffect } from 'react';
-
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
-
 import { getFirstAllowedUrl, userHasOneOfPermissions } from '../utils';
-
 import PageError from '../../../components/errors/PageError';
-import PageNoPerms from '../../../components/errors/PageNoPerms.tsx';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
+import PageNoPerms from '../../../components/errors/PageNoPerms';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { WrongAccountModal } from './WrongAccountModal.tsx';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { WrongAccountModal } from './WrongAccountModal';
 
-const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
+type Props = {
+    component: ReactNode;
+    allRoutes: any[];
+    routeConfig: Record<string, any>;
+};
+
+const ProtectedRoute: FunctionComponent<Props> = ({
+    routeConfig,
+    allRoutes = [],
+    component,
+}) => {
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
     const params = useParamsObject(baseUrl);
     const paramsString = useParams()['*'];
@@ -24,7 +30,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
 
     // TODO test wrong account feature
     const isWrongAccount = Boolean(
-        params?.accountId && params?.accountId !== `${currentUser.account.id}`,
+        params?.accountId && params?.accountId !== `${currentUser.account?.id}`,
     );
 
     let isAuthorized =
@@ -57,7 +63,10 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
 
     useEffect(() => {
         // Checking with paramsString because params maybe empty if the config is not correct for useParamsObject
-        if (!paramsString.includes('accountId') && currentUser.account) {
+        if (
+            !(paramsString ?? '').includes('accountId') &&
+            currentUser.account
+        ) {
             navigate(`./accountId/${currentUser.account.id}/${paramsString}`, {
                 replace: true,
                 state: location.state ? { ...location.state } : null,
@@ -71,7 +80,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
                 id: currentUser.id,
                 username: currentUser.user_name,
                 email: currentUser.email,
-                account: currentUser.account.name,
+                account: currentUser.account?.name,
             });
         }
     }, [currentUser]);
@@ -95,15 +104,6 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
             )}
         </>
     );
-};
-ProtectedRoute.defaultProps = {
-    allRoutes: [],
-};
-
-ProtectedRoute.propTypes = {
-    component: PropTypes.node.isRequired,
-    allRoutes: PropTypes.array,
-    routeConfig: PropTypes.object.isRequired,
 };
 
 export default ProtectedRoute;

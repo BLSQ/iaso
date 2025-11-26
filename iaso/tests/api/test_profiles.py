@@ -341,6 +341,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_export_as_csv(self):
+        self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
@@ -372,17 +373,18 @@ class ProfileAPITestCase(APITestCase):
             ]
         )
 
-        expected_csv += f"{self.jane.id},janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
-        expected_csv += f'{self.john.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += f'{self.jim.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
-        expected_csv += f"{self.jam.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
-        expected_csv += f"{self.jom.id},jom,,,,,,,fr,,,,,,,\r\n"
-        expected_csv += f"{self.jum.id},jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'{self.user_managed_geo_limit.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
+        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
+        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
+        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
+        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,\r\n"
+        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
+        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
     def test_profile_list_export_as_xlsx(self):
+        self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
@@ -416,12 +418,12 @@ class ProfileAPITestCase(APITestCase):
             excel_data,
             {
                 "user_profile_id": {
-                    0: self.jane.id,
-                    1: self.john.id,
-                    2: self.jim.id,
-                    3: self.jam.id,
-                    4: self.jom.id,
-                    5: self.jum.id,
+                    0: self.jane.iaso_profile.id,
+                    1: self.john.iaso_profile.id,
+                    2: self.jim.iaso_profile.id,
+                    3: self.jam.iaso_profile.id,
+                    4: self.jom.iaso_profile.id,
+                    5: self.jum.iaso_profile.id,
                     6: self.user_managed_geo_limit.id,
                 },
                 "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},

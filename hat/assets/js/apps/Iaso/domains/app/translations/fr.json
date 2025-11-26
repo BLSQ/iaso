@@ -584,6 +584,7 @@
     "iaso.label.dhis2Mappings": "Correspondances avec DHIS2",
     "iaso.label.display": "Afficher",
     "iaso.label.displayPassword": "Afficher le mot de passe",
+    "iaso.label.djangoAdmin": "Panneau d'administraton Django",
     "iaso.label.docs": "Docs",
     "iaso.label.document": "Document",
     "iaso.label.documents": "Documents",

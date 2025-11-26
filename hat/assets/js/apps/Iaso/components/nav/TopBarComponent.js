@@ -15,6 +15,7 @@ import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { HomePageButton } from './HomePageButton.tsx';
 import { LogoutButton } from './LogoutButton.tsx';
+import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
 
 const styles = theme => ({
     menuButton: {
@@ -149,6 +150,12 @@ function TopBar(props) {
                             <Box display="flex" justifyContent="center" pl={2}>
                                 <HomePageButton />
                             </Box>
+
+                            {(currentUser.is_staff === true || currentUser.is_superuser === true) && (
+                                <Box display="flex" justifyContent="center" pl={1}>
+                                    <DjangoAdminPanelButton />
+                                </Box>
+                            )}
 
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />

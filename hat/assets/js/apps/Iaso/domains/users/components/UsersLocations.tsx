@@ -1,9 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
-const UsersLocations = ({ handleChange, currentUser }) => {
+type Props = {
+    handleChange: (value: any[]) => void;
+    currentUser: any;
+};
+const UsersLocations: FunctionComponent<Props> = ({
+    handleChange,
+    currentUser,
+}) => {
     const onConfirm = orgUnitsList => {
         if (!orgUnitsList) {
             handleChange([]);
@@ -20,11 +26,6 @@ const UsersLocations = ({ handleChange, currentUser }) => {
             initialSelection={currentUser.org_units.value}
         />
     );
-};
-
-UsersLocations.propTypes = {
-    handleChange: PropTypes.func.isRequired,
-    currentUser: PropTypes.object.isRequired,
 };
 
 export default UsersLocations;

@@ -13,7 +13,6 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import { stringToBoolean } from '../../../utils/dataManipulation';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';

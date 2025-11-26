@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import {
     Table,
     TableBody,
@@ -57,17 +56,26 @@ const getArrayfields = objectItem =>
  * with pk, fields and models. In effect at the moment there is only ever one.
  */
 
-const LogCompareComponent = ({
+type Props = {
+    log: any[];
+    compareLog?: any[];
+    goToRevision?: (log: any) => void;
+    title: string;
+    isNewValue?: boolean;
+    showButtons?: boolean;
+};
+
+const LogCompareComponent: FunctionComponent<Props> = ({
     log,
-    compareLog,
-    goToRevision,
     title,
+    compareLog = [],
+    goToRevision = () => {},
     showButtons = false,
     isNewValue = false,
 }) => {
     const [showAllFields, setShowAllFields] = React.useState(false);
-    const classes = useStyles();
-    const differenceArray = [];
+    const classes: Record<string, string> = useStyles();
+    const differenceArray: { [k: string]: unknown }[] = [];
     const { formatMessage } = useSafeIntl();
 
     return log.map((l, i) => {
@@ -160,7 +168,7 @@ const LogCompareComponent = ({
                                     className={
                                         showAllFields && diffFields[fieldKey]
                                             ? classes.isDifferent
-                                            : null
+                                            : undefined
                                     }
                                 >
                                     <ValueWithErrorBoundary
@@ -219,23 +227,6 @@ const LogCompareComponent = ({
             </Paper>
         );
     });
-};
-
-LogCompareComponent.defaultProps = {
-    compareLog: [],
-    title: '',
-    goToRevision: () => {},
-    isNewValue: false,
-    showButtons: false,
-};
-
-LogCompareComponent.propTypes = {
-    log: PropTypes.array.isRequired,
-    compareLog: PropTypes.array,
-    goToRevision: PropTypes.func,
-    title: PropTypes.string.isRequired,
-    isNewValue: PropTypes.bool,
-    showButtons: PropTypes.bool,
 };
 
 export default LogCompareComponent;

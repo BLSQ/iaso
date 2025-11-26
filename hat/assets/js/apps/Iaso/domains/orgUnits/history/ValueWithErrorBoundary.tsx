@@ -2,9 +2,7 @@ import React from 'react';
 import { Typography, Box } from '@mui/material';
 import { withStyles } from '@mui/styles';
 import { injectIntl } from 'bluesquare-components';
-import PropTypes from 'prop-types';
-
-import { LogValue } from './LogValue.tsx';
+import { LogValue } from './LogValue';
 import { MESSAGES } from './messages';
 
 const styles = theme => ({
@@ -19,9 +17,20 @@ const styles = theme => ({
     },
 });
 
+type Props = {
+    value?: string | number | boolean | any[];
+    fieldKey: string;
+    intl: any;
+    classes: Record<string, string>;
+};
+
+type State = {
+    hasError: boolean;
+};
+
 // Use an errorBoundary so if the value cannot be parsed and crash when rendering
 // we still display the raw value
-class ValueWithErrorBoundary extends React.Component {
+class ValueWithErrorBoundary extends React.Component<Props, State> {
     constructor(props) {
         super(props);
         this.state = { hasError: false };
@@ -53,19 +62,5 @@ class ValueWithErrorBoundary extends React.Component {
         return <LogValue fieldKey={fieldKey} value={value} />;
     }
 }
-ValueWithErrorBoundary.defaultProps = {
-    value: undefined,
-};
-ValueWithErrorBoundary.propTypes = {
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number,
-        PropTypes.array,
-        PropTypes.bool,
-    ]),
-    fieldKey: PropTypes.string.isRequired,
-    intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-};
 
 export default withStyles(styles)(injectIntl(ValueWithErrorBoundary));

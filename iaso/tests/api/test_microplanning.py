@@ -378,14 +378,22 @@ class PlanningTestCase(APITestCase):
         self.assertIn("pipeline_uuids", r)
         self.assertEqual(r["pipeline_uuids"], test_uuids)
 
-        # Verify in database
         self.planning.refresh_from_db()
         self.assertEqual(self.planning.pipeline_uuids, test_uuids)
 
     def test_planning_with_target_org_unit_type(self):
         """Test creating and retrieving planning with target_org_unit_type."""
+        source = DataSource.objects.create(name="Test Source")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+
         org_unit_type = OrgUnitType.objects.create(name="Health Post")
         org_unit_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root")
+        OrgUnit.objects.create(
+            version=version, name="Child Health Post", org_unit_type=org_unit_type, parent=root_org_unit
+        )
 
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
@@ -394,7 +402,7 @@ class PlanningTestCase(APITestCase):
 
         data = {
             "name": "Planning with Target Type",
-            "org_unit": self.org_unit.id,
+            "org_unit": root_org_unit.id,
             "team": self.team1.id,
             "project": self.project1.id,
             "forms": [self.form1.id],
@@ -425,14 +433,23 @@ class PlanningTestCase(APITestCase):
         user = User.objects.get(username="test")
         request = mock.Mock(user=user)
 
+        source = DataSource.objects.create(name="Test Source 2")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=2)
+
         org_unit_type = OrgUnitType.objects.create(name="Health Center")
         org_unit_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root 2")
+        OrgUnit.objects.create(
+            version=version, name="Child Health Center", org_unit_type=org_unit_type, parent=root_org_unit
+        )
 
         serializer = PlanningSerializer(
             context={"request": request},
             data={
                 "name": "Test Planning with Target Type",
-                "org_unit": self.org_unit.id,
+                "org_unit": root_org_unit.id,
                 "team": self.team1.id,
                 "project": self.project1.id,
                 "forms": [self.form1.id],
@@ -445,8 +462,22 @@ class PlanningTestCase(APITestCase):
 
     def test_planning_api_patch_with_target_org_unit_type(self):
         """Test updating planning with target_org_unit_type via API."""
+        source = DataSource.objects.create(name="Test Source 3")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=3)
+
         org_unit_type = OrgUnitType.objects.create(name="Clinic")
         org_unit_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root 3")
+        OrgUnit.objects.create(version=version, name="Child Clinic", org_unit_type=org_unit_type, parent=root_org_unit)
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="Planning for patch test",
+            team=self.team1,
+            org_unit=root_org_unit,
+        )
 
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
@@ -457,15 +488,15 @@ class PlanningTestCase(APITestCase):
             "target_org_unit_type": org_unit_type.id,
         }
 
-        response = self.client.patch(f"/api/microplanning/plannings/{self.planning.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         r = response.json()
         self.assertEqual(r["target_org_unit_type"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["name"], "Clinic")
 
-        self.planning.refresh_from_db()
-        self.assertEqual(self.planning.target_org_unit_type, org_unit_type)
+        planning.refresh_from_db()
+        self.assertEqual(planning.target_org_unit_type, org_unit_type)
 
     def test_planning_with_target_org_unit_type_wrong_project(self):
         """Test that creating planning with target_org_unit_type from wrong project fails."""
@@ -660,8 +691,6 @@ class AssignmentAPITestCase(APITestCase):
         self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
-        # cannot create a second Assignment for the same org unit in the same planning
-        # This should fail due to unique constraint
         serializer = AssignmentSerializer(
             context={"request": request},
             data=dict(
@@ -670,9 +699,7 @@ class AssignmentAPITestCase(APITestCase):
                 org_unit=self.child2.id,
             ),
         )
-        # The serializer validation passes, but save() will fail due to unique constraint
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        # This should fail with IntegrityError due to unique constraint
         with self.assertRaises(IntegrityError):
             serializer.save()
 
@@ -757,7 +784,6 @@ class AssignmentAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_bulk_no_access_planning(self):
-        # user don't have access to planning because it's in another account
         other_account = Account.objects.create(name="other_account")
 
         user = self.create_user_with_profile(

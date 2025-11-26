@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { commonStyles } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
@@ -8,7 +7,10 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Form = ({ children }) => {
+type Props = {
+    children?: ReactNode;
+};
+const Form: FunctionComponent<Props> = ({ children = null }) => {
     const classes = useStyles();
 
     return (
@@ -21,13 +23,6 @@ const Form = ({ children }) => {
             {children}
         </Box>
     );
-};
-Form.defaultProps = {
-    children: <></>,
-};
-
-Form.propTypes = {
-    children: PropTypes.node,
 };
 
 export default Form;

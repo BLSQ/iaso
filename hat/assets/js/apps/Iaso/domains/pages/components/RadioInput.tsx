@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import {
     FormControlLabel,
     FormControl,
@@ -17,14 +16,21 @@ const useStyles = makeStyles(() => ({
         fontSize: 12,
     },
 }));
-const RadioInput = ({
-    field,
-    form,
-    label,
-    options,
-    onChange,
-    ...props
-} = {}) => {
+
+type Props = {
+    field?: Record<string, any>;
+    form?: Record<string, any>;
+    label?: string;
+    options?: { label: string; value: unknown }[];
+    onChange?: (value: any, form: any) => void;
+};
+const RadioInput: FunctionComponent<Props> = ({
+    field = {},
+    form = {},
+    label = '',
+    options = [],
+    onChange = () => {},
+}) => {
     const classes = useStyles();
     return (
         <FormControl component="fieldset">
@@ -36,7 +42,6 @@ const RadioInput = ({
                     root: classes.radioGroup,
                 }}
                 name={field.name}
-                {...props}
                 {...field}
                 onChange={e => {
                     if (onChange) {
@@ -47,9 +52,9 @@ const RadioInput = ({
                 }}
                 value={field.value !== undefined ? field.value : null}
             >
-                {options.map(option => (
+                {options.map((option: { label: string; value: unknown }) => (
                     <FormControlLabel
-                        key={option.value}
+                        key={`${option.value}`}
                         value={option.value !== undefined ? option.value : null}
                         control={<Radio />}
                         label={option.label}
@@ -58,22 +63,6 @@ const RadioInput = ({
             </RadioGroup>
         </FormControl>
     );
-};
-
-RadioInput.defaultProps = {
-    field: {},
-    form: {},
-    label: '',
-    options: [],
-    onChange: null,
-};
-
-RadioInput.propTypes = {
-    field: PropTypes.object,
-    form: PropTypes.object,
-    label: PropTypes.string,
-    options: PropTypes.array,
-    onChange: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
 };
 
 export default RadioInput;

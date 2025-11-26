@@ -1,9 +1,19 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { TextField } from '@mui/material';
 import { get } from 'lodash';
 
-const TextInput = ({ field, form, label, multiline, ...props } = {}) => {
+type Props = {
+    field?: Record<string, any>;
+    form?: Record<string, any>;
+    label?: string;
+    multiline?: boolean;
+};
+const TextInput: FunctionComponent<Props> = ({
+    field = {},
+    form = {},
+    label = '',
+    multiline = false,
+}) => {
     const value = field.value || '';
     const initialValue = get(form.initialValues, field.name);
     const hasError = Boolean(get(form.errors, field.name));
@@ -19,7 +29,6 @@ const TextInput = ({ field, form, label, multiline, ...props } = {}) => {
             label={label}
             variant="outlined"
             size="medium"
-            {...props}
             {...field}
             multiline={multiline}
             value={value}
@@ -27,20 +36,6 @@ const TextInput = ({ field, form, label, multiline, ...props } = {}) => {
             helperText={displayError && get(form.errors, field.name)}
         />
     );
-};
-
-TextInput.defaultProps = {
-    field: {},
-    form: {},
-    label: '',
-    multiline: false,
-};
-
-TextInput.propTypes = {
-    field: PropTypes.object,
-    form: PropTypes.object,
-    label: PropTypes.string,
-    multiline: PropTypes.bool,
 };
 
 export default TextInput;

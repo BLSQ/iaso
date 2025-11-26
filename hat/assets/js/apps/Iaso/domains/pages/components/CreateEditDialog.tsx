@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
 import {
@@ -16,18 +15,15 @@ import { get, merge } from 'lodash';
 import { Field, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import Typography from '@mui/material/Typography';
-
 import Form from './Form';
 import TextInput from './TextInput';
 import Rte from './Rte';
 import RadioInput from './RadioInput';
-import { UsersSelect } from './UsersSelect.tsx';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
-
+import { UsersSelect } from './UsersSelect';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { useSavePage } from '../hooks/useSavePage';
-
-import MESSAGES from '../messages';
 import { PAGES_TYPES, IFRAME, TEXT, RAW, SUPERSET } from '../constants';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -40,10 +36,19 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
+type Props = {
+    isOpen?: boolean;
+    onClose?: () => void;
+    selectedPage?: Record<string, any> | null; // keeping null in the typing as leftover from prop types. It can probably be removed
+};
+const CreateEditDialog: FunctionComponent<Props> = ({
+    isOpen = false,
+    onClose = () => {},
+    selectedPage = null,
+}) => {
     const { mutate: savePage } = useSavePage();
 
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles({});
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
 
@@ -112,7 +117,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
     const isFormTouched = !isEqual(formik.initialValues, formik.values);
     const type = get(formik.values, 'type');
     let contentLabel = formatMessage(MESSAGES.rawHtml);
-    let contentComponent = TextInput;
+    let contentComponent: FunctionComponent = TextInput;
     if (type === IFRAME) {
         contentLabel = formatMessage(MESSAGES.url);
         contentComponent = TextInput;
@@ -127,7 +132,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
             fullWidth
             maxWidth="md"
             open={isOpen}
-            onClose={(event, reason) => {
+            onClose={(_, reason) => {
                 if (reason === 'backdropClick') {
                     onClose();
                 }
@@ -301,18 +306,6 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
             </DialogActions>
         </Dialog>
     );
-};
-
-CreateEditDialog.defaultProps = {
-    isOpen: false,
-    onClose: () => null,
-    selectedPage: null,
-};
-
-CreateEditDialog.propTypes = {
-    isOpen: PropTypes.bool,
-    onClose: PropTypes.func,
-    selectedPage: PropTypes.object,
 };
 
 export default CreateEditDialog;

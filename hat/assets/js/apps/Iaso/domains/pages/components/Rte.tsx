@@ -1,10 +1,8 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent, useEffect } from 'react';
 import { useQuill } from 'react-quilljs';
 import { makeStyles } from '@mui/styles';
 import { FormControl, FormLabel } from '@mui/material';
 import isEqual from 'lodash/isEqual';
-
 import 'quill/dist/quill.snow.css';
 
 const useStyles = makeStyles(theme => ({
@@ -31,7 +29,19 @@ const useStyles = makeStyles(theme => ({
         fontSize: 12,
     },
 }));
-const Rte = ({ label, field, form } = {}) => {
+
+type Props = {
+    field?: { name: string; value?: string } & Record<string, any>;
+    form?: {
+        setFieldValue: (value: string, innerHtml: string) => void;
+    } & Record<string, any>;
+    label?: string;
+};
+const Rte: FunctionComponent<Props> = ({
+    label,
+    field = { name: '', value: undefined },
+    form = { setFieldValue: (value: string, innerHtml: string) => {} },
+} = {}) => {
     const value = field.value || '';
     const classes = useStyles();
 
@@ -81,18 +91,6 @@ const Rte = ({ label, field, form } = {}) => {
             </div>
         </FormControl>
     );
-};
-
-Rte.defaultProps = {
-    field: {},
-    form: {},
-    label: '',
-};
-
-Rte.propTypes = {
-    field: PropTypes.object,
-    form: PropTypes.object,
-    label: PropTypes.string,
 };
 
 export default Rte;

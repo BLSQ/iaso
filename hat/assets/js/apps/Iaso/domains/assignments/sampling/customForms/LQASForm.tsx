@@ -199,30 +199,43 @@ export const LQASForm: FunctionComponent<Props> = ({
     const canAddLevel = latestOptions?.original?.sub_unit_types.length !== 0;
     const isLastLevelUndefined = levels[levels.length - 1] === undefined;
 
+    const {
+        org_unit_type_sequence_identifiers,
+        org_unit_type_criteria,
+        org_unit_type_quantities,
+    } = parameterValues || {};
     useEffect(() => {
         if (
-            parameterValues?.org_unit_type_sequence_identifiers?.length &&
-            parameterValues?.org_unit_type_sequence_identifiers?.length > 0 &&
-            !canAddLevel
+            org_unit_type_sequence_identifiers?.length &&
+            org_unit_type_sequence_identifiers?.length > 0
         ) {
-            const allLevelsFilled =
-                parameterValues.org_unit_type_sequence_identifiers?.every(
-                    (level, index) => {
-                        return (
-                            level !== undefined &&
-                            parameterValues.org_unit_type_criteria?.[index] !==
-                                undefined &&
-                            parameterValues.org_unit_type_quantities?.[
-                                index
-                            ] !== undefined
-                        );
-                    },
-                );
-            setAllowConfirm(Boolean(allLevelsFilled));
+            const allLevelsFilled = org_unit_type_sequence_identifiers?.every(
+                (level, index) => {
+                    return (
+                        level !== undefined &&
+                        org_unit_type_criteria?.[index] !== undefined &&
+                        org_unit_type_quantities?.[index] !== undefined
+                    );
+                },
+            );
+
+            setAllowConfirm(
+                Boolean(allLevelsFilled) &&
+                    (!planning.target_org_unit_type ||
+                        latestOptions?.value === planning.target_org_unit_type),
+            );
         } else {
             setAllowConfirm(false);
         }
-    }, [setAllowConfirm, parameterValues, canAddLevel]);
+    }, [
+        setAllowConfirm,
+        org_unit_type_sequence_identifiers,
+        org_unit_type_criteria,
+        org_unit_type_quantities,
+        canAddLevel,
+        planning.target_org_unit_type,
+        latestOptions?.value,
+    ]);
     return (
         <Paper sx={styles.paper}>
             {levels.map((orgUnitTypeId, index) => {

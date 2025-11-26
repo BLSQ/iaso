@@ -8,21 +8,21 @@ Hotfixes are used to quickly patch critical bugs in production. Unlike regular f
 
 ## Prerequisites
 
-- Ensure you have the latest tags and branches:
+- Ensure you have the latest code from `main`:
   ```bash
-  git fetch --all --tags
+  git fetch --all
   ```
-- Identify the latest production tag/release (check [GitHub tags](https://github.com/BLSQ/iaso/tags))
 
 ## Step-by-Step Process
 
 ### 1. Create a Hotfix Branch
 
-Create a new branch from the latest hotfix or release tag. Use the prefix `HOT-FIX` or `hotfix/`:
+Create a new branch from `main`. Use the prefix `HOT-FIX` or `hotfix/`:
 
 ```bash
-# First, checkout the latest production tag
-git checkout tags/v2025.11.18b
+# Checkout and update main branch
+git checkout main
+git pull origin main
 
 # Create your hotfix branch
 git checkout -b HOT-FIX-TICKET-NUMBER-describe-your-fix
@@ -33,9 +33,10 @@ git checkout -b hotfix/TICKET-NUMBER-describe-your-fix
 **Alternative:** If you already have the fix in another branch, you can create the hotfix branch and cherry-pick your commits:
 
 ```bash
-# Create hotfix branch from production tag
-git checkout tags/v2025.11.18b
-git checkout -b HOT-FIX-describe-your-fix
+# Create hotfix branch from main
+git checkout main
+git pull origin main
+git checkout -b HOT-FIX-TICKET-NUMBER-describe-your-fix
 
 # Cherry-pick your commit(s) from another branch
 git cherry-pick <commit-hash>
@@ -59,7 +60,7 @@ git commit -m "fix: describe your hotfix"
 Push your hotfix branch to GitHub:
 
 ```bash
-git push origin HOT-FIX-describe-your-fix
+git push origin HOT-FIX-TICKET-NUMBER-describe-your-fix
 ```
 
 ### 4. Create a Pull Request
@@ -70,7 +71,7 @@ Create a Pull Request targeting the `main` branch.
 
 - Wait for code review approval
 - Ensure all CI/CD checks pass
-- Once approved, **merge the PR to `main`**
+- Once approved, **squash and merge the PR to `main`** following conventional commit standards
 
 ### 6. Pull Main Locally
 
@@ -83,7 +84,7 @@ git pull origin main
 
 ### 7. Create a New Tag
 
-Create a new tag with an alphabetical increment:
+First, check the latest tag on [GitHub Tags](https://github.com/BLSQ/iaso/tags), then create a new tag with an alphabetical increment:
 
 ```bash
 # If the latest tag was v2025.11.18b, create v2025.11.18c
@@ -109,32 +110,48 @@ Verify that the tag appears on GitHub:
 - Visit [GitHub Tags](https://github.com/BLSQ/iaso/tags)
 - Confirm your new tag is listed
 
+### 10. Backport to Develop
+
+**Important:** After the hotfix is deployed, backport the changes to the `develop` branch to ensure the fix is included in future releases:
+
+```bash
+# Checkout develop
+git checkout develop
+git pull origin develop
+
+# Cherry-pick the hotfix commit(s)
+git cherry-pick <commit-hash>
+
+# Push to develop
+git push origin develop
+```
+
+Alternatively, create a PR from `main` to `develop` if there are multiple commits or conflicts.
+
 ## Quick Reference Commands
 
 ```bash
-# 1. Fetch latest tags
-git fetch --all --tags
+# 1. Create hotfix branch from main
+git checkout main
+git pull origin main
+git checkout -b HOT-FIX-TICKET-NUMBER-describe-your-fix
 
-# 2. Create hotfix branch from latest release
-git checkout tags/v2025.11.18b
-git checkout -b HOT-FIX-describe-your-fix
-
-# 3. Make changes and commit
+# 2. Make changes and commit
 git add .
 git commit -m "fix: your fix description"
 
-# 4. Push branch
-git push origin HOT-FIX-describe-your-fix
+# 3. Push branch
+git push origin HOT-FIX-TICKET-NUMBER-describe-your-fix
 
-# 5. After PR is merged, pull main
+# 4. After PR is merged, pull main
 git checkout main
 git pull origin main
 
-# 6. Create and push new tag
+# 5. Create and push new tag (check latest tag first)
 git tag -a v2025.11.18c -m "Hotfix: description"
 git push origin v2025.11.18c
 
-# 7. Backport to develop
+# 6. Backport to develop
 git checkout develop
 git pull origin develop
 git cherry-pick <commit-hash>

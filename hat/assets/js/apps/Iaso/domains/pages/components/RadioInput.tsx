@@ -30,6 +30,7 @@ const RadioInput: FunctionComponent<Props> = ({
     label = '',
     options = [],
     onChange = () => {},
+    ...props
 }) => {
     const classes = useStyles();
     return (
@@ -42,6 +43,7 @@ const RadioInput: FunctionComponent<Props> = ({
                     root: classes.radioGroup,
                 }}
                 name={field.name}
+                {...props}
                 {...field}
                 onChange={e => {
                     if (onChange) {

@@ -13,6 +13,7 @@ const TextInput: FunctionComponent<Props> = ({
     form = {},
     label = '',
     multiline = false,
+    ...props
 }) => {
     const value = field.value || '';
     const initialValue = get(form.initialValues, field.name);
@@ -29,6 +30,7 @@ const TextInput: FunctionComponent<Props> = ({
             label={label}
             variant="outlined"
             size="medium"
+            {...props}
             {...field}
             multiline={multiline}
             value={value}

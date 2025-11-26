@@ -424,7 +424,7 @@ class ProfileAPITestCase(APITestCase):
                     3: self.jam.iaso_profile.id,
                     4: self.jom.iaso_profile.id,
                     5: self.jum.iaso_profile.id,
-                    6: self.user_managed_geo_limit.id,
+                    6: self.user_managed_geo_limit.iaso_profile.id,
                 },
                 "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
                 "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},

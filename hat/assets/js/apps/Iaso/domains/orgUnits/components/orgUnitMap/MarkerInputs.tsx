@@ -1,18 +1,13 @@
-import React, { useCallback, useState } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Button, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import AddLocation from '@mui/icons-material/AddLocation';
 import DeleteIcon from '@mui/icons-material/Delete';
-
-import PropTypes from 'prop-types';
-
 import { commonStyles } from 'bluesquare-components';
-
-import InputComponent from '../../../../components/forms/InputComponent.tsx';
-
+import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../../messages';
+import { OrgUnit } from '../../types/orgUnit';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -20,7 +15,27 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
     },
 }));
-const MarkerInputs = ({
+
+type Props = {
+    orgUnit: OrgUnit;
+    toggleAddMarker: () => void;
+    onChangeLocation: (latLong: any) => void;
+    hasMarker: boolean;
+    actionBusy: boolean;
+    isCreatingMarker: boolean;
+    errorsCoordinates: {
+        latitude: [];
+        longitude: [];
+    };
+    setErrorsCoordinates: React.Dispatch<
+        React.SetStateAction<{
+            latitude: [];
+            longitude: [];
+        }>
+    >;
+};
+
+const MarkerInputs: FunctionComponent<Props> = ({
     orgUnit,
     onChangeLocation,
     toggleAddMarker,
@@ -30,10 +45,10 @@ const MarkerInputs = ({
     errorsCoordinates,
     setErrorsCoordinates,
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { latitude, longitude, altitude } = orgUnit;
     const handleSetError = useCallback(
-        (keyValue, message) => {
+        (keyValue: string, message?: string) => {
             const newErrors = {
                 ...errorsCoordinates,
                 [keyValue]: message ? [message] : [],
@@ -153,16 +168,6 @@ const MarkerInputs = ({
             )}
         </Box>
     );
-};
-MarkerInputs.propTypes = {
-    orgUnit: PropTypes.object.isRequired,
-    toggleAddMarker: PropTypes.func.isRequired,
-    onChangeLocation: PropTypes.func.isRequired,
-    hasMarker: PropTypes.bool.isRequired,
-    actionBusy: PropTypes.bool.isRequired,
-    isCreatingMarker: PropTypes.bool.isRequired,
-    errorsCoordinates: PropTypes.object.isRequired,
-    setErrorsCoordinates: PropTypes.func.isRequired,
 };
 
 export default MarkerInputs;

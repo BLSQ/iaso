@@ -1,18 +1,13 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Button, Box } from '@mui/material';
+import { Button, Box, ButtonPropsColorOverrides } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import Edit from '@mui/icons-material/Settings';
 import DeleteIcon from '@mui/icons-material/Delete';
-
-import PropTypes from 'prop-types';
-
 import { commonStyles } from 'bluesquare-components';
-
 import ShapeSvg from '../../../../components/svg/ShapeSvgComponent';
-
 import MESSAGES from '../../messages';
+import { OverridableStringUnion } from '@mui/types';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -21,7 +16,31 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const ShapesButtons = ({
+type Props = {
+    disabled: boolean;
+    editEnabled: boolean;
+    addEnabled: boolean;
+    deleteEnabled: boolean;
+    toggleEditShape: (keyValue: string) => void;
+    toggleAddShape: (keyValue: string) => void;
+    toggleDeleteShape: (keyValue: string) => void;
+    addShape: (shapeType: string) => void;
+    hasShape: boolean;
+    shapeKey: string;
+    color?:
+        | OverridableStringUnion<
+              | 'inherit'
+              | 'primary'
+              | 'secondary'
+              | 'success'
+              | 'error'
+              | 'info'
+              | 'warning',
+              ButtonPropsColorOverrides
+          >
+        | undefined;
+};
+const ShapesButtons: FunctionComponent<Props> = ({
     disabled,
     editEnabled,
     deleteEnabled,
@@ -32,9 +51,9 @@ const ShapesButtons = ({
     addShape,
     hasShape,
     shapeKey,
-    color,
+    color = 'primary',
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     return (
         <>
             <Box mb={2}>
@@ -93,26 +112,6 @@ const ShapesButtons = ({
             )}
         </>
     );
-};
-
-ShapesButtons.defaultProps = {
-    editDisabledMessage: '',
-    color: 'primary',
-};
-
-ShapesButtons.propTypes = {
-    disabled: PropTypes.bool.isRequired,
-    editEnabled: PropTypes.bool.isRequired,
-    addEnabled: PropTypes.bool.isRequired,
-    deleteEnabled: PropTypes.bool.isRequired,
-    toggleEditShape: PropTypes.func.isRequired,
-    toggleDeleteShape: PropTypes.func.isRequired,
-    toggleAddShape: PropTypes.func.isRequired,
-    addShape: PropTypes.func.isRequired,
-    hasShape: PropTypes.bool.isRequired,
-    shapeKey: PropTypes.string.isRequired,
-    editDisabledMessage: PropTypes.string,
-    color: PropTypes.string,
 };
 
 export default ShapesButtons;

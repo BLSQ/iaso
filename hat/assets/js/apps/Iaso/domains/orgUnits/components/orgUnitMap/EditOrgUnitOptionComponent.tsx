@@ -1,18 +1,15 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
-import PropTypes from 'prop-types';
-
 import { commonStyles } from 'bluesquare-components';
-
 import MarkerInputs from './MarkerInputs';
 import ShapesButtons from './ShapesButtons';
-
 import MESSAGES from '../../messages';
 import { innerDrawerStyles } from '../../../../components/nav/InnerDrawer/styles';
+import { OrgUnit } from '../../types/orgUnit';
 
+//@ts-ignore
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...innerDrawerStyles(theme),
@@ -21,7 +18,31 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const EditOrgUnitOptionComponent = ({
+type Props = {
+    orgUnit: OrgUnit;
+    locationState: Record<string, any>;
+    catchmentState: Record<string, any>;
+    toggleEditShape: (keyValue: string) => void;
+    toggleAddShape: (keyValue: string) => void;
+    toggleDeleteShape: (keyValue: string) => void;
+    addShape: (shapeType: string) => void;
+    toggleAddMarker: () => void;
+    onChangeLocation: (latLong: any) => void;
+    canEditLocation: boolean;
+    canEditCatchment: boolean;
+    isCreatingMarker: boolean;
+    errorsCoordinates: {
+        latitude: [];
+        longitude: [];
+    };
+    setErrorsCoordinates: React.Dispatch<
+        React.SetStateAction<{
+            latitude: [];
+            longitude: [];
+        }>
+    >;
+};
+const EditOrgUnitOptionComponent: FunctionComponent<Props> = ({
     orgUnit,
     locationState,
     catchmentState,
@@ -37,7 +58,7 @@ const EditOrgUnitOptionComponent = ({
     errorsCoordinates,
     setErrorsCoordinates,
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const hasMarker = orgUnit.latitude !== null || orgUnit.longitude !== null;
     return (
         <Box
@@ -148,22 +169,6 @@ const EditOrgUnitOptionComponent = ({
             </Box>
         </Box>
     );
-};
-EditOrgUnitOptionComponent.propTypes = {
-    orgUnit: PropTypes.object.isRequired,
-    locationState: PropTypes.object.isRequired,
-    catchmentState: PropTypes.object.isRequired,
-    toggleEditShape: PropTypes.func.isRequired,
-    toggleAddShape: PropTypes.func.isRequired,
-    toggleDeleteShape: PropTypes.func.isRequired,
-    toggleAddMarker: PropTypes.func.isRequired,
-    addShape: PropTypes.func.isRequired,
-    onChangeLocation: PropTypes.func.isRequired,
-    canEditLocation: PropTypes.bool.isRequired,
-    canEditCatchment: PropTypes.bool.isRequired,
-    isCreatingMarker: PropTypes.bool.isRequired,
-    errorsCoordinates: PropTypes.object.isRequired,
-    setErrorsCoordinates: PropTypes.func.isRequired,
 };
 
 export default EditOrgUnitOptionComponent;

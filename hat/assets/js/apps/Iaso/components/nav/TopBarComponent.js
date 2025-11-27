@@ -151,7 +151,7 @@ function TopBar(props) {
                                 <HomePageButton />
                             </Box>
 
-                            {(currentUser.is_staff === true || currentUser.is_superuser === true) && (
+                            { currentUser.is_staff === true && (
                                 <Box display="flex" justifyContent="center" pl={1}>
                                     <DjangoAdminPanelButton />
                                 </Box>

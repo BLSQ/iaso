@@ -27,6 +27,7 @@ export const useGetTasks = ({
         options: {
             retry: false,
             keepPreviousData: true,
+            staleTime: Infinity,
         },
     });
 };
@@ -40,6 +41,7 @@ export const useGetTaskDetails = (
         options: {
             retry: false,
             enabled: Boolean(taskId),
+            staleTime: Infinity,
         },
     });
 };

@@ -141,7 +141,7 @@ export const useGetEntityTypesDropdown = (): UseQueryResult<
         queryKey: ['entityTypesOptions'],
         queryFn: () => getRequest('/api/entitytypes/?order=name'),
         options: {
-            staleTime: 1000 * 60 * 15, // in MS
+            staleTime: Infinity,
             cacheTime: 1000 * 60 * 5,
             select: data =>
                 data?.map(type => ({

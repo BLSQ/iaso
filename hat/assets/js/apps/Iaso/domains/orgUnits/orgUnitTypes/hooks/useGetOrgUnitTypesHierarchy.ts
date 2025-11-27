@@ -55,7 +55,7 @@ export const useGetOrgUnitTypesHierarchy = (
             enabled: Boolean(orgUnitTypeId),
             keepPreviousData: true,
             cacheTime: 60000,
-            staleTime: 60000,
+            staleTime: Infinity,
             retry: false,
         },
     });

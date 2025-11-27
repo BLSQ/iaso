@@ -27,7 +27,7 @@ export const useGetCurrentUser = (
             retry: false,
             enabled,
             keepPreviousData: true,
-            staleTime: 1000 * 60 * 15, // in MS
+            staleTime: Infinity,
             cacheTime: 1000 * 60 * 5,
         },
     });

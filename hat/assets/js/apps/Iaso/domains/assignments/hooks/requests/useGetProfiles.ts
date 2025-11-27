@@ -27,6 +27,7 @@ export const useGetProfiles = (): UseQueryResult<
                 });
             },
             enabled: Boolean(colors),
+            staleTime: Infinity,
         },
     });
 };

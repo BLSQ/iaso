@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("iaso", "0352_alter_account_modules"),
@@ -17,7 +16,33 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name="poliopermissionsupport",
-            options={"default_permissions": [], "managed": False, "permissions": [("iaso_polio", "Polio"), ("iaso_polio_budget", "Budget Polio"), ("iaso_polio_budget_admin", "Budget Polio Admin"), ("iaso_polio_config", "Polio config"), ("iaso_polio_chronogram", "Polio chronogram"), ("iaso_polio_chronogram_restricted_write", "Polio chronogram user (restricted write)"), ("iaso_polio_notifications", "Polio notifications"), ("iaso_polio_vaccine_authorizations_admin", "Polio Vaccine Authorizations Admin"), ("iaso_polio_vaccine_authorizations_read_only", "Polio Vaccine Authorizations Read Only"), ("iaso_polio_vaccine_stock_earmarks_admin", "Polio Vaccine Stock Earmarks Admin"), ("iaso_polio_vaccine_stock_earmarks_nonadmin", "Polio Vaccine Stock Earmarks Non Admin"), ("iaso_polio_vaccine_stock_earmarks_read_only", "Polio Vaccine Stock Earmarks Read Only"), ("iaso_polio_vaccine_stock_management_read", "Polio Vaccine Stock Management Read"), ("iaso_polio_vaccine_stock_management_read_only", "Polio Vaccine Stock Management Read Only"), ("iaso_polio_vaccine_stock_management_write", "Polio Vaccine Stock Management Write"), ("iaso_polio_vaccine_supply_chain_read", "Polio Vaccine Supply Chain Read"), ("iaso_polio_vaccine_supply_chain_read_only", "Polio Vaccine Supply Chain Read Only"), ("iaso_polio_vaccine_supply_chain_write", "Polio Vaccine Supply Chain Write"), ("iaso_polio_performance_read_only", "Polio Performance Read Only"), ("iaso_polio_performance_non_admin", "Polio Performance Non Admin"), ("iaso_polio_performance_admin", "Polio performance Admin")]},
+            options={
+                "default_permissions": [],
+                "managed": False,
+                "permissions": [
+                    ("iaso_polio", "Polio"),
+                    ("iaso_polio_budget", "Budget Polio"),
+                    ("iaso_polio_budget_admin", "Budget Polio Admin"),
+                    ("iaso_polio_config", "Polio config"),
+                    ("iaso_polio_chronogram", "Polio chronogram"),
+                    ("iaso_polio_chronogram_restricted_write", "Polio chronogram user (restricted write)"),
+                    ("iaso_polio_notifications", "Polio notifications"),
+                    ("iaso_polio_vaccine_authorizations_admin", "Polio Vaccine Authorizations Admin"),
+                    ("iaso_polio_vaccine_authorizations_read_only", "Polio Vaccine Authorizations Read Only"),
+                    ("iaso_polio_vaccine_stock_earmarks_admin", "Polio Vaccine Stock Earmarks Admin"),
+                    ("iaso_polio_vaccine_stock_earmarks_nonadmin", "Polio Vaccine Stock Earmarks Non Admin"),
+                    ("iaso_polio_vaccine_stock_earmarks_read_only", "Polio Vaccine Stock Earmarks Read Only"),
+                    ("iaso_polio_vaccine_stock_management_read", "Polio Vaccine Stock Management Read"),
+                    ("iaso_polio_vaccine_stock_management_read_only", "Polio Vaccine Stock Management Read Only"),
+                    ("iaso_polio_vaccine_stock_management_write", "Polio Vaccine Stock Management Write"),
+                    ("iaso_polio_vaccine_supply_chain_read", "Polio Vaccine Supply Chain Read"),
+                    ("iaso_polio_vaccine_supply_chain_read_only", "Polio Vaccine Supply Chain Read Only"),
+                    ("iaso_polio_vaccine_supply_chain_write", "Polio Vaccine Supply Chain Write"),
+                    ("iaso_polio_performance_read_only", "Polio Performance Read Only"),
+                    ("iaso_polio_performance_non_admin", "Polio Performance Non Admin"),
+                    ("iaso_polio_performance_admin", "Polio performance Admin"),
+                ],
+            },
         ),
         migrations.CreateModel(
             name="PerformanceDashboard",
@@ -25,19 +50,72 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
                 ("date", models.DateField()),
-                ("status", models.CharField(choices=[("draft", "Draft"), ("commented", "Commented"), ("final", "Final")], default="draft", max_length=20)),
-                ("vaccine", models.CharField(choices=[("mOPV2", "mOPV2"), ("nOPV2", "nOPV2"), ("bOPV", "bOPV"), ("nOPV2 & bOPV", "nOPV2 & bOPV")], max_length=20)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("draft", "Draft"), ("commented", "Commented"), ("final", "Final")],
+                        default="draft",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "vaccine",
+                    models.CharField(
+                        choices=[
+                            ("mOPV2", "mOPV2"),
+                            ("nOPV2", "nOPV2"),
+                            ("bOPV", "bOPV"),
+                            ("nOPV2 & bOPV", "nOPV2 & bOPV"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="performance_dashboard", to="iaso.account")),
-                ("country", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name="performance_dashboard", to="iaso.orgunit")),
-                ("created_by", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="performance_dashboard_created_set", to=settings.AUTH_USER_MODEL)),
-                ("updated_by", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="performance_dashboard_updated_set", to=settings.AUTH_USER_MODEL)),
+                (
+                    "account",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="performance_dashboard",
+                        to="iaso.account",
+                    ),
+                ),
+                (
+                    "country",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="performance_dashboard",
+                        to="iaso.orgunit",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="performance_dashboard_created_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="performance_dashboard_updated_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Performance Dashboard",
                 "ordering": ["-date", "country__name"],
-                "indexes": [models.Index(fields=["account"], name="polio_perfo_account_aa3e44_idx"), models.Index(fields=["country"], name="polio_perfo_country_1ff62b_idx")],
+                "indexes": [
+                    models.Index(fields=["account"], name="polio_perfo_account_aa3e44_idx"),
+                    models.Index(fields=["country"], name="polio_perfo_country_1ff62b_idx"),
+                ],
             },
         ),
     ]

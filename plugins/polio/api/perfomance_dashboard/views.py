@@ -51,7 +51,6 @@ class PerformanceDashboardViewSet(ModelViewSet):
             .order_by("-date")
         )
 
-
     def get_serializer_class(self):
         """
         Dynamically returns the appropriate serializer class based on the action.

@@ -67,17 +67,17 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         # We are on 2023-10-10. A record created on 2023-10-05 is recent.
         with freeze_time("2023-10-05"):
             recent_dashboard = PerformanceDashboard.objects.create(
-                account = self.account_hokage,
-                country = self.konoha,
-                date = "2023-10-05",
-                status = "draft",
-                vaccine = "bOPV",
-                created_by = self.user_Kakashi,
+                account=self.account_hokage,
+                country=self.konoha,
+                date="2023-10-05",
+                status="draft",
+                vaccine="bOPV",
+                created_by=self.user_Kakashi,
             )
             # Now, back on 2023-10-10 (5 days later), try to update it.
             update_data = {"status": "final"}
             response = self.client.patch(
-            f"{self.PERFORMANCE_DASHBOARD_API_URL}{recent_dashboard.id}/", data = update_data, format = "json"
+                f"{self.PERFORMANCE_DASHBOARD_API_URL}{recent_dashboard.id}/", data=update_data, format="json"
             )
             self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -90,17 +90,17 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         # We are on 2023-10-20. A record created on 2023-10-10 is 10 days old
         with freeze_time("2023-10-10"):
             old_dashboard = PerformanceDashboard.objects.create(
-                account = self.account_hokage,
-                country = self.konoha,
-                date = "2023-10-10",
-                status = "draft",
-                vaccine = "bOPV",
-                created_by = self.user_Kakashi,
+                account=self.account_hokage,
+                country=self.konoha,
+                date="2023-10-10",
+                status="draft",
+                vaccine="bOPV",
+                created_by=self.user_Kakashi,
             )
         # Now, on 2023-10-20 (10 days later), try to update it. This should fail.
         update_data = {"status": "final"}
         response = self.client.patch(
-        f"{self.PERFORMANCE_DASHBOARD_API_URL}{old_dashboard.id}/", data = update_data, format = "json"
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{old_dashboard.id}/", data=update_data, format="json"
         )
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 

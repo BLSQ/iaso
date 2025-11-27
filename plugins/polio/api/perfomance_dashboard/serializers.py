@@ -10,8 +10,6 @@ from plugins.polio.models.performance_dashboard import PerformanceDashboard
 logger = logging.getLogger(__name__)
 
 
-
-
 class OrgUnitNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit

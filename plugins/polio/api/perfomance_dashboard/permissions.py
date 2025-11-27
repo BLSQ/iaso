@@ -20,7 +20,8 @@ class PerformanceDashboardPermission(permissions.BasePermission):
     - Read-only users can only view data.
     - Non-admin users can create data and modify recent data.
     - Admin users have unrestricted access.
-"""
+    """
+
     def has_permission(self, request, view):
         """
         View - level permissions.
@@ -36,6 +37,7 @@ class PerformanceDashboardPermission(permissions.BasePermission):
         return request.user.has_perm(POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
             POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name()
         )
+
     def has_object_permission(self, request, view, obj: PerformanceDashboard):
         """
         Object-level permissions, checked for retrieve, update, and delete actions.
@@ -46,7 +48,7 @@ class PerformanceDashboardPermission(permissions.BasePermission):
         if request.user.has_perm(POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name()):
             return True
         if request.user.has_perm(POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name()):
-            if request.method in permissions.SAFE_METHODS or request.method =="POST":
+            if request.method in permissions.SAFE_METHODS or request.method == "POST":
                 # Read and create actions are allowed for non-admins.
                 return True
 

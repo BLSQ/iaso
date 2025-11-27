@@ -26,10 +26,7 @@ class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
         response_data = response.json()
         results = response_data.get("results", [])
         count = len(results)
-        expected_count = PerformanceDashboard.objects.filter(
-            account=self.account_hokage,
-            country= self.konoha
-        ).count()
+        expected_count = PerformanceDashboard.objects.filter(account=self.account_hokage, country=self.konoha).count()
         self.assertEqual(count, expected_count)
 
         result_ids = {item["id"] for item in response_data["results"]}

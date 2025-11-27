@@ -878,7 +878,7 @@
     "iaso.polio.performance.status.draft": "Brouillon",
     "iaso.polio.performance.status.commented": "Commenté",
     "iaso.polio.performance.status.final": "Final",
-    "iaso.polio.antigen": "Antigen",
+    "iaso.polio.antigen": "Vaccin",
     "iaso.label.edit": "Modifier",
     "iaso.polio.validation.invalidDate": "Date invalide",
     "iaso.polio.validation.fieldRequired": "Champ requis",

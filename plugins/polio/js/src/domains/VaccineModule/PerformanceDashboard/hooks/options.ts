@@ -4,7 +4,7 @@ import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso
 import MESSAGES from '../messages';
 
 const statuses: string[] = ['draft', 'commented', 'final']; // Updated statuses
-const antigens: string[] = ['nOPV2', 'bOPV', 'nOPV2 & bOPV'];
+const vaccines: string[] = ['nOPV2', 'bOPV', 'nOPV2 & bOPV'];
 
 export const useStatusOptions = (): DropdownOptions<string>[] => {
     const { formatMessage } = useSafeIntl();
@@ -21,12 +21,12 @@ export const useStatusOptions = (): DropdownOptions<string>[] => {
     }, [formatMessage]);
 };
 
-export const useAntigenOptions = (): DropdownOptions<string>[] => {
+export const useVaccineOptions = (): DropdownOptions<string>[] => {
     return useMemo(() => {
-        return antigens.map(antigen => {
+        return vaccines.map(vaccine => {
             return {
-                value: antigen,
-                label: antigen,
+                value: vaccine,
+                label: vaccine,
             };
         });
     }, []);

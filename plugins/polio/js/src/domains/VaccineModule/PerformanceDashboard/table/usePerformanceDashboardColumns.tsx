@@ -40,8 +40,8 @@ export const usePerformanceDashboardColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.antigen),
-                accessor: 'antigen',
-                id: 'antigen',
+                accessor: 'vaccine',
+                id: 'vaccine',
                 sortable: true,
             },
             {

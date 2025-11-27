@@ -19,7 +19,7 @@ export const usePerformanceDashboardSchema = () => {
             .positive()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        antigen: yup
+        vaccine: yup
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),

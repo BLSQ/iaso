@@ -78,7 +78,7 @@ export const useDynamicPossibleFields = (
     // Build dynamic queries array for possible fields
     const queries = useMemo(() => {
         return formIds.map(formId => ({
-            queryKey: ['form', formId, 'possible_fields'],
+            queryKey: ['forms', formId, 'possible_fields'],
             queryFn: () =>
                 getRequest(`/api/forms/${formId}/?fields=possible_fields`),
             snackErrorMsg: MESSAGES.fetchPossibleFieldsError,

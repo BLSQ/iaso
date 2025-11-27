@@ -1,17 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { PLANNING_WRITE } from '../../utils/permissions';
-import { CreatePlanning } from './components/PlanningDialog';
 import { usePlanningColumns } from './config';
-import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
 import { PlanningFilters } from './PlanningFilters';
@@ -28,8 +24,7 @@ export const Planning: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetPlannings(apiParams);
-    const { mutateAsync: deletePlanning } = useDeletePlanning();
-    const columns = usePlanningColumns(deletePlanning);
+    const columns = usePlanningColumns();
 
     return (
         <>
@@ -40,11 +35,6 @@ export const Planning: FunctionComponent = () => {
 
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <PlanningFilters params={apiParams} />
-                <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
-                    <Grid container item justifyContent="flex-end">
-                        <CreatePlanning type="create" iconProps={{}} />
-                    </Grid>
-                </DisplayIfUserHasPerm>
 
                 <TableWithDeepLink
                     baseUrl={baseUrl}
@@ -55,6 +45,8 @@ export const Planning: FunctionComponent = () => {
                     count={data?.count ?? 0}
                     params={apiParams}
                     extraProps={{ loading: isFetching }}
+                    columnSelectorEnabled
+                    countOnTop={false}
                 />
             </Box>
         </>

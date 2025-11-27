@@ -15,6 +15,7 @@ import {
 import Color from 'color';
 import { closeSnackbar } from 'notistack';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
@@ -29,7 +30,6 @@ import {
     buildQueryString,
     useGetCompletenessStats,
 } from './hooks/api/useGetCompletnessStats';
-import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useCompletenessStatsColumns } from './hooks/useCompletenessStatsColumns';
 import MESSAGES from './messages';
 import { CompletenessRouterParams } from './types';
@@ -61,10 +61,10 @@ export const CompletenessStats: FunctionComponent = () => {
     const { data: completenessMapStats, isFetching: isFetchingMapStats } =
         useGetCompletnessMapStats(params, tab === 'map');
     const columns = useCompletenessStatsColumns(params, completenessStats);
-    const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
-        'period_type',
-        'legend_threshold',
-    ]);
+    const { data: forms, isFetching: fetchingForms } =
+        useGetFormsDropdownOptions({
+            extraFields: ['period_type', 'legend_threshold'],
+        });
 
     const mapResults =
         completenessMapStats?.filter(location => !location.is_root) || [];

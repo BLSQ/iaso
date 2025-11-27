@@ -1,6 +1,5 @@
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from iaso.utils.colors import COLOR_CHOICES, DISPERSED_COLOR_ORDER
@@ -15,7 +14,8 @@ class ColorsQueryParamsSerializer(serializers.Serializer):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+# public API to avoid breaking embedded pages
+@permission_classes([])
 def colors_list(request):
     """Return the list of available colors for the application
 

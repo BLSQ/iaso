@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { SearchButton } from 'Iaso/components/SearchButton';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import DatesRange from '../../../../components/filters/DatesRange';
 import InputComponent from '../../../../components/forms/InputComponent';
 import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
@@ -11,7 +12,6 @@ import {
     useMultiTreeviewFilterState,
 } from '../../../../hooks/useFilterState';
 import { PaginationParams } from '../../../../types/general';
-import { useGetFormsOptions } from '../../../completenessStats/hooks/api/useGetFormsOptions';
 import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { TeamType } from '../../../teams/constants';
@@ -81,7 +81,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         useGetEntityTypesDropdown();
 
     const { data: formsDropdown, isFetching: isFetchingForms } =
-        useGetFormsOptions(['possible_fields']);
+        useGetFormsDropdownOptions({
+            extraFields: ['possible_fields'],
+        });
 
     const selectedForm = useMemo(() => {
         return (formsDropdown as any[])

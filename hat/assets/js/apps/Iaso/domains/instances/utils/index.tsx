@@ -208,7 +208,7 @@ export const formatLabel = (field: Field): string => {
 
 const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
     const { key } = c;
-    // eslint-disable-next-line camelcase
+
     const { file_content } = settings.row.original;
     const value = file_content[key];
 
@@ -231,7 +231,6 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
 };
 
 export const useInstancesColumns = (
-    // eslint-disable-next-line default-param-last
     getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
     ),
@@ -395,7 +394,7 @@ const getDefaultCols = (
 };
 
 type UseInstanceVisibleColumnsArgs = {
-    formDetails: Form;
+    formDetails: Partial<Form>;
     formIds: string[];
     instanceMetasFields?: InstanceMetasField[];
     labelKeys: string[];
@@ -483,7 +482,7 @@ type SelectionAction = {
 export const useSelectionActions = (
     filters: Record<string, string>,
     setForceRefresh: () => void,
-    // eslint-disable-next-line default-param-last
+
     isUnDeleteAction = false,
     classes: Record<string, string>,
 ): SelectionAction[] => {

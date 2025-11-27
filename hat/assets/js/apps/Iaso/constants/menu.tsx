@@ -361,6 +361,12 @@ const menuItems = (
                     key: 'duplicates',
                     icon: props => <FileCopyIcon {...props} />,
                 },
+                {
+                    label: formatMessage(MESSAGES.entityDuplicateAnalysesTitle),
+                    permissions: paths.entityDuplicatesPath.permissions,
+                    key: 'duplicate-analyses',
+                    icon: props => <QueryStatsIcon {...props} />,
+                },
             ],
         },
         {

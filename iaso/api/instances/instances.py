@@ -672,8 +672,10 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk=None):
         original = get_object_or_404(self.get_queryset(), pk=pk)
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
+        user = request.user
+        instance.last_modified_by = user
         instance.soft_delete()
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())

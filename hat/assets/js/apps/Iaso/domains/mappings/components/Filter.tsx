@@ -1,22 +1,20 @@
 import React, { useState, FunctionComponent } from 'react';
 
+import SearchIcon from '@mui/icons-material/Search';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import SearchIcon from '@mui/icons-material/Search';
 import { useSafeIntl } from 'bluesquare-components';
 
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { baseUrl } from '../config';
+import MESSAGES from '../messages';
 import { mappingTypeOptions } from './MappingTypeOptions';
 
-import MESSAGES from '../messages';
-
-import { baseUrl } from '../config';
-import { useGetFormsDropdownOptions } from '../hooks/requests/useGetFormsDropdownOptions';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-
-const useStyles = makeStyles(theme => ({}));
+const useStyles = makeStyles(() => ({}));
 
 type Params = {
     pageSize: string;
@@ -44,7 +42,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         useGetProjectsDropdownOptions();
 
     const { data: allForms, isFetching: isFetchingForms } =
-        useGetFormsDropdownOptions({});
+        useGetFormsDropdownOptions();
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));

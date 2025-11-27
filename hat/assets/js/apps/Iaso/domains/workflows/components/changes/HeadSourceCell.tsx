@@ -1,12 +1,11 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useMemo } from 'react';
+import { Box, Grid } from '@mui/material';
 
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import InputComponent from '../../../../components/forms/InputComponent';
+import { DropdownOptions } from '../../../../types/utils';
 import MESSAGES from '../../messages';
 
-import { useGetForms } from '../../hooks/requests/useGetForms';
-
-import { DropdownOptions } from '../../../../types/utils';
 import { Change } from '../../types';
 
 type Props = {
@@ -28,20 +27,17 @@ export const HeadSourceCell: FunctionComponent<Props> = ({
     sourceVersion,
     sourceVersionsDropdownOptions,
 }) => {
-    const { data: forms, isLoading: isLoadingForms } = useGetForms();
+    const { data: forms, isLoading: isLoadingForms } =
+        useGetFormsDropdownOptions();
     const formsList = useMemo(
         () =>
             forms
                 // remove already selected forms
                 ?.filter(
                     f =>
-                        !changes?.find(ch => ch.form.id === f.id) ||
-                        change?.form.id === f.id,
-                )
-                .map(f => ({
-                    label: f.name,
-                    value: f.id,
-                })) || [],
+                        !changes?.find(ch => ch.form.id === f.value) ||
+                        change?.form.id === f.value,
+                ) || [],
         [change?.form.id, changes, forms],
     );
     return (

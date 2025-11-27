@@ -12,9 +12,9 @@ class ColorsApiTestCase(APITestCase):
         cls.user = cls.create_user_with_profile(username="user", account=account)
 
     def test_colors_unauth(self):
-        """Test that unauthenticated users cannot access colors API"""
+        """Test that unauthenticated users can access colors API"""
         response = self.client.get("/api/colors/", format="json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
 
     def test_colors_rainbow_order(self):
         """Test colors API returns rainbow order by default"""

@@ -6,14 +6,23 @@ from rest_framework.response import Response
 
 import iaso.models.base as base
 
-from iaso.api.common import HasPermission, ModelViewSet, Paginator
+from iaso.api.common import HasPermission, ModelViewSet, Paginator, TimestampField
+from iaso.api.deduplication.filters import (
+    AnalysesAlgorithmFilterBackend,
+    AnalysesStartDateEndDateFilterBackend,
+    AnalysesStatusFilterBackend,
+    AnalysesUsersFilterBackend,
+)
 from iaso.models import EntityDuplicateAnalyzis, EntityType
 from iaso.models.deduplication import PossibleAlgorithms
 from iaso.permissions.core_permissions import (
     CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
     CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
 )
-from iaso.tasks.run_deduplication_algo import run_deduplication_algo
+from iaso.tasks.run_deduplication_algo import (
+    get_deduplication_aglo_default_parameters,
+    run_deduplication_algo,
+)
 
 
 class AnalyzePostBodySerializer(serializers.Serializer):
@@ -58,12 +67,14 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(source="task.status", choices=base.STATUS_TYPE_CHOICES)
-    started_at = serializers.DateTimeField(source="task.started_at")
+    started_at = TimestampField(read_only=True, source="task.started_at")
     created_by = UserNestedSerializer(source="task.launcher")
+    task_id = serializers.IntegerField(source="task.id")
+    result_message = serializers.CharField(source="task.progress_message")
     entity_type_id = serializers.SerializerMethodField()
     fields = serializers.SerializerMethodField(method_name="get_the_fields")  # type: ignore
     parameters = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(source="task.created_at")
+    created_at = TimestampField(read_only=True, source="task.created_at")
 
     def get_entity_type_id(self, obj):
         return obj.metadata["entity_type_id"]
@@ -88,6 +99,8 @@ class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
             "finished_at",
             "created_at",
             "finished_at",
+            "task_id",
+            "result_message",
         ]
 
 
@@ -104,7 +117,11 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
 
     filter_backends = [
         filters.OrderingFilter,
+        AnalysesAlgorithmFilterBackend,
         DjangoFilterBackend,
+        AnalysesStartDateEndDateFilterBackend,
+        AnalysesStatusFilterBackend,
+        AnalysesUsersFilterBackend,
     ]
     ordering_fields = ["created_at", "finished_at", "id"]
     results_key = "results"
@@ -112,7 +129,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        return EntityDuplicateAnalyzis.objects.filter(task__account=user_account).select_related("task__created_by")
+        return EntityDuplicateAnalyzis.objects.filter(task__account=user_account).select_related("task").all()
 
     def get_permissions(self):
         permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_DUPLICATES_READ_PERMISSION)]
@@ -121,7 +138,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action == "retrieve":
+        if self.action == "retrieve" or self.action == "list":
             return EntityDuplicateAnalyzisDetailSerializer
         return EntityDuplicateAnalyzisSerializer
 
@@ -204,12 +221,13 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         data = serializer.validated_data
 
         algo_name = data["algorithm"]
-
+        default_parameters = get_deduplication_aglo_default_parameters(algo_name=algo_name)
         algo_params = {
             "entity_type_id": data["entity_type_id"],
             "fields": data["fields"],
-            "parameters": {param["name"]: param["value"] for param in data["parameters"]},
+            "parameters": default_parameters | {param["name"]: param["value"] for param in data["parameters"]},
         }
+
         task = run_deduplication_algo(algo_name=algo_name, algo_params=algo_params, user=request.user)
 
         analyze = EntityDuplicateAnalyzis.objects.create(algorithm=algo_name, metadata=algo_params, task=task)

@@ -14,7 +14,7 @@ import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
 import { useSavePerformance } from '../hooks/api';
-import { useAntigenOptions, useStatusOptions } from '../hooks/options';
+import { useVaccineOptions, useStatusOptions } from '../hooks/options';
 import MESSAGES from '../messages';
 import { PerformanceData } from '../types';
 import { usePerformanceDashboardSchema } from './validation';
@@ -37,7 +37,7 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
     const { data: countries, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const statusOptions = useStatusOptions();
-    const antigenOptions = useAntigenOptions();
+    const vaccineOptions = useVaccineOptions();
 
     const formik = useFormik({
         initialValues: {
@@ -45,7 +45,7 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
             date: performanceData?.date,
             status: performanceData?.status,
             country_id: performanceData?.country_id,
-            antigen: performanceData?.antigen,
+            vaccine: performanceData?.vaccine,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -119,10 +119,10 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.antigen)}
-                        name="antigen"
+                        name="vaccine"
                         component={SingleSelect}
                         required
-                        options={antigenOptions}
+                        options={vaccineOptions}
                         clearable={false}
                         isSearchable={false}
                     />

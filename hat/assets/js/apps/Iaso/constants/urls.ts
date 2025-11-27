@@ -447,6 +447,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'entities/duplicates/details',
         params: ['accountId', 'entities', ...paginationPathParams],
     },
+    entityDuplicateAnalyses: {
+        url: 'entities/duplicate-analyses',
+        params: [
+            'accountId',
+            'users',
+            'status',
+            'algorithm',
+            'start_date',
+            'end_date',
+            ...paginationPathParams,
+        ],
+    },
     pages: {
         url: 'pages',
         params: [
@@ -685,6 +697,7 @@ type IasoBaseUrls = {
     entityTypes: string;
     entityDuplicates: string;
     entityDuplicateDetails: string;
+    entityDuplicateAnalyses: string;
     pages: string;
     planning: string;
     assignments: string;

@@ -352,6 +352,131 @@ export const useSkipEffectOnMount = (func:Function, deps:Array<unknown>) => {
 
 ```
 
+## React Query Best Practices
+
+### Query Key Structure
+
+Query keys in React Query use hierarchical matching for cache invalidation. Following a consistent structure is critical for maintainability and performance.
+
+#### Recommended Pattern
+
+```typescript
+// List queries - plural noun
+['forms']
+['orgUnits']
+['users']
+
+// Individual item - [resource, id]
+['forms', formId]  // formId as number, not string
+['orgUnits', orgUnitId]
+
+// Nested data - [resource, id, property]
+['forms', formId, 'possible_fields']
+['forms', formId, 'versions']
+['orgUnits', orgUnitId, 'children']
+```
+
+**Key Principles:**
+
+1. **Use raw values, not prefixed strings**: Use `['forms', 123]` not `['forms', 'form-123']`
+2. **Use numbers directly**: Use `formId` (number) not `` `form-${formId}` `` (string)
+3. **Consistent hierarchy**: Always follow `[resource, id, property]` pattern
+4. **Plural for lists, singular for instances**: `['forms']` for list, but nested keys can be singular
+
+#### Invalidation Scopes
+
+```typescript
+// Invalidate ALL forms-related queries (list, details, dropdowns, all IDs)
+queryClient.invalidateQueries(['forms']);
+
+// Invalidate only form #123 and its nested data
+queryClient.invalidateQueries(['forms', 123]);
+// Matches: ['forms', 123], ['forms', 123, 'possible_fields'], ['forms', 123, 'versions']
+// Does NOT match: ['forms'], ['forms', 456]
+
+// Invalidate specific nested property only
+queryClient.invalidateQueries(['forms', 123, 'possible_fields']);
+// Matches only: ['forms', 123, 'possible_fields']
+```
+
+#### Query Keys for Filtered Lists
+
+When building queries with multiple parameters (pagination, filters, sorting), use the params object directly in the query key:
+
+```typescript
+// ✅ GOOD - params object in query key
+const apiParams = useApiParams(tableParams, tableDefaults);
+const queryString = new URLSearchParams(apiParams).toString();
+
+useSnackQuery({
+    queryKey: ['forms', apiParams],  // Object handles order automatically
+    queryFn: () => getRequest(`/api/forms/?${queryString}`),
+});
+
+// ❌ BAD - query string in key (parameter order creates duplicate cache entries)
+useSnackQuery({
+    queryKey: ['forms', queryString],  // 'page=1&limit=10' vs 'limit=10&page=1' = different keys!
+    queryFn: () => getRequest(`/api/forms/?${queryString}`),
+});
+```
+
+**Benefits:**
+- React Query normalizes object keys, preventing duplicate cache entries due to parameter order
+- Easier to invalidate selectively (e.g., all pages for a specific filter)
+- More readable and maintainable
+
+#### Common Patterns
+
+**After mutation, invalidate related queries:**
+
+```typescript
+// Creating a new form
+useMutation({
+    mutationFn: createForm,
+    onSuccess: () => {
+        queryClient.invalidateQueries(['forms']); // Refresh the list
+    }
+});
+
+// Updating an existing form
+useMutation({
+    mutationFn: updateForm,
+    onSuccess: (data, variables) => {
+        // Option 1: Invalidate everything (list + all details)
+        queryClient.invalidateQueries(['forms']);
+        
+        // Option 2: Only invalidate this specific form (if list doesn't show form details)
+        // queryClient.invalidateQueries(['forms', variables.id]);
+    }
+});
+
+// Deleting a form
+useMutation({
+    mutationFn: deleteForm,
+    onSuccess: () => {
+        queryClient.invalidateQueries(['forms']); // Only refresh list
+    }
+});
+```
+
+**Using nested query keys:**
+
+```typescript
+// In your hook
+export const useGetPossibleFields = (formId: number) => {
+    return useSnackQuery({
+        queryKey: ['forms', formId, 'possible_fields'],
+        queryFn: () => getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+        options: {
+            enabled: Boolean(formId),
+        },
+    });
+};
+
+// When form is updated, invalidate all its data
+queryClient.invalidateQueries(['forms', formId]); 
+// This invalidates 'possible_fields', 'versions', etc.
+```
 
 ## Remarks
 

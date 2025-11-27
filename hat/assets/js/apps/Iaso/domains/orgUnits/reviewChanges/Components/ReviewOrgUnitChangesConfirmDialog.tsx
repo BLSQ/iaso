@@ -40,8 +40,8 @@ type Props = {
     submitChangeRequest: SubmitChangeRequest;
     open: boolean;
     onClose: () => void;
-    isApproved: boolean;
     isPartiallyApproved: boolean;
+    isRejected: boolean;
     approvedFields: string[];
     isNewOrgUnit: boolean;
 };
@@ -50,29 +50,29 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
     submitChangeRequest,
     open,
     onClose,
-    isApproved,
     isPartiallyApproved,
+    isRejected,
     approvedFields,
     isNewOrgUnit,
 }) => {
     const [comment, setComment] = useState<string | undefined>();
     const { formatMessage } = useSafeIntl();
     const titleMessage = useMemo(() => {
+        if (isRejected) {
+            return formatMessage(MESSAGES.addRejectionComment);
+        }
         if (isPartiallyApproved) {
             return formatMessage(MESSAGES.addPartiallyApprovedComment);
         }
-        if (isApproved) {
-            return '';
-        }
-        return formatMessage(MESSAGES.addRejectionComment);
-    }, [isApproved, isPartiallyApproved, formatMessage]);
+        return '';
+    }, [isPartiallyApproved, isRejected, formatMessage]);
 
     const reviewOrgUnitChangesCommentDialogButtons = useMemo(() => {
         return createChangesConfirmDialogButtons({
             comment,
             onClose,
             submitChangeRequest,
-            isApproved,
+            isApproved: !isRejected,
             isPartiallyApproved,
             approvedFields,
         });
@@ -80,7 +80,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
         approvedFields,
         comment,
         onClose,
-        isApproved,
+        isRejected,
         isPartiallyApproved,
         submitChangeRequest,
     ]);
@@ -95,7 +95,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
             closeDialog={onClose}
             buttons={() => reviewOrgUnitChangesCommentDialogButtons}
         >
-            {(!isApproved || isPartiallyApproved) && (
+            {(isRejected || isPartiallyApproved) && (
                 <InputComponent
                     type="textarea"
                     keyValue=""
@@ -105,7 +105,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
                     withMarginTop={false}
                 />
             )}
-            {isApproved && !isPartiallyApproved && (
+            {!isRejected && !isPartiallyApproved && (
                 <>
                     <p>
                         {formatMessage(

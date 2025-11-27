@@ -95,6 +95,10 @@ export const useRedirections: RedirectionsMethod = ({
                 to: `/${baseUrls.entityDuplicates}${getPaginationParams()}`,
             },
             {
+                path: `/${baseUrls.entityDuplicateAnalyses}`,
+                to: `/${baseUrls.entityDuplicateAnalyses}${getPaginationParams('-created_at')}`,
+            },
+            {
                 path: `/${baseUrls.groups}`,
                 to: `/${baseUrls.groups}${getPaginationParams('name')}`,
             },

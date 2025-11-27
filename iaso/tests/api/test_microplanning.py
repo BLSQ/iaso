@@ -23,7 +23,7 @@ class PlanningTestCase(APITestCase):
         cls.account = account = Account.objects.get(name="test")
         cls.user = user = User.objects.get(username="test")
         cls.project1 = project1 = account.project_set.create(name="project1")
-        project2 = account.project_set.create(name="project2")
+        cls.project2 = project2 = account.project_set.create(name="project2")
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=user)
         Team.objects.create(project=project2, name="team2", manager=user)
         other_account = Account.objects.create(name="other account")
@@ -90,6 +90,8 @@ class PlanningTestCase(APITestCase):
                 "started_at": "2025-01-01",
                 "ended_at": "2025-01-10",
                 "pipeline_uuids": [],
+                "target_org_unit_type": None,
+                "target_org_unit_type_details": None,
             },
             r,
         )
@@ -376,9 +378,255 @@ class PlanningTestCase(APITestCase):
         self.assertIn("pipeline_uuids", r)
         self.assertEqual(r["pipeline_uuids"], test_uuids)
 
-        # Verify in database
         self.planning.refresh_from_db()
         self.assertEqual(self.planning.pipeline_uuids, test_uuids)
+
+    def test_planning_with_target_org_unit_type(self):
+        """Test creating and retrieving planning with target_org_unit_type."""
+        source = DataSource.objects.create(name="Test Source")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+
+        org_unit_type = OrgUnitType.objects.create(name="Health Post")
+        org_unit_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root")
+        OrgUnit.objects.create(
+            version=version, name="Child Health Post", org_unit_type=org_unit_type, parent=root_org_unit
+        )
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "Planning with Target Type",
+            "org_unit": root_org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id],
+            "target_org_unit_type": org_unit_type.id,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        r = response.json()
+
+        self.assertEqual(r["target_org_unit_type"], org_unit_type.id)
+        self.assertIsNotNone(r["target_org_unit_type_details"])
+        self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
+
+        planning = Planning.objects.get(id=r["id"])
+        self.assertEqual(planning.target_org_unit_type, org_unit_type)
+
+        response = self.client.get(f"/api/microplanning/plannings/{planning.id}/", format="json")
+        self.assertEqual(response.status_code, 200)
+        r = response.json()
+        self.assertEqual(r["target_org_unit_type"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
+
+    def test_planning_serializer_with_target_org_unit_type(self):
+        """Test PlanningSerializer with target_org_unit_type field."""
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+
+        source = DataSource.objects.create(name="Test Source 2")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=2)
+
+        org_unit_type = OrgUnitType.objects.create(name="Health Center")
+        org_unit_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root 2")
+        OrgUnit.objects.create(
+            version=version, name="Child Health Center", org_unit_type=org_unit_type, parent=root_org_unit
+        )
+
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning with Target Type",
+                "org_unit": root_org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id],
+                "target_org_unit_type": org_unit_type.id,
+            },
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        planning = serializer.save()
+        self.assertEqual(planning.target_org_unit_type, org_unit_type)
+
+    def test_planning_api_patch_with_target_org_unit_type(self):
+        """Test updating planning with target_org_unit_type via API."""
+        source = DataSource.objects.create(name="Test Source 3")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=3)
+
+        org_unit_type = OrgUnitType.objects.create(name="Clinic")
+        org_unit_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root 3")
+        OrgUnit.objects.create(version=version, name="Child Clinic", org_unit_type=org_unit_type, parent=root_org_unit)
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="Planning for patch test",
+            team=self.team1,
+            org_unit=root_org_unit,
+        )
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "target_org_unit_type": org_unit_type.id,
+        }
+
+        response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        r = response.json()
+        self.assertEqual(r["target_org_unit_type"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["name"], "Clinic")
+
+        planning.refresh_from_db()
+        self.assertEqual(planning.target_org_unit_type, org_unit_type)
+
+    def test_planning_with_target_org_unit_type_wrong_project(self):
+        """Test that creating planning with target_org_unit_type from wrong project fails."""
+        org_unit_type = OrgUnitType.objects.create(name="Wrong Project Type")
+        org_unit_type.projects.add(self.project2)
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "Planning with Wrong Target Type",
+            "org_unit": self.org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id],
+            "target_org_unit_type": org_unit_type.id,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("target_org_unit_type", r)
+        self.assertEqual(r["target_org_unit_type"][0], "planningAndTargetOrgUnitType")
+
+    def test_planning_serializer_target_org_unit_type_wrong_project(self):
+        """Test PlanningSerializer validation with target_org_unit_type from wrong project."""
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+
+        org_unit_type = OrgUnitType.objects.create(name="Wrong Type")
+        org_unit_type.projects.add(self.project2)
+
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning Wrong Type",
+                "org_unit": self.org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id],
+                "target_org_unit_type": org_unit_type.id,
+            },
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("target_org_unit_type", serializer.errors)
+
+    def test_planning_patch_target_org_unit_type_wrong_project(self):
+        """Test that patching planning with target_org_unit_type from wrong project fails."""
+        org_unit_type = OrgUnitType.objects.create(name="Wrong Patch Type")
+        org_unit_type.projects.add(self.project2)
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "target_org_unit_type": org_unit_type.id,
+        }
+
+        response = self.client.patch(f"/api/microplanning/plannings/{self.planning.id}/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("target_org_unit_type", r)
+        self.assertEqual(r["target_org_unit_type"][0], "planningAndTargetOrgUnitType")
+
+    def test_planning_target_org_unit_type_no_descendants(self):
+        """Test that creating planning with target_org_unit_type but no descendant org units fails."""
+        source = DataSource.objects.create(name="Test Source")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+
+        org_unit_type_no_descendants = OrgUnitType.objects.create(name="Type With No Descendants")
+        org_unit_type_no_descendants.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="Root", org_unit_type=self.org_unit.org_unit_type)
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "Planning with No Matching Descendants",
+            "org_unit": root_org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id],
+            "target_org_unit_type": org_unit_type_no_descendants.id,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("target_org_unit_type", r)
+        self.assertEqual(r["target_org_unit_type"][0], "noOrgUnitsOfTypeInHierarchy")
+
+    def test_planning_target_org_unit_type_with_valid_descendants(self):
+        """Test that creating planning with target_org_unit_type and valid descendants succeeds."""
+        source = DataSource.objects.create(name="Test Source 2")
+        source.projects.add(self.project1)
+        version = SourceVersion.objects.create(data_source=source, number=2)
+
+        target_type = OrgUnitType.objects.create(name="Health Post")
+        target_type.projects.add(self.project1)
+
+        parent_type = OrgUnitType.objects.create(name="District")
+        parent_type.projects.add(self.project1)
+
+        root_org_unit = OrgUnit.objects.create(version=version, name="District 1", org_unit_type=parent_type)
+        OrgUnit.objects.create(version=version, name="Health Post 1", org_unit_type=target_type, parent=root_org_unit)
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data = {
+            "name": "Planning with Valid Descendants",
+            "org_unit": root_org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id],
+            "target_org_unit_type": target_type.id,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        r = response.json()
+        self.assertEqual(r["target_org_unit_type"], target_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
 
 
 class AssignmentAPITestCase(APITestCase):
@@ -443,8 +691,6 @@ class AssignmentAPITestCase(APITestCase):
         self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
-        # cannot create a second Assignment for the same org unit in the same planning
-        # This should fail due to unique constraint
         serializer = AssignmentSerializer(
             context={"request": request},
             data=dict(
@@ -453,9 +699,7 @@ class AssignmentAPITestCase(APITestCase):
                 org_unit=self.child2.id,
             ),
         )
-        # The serializer validation passes, but save() will fail due to unique constraint
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        # This should fail with IntegrityError due to unique constraint
         with self.assertRaises(IntegrityError):
             serializer.save()
 
@@ -540,7 +784,6 @@ class AssignmentAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_bulk_no_access_planning(self):
-        # user don't have access to planning because it's in another account
         other_account = Account.objects.create(name="other_account")
 
         user = self.create_user_with_profile(

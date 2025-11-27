@@ -189,7 +189,6 @@ export const INSTANCE_METAS_FIELDS = [
             return textPlaceholder;
         },
     },
-
     {
         key: 'version',
         accessor: 'formVersion',
@@ -204,13 +203,6 @@ export const INSTANCE_METAS_FIELDS = [
             const data = settings.row.original;
             return data.file_content?._version || textPlaceholder;
         },
-    },
-    {
-        key: 'updated_at',
-        render: value => displayDateFromTimestamp(value),
-        active: true,
-        tableOrder: 5,
-        type: 'info',
     },
     {
         key: 'source_created_at',
@@ -282,6 +274,17 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'last_modified_by',
         type: 'info',
+        getLabelKey: data => {
+            return data.deleted? 'deleted_by' : 'last_modified_by';
+        },
+    },
+    {
+        key: 'updated_at',
+        render: value => displayDateFromTimestamp(value),
+        type: 'info',
+        getLabelKey: data => {
+            return data.deleted? 'deleted_at' : 'updated_at';
+        },
     },
 ];
 

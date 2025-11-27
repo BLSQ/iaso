@@ -797,6 +797,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_saas_account_creation_tooltip: {
         id: 'iaso.permissions.iaso_saas_account_creation_tooltip',
         defaultMessage: 'Allows to create new SaaS accounts and to check for account/user name availability',
+    },
+    iaso_stock_management: {
+        id: 'iaso.permissions.iaso_stock_management',
+        defaultMessage: 'Stock management',
+    },
+    iaso_stock_management_tooltip: {
+        id: 'iaso.permissions.iaso_stock_management_tooltip',
+        defaultMessage: 'Allows to manage all aspects of stock management of items such as medical supplies or equipment',
     }
 });
 

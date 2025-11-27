@@ -38,7 +38,7 @@ class PerformanceDashboard(SoftDeletableModel):
         on_delete=models.PROTECT,
         related_name="performance_dashboard",
     )
-    antigen = models.CharField(max_length=20, choices=VACCINES)
+    vaccine = models.CharField(max_length=20, choices=VACCINES)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="performance_dashboard", null=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -65,7 +65,6 @@ class PerformanceDashboard(SoftDeletableModel):
 
     class Meta:
         verbose_name = _("Performance Dashboard")
-        # verbose_name_plural = _("National Logistics Plans")
         ordering = ["-date", "country__name"]
         indexes = [
             models.Index(fields=["account"]),
@@ -74,4 +73,4 @@ class PerformanceDashboard(SoftDeletableModel):
 
     # No unique constraint specified in the ticket, so omitting for now.
     def __str__(self):
-        return f"{self.country.name} - {self.date} - {self.antigen()}"
+        return f"{self.country.name} - {self.date} - {self.vaccine}"

@@ -83,7 +83,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.land_of_fire,
             date=datetime.date(2025, 10, 10),
             status="draft",
-            antigen="bOPV",
+            vaccine="bOPV",
             created_by=cls.user_Hashirama,
         )
 
@@ -92,7 +92,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.konoha,
             date=datetime.date(2025, 10, 10),
             status="commented",
-            antigen="bOPV",
+            vaccine="bOPV",
             created_by=cls.user_Kakashi,
         )
         cls.dashboard_3 = p.PerformanceDashboard.objects.create(
@@ -100,7 +100,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.land_of_wind,
             date=datetime.date(2025, 10, 10),
             status="commented",
-            antigen="bOPV",
+            vaccine="bOPV",
             created_by=cls.user_pain,
         )
 
@@ -109,7 +109,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.land_of_fire,
             date=datetime.date(2025, 10, 10),
             status="final",
-            antigen="nOPV2",
+            vaccine="nOPV2",
             created_by=cls.user_Neji,
         )
 
@@ -118,7 +118,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.land_of_fire,
             date=datetime.date(2025, 10, 10),
             status="final",
-            antigen="nOPV2",
+            vaccine="nOPV2",
             created_by=cls.user_Tobirama,
         )
 
@@ -127,7 +127,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.land_of_fire,
             date=datetime.date(2025, 10, 10),
             status="final",
-            antigen="nOPV2",
+            vaccine="nOPV2",
             created_by=cls.user_Naruto_no_perms,
         )
         cls.dashboard_7 = p.PerformanceDashboard.objects.create(
@@ -135,7 +135,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.konoha,
             date=datetime.date(2025, 10, 10),
             status="commented",
-            antigen="nOPV2",
+            vaccine="nOPV2",
             created_by=cls.user_Kakashi,
         )
         cls.dashboard_8 = p.PerformanceDashboard.objects.create(
@@ -143,6 +143,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             country=cls.suna,
             date=datetime.date(2025, 10, 10),
             status="draft",
-            antigen="nOPV2",
+            vaccine="nOPV2",
             created_by=cls.user_Tobirama,
         )

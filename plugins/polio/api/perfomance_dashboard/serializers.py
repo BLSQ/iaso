@@ -2,18 +2,14 @@ import logging
 
 from rest_framework import serializers
 
-from iaso.models import OrgUnit, User
+from iaso.api.common import UserSerializer
+from iaso.models import OrgUnit
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
 
 
 logger = logging.getLogger(__name__)
 
 
-class UserNestedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "first_name", "last_name"]
-        ref_name = "UserNestedSerializerForNationalLogisticsPlan"
 
 
 class OrgUnitNestedSerializer(serializers.ModelSerializer):
@@ -24,8 +20,8 @@ class OrgUnitNestedSerializer(serializers.ModelSerializer):
 
 
 class PerformanceDashboardListSerializer(serializers.ModelSerializer):
-    created_by = UserNestedSerializer(read_only=True)
-    updated_by = UserNestedSerializer(read_only=True)
+    created_by = UserSerializer(read_only=True)
+    updated_by = UserSerializer(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
@@ -42,7 +38,7 @@ class PerformanceDashboardListSerializer(serializers.ModelSerializer):
             "status",
             "country_name",  # For read operations (displaying nested country object)
             "country_id",  # For write operations (accepting country ID)
-            "antigen",
+            "vaccine",
             "account",
             "created_at",
             "created_by",
@@ -63,7 +59,7 @@ class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
             "date",
             "status",
             "country_id",  # Only country_id is needed for input
-            "antigen",
+            "vaccine",
         ]
         # read_only_fields = ["account"] # No longer needed here
 

@@ -1,4 +1,8 @@
-from freezegun import freeze_time
+import datetime
+
+from unittest.mock import patch
+
+from django.utils import timezone
 from rest_framework import status
 
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
@@ -58,45 +62,54 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data=create_data, format="json")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
-    @freeze_time("2023-10-10")
-    def test_non_admin_can_update_recent_record(self):
+    @patch("django.utils.timezone.now")
+    def test_non_admin_can_update_recent_record(self, mock_now):
         """
         Test that a non-admin user CAN update a recently created record
         """
         self.client.force_authenticate(self.user_Kakashi)
-        # We are on 2023-10-10. A record created on 2023-10-05 is recent.
-        with freeze_time("2023-10-05"):
-            recent_dashboard = PerformanceDashboard.objects.create(
-                account=self.account_hokage,
-                country=self.konoha,
-                date="2023-10-05",
-                status="draft",
-                vaccine="bOPV",
-                created_by=self.user_Kakashi,
-            )
-            # Now, back on 2023-10-10 (5 days later), try to update it.
-            update_data = {"status": "final"}
-            response = self.client.patch(
-                f"{self.PERFORMANCE_DASHBOARD_API_URL}{recent_dashboard.id}/", data=update_data, format="json"
-            )
-            self.assertJSONResponse(response, status.HTTP_200_OK)
 
-    @freeze_time("2023-10-20")
-    def test_non_admin_cannot_update_old_record(self):
+        time_of_creation = timezone.make_aware(datetime.datetime(2023, 10, 5))
+        mock_now.return_value = time_of_creation
+        recent_dashboard = PerformanceDashboard.objects.create(
+            account=self.account_hokage,
+            country=self.konoha,
+            date="2023-10-05",
+            status="draft",
+            vaccine="bOPV",
+            created_by=self.user_Kakashi,
+        )
+
+        time_of_update = timezone.make_aware(datetime.datetime(2023, 10, 10))
+        mock_now.return_value = time_of_update
+
+        # Now, back on 2023-10-10 (5 days later), try to update it.
+        update_data = {"status": "final"}
+        response = self.client.patch(
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{recent_dashboard.id}/", data=update_data, format="json"
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    @patch("django.utils.timezone.now")
+    def test_non_admin_cannot_update_old_record(self, mock_now):
         """
         Test that a non-admin user CANNOT update an old record.
         """
         self.client.force_authenticate(self.user_Kakashi)
+
+        time_of_creation = timezone.make_aware(datetime.datetime(2023, 10, 10))
+        mock_now.return_value = time_of_creation
         # We are on 2023-10-20. A record created on 2023-10-10 is 10 days old
-        with freeze_time("2023-10-10"):
-            old_dashboard = PerformanceDashboard.objects.create(
-                account=self.account_hokage,
-                country=self.konoha,
-                date="2023-10-10",
-                status="draft",
-                vaccine="bOPV",
-                created_by=self.user_Kakashi,
-            )
+        old_dashboard = PerformanceDashboard.objects.create(
+            account=self.account_hokage,
+            country=self.konoha,
+            date="2023-10-10",
+            status="draft",
+            vaccine="bOPV",
+            created_by=self.user_Kakashi,
+        )
+        time_of_update = timezone.make_aware(datetime.datetime(2023, 10, 20))
+        mock_now.return_value = time_of_update
         # Now, on 2023-10-20 (10 days later), try to update it. This should fail.
         update_data = {"status": "final"}
         response = self.client.patch(

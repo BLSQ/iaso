@@ -34,6 +34,7 @@ export const useGetTasks = ({
 
 export const useGetTaskDetails = (
     taskId?: number,
+    pollBulkTask: boolean = false,
 ): UseQueryResult<Task<any>, Error> => {
     return useSnackQuery({
         queryKey: ['tasks', taskId],
@@ -42,6 +43,7 @@ export const useGetTaskDetails = (
             retry: false,
             enabled: Boolean(taskId),
             staleTime: Infinity,
+            refetchInterval: pollBulkTask ? 5000 : false,
         },
     });
 };

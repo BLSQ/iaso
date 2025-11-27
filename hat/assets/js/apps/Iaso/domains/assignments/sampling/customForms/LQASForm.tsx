@@ -173,13 +173,29 @@ export const LQASForm: FunctionComponent<Props> = ({
     const { data: taskDetails } = useGetTaskDetails(
         taskStatus === 'SUCCESS' ? taskId : undefined,
     );
+    const [pollBulkTask, setPollBulkTask] = useState(true);
+    const bulkTaskId = taskDetails?.result?.bulk_update_task_id;
+    const { data: bulkTaskDetails } = useGetTaskDetails(
+        bulkTaskId,
+        pollBulkTask,
+    );
+
     useEffect(() => {
-        if (taskDetails?.result?.group_id) {
+        if (
+            taskDetails?.result?.bulk_update_task_id &&
+            bulkTaskDetails?.status === 'SUCCESS'
+        ) {
+            setPollBulkTask(false);
             setExtraFilters({
                 group: taskDetails.result.group_id,
             });
         }
-    }, [taskDetails?.result?.group_id, setExtraFilters]);
+    }, [
+        bulkTaskDetails?.status,
+        setExtraFilters,
+        taskDetails?.result?.bulk_update_task_id,
+        taskDetails?.result?.group_id,
+    ]);
 
     // Memoized values
     const levels = useMemo(() => {

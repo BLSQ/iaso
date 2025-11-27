@@ -5,7 +5,7 @@ from plugins.polio.models.performance_dashboard import PerformanceDashboard
 
 class PerformanceDashboardFilter(django_filters.FilterSet):
     """
-    Filter for the NationalLogisticsPlan model.
+    Filter for the Performance dashboard model.
     """
 
     country = django_filters.NumberFilter(field_name="country__id")
@@ -13,4 +13,4 @@ class PerformanceDashboardFilter(django_filters.FilterSet):
 
     class Meta:
         model = PerformanceDashboard
-        fields = ["status", "antigen"]
+        fields = ["country", "country_block"]

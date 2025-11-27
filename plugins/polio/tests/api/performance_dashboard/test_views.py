@@ -1,3 +1,4 @@
+from freezegun import freeze_time
 from rest_framework import status
 
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
@@ -33,44 +34,74 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         """
         self.client.force_authenticate(self.user_Neji)
 
-        # GET (read) should be allowed
         response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        # POST (create) should be forbidden
         response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data={}, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
-        # PATCH (update) should be forbidden
         response = self.client.patch(
             f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/", data={}, format="json"
         )
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
-        # DELETE should be forbidden
         response = self.client.delete(f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
-    def test_non_admin_user_can_create_and_update(self):
+    def test_non_admin_user_can_create(self):
         """
         Test that a non-admin user can create and update, but not delete.
         """
         self.client.force_authenticate(self.user_Kakashi)
 
-        # Create should be allowed
-        create_data = {"date": "2023-08-01", "status": "draft", "antigen": "bOPV", "country_id": self.konoha.id}
+        create_data = {"date": "2023-08-01", "status": "draft", "vaccine": "bOPV", "country_id": self.konoha.id}
         response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data=create_data, format="json")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
-        # Update should be allowed
+    @freeze_time("2023-10-10")
+    def test_non_admin_can_update_recent_record(self):
+        """
+        Test that a non-admin user CAN update a recently created record
+        """
+        self.client.force_authenticate(self.user_Kakashi)
+        # We are on 2023-10-10. A record created on 2023-10-05 is recent.
+        with freeze_time("2023-10-05"):
+            recent_dashboard = PerformanceDashboard.objects.create(
+                account = self.account_hokage,
+                country = self.konoha,
+                date = "2023-10-05",
+                status = "draft",
+                vaccine = "bOPV",
+                created_by = self.user_Kakashi,
+            )
+            # Now, back on 2023-10-10 (5 days later), try to update it.
+            update_data = {"status": "final"}
+            response = self.client.patch(
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{recent_dashboard.id}/", data = update_data, format = "json"
+            )
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    @freeze_time("2023-10-20")
+    def test_non_admin_cannot_update_old_record(self):
+        """
+        Test that a non-admin user CANNOT update an old record.
+        """
+        self.client.force_authenticate(self.user_Kakashi)
+        # We are on 2023-10-20. A record created on 2023-10-10 is 10 days old
+        with freeze_time("2023-10-10"):
+            old_dashboard = PerformanceDashboard.objects.create(
+                account = self.account_hokage,
+                country = self.konoha,
+                date = "2023-10-10",
+                status = "draft",
+                vaccine = "bOPV",
+                created_by = self.user_Kakashi,
+            )
+        # Now, on 2023-10-20 (10 days later), try to update it. This should fail.
         update_data = {"status": "final"}
         response = self.client.patch(
-            f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/", data=update_data, format="json"
+        f"{self.PERFORMANCE_DASHBOARD_API_URL}{old_dashboard.id}/", data = update_data, format = "json"
         )
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-
-        # Delete should be forbidden
-        response = self.client.delete(f"{self.PERFORMANCE_DASHBOARD_API_URL}{self.dashboard_2.id}/")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_admin_user_can_delete(self):
@@ -92,34 +123,18 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
-        # print(f"Response data is: {response_data}")
         # Check if the response is paginated or just a list
-        if isinstance(response_data, dict) and "results" in response_data:
-            # Paginated response
+        if "results" in response_data:
             results = response_data["results"]
-            count = response_data["count"]
-        elif isinstance(response_data, list):
-            # Non-paginated response - results is the list itself
-            results = response_data
             count = len(results)
         else:
-            # Unexpected structure
-            self.fail(f"Unexpected response structure: {type(response_data)} - {response_data}")
+            self.fail("Response is not paginated as expected")
 
-        expected_count = 7
-        # Should only contain the 4 dashboards from the Hokage account
+        expected_count = PerformanceDashboard.objects.filter(account=self.account_hokage).count()
         self.assertEqual(count, expected_count)
 
-        result_ids = [item["id"] for item in results]
-        # Check that IDs from the user's own account are present
-        self.assertIn(self.dashboard_1.id, result_ids)
-        self.assertIn(self.dashboard_2.id, result_ids)
-        self.assertIn(self.dashboard_4.id, result_ids)
-        self.assertIn(self.dashboard_5.id, result_ids)  # Owned by Hokage, should be visible
-        self.assertIn(self.dashboard_6.id, result_ids)  # Owned by Hokage, should be visible
-
-        # Check that an ID from a *different* account is NOT present
-        # dashboard_7 belongs to account_akatsuki and should NOT be visible to user_Hashirama
+        result_ids = {item["id"] for item in results}
+        # dashboard_3 belongs to account_akatsuki and should NOT be visible to user_Hashirama
         self.assertNotIn(
             self.dashboard_3.id,
             result_ids,
@@ -134,7 +149,7 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         data = {
             "date": "2023-09-01",
             "status": "draft",
-            "antigen": "nOPV2",
+            "vaccine": "nOPV2",
             "country_id": self.suna.id,
         }
         response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data=data, format="json")

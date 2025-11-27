@@ -1,7 +1,6 @@
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
-from iaso import models as m
 from plugins.polio.api.perfomance_dashboard.serializers import (
     PerformanceDashboardListSerializer,
     PerformanceDashboardWriteSerializer,
@@ -29,7 +28,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         self.assertIn("id", data)
         self.assertIn("date", data)
         self.assertIn("status", data)
-        self.assertIn("antigen", data)
+        self.assertIn("vaccine", data)
 
         self.assertIn("created_by", data)
 
@@ -51,15 +50,9 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
             # "account": self.account_hokage,
             "date": "2023-05-01",
             "status": "draft",
-            "antigen": "bOPV",
+            "vaccine": "bOPV",
             "country_id": self.konoha.id,
         }
-        # Ensure the user has an iaso_profile and an account
-        if not hasattr(self.user_Hashirama, "iaso_profile"):
-            self.user_Hashirama.iaso_profile = m.IasoProfile.objects.create(
-                user=self.user_Hashirama, account=self.account_hokage
-            )
-            self.user_Hashirama.save()
         # We need to mock a request to pass in the context,
         # because the serializer's create method needs it to get the user and account.
         factory = APIRequestFactory()
@@ -76,11 +69,6 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
 
         # Check if the data is valid
         self.assertTrue(serializer.is_valid(), serializer.errors)
-
-        # --- TEMPORARY DEBUGGING STEP ---
-        is_valid = serializer.is_valid()
-        if not is_valid:
-            print("Serializer validation errors:", serializer.errors)
 
         # Save the new object
         new_dashboard = serializer.save()
@@ -102,7 +90,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         invalid_data = {
             "date": "2023-06-01",
             "status": "final",
-            "antigen": "nOPV2",
+            "vaccine": "nOPV2",
         }
 
         serializer = PerformanceDashboardWriteSerializer(data=invalid_data)

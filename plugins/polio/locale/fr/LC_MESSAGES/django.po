@@ -739,7 +739,7 @@ msgid "% of health facilities with Cold Chain inventory"
 msgstr "% des formations sanitaires avec inventaire de la chaîne du froid"
 
 #: plugins/polio/models/performance_thresholds.py
-msgid " % of health facilities with gaps in passive cold chain"
+msgid "% of health facilities with gaps in passive cold chain"
 msgstr "% des formations sanitaires avec des lacunes dans la chaîne du froid passive"
 
 #: plugins/polio/models/performance_thresholds.py

@@ -69,6 +69,7 @@ export const LqasCountryMapView: FunctionComponent<Props> = ({
             roundNumber,
         });
     }, [campaign, roundNumber]);
+    console.log('SCOPE IDS', scopeIds, campaign, roundNumber);
     const title = formatMessage(MESSAGES.lqasResults);
     const name = `LQASIMMap${roundNumber}-LQAS-${countryId}-${side}-${campaign?.obr_name}`;
     return (

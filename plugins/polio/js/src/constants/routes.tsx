@@ -44,6 +44,7 @@ import {
 } from './permissions';
 import {
     EMBEDDED_CALENDAR_URL,
+    EMBEDDED_LQAS_COUNTRY_URL,
     EMBEDDED_VACCINE_REPOSITORY_URL,
     EMBEDDED_VACCINE_STOCK_URL,
     baseUrls,
@@ -108,6 +109,13 @@ export const embeddedVaccineStockPath: AnonymousRoutePath = {
     isRootUrl: false,
 };
 
+export const embeddedLqasCountryPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: baseUrls.embeddedLqasCountry,
+    routerUrl: `${EMBEDDED_LQAS_COUNTRY_URL}/*`,
+    element: <Lqas />,
+    isRootUrl: false,
+};
 export const lqasCountryPath: RoutePath = {
     baseUrl: baseUrls.lqasCountry,
     routerUrl: `${baseUrls.lqasCountry}/*`,
@@ -287,4 +295,5 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     chronogramPath,
     chronogramTemplateTaskPath,
     chronogramDetailsPath,
+    embeddedLqasCountryPath,
 ];

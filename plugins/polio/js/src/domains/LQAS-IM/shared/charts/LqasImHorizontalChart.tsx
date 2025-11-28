@@ -23,6 +23,7 @@ type Props = {
     countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
+    isEmbedded?: boolean;
 };
 
 export const LqasImHorizontalChart: FunctionComponent<Props> = ({
@@ -32,6 +33,7 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
     countryId,
     data,
     isLoading,
+    isEmbedded = false,
 }) => {
     // TODO: add consition on scope
     const { formatMessage } = useSafeIntl();
@@ -40,8 +42,10 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
     const {
         data: regions,
         isLoading: isLoadingRegions,
-    }: UseQueryResult<{ name: string; id: number }[]> =
-        useGetRegions(countryId);
+    }: UseQueryResult<{ name: string; id: number }[]> = useGetRegions(
+        countryId,
+        isEmbedded,
+    );
 
     const chartData = useMemo(() => {
         if (type === 'lqas') {

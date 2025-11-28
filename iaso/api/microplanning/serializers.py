@@ -16,6 +16,7 @@ class NestedProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
+        ref_name = "MicroplanningNestedProject"
 
 
 class NestedUserSerializer(serializers.ModelSerializer):

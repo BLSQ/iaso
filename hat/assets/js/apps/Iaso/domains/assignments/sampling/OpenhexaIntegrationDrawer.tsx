@@ -273,7 +273,13 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                 taskId={taskId}
                             />
                         </Box>
-                        {currentStep === 2 && (
+                        <Box
+                            sx={
+                                currentStep !== 2
+                                    ? styles.containerHidden
+                                    : undefined
+                            }
+                        >
                             <PipelineInfos
                                 error={error}
                                 taskLogs={taskLogs}
@@ -281,7 +287,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                 isPipelineActive={isPipelineActive}
                                 taskId={taskId}
                             />
-                        )}
+                        </Box>
                     </Box>
                 </Box>
             </Drawer>

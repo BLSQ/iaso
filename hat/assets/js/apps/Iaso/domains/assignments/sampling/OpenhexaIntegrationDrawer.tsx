@@ -171,6 +171,10 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                 open={isOpen}
                 onClose={() => setIsOpen(false)}
                 anchor="right"
+                keepMounted
+                ModalProps={{
+                    keepMounted: true,
+                }}
             >
                 <Box sx={styles.box}>
                     <Paper elevation={1} sx={styles.paper}>

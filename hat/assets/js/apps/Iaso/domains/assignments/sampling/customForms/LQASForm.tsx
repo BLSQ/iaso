@@ -8,7 +8,7 @@ import React, {
     SetStateAction,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
-import { Box, Button, Paper } from '@mui/material';
+import { Box, Button, CircularProgress, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
@@ -179,7 +179,9 @@ export const LQASForm: FunctionComponent<Props> = ({
         bulkTaskId,
         pollBulkTask,
     );
-
+    const isBulkTaskRunning =
+        bulkTaskDetails?.status === 'RUNNING' ||
+        bulkTaskDetails?.status === 'QUEUED';
     useEffect(() => {
         if (
             taskDetails?.result?.bulk_update_task_id &&
@@ -220,6 +222,7 @@ export const LQASForm: FunctionComponent<Props> = ({
         org_unit_type_criteria,
         org_unit_type_quantities,
     } = parameterValues || {};
+
     useEffect(() => {
         if (
             org_unit_type_sequence_identifiers?.length &&
@@ -254,6 +257,29 @@ export const LQASForm: FunctionComponent<Props> = ({
     ]);
     return (
         <Paper sx={styles.paper}>
+            {isBulkTaskRunning && (
+                <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    height="100%"
+                    sx={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 1000,
+                    }}
+                >
+                    <Paper
+                        sx={{ backgroundColor: 'white', p: 2, elevation: 2 }}
+                    >
+                        <CircularProgress />
+                        LOADING BULK TASK...
+                    </Paper>
+                </Box>
+            )}
             {levels.map((orgUnitTypeId, index) => {
                 return (
                     <Paper

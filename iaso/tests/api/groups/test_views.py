@@ -42,6 +42,17 @@ class GroupsAPITestCase(APITestCase):
         cls.project_1.data_sources.add(cls.data_source)
         cls.project_1.save()
 
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Health Center", short_name="HC")
+        cls.org_unit_1 = m.OrgUnit.objects.create(
+            name="Org Unit 1", version=cls.source_version_2, org_unit_type=cls.org_unit_type
+        )
+        cls.org_unit_2 = m.OrgUnit.objects.create(
+            name="Org Unit 2", version=cls.source_version_2, org_unit_type=cls.org_unit_type
+        )
+        cls.org_unit_3 = m.OrgUnit.objects.create(
+            name="Org Unit 3", version=cls.source_version_2, org_unit_type=cls.org_unit_type
+        )
+
     def test_groups_list_without_auth(self):
         """GET /groups/ without auth: 401"""
 
@@ -191,6 +202,113 @@ class GroupsAPITestCase(APITestCase):
 
         last_count = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
         self.assertEqual(count_after + 1, last_count)
+
+    def test_groups_create_with_org_units_ok(self):
+        """POST /groups/ with org_unit_ids - happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/groups/",
+            data={"name": "test group with org units", "org_unit_ids": [self.org_unit_1.id, self.org_unit_2.id]},
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+
+        response_data = response.json()
+        group = m.Group.objects.get(id=response_data["id"])
+        self.assertEqual(group.org_units.count(), 2)
+        self.assertIn(self.org_unit_1, group.org_units.all())
+        self.assertIn(self.org_unit_2, group.org_units.all())
+
+    def test_groups_create_with_empty_org_units(self):
+        """POST /groups/ with empty org_unit_ids list"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/groups/", data={"name": "test group empty", "org_unit_ids": []}, format="json"
+        )
+        self.assertJSONResponse(response, 201)
+
+        group = m.Group.objects.get(id=response.json()["id"])
+        self.assertEqual(group.org_units.count(), 0)
+
+    def test_groups_create_with_invalid_org_unit_id(self):
+        """POST /groups/ with invalid org_unit_ids - should fail"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/groups/",
+            data={"name": "test group", "org_unit_ids": [999999]},
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertIn("org_unit_ids", response.json())
+
+    def test_groups_create_with_org_units_from_different_account(self):
+        """POST /groups/ with org_unit_ids from different account - should fail"""
+
+        marvel = self.raccoon.iaso_profile.account
+        marvel_data_source = m.DataSource.objects.create(name="Marvel source")
+        marvel_version = m.SourceVersion.objects.create(data_source=marvel_data_source, number=1)
+        marvel_org_unit_type = m.OrgUnitType.objects.create(name="Marvel HC", short_name="MHC")
+        marvel_org_unit = m.OrgUnit.objects.create(
+            name="Marvel Org Unit", version=marvel_version, org_unit_type=marvel_org_unit_type
+        )
+
+        marvel_project = m.Project.objects.create(name="Marvel Project", app_id="marvel.project", account=marvel)
+        marvel_project.data_sources.add(marvel_data_source)
+        marvel.default_version = marvel_version
+        marvel.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/groups/",
+            data={"name": "test group", "org_unit_ids": [marvel_org_unit.id]},
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertIn("org_unit_ids", response.json())
+
+    def test_groups_create_with_org_units_without_write_permission(self):
+        """POST /groups/ with org_unit_ids user cannot edit due to org_unit_type restrictions"""
+
+        restricted_org_unit_type = m.OrgUnitType.objects.create(name="Restricted Type", short_name="RT")
+        restricted_org_unit = m.OrgUnit.objects.create(
+            name="Restricted Org Unit", version=self.source_version_2, org_unit_type=restricted_org_unit_type
+        )
+
+        restricted_user = self.create_user_with_profile(
+            username="han_solo", account=self.yoda.iaso_profile.account, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
+        restricted_user.iaso_profile.editable_org_unit_types.add(self.org_unit_type)
+
+        self.client.force_authenticate(restricted_user)
+        response = self.client.post(
+            "/api/groups/",
+            data={"name": "test group", "org_unit_ids": [restricted_org_unit.id]},
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertIn("org_unit_ids", response.json())
+
+    def test_groups_create_with_org_units_user_with_no_restrictions(self):
+        """POST /groups/ user with no editable_org_unit_types restrictions can add any org unit"""
+
+        special_org_unit_type = m.OrgUnitType.objects.create(name="Special Type", short_name="ST")
+        special_org_unit = m.OrgUnit.objects.create(
+            name="Special Org Unit", version=self.source_version_2, org_unit_type=special_org_unit_type
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/groups/",
+            data={"name": "test group", "org_unit_ids": [special_org_unit.id, self.org_unit_1.id]},
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+
+        group = m.Group.objects.get(id=response.json()["id"])
+        self.assertEqual(group.org_units.count(), 2)
 
     def test_groups_partial_update_ok(self):
         """PATCH /groups/<group_id>: happy path (validation is already covered by create tests)"""

@@ -29,6 +29,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "source_version",
             "group_sets",
             "org_unit_count",
+            "org_unit_ids",
             "org_units",
             "created_at",
             "updated_at",
@@ -40,14 +41,36 @@ class GroupSerializer(serializers.ModelSerializer):
     source_version = SourceVersionSerializerForGroup(read_only=True)
     group_sets = GroupSetSerializer(many=True, read_only=True)
     org_unit_count = serializers.IntegerField(read_only=True)
-    org_units = serializers.PrimaryKeyRelatedField(
+    org_units = serializers.SerializerMethodField(read_only=True)
+    org_unit_ids = serializers.PrimaryKeyRelatedField(
+        source="org_units",
+        write_only=True,
         many=True,
-        queryset=OrgUnit.objects.all(),
+        queryset=OrgUnit.objects.none(),  # Scoped in __init__ via child_relation (see GroupSetSerializer pattern)
         required=False,
         allow_empty=True,
     )
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    def get_org_units(self, obj):
+        """Return list of org unit IDs for read operations."""
+        return list(obj.org_units.values_list("id", flat=True))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and "org_unit_ids" in self.fields:
+            user = request.user
+            if user and user.is_authenticated:
+                profile = user.iaso_profile
+                queryset = OrgUnit.objects.filter_for_account(profile.account)
+
+                editable_org_unit_type_ids = profile.get_editable_org_unit_type_ids()
+                if editable_org_unit_type_ids:
+                    queryset = queryset.filter(org_unit_type_id__in=editable_org_unit_type_ids)
+
+                self.fields["org_unit_ids"].child_relation.queryset = queryset
 
     def validate(self, attrs):
         default_version = self._fetch_user_default_source_version()

@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View user manual',
         id: 'iaso.tooltip.viewUserManual',
     },
+    djangoAdmin: {
+        defaultMessage: 'Django Admin Panel',
+        id: 'iaso.label.djangoAdmin',
+    },
     iasoVersion: {
         defaultMessage: 'App version',
         id: 'iaso.label.iasoVersion',

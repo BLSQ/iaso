@@ -583,6 +583,7 @@
     "iaso.label.dhis2Mappings": "DHIS mappings",
     "iaso.label.display": "Display",
     "iaso.label.displayPassword": "Display the password",
+    "iaso.label.djangoAdmin": "Django Admin Panel",
     "iaso.label.docs": "Docs",
     "iaso.label.document": "Document",
     "iaso.label.documents": "Documents",

@@ -10,6 +10,7 @@ class NestedProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
+        ref_name = "TeamsNestedProject"
 
 
 class NestedTeamSerializer(serializers.ModelSerializer):

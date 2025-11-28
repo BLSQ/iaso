@@ -655,21 +655,30 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_soft_delete_an_instance(self):
         """DELETE /instances/{instanceid}/"""
-
+        # setting up some fields first
+        updated_at_before = timezone.now()
         soft_deleted_instance = self.form_1.instances.first()
+        soft_deleted_instance.updated_at = updated_at_before
+        soft_deleted_instance.last_modified_by = self.guest
+        soft_deleted_instance.save()
 
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertFalse(response.json()["deleted"])
 
         response = self.client.delete(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
-        self.assertTrue(response.json()["deleted"])
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertTrue(result["deleted"])
+
+        soft_deleted_instance.refresh_from_db()
+        self.assertGreater(soft_deleted_instance.updated_at, updated_at_before)
+        self.assertNotEqual(soft_deleted_instance.last_modified_by_id, self.guest.id)
+        self.assertEqual(soft_deleted_instance.last_modified_by_id, self.yoda.id)
 
         self.assertEqual(1, Modification.objects.count())
         modification = Modification.objects.first()

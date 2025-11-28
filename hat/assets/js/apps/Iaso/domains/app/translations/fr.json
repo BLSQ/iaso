@@ -406,6 +406,8 @@
     "iaso.instance.coordinate": "Coordonnées",
     "iaso.instance.created_at": "Création dans Iaso",
     "iaso.instance.delete": "Effacer une(des) soumission(s)",
+    "iaso.instance.deleted_at": "Deleted at",
+    "iaso.instance.deleted_by": "Deleted by",
     "iaso.instance.deleteCount": "Effacer {count} soumission(s)",
     "iaso.instance.deleteInstanceWarning": "Cette opération peut toujours être annulée.",
     "iaso.instance.deleteText": "Restaurer la soumission est possible sur la page detail",

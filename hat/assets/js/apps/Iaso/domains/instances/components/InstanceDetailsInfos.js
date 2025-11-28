@@ -33,8 +33,8 @@ const InstanceDetailsInfos = ({
                         }
                         label={formatMessage(
                             MESSAGES[
-                                'labelKey' in f
-                                    ? f.labelKey
+                                'getLabelKey' in f
+                                    ? f.getLabelKey(currentInstance)
                                     : f.translationKey ?? f.key
                             ],
                         )}

@@ -405,6 +405,8 @@
     "iaso.instance.coordinate": "Coordinates",
     "iaso.instance.created_at": "Created in Iaso",
     "iaso.instance.delete": "Delete instance(s)",
+    "iaso.instance.deleted_at": "Deleted at",
+    "iaso.instance.deleted_by": "Deleted by",
     "iaso.instance.deleteCount": "Delete {count} instance(s)",
     "iaso.instance.deleteInstanceWarning": "This operation can still be undone",
     "iaso.instance.deleteText": "Undelete is possible on submission detail page",

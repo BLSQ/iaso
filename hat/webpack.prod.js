@@ -284,7 +284,7 @@ module.exports = {
 
     resolve: {
         alias: {
-            'react/jsx-runtime': 'react/jsx-runtime.js',
+            'react/jsx-runtime.js': 'react/jsx-runtime',
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,

@@ -704,3 +704,76 @@ msgstr "Polio - Performance Non Admin"
 #: plugins/polio/permissions.py
 msgid "Polio performance Admin"
 msgstr "Polio - Performance Admin"
+
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Quantities of unusable vials waiting for disposal"
+msgstr "Quantités de flacons inutilisables en attente d'élimination"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Number of vials missing, broken, VVM passed, labels unreadable"
+msgstr "Nombre de flacons manquants, cassés, VVM périmés, étiquettes illisibles"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Average of number of days of delay for submission of Form A"
+msgstr "Moyenne du nombre de jours de retard pour la soumission du Formulaire A"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "% of VM pre campaigns activities implemented"
+msgstr "% des activités pré-campagnes de MV (Module Vaccin) mises en œuvre"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Completeness of daily report on vaccine consumption"
+msgstr "Complétude du rapport journalier sur la consommation de vaccins"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Stock out"
+msgstr "Rupture de stock"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Completeness of Form A at district level"
+msgstr "Complétude du Formulaire A au niveau du district"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "% of health facilities with Cold Chain inventory"
+msgstr "% des formations sanitaires avec inventaire de la chaîne du froid"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid " % of health facilities with gaps in passive cold chain"
+msgstr "% des formations sanitaires avec des lacunes dans la chaîne du froid passive"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Latest update of the National Logistics Plan"
+msgstr "Dernière mise à jour du Plan Logistique National"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Last year same date"
+msgstr "Même date l'année dernière"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "To date"
+msgstr "À ce jour"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "12 months behind"
+msgstr "12 derniers mois (précédents)"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Last 12 months"
+msgstr "12 derniers mois (en cours)"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "SIA a year before"
+msgstr "AIS un an avant"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Latest SIA"
+msgstr "Dernière AIS (Activité de Vaccination Supplémentaire)"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Threshold"
+msgstr "Seuil de Performance"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Thresholds"
+msgstr "Seuils de Performance"

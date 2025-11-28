@@ -8,14 +8,14 @@ from django.db.models import Q, QuerySet
 from rest_framework import permissions, serializers
 from rest_framework.exceptions import ValidationError
 
-from iaso.api.common import ModelViewSet
+from iaso.api.common import ModelViewSet, ReadOnlyOrHasPermission
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnit
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.models import Campaign, Round
 from plugins.polio.models.base import SubActivity
-from plugins.polio.permissions import POLIO_PERMISSION
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 class HasPolioPermission(permissions.BasePermission):
@@ -71,7 +71,7 @@ class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):
 
 class LqasImCountriesOptionsViewset(PolioOrgunitViewSet):
     http_method_names = ["get"]
-    permission_classes = [HasPolioPermission | HasPolioAdminPermission]
+    permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     filterset_class = LqasImCountryOptionsFilter
     remove_results_key_if_paginated = False
     results_key = "results"
@@ -82,7 +82,7 @@ class LqasImCountriesOptionsViewset(PolioOrgunitViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(org_unit_type__category="COUNTRY")
+        queryset = queryset.filter(org_unit_type__category="COUNTRY")  # TODO add filter by user and app id
         return queryset
 
 
@@ -130,7 +130,7 @@ class CampaignDropDownSerializer(serializers.ModelSerializer):
 
 class LqasImCampaignOptionsViewset(ModelViewSet):
     http_method_names = ["get"]
-    permission_classes = [HasPolioPermission | HasPolioAdminPermission]
+    permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     filterset_class = LqasImCampaignOptionsFilter
     remove_results_key_if_paginated = False
     results_key = "results"
@@ -188,7 +188,7 @@ class LqasImRoundOptionsFilter(django_filters.rest_framework.FilterSet):
 
 class LqasImRoundOptionsViewset(ModelViewSet):
     http_method_names = ["get"]
-    permission_classes = [HasPolioPermission | HasPolioAdminPermission]
+    permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     filterset_class = LqasImRoundOptionsFilter
     remove_results_key_if_paginated = False
     results_key = "results"

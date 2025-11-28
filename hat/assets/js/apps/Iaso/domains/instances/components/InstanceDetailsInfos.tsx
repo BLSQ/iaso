@@ -35,9 +35,9 @@ const InstanceDetailsInfos: FunctionComponent<Props> = ({
                         }
                         label={formatMessage(
                             MESSAGES[
-                                'labelKey' in f
-                                    ? f.labelKey
-                                    : (f.translationKey ?? f.key)
+                                'getLabelKey' in f
+                                    ? f.getLabelKey(currentInstance)
+                                    : f.translationKey ?? f.key
                             ],
                         )}
                         valueTitle={

@@ -10,10 +10,11 @@ import { useSidebar } from '../../domains/app/contexts/SideBarContext';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext';
 import { LangSwitch } from '../../domains/home/components/LangSwitch';
 import { useFindCustomComponent } from '../../plugins/hooks/customComponents';
-import { useCurrentUser } from '../../utils/usersUtils';
-import { CurrentUserInfos } from './CurrentUser/index';
-import { HomePageButton } from './HomePageButton';
-import { LogoutButton } from './LogoutButton';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { CurrentUserInfos } from './CurrentUser/index.tsx';
+import { HomePageButton } from './HomePageButton.tsx';
+import { LogoutButton } from './LogoutButton.tsx';
+import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
 
 const styles = theme => ({
     menuButton: {
@@ -156,6 +157,12 @@ const TopBar: FunctionComponent<Props> = ({
                             <Box display="flex" justifyContent="center" pl={2}>
                                 <HomePageButton />
                             </Box>
+
+                            {(currentUser.is_staff === true && currentUser.is_superuser === true) && (
+                                <Box display="flex" justifyContent="center" pl={1}>
+                                    <DjangoAdminPanelButton />
+                                </Box>
+                            )}
 
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />

@@ -160,7 +160,7 @@ export const searchOrgUnits = async ({
 };
 
 export const useGetOrgUnit = (
-    OrgUnitId: string | undefined,
+    OrgUnitId?: string,
 ): UseQueryResult<OrgUnit, Error> =>
     useSnackQuery(
         ['orgunits', OrgUnitId],

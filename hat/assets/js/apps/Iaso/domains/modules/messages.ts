@@ -90,6 +90,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'SaaS',
         id: 'iaso.modules.saas',
     },
+    stock_management: {
+        defaultMessage: 'Stock management',
+        id: 'iaso.modules.stock_management',
+    },
 });
 
 export default MESSAGES;

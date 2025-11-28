@@ -210,7 +210,6 @@ export const useGetOrgUnits = ({
             geography: 'any',
             onlyDirectChildren: false,
             page: 1,
-            withParents: true,
             order,
             orgUnitParentIds: orgUnitParentIds?.join(','),
             orgUnitTypeId: baseOrgunitType,
@@ -265,6 +264,7 @@ type ListProps = {
     baseOrgunitType: string | undefined;
     order?: string;
     search?: string;
+    extraFilters?: Record<string, any>;
 };
 
 export const useGetOrgUnitsList = ({
@@ -272,6 +272,7 @@ export const useGetOrgUnitsList = ({
     baseOrgunitType,
     order,
     search,
+    extraFilters = {},
 }: ListProps): UseQueryResult<OrgUnit[], Error> => {
     const params: Record<string, any> = useMemo(
         () => ({
@@ -284,8 +285,9 @@ export const useGetOrgUnitsList = ({
             orgUnitParentIds: orgUnitParentIds?.join(','),
             orgUnitTypeId: baseOrgunitType,
             search,
+            extraFilters,
         }),
-        [baseOrgunitType, order, orgUnitParentIds, search],
+        [baseOrgunitType, order, orgUnitParentIds, search, extraFilters],
     );
 
     const select = useCallback(

@@ -161,6 +161,7 @@ export const useGetAssignmentData = ({
             baseOrgunitType,
             order,
             search,
+            extraFilters,
         });
     const [orgUnits] = useBoundState<Locations | undefined>(
         undefined,

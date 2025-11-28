@@ -8,7 +8,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { useGetFormsDropdownOptions } from 'Iaso/domains/mappings/hooks/requests/useGetFormsDropdownOptions';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetSkusDropdownOptions } from 'Iaso/domains/stock/hooks/useGetSkusDropdownOptions';
 import { useGetStatus } from 'Iaso/domains/stock/hooks/useGetStatus';
 import { Status } from 'Iaso/domains/stock/types/stocks';
@@ -140,7 +140,7 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
     const { data: allSkus, isFetching: isFetchingSkus } =
         useGetSkusDropdownOptions({});
     const { data: allForms, isFetching: isFetchingForms } =
-        useGetFormsDropdownOptions({});
+        useGetFormsDropdownOptions();
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {

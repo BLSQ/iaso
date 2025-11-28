@@ -4,6 +4,7 @@ from celery import shared_task
 from django_celery_results.models import TaskResult
 
 from iaso.models import *
+from iaso.models.base import ExternalCredentials
 from plugins.wfp.common import ETL
 
 from .management.commands.ethiopia.Under5 import ET_Under5
@@ -99,12 +100,17 @@ def etl_ssd(all_data=None):
     MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")
 
-    ETL().aggregating_data_to_push_to_dhis2(pbwg_account)
-
-    pushed_data = Dhis2().save_dhis2_sync_results(entity_type_pbwg_code)
-    logger.info(
-        f"----------------------------- Pushed to DHIS2 on U5 and PBW for {len(pushed_data)} rows aggregated per year and month -----------------------------"
-    )
+    external_credential = ExternalCredentials.objects.filter(account=pbwg_account).first()
+    if external_credential is not None and (
+        external_credential.url is not None
+        and external_credential.login is not None
+        and external_credential.password is not None
+    ):
+        ETL().aggregating_data_to_push_to_dhis2(pbwg_account)
+        pushed_data = Dhis2().save_dhis2_sync_results(entity_type_pbwg_code, external_credential)
+        logger.info(
+            f"----------------------------- Pushed to DHIS2 on U5 and PBW for {len(pushed_data)} rows aggregated per year and month -----------------------------"
+        )
 
     # print("len(connection.queries)", len(connection.queries))  # Uncomment this line to see the number of SQL queries executed
     # print(connection.queries) # Uncomment this line to see the SQL queries executed

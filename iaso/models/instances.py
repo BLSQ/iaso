@@ -820,10 +820,12 @@ class Instance(models.Model):
 
     def soft_delete(self):
         self.deleted = True
+        self.updated_at = timezone.now()
         self.save()
 
     def restore(self):
         self.deleted = False
+        self.updated_at = timezone.now()
         self.save()
 
     def can_user_modify(self, user):

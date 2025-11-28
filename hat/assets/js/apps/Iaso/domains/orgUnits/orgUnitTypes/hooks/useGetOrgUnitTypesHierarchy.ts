@@ -44,7 +44,7 @@ export const flattenHierarchy = (
 };
 
 export const useGetOrgUnitTypesHierarchy = (
-    orgUnitTypeId: number,
+    orgUnitTypeId?: number,
 ): UseQueryResult<OrgUnitTypeHierarchy, Error> => {
     const queryKey: any[] = ['orgUnitTypeHierarchy', orgUnitTypeId];
     return useSnackQuery({

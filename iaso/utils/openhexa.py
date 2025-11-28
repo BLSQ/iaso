@@ -37,16 +37,16 @@ def get_openhexa_config(account):
         try:
             workspace = OpenHEXAWorkspace.objects.select_related("openhexa_instance").get(account=account)
         except OpenHEXAWorkspace.DoesNotExist:
-            logger.error(f"No OpenHEXA workspace configured for account '{account.name}' (ID: {account.id})")
+            logger.warning(f"No OpenHEXA workspace configured for account '{account.name}' (ID: {account.id})")
             raise ValidationError(_("No OpenHEXA workspace configured for your account"))
         except OpenHEXAWorkspace.MultipleObjectsReturned:
-            logger.error(f"Multiple OpenHEXA workspaces found for account '{account.name}' (ID: {account.id})")
+            logger.warning(f"Multiple OpenHEXA workspaces found for account '{account.name}' (ID: {account.id})")
             raise ValidationError(_("Multiple OpenHEXA workspaces configured for your account"))
 
         # Get workspace slug
         workspace_slug = workspace.slug
         if not workspace_slug:
-            logger.error(f"OpenHEXA workspace for account '{account.name}' has no slug configured")
+            logger.warning(f"OpenHEXA workspace for account '{account.name}' has no slug configured")
             raise ValidationError(_("OpenHEXA workspace has no slug configured"))
 
         # Get OpenHEXA instance configuration
@@ -55,16 +55,16 @@ def get_openhexa_config(account):
         openhexa_token = openhexa_instance.token
 
         if not openhexa_url:
-            logger.error(f"OpenHEXA instance '{openhexa_instance.name}' has no URL configured")
+            logger.warning(f"OpenHEXA instance '{openhexa_instance.name}' has no URL configured")
             raise ValidationError(_("OpenHEXA instance has no URL configured"))
 
         if not openhexa_token:
-            logger.error(f"OpenHEXA instance '{openhexa_instance.name}' has no token configured")
+            logger.warning(f"OpenHEXA instance '{openhexa_instance.name}' has no token configured")
             raise ValidationError(_("OpenHEXA instance has no token configured"))
 
         # Validate that the URL contains 'graphql'
         if "graphql" not in openhexa_url.lower():
-            logger.error(f"OpenHexa URL does not contain 'graphql': {openhexa_url}")
+            logger.warning(f"OpenHexa URL does not contain 'graphql': {openhexa_url}")
             raise ValidationError(_("OpenHEXA URL must contain 'graphql'"))
 
         return openhexa_url, openhexa_token, workspace_slug, workspace
@@ -72,8 +72,8 @@ def get_openhexa_config(account):
     except ValidationError:
         # Re-raise ValidationErrors from inner try block
         raise
-    except Exception:
-        logger.exception(f"Could not fetch OpenHEXA config for account {account.id}")
+    except Exception as e:
+        logger.warning(f"Could not fetch OpenHEXA config for account {account.id}: {str(e)}")
         raise ValidationError(_("OpenHexa configuration not found"))
 
 

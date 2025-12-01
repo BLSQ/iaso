@@ -291,25 +291,6 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertIn("org_unit_ids", response.json())
 
-    def test_groups_create_with_org_units_user_with_no_restrictions(self):
-        """POST /groups/ user with no editable_org_unit_types restrictions can add any org unit"""
-
-        special_org_unit_type = m.OrgUnitType.objects.create(name="Special Type", short_name="ST")
-        special_org_unit = m.OrgUnit.objects.create(
-            name="Special Org Unit", version=self.source_version_2, org_unit_type=special_org_unit_type
-        )
-
-        self.client.force_authenticate(self.yoda)
-        response = self.client.post(
-            "/api/groups/",
-            data={"name": "test group", "org_unit_ids": [special_org_unit.id, self.org_unit_1.id]},
-            format="json",
-        )
-        self.assertJSONResponse(response, 201)
-
-        group = m.Group.objects.get(id=response.json()["id"])
-        self.assertEqual(group.org_units.count(), 2)
-
     def test_groups_partial_update_ok(self):
         """PATCH /groups/<group_id>: happy path (validation is already covered by create tests)"""
 

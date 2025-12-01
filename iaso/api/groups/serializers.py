@@ -85,12 +85,12 @@ class GroupSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        org_units = validated_data.pop("org_units", [])
+        org_unit_ids = validated_data.pop("org_unit_ids", [])
         default_version = self._fetch_user_default_source_version()
         validated_data["source_version"] = default_version
         group = super().create(validated_data)
-        if org_units:
-            group.org_units.set(org_units)
+        if org_unit_ids:
+            group.org_units.set(org_unit_ids)
         return group
 
     def _fetch_user_default_source_version(self):

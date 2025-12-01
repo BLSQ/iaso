@@ -12,6 +12,7 @@ import {
     commonStyles,
     useRedirectTo,
     useSafeIntl,
+    InputWithInfos
 } from 'bluesquare-components';
 import { stringToBoolean } from '../../../utils/dataManipulation';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -145,16 +146,18 @@ const Filters: FunctionComponent<Props> = ({
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="search"
-                    onChange={handleChange}
-                    value={filters.search}
-                    type="search"
-                    label={MESSAGES.search}
-                    onEnterPressed={handleSearch}
-                    onErrorChange={setTextSearchError}
-                    blockForbiddenChars
-                />
+                <InputWithInfos infos={formatMessage(MESSAGES.searchParams)}>
+                    <InputComponent
+                        keyValue="search"
+                        onChange={handleChange}
+                        value={filters.search}
+                        type="search"
+                        label={MESSAGES.search}
+                        onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                        blockForbiddenChars
+                    />
+                </InputWithInfos>
                 <InputComponent
                     keyValue="projectsIds"
                     onChange={handleChange}

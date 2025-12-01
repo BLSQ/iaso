@@ -18,8 +18,11 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
     results_key = "results"
 
     def get_queryset(self):
-        # TODO see if we need to filter per user as with Campaign
-        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
+        return (
+            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+            .filter(org_unit_type__category="COUNTRY")
+            .exclude(simplified_geom__isnull=True)
+        )
 
     def list(self, request):
         results = []

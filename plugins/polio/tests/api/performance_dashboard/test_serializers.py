@@ -1,3 +1,4 @@
+from rest_framework import serializers
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
@@ -19,12 +20,10 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         """
         Test that the List/Read serializer returns the correct structure and data.
         """
-        # Get a dashboard instance from the test data
         dashboard = self.dashboard_1
         serializer = PerformanceDashboardListSerializer(instance=dashboard)
         data = serializer.data
 
-        # Check that all expected keys are present
         self.assertIn("id", data)
         self.assertIn("date", data)
         self.assertIn("status", data)
@@ -36,8 +35,6 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         self.assertEqual(data["id"], dashboard.id)
         self.assertEqual(data["status"], dashboard.status)
 
-        # Check that nested objects are serialized correctly
-
         self.assertEqual(data["country_name"], dashboard.country.name)
         self.assertEqual(data["created_by"]["username"], dashboard.created_by.username)
 
@@ -45,48 +42,35 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         """
         Test that the Write serializer can successfully create a new object.
         """
-        # Data for a new dashboard
         data = {
-            # "account": self.account_hokage,
             "date": "2023-05-01",
             "status": "draft",
             "vaccine": "bOPV",
-            "country_id": self.konoha.id,
+            "country_id": self.est.id,
         }
-        # We need to mock a request to pass in the context,
-        # because the serializer's create method needs it to get the user and account.
         factory = APIRequestFactory()
-        # Create the raw Django request without setting user yet
         django_request = factory.post(self.PERFORMANCE_DASHBOARD_API_URL, data, format="json")
 
-        # Wrap it in DRF's Request
         drf_request = Request(django_request)
-        # Now, set the user directly on the DRF request object.
-        drf_request.user = self.user_Hashirama  # The user performing the action
+        drf_request.user = self.user_admin_1
 
-        # Create the serializer with the correctly configured DRF request in the context
         serializer = PerformanceDashboardWriteSerializer(data=data, context={"request": drf_request})
 
-        # Check if the data is valid
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
-        # Save the new object
         new_dashboard = serializer.save()
 
-        # Verify the object was created and fields are set correctly
         self.assertIsInstance(new_dashboard, PerformanceDashboard)
         self.assertEqual(new_dashboard.status, "draft")
-        self.assertEqual(new_dashboard.country, self.konoha)
+        self.assertEqual(new_dashboard.country, self.est)
 
-        # Verify that the user and account were set automatically
-        self.assertEqual(new_dashboard.created_by, self.user_Hashirama)
-        self.assertEqual(new_dashboard.account, self.account_hokage)
+        self.assertEqual(new_dashboard.created_by, self.user_admin_1)
+        self.assertEqual(new_dashboard.account, self.account_one)
 
     def test_write_serializer_invalid_data_fails(self):
         """
         Test that the Write serializer fails with invalid or missing data.
         """
-        # Data with a missing required field ('country_id')
         invalid_data = {
             "date": "2023-06-01",
             "status": "final",
@@ -95,9 +79,40 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
 
         serializer = PerformanceDashboardWriteSerializer(data=invalid_data)
 
-        # Check that the serializer is not valid
         self.assertFalse(serializer.is_valid())
 
-        # Check that the 'errors' dictionary contains the expected error
         self.assertIn("country_id", serializer.errors)
         self.assertEqual(serializer.errors["country_id"][0].code, "required")
+
+    def test_create_raises_validation_error_if_request_missing(self):
+        """Test that .save() fails if request is not in serializer context."""
+        data = {
+            "date": "2023-05-01",
+            "status": "draft",
+            "vaccine": "bOPV",
+            "country_id": self.est.id,
+        }
+        serializer = PerformanceDashboardWriteSerializer(data=data, context={})
+        self.assertTrue(serializer.is_valid())
+
+        with self.assertRaises(serializers.ValidationError) as e:
+            serializer.save()
+        self.assertIn("Request context is missing", str(e.exception))
+
+    def test_create_raises_validation_error_if_country_does_not_exist(self):
+        """
+        Test that providing a non-existent country_id returns a 400 Bad Request,
+        not a 500 Server Error.
+        """
+        data = {
+            "date": "2023-05-01",
+            "status": "draft",
+            "vaccine": "bOPV",
+            "country_id": 999999,
+        }
+
+        serializer = PerformanceDashboardWriteSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid(), "Serializer accepted a non-existent country ID!")
+
+        self.assertIn("country_id", serializer.errors)

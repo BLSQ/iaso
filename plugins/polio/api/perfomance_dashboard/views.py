@@ -21,7 +21,7 @@ class PerformanceDashboardViewSet(ModelViewSet):
     - `country` (ID of the country OrgUnit)
     - `country_block` (ID of the parent OrgUnit of the country, e.g., a region)
     - `status` (draft, commented, final)
-    - `vaccine` (bOPV, nOPV2, etc.)
+    - `vaccine` (bOPV, nOPV2, Co-administration.)
 
     The permissions are structured as follows:
     - **Read-only**: Can only list and retrieve plans.
@@ -29,9 +29,6 @@ class PerformanceDashboardViewSet(ModelViewSet):
     - **Admin**: Can delete plans.
     """
 
-    # The serializer_class is removed because 'get_serializer_class' is implemented
-    # DRF will call get_serializer_clas() instead of looking for this attribute
-    # serializer_class =
     permission_classes = [PerformanceDashboardPermission]
     filter_backends = [
         filters.OrderingFilter,
@@ -55,10 +52,15 @@ class PerformanceDashboardViewSet(ModelViewSet):
         """
         Dynamically returns the appropriate serializer class based on the action.
         """
-        if self.action in ["list", "retrieve"]:
-            return PerformanceDashboardListSerializer
-
         if self.action in ["create", "update", "partial_update"]:
             return PerformanceDashboardWriteSerializer
 
-        return super().get_serializer_class()
+        return PerformanceDashboardListSerializer
+
+    def perform_destroy(self, instance):
+        """
+        Perform a soft delete and log the user who performed the action.
+        """
+        instance.updated_by = self.request.user
+        instance.save(update_fields=["updated_by"])
+        instance.delete()

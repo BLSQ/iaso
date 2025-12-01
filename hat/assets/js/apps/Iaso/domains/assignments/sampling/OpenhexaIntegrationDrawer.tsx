@@ -133,11 +133,11 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         };
         launchTask(parameters);
     }, [launchTask, parameterValues, planning.id, selectedPipelineId]);
-    const handleChangePipeline = useCallback((_, value) => {
+    const handleChangePipeline = (_, value) => {
         setSelectedPipelineId(value);
         setParameterValues(undefined);
         setAllowConfirm(false);
-    }, []);
+    };
 
     const handleReset = () => {
         setCurrentStep(1);

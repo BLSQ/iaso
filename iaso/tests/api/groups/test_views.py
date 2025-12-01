@@ -17,23 +17,25 @@ class GroupsAPITestCase(APITestCase):
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
 
-        star_wars = m.Account.objects.create(name="Star Wars", default_version=cls.source_version_2)
-        marvel = m.Account.objects.create(name="Marvel")
+        primary_account = m.Account.objects.create(name="Primary Health Account", default_version=cls.source_version_2)
+        secondary_account = m.Account.objects.create(name="Secondary Health Account")
 
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION]
+        cls.core_permission_user = cls.create_user_with_profile(
+            username="core_manager", account=primary_account, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
-        cls.chewbacca = cls.create_user_with_profile(username="chewbacca", account=star_wars)
-        cls.raccoon = cls.create_user_with_profile(
-            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
+        cls.user_missing_menu_permission = cls.create_user_with_profile(
+            username="readonly_staff", account=primary_account
+        )
+        cls.user_from_other_account = cls.create_user_with_profile(
+            username="external_manager", account=secondary_account, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
 
         cls.project_1 = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
+            name="Nutrition Follow-up", app_id="org.iaso.nutrition.follow_up", account=primary_account
         )
 
         cls.project_2 = m.Project.objects.create(
-            name="New Land Speeder concept", app_id="stars.empire.agriculture.land_speeder", account=star_wars
+            name="Maternal Health Outreach", app_id="org.iaso.maternal.health", account=primary_account
         )
 
         cls.group_1 = m.Group.objects.create(name="Councils", source_version=cls.source_version_1)
@@ -65,12 +67,12 @@ class GroupsAPITestCase(APITestCase):
             name="Outside Restricted OU", version=cls.source_version_2, org_unit_type=cls.org_unit_type
         )
 
-        cls.restricted_tree_user = cls.create_user_with_profile(
-            username="obiwan",
-            account=star_wars,
+        cls.user_with_restricted_org_tree_access = cls.create_user_with_profile(
+            username="regional_manager",
+            account=primary_account,
             permissions=[CORE_ORG_UNITS_PERMISSION],
         )
-        cls.restricted_tree_user.iaso_profile.org_units.set([cls.restricted_parent_org_unit])
+        cls.user_with_restricted_org_tree_access.iaso_profile.org_units.set([cls.restricted_parent_org_unit])
 
     def test_groups_list_without_auth(self):
         """GET /groups/ without auth: 401"""
@@ -81,14 +83,14 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_list_wrong_permission(self):
         f"""GET /groups/ with authenticated user, without the {CORE_ORG_UNITS_PERMISSION} permission"""
 
-        self.client.force_authenticate(self.chewbacca)
+        self.client.force_authenticate(self.user_missing_menu_permission)
         response = self.client.get("/api/groups/")
         self.assertJSONResponse(response, 403)
 
     def test_default_version_groups_list_ok(self):
         """GET /groups/ with authenticated user and only default version"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/?defaultVersion=true")
         self.assertJSONResponse(response, 200)
         self.assertValidGroupListData(response.json(), 1)
@@ -96,7 +98,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_list_ok(self):
         """GET /groups/ with authenticated user with the right menu permission"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/")
         self.assertJSONResponse(response, 200)
         self.assertValidGroupListData(response.json(), 2)
@@ -104,7 +106,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_list_paginated(self):
         """GET /groups/ paginated happy path"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/?limit=1&page=1", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
 
@@ -124,21 +126,21 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_retrieve_wrong_auth(self):
         """GET /groups/<group_id> with auth of unrelated user should result in a 404"""
 
-        self.client.force_authenticate(self.raccoon)
+        self.client.force_authenticate(self.user_from_other_account)
         response = self.client.get(f"/api/groups/{self.group_1.id}/")
         self.assertJSONResponse(response, 404)
 
     def test_groups_retrieve_not_found(self):
         """GET /groups/<group_id>: id does not exist"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_groups_retrieve_ok_1(self):
         """GET /groups/<group_id> happy path"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/{self.group_1.id}/")
         self.assertJSONResponse(response, 200)
 
@@ -153,25 +155,27 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_no_source_version(self):
         """POST /groups/ (user has no source version, cannot work)"""
 
-        self.client.force_authenticate(self.raccoon)
+        self.client.force_authenticate(self.user_from_other_account)
         response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 400)
 
     def test_groups_create_ok(self):
         """POST /groups/ happy path"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 201)
 
         response_data = response.json()
         self.assertValidGroupData(response_data, skip=["org_unit_count"])
-        self.assertEqual(self.yoda.iaso_profile.account.default_version_id, response_data["source_version"]["id"])
+        self.assertEqual(
+            self.core_permission_user.iaso_profile.account.default_version_id, response_data["source_version"]["id"]
+        )
 
     def test_groups_create_invalid(self):
         """POST /groups/ with missing data"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.post("/api/groups/", data={}, format="json")
         self.assertJSONResponse(response, 400)
 
@@ -184,7 +188,7 @@ class GroupsAPITestCase(APITestCase):
         self.group_2.source_ref = shared_source_ref
         self.group_2.save()
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         data = {
             "name": "Is this going to trigger an error?",
             "source_ref": shared_source_ref,
@@ -204,7 +208,7 @@ class GroupsAPITestCase(APITestCase):
         count_before = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
         self.assertEqual(count_before, 1)  # we already have a group with blank source_ref
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         data = {
             "name": "Is this going to trigger an error?",
             "source_ref": "",
@@ -225,7 +229,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_with_org_units_ok(self):
         """POST /groups/ with org_unit_ids - happy path"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.post(
             "/api/groups/",
             data={"name": "test group with org units", "org_unit_ids": [self.org_unit_1.id, self.org_unit_2.id]},
@@ -242,7 +246,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_with_empty_org_units(self):
         """POST /groups/ with empty org_unit_ids list"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.post(
             "/api/groups/", data={"name": "test group empty", "org_unit_ids": []}, format="json"
         )
@@ -254,7 +258,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_with_invalid_org_unit_id(self):
         """POST /groups/ with invalid org_unit_ids - should fail"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.post(
             "/api/groups/",
             data={"name": "test group", "org_unit_ids": [999999]},
@@ -266,7 +270,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_with_org_units_restricted_by_org_tree_fails(self):
         """POST /groups/ should fail when org units are outside the user's authorized tree"""
 
-        self.client.force_authenticate(self.restricted_tree_user)
+        self.client.force_authenticate(self.user_with_restricted_org_tree_access)
         response = self.client.post(
             "/api/groups/",
             data={
@@ -281,7 +285,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_with_org_units_restricted_by_org_tree_ok(self):
         """POST /groups/ succeeds when org units belong to the user's authorized tree"""
 
-        self.client.force_authenticate(self.restricted_tree_user)
+        self.client.force_authenticate(self.user_with_restricted_org_tree_access)
         response = self.client.post(
             "/api/groups/",
             data={
@@ -298,23 +302,25 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_with_org_units_from_different_account(self):
         """POST /groups/ with org_unit_ids from different account - should fail"""
 
-        marvel = self.raccoon.iaso_profile.account
-        marvel_data_source = m.DataSource.objects.create(name="Marvel source")
-        marvel_version = m.SourceVersion.objects.create(data_source=marvel_data_source, number=1)
-        marvel_org_unit_type = m.OrgUnitType.objects.create(name="Marvel HC", short_name="MHC")
-        marvel_org_unit = m.OrgUnit.objects.create(
-            name="Marvel Org Unit", version=marvel_version, org_unit_type=marvel_org_unit_type
+        secondary_account = self.user_from_other_account.iaso_profile.account
+        secondary_account_data_source = m.DataSource.objects.create(name="Secondary source")
+        secondary_account_version = m.SourceVersion.objects.create(data_source=secondary_account_data_source, number=1)
+        secondary_account_org_unit_type = m.OrgUnitType.objects.create(name="Secondary HC", short_name="MHC")
+        secondary_account_org_unit = m.OrgUnit.objects.create(
+            name="Secondary Org Unit", version=secondary_account_version, org_unit_type=secondary_account_org_unit_type
         )
 
-        marvel_project = m.Project.objects.create(name="Marvel Project", app_id="marvel.project", account=marvel)
-        marvel_project.data_sources.add(marvel_data_source)
-        marvel.default_version = marvel_version
-        marvel.save()
+        secondary_account_project = m.Project.objects.create(
+            name="Secondary Account Project", app_id="secondary_account.project", account=secondary_account
+        )
+        secondary_account_project.data_sources.add(secondary_account_data_source)
+        secondary_account.default_version = secondary_account_version
+        secondary_account.save()
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.post(
             "/api/groups/",
-            data={"name": "test group", "org_unit_ids": [marvel_org_unit.id]},
+            data={"name": "test group", "org_unit_ids": [secondary_account_org_unit.id]},
             format="json",
         )
         self.assertJSONResponse(response, 400)
@@ -329,7 +335,9 @@ class GroupsAPITestCase(APITestCase):
         )
 
         restricted_user = self.create_user_with_profile(
-            username="han_solo", account=self.yoda.iaso_profile.account, permissions=[CORE_ORG_UNITS_PERMISSION]
+            username="limited_editor",
+            account=self.core_permission_user.iaso_profile.account,
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
         restricted_user.iaso_profile.editable_org_unit_types.add(self.org_unit_type)
 
@@ -345,7 +353,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_partial_update_ok(self):
         """PATCH /groups/<group_id>: happy path (validation is already covered by create tests)"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.patch(
             f"/api/groups/{self.group_1.id}/", data={"name": "test group (updated)"}, format="json"
         )
@@ -373,7 +381,7 @@ class GroupsAPITestCase(APITestCase):
             source_ref="some_source_ref",
         )
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.patch(f"/api/groups/{new_group.id}/", data={"source_ref": ""}, format="json")
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -389,7 +397,7 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_update_not_implemented(self):
         """PUT /groups/<group_id>: 405"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.put(
             f"/api/groups/{self.group_1.id}/", data={"name": "test group (updated)"}, format="json"
         )
@@ -404,14 +412,14 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_destroy_wrong_auth(self):
         """DELETE /groups/<group_id> with user that cannot access group -> 404"""
 
-        self.client.force_authenticate(self.raccoon)
+        self.client.force_authenticate(self.user_from_other_account)
         response = self.client.delete(f"/api/groups/{self.group_1.id}/", format="json")
         self.assertJSONResponse(response, 404)
 
     def test_groups_destroy_ok(self):
         """DELETE /groups/<group_id> happy path"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.delete(f"/api/groups/{self.group_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
@@ -419,7 +427,7 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_authenticated_user_ok(self):
         """GET /groups/dropdown/ with authenticated user - happy path"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/")
         self.assertJSONResponse(response, 200)
 
@@ -459,7 +467,7 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_with_default_version_filter(self):
         """GET /groups/dropdown/ with defaultVersion=true filter"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?defaultVersion=true")
         self.assertJSONResponse(response, 200)
 
@@ -474,7 +482,7 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_with_version_filter(self):
         """GET /groups/dropdown/ with specific version filter"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/dropdown/?version={self.source_version_1.id}")
         self.assertJSONResponse(response, 200)
 
@@ -488,7 +496,7 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_with_data_source_filter(self):
         """GET /groups/dropdown/ with dataSource filter"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/dropdown/?dataSource={self.data_source.id}")
         self.assertJSONResponse(response, 200)
 
@@ -511,7 +519,7 @@ class GroupsAPITestCase(APITestCase):
         self.project_1.data_sources.add(second_data_source)
         self.project_1.save()
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get(f"/api/groups/dropdown/?dataSourceIds={self.data_source.id},{second_data_source.id}")
         self.assertJSONResponse(response, 200)
 
@@ -526,7 +534,7 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_with_search_filter(self):
         """GET /groups/dropdown/ with search filter"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?search=Councils")
         self.assertJSONResponse(response, 200)
 
@@ -545,7 +553,7 @@ class GroupsAPITestCase(APITestCase):
             name="Countries Block", source_version=self.source_version_1, block_of_countries=True
         )
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?blockOfCountries=true")
         self.assertJSONResponse(response, 200)
 
@@ -559,7 +567,7 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_with_order_parameter(self):
         """GET /groups/dropdown/ with order parameter"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?order=name")
         self.assertJSONResponse(response, 200)
 
@@ -574,7 +582,7 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_pagination(self):
         """GET /groups/dropdown/ with pagination"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/dropdown/?limit=1&page=1")
         self.assertJSONResponse(response, 200)
 
@@ -602,24 +610,28 @@ class GroupsAPITestCase(APITestCase):
     def test_dropdown_user_from_different_account(self):
         """GET /groups/dropdown/ with user from different account - should only see their groups"""
 
-        # Create a group for the marvel account
-        marvel_data_source = m.DataSource.objects.create(name="Marvel source")
-        marvel_version = m.SourceVersion.objects.create(data_source=marvel_data_source, number=1)
-        marvel_group = m.Group.objects.create(name="Marvel Group", source_version=marvel_version)
-
-        # Add marvel data source to marvel project
-        marvel_project = m.Project.objects.create(
-            name="Marvel Project", app_id="marvel.project", account=self.raccoon.iaso_profile.account
+        # Create a group for the secondary account
+        secondary_account_data_source = m.DataSource.objects.create(name="Secondary source")
+        secondary_account_version = m.SourceVersion.objects.create(data_source=secondary_account_data_source, number=1)
+        secondary_account_group = m.Group.objects.create(
+            name="Secondary Account Group", source_version=secondary_account_version
         )
-        marvel_project.data_sources.add(marvel_data_source)
-        marvel_project.save()
 
-        # Set default version for marvel account
-        marvel_account = self.raccoon.iaso_profile.account
-        marvel_account.default_version = marvel_version
-        marvel_account.save()
+        # Add secondary account data source to a project
+        secondary_account_project = m.Project.objects.create(
+            name="Secondary Account Project",
+            app_id="secondary_account.project",
+            account=self.user_from_other_account.iaso_profile.account,
+        )
+        secondary_account_project.data_sources.add(secondary_account_data_source)
+        secondary_account_project.save()
 
-        self.client.force_authenticate(self.raccoon)
+        # Set default version for secondary account
+        secondary_account_account = self.user_from_other_account.iaso_profile.account
+        secondary_account_account.default_version = secondary_account_version
+        secondary_account_account.save()
+
+        self.client.force_authenticate(self.user_from_other_account)
         response = self.client.get("/api/groups/dropdown/")
         self.assertJSONResponse(response, 200)
 
@@ -628,7 +640,7 @@ class GroupsAPITestCase(APITestCase):
 
         # Should only see groups from their account
         for item in data:
-            self.assertIn("Marvel source", item["label"])
+            self.assertIn("Secondary source", item["label"])
 
     def test_dropdown_anonymous_user_different_project(self):
         """GET /groups/dropdown/ with anonymous user and different project app_id"""
@@ -646,7 +658,7 @@ class GroupsAPITestCase(APITestCase):
     def test_export_groups_in_xlsx(self):
         """GET /groups/export/ with xlsx format"""
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/export/?file_format=xlsx")
         excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
@@ -692,7 +704,7 @@ class GroupsAPITestCase(APITestCase):
         self.group_1.source_ref = "group_1_ref"
         self.group_1.save()
 
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.core_permission_user)
         response = self.client.get("/api/groups/export/?file_format=csv")
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
         columns = data[0]
@@ -738,7 +750,7 @@ class GroupsAPITestCase(APITestCase):
     def test_export_groups_no_perms(self):
         """GET /groups/export/ with authenticated user without the right permission should result in a 403"""
 
-        self.client.force_authenticate(self.chewbacca)
+        self.client.force_authenticate(self.user_missing_menu_permission)
         response = self.client.get("/api/groups/export/?file_format=csv")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 

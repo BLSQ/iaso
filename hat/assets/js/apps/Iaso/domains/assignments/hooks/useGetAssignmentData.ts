@@ -78,7 +78,9 @@ export const useGetAssignmentData = ({
     selectedItem,
     search,
 }: Props): Result => {
-    const [extraFilters, setExtraFilters] = useState<Record<string, any>>({});
+    const [extraFilters, setExtraFilters] = useState<Record<string, string>>(
+        {},
+    );
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
         data: planning,

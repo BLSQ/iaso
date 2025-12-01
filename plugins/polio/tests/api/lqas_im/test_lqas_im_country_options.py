@@ -1,5 +1,7 @@
 import datetime
 
+from typing_extensions import override
+
 from plugins.polio.models import Round
 from plugins.polio.tests.api.lqas_im.test_lqas_im_options import LqasImOptionsTestCase
 
@@ -7,7 +9,38 @@ from plugins.polio.tests.api.lqas_im.test_lqas_im_options import LqasImOptionsTe
 class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
     endpoint = "/api/polio/lqasim/countriesoptions/"
 
-    def test_filter_org_units_by_account(self):
+    @override
+    def test_get_without_auth(self):
+        """GET - Read-only access to anonymous users for page embedding"""
+        if not self.endpoint:
+            return
+        response = self.client.get(self.endpoint)
+        self.assertJSONResponse(response, 200)
+
+    @override
+    def test_get_without_perm(self):
+        """GET - Read-only access  for page embedding"""
+        if not self.endpoint:
+            return
+        self.client.force_authenticate(self.anon)
+        response = self.client.get(self.endpoint)
+        self.assertJSONResponse(response, 200)
+        self.client.force_authenticate(self.user_no_perms)
+        response = self.client.get(self.endpoint)
+        self.assertJSONResponse(response, 200)
+
+    def test_filter_org_units_by_account_and_app_id(self):
+        # anon user should provide app_id
+        response = self.client.get(self.endpoint)
+        json_response = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(json_response["results"]), 0)
+        response = self.client.get(f"{self.endpoint}?app_id={self.project.app_id}")
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 2)
+        org_unit_ids = [result["value"] for result in results]
+        self.assertFalse(self.india.id in org_unit_ids)
+
         self.client.force_authenticate(self.user)
         response = self.client.get(self.endpoint)
         json_response = self.assertJSONResponse(response, 200)

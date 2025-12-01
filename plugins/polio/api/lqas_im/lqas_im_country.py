@@ -1,3 +1,6 @@
+from django.http import Http404
+from rest_framework.exceptions import ValidationError
+
 from iaso.api.common import ModelViewSet, ReadOnlyOrHasPermission
 from iaso.api.data_store import DataStoreSerializer
 from iaso.models.data_store import JsonDataStore
@@ -21,7 +24,7 @@ class LQASIMCountryViewset(ModelViewSet):
         app_id = self.request.query_params.get("app_id", None)
         user = self.request.user
         if slug is None:
-            return JsonDataStore.objects.none()
+            raise ValidationError("No slug provided")
 
         queryset = JsonDataStore.objects.filter(slug=slug)
         if not user.is_anonymous:
@@ -31,7 +34,7 @@ class LQASIMCountryViewset(ModelViewSet):
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
                 queryset = queryset.filter(account=project.account)
             except Project.DoesNotExist:
-                pass
+                raise Http404("No project matching app_id")
         else:
             queryset = JsonDataStore.objects.none()
         return queryset

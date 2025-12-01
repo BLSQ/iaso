@@ -49,10 +49,9 @@ const styles = {
         justifyContent: 'center',
     },
     image: {
-        width: 'auto',
-        height: '100%',
+        width: '100%',
+        height: 'auto',
         objectFit: 'contain' as const, // Explicitly cast the string to the 'contain' literal type
-        maxWidth: '80vw',
     },
     prevButton: {
         position: 'fixed',

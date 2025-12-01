@@ -26,6 +26,7 @@ NUTRITION_PROGRAMMES = [
     ("TSFP", _("TSFP")),
     ("OTP", _("OTP")),
     ("OTP - Under 6", _("OTP - Under 6")),
+    ("BSFP", _("BSFP")),
     ("breastfeeding", _("Breastfeeding")),
     ("pregnant", _("Pregnant")),
 ]

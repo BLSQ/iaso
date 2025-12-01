@@ -17,7 +17,7 @@ Hotfixes are used to quickly patch critical bugs in production. Unlike regular f
 
 ### 1. Create a Hotfix Branch
 
-Create a new branch from `main`. Use the prefix `HOTIX` or `hotfix/`:
+Create a new branch from `main`. Use the prefix `HOTFIX` or `hotfix/`:
 
 ```bash
 # Checkout and update main branch

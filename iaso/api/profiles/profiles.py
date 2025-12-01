@@ -1,5 +1,3 @@
-import re
-
 from typing import Any, List, Optional, Union
 
 from django.conf import settings
@@ -32,20 +30,10 @@ from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, User
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
-from iaso.utils import is_mobile_request
+from iaso.utils import is_mobile_request, search_by_ids_refs
 
 
 PK_ME = "me"
-
-
-def _parse_ids(prefix, search):
-    s = search.replace(prefix, "")
-    try:
-        parsed_ids = re.findall("[A-Za-z0-9_-]+", s)
-    except:
-        print("Failed parsing ids in search", search)
-        parsed_ids = []
-    return parsed_ids
 
 
 class HasProfilePermission(permissions.BasePermission):
@@ -106,9 +94,9 @@ def get_filtered_profiles(
 ) -> QuerySet[Profile]:
     if search:
         if search.startswith("ids:"):
-            queryset = queryset.filter(id__in=_parse_ids("ids:", search))
+            queryset = queryset.filter(id__in=search_by_ids_refs.parse_ids("ids:", search))
         elif search.startswith("refs:"):
-            queryset = queryset.filter(dhis2_id__in=_parse_ids("refs:", search))
+            queryset = queryset.filter(dhis2_id__in=search_by_ids_refs.parse_ids("refs:", search))
         else:
             queryset = queryset.filter(
                 Q(user__username__icontains=search)

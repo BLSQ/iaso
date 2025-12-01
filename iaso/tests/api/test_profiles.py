@@ -953,13 +953,35 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 2)
 
-    def test_search_by_ids(self):
+    def test_list_by_ids(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["profiles"]), 2)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+
+    def test_search_by_profile_ids(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/profiles/", {"search": f"ids:{self.jane.iaso_profile.id},{self.jim.iaso_profile.id}", "order": "id"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["profiles"]), 2)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+
+    def test_search_by_dhis2_id(self):
+        self.client.force_authenticate(self.jane)
+        mydhis2_id = "mydhis2id"
+
+        self.jim.iaso_profile.dhis2_id = mydhis2_id
+        self.jim.iaso_profile.save()
+
+        response = self.client.get("/api/profiles/", {"search": f"refs:{mydhis2_id}"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["profiles"]), 1)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "jim")
 
     def test_search_by_teams(self):
         self.client.force_authenticate(self.jane)

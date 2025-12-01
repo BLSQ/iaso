@@ -7,13 +7,13 @@ import {
 } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import MESSAGES from '../../../../../constants/messages';
-import { Sides } from '../../../../../constants/types';
+import { Side, Sides } from '../../../../../constants/types';
 import { baseUrls } from '../../../../../constants/urls';
 import { LIST, MAP, paperElevation } from '../../../shared/constants';
 import { LqasAfroOverviewContextProvider } from '../Context/LqasAfroOverviewContext';
 import { LqasAfroList } from '../ListView/LqasAfroList';
 import { LqasAfroSelector } from '../LqasAfroSelector';
-import { AfroMapParams, Side } from '../types';
+import { AfroMapParams } from '../types';
 import { LqasAfroMap } from './LqasAfroMap';
 
 const useStyles = makeStyles(theme => ({
@@ -75,7 +75,7 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                     }}
                     className={classes.marginBottom}
                     indicatorColor="primary"
-                    onChange={(event, newtab) => handleChangeTab(newtab)}
+                    onChange={(_, newtab) => handleChangeTab(newtab)}
                 >
                     <Tab value={MAP} label={formatMessage(MESSAGES.map)} />
                     <Tab value={LIST} label={formatMessage(MESSAGES.list)} />

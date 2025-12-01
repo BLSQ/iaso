@@ -9,7 +9,7 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
-ADMISSION_ANTHROPOMETRIC_FORMS = ["wfp_coda_pbwg_anthropometric"]
+ADMISSION_ANTHROPOMETRIC_FORMS = ["wfp_coda_pbwg_anthropometric", "PBWG_BSFP"]
 
 
 class PBWG:

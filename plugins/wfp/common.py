@@ -285,6 +285,8 @@ class ETL:
             "ethiopia_child_assistance_follow_up",
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",
+            "Anthropometric_BSFP_child_2",
+            "PBWG_BSFP",
         ]:
             if visit.get("next_visit__date__") is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
@@ -497,7 +499,7 @@ class ETL:
             given_assistance.append(assistance)
 
         if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
-            quantity = 0
+            quantity = step.get("quantity", 0)
             ration_type = ""
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets", 0)
@@ -967,7 +969,6 @@ class ETL:
         )
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
-        dataElements = None
         # Reading the dhis2 datalement mapper json file
         with open("plugins/wfp/dhis2_mapper.json") as mapper:
             data = json.load(mapper)
@@ -981,7 +982,8 @@ class ETL:
                 dataSet["period"] = period
                 journeys_by_program_type = groupby(list(journey_period), key=itemgetter("programme_type"))
                 dataValues.extend(self.map_dhis2_data(journeys_by_program_type, data))
-            dataSet["dataValues"] = dataValues
+            dataSet["dataValues"] = sorted(dataValues, key=itemgetter("value"), reverse=True)
+
             dhis2_aggregated_data.append(dataSet)
         return dhis2_aggregated_data
 
@@ -993,7 +995,7 @@ class ETL:
             categories = []
             sub_categories = []
             if program_type == "U5":
-                categories = ["screening_reporting", "tsfp_reporting", "otp_reporting"]
+                categories = ["screening_reporting", "tsfp_reporting", "otp_reporting", "bsfp_reporting"]
                 sub_categories = [
                     "muac_under_11_5",
                     "muac_11_5_12_4",
@@ -1005,7 +1007,7 @@ class ETL:
                 ]
                 journey = groupby(list(journey_by_program), key=itemgetter("gender"))
             elif program_type == "PLW":
-                categories = ["screening_reporting", "tsfp_reporting"]
+                categories = ["screening_reporting", "tsfp_reporting", "bsfp_reporting"]
                 sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23", "total_with_exit_type"]
                 journey = groupby(list(journey_by_program), key=itemgetter("nutrition_programme"))
 
@@ -1029,6 +1031,8 @@ class ETL:
                             dataElement_by_sub_category = dataElement.get("tsfp_reporting")
                         elif nutrition_programme == "OTP":
                             dataElement_by_sub_category = dataElement.get("otp_reporting")
+                        elif nutrition_programme == "BSFP":
+                            dataElement_by_sub_category = dataElement.get("bsfp_reporting")
                         if dataElement_by_sub_category is not None:
                             if dataElement_by_category is not None:
                                 dataElement_by_main_category = dataElement_by_category.get(main_category)
@@ -1041,4 +1045,9 @@ class ETL:
                                             rows[sub_category] = rows["total_beneficiary"]
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": rows[sub_category]})
+        dataValues = list(
+            {
+                (dataValue["dataElement"], dataValue["categoryOptionCombo"]): dataValue for dataValue in dataValues
+            }.values()
+        )
         return dataValues

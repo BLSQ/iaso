@@ -64,7 +64,7 @@ class GroupSerializer(serializers.ModelSerializer):
             user = request.user
             if user and user.is_authenticated:
                 profile = user.iaso_profile
-                queryset = OrgUnit.objects.filter_for_account(profile.account)
+                queryset = OrgUnit.objects.filter_for_user(user)
 
                 editable_org_unit_type_ids = profile.get_editable_org_unit_type_ids()
                 if editable_org_unit_type_ids:

@@ -52,6 +52,25 @@ class GroupsAPITestCase(APITestCase):
         cls.org_unit_3 = m.OrgUnit.objects.create(
             name="Org Unit 3", version=cls.source_version_2, org_unit_type=cls.org_unit_type
         )
+        cls.restricted_parent_org_unit = m.OrgUnit.objects.create(
+            name="Restricted Root OU", version=cls.source_version_2, org_unit_type=cls.org_unit_type
+        )
+        cls.restricted_child_org_unit = m.OrgUnit.objects.create(
+            name="Restricted Child OU",
+            version=cls.source_version_2,
+            org_unit_type=cls.org_unit_type,
+            parent=cls.restricted_parent_org_unit,
+        )
+        cls.outside_restricted_org_unit = m.OrgUnit.objects.create(
+            name="Outside Restricted OU", version=cls.source_version_2, org_unit_type=cls.org_unit_type
+        )
+
+        cls.restricted_tree_user = cls.create_user_with_profile(
+            username="obiwan",
+            account=star_wars,
+            permissions=[CORE_ORG_UNITS_PERMISSION],
+        )
+        cls.restricted_tree_user.iaso_profile.org_units.set([cls.restricted_parent_org_unit])
 
     def test_groups_list_without_auth(self):
         """GET /groups/ without auth: 401"""
@@ -243,6 +262,38 @@ class GroupsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 400)
         self.assertIn("org_unit_ids", response.json())
+
+    def test_groups_create_with_org_units_restricted_by_org_tree_fails(self):
+        """POST /groups/ should fail when org units are outside the user's authorized tree"""
+
+        self.client.force_authenticate(self.restricted_tree_user)
+        response = self.client.post(
+            "/api/groups/",
+            data={
+                "name": "restricted group",
+                "org_unit_ids": [self.outside_restricted_org_unit.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertIn("org_unit_ids", response.json())
+
+    def test_groups_create_with_org_units_restricted_by_org_tree_ok(self):
+        """POST /groups/ succeeds when org units belong to the user's authorized tree"""
+
+        self.client.force_authenticate(self.restricted_tree_user)
+        response = self.client.post(
+            "/api/groups/",
+            data={
+                "name": "restricted group ok",
+                "org_unit_ids": [self.restricted_child_org_unit.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        group = m.Group.objects.get(id=response.json()["id"])
+        self.assertEqual(group.org_units.count(), 1)
+        self.assertIn(self.restricted_child_org_unit, group.org_units.all())
 
     def test_groups_create_with_org_units_from_different_account(self):
         """POST /groups/ with org_unit_ids from different account - should fail"""

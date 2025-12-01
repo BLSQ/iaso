@@ -1,1 +1,1 @@
-## Traduction française bientôt disponible
+## Traduction française indisponible

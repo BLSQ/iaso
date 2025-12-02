@@ -110,7 +110,7 @@ git checkout main
 git pull origin main
 ```
 
-### 9. Verify the Tag
+### 8. Verify the Tag
 
 Verify that the tag appears on GitHub:
 

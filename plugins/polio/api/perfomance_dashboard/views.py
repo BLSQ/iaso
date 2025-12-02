@@ -62,5 +62,4 @@ class PerformanceDashboardViewSet(ModelViewSet):
         Perform a soft delete and log the user who performed the action.
         """
         instance.updated_by = self.request.user
-        instance.save(update_fields=["updated_by"])
         instance.delete()

@@ -4,17 +4,19 @@ import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/compon
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasOneOfPermissions } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import {
     POLIO_PERFORMANCE_ADMIN_PERMISSION,
     POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
 } from '../../../../constants/permissions';
 import MESSAGES from '../messages';
 import { EditPerformanceModal } from '../modals/CreateEditModal';
-import { DeletePerformanceModal } from '../modals/DeleteModal';
+import { useDeletePerformance } from '../hooks/api';
 
 export const usePerformanceDashboardColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const { mutate: deletePerformance } = useDeletePerformance();
 
     return useMemo(() => {
         const columns: Column[] = [
@@ -78,6 +80,7 @@ export const usePerformanceDashboardColumns = (): Column[] => {
                 sortable: false,
                 Cell: (settings: any) => {
                     const { original: performanceData } = settings.row;
+                    const recordName = `${performanceData.country_name} - ${performanceData.date}`;
                     return (
                         <>
                             <DisplayIfUserHasPerm
@@ -95,8 +98,17 @@ export const usePerformanceDashboardColumns = (): Column[] => {
                                     POLIO_PERFORMANCE_ADMIN_PERMISSION,
                                 ]}
                             >
-                                <DeletePerformanceModal
-                                    performanceData={performanceData}
+                                <DeleteDialog
+                                    titleMessage={formatMessage(
+                                        MESSAGES.deletePerformance,
+                                        { name: recordName },
+                                    )}
+                                    message={formatMessage(
+                                        MESSAGES.deletePerformanceConfirm,
+                                    )}
+                                    onConfirm={() =>
+                                        deletePerformance(performanceData.id)
+                                    }
                                 />
                             </DisplayIfUserHasPerm>
                         </>
@@ -105,5 +117,5 @@ export const usePerformanceDashboardColumns = (): Column[] => {
             });
         }
         return columns;
-    }, [formatMessage, currentUser]);
+    }, [formatMessage, currentUser, deletePerformance]);
 };

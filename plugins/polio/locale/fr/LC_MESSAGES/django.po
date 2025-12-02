@@ -679,7 +679,7 @@ msgstr "Aucun pays trouvé pour la campagne"
 
 #: plugins/polio/performance_dashboard.py
 msgid "Draft"
-msgstr "Brouillon"
+msgstr "Ébauche"
 
 #: plugins/polio/performance_dashboard.py
 msgid "Commented"

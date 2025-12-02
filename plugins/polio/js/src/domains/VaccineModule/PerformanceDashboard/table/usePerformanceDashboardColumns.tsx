@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasOneOfPermissions } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import {
     POLIO_PERFORMANCE_ADMIN_PERMISSION,
     POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
@@ -12,6 +14,7 @@ import { DeletePerformanceModal } from '../modals/DeleteModal';
 
 export const usePerformanceDashboardColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
 
     return useMemo(() => {
         const columns: Column[] = [
@@ -58,7 +61,18 @@ export const usePerformanceDashboardColumns = (): Column[] => {
                 sortable: true,
                 Cell: DateCell,
             },
-            {
+        ];
+
+        const hasActionPermission = userHasOneOfPermissions(
+            [
+                POLIO_PERFORMANCE_ADMIN_PERMISSION,
+                POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+            ],
+            currentUser,
+        );
+
+        if (hasActionPermission) {
+            columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'actions',
                 sortable: false,
@@ -88,9 +102,8 @@ export const usePerformanceDashboardColumns = (): Column[] => {
                         </>
                     );
                 },
-            },
-        ];
-
+            });
+        }
         return columns;
-    }, [formatMessage]);
+    }, [formatMessage, currentUser]);
 };

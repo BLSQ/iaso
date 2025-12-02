@@ -3,7 +3,7 @@ import { useApiParams } from '../../../../../../../../../hat/assets/js/apps/Iaso
 import { useUrlParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
-import { PerformanceList } from '../../types';
+import { PerformanceList, PerformanceData } from '../../types';
 
 const getPerformanceDashboard = (params: any) => {
     const queryString = new URLSearchParams(params).toString();
@@ -16,16 +16,13 @@ export const useGetPerformanceDashboard = (params: any) => {
 
     return useSnackQuery<PerformanceList>(
         [
-            'performance-dashboard',
-            apiParams,
-            apiParams.page,
-            apiParams.limit,
-            apiParams.order,
+            'performance-dashboard', apiParams
         ],
         () => getPerformanceDashboard(apiParams),
-        undefined,
         {
+            keepPreviousData: true,
             staleTime: 1000 * 60 * 5, // 5 minutes
+            cacheTime: 1000 * 60 * 5,
         },
     );
 };

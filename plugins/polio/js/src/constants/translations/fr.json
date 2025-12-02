@@ -875,7 +875,7 @@
     "iaso.polio.performance.delete": "Effacer les données de performance: {name}",
     "iaso.polio.performance.deleteWarning": "Voulez-vous vraiment supprimer cette entrée ?",
     "iaso.polio.performance.add": "Ajouter une donnée de performance",
-    "iaso.polio.performance.status.draft": "Brouillon",
+    "iaso.polio.performance.status.draft": "Ébauche",
     "iaso.polio.performance.status.commented": "Commenté",
     "iaso.polio.performance.status.final": "Final",
     "iaso.polio.antigen": "Vaccin",

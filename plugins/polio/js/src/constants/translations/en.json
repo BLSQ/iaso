@@ -879,7 +879,7 @@
     "iaso.polio.performance.status.draft": "Draft",
     "iaso.polio.performance.status.commented": "Commented",
     "iaso.polio.performance.status.final": "Final",
-    "iaso.polio.antigen": "Antigen",
+    "iaso.polio.antigen": "Vaccine",
     "iaso.label.edit": "Edit",
     "iaso.polio.validation.invalidDate": "Invalid date",
     "iaso.polio.validation.fieldRequired": "This field is required",

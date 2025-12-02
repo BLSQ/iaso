@@ -532,6 +532,7 @@
     "iaso.label.dhis2Mappings": "Mapeos de DHIS",
     "iaso.label.display": "Mostrar",
     "iaso.label.displayPassword": "Mostrar la contraseña",
+    "iaso.label.djangoAdmin": "Administración de Django",
     "iaso.label.docs": "Documentación",
     "iaso.label.document": "Documento",
     "iaso.label.documents": "Documentos",

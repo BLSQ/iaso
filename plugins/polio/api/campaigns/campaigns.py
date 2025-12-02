@@ -539,6 +539,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "account",
             "outbreak_declaration_date",
             "campaign_types",
+            "separate_scopes_per_round",
         ]
         read_only_fields = fields
 

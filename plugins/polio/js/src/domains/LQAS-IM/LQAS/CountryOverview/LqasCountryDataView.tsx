@@ -1,7 +1,6 @@
-import { Campaign, MapShapes, Side } from '../../../../constants/types';
 import React, { FunctionComponent, useMemo } from 'react';
+import { Campaign, MapShapes, Side } from '../../../../constants/types';
 import { ConvertedLqasImData, LqasImMapLayer } from '../../types';
-import { baseUrls } from '../../../../constants/urls';
 import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
 import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
 import { getLqasMapLayer, useLqasMapHeaderData } from './utils';
@@ -26,9 +25,10 @@ type Props = {
     params: Record<string, string | undefined>;
     isFetching: boolean;
     roundOptions?: DropdownOptions<string>[];
+    currentUrl: string;
+    isEmbedded: boolean;
 };
 
-const baseUrl = baseUrls.lqasCountry;
 export const LqasCountryDataView: FunctionComponent<Props> = ({
     params,
     side,
@@ -40,10 +40,12 @@ export const LqasCountryDataView: FunctionComponent<Props> = ({
     debugData,
     roundOptions,
     onRoundChange,
+    currentUrl,
+    isEmbedded,
 }) => {
     const campaignObrName = campaign?.obr_name;
     const { tab, handleChangeTab } = useLqasImTabState({
-        baseUrl,
+        baseUrl: currentUrl,
         params,
         side,
     });
@@ -52,7 +54,7 @@ export const LqasCountryDataView: FunctionComponent<Props> = ({
         isFetchingGeoJson,
         regionShapes,
         isFetchingRegions,
-    }: MapShapes = useMapShapes(countryId);
+    }: MapShapes = useMapShapes(countryId, isEmbedded);
 
     const mainLayer: LqasImMapLayer[] = useMemo(() => {
         return getLqasMapLayer({ data, campaign, roundNumber, shapes });

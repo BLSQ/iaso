@@ -12,16 +12,12 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
     @override
     def test_get_without_auth(self):
         """GET - Read-only access to anonymous users for page embedding"""
-        if not self.endpoint:
-            return
         response = self.client.get(self.endpoint)
         self.assertJSONResponse(response, 200)
 
     @override
     def test_get_without_perm(self):
         """GET - Read-only access  for page embedding"""
-        if not self.endpoint:
-            return
         self.client.force_authenticate(self.anon)
         response = self.client.get(self.endpoint)
         self.assertJSONResponse(response, 200)

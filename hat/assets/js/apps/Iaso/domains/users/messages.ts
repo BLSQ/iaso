@@ -61,6 +61,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.search',
     },
+
+    searchParams: {
+        id: 'iaso.users.searchParams',
+        defaultMessage:
+            // eslint-disable-next-line max-len
+            'Use prefix “refs:” for dhis2 ID search, “ids:” for internal profile ID. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd”',
+    },    
     infos: {
         defaultMessage: 'Infos',
         id: 'iaso.orgUnits.infos',

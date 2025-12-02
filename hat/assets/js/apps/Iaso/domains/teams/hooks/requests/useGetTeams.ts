@@ -21,6 +21,7 @@ export const useGetTeam = (teamId: number): UseQueryResult<Team, Error> => {
         queryFn: () => getTeam(teamId),
         options: {
             enabled: Boolean(teamId),
+            staleTime: Infinity,
         },
     });
 };
@@ -52,6 +53,7 @@ export const useGetTeams = (
     // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(options), undefined, {
         select,
+        staleTime: Infinity,
     });
 };
 
@@ -96,6 +98,7 @@ export const useGetTeamsDropdown = (
                     };
                 });
             },
+            staleTime: Infinity,
         },
     });
 };

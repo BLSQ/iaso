@@ -14,11 +14,11 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating task status from pipeline."""
 
     task_id = serializers.IntegerField(source="id", required=True)
-    result_data = serializers.JSONField(source="result", required=False, allow_null=True)
+    result = serializers.JSONField(required=False, allow_null=True)
 
     class Meta:
         model = Task
-        fields = ["task_id", "status", "progress_message", "progress_value", "end_value", "result_data"]
+        fields = ["task_id", "status", "progress_message", "progress_value", "end_value", "result"]
         extra_kwargs = {
             "status": {"required": False, "allow_blank": True},
             "progress_message": {"required": False, "allow_blank": True},

@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import { StatusStyles } from './constants';
-import { TaskStatus } from './types';
+import MESSAGES from '../../messages';
+import { StatusStyles } from '../constants';
+import { TaskStatus } from '../types';
 
 type StatusInfosProps = {
     status: TaskStatus;

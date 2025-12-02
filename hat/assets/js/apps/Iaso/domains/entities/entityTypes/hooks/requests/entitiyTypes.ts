@@ -7,12 +7,11 @@ import {
 } from '../../../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../../../libs/apiHooks';
 
-import { PaginatedEntityTypes } from '../../types/paginatedEntityTypes';
-import { EntityType } from '../../types/entityType';
-
 import { useCurrentUser } from '../../../../../utils/usersUtils';
 
 import MESSAGES from '../../messages';
+import { EntityType } from '../../types/entityType';
+import { PaginatedEntityTypes } from '../../types/paginatedEntityTypes';
 
 export const useDelete = (): UseMutationResult =>
     useSnackMutation(
@@ -59,7 +58,7 @@ export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
         queryKey: ['entitytypes'],
         queryFn: () => getRequest('/api/entitytypes/'),
         options: {
-            staleTime: 60000,
+            staleTime: Infinity,
         },
     });
 };

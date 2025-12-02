@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from iaso.api.common import TimestampField
 from iaso.api.group_sets.serializers import GroupSetSerializer
-from iaso.models import DataSource, Group, SourceVersion
+from iaso.models import DataSource, Group, OrgUnit, SourceVersion
 
 
 class DataSourceSerializerForGroup(serializers.ModelSerializer):
@@ -29,6 +29,8 @@ class GroupSerializer(serializers.ModelSerializer):
             "source_version",
             "group_sets",
             "org_unit_count",
+            "org_unit_ids",
+            "org_units",
             "created_at",
             "updated_at",
             "block_of_countries",  # It's used to mark a group containing only countries
@@ -39,8 +41,36 @@ class GroupSerializer(serializers.ModelSerializer):
     source_version = SourceVersionSerializerForGroup(read_only=True)
     group_sets = GroupSetSerializer(many=True, read_only=True)
     org_unit_count = serializers.IntegerField(read_only=True)
+    org_units = serializers.SerializerMethodField(read_only=True)
+    org_unit_ids = serializers.PrimaryKeyRelatedField(
+        source="org_units",
+        write_only=True,
+        many=True,
+        queryset=OrgUnit.objects.none(),  # Scoped in __init__ via child_relation (see GroupSetSerializer pattern)
+        required=False,
+        allow_empty=True,
+    )
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    def get_org_units(self, obj):
+        """Return list of org unit IDs for read operations."""
+        return list(obj.org_units.values_list("id", flat=True))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and "org_unit_ids" in self.fields:
+            user = request.user
+            if user and user.is_authenticated:
+                profile = user.iaso_profile
+                queryset = OrgUnit.objects.filter_for_user(user)
+
+                editable_org_unit_type_ids = profile.get_editable_org_unit_type_ids()
+                if editable_org_unit_type_ids:
+                    queryset = queryset.filter(org_unit_type_id__in=editable_org_unit_type_ids)
+
+                self.fields["org_unit_ids"].child_relation.queryset = queryset
 
     def validate(self, attrs):
         default_version = self._fetch_user_default_source_version()
@@ -55,9 +85,13 @@ class GroupSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
+        org_unit_ids = validated_data.pop("org_unit_ids", [])
         default_version = self._fetch_user_default_source_version()
         validated_data["source_version"] = default_version
-        return super().create(validated_data)
+        group = super().create(validated_data)
+        if org_unit_ids:
+            group.org_units.set(org_unit_ids)
+        return group
 
     def _fetch_user_default_source_version(self):
         profile = self.context["request"].user.iaso_profile

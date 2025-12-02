@@ -117,7 +117,7 @@ Verify that the tag appears on GitHub:
 - Visit [GitHub Tags](https://github.com/BLSQ/iaso/tags), or use `git log`
 - Confirm your new tag is listed
 
-### 10. Backport to Develop
+### 9. Backport to Develop
 
 **Important:** After the hotfix is deployed, backport the changes to the `develop` branch to ensure the fix is included in future releases:
 

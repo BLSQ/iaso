@@ -101,7 +101,7 @@ Create a Pull Request targeting the `main` branch.
 git push --tags --force
 ```
 
-### 6. Pull Main Locally
+### 7. Pull Main Locally
 
 After the PR is merged, update your local `main` branch:
 

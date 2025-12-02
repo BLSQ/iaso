@@ -168,9 +168,8 @@ git pull origin main
 git tag -a v2025.11.18c -m "Hotfix: description"
 git push origin v2025.11.18c
 
-# 6. Backport to develop
-git checkout develop
-git pull origin develop
+# 6. Backport to new branch
+git checkout HOTFIX-TICKET-NUMBER-describe-your-fix
 git cherry-pick <commit-hash>
-git push origin develop
+git push origin HOTFIX-TICKET-NUMBER-describe-your-fix
 ```

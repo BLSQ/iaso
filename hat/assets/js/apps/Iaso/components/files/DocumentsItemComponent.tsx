@@ -10,7 +10,7 @@ import {
     ExcellSvg,
     CsvSvg,
 } from 'bluesquare-components';
-import { getFileName } from '../../utils/filesUtils';
+import { getFileName } from 'Iaso/utils/filesUtils';
 import { PdfPreview } from './pdf/PdfPreview';
 
 const styles = {
@@ -46,7 +46,7 @@ const styles = {
         textOverflow: 'ellipsis',
         overflow: 'hidden',
         width: '100%',
-        height: '20px',
+        height: '35px',
         whiteSpace: 'nowrap',
         fontSize: 10,
     },
@@ -77,6 +77,20 @@ const ExtensionIcon: FunctionComponent<IconProps> = ({ fileExtension }) => {
 type Props = {
     filePath: string;
     fileInfo?: string;
+    getDisplayName?: (filePath: string) => React.ReactNode;
+    url?: string;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
+    getInfos?: (filePath: string) => React.ReactNode;
+    getExtraInfos?: (filePath: string) => React.ReactNode;
+};
+
+type PdfItemProps = {
+    filePath: string;
+    getDisplayName?: (filePath: string) => React.ReactNode;
+    url?: string;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
+    getInfos?: (filePath: string) => React.ReactNode;
+    getExtraInfos?: (filePath: string) => React.ReactNode;
 };
 export const OpenButtonComponent = ({ onClick, disabled, ...buttonProps }) => (
     <Box
@@ -97,15 +111,28 @@ export const OpenButtonComponent = ({ onClick, disabled, ...buttonProps }) => (
     </Box>
 );
 
-const PdfItem: FunctionComponent<Props> = ({ filePath, fileInfo }) => {
+const PdfItem: FunctionComponent<PdfItemProps> = ({
+    filePath,
+    getDisplayName = filePath => {
+        const fileName = getFileName(filePath);
+        return `${fileName.name}.${fileName.extension}`;
+    },
+    url = undefined,
+    urlLabel = undefined,
+    getInfos = () => null,
+    getExtraInfos = () => null,
+}) => {
     return (
         <PdfPreview
-            fileInfo={fileInfo}
             pdfUrl={filePath}
             OpenButtonComponent={OpenButtonComponent}
             buttonProps={{
-                label: fileInfo,
+                label: getDisplayName(filePath),
             }}
+            url={url}
+            urlLabel={urlLabel}
+            getInfos={getInfos}
+            getExtraInfos={getExtraInfos}
         />
     );
 };
@@ -113,13 +140,25 @@ const PdfItem: FunctionComponent<Props> = ({ filePath, fileInfo }) => {
 const DocumentsItemComponent: FunctionComponent<Props> = ({
     filePath,
     fileInfo,
+    getDisplayName = filePath => {
+        const fileName = getFileName(filePath);
+        return `${fileName.name}.${fileName.extension}`;
+    },
+    url = undefined,
+    urlLabel = undefined,
+    getInfos = () => null,
+    getExtraInfos = () => null,
 }) => {
     const fileName = getFileName(filePath);
     if (fileName.extension === 'pdf') {
         return (
             <PdfItem
                 filePath={filePath}
-                fileInfo={`${fileName.name}.${fileName.extension}`}
+                getDisplayName={getDisplayName}
+                url={url}
+                urlLabel={urlLabel}
+                getInfos={getInfos}
+                getExtraInfos={getExtraInfos}
             />
         );
     }
@@ -134,9 +173,7 @@ const DocumentsItemComponent: FunctionComponent<Props> = ({
             <Paper sx={styles.paper}>
                 <ExtensionIcon fileExtension={fileName.extension} />
                 {fileInfo && <Box sx={styles.fileInfo}>{fileInfo}</Box>}
-                <Box sx={styles.fileInfo}>
-                    {`${fileName.name}.${fileName.extension}`}
-                </Box>
+                <Box sx={styles.fileInfo}>{getDisplayName(filePath)}</Box>
             </Paper>
         </Box>
     );

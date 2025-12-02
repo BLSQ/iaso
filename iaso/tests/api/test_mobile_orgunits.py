@@ -347,6 +347,12 @@ class MobileOrgUnitAPITestCase(APITestCase):
                                 "created_at": 1698310800.0,
                                 "file_type": "image/jpeg",
                                 "name": None,
+                                "submitted_at": 1698310800.0,
+                                "org_unit": {
+                                    "id": self.raditz.id,
+                                    "name": self.raditz.name,
+                                },
+                                "form_name": form2.name,
                             },
                         ],
                     },

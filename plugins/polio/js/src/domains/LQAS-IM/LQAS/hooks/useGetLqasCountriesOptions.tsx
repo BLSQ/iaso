@@ -19,7 +19,7 @@ const getLqasCountriesOptions = (monthYear?: MonthYear, isEmbedded = false) => {
     if (isEmbedded) {
         return getRequest(`${url}&app_id=${appId}`);
     }
-    return getRequest(`${endpoint}/?month=${monthYear}`);
+    return getRequest(url);
 };
 
 type UseGetLqasCountriesOptionsArgs = {

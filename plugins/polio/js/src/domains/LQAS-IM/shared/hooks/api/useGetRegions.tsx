@@ -1,17 +1,22 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { appId } from '../../../../../constants/app';
 
 export const useGetRegions = (
     country?: number,
+    isEmbedded = false,
 ): UseQueryResult<{ name: string; id: number }[]> => {
-    const params = {
+    const params: Record<string, string> = {
         validation_status: 'all',
         limit: '3000',
         order: 'id',
         orgUnitParentId: `${country}`,
         orgUnitTypeCategory: 'REGION',
     };
+    if (isEmbedded) {
+        params.app_id = appId;
+    }
 
     const queryString = new URLSearchParams(params).toString();
 

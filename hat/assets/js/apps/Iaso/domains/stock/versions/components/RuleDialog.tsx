@@ -6,7 +6,6 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     AddButton,
-    LoadingSpinner,
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
 import isEqual from 'lodash/isEqual';
@@ -14,8 +13,8 @@ import * as yup from 'yup';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
-import { useGetFormsDropdownOptions } from 'Iaso/domains/mappings/hooks/requests/useGetFormsDropdownOptions';
 import { useGetImpacts } from 'Iaso/domains/stock/hooks/useGetImpacts';
 import { useGetSkusDropdownOptions } from 'Iaso/domains/stock/hooks/useGetSkusDropdownOptions';
 import MESSAGES from 'Iaso/domains/stock/messages';
@@ -112,7 +111,7 @@ const RuleDialog: FunctionComponent<Props> = ({
         messages: MESSAGES,
     });
     const { data: formsList, isFetching: isFetchingForms } =
-        useGetFormsDropdownOptions({});
+        useGetFormsDropdownOptions();
     const { data: skusList, isFetching: isFetchingSkus } =
         useGetSkusDropdownOptions({});
     const impacts = useGetImpacts();

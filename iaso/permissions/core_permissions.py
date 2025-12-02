@@ -15,6 +15,7 @@ from iaso.modules import (
     MODULE_PAYMENTS,
     MODULE_PLANNING,
     MODULE_REGISTRY,
+    MODULE_STOCK,
 )
 from iaso.permissions.base import IasoPermission
 
@@ -41,6 +42,7 @@ PERMISSION_GROUP_EMBEDDED_LINKS = "embedded_links"
 PERMISSION_GROUP_PAYMENTS = "payments"
 PERMISSION_GROUP_REGISTRY = "registry"
 PERMISSION_GROUP_EXTERNAL_STORAGE = "external_storage"
+PERMISSION_GROUP_STOCK = "stock_management"
 PERMISSION_GROUPS_DISPLAY_ORDER = [
     PERMISSION_GROUP_FORMS,
     PERMISSION_GROUP_ORG_UNITS,
@@ -51,6 +53,7 @@ PERMISSION_GROUPS_DISPLAY_ORDER = [
     PERMISSION_GROUP_EXTERNAL_STORAGE,
     PERMISSION_GROUP_PLANNING,
     PERMISSION_GROUP_EMBEDDED_LINKS,
+    PERMISSION_GROUP_STOCK,
     PERMISSION_GROUP_ADMIN,
 ]
 
@@ -280,8 +283,8 @@ CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION = CorePermission(
 CORE_STOCK_MANAGEMENT_PERMISSION = CorePermission(
     codename="iaso_stock_management",
     label=_("Stock management"),
-    module=MODULE_DEFAULT,
-    ui_group=PERMISSION_GROUP_ADMIN,
+    module=MODULE_STOCK,
+    ui_group=PERMISSION_GROUP_STOCK,
 )
 CORE_STORAGE_PERMISSION = CorePermission(
     codename="iaso_storages",

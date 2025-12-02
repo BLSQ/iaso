@@ -8,18 +8,12 @@ from django.db.models import Case, Count, IntegerField, Q, QuerySet, Sum, When
 from django.db.models.functions import Cast
 
 from iaso.models import DataSource, Instance, OrgUnit
+from iaso.utils import search_by_ids_refs
 
 
 def apply_org_unit_search(queryset: QuerySet, value: str, prefix: str = "") -> QuerySet:
     if value.startswith("ids:"):
-        s = value.replace("ids:", "")
-
-        try:
-            ids = re.findall("[A-Za-z0-9_-]+", s)
-            queryset = queryset.filter(**{f"{prefix}id__in": ids})
-        except:
-            queryset = queryset.filter(**{f"{prefix}id__in": []})
-            print("Failed parsing ids in search", value)
+        queryset = queryset.filter(**{f"{prefix}id__in": search_by_ids_refs.parse_ids("ids:", value)})
     elif value.startswith("refs:"):
         s = value.replace("refs:", "")
         try:
@@ -42,13 +36,7 @@ def apply_org_unit_search(queryset: QuerySet, value: str, prefix: str = "") -> Q
             queryset = queryset.filter(**{f"{prefix}source_ref__in": []})
             print("Failed parsing refs in search", value)
     elif value.startswith("codes:"):
-        s = value.replace("codes:", "")
-        try:
-            codes = re.findall("[A-Za-z0-9_-]+", s)
-            queryset = queryset.filter(**{f"{prefix}code__in": codes})
-        except:
-            queryset = queryset.filter(**{f"{prefix}code__in": []})
-            print("Failed parsing codes in search", value)
+        queryset = queryset.filter(**{f"{prefix}code__in": search_by_ids_refs.parse_ids("codes:", value)})
     else:
         queryset = queryset.filter(
             Q(**{f"{prefix}name__icontains": value}) | Q(**{f"{prefix}aliases__contains": [value]})

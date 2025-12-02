@@ -1,7 +1,6 @@
 import operator
 import os
 import random
-import re
 import time
 import typing
 
@@ -40,6 +39,7 @@ from .org_unit import OrgUnit, OrgUnitReferenceInstance
 
 
 logger = getLogger(__name__)
+from iaso.utils import search_by_ids_refs
 from iaso.utils.dates import get_beginning_of_day, get_end_of_day
 
 
@@ -302,20 +302,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         if search:
             if search.startswith("ids:"):
-                ids_str = search.replace("ids:", "")
-                try:
-                    ids = re.findall("[A-Za-z0-9_-]+", ids_str)
-                    queryset = queryset.filter(id__in=ids)
-                except:
-                    queryset = queryset.filter(id__in=[])
-                    print("Failed parsing ids in search", search)
+                queryset = queryset.filter(id__in=search_by_ids_refs.parse_ids("ids:", search))
             elif search.startswith("refs:"):
-                s = search.replace("refs:", "")
-                try:
-                    refs = re.findall("[A-Za-z0-9_-]+", s)
-                    queryset = queryset.filter(org_unit__source_ref__in=refs)
-                except:
-                    print("Failed parsing refs in search", search)
+                queryset = queryset.filter(org_unit__source_ref__in=search_by_ids_refs.parse_ids("refs:", search))
             else:
                 queryset = queryset.filter(
                     Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
@@ -820,10 +809,12 @@ class Instance(models.Model):
 
     def soft_delete(self):
         self.deleted = True
+        self.updated_at = timezone.now()
         self.save()
 
     def restore(self):
         self.deleted = False
+        self.updated_at = timezone.now()
         self.save()
 
     def can_user_modify(self, user):

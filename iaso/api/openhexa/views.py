@@ -324,9 +324,5 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             return Response(response_data)
 
-        except ValidationError:
-            # Configuration not properly set up
-            return Response({"configured": False})
-        except Exception as e:
-            logger.exception(f"Error checking OpenHexa config: {str(e)}")
+        except (ValidationError, Exception):
             return Response({"configured": False})

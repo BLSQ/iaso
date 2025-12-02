@@ -14,7 +14,7 @@ import isEqual from 'lodash/isEqual';
 import * as yup from 'yup';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
-import { useGetFormsDropdownOptions } from 'Iaso/domains/mappings/hooks/requests/useGetFormsDropdownOptions';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
 import { useTranslatedErrors } from 'Iaso/libs/validation';
@@ -150,7 +150,7 @@ const SkuDialog: FunctionComponent<Props> = ({
         messages: MESSAGES,
     });
     const { data: formsList, isFetching: isFetchingForms } =
-        useGetFormsDropdownOptions({});
+        useGetFormsDropdownOptions();
     const { data: orgUnitTypesList, isFetching: isFetchingOrgUnitTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: projectsList, isFetching: isFetchingProjects } =

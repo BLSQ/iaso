@@ -12,6 +12,7 @@ import {
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import DatesRange from '../../../components/filters/DatesRange';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
@@ -34,7 +35,6 @@ import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPla
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { INSTANCE_STATUSES } from '../constants';
 
-import { useGetForms } from '../hooks';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 import MESSAGES from '../messages';
@@ -117,8 +117,8 @@ const InstancesFiltersComponent = ({
     }, [defaultFilters]);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
-    const { data, isFetching: fetchingForms } = useGetForms();
-    const formsList = useMemo(() => data?.forms ?? [], [data]);
+    const { data: formsList, isFetching: fetchingForms } =
+        useGetFormsDropdownOptions();
     const formId =
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
@@ -296,10 +296,7 @@ const InstancesFiltersComponent = ({
                             onChange={handleFormChange}
                             value={formState.formIds.value || null}
                             type="select"
-                            options={formsList.map(t => ({
-                                label: t.name,
-                                value: t.id,
-                            }))}
+                            options={formsList || []}
                             label={MESSAGES.forms}
                             loading={fetchingForms}
                         />

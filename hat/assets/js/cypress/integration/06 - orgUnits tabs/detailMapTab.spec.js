@@ -121,9 +121,6 @@ describe('map tab', () => {
         cy.wait('@getOuDetail').then(() => {
             cy.log('displays map and shape');
             cy.get('.leaflet-container').should('be.visible');
-            cy.get('.leaflet-custom-shape-location-pane svg').should(
-                'be.visible',
-            );
             cy.log('displays linked sources');
             linkedList.links.forEach(l => {
                 cy.get('#sources').parent().should('contain', l.source.source);

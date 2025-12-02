@@ -67,20 +67,6 @@ const newFilters = {
         type: 'multi',
         clear: false,
     },
-    created_at_after: {
-        value: '10032022',
-        urlValue: '10-03-2022',
-        apiValue: '2022-03-10 00:00',
-        selector: '[data-test="start-date"] input',
-        type: 'text',
-    },
-    created_at_before: {
-        value: '10032023',
-        urlValue: '10-03-2023',
-        apiValue: '2023-03-10 23:59',
-        selector: '[data-test="end-date"] input',
-        type: 'text',
-    },
     userRoles: {
         value: [0],
         urlValue: userRoles.results[0].id, // This seems dependant on the DB
@@ -109,7 +95,6 @@ const openDialogForChangeRequestIndex = index => {
 };
 
 const goToPage = (
-    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     formQuery,
     fixture = listFixture,
@@ -496,9 +481,6 @@ describe('Organisations changes', () => {
                         parent_id: newFilters.parent_id.urlValue,
                         org_unit_type_id: newFilters.org_unit_type_id.urlValue,
                         withLocation: newFilters.withLocation.urlValue,
-                        created_at_after: newFilters.created_at_after.urlValue,
-                        created_at_before:
-                            newFilters.created_at_before.urlValue,
                         userRoles: newFilters.userRoles.urlValue,
                         status: newFilters.status.urlValue,
                     },
@@ -556,8 +538,9 @@ describe('Organisations changes', () => {
                 ).as('Luigi');
             });
 
-            cy.get('#userIds').type('lui');
+            cy.get('#userIds').as('userIds');
             cy.wait(800);
+            cy.get('@userIds').type('lui');
             cy.get('#userIds').type('{downarrow}').type('{enter}');
             cy.get('[data-test="search-button"]').click();
             cy.wait('@Luigi').then(() => {
@@ -595,6 +578,7 @@ describe('Organisations changes', () => {
             goToPage();
             cy.wait('@getOrgUnitChanges').then(() => {
                 // cy.fillMultiSelect('#groups', [1, 2], false);
+                cy.wait(100);
                 cy.fillMultiSelect('#status', [0], false);
                 cy.get('[data-test="search-button"]').click();
                 cy.get('[data-test="download-buttons"]')

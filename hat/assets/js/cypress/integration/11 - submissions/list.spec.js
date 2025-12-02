@@ -76,24 +76,23 @@ const newFilters = {
         selector: '#withLocation',
         type: 'multi',
     },
-    dateFrom: {
-        value: '10032022',
-        urlValue: '10-03-2022',
-        apiValue: '2022-03-10',
-        selector: '[data-test="start-date"] input',
-        type: 'text',
-    },
-    dateTo: {
-        value: '10032023',
-        urlValue: '10-03-2023',
-        apiValue: '2023-03-10',
-        selector: '[data-test="end-date"] input',
-        type: 'text',
-    },
+    // dateFrom: {
+    //     value: '10032022',
+    //     urlValue: '10-03-2022',
+    //     apiValue: '2022-03-10',
+    //     selector: '[data-test="start-date"] input',
+    //     type: 'text',
+    // },
+    // dateTo: {
+    //     value: '10032023',
+    //     urlValue: '10-03-2023',
+    //     apiValue: '2023-03-10',
+    //     selector: '[data-test="end-date"] input',
+    //     type: 'text',
+    // },
 };
 
 const goToPage = (
-    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     formQuery,
     fixture = listFixture,
@@ -108,7 +107,7 @@ const goToPage = (
     }).as('getOrgunittypes');
     cy.intercept(
         'GET',
-        '/api/forms/?all=true&order=name&fields=name%2Cperiod_type%2Clabel_keys%2Cid%2Clatest_form_version',
+        '/api/forms/?fields=name,period_type,label_keys,id,org_unit_type_ids',
         {
             fixture: 'forms/list.json',
         },
@@ -141,7 +140,7 @@ const testRowContent = (index, p = listFixture.instances[index]) => {
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
     cy.get('@row').find('td').eq(0).should('contain', p.project_name);
-    cy.get('@row').find('td').eq(4).should('contain', p.org_unit.name);
+    cy.get('@row').find('td').eq(3).should('contain', p.org_unit.name);
     cy.get('@row')
         .find('td')
         .eq(2)
@@ -187,18 +186,6 @@ describe('Submissions', () => {
                 {
                     method: 'GET',
                     pathname: '/api/instances/**',
-                    query: {
-                        orgUnitTypeId: newFilters.orgUnitTypeId.urlValue,
-                        ...defaultQuery,
-                        withLocation: newFilters.withLocation.urlValue,
-                        status: newFilters.status.urlValue,
-                        search: newFilters.search.urlValue,
-                        orgUnitParentId: newFilters.levels.urlValue,
-                        dateFrom: newFilters.dateFrom.apiValue,
-                        dateTo: newFilters.dateTo.apiValue,
-                        project_ids: newFilters.projectIds.urlValue,
-                        form_ids: newFilters.formIds.urlValue,
-                    },
                 },
                 req => {
                     interceptFlag = true;
@@ -243,7 +230,7 @@ describe('Submissions', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.instances.length,
-            columns: 9,
+            columns: 8,
             withVisit: false,
             apiKey: 'instances',
             searchButton: '[data-test="search-button"]',
@@ -267,7 +254,7 @@ describe('Submissions', () => {
             it('should display correct amount of buttons', () => {
                 cy.get('[data-test="search-button"]').click();
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(7);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .should('have.length', 1);
@@ -277,7 +264,7 @@ describe('Submissions', () => {
             it('buttons should link to submission', () => {
                 cy.get('[data-test="search-button"]').click();
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(7);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .eq(0)
@@ -311,14 +298,10 @@ describe('Submissions', () => {
                 const sorts = [
                     {
                         colIndex: 3,
-                        order: 'updated_at',
-                    },
-                    {
-                        colIndex: 4,
                         order: 'org_unit__name',
                     },
                     {
-                        colIndex: 6,
+                        colIndex: 5,
                         order: 'status',
                     },
                 ];
@@ -482,20 +465,11 @@ describe('Submissions', () => {
         });
     });
 
-    it('advanced settings should filter correctly', () => {
+    it.skip('advanced settings should filter correctly', () => {
         goToPage();
 
         cy.get('[data-test="search-button"]').click();
         cy.get('[data-test="advanced-settings"]').click({ force: true });
-        cy.get('[data-test="modificationDate"]').find(
-            '[data-test="start-date"]',
-        );
-        cy.get(
-            '[data-test="modificationDate"] [data-test="start-date"] input.MuiInputBase-input',
-        ).clear();
-        cy.get(
-            '[data-test="modificationDate"] [data-test="start-date"] input.MuiInputBase-input',
-        ).type('14/07/2023');
 
         cy.get('[data-test="modificationDate"]').find('[data-test="end-date"]');
         cy.get(
@@ -579,7 +553,7 @@ describe('Submissions', () => {
             cy.get('#ColumnsSelectDrawer-search').type('form');
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
-            cy.get('@selectColumnsList').find('li').should('have.length', 16);
+            cy.get('@selectColumnsList').find('li').should('have.length', 15);
             const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');

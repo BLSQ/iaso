@@ -28,11 +28,10 @@ const testRowContent = (index, form = formsList.forms[index]) => {
     cy.get('@row').find('td').eq(1).should('contain', form.name);
     cy.get('@row').find('td').eq(2).should('contain', formCreatedAt);
     cy.get('@row').find('td').eq(3).should('contain', formUpdatedAt);
-    cy.get('@row').find('td').eq(4).should('contain', formLastInstance);
 
     cy.get('@row')
         .find('td')
-        .eq(5)
+        .eq(4)
         .should('contain', form.org_unit_types[0].name);
     cy.get('@row').find('td').last().find('button').should('have.length', 2);
 };
@@ -81,7 +80,7 @@ describe('forms tab', () => {
                 cy.get('@table').find('tbody').find('tr').as('rows');
                 cy.get('@rows').should('have.length', formsList.count);
                 cy.get('@rows').eq(0).as('row');
-                cy.get('@row').find('td').should('have.length', 7);
+                cy.get('@row').find('td').should('have.length', 6);
                 cy.get('@row').find('td').eq(1).as('nameCol');
 
                 cy.get('@nameCol').should(
@@ -94,7 +93,7 @@ describe('forms tab', () => {
         testTablerender({
             baseUrl,
             rows: formsList.forms.length,
-            columns: 7,
+            columns: 6,
             apiPath: `forms/*`,
             apiKey: `forms`,
             withVisit: false,
@@ -126,7 +125,7 @@ describe('forms tab', () => {
 
     describe('Actions buttons', () => {
         it('should contain a link with the right href', () => {
-            const submissionsHref = `/dashboard/forms/submissions/formIds/1/isSearchActive/true/levels/${orgUnit.id}/tab/list`;
+            const submissionsHref = `/dashboard/forms/submissions/formIds/1/levels/${orgUnit.id}/tab/list`;
 
             cy.wait('@getOuDetail').then(() => {
                 cy.get('table').as('table');

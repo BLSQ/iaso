@@ -43,7 +43,7 @@ const goToPage = (
     cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
         fixture: 'orgunittypes/dropdown-list.json',
     });
-    cy.intercept('GET', '/api/teams/*', {
+    cy.intercept('GET', '/api/teams/**/*', {
         fixture: 'teams/list.json',
     });
     cy.intercept(
@@ -109,6 +109,7 @@ describe('Users', () => {
     describe('Search field', () => {
         beforeEach(() => {
             goToPage();
+            cy.wait('@getUsers');
         });
         testSearchField(search, searchWithForbiddenChars);
     });
@@ -310,6 +311,7 @@ describe('Users', () => {
                 cy.get('[data-test="search-button"]').click();
                 cy.wait('@getUsersSearch').then(xhr => {
                     cy.wrap(interceptFlag).should('eq', true);
+                    console.log('query', JSON.stringify(xhr.request.query));
                     cy.wrap(xhr.request.query).should('deep.equal', {
                         limit: '20',
                         location: '3',

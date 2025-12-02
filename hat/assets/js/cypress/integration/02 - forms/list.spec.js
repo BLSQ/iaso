@@ -66,7 +66,7 @@ describe('Forms', () => {
             testTablerender({
                 baseUrl,
                 rows: 11,
-                columns: 7,
+                columns: 6,
                 apiKey: 'forms',
                 searchButton: '[data-test="search-button"]',
             });
@@ -82,6 +82,7 @@ describe('Forms', () => {
                     is_superuser: false,
                 };
                 goToPage(fakeUser);
+                cy.wait('@getForms');
                 cy.get('[data-test="add-form-button"]').should('not.exist');
             });
             it("is visible if user has 'forms' permission", () => {
@@ -91,7 +92,9 @@ describe('Forms', () => {
                     is_superuser: false,
                 };
                 goToPage(fakeUser);
-                cy.get('[data-test="add-form-button"]').should('exist').click();
+                cy.wait('@getForms');
+                cy.get('[data-test="add-form-button"]').as('addFormButton');
+                cy.get('@addFormButton').click();
                 // check that button redirects to creation page
                 cy.url().should(
                     'eq',
@@ -102,6 +105,7 @@ describe('Forms', () => {
         describe('Search field', () => {
             beforeEach(() => {
                 goToPage();
+                cy.wait('@getForms');
             });
             testSearchField(search, searchWithForbiddenChars, 'forms');
         });
@@ -123,12 +127,17 @@ describe('Forms', () => {
                     .should('not.equal', 'disabled');
             });
             it('action should deep link active search', () => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]').click();
-                cy.url().should(
-                    'eq',
-                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/search/${search}/isSearchActive/true`,
-                );
+                cy.wait('@getForms').then(() => {
+                    cy.get('#search-search').as('searchInput');
+                    cy.wait(1);
+                    cy.get('@searchInput').type(search);
+                    cy.get('[data-test="search-button"]').as('searchButton');
+                    cy.get('@searchButton').click();
+                    cy.url().should(
+                        'eq',
+                        `${siteBaseUrl}/dashboard/forms/list/accountId/1/search/${search}`,
+                    );
+                });
             });
         });
         describe('Table', () => {
@@ -139,7 +148,7 @@ describe('Forms', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.forms.length);
-                rows.eq(0).find('td').should('have.length', 7);
+                rows.eq(0).find('td').should('have.length', 6);
             });
 
             describe('Action column', () => {
@@ -192,7 +201,7 @@ describe('Forms', () => {
                         cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(1);
-                        const latestCol = row.find('td').eq(6);
+                        const latestCol = row.find('td').eq(5);
                         latestCol.find('button').eq(5).should('not.exist');
                     });
 
@@ -200,7 +209,7 @@ describe('Forms', () => {
                         cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
-                        const latestCol = row.find('td').eq(6);
+                        const latestCol = row.find('td').eq(5);
                         latestCol.find('button').eq(5);
                         cy.get('a')
                             .filter((index, element) => {
@@ -215,7 +224,7 @@ describe('Forms', () => {
                         cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
-                        const latestCol = row.find('td').eq(6);
+                        const latestCol = row.find('td').eq(5);
                         latestCol.find('button').eq(5).click();
                         cy.get('ul').get('li').eq(0).should('have.text', 'XLS');
                         cy.get('ul').get('li').eq(1).should('have.text', 'XML');
@@ -289,15 +298,15 @@ describe('Forms', () => {
             goToPage(superUser, null, 'forms/list.json');
             cy.get('[data-test="search-button"]').click();
             cy.wait('@getForms').then(() => {
-                cy.get('#search-search').type(search);
                 cy.fillMultiSelect('#orgUnitTypeIds', [0, 1], false);
                 cy.fillMultiSelect('#projectsIds', [0, 1], false);
                 cy.get('#check-box-showDeleted').check();
 
+                cy.get('#search-search').as('searchInput');
+                cy.get('@searchInput').type(search, { force: true });
                 cy.get('[data-test="search-button"]').click();
 
                 cy.wait('@getForms').then(xhr => {
-                    cy.log('query', xhr.request.query);
                     cy.wrap(xhr.request.query).should('deep.equal', {
                         limit: '50',
                         order: 'instance_updated_at',
@@ -306,7 +315,7 @@ describe('Forms', () => {
                         projectsIds: '1,2',
                         search: 'ZELDA',
                         showDeleted: 'true',
-                        fields: 'id,name,form_id,device_field,location_field,org_unit_types,org_unit_type_ids,projects,project_ids,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,instance_updated_at,created_at,updated_at,deleted_at,derived,label_keys,possible_fields,legend_threshold,has_mappings',
+                        fields: 'created_at,name,org_unit_types,projects,updated_at,id,form_id,device_field,location_field,org_unit_type_ids,project_ids,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,updated_at,deleted_at,derived,label_keys,possible_fields,legend_threshold,has_mappings',
                     });
                 });
             });

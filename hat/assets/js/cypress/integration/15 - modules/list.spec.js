@@ -1,15 +1,14 @@
 /// <reference types="cypress" />
 
+import { search, searchWithForbiddenChars } from '../../constants/search';
+import entityTypes from '../../fixtures/entityTypes/list.json';
 import listFixture from '../../fixtures/modules/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
-import entityTypes from '../../fixtures/entityTypes/list.json';
 
-import { testPermission } from '../../support/testPermission';
-import { testTablerender } from '../../support/testTableRender';
-import { testSearchField } from '../../support/testSearchField';
 import { testPagination } from '../../support/testPagination';
-
-import { search, searchWithForbiddenChars } from '../../constants/search';
+import { testPermission } from '../../support/testPermission';
+import { testSearchField } from '../../support/testSearchField';
+import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/modules`;
@@ -50,6 +49,7 @@ describe('Modules', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
+            cy.wait('@getModules');
         });
         testSearchField(search, searchWithForbiddenChars);
     });

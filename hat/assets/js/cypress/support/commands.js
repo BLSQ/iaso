@@ -204,8 +204,9 @@ Cypress.Commands.add('deleteLastFieldInArrayInputField', selector => {
  * @param {string} value - new value to fill, by default empty string
  */
 Cypress.Commands.add('fillTextField', (id, value = '') => {
-    cy.get(id).clear();
-    cy.get(id).type(value);
+    cy.get(id).as('textField');
+    cy.get('@textField').clear();
+    cy.get('@textField').type(value);
 });
 
 /**

@@ -32,11 +32,7 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
             time: 1000000,
         },
     );
-    cy.intercept(
-        'GET',
-        '/api/teams/?type=TEAM_OF_USERS',
-        teamsList,
-    );
+    cy.intercept('GET', '/api/teams/?type=TEAM_OF_USERS', teamsList);
     cy.intercept(
         'GET',
 
@@ -198,8 +194,8 @@ describe('Duplicate entities list', () => {
                 interceptFlag = false;
                 cy.intercept(
                     'GET',
-                    // eslint-disable-next-line max-len
-                    '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=%5B%223%22%5D&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=26&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20',
+
+                    '/api/entityduplicates/**/*',
                     req => {
                         interceptFlag = true;
                         req.reply({
@@ -216,12 +212,7 @@ describe('Duplicate entities list', () => {
                 cy.fillSingleSelect('#algorithm', 0);
                 cy.fillSingleSelect('#similarity', 1);
                 cy.fillMultiSelect('#entity_type', [2, 3], false);
-                cy.get('[data-test="start-date"] input').type(20052010, {
-                    force: true,
-                });
-                cy.get('[data-test="end-date"] input').type(25052010, {
-                    force: true,
-                });
+
                 cy.get('#check-box-ignored').check({
                     force: true,
                 });

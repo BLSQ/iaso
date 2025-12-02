@@ -15,7 +15,9 @@ export const testSearchField = (
                     ? 'not.be.disabled'
                     : 'be.disabled',
             );
-        cy.get('#search-search').type(search);
+        cy.get('#search-search').as('searchInput');
+        cy.wait(100);
+        cy.get('@searchInput').type(search, { force: true });
         cy.get('@search-button').should('not.be.disabled');
     });
 
@@ -27,7 +29,9 @@ export const testSearchField = (
                     ? 'not.be.disabled'
                     : 'be.disabled',
             );
-        cy.get('#search-search').type(searchWithForbiddenChars);
+        cy.get('#search-search').as('searchInput');
+        cy.wait(100);
+        cy.get('@searchInput').type(searchWithForbiddenChars);
         if (
             containsForbiddenCharacter(
                 searchWithForbiddenChars,

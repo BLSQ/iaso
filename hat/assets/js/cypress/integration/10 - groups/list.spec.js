@@ -1,18 +1,18 @@
 /// <reference types="cypress" />
 
+import { formatThousand } from 'bluesquare-components';
 import moment from 'moment';
 
-import { formatThousand } from 'bluesquare-components';
+import { search, searchWithForbiddenChars } from '../../constants/search';
+import emptyFixture from '../../fixtures/groups/empty.json';
 import listFixture from '../../fixtures/groups/list-page1.json';
 import listFixture2 from '../../fixtures/groups/list-page2.json';
-import emptyFixture from '../../fixtures/groups/empty.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 
-import { testPermission } from '../../support/testPermission';
-import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
+import { testPermission } from '../../support/testPermission';
 import { testSearchField } from '../../support/testSearchField';
-import { search, searchWithForbiddenChars } from '../../constants/search';
+import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/configuration/groups`;
@@ -154,6 +154,7 @@ describe('Groups', () => {
     describe('Search field', () => {
         beforeEach(() => {
             goToPage({});
+            cy.wait('@getGroups');
         });
         testSearchField(search, searchWithForbiddenChars);
     });
@@ -245,7 +246,7 @@ describe('Groups', () => {
         it('should contain a link redirecting to the right org unit', () => {
             cy.wait('@getGroups').then(() => {
                 const href =
-                    '/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searchActive/true/searches/[{"validation_status":"all", "color":"f4511e", "group":"1", "source": null}]';
+                    '/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searchActive/true/searches/[{"validation_status":"all", "color":"42a5f5", "group":"1", "source": null}]';
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
                 const orgUnitLinkCol = row.find('td').eq(6);

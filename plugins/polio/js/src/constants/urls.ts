@@ -27,7 +27,6 @@ export const CONFIG_COUNTRY_URL = `${CONFIG_BASE_URL}/country`;
 export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`;
 export const EMBEDDED_LQAS_COUNTRY_URL = 'polio/embeddedLqasCountry';
 export const LQAS_BASE_URL = 'polio/lqas/lqas';
-export const EMBEDDED_LQAS_COUNTRY_URL = 'polio/embeddedLqasCountry';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
 export const EMBEDDED_LQAS_AFRO_MAP_URL = 'polio/embeddedLqasMap';
 export const IM_GLOBAL = 'polio/im/global';

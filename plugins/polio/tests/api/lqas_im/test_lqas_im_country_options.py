@@ -18,8 +18,6 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
     @override
     def test_get_without_perm(self):
         """GET - Read-only access  for page embedding"""
-        if not self.endpoint:
-            return
         self.client.force_authenticate(self.anon)
         response = self.client.get(self.endpoint)
         self.assertJSONResponse(response, 200)

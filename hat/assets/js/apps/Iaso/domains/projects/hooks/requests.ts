@@ -12,7 +12,7 @@ type ProjectApi = {
     projects: Array<Project>;
 };
 const getProjects = (
-    canBypassProjectRestrictions?: boolean,
+    canBypassProjectRestrictions = false,
 ): Promise<ProjectApi> => {
     let url = '/api/projects/';
     if (canBypassProjectRestrictions) {

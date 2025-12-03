@@ -6,7 +6,8 @@ import { useQueryClient } from 'react-query';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { TaskBaseInfo } from 'Iaso/domains/tasks/components/TaskBaseInfo';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
-import { useGetLogs, useGetTask } from 'Iaso/domains/tasks/hooks/api';
+import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
+import { useGetTaskDetails } from 'Iaso/domains/tasks/hooks/useGetTasks';
 import { Task } from 'Iaso/domains/tasks/types';
 import MESSAGES from '../messages';
 import { TaskParameters, TaskParams } from './TaskParameters';
@@ -35,7 +36,7 @@ const TaskModal: FunctionComponent<Props> = ({
             queryClient.invalidateQueries(['tasks']).then();
         }
     }, [data, task, setRunning, queryClient]);
-    const { data: fetchedTask } = useGetTask(task.id);
+    const { data: fetchedTask } = useGetTaskDetails(task.id);
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [data, messagesEndRef]);

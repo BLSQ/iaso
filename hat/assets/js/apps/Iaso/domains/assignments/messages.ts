@@ -230,6 +230,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.emptyAssignments',
         defaultMessage: 'Delete assignments',
     },
+    progress: {
+        defaultMessage: 'Progress',
+        id: 'iaso.tasks.progress',
+    },
 });
 
 export default MESSAGES;

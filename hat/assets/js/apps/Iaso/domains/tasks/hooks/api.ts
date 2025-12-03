@@ -78,16 +78,3 @@ export const useGetLogs = (
         },
     });
 };
-
-export const useGetTask = (
-    taskId: number,
-): UseQueryResult<Task<any>, Error> => {
-    return useSnackQuery({
-        queryKey: ['tasks', taskId],
-        queryFn: () => getRequest(`/api/tasks/${taskId}/`),
-        options: {
-            retry: false,
-            keepPreviousData: true,
-        },
-    });
-};

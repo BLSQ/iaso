@@ -98,6 +98,7 @@ export const Assignments: FunctionComponent = () => {
         isLoadingAssignments,
         isTeamsFetched,
         setProfiles,
+        setExtraFilters,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -306,6 +307,7 @@ export const Assignments: FunctionComponent = () => {
                                 )}
                                 orgunitTypes={orgunitTypes}
                                 isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                                setExtraFilters={setExtraFilters}
                             />
                         )}
                 </Box>

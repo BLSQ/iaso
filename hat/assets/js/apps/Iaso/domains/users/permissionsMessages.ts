@@ -805,6 +805,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_stock_management_tooltip: {
         id: 'iaso.permissions.iaso_stock_management_tooltip',
         defaultMessage: 'Allows to manage all aspects of stock management of items such as medical supplies or equipment',
+    },
+    iaso_polio_performance_permissions: {
+        id: 'iaso.permissions.iaso_polio_performance_permissions',
+        defaultMessage: 'Performance dashboard',
+    },
+    iaso_polio_performance_permissions_tooltip: {
+        id: 'iaso.permissions.iaso_polio_performance_permissions_tooltip',
+        defaultMessage: "Allows to manage data for vaccine module's performance dashboard",
     }
 });
 

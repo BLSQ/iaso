@@ -40,6 +40,8 @@ export type TaskLog = {
 export type TaskLogApiResponse = {
     status: TaskStatus;
     logs: TaskLog[];
+    end_value: number;
+    progress_value: number;
 };
 
 export type TaskApiResponse<T> = {

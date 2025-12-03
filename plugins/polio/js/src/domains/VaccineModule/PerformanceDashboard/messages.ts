@@ -23,7 +23,7 @@ const MESSAGES = defineMessages({
     },
     antigen: {
         id: 'iaso.polio.antigen',
-        defaultMessage: 'Antigen',
+        defaultMessage: 'Vaccine',
     },
     createdAt: {
         id: 'iaso.forms.created_at',

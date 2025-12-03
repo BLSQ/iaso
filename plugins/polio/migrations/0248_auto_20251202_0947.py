@@ -7,17 +7,17 @@ def transfer_permission(apps, schema_editor):
     User = apps.get_model("auth", "User")
     Permission = apps.get_model("auth", "Permission")
     admin_permissions = ["iaso_polio_vaccine_stock_earmarks_admin", "iaso_polio_vaccine_stock_management_write"]
-    non_admin_permissions = ["iaso_polio_vaccine_stock_earmarks_nonadmin ", "iaso_polio_vaccine_stock_management_read"]
+    non_admin_permissions = ["iaso_polio_vaccine_stock_earmarks_nonadmin", "iaso_polio_vaccine_stock_management_read"]
     read_only_permissions = [
         "iaso_polio_vaccine_stock_earmarks_read_only",
         "iaso_polio_vaccine_stock_management_read_only",
     ]
-    admin_users = User.objects.filter(user_permissions__codename__in=admin_permissions).distinct()
-    non_admin_users = User.objects.filter(user_permissions__codename__in=non_admin_permissions).distinct()
-    read_only_users = User.objects.filter(user_permissions__codename__in=read_only_permissions).distinct()
     admin_perm = Permission.objects.get(codename="iaso_polio_performance_admin")
     non_admin_perm = Permission.objects.get(codename="iaso_polio_performance_non_admin")
     read_only_perm = Permission.objects.get(codename="iaso_polio_performance_read_only")
+    admin_users = User.objects.filter(user_permissions__codename__in=admin_permissions).distinct()
+    non_admin_users = User.objects.filter(user_permissions__codename__in=non_admin_permissions).distinct()
+    read_only_users = User.objects.filter(user_permissions__codename__in=read_only_permissions).distinct()
     for user in admin_users:
         user.user_permissions.add(admin_perm)
     for user in non_admin_users:
@@ -29,12 +29,12 @@ def transfer_permission(apps, schema_editor):
 def remove_permission(apps, schema_editor):
     User = apps.get_model("auth", "User")
     Permission = apps.get_model("auth", "Permission")
-    admin_users = User.objects.filter(user_permissions__codename="iaso_polio_performance_admin").distinct()
-    non_admin_users = User.objects.filter(user_permissions__codename="iaso_polio_performance_non_admin").distinct()
-    read_only_users = User.objects.filter(user_permissions__codename="iaso_polio_performance_read_only").distinct()
     admin_perm = Permission.objects.get(codename="iaso_polio_performance_admin")
     non_admin_perm = Permission.objects.get(codename="iaso_polio_performance_non_admin")
     read_only_perm = Permission.objects.get(codename="iaso_polio_performance_read_only")
+    admin_users = User.objects.filter(user_permissions__codename="iaso_polio_performance_admin").distinct()
+    non_admin_users = User.objects.filter(user_permissions__codename="iaso_polio_performance_non_admin").distinct()
+    read_only_users = User.objects.filter(user_permissions__codename="iaso_polio_performance_read_only").distinct()
     for user in admin_users:
         user.user_permissions.remove(admin_perm)
     for user in non_admin_users:

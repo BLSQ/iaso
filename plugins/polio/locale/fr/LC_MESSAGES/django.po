@@ -676,3 +676,31 @@ msgstr "Polio - chaîne d'approvisionnement (écriture)"
 #: plugins/polio/preparedness/spreadsheet_manager.py
 msgid "No country found for campaign"
 msgstr "Aucun pays trouvé pour la campagne"
+
+#: plugins/polio/performance_dashboard.py
+msgid "Draft"
+msgstr "Ébauche"
+
+#: plugins/polio/performance_dashboard.py
+msgid "Commented"
+msgstr "Commenté"
+
+#: plugins/polio/performance_dashboard.py
+msgid "Final"
+msgstr "Final"
+
+#: plugins/polio/performance_dashboard.py
+msgid "Performance Dashboard"
+msgstr "Tableau des performances"
+
+#: plugins/polio/permissions.py
+msgid "Polio Performance Read Only"
+msgstr "Polio - Performance (lecture seule)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Performance Non Admin"
+msgstr "Polio - Performance Non Admin"
+
+#: plugins/polio/permissions.py
+msgid "Polio performance Admin"
+msgstr "Polio - Performance Admin"

@@ -5,10 +5,15 @@ import { Table } from 'bluesquare-components';
 
 import { getStickyTableHeadStyles } from '../../../styles/utils';
 import { Profile } from '../../../utils/usersUtils';
+import {
+    DropdownTeamsOptions,
+    SubTeam,
+    Team,
+    User,
+} from '../../teams/types/team';
 import { useColumns } from '../configs/AssignmentsMapTabColumns';
 import { AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 type Props = {
     data: SubTeam[] | User[];
@@ -44,7 +49,6 @@ export const Sidebar: FunctionComponent<Props> = ({
         setSelectedItem,
         currentTeam,
         orgUnits,
-        isLoadingAssignments,
     });
     return (
         <Paper>

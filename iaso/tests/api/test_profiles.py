@@ -10,7 +10,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Profile
-from iaso.models.microplanning import Team
+from iaso.models.team import Team
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
@@ -341,6 +341,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_export_as_csv(self):
+        self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
@@ -351,37 +352,39 @@ class ProfileAPITestCase(APITestCase):
 
         response_csv = response.getvalue().decode("utf-8")
 
-        expected_csv = (
-            "username,"
-            "password,"
-            "email,"
-            "first_name,"
-            "last_name,"
-            "orgunit,"
-            "orgunit__source_ref,"
-            "profile_language,"
-            "dhis2_id,"
-            "organization,"
-            "permissions,"
-            "user_roles,"
-            "projects,"
-            "phone_number,"
-            "editable_org_unit_types\r\n"
+        expected_csv = "".join(
+            [
+                "user_profile_id,",
+                "username,"
+                "password,"
+                "email,"
+                "first_name,"
+                "last_name,"
+                "orgunit,"
+                "orgunit__source_ref,"
+                "profile_language,"
+                "dhis2_id,"
+                "organization,"
+                "permissions,"
+                "user_roles,"
+                "projects,"
+                "phone_number,"
+                "editable_org_unit_types\r\n",
+            ]
         )
 
-        expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += (
-            f'jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
-        )
-        expected_csv += f"jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
+        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
+        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
+        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
+        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,\r\n"
+        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
+        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
     def test_profile_list_export_as_xlsx(self):
+        self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
@@ -392,6 +395,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(
             excel_columns,
             [
+                "user_profile_id",
                 "username",
                 "password",
                 "email",
@@ -413,6 +417,15 @@ class ProfileAPITestCase(APITestCase):
         self.assertDictEqual(
             excel_data,
             {
+                "user_profile_id": {
+                    0: self.jane.iaso_profile.id,
+                    1: self.john.iaso_profile.id,
+                    2: self.jim.iaso_profile.id,
+                    3: self.jam.iaso_profile.id,
+                    4: self.jom.iaso_profile.id,
+                    5: self.jum.iaso_profile.id,
+                    6: self.user_managed_geo_limit.iaso_profile.id,
+                },
                 "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
                 "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
@@ -940,13 +953,35 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 2)
 
-    def test_search_by_ids(self):
+    def test_list_by_ids(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["profiles"]), 2)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+
+    def test_search_by_profile_ids(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/profiles/", {"search": f"ids:{self.jane.iaso_profile.id},{self.jim.iaso_profile.id}", "order": "id"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["profiles"]), 2)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+
+    def test_search_by_dhis2_id(self):
+        self.client.force_authenticate(self.jane)
+        mydhis2_id = "mydhis2id"
+
+        self.jim.iaso_profile.dhis2_id = mydhis2_id
+        self.jim.iaso_profile.save()
+
+        response = self.client.get("/api/profiles/", {"search": f"refs:{mydhis2_id}"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["profiles"]), 1)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "jim")
 
     def test_search_by_teams(self):
         self.client.force_authenticate(self.jane)

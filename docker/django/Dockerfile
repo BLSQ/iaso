@@ -2,12 +2,12 @@
 FROM python:3.9
 
 RUN apt-get update && apt-get --yes install \
-		curl \
-		gettext \
-		gettext-base \
-		postgresql-client \
-		libgdal-dev \
-    &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+	curl \
+	gettext \
+	gettext-base \
+	postgresql-client \
+	libgdal-dev \
+	&&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
 
@@ -15,6 +15,11 @@ WORKDIR /opt/app
 COPY requirements.txt /opt/app/requirements.txt
 COPY requirements-dev.txt /opt/app/requirements-dev.txt
 RUN pip install -r requirements-dev.txt
+
+# Uncomment to debug snt-malaria budgeting
+# ENV PYTHONPATH="/opt/snt-malaria-budgeting:${PYTHONPATH}"
+
+# RUN pip uninstall -y snt-malaria-budgeting || true
 
 # don't copy app we mount everything afterwards for hot reloading anyway
 #COPY . /opt/app

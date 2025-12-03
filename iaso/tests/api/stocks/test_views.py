@@ -429,7 +429,7 @@ class StockLedgerItemAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(),
+            created_at=datetime(2025, 11, 5, 0, 0, 0),
         )
 
     def test_not_authenticated_without_rights_list(self):
@@ -482,6 +482,129 @@ class StockLedgerItemAPITestCase(APITestCase):
             # 1. SELECT OrgUnit
             # 2. SELECT COUNT(*)
             response = self.client.get(LEDGER_ITEM_URL, {"org_unit_id": self.org_unit_2.id})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+    def test_list_filter_date_before(self):
+        self.client.force_authenticate(self.user_without_rights)
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
+            response = self.client.get(LEDGER_ITEM_URL, {"created_at_before": "2025-11-05"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(1, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(LEDGER_ITEM_URL, {"created_at_before": "2025-11-04"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+    def test_list_filter_date_after(self):
+        self.client.force_authenticate(self.user_without_rights)
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
+            response = self.client.get(LEDGER_ITEM_URL, {"created_at_after": "2025-11-05"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(1, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(LEDGER_ITEM_URL, {"created_at_after": "2025-11-06"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+    def test_list_filter_date_before_and_after(self):
+        self.client.force_authenticate(self.user_without_rights)
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
+            response = self.client.get(
+                LEDGER_ITEM_URL, {"created_at_after": "2025-11-04", "created_at_before": "2025-11-06"}
+            )
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(1, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(
+                LEDGER_ITEM_URL, {"created_at_after": "2025-11-03", "created_at_before": "2025-11-04"}
+            )
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(
+                LEDGER_ITEM_URL, {"created_at_after": "2025-11-06", "created_at_before": "2025-11-07"}
+            )
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+    def test_list_filter_question(self):
+        self.client.force_authenticate(self.user_without_rights)
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
+            response = self.client.get(LEDGER_ITEM_URL, {"question": "_name"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(1, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(LEDGER_ITEM_URL, {"question": "whatever"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+    def test_list_filter_value_from(self):
+        self.client.force_authenticate(self.user_without_rights)
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
+            response = self.client.get(LEDGER_ITEM_URL, {"value_from": "10"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(1, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(LEDGER_ITEM_URL, {"value_from": "11"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+    def test_list_filter_value_to(self):
+        self.client.force_authenticate(self.user_without_rights)
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
+            response = self.client.get(LEDGER_ITEM_URL, {"value_to": "10"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(1, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(LEDGER_ITEM_URL, {"value_to": "9"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+    def test_list_filter_value_from_and_to(self):
+        self.client.force_authenticate(self.user_without_rights)
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
+            response = self.client.get(LEDGER_ITEM_URL, {"value_to": "12", "value_from": "8"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(1, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(LEDGER_ITEM_URL, {"value_to": "12", "value_from": "11"})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertEqual(0, response.data["count"])
+
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
+            response = self.client.get(LEDGER_ITEM_URL, {"value_to": "9", "value_from": "8"})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(0, response.data["count"])
 

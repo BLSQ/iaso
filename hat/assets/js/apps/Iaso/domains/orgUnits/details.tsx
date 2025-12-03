@@ -31,6 +31,7 @@ import {
     useCurrentUser,
 } from '../../utils/usersUtils';
 import { FormsTable } from '../forms/components/FormsTable';
+import { FormsParams } from '../forms/types/forms';
 import { userHasPermission } from '../users/utils';
 import { OrgUnitBreadcrumbs } from './components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnitForm } from './components/OrgUnitForm';
@@ -143,7 +144,10 @@ const OrgUnitDetail: FunctionComponent = () => {
         useCheckUserHasWritePermissionOnOrgunit(
             currentOrgUnit?.org_unit_type_id,
         ) && hasOrgUnitsHistoryPermission;
-    const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
+    const formParams = useOrgUnitTabParams(
+        params,
+        FORMS_PREFIX,
+    ) as unknown as FormsParams;
     const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
     const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);
 
@@ -531,7 +535,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                                             limit: 10,
                                             page: 1,
                                         }}
-                                        isSearchActive
+                                        displayColumnsSelectDrawer={false}
                                     />
                                 </Box>
                             )}

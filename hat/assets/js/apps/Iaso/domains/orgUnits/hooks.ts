@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import {
     useSnackMutation,
     useSnackQueries,
     useSnackQuery,
 } from 'Iaso/libs/apiHooks';
-import { getChipColors, getOtChipColors } from '../../constants/chipColors';
 import { useCheckUserHasWriteTypePermission } from '../../utils/usersUtils';
 import { DataSource } from '../dataSources/types/dataSources';
 import { Link, PaginatedLinks } from '../links/types';
@@ -40,6 +40,7 @@ export const useOrgUnitDetailData = (
     levels: string,
     tab: string,
 ): UseOrgUnitDetailDataReturn => {
+    const { data: colors } = useGetColors(true);
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
             ['currentOrgUnit', orgUnitId],
@@ -76,7 +77,7 @@ export const useOrgUnitDetailData = (
             const orgUnitTypes =
                 data?.orgUnitTypes.map((ot, i) => ({
                     ...ot,
-                    color: getOtChipColors(i),
+                    color: getColor(i, colors),
                 })) || [];
             return orgUnitTypes.filter(
                 ot =>
@@ -84,7 +85,11 @@ export const useOrgUnitDetailData = (
                     originalOrgUnit?.org_unit_type?.id === ot.id,
             );
         },
-        [checkUserHasWriteTypePermission, originalOrgUnit?.org_unit_type?.id],
+        [
+            checkUserHasWriteTypePermission,
+            originalOrgUnit?.org_unit_type?.id,
+            colors,
+        ],
     );
     const [
         { data: groups = [], isFetching: isFetchingGroups },
@@ -150,7 +155,7 @@ export const useOrgUnitDetailData = (
                 select: (data: PaginatedDataSources) =>
                     data.sources.map((s, i) => ({
                         ...s,
-                        color: getChipColors(i),
+                        color: getColor(i, colors),
                     })),
                 enabled: !isNewOrgunit && (tab === 'map' || tab === 'links'),
                 ...cacheOptions,
@@ -164,7 +169,7 @@ export const useOrgUnitDetailData = (
                 select: (data: PaginatedDataSources) =>
                     data.sources.map((s, i) => ({
                         ...s,
-                        color: getChipColors(i),
+                        color: getColor(i, colors),
                     })),
                 enabled: isNewOrgunit && (tab === 'map' || tab === 'links'),
                 ...cacheOptions,

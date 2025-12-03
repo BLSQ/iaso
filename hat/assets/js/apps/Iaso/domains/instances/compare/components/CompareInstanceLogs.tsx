@@ -64,6 +64,8 @@ export const CompareInstanceLogs: FunctionComponent = () => {
             logB: instanceLogB?.new_value[0]?.fields,
             logAFiles: instanceLogA?.files,
             logBFiles: instanceLogB?.files,
+            formDescriptorA: instanceLogA?.form_descriptor,
+            formDescriptorB: instanceLogB?.form_descriptor,
             fields: instanceLogA?.possible_fields,
         }),
         [instanceLogA, instanceLogB],
@@ -174,7 +176,7 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                                         logAInitialValue),
                             )}
                             loading={isFetchingInstanceLogs}
-                            user={instanceLogA?.user}
+                            user={instanceLogB?.user}
                             infos={instanceLogContent.logB}
                             dropDownLoading={isInstanceLogBFetching}
                         />

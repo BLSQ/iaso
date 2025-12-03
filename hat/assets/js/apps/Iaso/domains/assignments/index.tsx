@@ -13,12 +13,15 @@ import {
     useSkipEffectOnMount,
     useRedirectTo,
     useRedirectToReplace,
+    useGoBack,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineConfig } from '../openHexa/hooks/useGetPipelineConfig';
 import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
+import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
+import { Team, SubTeam, User } from '../teams/types/team';
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
@@ -30,7 +33,6 @@ import MESSAGES from './messages';
 import { OpenhexaIntegrationDrawer } from './sampling/OpenhexaIntegrationDrawer';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { AssignmentUnit } from './types/locations';
-import { Team, SubTeam, User } from './types/team';
 import { getSaveParams } from './utils';
 
 const useStyles = makeStyles(theme => ({
@@ -95,7 +97,8 @@ export const Assignments: FunctionComponent = () => {
         isFetchingChildrenOrgunits,
         isLoadingAssignments,
         isTeamsFetched,
-        setItemColor,
+        setProfiles,
+        setExtraFilters,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -107,6 +110,30 @@ export const Assignments: FunctionComponent = () => {
     });
     const isLoading = isLoadingPlanning || isSaving;
 
+    const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
+
+    const setItemColor = (color, itemId) => {
+        // TODO: improve this
+        if (currentTeam?.type === 'TEAM_OF_USERS') {
+            const itemIndex = profiles.findIndex(
+                profile => profile.user_id === itemId,
+            );
+            if (itemIndex !== undefined) {
+                const newProfiles = [...profiles];
+                newProfiles[itemIndex] = {
+                    ...newProfiles[itemIndex],
+                    color,
+                };
+                setProfiles(newProfiles);
+            }
+        }
+        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+            saveTeam({
+                id: itemId,
+                color,
+            });
+        }
+    };
     const { data: hasPipelineConfig } = useGetPipelineConfig();
     const handleSaveAssignment = useCallback(
         (selectedOrgUnit: AssignmentUnit) => {
@@ -237,13 +264,15 @@ export const Assignments: FunctionComponent = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [planning?.id, currentTeam?.id]);
+    const goBack = useGoBack(baseUrls.planning);
     return (
         <>
             <TopBar
                 title={`${formatMessage(MESSAGES.title)}: ${
                     planning?.name ?? ''
                 }`}
-                displayBackButton={false}
+                displayBackButton
+                goBack={goBack}
             />
             <ParentDialog
                 childrenOrgunits={childrenOrgunits}
@@ -278,6 +307,7 @@ export const Assignments: FunctionComponent = () => {
                                 )}
                                 orgunitTypes={orgunitTypes}
                                 isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                                setExtraFilters={setExtraFilters}
                             />
                         )}
                 </Box>

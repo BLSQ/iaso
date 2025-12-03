@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import moment from 'moment';
 import { Grid, Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 
-import { Analysis } from '../types';
-import MESSAGES from '../messages';
 import { useGetEntityTypesDropdown } from '../../hooks/requests';
+import MESSAGES from '../messages';
+import { Analysis } from '../types';
 
 type Props = {
     analysis: Analysis;
@@ -21,10 +21,10 @@ export const AnalysisTooltipTitle: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const parameters: string[] = useMemo(
         () =>
-            Object.entries(analysis.metadata.parameters).map(
+            Object.entries(analysis.parameters).map(
                 ([key, value]) => `${key}: ${value}`,
             ),
-        [analysis.metadata.parameters],
+        [analysis.parameters],
     );
     const { data: entityTypesDropdown } = useGetEntityTypesDropdown();
 
@@ -32,13 +32,12 @@ export const AnalysisTooltipTitle: FunctionComponent<Props> = ({
         if (entityTypesDropdown) {
             const type = entityTypesDropdown.find(
                 entityType =>
-                    entityType.value ===
-                    parseInt(analysis.metadata.entity_type_id, 10),
+                    entityType.value === parseInt(analysis.entity_type_id, 10),
             );
             return type?.label || '-';
         }
         return '';
-    }, [analysis.metadata.entity_type_id, entityTypesDropdown]);
+    }, [analysis.entity_type_id, entityTypesDropdown]);
 
     const data: Info[] = useMemo(
         () => [
@@ -58,7 +57,7 @@ export const AnalysisTooltipTitle: FunctionComponent<Props> = ({
             },
             {
                 label: formatMessage(MESSAGES.fields),
-                value: analysis.metadata.fields.join(','),
+                value: analysis.fields.join(','),
             },
             {
                 label: formatMessage(MESSAGES.parameters),

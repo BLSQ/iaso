@@ -25,6 +25,7 @@ export const EMBEDDED_VACCINE_STOCK_URL = 'polio/embeddedVaccineStock';
 export const CONFIG_BASE_URL = 'polio/config';
 export const CONFIG_COUNTRY_URL = `${CONFIG_BASE_URL}/country`;
 export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`;
+export const EMBEDDED_LQAS_COUNTRY_URL = 'polio/embeddedLqasCountry';
 export const LQAS_BASE_URL = 'polio/lqas/lqas';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
 export const IM_GLOBAL = 'polio/im/global';
@@ -151,6 +152,23 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     lqasCountry: {
         url: LQAS_BASE_URL,
+        params: [
+            'leftCountry',
+            'leftCampaign',
+            'leftRound',
+            'leftMonth',
+            'leftYear',
+            'leftTab',
+            'rightCampaign',
+            'rightCountry',
+            'rightRound',
+            'rightMonth',
+            'rightYear',
+            'rightTab',
+        ],
+    },
+    embeddedLqasCountry: {
+        url: EMBEDDED_LQAS_COUNTRY_URL,
         params: [
             'leftCountry',
             'leftCampaign',
@@ -366,6 +384,7 @@ export type PolioBaseUrls = {
     embeddedCalendar: string;
     embeddedVaccineRepository: string;
     embeddedVaccineStock: string;
+    embeddedLqasCountry: string;
     notification: string;
     chronogram: string;
     chronogramTemplateTask: string;

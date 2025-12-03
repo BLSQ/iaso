@@ -1,26 +1,22 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.fields import Field
 
 from iaso.api.common import (
     DateTimestampField,
     TimestampField,
 )
+from iaso.api.teams.serializers import NestedTeamSerializer
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
-from iaso.models.microplanning import Assignment, Planning, Team, TeamType
+from iaso.models.microplanning import Assignment, Planning
 from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.models.team import Team
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
-
-
-class NestedTeamSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Team
-        fields = ["id", "name", "deleted_at"]
+        ref_name = "MicroplanningNestedProject"
 
 
 class NestedUserSerializer(serializers.ModelSerializer):
@@ -29,129 +25,16 @@ class NestedUserSerializer(serializers.ModelSerializer):
         fields = ["id", "username"]
 
 
-class AuditTeamSerializer(serializers.ModelSerializer):
-    sub_teams: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-
-    class Meta:
-        model = Team
-        fields = "__all__"
-
-
 class NestedOrgUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "org_unit_type"]
 
 
-class TeamSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        user = self.context["request"].user
-        account = user.iaso_profile.account
-        users_in_account = User.objects.filter(iaso_profile__account=account)
-        self.fields["project"].queryset = account.project_set.all()
-        self.fields["manager"].queryset = users_in_account
-        self.fields["users"].child_relation.queryset = users_in_account
-        self.fields["sub_teams"].child_relation.queryset = Team.objects.filter_for_user(user)
-        self.fields["parent"].queryset = Team.objects.filter_for_user(user)
-
+class NestedOrgUnitTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Team
-        fields = [
-            "id",
-            "project",
-            "project_details",
-            "name",
-            "description",
-            "created_at",
-            "deleted_at",
-            "type",
-            "users",
-            "users_details",
-            "manager",
-            "parent",
-            "sub_teams",
-            "sub_teams_details",
-        ]
-        read_only_fields = ["created_at"]
-
-    users_details = NestedUserSerializer(many=True, read_only=True, source="users")
-    sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
-    project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
-
-    def validate_parent(self, value: Team):
-        if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):
-            raise serializers.ValidationError("parentIsNotTeamOfTeam")
-        if self.instance:
-            p = value
-            while p:
-                if p == self.instance:
-                    raise serializers.ValidationError("noLoopInSubTree")
-                # TODO: investigate type error on next line
-                p = p.parent  # type: ignore
-        return value
-
-    def validate_sub_teams(self, values):
-        def recursive_check(instance, children):
-            for child in children:
-                if instance == child:
-                    raise serializers.ValidationError("noLoopInSubTree")
-                recursive_check(instance, child.sub_teams.all())
-
-        if self.instance:
-            recursive_check(self.instance, values)
-        return values
-
-    def save(self, **kwargs):
-        old_sub_teams_ids = []
-        if self.instance:
-            old_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
-        r = super().save(**kwargs)
-        new_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
-        team_changed_qs = Team.objects.filter(id__in=new_sub_teams_ids + old_sub_teams_ids)
-        teams_to_update = []
-        for team in team_changed_qs:
-            teams_to_update += team.calculate_paths(force_recalculate=True)
-        Team.objects.bulk_update(teams_to_update, ["path"])
-        return r
-
-    def validate(self, attrs):
-        validated_data = super(TeamSerializer, self).validate(attrs)
-
-        user = self.context["request"].user
-        validated_data["created_by"] = user
-
-        project = validated_data.get("project", self.instance.project if self.instance else None)
-        sub_teams = validated_data.get("sub_teams", self.instance.sub_teams.all() if self.instance else [])
-        for sub_team in sub_teams:
-            if sub_team.project != project:
-                raise serializers.ValidationError("Sub teams must be in the same project")
-
-        # Check that we don't have both user and teams
-        # this is written in this way to support partial update
-        users = None
-        teams = None
-        if self.instance:
-            teams = self.instance.sub_teams.all()
-            users = self.instance.users.all()
-        if "sub_teams" in validated_data:
-            teams = validated_data["sub_teams"]
-        if "users" in validated_data:
-            users = validated_data["users"]
-        if teams and users:
-            raise serializers.ValidationError("Teams cannot have both users and sub teams")
-        if users:
-            expected_type = TeamType.TEAM_OF_USERS
-        elif teams:
-            expected_type = TeamType.TEAM_OF_TEAMS
-        else:
-            expected_type = None
-        if validated_data.get("type") and expected_type and expected_type != validated_data.get("type"):
-            raise serializers.ValidationError("Incorrect type")
-        if validated_data.get("type") is None:
-            validated_data["type"] = expected_type
-
-        return validated_data
+        model = OrgUnitType
+        fields = ["id", "name"]
 
 
 class PlanningSerializer(serializers.ModelSerializer):
@@ -163,6 +46,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
+        self.fields["target_org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
 
     class Meta:
         model = Planning
@@ -181,12 +65,15 @@ class PlanningSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "pipeline_uuids",
+            "target_org_unit_type",
+            "target_org_unit_type_details",
         ]
         read_only_fields = ["created_at", "parent"]
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
+    target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
     pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
 
     def validate(self, attrs):
@@ -224,6 +111,19 @@ class PlanningSerializer(serializers.ModelSerializer):
             org_unit_projects = org_unit.org_unit_type.projects.all()
             if project not in org_unit_projects:
                 validation_errors["org_unit"] = "planningAndOrgUnit"
+
+        target_org_unit_type = validated_data.get(
+            "target_org_unit_type", self.instance.target_org_unit_type if self.instance else None
+        )
+        if target_org_unit_type:
+            target_type_projects = target_org_unit_type.projects.all()
+            if project not in target_type_projects:
+                validation_errors["target_org_unit_type"] = "planningAndTargetOrgUnitType"
+            else:
+                descendant_org_units = OrgUnit.objects.descendants(org_unit).filter(org_unit_type=target_org_unit_type)
+                if not descendant_org_units.exists():
+                    validation_errors["target_org_unit_type"] = "noOrgUnitsOfTypeInHierarchy"
+
         if validation_errors:
             raise serializers.ValidationError(validation_errors)
 

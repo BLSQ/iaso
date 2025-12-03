@@ -156,4 +156,4 @@ azure-storage-blob==12.19.0
 
 # SNT Malaria plugin.
 # ------------------------------------------------------------------------------
-snt-malaria-budgeting==0.2.0
+snt-malaria-budgeting==0.4.2

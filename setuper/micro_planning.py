@@ -59,7 +59,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     for team_name in ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]:
         user_ids = [x["user_id"] for x in users[team_index : team_index + 5]]
         iaso_client.post(
-            "/api/microplanning/teams/",
+            "/api/teams/",
             json={
                 "manager": manager["user_id"],
                 "name": f"TEAM {team_name}",
@@ -71,12 +71,12 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         )
         team_index = team_index + 1
 
-    teams = iaso_client.get("/api/microplanning/teams/?limit=20000")["results"]
+    teams = iaso_client.get("/api/teams/?limit=20000")["results"]
 
     print(f"\t{len(teams) - 1} teams created")
 
     iaso_client.post(
-        "/api/microplanning/teams/",
+        "/api/teams/",
         json={
             "name": "Team of Teams",
             "project": project_id,

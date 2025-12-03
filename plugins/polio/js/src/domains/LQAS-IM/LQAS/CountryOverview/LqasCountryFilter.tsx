@@ -7,7 +7,6 @@ import {
 import { LqasUrlParams } from '..';
 import { Box, Grid } from '@mui/material';
 import MESSAGES from '../../../../constants/messages';
-import { baseUrls } from '../../../../constants/urls';
 import {
     useGetLqasCampaignsOptions,
     useGetLqasCountriesOptions,
@@ -19,6 +18,8 @@ import moment from 'moment';
 type Props = {
     params: LqasUrlParams;
     side: Side;
+    currentUrl: string;
+    isEmbedded: boolean;
 };
 
 const monthOptions = [
@@ -53,19 +54,19 @@ const generateYearOptions = (
 };
 const yearOptions = generateYearOptions();
 
-const baseUrl = baseUrls.lqasCountry;
-
 export const LqasCountryFilter: FunctionComponent<Props> = ({
     params,
     side,
+    currentUrl,
+    isEmbedded,
 }) => {
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
 
     const { data: countriesOptions, isFetching: isFetchingCountriesOptions } =
-        useGetLqasCountriesOptions({ side, params });
+        useGetLqasCountriesOptions({ side, params, isEmbedded });
     const { data: campaignsOptions, isFetching: isFetchingCampaignsOptions } =
-        useGetLqasCampaignsOptions({ side, params });
+        useGetLqasCampaignsOptions({ side, params, isEmbedded });
 
     const onChange = useCallback(
         (key, value) => {
@@ -88,7 +89,7 @@ export const LqasCountryFilter: FunctionComponent<Props> = ({
             }
 
             // setFilters(newFilters);
-            redirectToReplace(baseUrl, newParams);
+            redirectToReplace(currentUrl, newParams);
         },
         [redirectToReplace, ...Object.values(params), side],
     );

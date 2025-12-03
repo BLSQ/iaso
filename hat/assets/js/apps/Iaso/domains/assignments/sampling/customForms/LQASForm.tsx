@@ -4,12 +4,15 @@ import React, {
     useMemo,
     useState,
     useEffect,
+    Dispatch,
+    SetStateAction,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
 import { Box, Button, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { useGetTaskDetails } from 'Iaso/domains/tasks/hooks/useGetTasks';
 import { SxStyles } from 'Iaso/types/general';
 import {
     addToArray,
@@ -19,7 +22,7 @@ import {
 import MESSAGES from '../../messages';
 import { Planning } from '../../types/planning';
 
-import { Criteria } from '../types';
+import { Criteria, TaskStatus } from '../types';
 import { Level } from './Level';
 
 const styles: SxStyles = {
@@ -59,6 +62,9 @@ type Props = {
     handleParameterChange: (parameterName: string, value: any) => void;
     orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     isFetchingOrgunitTypes: boolean;
+    taskStatus: TaskStatus;
+    setExtraFilters: Dispatch<SetStateAction<Record<string, any>>>;
+    taskId?: number;
 };
 
 export const LQASForm: FunctionComponent<Props> = ({
@@ -68,6 +74,9 @@ export const LQASForm: FunctionComponent<Props> = ({
     handleParameterChange,
     orgunitTypes,
     isFetchingOrgunitTypes,
+    taskStatus,
+    taskId,
+    setExtraFilters,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [expandedLevels, setExpandedLevels] = useState<boolean[]>([false]);
@@ -161,6 +170,21 @@ export const LQASForm: FunctionComponent<Props> = ({
         [update],
     );
 
+    const { data: taskDetails } = useGetTaskDetails(
+        taskStatus === 'SUCCESS' ? taskId : undefined,
+    );
+    useEffect(() => {
+        if (taskDetails?.result?.group_id) {
+            setExtraFilters({
+                group: taskDetails.result.group_id,
+            });
+        }
+    }, [
+        setExtraFilters,
+        taskDetails?.result?.bulk_update_task_id,
+        taskDetails?.result?.group_id,
+    ]);
+
     // Memoized values
     const levels = useMemo(() => {
         const orgunitTypeIds =
@@ -179,30 +203,44 @@ export const LQASForm: FunctionComponent<Props> = ({
     const canAddLevel = latestOptions?.original?.sub_unit_types.length !== 0;
     const isLastLevelUndefined = levels[levels.length - 1] === undefined;
 
+    const {
+        org_unit_type_sequence_identifiers,
+        org_unit_type_criteria,
+        org_unit_type_quantities,
+    } = parameterValues || {};
+
     useEffect(() => {
         if (
-            parameterValues?.org_unit_type_sequence_identifiers?.length &&
-            parameterValues?.org_unit_type_sequence_identifiers?.length > 0 &&
-            !canAddLevel
+            org_unit_type_sequence_identifiers?.length &&
+            org_unit_type_sequence_identifiers?.length > 0
         ) {
-            const allLevelsFilled =
-                parameterValues.org_unit_type_sequence_identifiers?.every(
-                    (level, index) => {
-                        return (
-                            level !== undefined &&
-                            parameterValues.org_unit_type_criteria?.[index] !==
-                                undefined &&
-                            parameterValues.org_unit_type_quantities?.[
-                                index
-                            ] !== undefined
-                        );
-                    },
-                );
-            setAllowConfirm(Boolean(allLevelsFilled));
+            const allLevelsFilled = org_unit_type_sequence_identifiers?.every(
+                (level, index) => {
+                    return (
+                        level !== undefined &&
+                        org_unit_type_criteria?.[index] !== undefined &&
+                        org_unit_type_quantities?.[index] !== undefined
+                    );
+                },
+            );
+
+            setAllowConfirm(
+                Boolean(allLevelsFilled) &&
+                    (!planning.target_org_unit_type ||
+                        latestOptions?.value === planning.target_org_unit_type),
+            );
         } else {
             setAllowConfirm(false);
         }
-    }, [setAllowConfirm, parameterValues, canAddLevel]);
+    }, [
+        setAllowConfirm,
+        org_unit_type_sequence_identifiers,
+        org_unit_type_criteria,
+        org_unit_type_quantities,
+        canAddLevel,
+        planning.target_org_unit_type,
+        latestOptions?.value,
+    ]);
     return (
         <Paper sx={styles.paper}>
             {levels.map((orgUnitTypeId, index) => {

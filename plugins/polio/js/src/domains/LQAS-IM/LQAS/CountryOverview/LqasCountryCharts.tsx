@@ -25,6 +25,7 @@ type Props = {
     campaignObrName?: string;
     convertedData: Record<string, ConvertedLqasImData>;
     countryId?: NumberAsString;
+    isEmbedded?: boolean;
 };
 
 export const LqasCountryCharts: FunctionComponent<Props> = ({
@@ -37,6 +38,7 @@ export const LqasCountryCharts: FunctionComponent<Props> = ({
     convertedData,
     countryId,
     isFetchingCampaign,
+    isEmbedded = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
@@ -57,6 +59,7 @@ export const LqasCountryCharts: FunctionComponent<Props> = ({
                     countryId={countryId ? parseInt(countryId, 10) : undefined}
                     data={convertedData}
                     isLoading={isFetching}
+                    isEmbedded={isEmbedded}
                 />
             </Paper>
 

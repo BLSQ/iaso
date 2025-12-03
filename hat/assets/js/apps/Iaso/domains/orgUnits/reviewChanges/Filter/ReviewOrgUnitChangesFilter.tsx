@@ -14,9 +14,11 @@ import {
 } from 'bluesquare-components';
 
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useCheckBoxFilter, useFilterState } from 'Iaso/hooks/useFilterState';
 import { DropdownOptions } from 'Iaso/types/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
@@ -28,11 +30,8 @@ import {
     useSearchDataSourceVersionsSynchronization,
 } from '../../../dataSources/hooks/useGetDataSourceVersionsSynchronizationDropdown';
 import { useDefaultSourceVersion } from '../../../dataSources/utils';
-import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
-import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
 import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../components/TreeView/requests';
 import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
@@ -81,8 +80,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
-    const { data: forms, isFetching: isLoadingForms } = useGetForms();
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
+    const { data: formOptions, isFetching: isLoadingForms } =
+        useGetFormsDropdownOptions();
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
 
@@ -124,14 +123,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const [dataSource, setDataSource] = useState<string>(
         sourceParam || defaultSourceVersion?.source?.id.toString(),
     );
-    const formOptions = useMemo(
-        () =>
-            forms?.map(form => ({
-                label: form.name,
-                value: form.id,
-            })) || [],
-        [forms],
-    );
+
     // Get the initial data source id
     const initialDataSource = useMemo(
         () =>
@@ -258,14 +250,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             const joined = Array.isArray(newValue)
                 ? newValue.join(',')
                 : newValue;
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
-
-    const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
             handleChange(keyValue, joined);
         },
         [handleChange],
@@ -470,6 +454,18 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
+                <InputWithInfos
+                    infos={formatMessage(MESSAGES.searchOrgUnitInfos)}
+                >
+                    <InputComponent
+                        type="text"
+                        clearable
+                        keyValue="org_unit"
+                        value={filters.org_unit}
+                        onChange={handleChange}
+                        labelString={formatMessage(MESSAGES.orgUnit)}
+                    />
+                </InputWithInfos>
                 <Box id="ou-tree-input">
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
@@ -490,18 +486,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <InputWithInfos
-                    infos={formatMessage(MESSAGES.searchOrgUnitInfos)}
-                >
-                    <InputComponent
-                        type="text"
-                        clearable
-                        keyValue="org_unit"
-                        value={filters.org_unit}
-                        onChange={handleChange}
-                        labelString={formatMessage(MESSAGES.orgUnit)}
-                    />
-                </InputWithInfos>
                 <InputComponent
                     type="select"
                     multi
@@ -537,14 +521,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2}>
-                    <AsyncSelect
+                    <UserAsyncSelect
                         keyValue="userIds"
-                        label={MESSAGES.user}
-                        value={selectedUsers ?? ''}
-                        onChange={handleChangeUsers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
+                        handleChange={handleChange}
+                        filterUsers={filters.userIds}
                     />
                 </Box>
                 <InputComponent

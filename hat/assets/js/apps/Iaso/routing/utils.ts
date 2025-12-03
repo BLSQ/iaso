@@ -1,11 +1,14 @@
 import { createUrl } from 'bluesquare-components';
-import { getChipColors } from '../constants/chipColors';
+import { getColor } from 'Iaso/hooks/useGetColors';
 import { baseUrls } from '../constants/urls';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { cleanupParams } from '../utils/requests';
 
 // TODO replace createUrl to avoid multiple methods with same use
-export const getOrgUnitsUrl = (accountId: string | number): string =>
+export const getOrgUnitsUrl = (
+    accountId: string | number,
+    colors: string[],
+): string =>
     `/${baseUrls.orgUnits}${createUrl(
         {
             accountId,
@@ -14,8 +17,9 @@ export const getOrgUnitsUrl = (accountId: string | number): string =>
             pageSize: 50,
             page: 1,
             searchTabIndex: 0,
-            searches: `[{"validation_status":"all", "color":"${getChipColors(
+            searches: `[{"validation_status":"all", "color":"${getColor(
                 0,
+                colors,
             ).replace('#', '')}"}]`,
         },
         '',

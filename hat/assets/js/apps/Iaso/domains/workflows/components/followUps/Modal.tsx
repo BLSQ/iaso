@@ -16,6 +16,7 @@ import {
     JsonLogicEditor,
 } from 'bluesquare-components';
 
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
@@ -23,7 +24,6 @@ import { Popper } from '../../../forms/fields/components/Popper';
 import { parseJson, JSONValue } from '../../../instances/utils/jsonLogicParse';
 import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
 import { useCreateWorkflowFollowUp } from '../../hooks/requests/useCreateWorkflowFollowUp';
-import { useGetForms } from '../../hooks/requests/useGetForms';
 
 import MESSAGES from '../../messages';
 
@@ -69,7 +69,8 @@ const FollowUpsModal: FunctionComponent<Props> = ({
         closeDialog,
         versionId,
     );
-    const { data: forms, isFetching: isFetchingForms } = useGetForms();
+    const { data: formsList, isFetching: isFetchingForms } =
+        useGetFormsDropdownOptions();
 
     const handleConfirm = useCallback(() => {
         if (followUp?.id) {
@@ -97,14 +98,6 @@ const FollowUpsModal: FunctionComponent<Props> = ({
         newOrder,
         saveFollowUp,
     ]);
-    const formsList = useMemo(
-        () =>
-            forms?.map(form => ({
-                label: form.name,
-                value: form.id,
-            })) || [],
-        [forms],
-    );
     const handleChangeLogic = (result: JsonLogicResult) => {
         let parsedValue;
         if (result?.logic && fields)

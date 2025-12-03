@@ -342,7 +342,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(response_data["entity_type_id"], str(self.default_entity_type.id))
         self.assertEqual(response_data["fields"], ["Prenom", "Nom", "age__int__"])
         self.assertEqual(response_data["algorithm"], "levenshtein")
-        self.assertEqual(response_data["parameters"], {})
+        self.assertEqual(response_data["parameters"], {"above_score_display": 50, "levenshtein_max_distance": 3})
         self.assertEqual(response_data["created_by"]["id"], self.user_with_default_ou_rw.id)
 
         response_duplicate = self.client.get("/api/entityduplicates/")

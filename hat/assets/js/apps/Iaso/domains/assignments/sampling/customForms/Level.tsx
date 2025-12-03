@@ -190,6 +190,8 @@ export const Level: FunctionComponent<Props> = ({
                                 withMarginTop={false}
                                 type="select"
                                 required
+                                // TODO: remove this when we have those infos
+                                disabled
                                 keyValue={`org_unit_type_criteria_${index}`}
                                 onChange={(_, value) => {
                                     handleCriteriaChange(value, index);

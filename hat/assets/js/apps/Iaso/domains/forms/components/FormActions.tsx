@@ -38,7 +38,7 @@ export const FormActions: FunctionComponent<Props> = ({
         setAnchorEl(null);
     };
     // Url to instances
-    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}/isSearchActive/true`;
+    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}`;
     if (orgUnitId) {
         urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
     }

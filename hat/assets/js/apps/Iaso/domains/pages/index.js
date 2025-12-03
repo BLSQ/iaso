@@ -1,19 +1,19 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
-import { Box, Button, Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { Box, Button, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { useGetPages } from './hooks/useGetPages';
-import { useRemovePage } from './hooks/useRemovePage';
-import DeleteConfirmDialog from './components/DeleteConfirmDialog';
-import CreateEditDialog from './components/CreateEditDialog';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { baseUrls } from '../../constants/urls.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import CreateEditDialog from './components/CreateEditDialog';
+import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import Filters from './components/Filters';
 import { usePagesColumns } from './config';
+import { useGetPages } from './hooks/useGetPages';
+import { useRemovePage } from './hooks/useRemovePage';
+import MESSAGES from './messages';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;

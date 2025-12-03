@@ -22,7 +22,12 @@ export const useStyles = makeStyles(theme => ({
         width: '100%',
     },
     list: {
-        height: `calc(100vh - ${theme.spacing(8)})`,
+        maxHeight: `calc(100vh - ${theme.spacing(8)})`,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+    },
+    listWithApply: {
+        maxHeight: `calc(100vh - ${theme.spacing(16)})`,
         overflowY: 'auto',
         overflowX: 'hidden',
     },

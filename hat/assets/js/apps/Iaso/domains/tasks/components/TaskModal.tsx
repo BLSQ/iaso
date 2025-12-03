@@ -6,17 +6,25 @@ import { useQueryClient } from 'react-query';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { TaskBaseInfo } from 'Iaso/domains/tasks/components/TaskBaseInfo';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
-import { useGetLogs, useGetTask } from 'Iaso/domains/tasks/hooks/api';
+import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
+import { useGetTaskDetails } from 'Iaso/domains/tasks/hooks/useGetTasks';
 import { Task } from 'Iaso/domains/tasks/types';
 import MESSAGES from '../messages';
+import { TaskParameters, TaskParams } from './TaskParameters';
 
 export type Props = {
     task: Task<any>;
     isOpen: boolean;
+    taskParams?: TaskParams[];
     closeDialog: () => void;
 };
 
-const TaskModal: FunctionComponent<Props> = ({ task, isOpen, closeDialog }) => {
+const TaskModal: FunctionComponent<Props> = ({
+    task,
+    isOpen,
+    closeDialog,
+    taskParams = [],
+}) => {
     const queryClient = useQueryClient();
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
     const [isRunning, setRunning] = useState(false);
@@ -28,8 +36,7 @@ const TaskModal: FunctionComponent<Props> = ({ task, isOpen, closeDialog }) => {
             queryClient.invalidateQueries(['tasks']).then();
         }
     }, [data, task, setRunning, queryClient]);
-    const { data: fetchedTask } = useGetTask(task.id);
-
+    const { data: fetchedTask } = useGetTaskDetails(task.id);
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [data, messagesEndRef]);
@@ -42,11 +49,16 @@ const TaskModal: FunctionComponent<Props> = ({ task, isOpen, closeDialog }) => {
             maxWidth="md"
         >
             <Grid container spacing={2}>
-                <Grid item xs={8}>
+                <Grid item xs={6}>
                     <WidgetPaper title={formatMessage(MESSAGES.task)}>
                         <TaskBaseInfo size="small" task={fetchedTask ?? task} />
                     </WidgetPaper>
                 </Grid>
+                {taskParams && taskParams.length > 0 ? (
+                    <Grid item xs={6}>
+                        <TaskParameters taskParams={taskParams} />
+                    </Grid>
+                ) : null}
             </Grid>
 
             <Box

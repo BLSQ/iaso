@@ -283,10 +283,18 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 progress_value = validated_data.get("progress_value")
                 progress_message = validated_data.get("progress_message")
                 end_value = validated_data.get("end_value")
+                result_data = validated_data.get("result")
+
+                # Update progress fields
                 if progress_value is not None or progress_message is not None or end_value is not None:
                     task.report_progress_and_stop_if_killed(
                         progress_value=progress_value, progress_message=progress_message, end_value=end_value
                     )
+
+                # Update result field if provided (independently of progress)
+                if result_data is not None:
+                    task.result = result_data
+                    task.save()
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
 
@@ -324,9 +332,5 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             return Response(response_data)
 
-        except ValidationError:
-            # Configuration not properly set up
-            return Response({"configured": False})
-        except Exception as e:
-            logger.exception(f"Error checking OpenHexa config: {str(e)}")
+        except (ValidationError, Exception):
             return Response({"configured": False})

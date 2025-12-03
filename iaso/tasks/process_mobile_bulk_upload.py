@@ -346,9 +346,12 @@ def process_population_instances(instances_data):
             newest_population_instance = (
                 get_population_instances().filter(org_unit=org_unit).order_by("-source_created_at").first()
             )
-            new_pop = int(newest_population_instance.json["population"])
-            org_unit.set_extra_fields({"population": new_pop})
-            logger.info(f"\tSet population on {org_unit.name} ({org_unit.id}) to {new_pop}")
+            if newest_population_instance:
+                new_pop = int(newest_population_instance.json["population"])
+                org_unit.set_extra_fields({"population": new_pop})
+                logger.info(f"\tSet population on {org_unit.name} ({org_unit.id}) to {new_pop}")
+            else:
+                logger.warning(f"No population form instance found for org unit {org_unit_id}")
 
 
 def is_uuid(string):

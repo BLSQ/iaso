@@ -23,7 +23,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         """
         Authenticated users without the correct permissions should be forbidden.
         """
-        self.client.force_authenticate(self.user_Naruto_no_perms)
+        self.client.force_authenticate(self.user_no_perms)
         response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL)
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
@@ -31,7 +31,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         """
         Test that a read-only user can only perform GET requests.
         """
-        self.client.force_authenticate(self.user_Neji)
+        self.client.force_authenticate(self.user_read_only)
 
         # GET should work
         response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL)
@@ -42,7 +42,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # PATCH should fail
-        threshold_id = self.threshold_hokage_stock_12m.id
+        threshold_id = self.threshold_stock_12m.id
         response = self.client.patch(f"{self.PERFORMANCE_THRESHOLDS_API_URL}{threshold_id}/", data={}, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
@@ -54,7 +54,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         """
         Test that a non-admin user can create a new threshold.
         """
-        self.client.force_authenticate(self.user_Kakashi)
+        self.client.force_authenticate(self.user_non_admin)
 
         create_data = {
             "indicator": "daily_report_completeness",
@@ -73,9 +73,9 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         Test that a non-admin user CAN update an existing record.
         (Unlike Dashboards, Threshold settings usually don't have a time limit for edits)
         """
-        self.client.force_authenticate(self.user_Kakashi)
+        self.client.force_authenticate(self.user_non_admin)
 
-        threshold = self.threshold_hokage_stock_12m
+        threshold = self.threshold_stock_12m
 
         # Change Success from 5 to 8
         update_data = {"success_threshold": "8"}
@@ -95,7 +95,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         """
         self.client.force_authenticate(self.user_Hashirama)
 
-        threshold_id = self.threshold_hokage_stock_12m.id
+        threshold_id = self.threshold_stock_12m.id
 
         response = self.client.delete(f"{self.PERFORMANCE_THRESHOLDS_API_URL}{threshold_id}/")
         self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
@@ -110,7 +110,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         """
         Test that a user can only list thresholds from their own account.
         """
-        self.client.force_authenticate(self.user_Hashirama)  # User from Hokage account
+        self.client.force_authenticate(self.user_admin)
 
         response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -124,25 +124,22 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         else:
             self.fail("Response is not paginated as expected")
 
-        # Expected: 2 (Stock Out + Vials for Hokage). Should NOT see Akatsuki's threshold.
-        expected_count = PerformanceThresholds.objects.filter(account=self.account_hokage).count()
+        expected_count = PerformanceThresholds.objects.filter(account=self.account).count()
         self.assertEqual(count, expected_count)
         self.assertEqual(count, 2)
 
         result_ids = {item["id"] for item in results}
 
-        # threshold_akatsuki_stock belongs to account_akatsuki and should NOT be visible
         self.assertNotIn(
-            self.threshold_akatsuki_stock.id,
+            self.threshold_stock_12m_other_account.id,
             result_ids,
-            "Threshold from another account (Akatsuki) should not be listed for Hokage user",
         )
 
     def test_create_sets_audit_fields_correctly(self):
         """
         Test that on creation, `created_by` and `account` are set automatically by the view/serializer.
         """
-        self.client.force_authenticate(self.user_Kakashi)
+        self.client.force_authenticate(self.user_non_admin)
 
         data = {
             "indicator": "pre_campaign_activities",
@@ -156,5 +153,5 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
 
         new_threshold = PerformanceThresholds.objects.get(id=response.json()["id"])
 
-        self.assertEqual(new_threshold.created_by, self.user_Kakashi)
-        self.assertEqual(new_threshold.account, self.account_hokage)
+        self.assertEqual(new_threshold.created_by, self.user_non_admin)
+        self.assertEqual(new_threshold.account, self.account)

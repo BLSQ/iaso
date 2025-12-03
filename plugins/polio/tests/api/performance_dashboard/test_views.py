@@ -186,7 +186,7 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         """
         Test that a user can only list dashboards from their own account.
         """
-        self.client.force_authenticate(self.user_admin_1)  # User from Hokage account
+        self.client.force_authenticate(self.user_admin_1)
         response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -205,7 +205,6 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         self.assertNotIn(
             self.dashboard_3.id,
             result_ids,
-            "Dashboard from another account (Akatsuki) should not be listed for Hokage user",
         )
 
     def test_create_sets_audit_fields_correctly(self):

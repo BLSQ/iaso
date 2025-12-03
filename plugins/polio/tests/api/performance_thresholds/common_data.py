@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AnonymousUser
+
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.models.performance_thresholds import PerformanceThresholds
@@ -18,81 +20,63 @@ class PerformanceThresholdsAPIBase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        # --- 1. Main Account (Hokage) ---
-        cls.datasource_hokage = m.DataSource.objects.create(name="Datasource Hokage")
-        cls.datasource_version_hokage = m.SourceVersion.objects.create(data_source=cls.datasource_hokage, number=1)
-        cls.account_hokage = m.Account.objects.create(name="Hokage", default_version=cls.datasource_version_hokage)
-        cls.app_id = "hokage"
-        cls.project_Tsukuyomi = m.Project.objects.create(
-            name="Project Tsukuyomi", account=cls.account_hokage, app_id=cls.app_id
-        )
-        cls.datasource_hokage.projects.set([cls.project_Tsukuyomi])
+        # --- 1. Main Account ---
+        cls.datasource = m.DataSource.objects.create(name="Datasource")
+        cls.datasource_version = m.SourceVersion.objects.create(data_source=cls.datasource, number=1)
+        cls.account = m.Account.objects.create(name="account", default_version=cls.datasource_version)
+        cls.app_id = "com.app_id.app"
+        cls.project = m.Project.objects.create(name="Project", account=cls.account, app_id=cls.app_id)
+        cls.datasource.projects.set([cls.project])
 
         # --- 2. Users for Main Account ---
-        # Admin (Can CRUD everything)
-        cls.user_Hashirama = cls.create_user_with_profile(
-            username="Hashirama Senju",
-            account=cls.account_hokage,
+        # Admin
+        cls.user_admin = cls.create_user_with_profile(
+            username="admin",
+            account=cls.account,
             permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
         )
 
-        # Admin 2 (Can CRUD)
-        cls.user_Tobirama = cls.create_user_with_profile(
-            username="Tobirama Senju",
-            account=cls.account_hokage,
-            permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
-        )
-
-        # Read Only (Can View, Cannot Create/Edit)
-        cls.user_Neji = cls.create_user_with_profile(
-            username="Neji Hyuga",
-            account=cls.account_hokage,
-            permissions=[POLIO_PERFORMANCE_READ_ONLY_PERMISSION],
-        )
-
-        # Non-Admin (Can Create/Edit, usually)
-        cls.user_Kakashi = cls.create_user_with_profile(
-            username="Kakashi Hatake",
-            account=cls.account_hokage,
+        # Non admin
+        cls.user_non_admin = cls.create_user_with_profile(
+            username="non admin",
+            account=cls.account,
             permissions=[POLIO_PERFORMANCE_NON_ADMIN_PERMISSION],
         )
 
-        # No Permissions (Should see nothing)
-        cls.user_Naruto_no_perms = cls.create_user_with_profile(
-            username="Naruto UZUMAKI", account=cls.account_hokage, permissions=[]
+        # Read Only (Can View, Cannot Create/Edit)
+        cls.user_read_only = cls.create_user_with_profile(
+            username="read only",
+            account=cls.account,
+            permissions=[POLIO_PERFORMANCE_READ_ONLY_PERMISSION],
         )
 
-        # --- 3. Second Account (Akatsuki) - For Isolation Tests ---
-        cls.account_akatsuki = m.Account.objects.create(name="Akatsuki", default_version=cls.datasource_version_hokage)
-        cls.user_pain = cls.create_user_with_profile(
-            username="Pain",
-            account=cls.account_akatsuki,
+        # No Permissions (Read-only)
+        cls.user_no_perms = cls.create_user_with_profile(username="No perms", account=cls.account, permissions=[])
+        # Anonymous user (unauthenticated)
+        cls.anon = AnonymousUser()
+
+        # --- 3. Second Account - For access control tests ---
+        cls.other_account = m.Account.objects.create(name="Other account", default_version=cls.datasource_version)
+        cls.user_other_account = cls.create_user_with_profile(
+            username="other account user",
+            account=cls.other_account,
             permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
-        )
-
-        # --- 4. Org Units (Optional, but good to keep if needed later) ---
-        org_unit_type_country = m.OrgUnitType.objects.create(name="Country", category="COUNTRY")
-        org_unit_type_block = m.OrgUnitType.objects.create(name="Region", category="REGION")
-
-        cls.land_of_fire = m.OrgUnit.objects.create(name="Land of Fire", org_unit_type=org_unit_type_block)
-        cls.konoha = m.OrgUnit.objects.create(
-            name="Konoha", org_unit_type=org_unit_type_country, parent=cls.land_of_fire
         )
 
         # --- 5. Performance Thresholds Data ---
 
-        # Threshold 1: Stock Out / Last 12 Months (Hokage)
-        cls.threshold_hokage_stock_12m = PerformanceThresholds.objects.create(
-            account=cls.account_hokage,
+        # Threshold 1: Stock Out / Last 12 Months (Account)
+        cls.threshold_stock_12m = PerformanceThresholds.objects.create(
+            account=cls.account,
             indicator="stock_out",
             timeline="last_12_months",
             fail_threshold="10",
             success_threshold="5",
         )
 
-        # Threshold 2: Unusable Vials / To Date (Hokage)
-        cls.threshold_hokage_vials_todate = PerformanceThresholds.objects.create(
-            account=cls.account_hokage,
+        # Threshold 2: Unusable Vials / To Date (Account)
+        cls.threshold_vials_todate = PerformanceThresholds.objects.create(
+            account=cls.account,
             indicator="unusable_vials",
             timeline="to_date",
             fail_threshold="100",
@@ -100,9 +84,8 @@ class PerformanceThresholdsAPIBase(APITestCase):
         )
 
         # Threshold 3: Stock Out / Last 12 Months (Akatsuki - Different Account)
-        # This is to test that Hokage users CANNOT see or edit Akatsuki data
-        cls.threshold_akatsuki_stock = PerformanceThresholds.objects.create(
-            account=cls.account_akatsuki,
+        cls.threshold_stock_12m_other_account = PerformanceThresholds.objects.create(
+            account=cls.other_account,
             indicator="stock_out",
             timeline="last_12_months",
             fail_threshold="50",

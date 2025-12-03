@@ -14,7 +14,7 @@ import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
 import { useSavePerformance } from '../hooks/api';
-import { useVaccineOptions, useStatusOptions } from '../hooks/options';
+import { vaccineOptions, useStatusOptions } from '../hooks/options';
 import MESSAGES from '../messages';
 import { PerformanceData } from '../types';
 import { usePerformanceDashboardSchema } from './validation';
@@ -37,7 +37,6 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
     const { data: countries, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const statusOptions = useStatusOptions();
-    const vaccineOptions = useVaccineOptions();
 
     const formik = useFormik({
         initialValues: {

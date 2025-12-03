@@ -19,9 +19,7 @@ class PerformanceThresholdSerializerAPITestCase(PerformanceThresholdsAPIBase):
         """
         Test that the List/Read serializer returns the correct structure and data.
         """
-        # Get a threshold instance from the test data (created in common_data)
-        threshold = self.threshold_hokage_stock_12m
-        serializer = PerformanceThresholdListSerializer(instance=threshold)
+        serializer = PerformanceThresholdListSerializer(instance=self.threshold_stock_12m)
         data = serializer.data
 
         # Check that all expected keys are present
@@ -37,14 +35,14 @@ class PerformanceThresholdSerializerAPITestCase(PerformanceThresholdsAPIBase):
         self.assertIn("updated_by", data)
 
         # Check that the values are correct
-        self.assertEqual(data["id"], threshold.id)
+        self.assertEqual(data["id"], self.threshold_stock_12m.id)
         self.assertEqual(data["indicator"], "stock_out")
         self.assertEqual(data["timeline"], "last_12_months")
         self.assertEqual(data["fail_threshold"], "10")
         self.assertEqual(data["success_threshold"], "5")
 
         # Verify account ID matches
-        self.assertEqual(data["account"], self.account_hokage.id)
+        self.assertEqual(data["account"], self.account.id)
 
     def test_write_serializer_create_success(self):
         """
@@ -75,8 +73,8 @@ class PerformanceThresholdSerializerAPITestCase(PerformanceThresholdsAPIBase):
         self.assertEqual(new_threshold.indicator, "unusable_vials")
         self.assertEqual(new_threshold.success_threshold, "AVERAGE")
 
-        self.assertEqual(new_threshold.created_by, self.user_Hashirama)
-        self.assertEqual(new_threshold.account, self.account_hokage)
+        self.assertEqual(new_threshold.created_by, self.user_admin)
+        self.assertEqual(new_threshold.account, self.account)
 
     def test_write_serializer_invalid_data_fails(self):
         """

@@ -28,4 +28,4 @@ class PerformanceThresholdFilterAPITestCase(PerformanceThresholdsAPIBase):
 
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["indicator"], "stock_out")
-        self.assertEqual(results[0]["id"], self.threshold_hokage_stock_12m.id)
+        self.assertEqual(results[0]["id"], self.threshold_stock_12m.id)

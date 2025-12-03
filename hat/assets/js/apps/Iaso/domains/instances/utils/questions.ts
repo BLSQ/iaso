@@ -63,12 +63,12 @@ export const findKeyForFilePath = (
             }
         } else {
             const slugValue = slugifyValue(element);
-            if (filePath.includes(slugValue)) {
+            if (filePath.endsWith(slugValue)) {
                 return key;
             }
             if (
                 slugValue.endsWith('.jpg') &&
-                filePath.includes(slugValue.replace('.jpg', '.webp'))
+                filePath.endsWith(slugValue.replace('.jpg', '.webp'))
             ) {
                 return key;
             }

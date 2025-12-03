@@ -2,10 +2,9 @@ import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../messages';
-import { defaultVaccineOptions } from '../../SupplyChain/constants'; // New import
+import { defaultVaccineOptions } from '../../SupplyChain/constants';
 
 const statuses: string[] = ['draft', 'commented', 'final'];
-// Removed: const vaccines: string[] = ['nOPV2', 'bOPV', 'nOPV2 & bOPV'];
 
 export const useStatusOptions = (): DropdownOptions<string>[] => {
     const { formatMessage } = useSafeIntl();

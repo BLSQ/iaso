@@ -29,9 +29,6 @@ class PerformanceDashboardViewSet(ModelViewSet):
     - **Admin**: Can delete plans.
     """
 
-    # The serializer_class is removed because 'get_serializer_class' is implemented
-    # DRF will call get_serializer_clas() instead of looking for this attribute
-    # serializer_class =
     permission_classes = [PerformanceDashboardPermission]
     filter_backends = [
         filters.OrderingFilter,

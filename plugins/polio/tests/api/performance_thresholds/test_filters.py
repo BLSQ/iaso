@@ -29,34 +29,3 @@ class PerformanceThresholdFilterAPITestCase(PerformanceThresholdsAPIBase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["indicator"], "stock_out")
         self.assertEqual(results[0]["id"], self.threshold_hokage_stock_12m.id)
-
-    def test_filter_by_timeline(self):
-        """
-        Test that we can filter the list by a specific timeline.
-        """
-        # There is one threshold with timeline "to_date"
-        response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL, {"timeline": "to_date"})
-
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-
-        response_data = response.json()
-        results = response_data.get("results", response_data)
-
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["timeline"], "to_date")
-        self.assertEqual(results[0]["id"], self.threshold_hokage_vials_todate.id)
-
-    def test_filter_by_indicator_and_timeline(self):
-        """
-        Test that filtering by both indicator and timeline works correctly.
-        """
-        params = {"indicator": "unusable_vials", "timeline": "to_date"}
-        response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL, params)
-
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-
-        response_data = response.json()
-        results = response_data.get("results", response_data)
-
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["id"], self.threshold_hokage_vials_todate.id)

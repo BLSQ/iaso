@@ -40,6 +40,12 @@ class MobileOrgUnitAPITestCase(APITestCase):
             account=account,
             needs_authentication=True,
         )
+        project2 = Project.objects.create(
+            name="Nameks",
+            app_id="dragon.ball.nameks",
+            account=account,
+            needs_authentication=True,
+        )
         cls.user = user = cls.create_user_with_profile(
             username="user", account=account, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
@@ -67,6 +73,9 @@ class MobileOrgUnitAPITestCase(APITestCase):
         cls.on_earth = on_earth = OrgUnitType.objects.create(name="Born on Earth")
         on_earth.projects.add(project)
         super_saiyans.sub_unit_types.add(on_earth)
+
+        cls.nameks = nameks = OrgUnitType.objects.create(name="Nameks")
+        nameks.projects.add(project2)
 
         cls.raditz = raditz = OrgUnit.objects.create(
             uuid="702dbae8-0f47-4065-ad0c-b2557f31cc96",
@@ -153,8 +162,112 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)
+        with self.assertNumQueries(16):
+            # 1. SELECT  FROM "iaso_project"
+            # 2. SELECT FROM "iaso_account"
+            # 3. SELECT FROM "iaso_orgunit"
+            # 4. SELECT FROM "django_cache_table"
+            # 5. SELECT FROM "iaso_project"
+            # 6. SELECT FROM "iaso_account"
+            # 7. SELECT "iaso_featureflag"
+            # 8. SELECT FROM "iaso_sourceversion"
+            # 9. SELECT FROM "iaso_orgunit"
+            # 10. SELECT FROM "iaso_project" INNER JOIN "iaso_orgunittype_projects"
+            # 11. SELECT FROM "iaso_group"
+            # 12. SELECT COUNT(*) FROM "django_cache_table"
+            # 13. SAVEPOINT "s128932915669888_x20"
+            # 14. SELECT FROM "django_cache_table"
+            # 15. INSERT INTO "django_cache_table"
+            # 16. RELEASE SAVEPOINT "s128932915669888_x20"
+            response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response, 200)
+        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
+        self.assertNotIn("count", response.json())
+        self.assertNotIn("next", response.json())
+        self.assertNotIn("previous", response.json())
+        self.assertEqual(len(response.json()["orgUnits"]), 4)
+        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
+        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
+        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
+        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Gohan")
+        self.assertEqual(response.json()["orgUnits"][2]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][2]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Goten")
+        self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
 
-        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+    def test_org_unit_have_correct_parent_id_when_everything_is_fine_without_limit(self):
+        self.goku.validation_status = OrgUnit.VALIDATION_VALID
+        self.goku.save()
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(16):
+            # 1. SELECT  FROM "iaso_project"
+            # 2. SELECT FROM "iaso_account"
+            # 3. SELECT FROM "iaso_orgunit"
+            # 4. SELECT FROM "django_cache_table"
+            # 5. SELECT FROM "iaso_project"
+            # 6. SELECT FROM "iaso_account"
+            # 7. SELECT "iaso_featureflag"
+            # 8. SELECT FROM "iaso_sourceversion"
+            # 9. SELECT FROM "iaso_orgunit"
+            # 10. SELECT FROM "iaso_project" INNER JOIN "iaso_orgunittype_projects"
+            # 11. SELECT FROM "iaso_group"
+            # 12. SELECT COUNT(*) FROM "django_cache_table"
+            # 13. SAVEPOINT "s128932915669888_x20"
+            # 14. SELECT FROM "django_cache_table"
+            # 15. INSERT INTO "django_cache_table"
+            # 16. RELEASE SAVEPOINT "s128932915669888_x20"
+            response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response, 200)
+        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
+        self.assertNotIn("count", response.json())
+        self.assertNotIn("next", response.json())
+        self.assertNotIn("previous", response.json())
+        self.assertEqual(len(response.json()["orgUnits"]), 5)
+        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
+        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
+        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
+        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Goku")
+        self.assertEqual(response.json()["orgUnits"][2]["parent_id"], self.bardock.id)
+        self.assertEqual(1, len(response.json()["orgUnits"][2]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Gohan")
+        self.assertEqual(response.json()["orgUnits"][3]["parent_id"], self.goku.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][4]["name"], "Son Goten")
+        self.assertEqual(response.json()["orgUnits"][4]["parent_id"], self.goku.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][4]["groups"]))
+
+    def test_org_unit_have_correct_parent_id_when_parent_wrong_type_without_limit(self):
+        self.goku.validation_status = OrgUnit.VALIDATION_VALID
+        self.goku.org_unit_type = self.nameks
+        self.goku.save()
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(16):
+            # 1. SELECT  FROM "iaso_project"
+            # 2. SELECT FROM "iaso_account"
+            # 3. SELECT FROM "iaso_orgunit"
+            # 4. SELECT FROM "django_cache_table"
+            # 5. SELECT FROM "iaso_project"
+            # 6. SELECT FROM "iaso_account"
+            # 7. SELECT "iaso_featureflag"
+            # 8. SELECT FROM "iaso_sourceversion"
+            # 9. SELECT FROM "iaso_orgunit"
+            # 10. SELECT FROM "iaso_project" INNER JOIN "iaso_orgunittype_projects"
+            # 11. SELECT FROM "iaso_group"
+            # 12. SELECT COUNT(*) FROM "django_cache_table"
+            # 13. SAVEPOINT "s128932915669888_x20"
+            # 14. SELECT FROM "django_cache_table"
+            # 15. INSERT INTO "django_cache_table"
+            # 16. RELEASE SAVEPOINT "s128932915669888_x20"
+            response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         self.assertJSONResponse(response, 200)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertNotIn("count", response.json())

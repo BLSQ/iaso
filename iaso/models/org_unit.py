@@ -218,8 +218,17 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
     ) -> "OrgUnitQuerySet":
+        try:
+            project = Project.objects.get_for_user_and_app_id(user, app_id) if app_id is not None else None
+            return self.filter_for_user_and_project(user, project)
+        except Project.DoesNotExist:
+            return self.none()
+
+    def filter_for_user_and_project(
+        self, user: typing.Union[User, AnonymousUser, None], project: typing.Optional[Project] = None
+    ) -> "OrgUnitQuerySet":
         """Restrict to the orgunits the User can see, used mainly in the API"""
-        if user and user.is_anonymous and app_id is None:
+        if user and user.is_anonymous and project is None:
             return self.none()
 
         queryset: OrgUnitQuerySet = self.defer("geom")
@@ -234,19 +243,12 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
             if user.iaso_profile.org_units.exists() and not user.is_superuser:
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
-        if app_id is not None:
-            try:
-                project = Project.objects.get_for_user_and_app_id(user, app_id)
-
-                if project.account is None:
-                    # cannot filter on default version if no project or project has no account
-                    return self.none()
-
-                queryset = queryset.filter(
-                    org_unit_type__projects__in=[project], version=project.account.default_version
-                )
-            except Project.DoesNotExist:
+        if project is not None:
+            if project.account is None:
+                # cannot filter on default version if no project or project has no account
                 return self.none()
+
+            queryset = queryset.filter(org_unit_type__projects__in=[project], version=project.account.default_version)
 
         return queryset
 

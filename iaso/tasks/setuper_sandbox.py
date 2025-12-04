@@ -1,9 +1,9 @@
 import logging
-import os
 import subprocess
 
 from datetime import datetime
 
+from django.conf import settings
 from django.db.models import Q
 
 from beanstalk_worker import task_decorator
@@ -55,8 +55,7 @@ def recreate_account(account_name):
 
 @task_decorator(task_name="setuper_sandbox")
 def setuper_sandbox(name="admin", task=Task):
-    ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
-    if ENABLE_SETUPER_SANDBOX:
+    if settings.ENABLE_SETUPER_SANDBOX:
         logger.warning(f" .... Resetting {name} account and its data! ...")
         current_timestamp = int(datetime.now().timestamp())
         account_name = name

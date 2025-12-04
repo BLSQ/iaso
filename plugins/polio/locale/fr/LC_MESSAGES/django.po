@@ -704,3 +704,11 @@ msgstr "Polio - Performance Non Admin"
 #: plugins/polio/permissions.py
 msgid "Polio performance Admin"
 msgstr "Polio - Performance Admin"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Threshold"
+msgstr "Seuil de performance"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Thresholds"
+msgstr "Seuils de performance"

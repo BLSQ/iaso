@@ -42,20 +42,20 @@ class PerformanceThresholdWriteSerializer(serializers.ModelSerializer):
         validated_data["account"] = profile.account
         return super().create(validated_data)
 
-    def validate_fail_treshold(self, request_data):
+    def validate_fail_threshold(self, request_data):
         is_valid = PerformanceThresholds.is_json_logic_expression(request_data)
         if not is_valid:
-            raise serializers.ValidationError({"Error": "Invalid JSON logic"})
+            raise serializers.ValidationError("Invalid JSON logic for fail threshold")
         return request_data
 
-    def validate_warning_treshold(self, request_data):
+    def validate_warning_threshold(self, request_data):
         is_valid = PerformanceThresholds.is_json_logic_expression(request_data)
         if not is_valid:
-            raise serializers.ValidationError({"Error": "Invalid JSON logic"})
+            raise serializers.ValidationError("Invalid JSON logic for warning threshold")
         return request_data
 
-    def validate_success_treshold(self, request_data):
+    def validate_success_threshold(self, request_data):
         is_valid = PerformanceThresholds.is_json_logic_expression(request_data)
         if not is_valid:
-            raise serializers.ValidationError({"Error": "Invalid JSON logic"})
+            raise serializers.ValidationError("Invalid JSON logic for success threshold")
         return request_data

@@ -30,6 +30,10 @@ class PerformanceThresholdsAPIBase(APITestCase):
 
         # --- 2. Users for Main Account ---
         # Admin
+        cls.superuser = cls.create_user_with_profile(
+            username="superuser", account=cls.account, language="en", is_superuser=True
+        )
+
         cls.user_admin = cls.create_user_with_profile(
             username="admin",
             account=cls.account,
@@ -65,29 +69,42 @@ class PerformanceThresholdsAPIBase(APITestCase):
 
         # --- 5. Performance Thresholds Data ---
 
+        cls.arg1 = {"var": "value"}
+        cls.arg_avg = {"var": "average"}
+
+        cls.json_logic_rule_1 = {">": [cls.arg1, 50]}
+        cls.json_logic_rule_2 = {">": [cls.arg1, cls.arg_avg]}
+        cls.json_logic_rule_3 = {"<": [cls.arg1, 90]}
+        cls.json_logic_rule_4 = {"<": [cls.arg1, cls.arg_avg]}
+        cls.json_logic_rule_5 = {">": [cls.arg1, 90]}
+        cls.json_logic_rule_6 = {"<": [cls.arg1, 50]}
+
+        cls.json_logic_expression_1 = {"or": [cls.json_logic_rule_1, cls.json_logic_rule_2]}
+        cls.json_logic_expression_2 = {"and": [cls.json_logic_rule_1, cls.json_logic_rule_3]}
+
         # Threshold 1: Stock Out / Last 12 Months (Account)
         cls.threshold_stock_12m = PerformanceThresholds.objects.create(
             account=cls.account,
             indicator="stock_out",
-            timeline="last_12_months",
-            fail_threshold="10",
-            success_threshold="5",
+            success_threshold=cls.json_logic_rule_5,
+            warning_threshold=cls.json_logic_expression_2,
+            fail_threshold=cls.json_logic_rule_6,
         )
 
         # Threshold 2: Unusable Vials / To Date (Account)
         cls.threshold_vials_todate = PerformanceThresholds.objects.create(
             account=cls.account,
             indicator="unusable_vials",
-            timeline="to_date",
-            fail_threshold="100",
-            success_threshold="AVERAGE",
+            success_threshold=cls.json_logic_rule_5,
+            warning_threshold=cls.json_logic_expression_1,
+            fail_threshold=cls.json_logic_rule_4,
         )
 
-        # Threshold 3: Stock Out / Last 12 Months (Akatsuki - Different Account)
+        # Threshold 3: Stock Out / Last 12 Months (Other account)
         cls.threshold_stock_12m_other_account = PerformanceThresholds.objects.create(
             account=cls.other_account,
             indicator="stock_out",
-            timeline="last_12_months",
-            fail_threshold="50",
-            success_threshold="20",
+            success_threshold=cls.json_logic_expression_1,
+            warning_threshold=cls.json_logic_rule_2,
+            fail_threshold=cls.json_logic_rule_6,
         )

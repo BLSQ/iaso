@@ -43,7 +43,9 @@ class PerformanceDashboardViewSet(ModelViewSet):
         Get the queryset for the view, filtered for the current user's account.
         """
         return (
-            PerformanceDashboard.objects.filter_for_user(self.request.user)
+            PerformanceDashboard.objects.filter_for_user_and_app_id(
+                self.request.user, self.request.query_params.get("app_id", None)
+            )
             .select_related("country", "created_by", "updated_by")
             .order_by("-date")
         )

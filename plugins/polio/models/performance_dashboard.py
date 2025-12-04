@@ -5,9 +5,8 @@ from django.db import models
 from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models import OrgUnit
+from iaso.models import OrgUnit, Project
 from iaso.models.base import Account
-from iaso.models.entity import UserNotAuthError
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
@@ -18,11 +17,21 @@ from plugins.polio.models.base import VACCINES
 
 
 class PerformanceDashboardQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
-        if not user or not user.is_authenticated:
-            raise UserNotAuthError("User not Authenticated")
-        profile = user.iaso_profile
-        return self.filter(account=profile.account)
+    def filter_for_user_and_app_id(
+        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str] = None
+    ):
+        if not user or (user.is_anonymous and app_id is None):
+            return self.none()
+
+        if user.is_authenticated:
+            return self.filter(account=user.iaso_profile.account)
+
+        if app_id is not None:  # leaving the possibility to pass app_id if page needs to be embedded
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+                return self.filter(account=project.account)
+            except Project.DoesNotExist:
+                return self.none()
 
 
 class PerformanceDashboard(SoftDeletableModel):

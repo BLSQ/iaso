@@ -142,6 +142,42 @@ class Modification(models.Model):
         new_fields = new_value.get("fields") or {}
         return dict_compare(past_fields, new_fields)
 
+    @staticmethod
+    def make_json_schema(past_value_schema, new_value_schema):
+        """Convenience method to generate json_schema when writing tests"""
+
+        return {
+            "type": "object",
+            "properties": {
+                "id": {"type": "number"},
+                "content_type": {"type": "string"},
+                "object_id": {"type": "string"},
+                "source": {"type": "string"},
+                "user": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "number"},
+                        "first_name": {"type": ["string", "null"]},
+                        "user_name": {"type": "string"},
+                        "last_name": {"type": ["string", "null"]},
+                        "email": {"type": ["string", "null"]},
+                        "language": {"type": ["string", "null"]},
+                        "user_id": {"type": "number"},
+                        "phone_number": {"type": ["string", "null"]},
+                        "country_code": {"type": ["string", "null"]},
+                        "editable_org_unit_type_ids": {"type": "array", "items": {"type": "number"}},
+                        "user_roles_editable_org_unit_type_ids": {"type": "array", "items": {"type": "number"}},
+                    },
+                    "required": ["id", "user_name", "user_id"],
+                },
+                "created_at": {"type": "string"},
+                "org_unit_change_request_id": {"type": ["string", "null"]},
+                "past_value": {"type": "array", "items": past_value_schema},
+                "new_value": {"type": "array", "items": new_value_schema},
+            },
+            "required": ["id", "content_type", "object_id", "source", "user", "created_at", "past_value", "new_value"],
+        }
+
 
 def log_modification(
     # `v1` should be either a deepcopy or a serialized instance.

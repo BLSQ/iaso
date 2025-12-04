@@ -1,8 +1,7 @@
-from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
 from plugins.polio.api.performance_thresholds.serializers import (
-    PerformanceThresholdListSerializer,
+    PerformanceThresholdReadSerializer,
     PerformanceThresholdWriteSerializer,
 )
 from plugins.polio.models.performance_thresholds import PerformanceThresholds
@@ -15,157 +14,81 @@ class PerformanceThresholdSerializerAPITestCase(PerformanceThresholdsAPIBase):
     Test cases for the Performance Threshold serializers.
     """
 
-    def test_list_serializer_returns_expected_data(self):
+    def test_read_serializer_returns_expected_data(self):
         """
         Test that the List/Read serializer returns the correct structure and data.
         """
-        serializer = PerformanceThresholdListSerializer(instance=self.threshold_stock_12m)
+        serializer = PerformanceThresholdReadSerializer(instance=self.threshold_stock_12m)
         data = serializer.data
-
-        # Check that all expected keys are present
-        self.assertIn("id", data)
-        self.assertIn("indicator", data)
-        self.assertIn("timeline", data)
-        self.assertIn("fail_threshold", data)
-        self.assertIn("success_threshold", data)
-        self.assertIn("account", data)
-        self.assertIn("created_at", data)
-        self.assertIn("updated_at", data)
-        self.assertIn("created_by", data)
-        self.assertIn("updated_by", data)
 
         # Check that the values are correct
         self.assertEqual(data["id"], self.threshold_stock_12m.id)
-        self.assertEqual(data["indicator"], "stock_out")
-        self.assertEqual(data["timeline"], "last_12_months")
-        self.assertEqual(data["fail_threshold"], "10")
-        self.assertEqual(data["success_threshold"], "5")
+        self.assertEqual(data["indicator"], self.threshold_stock_12m.indicator)
+        self.assertEqual(data["success_threshold"], self.threshold_stock_12m.success_threshold)
+        self.assertEqual(data["warning_threshold"], self.threshold_stock_12m.warning_threshold)
+        self.assertEqual(data["fail_threshold"], self.threshold_stock_12m.fail_threshold)
 
-        # Verify account ID matches
-        self.assertEqual(data["account"], self.account.id)
-
-    def test_write_serializer_create_success(self):
+    def test_write_serializer(self):
         """
         Test that the Write serializer can successfully create a new object.
         """
-        # Data for a new threshold
         data = {
-            "indicator": "unusable_vials",
-            "timeline": "last_12_months",
-            "fail_threshold": "50",
-            "success_threshold": "AVERAGE",  # Testing the keyword acceptance
+            "indicator": "lines of code per month",
+            "success_threshold": self.json_logic_rule_2,
+            "warning_threshold": self.json_logic_rule_3,
+            "fail_threshold": self.json_logic_rule_4,
         }
-
+        # mock request to pass context to serializer
         factory = APIRequestFactory()
+        request = factory.get("/")
+        request.user = self.user_admin
 
-        django_request = factory.post(self.PERFORMANCE_THRESHOLDS_API_URL, data, format="json")
-
-        drf_request = Request(django_request)
-        drf_request.user = self.user_Hashirama
-
-        serializer = PerformanceThresholdWriteSerializer(data=data, context={"request": drf_request})
-
-        self.assertTrue(serializer.is_valid(), serializer.errors)
-
+        serializer = PerformanceThresholdWriteSerializer(data=data, context={"request": request})
+        self.assertTrue(serializer.is_valid())
         new_threshold = serializer.save()
 
         self.assertIsInstance(new_threshold, PerformanceThresholds)
-        self.assertEqual(new_threshold.indicator, "unusable_vials")
-        self.assertEqual(new_threshold.success_threshold, "AVERAGE")
-
-        self.assertEqual(new_threshold.created_by, self.user_admin)
+        self.assertEqual(new_threshold.indicator, "lines of code per month")
+        self.assertEqual(new_threshold.success_threshold, self.json_logic_rule_2)
+        self.assertEqual(new_threshold.warning_threshold, self.json_logic_rule_3)
+        self.assertEqual(new_threshold.fail_threshold, self.json_logic_rule_4)
         self.assertEqual(new_threshold.account, self.account)
 
-    def test_write_serializer_invalid_data_fails(self):
+    def test_write_validation(self):
         """
-        Test that the Write serializer fails with invalid or missing data.
+        Test field validation for write serializer.
         """
-        invalid_data_missing = {
-            "indicator": "stock_out",
-            "timeline": "to_date",
-            # Missing thresholds
+        # mock request to pass context to serializer
+        factory = APIRequestFactory()
+        request = factory.get("/")
+        request.user = self.user_admin
+
+        data = {
+            "indicator": "lines of code per month",
+            "success_threshold": self.json_logic_rule_2,
+            "warning_threshold": {"<<": [self.arg1, 90]},
+            "fail_threshold": self.json_logic_rule_4,
         }
-        serializer = PerformanceThresholdWriteSerializer(data=invalid_data_missing)
+        serializer = PerformanceThresholdWriteSerializer(data=data, context={"request": request})
         self.assertFalse(serializer.is_valid())
-        self.assertIn("success_threshold", serializer.errors)
-        self.assertIn("fail_threshold", serializer.errors)
+        self.assertIn("Invalid JSON logic for warning threshold", serializer.errors["warning_threshold"][0])
 
-        invalid_data_value = {
-            "indicator": "stock_out",
-            "timeline": "last_12_months",
-            "fail_threshold": "banana",
-            "success_threshold": "10",
-        }
-
-        serializer_val = PerformanceThresholdWriteSerializer(data=invalid_data_value)
-
-        self.assertFalse(serializer_val.is_valid())
-
-        self.assertIn("fail_threshold", serializer_val.errors)
-
-    def test_write_serializer_fail_threshold_greater_than_success_fails(self):
-        """
-        Test that validation fails if fail_threshold > success_threshold, based on the current implementation.
-        """
         data = {
-            "indicator": "stock_out",
-            "timeline": "last_12_months",
-            "fail_threshold": "11",  # Higher than success
-            "success_threshold": "10",
+            "indicator": "lines of code per month",
+            "warning_threshold": self.json_logic_rule_2,
+            "success_threshold": {"<<": [self.arg1, 90]},
+            "fail_threshold": self.json_logic_rule_4,
         }
-        serializer = PerformanceThresholdWriteSerializer(data=data)
-
+        serializer = PerformanceThresholdWriteSerializer(data=data, context={"request": request})
         self.assertFalse(serializer.is_valid())
-        self.assertIn("non_field_errors", serializer.errors)
-        self.assertEqual(
-            str(serializer.errors["non_field_errors"][0]),
-            "Fail threshold cannot be greater Success threshold.",
-        )
+        self.assertIn("Invalid JSON logic for success threshold", serializer.errors["success_threshold"][0])
 
-    def test_write_serializer_fail_threshold_less_than_success_passes(self):
-        """
-        Test that validation passes if fail_threshold <= success_threshold.
-        """
         data = {
-            "indicator": "pre_campaign_activities",
-            "timeline": "last_12_months",
-            "fail_threshold": "80",
-            "success_threshold": "90",
+            "indicator": "lines of code per month",
+            "success_threshold": self.json_logic_rule_2,
+            "fail_threshold": {"<<": [self.arg1, 90]},
+            "warning_threshold": self.json_logic_rule_4,
         }
-        serializer = PerformanceThresholdWriteSerializer(data=data)
-        self.assertTrue(serializer.is_valid(), serializer.errors)
-
-        # Test equal values
-        data_equal = {
-            "indicator": "pre_campaign_activities",
-            "timeline": "last_12_months",
-            "fail_threshold": "85",
-            "success_threshold": "85",
-        }
-        serializer_equal = PerformanceThresholdWriteSerializer(data=data_equal)
-        self.assertTrue(serializer_equal.is_valid(), serializer_equal.errors)
-
-    def test_write_serializer_thresholds_with_keywords_pass_validation(self):
-        """
-        Test that validation passes when one or both thresholds are keywords, as the numeric comparison is skipped.
-        """
-        data = {
-            "indicator": "stock_out",
-            "timeline": "to_date",
-            "fail_threshold": "AVERAGE",
-            "success_threshold": "NO_LIMIT",
-        }
-        serializer = PerformanceThresholdWriteSerializer(data=data)
-        self.assertTrue(serializer.is_valid(), serializer.errors)
-
-        data2 = {
-            "indicator": "stock_out",
-            "timeline": "to_date",
-            "fail_threshold": "100",
-            "success_threshold": "AVERAGE",
-        }
-
-        serializer2 = PerformanceThresholdWriteSerializer(data=data2)
-        # The numeric check is skipped, so this will pass validation regardless of the number.
-
-        self.assertTrue(serializer2.is_valid(), serializer2.errors)
+        serializer = PerformanceThresholdWriteSerializer(data=data, context={"request": request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Invalid JSON logic for fail threshold", serializer.errors["fail_threshold"][0])

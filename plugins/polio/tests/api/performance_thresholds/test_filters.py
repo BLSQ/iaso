@@ -12,7 +12,7 @@ class PerformanceThresholdFilterAPITestCase(PerformanceThresholdsAPIBase):
         """
         Authenticate the user for the tests.
         """
-        self.client.force_authenticate(self.user_Hashirama)
+        self.client.force_authenticate(self.user_admin)
 
     def test_filter_by_indicator(self):
         """

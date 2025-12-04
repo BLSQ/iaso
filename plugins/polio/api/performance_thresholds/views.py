@@ -3,7 +3,7 @@ import django_filters
 from rest_framework import filters
 
 from hat.audit.audit_mixin import AuditMixin
-from iaso.api.common import ModelViewSet, ReadOnlyOrHasPermission
+from iaso.api.common import ModelViewSet
 from plugins.polio.api.perfomance_dashboard.permissions import PerformanceDashboardPermission
 from plugins.polio.api.performance_thresholds.filters import PerformanceThresholdFilter
 from plugins.polio.api.performance_thresholds.serializers import (
@@ -13,7 +13,7 @@ from plugins.polio.api.performance_thresholds.serializers import (
 from plugins.polio.models.performance_thresholds import PerformanceThresholds
 
 
-class PerformanceThresholdsViewSet(ModelViewSet, AuditMixin):
+class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     """
     API endpoint for Performance dashboard tresholds.
 
@@ -28,7 +28,7 @@ class PerformanceThresholdsViewSet(ModelViewSet, AuditMixin):
     We are reusing the performance dashboard permissions since the features are related from a business point of view
     """
 
-    permission_classes = [ReadOnlyOrHasPermission(PerformanceDashboardPermission)]
+    permission_classes = [PerformanceDashboardPermission]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -36,12 +36,13 @@ class PerformanceThresholdsViewSet(ModelViewSet, AuditMixin):
     filterset_class = PerformanceThresholdFilter
     ordering_fields = ["indicator", "created_at", "updated_at"]
     http_method_names = ["get", "post", "patch", "delete"]
+    audit_serializer = PerformanceThresholdReadSerializer
 
     def get_queryset(self):
         """
         Get the queryset for the view, filtered for the current user's account.
         """
-        return PerformanceThresholds.objects.filter_for_user(
+        return PerformanceThresholds.objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get("app_id", None)
         ).order_by("indicator")
 

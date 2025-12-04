@@ -114,3 +114,20 @@ class PerformanceThresholds(SoftDeletableModel):
             if found_invalid_data:
                 break
         return not found_invalid_data
+
+    # expose json schema of model for testing
+    @staticmethod
+    def json_schema():
+        return {
+            "type": "object",
+            "properties": {
+                "id": {"type": "number"},
+                "indicator": {"type": "string"},
+                "created_at": {"type": "string"},
+                "updated_at": {"type": "string"},
+                "fail_threshold": {"type": "object"},
+                "success_threshold": {"type": "object"},
+                "warning_threshold": {"type": "object"},
+            },
+            "required": ["id", "indicator", "fail_threshold", "success_threshold", "warning_threshold"],
+        }

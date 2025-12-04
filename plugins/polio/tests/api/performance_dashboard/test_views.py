@@ -17,19 +17,24 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
 
     # --- Permissions Tests ---
 
-    def test_list_unauthenticated_returns_401(self):
+    def test_unauthenticated_access_read_only(self):
         """
         Unauthenticated users should not be able to access the endpoint.
         """
         response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data={}, format="json")
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-    def test_list_with_no_perms_returns_403(self):
+    def test_list_with_no_perms_read_only(self):
         """
         Authenticated users without the correct permissions should be forbidden.
         """
         self.client.force_authenticate(self.user_no_permissions_1)
         response = self.client.get(self.PERFORMANCE_DASHBOARD_API_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data={}, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_read_only_user_permissions(self):
@@ -58,7 +63,7 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         """
         self.client.force_authenticate(self.user_non_admin_1)
 
-        create_data = {"date": "2023-08-01", "status": "draft", "vaccine": "bOPV", "country_id": self.est.id}
+        create_data = {"date": "2023-08-01", "status": "draft", "vaccine": "bOPV", "country_id": self.east.id}
         response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data=create_data, format="json")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
@@ -73,7 +78,7 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         mock_now.return_value = time_of_creation
         recent_dashboard = PerformanceDashboard.objects.create(
             account=self.account_one,
-            country=self.est,
+            country=self.east,
             date="2023-10-05",
             status="draft",
             vaccine="bOPV",
@@ -103,7 +108,7 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
 
         old_dashboard = PerformanceDashboard.objects.create(
             account=self.account_one,
-            country=self.est,
+            country=self.east,
             date="2023-10-10",
             status="draft",
             vaccine="bOPV",

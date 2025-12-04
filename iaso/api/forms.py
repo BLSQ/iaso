@@ -397,20 +397,24 @@ class FormsViewSet(ModelViewSet):
             #  - be smarter cfr is_field_referenced
             #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
 
-            queryset = queryset.prefetch_related(
+            prefetch_relations = [
                 "form_versions",
                 "projects",
                 "projects__feature_flags",
-                Prefetch(
-                    "projects__projectfeatureflags_set",
-                    queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
-                ),
                 "reference_of_org_unit_types",
                 "org_unit_types",
                 "org_unit_types__reference_forms",
                 "org_unit_types__sub_unit_types",
                 "org_unit_types__allow_creating_sub_unit_types",
-            )
+            ]
+            if not mobile:
+                prefetch_relations.append(
+                    Prefetch(
+                        "projects__projectfeatureflags_set",
+                        queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
+                    )
+                )
+            queryset = queryset.prefetch_related(*prefetch_relations)
 
         # optimize latest version loading to not trigger a select n+1 on form_version
         queryset = queryset.with_latest_version()

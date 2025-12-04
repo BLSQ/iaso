@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
-import {
-    useSafeIntl,
-    UrlParams,
-} from 'bluesquare-components';
+import { useSafeIntl, UrlParams } from 'bluesquare-components';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
@@ -46,7 +43,7 @@ export const PerformanceDashboard: FunctionComponent = () => {
                 >
                     <Grid container justifyContent="flex-end">
                         <Box mt={2}>
-                            <CreatePerformanceModal />
+                            <CreatePerformanceModal iconProps={{}} />
                         </Box>
                     </Grid>
                 </DisplayIfUserHasPerm>

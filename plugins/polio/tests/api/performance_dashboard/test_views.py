@@ -82,7 +82,6 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
             date="2023-10-05",
             status="draft",
             vaccine="bOPV",
-            created_by=self.user_non_admin_1,
         )
 
         time_of_update = timezone.make_aware(datetime.datetime(2023, 10, 10))
@@ -93,8 +92,6 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
             f"{self.PERFORMANCE_DASHBOARD_API_URL}{recent_dashboard.id}/", data=update_data, format="json"
         )
         self.assertJSONResponse(response, status.HTTP_200_OK)
-        recent_dashboard.refresh_from_db()
-        self.assertEqual(recent_dashboard.updated_by, self.user_non_admin_1)
 
     @patch("django.utils.timezone.now")
     def test_non_admin_cannot_update_old_record(self, mock_now):
@@ -112,7 +109,6 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
             date="2023-10-10",
             status="draft",
             vaccine="bOPV",
-            created_by=self.user_non_admin_1,
         )
         time_of_update = timezone.make_aware(datetime.datetime(2023, 10, 20))
         mock_now.return_value = time_of_update
@@ -139,11 +135,9 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
 
         self.assertIsNotNone(deleted_dashboard.deleted_at)
 
-        self.assertEqual(deleted_dashboard.updated_by, self.user_admin_1)
-
     def test_admin_user_can_update(self):
         """
-        Test that a PATCH request correctly updates the data and sets the `updated_by` field.
+        Test that a PATCH request correctly updates the data field.
         """
         self.client.force_authenticate(self.user_admin_1)
 
@@ -162,11 +156,9 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         self.assertEqual(dashboard_to_update.status, "final")
         self.assertEqual(dashboard_to_update.vaccine, "nOPV2")
 
-        self.assertEqual(dashboard_to_update.updated_by, self.user_admin_1)
-
     def test_perform_destroy_audits_user(self):
         """
-        Test that perform_destroy correctly sets updated_by and soft-deletes the instance.
+        Test that perform_destroy soft-deletes the instance.
         """
         # Authenticate a user who can delete (e.g., an admin)
         self.client.force_authenticate(self.user_admin_1)
@@ -180,8 +172,6 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         deleted_dashboard = PerformanceDashboard.objects_include_deleted.get(id=dashboard_to_delete.id)
 
         self.assertIsNotNone(deleted_dashboard.deleted_at)
-
-        self.assertEqual(deleted_dashboard.updated_by, self.user_admin_1)
 
         self.assertFalse(PerformanceDashboard.objects.filter(id=dashboard_to_delete.id).exists())
 
@@ -214,7 +204,7 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
 
     def test_create_sets_audit_fields_correctly(self):
         """
-        Test that on creation, `created_by` and `account` are set automatically by the view/serializer.
+        Test that on creation, `account` are set automatically by the view/serializer.
         """
         self.client.force_authenticate(self.user_with_account2)
         data = {
@@ -227,5 +217,4 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         new_dashboard = PerformanceDashboard.objects.get(id=response.json()["id"])
-        self.assertEqual(new_dashboard.created_by, self.user_with_account2)
         self.assertEqual(new_dashboard.account, self.account_two)

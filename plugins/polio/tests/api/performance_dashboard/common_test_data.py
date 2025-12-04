@@ -80,7 +80,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="draft",
             vaccine="bOPV",
-            created_by=cls.user_admin_1,
         )
 
         cls.dashboard_2 = p.PerformanceDashboard.objects.create(
@@ -89,7 +88,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="commented",
             vaccine="bOPV",
-            created_by=cls.user_non_admin_1,
         )
         cls.dashboard_3 = p.PerformanceDashboard.objects.create(
             account=cls.account_two,
@@ -97,7 +95,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="commented",
             vaccine="bOPV",
-            created_by=cls.user_with_account2,
         )
 
         cls.dashboard_4 = p.PerformanceDashboard.objects.create(
@@ -106,7 +103,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="final",
             vaccine="nOPV2",
-            created_by=cls.user_read_only_1,
         )
 
         cls.dashboard_5 = p.PerformanceDashboard.objects.create(
@@ -115,7 +111,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="final",
             vaccine="nOPV2",
-            created_by=cls.user_admin_2,
         )
 
         cls.dashboard_6 = p.PerformanceDashboard.objects.create(
@@ -124,7 +119,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="final",
             vaccine="nOPV2",
-            created_by=cls.user_no_permissions_1,
         )
         cls.dashboard_7 = p.PerformanceDashboard.objects.create(
             account=cls.account_one,
@@ -132,7 +126,6 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="commented",
             vaccine="nOPV2",
-            created_by=cls.user_non_admin_1,
         )
         cls.dashboard_8 = p.PerformanceDashboard.objects.create(
             account=cls.account_one,
@@ -140,5 +133,4 @@ class PerformanceDashboardAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="draft",
             vaccine="nOPV2",
-            created_by=cls.user_admin_2,
         )

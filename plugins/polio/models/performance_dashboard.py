@@ -49,23 +49,8 @@ class PerformanceDashboard(SoftDeletableModel):
     )
     vaccine = models.CharField(max_length=20, choices=VACCINES)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="performance_dashboard", null=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        User,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="performance_dashboard_created_set",
-    )
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        User,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="performance_dashboard_updated_set",
-    )
 
     # Managers
     objects = DefaultSoftDeletableManager.from_queryset(PerformanceDashboardQuerySet)()

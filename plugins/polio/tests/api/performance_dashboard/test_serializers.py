@@ -29,14 +29,11 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         self.assertIn("status", data)
         self.assertIn("vaccine", data)
 
-        self.assertIn("created_by", data)
-
         # Check that the values are correct
         self.assertEqual(data["id"], dashboard.id)
         self.assertEqual(data["status"], dashboard.status)
 
         self.assertEqual(data["country_name"], dashboard.country.name)
-        self.assertEqual(data["created_by"]["username"], dashboard.created_by.username)
 
     def test_write_serializer_create_success(self):
         """
@@ -64,7 +61,6 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         self.assertEqual(new_dashboard.status, "draft")
         self.assertEqual(new_dashboard.country, self.east)
 
-        self.assertEqual(new_dashboard.created_by, self.user_admin_1)
         self.assertEqual(new_dashboard.account, self.account_one)
 
     def test_write_serializer_invalid_data_fails(self):

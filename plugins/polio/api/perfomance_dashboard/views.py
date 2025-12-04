@@ -2,8 +2,10 @@ import django_filters
 
 from rest_framework import filters
 
+from hat.audit.audit_mixin import AuditMixin
 from iaso.api.common import ModelViewSet
 from plugins.polio.api.perfomance_dashboard.serializers import (
+    PerformanceDashboardAuditSerializer,
     PerformanceDashboardListSerializer,
     PerformanceDashboardWriteSerializer,
 )
@@ -13,7 +15,7 @@ from .filters import PerformanceDashboardFilter
 from .permissions import PerformanceDashboardPermission
 
 
-class PerformanceDashboardViewSet(ModelViewSet):
+class PerformanceDashboardViewSet(AuditMixin, ModelViewSet):
     """
     API endpoint for Performance Dashboard.
 
@@ -37,6 +39,7 @@ class PerformanceDashboardViewSet(ModelViewSet):
     filterset_class = PerformanceDashboardFilter
     ordering_fields = ["date", "country__name", "status", "vaccine", "updated_at"]
     http_method_names = ["get", "post", "patch", "delete"]
+    audit_serializer = PerformanceDashboardAuditSerializer
 
     def get_queryset(self):
         """
@@ -46,7 +49,7 @@ class PerformanceDashboardViewSet(ModelViewSet):
             PerformanceDashboard.objects.filter_for_user_and_app_id(
                 self.request.user, self.request.query_params.get("app_id", None)
             )
-            .select_related("country", "created_by", "updated_by")
+            .select_related("country")
             .order_by("-date")
         )
 
@@ -58,10 +61,3 @@ class PerformanceDashboardViewSet(ModelViewSet):
             return PerformanceDashboardWriteSerializer
 
         return PerformanceDashboardListSerializer
-
-    def perform_destroy(self, instance):
-        """
-        Perform a soft delete and log the user who performed the action.
-        """
-        instance.updated_by = self.request.user
-        instance.delete()

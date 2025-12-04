@@ -13,25 +13,18 @@ from iaso.models import Account, DataSource, Profile, Project, Task
 logger = logging.getLogger(__name__)
 
 
-def update_users_profiles(profiles, new_account_name):
+def update_users_profiles(profiles, account_name, new_account_name):
     for profile in profiles:
-        user_name = profile.user.username.split(".")
-        new_user_name = new_account_name
-        if len(user_name) > 1:
-            new_user_name = f"{new_account_name}.{user_name[1]}"
+        new_user_name = profile.user.username.replace(account_name, new_account_name)
         profile.user.username = new_user_name
         profile.user.is_active = False
         profile.user.save()
     return profiles
 
 
-def change_projects_app_id(projects, new_account_name):
+def change_projects_app_id(projects, account_name, new_account_name):
     for project in projects:
-        app_id = project.app_id.split(".")
-        if len(app_id) > 1:
-            project.app_id = f"{new_account_name}.{app_id[1]}"
-        else:
-            project.app_id = new_account_name
+        project.app_id = project.app_id.replace(account_name, new_account_name)
         project.save()
     return projects
 
@@ -71,12 +64,12 @@ def setuper_sandbox(name="admin", task=Task):
         profiles = Profile.objects.filter(Q(account=account) | Q(user__username=account_name))
         logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {account_name}")
 
-        updated_users = update_users_profiles(profiles, new_name)
+        updated_users = update_users_profiles(profiles, account_name, new_name)
         logger.info(f"Disabled {len(updated_users)} users")
 
         projects = Project.objects.filter(account=account)
         logger.info(f"Renaming app id for all {len(projects)} projects belong to account {account_name}")
-        projects_to_updated = change_projects_app_id(projects, new_name)
+        projects_to_updated = change_projects_app_id(projects, account_name, new_name)
         updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])
         logger.info(f"Renamed app id for all {updated_projects} projects")
 

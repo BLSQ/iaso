@@ -68,3 +68,20 @@ class PerformanceDashboard(SoftDeletableModel):
     # No unique constraint specified in the ticket, so omitting for now.
     def __str__(self):
         return f"{self.country.name} - {self.date} - {self.vaccine}"
+
+    @staticmethod
+    def json_schema():
+        return {
+            "type": "object",
+            "properties": {
+                "id": {"type": "number"},
+                "vaccine": {"type": "string"},
+                "created_at": {"type": "string"},
+                "updated_at": {"type": "string"},
+                "country_name": {"type": "string"},
+                "country_id": {"type": "string"},
+                "status": {"type": "string"},
+                "date": {"type": "string"},
+            },
+            "required": ["id", "vaccine", "country_name", "country_id", "status", "date"],
+        }

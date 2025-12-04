@@ -28,6 +28,11 @@ class PerformanceDashboardAPIBase(APITestCase):
         cls.datasource_one.projects.set([cls.project])
 
         # Users for the main account
+
+        cls.superuser = cls.create_user_with_profile(
+            username="superuser", account=cls.account_one, language="en", is_superuser=True
+        )
+
         cls.user_admin_1 = cls.create_user_with_profile(
             username="user_admin_1",
             account=cls.account_one,

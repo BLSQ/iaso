@@ -168,7 +168,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         )
         logs = self.assertJSONResponse(response, status.HTTP_200_OK)
         log = logs["list"][0]
-        print("LOGS", logs)
+
         try:
             jsonschema.validate(instance=log, schema=PERFORMANCE_THRESHOLD_LOG_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:

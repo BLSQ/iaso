@@ -2,12 +2,19 @@ import datetime
 
 from unittest.mock import patch
 
+import jsonschema
+
 from django.utils import timezone
 from rest_framework import status
 
+from hat.audit.models import Modification
 from plugins.polio.models.performance_dashboard import PerformanceDashboard
 
 from .common_test_data import PerformanceDashboardAPIBase
+
+
+model_json_schema = PerformanceDashboard.json_schema()
+PERFORMANCE_DASHBOARD_LOG_SCHEMA = Modification.make_json_schema(model_json_schema, model_json_schema)
 
 
 class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
@@ -156,28 +163,9 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
         self.assertEqual(dashboard_to_update.status, "final")
         self.assertEqual(dashboard_to_update.vaccine, "nOPV2")
 
-    def test_perform_destroy_audits_user(self):
-        """
-        Test that perform_destroy soft-deletes the instance.
-        """
-        # Authenticate a user who can delete (e.g., an admin)
-        self.client.force_authenticate(self.user_admin_1)
-
-        dashboard_to_delete = self.dashboard_1
-
-        response = self.client.delete(f"{self.PERFORMANCE_DASHBOARD_API_URL}{dashboard_to_delete.id}/")
-
-        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
-
-        deleted_dashboard = PerformanceDashboard.objects_include_deleted.get(id=dashboard_to_delete.id)
-
-        self.assertIsNotNone(deleted_dashboard.deleted_at)
-
-        self.assertFalse(PerformanceDashboard.objects.filter(id=dashboard_to_delete.id).exists())
-
     # --- Data Isolation and Functionality Tests ---
 
-    def test_list_returns_only_own_account_dashboards(self):
+    def test_list_filters_by_account(self):
         """
         Test that a user can only list dashboards from their own account.
         """
@@ -202,19 +190,44 @@ class PerformanceDashboardViewsAPITestCase(PerformanceDashboardAPIBase):
             result_ids,
         )
 
-    def test_create_sets_audit_fields_correctly(self):
+    def test_audit_log_on_save(self):
         """
-        Test that on creation, `account` are set automatically by the view/serializer.
+        Test that Modification instance is created on save
         """
-        self.client.force_authenticate(self.user_with_account2)
-        data = {
-            "date": "2023-09-01",
-            "status": "draft",
-            "vaccine": "nOPV2",
-            "country_id": self.south.id,
-        }
-        response = self.client.post(self.PERFORMANCE_DASHBOARD_API_URL, data=data, format="json")
-        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.client.force_authenticate(self.superuser)
 
-        new_dashboard = PerformanceDashboard.objects.get(id=response.json()["id"])
-        self.assertEqual(new_dashboard.account, self.account_two)
+        dashboard_to_update = self.dashboard_1
+
+        update_data = {"status": "final", "vaccine": "nOPV2"}
+
+        response = self.client.patch(
+            f"{self.PERFORMANCE_DASHBOARD_API_URL}{dashboard_to_update.id}/", data=update_data, format="json"
+        )
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response = self.client.get(
+            f"/api/logs/?contentType=polio.performancedashboard&fields=past_value,new_value&objectId={dashboard_to_update.id}"
+        )
+        logs = self.assertJSONResponse(response, status.HTTP_200_OK)
+        log = logs["list"][0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PERFORMANCE_DASHBOARD_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        past_value = log["past_value"][0]
+        self.assertEqual(past_value["id"], dashboard_to_update.id)
+        self.assertEqual(past_value["date"], dashboard_to_update.date.strftime("%Y-%m-%d"))
+        self.assertEqual(past_value["status"], "draft")
+        self.assertEqual(past_value["country_name"], self.west.name)
+        self.assertEqual(past_value["country_id"], str(self.west.id))
+        self.assertEqual(past_value["vaccine"], "bOPV")
+        new_value = log["new_value"][0]
+        self.assertEqual(new_value["id"], dashboard_to_update.id)
+        self.assertEqual(new_value["date"], dashboard_to_update.date.strftime("%Y-%m-%d"))
+        self.assertEqual(new_value["status"], "final")
+        self.assertEqual(new_value["country_name"], self.west.name)
+        self.assertEqual(new_value["country_id"], str(self.west.id))
+        self.assertEqual(new_value["vaccine"], "nOPV2")

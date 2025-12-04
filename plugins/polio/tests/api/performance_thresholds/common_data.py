@@ -29,10 +29,10 @@ class PerformanceThresholdsAPIBase(APITestCase):
         cls.datasource.projects.set([cls.project])
 
         # --- 2. Users for Main Account ---
-        # Admin
         cls.superuser = cls.create_user_with_profile(
             username="superuser", account=cls.account, language="en", is_superuser=True
         )
+        # Admin
 
         cls.user_admin = cls.create_user_with_profile(
             username="admin",

@@ -55,6 +55,9 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def get_org_units(self, obj):
         """Return list of org unit IDs for read operations."""
+        cache = getattr(obj, "_prefetched_objects_cache", None)
+        if cache and "org_units" in cache:
+            return [org_unit.id for org_unit in cache["org_units"]]
         return list(obj.org_units.values_list("id", flat=True))
 
     def __init__(self, *args, **kwargs):

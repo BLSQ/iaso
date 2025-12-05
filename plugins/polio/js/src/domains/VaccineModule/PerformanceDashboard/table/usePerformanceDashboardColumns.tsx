@@ -91,6 +91,7 @@ export const usePerformanceDashboardColumns = (): Column[] => {
                             >
                                 <EditPerformanceModal
                                     performanceData={performanceData}
+                                    iconProps={{}}
                                 />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
@@ -103,9 +104,7 @@ export const usePerformanceDashboardColumns = (): Column[] => {
                                         MESSAGES.deletePerformance,
                                         { name: recordName },
                                     )}
-                                    message={formatMessage(
-                                        MESSAGES.deletePerformanceConfirm,
-                                    )}
+                                    message={formatMessage(MESSAGES.deleteText)}
                                     onConfirm={() =>
                                         deletePerformance(performanceData.id)
                                     }

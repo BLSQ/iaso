@@ -16,11 +16,11 @@ class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
         """
         self.client.force_authenticate(self.user_admin_1)
 
-        response = self.client.get(f"{self.PERFORMANCE_DASHBOARD_API_URL}?country={self.est.id}")
+        response = self.client.get(f"{self.PERFORMANCE_DASHBOARD_API_URL}?country={self.east.id}")
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         results = response_data.get("results", [])
         count = len(results)
-        expected_count = PerformanceDashboard.objects.filter(account=self.account_one, country=self.est).count()
+        expected_count = PerformanceDashboard.objects.filter(account=self.account_one, country=self.east).count()
         self.assertEqual(count, expected_count)
 
         result_ids = {item["id"] for item in response_data["results"]}

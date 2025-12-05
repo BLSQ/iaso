@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.performance.status.final',
         defaultMessage: 'Final',
     },
+    deleteText: {
+        id: 'iaso.label.deleteText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
 });
 
 export default MESSAGES;

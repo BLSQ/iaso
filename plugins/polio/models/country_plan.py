@@ -16,7 +16,7 @@ from iaso.utils.models.soft_deletable import (
 from plugins.polio.models.base import VACCINES
 
 
-class PerformanceDashboardQuerySet(QuerySet):
+class CountryPlanQuerySet(QuerySet):
     def filter_for_user_and_app_id(
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str] = None
     ):
@@ -34,7 +34,7 @@ class PerformanceDashboardQuerySet(QuerySet):
                 return self.none()
 
 
-class PerformanceDashboard(SoftDeletableModel):
+class CountryPlan(SoftDeletableModel):
     class Status(models.TextChoices):
         DRAFT = "draft", _("Draft")
         COMMENTED = "commented", _("Commented")
@@ -45,17 +45,17 @@ class PerformanceDashboard(SoftDeletableModel):
     country = models.ForeignKey(
         OrgUnit,
         on_delete=models.PROTECT,
-        related_name="performance_dashboard",
+        related_name="country_plan",
     )
     vaccine = models.CharField(max_length=20, choices=VACCINES)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="performance_dashboard", null=False)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="country_plan", null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     # Managers
-    objects = DefaultSoftDeletableManager.from_queryset(PerformanceDashboardQuerySet)()
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(PerformanceDashboardQuerySet)()
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(PerformanceDashboardQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(CountryPlanQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(CountryPlanQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(CountryPlanQuerySet)()
 
     class Meta:
         verbose_name = _("Performance Dashboard")

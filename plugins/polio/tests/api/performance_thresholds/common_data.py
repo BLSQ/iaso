@@ -4,9 +4,9 @@ from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.models.performance_thresholds import PerformanceThresholds
 from plugins.polio.permissions import (
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
 )
 
 
@@ -16,7 +16,7 @@ class PerformanceThresholdsAPIBase(APITestCase):
     Sets up accounts, users, and initial threshold data.
     """
 
-    PERFORMANCE_THRESHOLDS_API_URL = "/api/polio/performance_thresholds/"
+    COUNTRY_PLAN_THRESHOLDS_API_URL = "/api/polio/performance_thresholds/"
 
     @classmethod
     def setUpTestData(cls):
@@ -37,21 +37,21 @@ class PerformanceThresholdsAPIBase(APITestCase):
         cls.user_admin = cls.create_user_with_profile(
             username="admin",
             account=cls.account,
-            permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_ADMIN_PERMISSION],
         )
 
         # Non admin
         cls.user_non_admin = cls.create_user_with_profile(
             username="non admin",
             account=cls.account,
-            permissions=[POLIO_PERFORMANCE_NON_ADMIN_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION],
         )
 
         # Read Only (Can View, Cannot Create/Edit)
         cls.user_read_only = cls.create_user_with_profile(
             username="read only",
             account=cls.account,
-            permissions=[POLIO_PERFORMANCE_READ_ONLY_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION],
         )
 
         # No Permissions (Read-only)
@@ -64,7 +64,7 @@ class PerformanceThresholdsAPIBase(APITestCase):
         cls.user_other_account = cls.create_user_with_profile(
             username="other account user",
             account=cls.other_account,
-            permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_ADMIN_PERMISSION],
         )
 
         # --- 5. Performance Thresholds Data ---

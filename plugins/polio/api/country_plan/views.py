@@ -4,18 +4,18 @@ from rest_framework import filters
 
 from hat.audit.audit_mixin import AuditMixin
 from iaso.api.common import ModelViewSet
-from plugins.polio.api.perfomance_dashboard.serializers import (
-    PerformanceDashboardAuditSerializer,
-    PerformanceDashboardListSerializer,
-    PerformanceDashboardWriteSerializer,
+from plugins.polio.api.country_plan.serializers import (
+    CountryPlanAuditSerializer,
+    CountryPlanListSerializer,
+    CountryPlanWriteSerializer,
 )
-from plugins.polio.models.performance_dashboard import PerformanceDashboard
+from plugins.polio.models.country_plan import CountryPlan
 
-from .filters import PerformanceDashboardFilter
-from .permissions import PerformanceDashboardPermission
+from .filters import CountryPlanFilter
+from .permissions import CountryPlanPermission
 
 
-class PerformanceDashboardViewSet(AuditMixin, ModelViewSet):
+class CountryPlanViewSet(AuditMixin, ModelViewSet):
     """
     API endpoint for Performance Dashboard.
 
@@ -31,22 +31,22 @@ class PerformanceDashboardViewSet(AuditMixin, ModelViewSet):
     - **Admin**: Can delete plans.
     """
 
-    permission_classes = [PerformanceDashboardPermission]
+    permission_classes = [CountryPlanPermission]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
     ]
-    filterset_class = PerformanceDashboardFilter
+    filterset_class = CountryPlanFilter
     ordering_fields = ["date", "country__name", "status", "vaccine", "updated_at"]
     http_method_names = ["get", "post", "patch", "delete"]
-    audit_serializer = PerformanceDashboardAuditSerializer
+    audit_serializer = CountryPlanAuditSerializer
 
     def get_queryset(self):
         """
         Get the queryset for the view, filtered for the current user's account.
         """
         return (
-            PerformanceDashboard.objects.filter_for_user_and_app_id(
+            CountryPlan.objects.filter_for_user_and_app_id(
                 self.request.user, self.request.query_params.get("app_id", None)
             )
             .select_related("country")
@@ -58,6 +58,6 @@ class PerformanceDashboardViewSet(AuditMixin, ModelViewSet):
         Dynamically returns the appropriate serializer class based on the action.
         """
         if self.action in ["create", "update", "partial_update"]:
-            return PerformanceDashboardWriteSerializer
+            return CountryPlanWriteSerializer
 
-        return PerformanceDashboardListSerializer
+        return CountryPlanListSerializer

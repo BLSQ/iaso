@@ -19,7 +19,7 @@ class PerformanceThresholdFilterAPITestCase(PerformanceThresholdsAPIBase):
         Test that we can filter the list by a specific indicator.
         """
         # There is one threshold with indicator "stock_out" in the test data
-        response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL, {"indicator": "stock_out"})
+        response = self.client.get(self.COUNTRY_PLAN_THRESHOLDS_API_URL, {"indicator": "stock_out"})
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
 

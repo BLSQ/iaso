@@ -3,20 +3,20 @@ import logging
 from rest_framework import serializers
 
 from iaso.models import OrgUnit
-from plugins.polio.models.performance_dashboard import PerformanceDashboard
+from plugins.polio.models.country_plan import CountryPlan
 
 
 logger = logging.getLogger(__name__)
 
 
-class PerformanceDashboardAuditSerializer(serializers.ModelSerializer):
+class CountryPlanAuditSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     country_name = serializers.CharField(source="country.name", read_only=True)
     country_id = serializers.CharField(source="country.id", read_only=True)
 
     class Meta:
-        model = PerformanceDashboard
+        model = CountryPlan
         fields = [
             "id",
             "date",
@@ -29,14 +29,14 @@ class PerformanceDashboardAuditSerializer(serializers.ModelSerializer):
         ]
 
 
-class PerformanceDashboardListSerializer(serializers.ModelSerializer):
+class CountryPlanListSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
     country_name = serializers.CharField(source="country.name", read_only=True)
 
     class Meta:
-        model = PerformanceDashboard
+        model = CountryPlan
         fields = [
             "id",
             "date",
@@ -52,12 +52,12 @@ class PerformanceDashboardListSerializer(serializers.ModelSerializer):
         extra_kwargs = {"country_id": {"read_only": True}}
 
 
-class PerformanceDashboardWriteSerializer(serializers.ModelSerializer):
+class CountryPlanWriteSerializer(serializers.ModelSerializer):
     # Expect the country ID for write operations
     country_id = serializers.PrimaryKeyRelatedField(source="country", queryset=OrgUnit.objects.all(), write_only=True)
 
     class Meta:
-        model = PerformanceDashboard
+        model = CountryPlan
         fields = [
             "id",
             "date",

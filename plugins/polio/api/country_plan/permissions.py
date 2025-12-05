@@ -3,18 +3,18 @@ import datetime
 from django.utils import timezone
 from rest_framework import permissions
 
-from plugins.polio.models.performance_dashboard import PerformanceDashboard
+from plugins.polio.models.country_plan import CountryPlan
 from plugins.polio.permissions import (
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
 )
 
 
 DAYS_OPEN_FOR_NON_ADMIN_EDIT = 7
 
 
-class PerformanceDashboardPermission(permissions.BasePermission):
+class CountryPlanPermission(permissions.BasePermission):
     """
     Custom permission for the Performance Dashboard.
     - Read-only users can only view data.
@@ -31,20 +31,20 @@ class PerformanceDashboardPermission(permissions.BasePermission):
 
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.has_perm(POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
-            POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name()
+        return request.user.has_perm(POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
+            POLIO_COUNTRY_PLAN_ADMIN_PERMISSION.full_name()
         )
 
-    def has_object_permission(self, request, view, obj: PerformanceDashboard):
+    def has_object_permission(self, request, view, obj: CountryPlan):
         """
         Object-level permissions, checked for retrieve, update, and delete actions.
         - Admins can do anything.
         - Read-only users can only view.
         - Non-admins can only edit/delete recent objects.
         """
-        if request.user.has_perm(POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name()):
+        if request.user.has_perm(POLIO_COUNTRY_PLAN_ADMIN_PERMISSION.full_name()):
             return True
-        if request.user.has_perm(POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name()):
+        if request.user.has_perm(POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION.full_name()):
             if request.method in permissions.SAFE_METHODS or request.method == "POST":
                 # Read and create actions are allowed for non-admins.
                 return True
@@ -54,7 +54,7 @@ class PerformanceDashboardPermission(permissions.BasePermission):
                 time_limit = timezone.now() - datetime.timedelta(days=DAYS_OPEN_FOR_NON_ADMIN_EDIT)
                 return obj.created_at >= time_limit
 
-        if request.user.has_perm(POLIO_PERFORMANCE_READ_ONLY_PERMISSION.full_name()):
+        if request.user.has_perm(POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION.full_name()):
             return request.method in permissions.SAFE_METHODS
 
         return False

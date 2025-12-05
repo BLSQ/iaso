@@ -2,20 +2,20 @@ import datetime
 
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio.models import performance_dashboard as p
+from plugins.polio.models import country_plan as p
 from plugins.polio.permissions import (
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
 )
 
 
-class PerformanceDashboardAPIBase(APITestCase):
+class CountryPlanAPIBase(APITestCase):
     """ "
     Creating the test data for the performance dashboard API
     """
 
-    PERFORMANCE_DASHBOARD_API_URL = "/api/polio/performance_dashboard/"
+    COUNTRY_PLAN_API_URL = "/api/polio/country_plan/"
 
     @classmethod
     def setUpTestData(cls):
@@ -36,25 +36,25 @@ class PerformanceDashboardAPIBase(APITestCase):
         cls.user_admin_1 = cls.create_user_with_profile(
             username="user_admin_1",
             account=cls.account_one,
-            permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_ADMIN_PERMISSION],
         )
 
         cls.user_admin_2 = cls.create_user_with_profile(
             username="user_admin_2",
             account=cls.account_one,
-            permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_ADMIN_PERMISSION],
         )
 
         cls.user_read_only_1 = cls.create_user_with_profile(
             username="user_read_only_1",
             account=cls.account_one,
-            permissions=[POLIO_PERFORMANCE_READ_ONLY_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION],
         )
 
         cls.user_non_admin_1 = cls.create_user_with_profile(
             username="kakashi",
             account=cls.account_one,
-            permissions=[POLIO_PERFORMANCE_NON_ADMIN_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION],
         )
 
         # User with no permissions
@@ -67,7 +67,7 @@ class PerformanceDashboardAPIBase(APITestCase):
         cls.user_with_account2 = cls.create_user_with_profile(
             username="user_with_account2",
             account=cls.account_two,
-            permissions=[POLIO_PERFORMANCE_ADMIN_PERMISSION],
+            permissions=[POLIO_COUNTRY_PLAN_ADMIN_PERMISSION],
         )
 
         # Org Units
@@ -79,7 +79,7 @@ class PerformanceDashboardAPIBase(APITestCase):
         cls.north = m.OrgUnit.objects.create(name="north", org_unit_type=org_unit_type_block)
         cls.south = m.OrgUnit.objects.create(name="south", org_unit_type=org_unit_type_country, parent=cls.north)
 
-        cls.dashboard_1 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_1 = p.CountryPlan.objects.create(
             account=cls.account_one,
             country=cls.west,
             date=datetime.date(2025, 10, 10),
@@ -87,14 +87,14 @@ class PerformanceDashboardAPIBase(APITestCase):
             vaccine="bOPV",
         )
 
-        cls.dashboard_2 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_2 = p.CountryPlan.objects.create(
             account=cls.account_one,
             country=cls.east,
             date=datetime.date(2025, 10, 10),
             status="commented",
             vaccine="bOPV",
         )
-        cls.dashboard_3 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_3 = p.CountryPlan.objects.create(
             account=cls.account_two,
             country=cls.south,
             date=datetime.date(2025, 10, 10),
@@ -102,7 +102,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             vaccine="bOPV",
         )
 
-        cls.dashboard_4 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_4 = p.CountryPlan.objects.create(
             account=cls.account_one,
             country=cls.west,
             date=datetime.date(2025, 10, 10),
@@ -110,7 +110,7 @@ class PerformanceDashboardAPIBase(APITestCase):
             vaccine="nOPV2",
         )
 
-        cls.dashboard_5 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_5 = p.CountryPlan.objects.create(
             account=cls.account_one,
             country=cls.west,
             date=datetime.date(2025, 10, 10),
@@ -118,21 +118,21 @@ class PerformanceDashboardAPIBase(APITestCase):
             vaccine="nOPV2",
         )
 
-        cls.dashboard_6 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_6 = p.CountryPlan.objects.create(
             account=cls.account_one,
             country=cls.west,
             date=datetime.date(2025, 10, 10),
             status="final",
             vaccine="nOPV2",
         )
-        cls.dashboard_7 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_7 = p.CountryPlan.objects.create(
             account=cls.account_one,
             country=cls.east,
             date=datetime.date(2025, 10, 10),
             status="commented",
             vaccine="nOPV2",
         )
-        cls.dashboard_8 = p.PerformanceDashboard.objects.create(
+        cls.dashboard_8 = p.CountryPlan.objects.create(
             account=cls.account_one,
             country=cls.south,
             date=datetime.date(2025, 10, 10),

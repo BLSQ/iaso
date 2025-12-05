@@ -28,12 +28,9 @@ class PerformanceDashboardPermission(permissions.BasePermission):
         - Read access for safe methods if user has any of the required permissions.
         - Write access for unsafe methods if user has write or admin permissions.
         """
+
         if request.method in permissions.SAFE_METHODS:
-            return (
-                request.user.has_perm(POLIO_PERFORMANCE_READ_ONLY_PERMISSION.full_name())
-                or request.user.has_perm(POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name())
-                or request.user.has_perm(POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name())
-            )
+            return True
         return request.user.has_perm(POLIO_PERFORMANCE_NON_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
             POLIO_PERFORMANCE_ADMIN_PERMISSION.full_name()
         )

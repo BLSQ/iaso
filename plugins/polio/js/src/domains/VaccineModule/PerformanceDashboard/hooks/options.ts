@@ -20,6 +20,5 @@ export const useStatusOptions = (): DropdownOptions<string>[] => {
     }, [formatMessage]);
 };
 
-export const useVaccineOptions = (): DropdownOptions<string>[] => {
-    return defaultVaccineOptions.filter(option => option.value !== 'mOPV2');
-};
+export const vaccineOptions: DropdownOptions<string>[] =
+    defaultVaccineOptions.filter(option => option.value !== 'mOPV2');

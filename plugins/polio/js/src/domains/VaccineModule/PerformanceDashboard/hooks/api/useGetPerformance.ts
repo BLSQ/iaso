@@ -2,8 +2,7 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { useApiParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useUrlParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-
-import { PerformanceList, PerformanceData } from '../../types';
+import { PerformanceList } from '../../types';
 
 const getPerformanceDashboard = (params: any) => {
     const queryString = new URLSearchParams(params).toString();
@@ -14,15 +13,15 @@ export const useGetPerformanceDashboard = (params: any) => {
     const safeParams = useUrlParams(params);
     const apiParams = useApiParams(safeParams);
 
-    return useSnackQuery<PerformanceList>(
-        [
+    return useSnackQuery<PerformanceList>({
+        queryKey:[
             'performance-dashboard', apiParams
         ],
-        () => getPerformanceDashboard(apiParams),
-        {
+        queryFn:() => getPerformanceDashboard(apiParams),
+        options :{
             keepPreviousData: true,
             staleTime: 1000 * 60 * 5, // 5 minutes
             cacheTime: 1000 * 60 * 5,
-        },
+        },}
     );
 };

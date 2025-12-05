@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-30 08:39+0000\n"
+"POT-Creation-Date: 2025-12-01 12:29+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -85,6 +85,10 @@ msgstr "OTP"
 #: plugins/wfp/models.py
 msgid "OTP - Under 6"
 msgstr "OTP - Under 6"
+
+#: plugins/wfp/models.py
+msgid "BSFP"
+msgstr "BSFP"
 
 #: plugins/wfp/models.py
 msgid "Breastfeeding"

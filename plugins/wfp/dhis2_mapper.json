@@ -397,6 +397,26 @@
                     }
                 }
             }
+        },
+        "bsfp_reporting": {
+            "new_case": {
+                "Male": {
+                    "new_case": {
+                        "total_beneficiary": {
+                            "dataElement": "guwOLVJGIyJ",
+                            "categoryOptionCombo": "TlDOlnLmDqE"
+                        }
+                    }
+                },
+                "Female": {
+                    "new_case": {
+                        "total_beneficiary": {
+                            "dataElement": "guwOLVJGIyJ",
+                            "categoryOptionCombo": "jSDX5P0PQHc"
+                        }
+                    }
+                }
+            }
         }
     },
     "PLW": {
@@ -568,6 +588,26 @@
                     "transfer_from_other_tsfp": {
                         "dataElement": "NlLLl5EqZvr",
                         "categoryOptionCombo": "z04tUG0eT6e"
+                    }
+                }
+            }
+        },
+        "bsfp_reporting": {
+            "new_case": {
+                "pregnant": {
+                    "new_case": {
+                        "total_beneficiary": {
+                            "dataElement": "zL0E3rfrdVs",
+                            "categoryOptionCombo": "jSDX5P0PQHc"
+                        }
+                    }
+                },
+                "breastfeeding": {
+                    "new_case": {
+                        "total_beneficiary": {
+                            "dataElement": "guwOLVJGIyJ",
+                            "categoryOptionCombo": "jSDX5P0PQHc"
+                        }
                     }
                 }
             }

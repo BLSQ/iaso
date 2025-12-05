@@ -32,7 +32,10 @@ class PolioLqasAfroMapTestCase(APITestCase):
 
     def setUp(cls) -> None:
         cls.account = Account.objects.create(name="Polio account")
-        cls.authorized_user = cls.create_user_with_profile(username="authorized", account=cls.account)
+        cls.project = Project.objects.create(name="Project", account=cls.account, app_id="com.appId.app")
+        cls.authorized_user = cls.create_user_with_profile(
+            username="authorized", account=cls.account, projects=[cls.project]
+        )
         cls.unauthorized_user = cls.create_user_with_profile(username="unAuthorized", account=cls.account)
         cls.project = Project.objects.create(name="Polio", app_id="polio.rapid.outbreak.taskforce", account=cls.account)
         cls.data_source = DataSource.objects.create(name="Default source")
@@ -138,8 +141,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
             version=cls.source_version,
             simplified_geom=cls.country_3_geo_json,
         )
-        cls.polio_type, created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
-        cls.measles_type, created = CampaignType.objects.get_or_create(name=CampaignType.MEASLES)
+        cls.polio_type, _ = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+        cls.measles_type, _ = CampaignType.objects.get_or_create(name=CampaignType.MEASLES)
 
         # Campaign 1. Scope at campaign level
         cls.campaign_1 = Campaign.objects.create(
@@ -349,7 +352,21 @@ class PolioLqasAfroMapTestCase(APITestCase):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
         response = c.get("/api/polio/lqasmap/global/?category=lqas", accept="application/json")
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, 200)
+
+    def test_anonymous_access(self):
+        c = APIClient()
+        response = c.get("/api/polio/lqasmap/global/?category=lqas", accept="application/json")
+        response = self.assertJSONResponse(response, 200)
+        data = response["results"]
+        # Passing no app_id when anonymous should return empty org units
+        self.assertEqual(len(data), 0)
+        response = c.get(
+            f"/api/polio/lqasmap/global/?category=lqas&app_id={self.project.app_id}", accept="application/json"
+        )
+        response = self.assertJSONResponse(response, 200)
+        data = response["results"]
+        self.assertGreater(len(data), 0)
 
     def test_determine_status_for_district(self):
         district_data = self.country1_data_store_content["stats"][self.campaign_1.obr_name]["rounds"][0]["data"][
@@ -597,6 +614,23 @@ class PolioLqasAfroMapTestCase(APITestCase):
         content = json.loads(response.content)
         results = content["results"]
         self.assertEqual(len(results), 0)
+
+    def test_lqas_zoomin_anon_access(self):
+        c = APIClient()
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}", accept="application/json"
+        )
+        response = self.assertJSONResponse(response, 200)
+        data = response["results"]
+        # Passing no app_id when anonymous should return empty org units
+        self.assertEqual(len(data), 0)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&app_id={self.project.app_id}",
+            accept="application/json",
+        )
+        response = self.assertJSONResponse(response, 200)
+        data = response["results"]
+        self.assertGreater(len(data), 0)
 
     def test_lqas_zoomed_in(self):
         c = APIClient()

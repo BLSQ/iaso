@@ -133,6 +133,12 @@ export const lqasAfroPath: RoutePath = {
     element: <LqasAfroOverview />,
     permissions: [POLIO, POLIO_ADMIN],
 };
+export const embeddedLqasAfroPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: baseUrls.embeddedLqasAfroPath,
+    routerUrl: `${baseUrls.embeddedLqasAfroPath}/*`,
+    element: <LqasAfroOverview />,
+};
 
 export const imGlobalPath: RoutePath = {
     baseUrl: baseUrls.imGlobal,
@@ -311,4 +317,5 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     chronogramDetailsPath,
     performanceDashboardPath,
     embeddedLqasCountryPath,
+    embeddedLqasAfroPath,
 ];

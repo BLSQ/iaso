@@ -2,22 +2,28 @@
 
 ## Overview
 
-This document describes the integration between Iaso's Planning feature and OpenHexa pipelines for automated assignment generation. The integration allows users to configure sampling parameters and automatically generate assignments of organizational units to teams/users using LQAS (Lot Quality Assurance Sampling) algorithms.
+This document describes the integration between Iaso's Planning feature and OpenHexa pipelines for LQAS (Lot Quality Assurance Sampling) sampling. The integration allows users to configure sampling parameters and automatically generate **org unit groups** using LQAS algorithms. 
+
+**Important**: The pipeline is responsible **only for sampling** and creating org unit groups. Assignment of org units to teams/users is handled separately on the Iaso side.
 
 ## Architecture Overview
 
 ### Core Components
 
-1. **Planning System**: Manages planning configurations and assignment results
-2. **OpenHexa Integration**: Handles pipeline execution and task management
-3. **Assignment Engine**: Generates assignments based on pipeline results
-4. **UI Components**: Frontend interfaces for configuration and monitoring
+1. **Planning System**: Manages planning configurations and sampling results
+2. **OpenHexa Integration**: Handles pipeline execution and task management via `OpenHEXAInstance` and `OpenHEXAWorkspace` model
+3. **Sampling Engine**: OpenHexa pipeline that selects org units using LQAS algorithm
+4. **Group Creation**: Pipeline creates org unit groups in Iaso
+5. **Assignment Engine**: Iaso-side system that assigns groups to teams/users (separate from pipeline)
+6. **UI Components**: Frontend interfaces for configuration and monitoring
 
 ### Data Flow
 
 ```
-Planning Configuration → Pipeline Parameters → OpenHexa Execution → Assignment Generation → UI Display
+Planning Configuration → Pipeline Parameters → OpenHexa Execution → LQAS Sampling → Group Creation → Task Result Storage → UI Display
 ```
+
+**Note**: Assignment of org units to teams/users happens on the Iaso side after the pipeline completes.
 
 ## Data Models
 
@@ -65,6 +71,8 @@ class Assignment(SoftDeletableModel):
         unique_together = [["planning", "org_unit"]]
 ```
 
+**Note**: Assignments are created on the Iaso side, not by the OpenHexa pipeline. The pipeline only creates org unit groups.
+
 ### OrgUnitType Hierarchy
 
 ```python
@@ -83,6 +91,34 @@ class OrgUnitType(models.Model):
     ]
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
 ```
+
+### Sampling Results Model (Planned)
+
+A new model is planned to track multiple sampling runs per planning:
+
+```python
+class PlanningSamplingResult(models.Model):
+    """Stores the results of sampling pipeline runs."""
+    planning = models.ForeignKey("Planning", on_delete=models.CASCADE, related_name="sampling_results")
+    task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True)
+    pipeline_id = models.CharField(max_length=36)  # OpenHexa pipeline UUID
+    pipeline_version = models.CharField(max_length=100)  # Pipeline version
+    group = models.ForeignKey("Group", on_delete=models.SET_NULL, null=True, blank=True)  # Created org unit group
+    org_units_count = models.IntegerField()  # Number of sampled org units
+    parameters = models.JSONField()  # Sampling parameters used
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
+```
+
+**Purpose**: This model will allow:
+- Storing multiple sampling runs for comparison
+- Tracking which pipeline and version was used
+- Linking to the created org unit group
+- Enabling users to compare different sampling results
+- Allowing selection of the best sampling result for assignment creation
 
 ### Team Hierarchy
 
@@ -113,31 +149,56 @@ The OpenHexa pipeline receives the following parameters:
 def lqas_assignment_pipeline(
     planning_id: int,
     task_id: int,
+    pipeline_id: str,                               # Pipeline UUID for status updates
     org_unit_type_sequence_identifiers: List[int],  # [398, 399, 400] - IDs from higher to lower level
     org_unit_type_quantities: List[int],            # [2, 3, 4] - quantities at each level
     org_unit_type_exceptions: List[str],            # ["12098,108033", "", ""] - exceptions per level
+    org_unit_type_criteria: List[str],              # ["RURAL/URBAN", "RURAL", "URBAN"] - criteria per level
     connection_host: str,                           # "http://localhost:8081" - Iaso server URL
-    connection_token: str,                          # Session token for authentication
+    connection_token: str,                          # JWT Bearer token for authentication
 ):
     """
-    LQAS Assignment Pipeline
+    LQAS Org Unit Selection Pipeline
+    
+    This pipeline samples org units using LQAS algorithm and creates an org unit group.
+    The group can then be used on the Iaso side to create assignments to teams/users.
     
     Args:
-        planning_id: ID of the planning to generate assignments for
-        task_id: ID of the task for status updates
+        planning_id: ID of the planning to generate sampling for
+        task_id: ID of the task for progress and status updates
+        pipeline_id: UUID of the pipeline for API status update endpoint
         org_unit_type_sequence_identifiers: List of org unit type IDs in hierarchy order (top to bottom)
         org_unit_type_quantities: List of quantities to select at each level
         org_unit_type_exceptions: List of comma-separated org unit IDs to exclude at each level
+        org_unit_type_criteria: List of criteria for selection at each level (RURAL/URBAN, RURAL, or URBAN)
         connection_host: Host URL of the Iaso server (e.g., "http://localhost:8081")
-        connection_token: Session token for authentication
+        connection_token: JWT Bearer token for authentication
     """
 ```
 
 ### Parameter Structure
 
+#### planning_id
+- **Type**: `int`
+- **Description**: ID of the planning for which org units should be sampled
+- **Required**: Yes
+- **Example**: `123`
+
+#### task_id
+- **Type**: `int`
+- **Description**: ID of the background task for progress and status updates
+- **Required**: Yes (can be None in some cases)
+- **Example**: `456`
+
+#### pipeline_id
+- **Type**: `str`
+- **Description**: UUID of the OpenHexa pipeline, used to construct the API endpoint for task status updates (`/api/openhexa/pipelines/{pipeline_id}/`)
+- **Required**: Yes
+- **Example**: `"f2bbb20d-0170-4b73-af08-e24390859571"`
+
 #### org_unit_type_sequence_identifiers
 - **Type**: `List[int]`
-- **Description**: IDs of org unit types in hierarchical order (from highest to lowest level)
+- **Description**: IDs of org unit types in hierarchical order (from highest to lowest level). Defines the hierarchy levels to sample from.
 - **Example**: `[398, 399, 400]` where:
   - `398` = Country level
   - `399` = Region level  
@@ -145,32 +206,44 @@ def lqas_assignment_pipeline(
 
 #### org_unit_type_quantities
 - **Type**: `List[int]`
-- **Description**: Number of org units to select at each level
+- **Description**: Number of org units to randomly select at each hierarchy level using LQAS sampling
 - **Example**: `[2, 3, 4]` means:
-  - Select 2 countries
-  - From each country, select 3 regions
-  - From each region, select 4 districts
-  - Total: 2 × 3 × 4 = 24 districts
+  - Select 2 org units at country level
+  - From each selected country, select 3 org units at region level
+  - From each selected region, select 4 org units at district level
+  - Total sampled: 2 × 3 × 4 = 24 org units at the lowest level
 
 #### org_unit_type_exceptions
 - **Type**: `List[str]`
-- **Description**: Org unit IDs to exclude from random sampling at each level. Each string contains comma-separated IDs of org units to ignore during sampling at that specific level.
+- **Description**: Org unit IDs to exclude from random sampling at each hierarchy level. Each string contains comma-separated IDs of org units to exclude during LQAS sampling at that specific level.
 - **Example**: `["12098,108033", "", ""]` means:
-  - Exclude countries with IDs 12098 and 108033 (comma-separated in first string)
-  - No region exceptions (empty string)
-  - No district exceptions (empty string)
+  - At country level: exclude org units with IDs 12098 and 108033 from sampling pool
+  - At region level: no exclusions (empty string)
+  - At district level: no exclusions (empty string)
+- **Note**: Empty strings indicate no exclusions at that level
+
+#### org_unit_type_criteria
+- **Type**: `List[str]`
+- **Description**: Selection criteria for org units at each hierarchy level. Controls whether to include rural, urban, or both types of org units in the sampling pool.
+- **Choices**: `"RURAL/URBAN"`, `"RURAL"`, `"URBAN"`
+- **Example**: `["RURAL/URBAN", "RURAL", "URBAN"]` means:
+  - At first level: include both rural and urban org units in sampling pool
+  - At second level: include only rural org units in sampling pool
+  - At third level: include only urban org units in sampling pool
+- **Note**: This filters the available org units before applying LQAS random sampling
 
 #### connection_host
 - **Type**: `str`
-- **Description**: Host URL of the Iaso server to connect to. This enables multitenant support by allowing pipelines to connect to different Iaso instances. This URL is automatically generated during pipeline launch based on the current request.
-- **Example**: `"http://localhost:8081"` or `"https://iaso.example.com"`
-- **Note**: This parameter is automatically added to the config by the backend during pipeline launch - it should not be provided by the frontend.
+- **Description**: Base URL of the Iaso server. This enables multitenant support by allowing pipelines to connect to different Iaso instances. This URL is automatically generated during pipeline launch based on the current HTTP request.
+- **Example**: `"https://iaso.example.com"` or `"http://localhost:8081"`
+- **Note**: This parameter is **automatically added** to the config by the backend during pipeline launch - the frontend should **not** provide this parameter.
 
 #### connection_token
 - **Type**: `str`
-- **Description**: JWT Bearer token for authentication with the Iaso API. This token is automatically generated during pipeline launch using the authenticated user's credentials and used in the `Authorization: Bearer {token}` header.
+- **Security**: ⚠️ **This parameter should be protected/hidden in the OpenHexa UI** - it contains sensitive authentication credentials and should not be visible to end users
+- **Description**: JWT Bearer token for authentication with the Iaso API. This token is automatically generated during pipeline launch using the authenticated user's credentials and is used in the `Authorization: Bearer {token}` header for all API calls from the pipeline.
 - **Example**: `"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."` (JWT access token)
-- **Note**: This parameter is automatically added to the config by the backend during pipeline launch - it should not be provided by the frontend.
+- **Note**: This parameter is **automatically added** to the config by the backend during pipeline launch - the frontend should **not** provide this parameter.
 
 ### Pipeline Execution Flow
 
@@ -183,11 +256,15 @@ def lqas_assignment_pipeline(
 
 #### OpenHEXA Side (Pipeline)
 1. **Connection Test**: Validate connection to Iaso API using provided host and token
-2. **Validation**: Verify org unit type hierarchy matches team hierarchy
-3. **Sampling**: Apply LQAS algorithm to select org units
-4. **Assignment**: Assign selected org units to teams/users
-5. **Progress Updates**: Optionally update task progress throughout execution
-6. **Result Storage**: Store final assignments in Iaso database
+2. **Validation**: Verify parameters and org unit type hierarchy
+3. **Data Fetch**: Retrieve planning info and org units from Iaso
+4. **Sampling**: Apply LQAS algorithm to select org units based on quantities, criteria, and exceptions
+5. **Group Creation**: Create org unit group in Iaso containing sampled units
+6. **Progress Updates**: Update task progress throughout execution
+7. **Result Storage**: Store sampling results (task_id, group_id, planning_id, org_unit_ids) to database
+8. **Task Update**: Save final results to task (group_id, org_units_count, etc.)
+
+**Note**: The pipeline does NOT create assignments. Assignment creation is handled on the Iaso side.
 
 #### Status Management
 - **Automatic**: Iaso polling system handles all status transitions
@@ -201,6 +278,8 @@ The pipeline uses JWT Bearer token authentication instead of OpenHexa's connecti
 
 #### Generic API Caller
 
+The pipeline uses a generic API caller function for all Iaso API interactions:
+
 ```python
 def call_api(
     base_url: str,
@@ -209,6 +288,7 @@ def call_api(
     method: str = "GET",
     data: Optional[Dict] = None,
     params: Optional[Dict] = None,
+    timeout: int = 300,
 ) -> Any:
     """
     Generic API caller that uses Bearer token authentication.
@@ -216,15 +296,23 @@ def call_api(
     Args:
         base_url (str): Root server URL, e.g. "http://localhost:8081"
         endpoint (str): API endpoint, e.g. "/api/forms/" (no trailing slash required)
-        bearer_token (str): JWT Bearer token for authentication
+        bearer_token (str): Bearer token for authentication
         method (str): HTTP method, default "GET" (can be "POST", "PUT", "PATCH", "DELETE")
         data (dict, optional): Data payload for POST/PUT/PATCH
         params (dict, optional): Query params for GET requests
+        timeout (int): Request timeout in seconds (default: 300s / 5 minutes)
+                      Increase for large data fetches like org unit hierarchies
 
     Returns:
         dict or str: JSON response if possible, otherwise raw text
     """
 ```
+
+**Key Features:**
+- Bearer token authentication
+- Configurable timeout (default 5 minutes for large hierarchies)
+- Automatic JSON parsing
+- HTTP error handling with `raise_for_status()`
 
 #### Token Acquisition
 
@@ -243,23 +331,6 @@ The backend uses the authenticated user's credentials to generate a JWT access t
 - Token generation is handled securely on the server side
 - The token is automatically included in the pipeline configuration
 
-#### Connection Testing
-
-The pipeline includes a connection test function that validates API connectivity before proceeding:
-
-```python
-def test_connection(connection_host: str, connection_token: str) -> bool:
-    """
-    Test the connection to Iaso API.
-    
-    Args:
-        connection_host: Host URL of the Iaso server
-        connection_token: JWT Bearer token for authentication
-        
-    Returns:
-        bool: True if connection is successful, False otherwise
-    """
-```
 
 **Benefits of this approach:**
 - **Automatic Token Generation**: JWT tokens are generated server-side during pipeline launch
@@ -276,29 +347,116 @@ def test_connection(connection_host: str, connection_token: str) -> bool:
 
 The pipeline integration uses a dual approach for task status management:
 
-#### 1. Pipeline Progress Updates (Optional)
+#### 1. Pipeline Progress Updates (Recommended)
 
-The pipeline can optionally update progress and messages using the generic API caller:
+The pipeline uses a `TaskProgressLogger` class for convenient progress tracking:
 
 ```python
-def safe_update_task_status(
-    task_id: Optional[int],
-    message: str,
+class TaskProgressLogger:
+    """Logger for task progress with Iaso integration.
+    
+    Encapsulates task context to avoid repetitive parameter passing.
+    Implements smart batching to reduce API calls.
+    """
+
+    def __init__(
+        self,
+        task_id: Optional[int],
+        pipeline_id: str,
+        connection_host: str,
+        connection_token: str,
+        batch_threshold: int = 5,
+    ):
+        """Initialize the logger with task context.
+        
+        Args:
+            task_id: ID of the task (can be None)
+            pipeline_id: Pipeline ID for the endpoint
+            connection_host: Iaso server URL
+            connection_token: Bearer token for authentication
+            batch_threshold: Minimum progress change to trigger API call (default: 5%)
+        """
+
+    def log(
+        self,
+        message: str,
+        progress_value: Optional[int] = None,
+        result_data: Optional[Dict] = None,
+        log_level: str = "info",
+        force_send: bool = False,
+    ):
+        """Log progress with current task context.
+        
+        Args:
+            message: Progress message
+            progress_value: Optional progress value (end_value is always 100)
+            result_data: Optional result data to save (usually for final step)
+            log_level: Level of the log (info, error, warning, debug)
+            force_send: Force immediate API call (bypasses batching)
+        """
+
+    def flush(self):
+        """Force send any pending updates (call at end of pipeline)."""
+```
+
+**Usage Example:**
+```python
+# Initialize logger once at pipeline start
+logger = TaskProgressLogger(
+    task_id=task_id,
+    pipeline_id=pipeline_id,
+    connection_host=connection_host,
+    connection_token=connection_token,
+)
+
+# Use throughout pipeline
+logger.log("Starting data fetch", 10)
+logger.log("Data fetched successfully", 50)
+logger.log("Processing complete", 100, result_data={"count": 42})
+```
+
+**Smart Batching Features:**
+- Batches updates by default (only sends when progress changes by 5% or more)
+- Always sends errors and warnings immediately
+- Always sends final update (100% or with result_data)
+- Can force immediate send with `force_send=True`
+- Auto-raises RuntimeError on error log level (fails pipeline properly)
+
+#### 2. Direct API Updates (Low-Level)
+
+For direct control, use the `update_task_on_iaso()` function:
+
+```python
+def update_task_on_iaso(
     connection_host: str,
     connection_token: str,
+    task_id: int,
     pipeline_id: str,
+    message: str,
     progress_value: Optional[int] = None,
     end_value: Optional[int] = None,
     result_data: Optional[Dict] = None,
-    status: Optional[str] = None,  # Optional - not used by default
 ):
-    """Safely update task progress and messages in Iaso."""
-    # Uses call_api() function to send PATCH request to /api/openhexa/pipelines/{pipeline_id}/
-    # with task_id, progress_message, progress_value, end_value, result_data
-    # Status updates are handled by the polling system, not the pipeline
+    """
+    Update task progress on Iaso (does NOT update status).
+    
+    Args:
+        connection_host: Iaso server URL
+        connection_token: Bearer token for authentication
+        task_id: Task ID to update
+        pipeline_id: Pipeline ID for the endpoint
+        message: Progress message
+        progress_value: Optional progress value
+        end_value: Optional end value
+        result_data: Optional result data to save
+    """
+    # Sends PATCH request to /api/openhexa/pipelines/{pipeline_id}/
+    # with task_id, progress_message, progress_value, end_value, result
 ```
 
-#### 2. Automatic Status Polling System
+**Note:** Status updates (QUEUED, RUNNING, SUCCESS, ERRORED) are handled automatically by Iaso's polling system. The pipeline should only send progress updates and messages.
+
+#### 3. Automatic Status Polling System
 
 The main status management is handled by Iaso's background task system that continuously polls OpenHEXA for pipeline status:
 
@@ -311,7 +469,7 @@ def launch_openhexa_pipeline(
     version: str,
     config: dict,
     delay: int = 2,
-    max_polling_duration_minutes: int = 10,
+    max_polling_duration_minutes: int = 200,
     task: Task = None,
 ):
     """
@@ -404,47 +562,34 @@ def launch_openhexa_pipeline(user, pipeline_id, openhexa_url, openhexa_token, ve
 
 ## OpenHexa Configuration
 
-### Configuration Parameters
+### Configuration via OpenHEXAInstance Model
 
-The OpenHexa integration requires configuration stored in the `Config` model with slug `"openhexa-config"`. The configuration includes:
+The OpenHexa integration is now configured using the `OpenHEXAInstance` model instead of the legacy `Config` model. This provides better multitenant support and instance management.
 
-#### Required Parameters
-- `openhexa_url`: The GraphQL endpoint URL for OpenHexa
-- `openhexa_token`: Authentication token for OpenHexa API
-- `workspace_slug`: The workspace identifier in OpenHexa
+For detailed information on OpenHexa configuration, see the [OpenHexa Integration Guide](../openhexa-integration.md).
 
-#### Optional Parameters
-- `lqas_pipeline_code`: The pipeline code used to display a custom form for LQAS sampling in the OpenHexa integration UI. This enables specialized LQAS sampling forms when available.
+#### Key Configuration Fields
+- `url`: The GraphQL endpoint URL for OpenHexa
+- `token`: Authentication token for OpenHexa API
+- Workspace information is managed through OpenHexa workspace connections
 
-### Configuration Example
+### LQAS Pipeline Configuration
 
-```json
-{
-    "openhexa_url": "https://openhexa.example.com/graphql/",
-    "openhexa_token": "your-api-token-here",
-    "workspace_slug": "your-workspace",
-    "lqas_pipeline_code": "lqas-sampling-pipeline",
-}
+The Planning feature can be configured to use specific LQAS pipelines:
+
+#### Planning Model Configuration
+```python
+class Planning(SoftDeletableModel):
+    # ... other fields ...
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text="List of OpenHexa pipeline UUIDs available for this planning",
+    )
 ```
 
-### Configuration Endpoint
-
-The system provides an endpoint to check OpenHexa configuration status:
-
-```http
-GET /api/openhexa/pipelines/config/
-```
-
-**Response**:
-```json
-{
-    "configured": true,
-    "lqas_pipeline_code": "lqas-sampling-pipeline"
-}
-```
-
-- `configured`: Boolean indicating if all required parameters are present
-- `lqas_pipeline_code`: Only included if present in configuration
+This allows linking specific LQAS sampling pipelines to a planning configuration.
 
 ## API Endpoints
 
@@ -460,9 +605,11 @@ Content-Type: application/json
     "config": {
         "planning_id": 123,
         "task_id": 456,
+        "pipeline_id": "f2bbb20d-0170-4b73-af08-e24390859571",
         "org_unit_type_sequence_identifiers": [398, 399, 400],
         "org_unit_type_quantities": [2, 3, 4],
-        "org_unit_type_exceptions": ["12098,108033", "", ""]
+        "org_unit_type_exceptions": ["12098,108033", "", ""],
+        "org_unit_type_criteria": ["RURAL/URBAN", "RURAL", "URBAN"]
     }
 }
 ```
@@ -480,14 +627,18 @@ Content-Type: application/json
     "progress_value": 100,
     "end_value": 100,
     "result_data": {
-        "assignments_created": 24,
-        "org_units_selected": [...],
-        "teams_assigned": [...]
+        "pipeline_name": "LQAS Org Unit Selection Pipeline",
+        "status": "SUCCESS",
+        "group_id": 789,
+        "planning_id": 123,
+        "org_units_ids": [1001, 1002, 1003],
+        "org_units_count": 3,
+        "execution_time": "2025-12-05T10:30:00"
     }
 }
 ```
 
-**Note**: The `status` parameter is optional and not used by default. Status updates are handled automatically by Iaso's polling system. The pipeline should only send progress updates and messages.
+**Note**: The `status` parameter is optional and not used by default. Status updates are handled automatically by Iaso's polling system. The pipeline should only send progress updates and messages with result data.
 
 #### Automatic Status Updates (Iaso → OpenHEXA)
 Status updates are handled automatically by the background polling system:
@@ -500,190 +651,134 @@ Status updates are handled automatically by the background polling system:
 
 The polling system continuously monitors OpenHEXA and updates Iaso task status accordingly.
 
-## Architecture Improvements
+### Group Management
 
-### Key Benefits of the New Architecture
+#### Create Org Unit Group (Pipeline → Iaso)
+The pipeline creates org unit groups via the Iaso API:
 
-#### 1. **Reliable Status Management**
-- **Automatic Synchronization**: Iaso task status always matches OpenHEXA pipeline status
-- **No Manual Updates**: Status changes are handled automatically by the polling system
-- **Real-time Updates**: Status changes are reflected immediately in the UI
-- **Consistent State**: Eliminates status mismatches between systems
-
-#### 2. **Robust Pipeline Execution**
-- **Configurable Timeouts**: Default 10-minute timeout prevents ghost tasks (configurable)
-- **Continuous Monitoring**: Polls until pipeline reaches final state or timeout
-- **Error Recovery**: Handles network errors and continues polling
-- **Kill Support**: Respects task termination signals
-- **Timeout Protection**: Prevents indefinite polling that could create ghost tasks
-
-#### 3. **Simplified Pipeline Development**
-- **Optional Status Updates**: Pipelines can focus on business logic, not status management
-- **Progress Reporting**: Pipelines can still send progress updates and messages
-- **Clean Separation**: Status management is handled by Iaso, not the pipeline
-- **Reduced Complexity**: Pipelines don't need to handle status transitions
-
-#### 4. **Better User Experience**
-- **Accurate Status**: Users always see the correct pipeline status
-- **Real-time Feedback**: Status updates happen automatically
-- **Reliable Monitoring**: No more stuck or orphaned tasks
-- **Consistent Interface**: Same task management interface for all pipeline types
-
-#### 5. **Improved Maintainability**
-- **Single Source of Truth**: OpenHEXA is the authoritative source for pipeline status
-- **Centralized Logic**: All status management logic is in one place
-- **Easier Debugging**: Clear separation between pipeline logic and status management
-- **Better Testing**: Status management can be tested independently
-
-### Migration from Previous Architecture
-
-The new architecture is backward compatible with existing pipelines:
-
-- **Existing Pipelines**: Continue to work without modification
-- **Status Updates**: Optional - pipelines can still send status updates if needed
-- **Progress Updates**: Still supported and recommended for user feedback
-- **Error Handling**: Improved error handling and recovery
-
-### Best Practices
-
-#### For Pipeline Developers
-1. **Focus on Business Logic**: Don't worry about status management
-2. **Send Progress Updates**: Use `safe_update_task_status()` for user feedback
-3. **Handle Errors Gracefully**: Let the polling system handle status updates
-4. **Use Result Data**: Include meaningful data in progress updates
-
-#### For Frontend Developers
-1. **Monitor Task Status**: Use the task status for UI updates
-2. **Show Progress**: Display progress messages from the pipeline
-3. **Handle States**: Implement proper UI states for each task status
-4. **Real-time Updates**: Use task polling for real-time status updates
-
-### Assignment Management
-
-#### Delete All Assignments for Planning
 ```http
-DELETE /api/assignments/?planning={planning_id}
-```
-
-#### Bulk Create Assignments
-```http
-POST /api/assignments/bulk_create_assignments/
+POST /api/groups/
 Content-Type: application/json
+Authorization: Bearer {connection_token}
 
 {
-    "planning": 123,
-    "assignments": [
-        {
-            "org_unit": 1001,
-            "team": 201,
-            "user": null
-        },
-        {
-            "org_unit": 1002,
-            "team": 202,
-            "user": 301
-        }
-    ]
+    "name": "LQAS Group for Planning 123 - 2025-12-05 10:30",
+    "org_unit_ids": [1001, 1002, 1003, ...]
 }
 ```
 
-## Frontend Integration
-
-### User Workflow
-
-The correct workflow for planning-pipeline integration is:
-
-1. **Planning Creation/Edition**: User selects available pipelines (no parameters)
-2. **Assignment Map View**: User views current assignments and launches sampling
-3. **Parameter Configuration**: User configures sampling parameters in a dialog
-4. **Pipeline Execution**: System executes pipeline and updates assignments
-
-### Planning Configuration UI
-
-The planning creation/edition dialog should include:
-
-1. **Pipeline Selection**: Multi-select dropdown for available pipelines (only pipeline selection, no parameters) - Only visible if OpenHexa config is present
-   - Selected pipelines are stored in the `pipeline_uuids` field as an array of UUIDs
-   - This links specific pipelines to the planning configuration
-
-### Assignment View UI (Map Page)
-
-The assignment details view (map page) should display:
-
-1. **Current Assignments**: Table showing org units assigned to teams/users
-2. **Visual Map**: Geographic representation of assignments
-3. **Pipeline Controls**: Buttons to:
-   - **Launch Sample**: Open parameter configuration dialog
-   - View pipeline status
-   - Delete existing assignments (with confirmation)
-4. **Parameter Configuration Dialog**: Modal/dialog for:
-   - Pipeline selection (if multiple available)
-   - Org unit type hierarchy selection
-   - Quantities at each level
-   - Exception org units (comma-separated IDs to exclude per level)
-
-### Workflow Details
-
-#### Step 1: Planning Creation/Edition
-- User creates or edits a planning
-- User selects which pipelines are available for this planning
-
-#### Step 2: Assignment Map View
-- User navigates to the assignment map view for the planning
-- User sees current assignments (if any) on the map and in the table
-- User sees "Launch Sample" button (only if OpenHexa is configured)
-
-#### Step 3: Launch Sample
-- User clicks "Launch Sample" button
-- If existing assignments exist, show confirmation dialog: "This will delete all existing assignments. Continue?"
-- Open parameter configuration dialog
-
-#### Step 4: Parameter Configuration
-- User selects pipeline (if multiple available)
-- User configures sampling parameters:
-  - Org unit type hierarchy (from higher to lower level)
-  - Quantities at each level
-  - Exception org units to exclude (comma-separated IDs per level)
-- User clicks "Launch Pipeline" to execute
-
-#### Step 5: Pipeline Execution
-- System creates task and launches pipeline
-- User sees task status updates
-- System updates assignments when pipeline completes
-- User sees new assignments on map and in table
-
-## Validation Rules
-
-### Hierarchy Validation
-
-1. **Org Unit Type Hierarchy**: Must match team hierarchy depth
-2. **Team Hierarchy**: Must be compatible with org unit type structure
-3. **Exception Validation**: Exception org units must exist and be of correct type
-
-### Pipeline Validation
-
-1. **Parameter Validation**: All required parameters must be provided
-2. **Type Validation**: Parameter types must match expected formats
-3. **Range Validation**: Quantities must be positive integers
-4. **Existence Validation**: All referenced IDs must exist in database
-
-## Error Handling
-
-### Common Error Scenarios
-
-1. **Hierarchy Mismatch**: Org unit type hierarchy doesn't match team hierarchy
-2. **Invalid Parameters**: Missing or invalid pipeline parameters
-3. **Pipeline Failure**: OpenHexa pipeline execution fails
-4. **Assignment Conflicts**: Attempting to create duplicate assignments
-
-### Error Response Format
-
+**Response**:
 ```json
 {
-    "error": "Error message",
-    "details": {
-        "field": "specific field error",
-        "code": "ERROR_CODE"
-    }
+    "id": 789,
+    "name": "LQAS Group for Planning 123 - 2025-12-05 10:30",
+    "org_unit_ids": [1001, 1002, 1003, ...]
 }
 ```
+
+### Sampling Results Storage
+
+The pipeline stores sampling results in a database table for later retrieval:
+
+```sql
+CREATE TABLE assignments_plannings (
+    task_id INTEGER,
+    group_id INTEGER,
+    planning_id INTEGER,
+    org_units_ids TEXT  -- JSON string of org unit IDs
+);
+```
+
+**Future Enhancement**: This will be replaced by a proper Django model (`PlanningSamplingResult`) to enable:
+- Multiple sampling runs per planning
+- Comparison of different sampling results  
+- Selection of preferred sampling for assignment creation
+
+## Future Enhancements
+
+### Sampling Results Model Implementation
+
+**Status**: Planned
+
+**Goal**: Replace the temporary database table with a proper Django model to track multiple sampling runs per planning.
+
+#### Proposed Model
+
+```python
+class PlanningSamplingResult(models.Model):
+    """Stores the results of LQAS sampling pipeline runs."""
+    planning = models.ForeignKey(
+        "Planning", 
+        on_delete=models.CASCADE, 
+        related_name="sampling_results"
+    )
+    task = models.ForeignKey(
+        "Task", 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name="sampling_results"
+    )
+    pipeline_id = models.CharField(max_length=36, help_text="OpenHexa pipeline UUID")
+    pipeline_version = models.CharField(max_length=100, help_text="Pipeline version identifier")
+    group = models.ForeignKey(
+        "Group", 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        help_text="Created org unit group containing sampled units"
+    )
+    org_units_count = models.IntegerField(help_text="Number of sampled org units")
+    parameters = models.JSONField(help_text="Sampling parameters used for this run")
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("SUCCESS", "Success"),
+            ("FAILED", "Failed"),
+            ("RUNNING", "Running"),
+        ],
+        default="RUNNING"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True
+    )
+    
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Sampling Result"
+        verbose_name_plural = "Sampling Results"
+```
+
+#### Benefits
+
+1. **Multiple Samplings**: Store and compare multiple sampling runs per planning
+2. **Audit Trail**: Track who created each sampling and when
+3. **Parameter History**: Record exact parameters used for each sampling
+4. **Status Tracking**: Monitor sampling execution status
+5. **Group Association**: Direct link to created org unit groups
+6. **Comparison Interface**: Enable side-by-side comparison in UI
+
+#### UI Features
+
+1. **Sampling Results List**:
+   - Display all sampling runs for a planning
+   - Show execution timestamp, status, parameters
+   - Link to view org unit group contents
+   - Action buttons (use for assignments, delete)
+
+2. **Comparison View**:
+   - Select multiple sampling results to compare
+   - Side-by-side parameter comparison
+   - Visual diff of sampled org units
+   - Highlight differences in selection
+
+3. **Assignment Creation**:
+   - Select preferred sampling result
+   - Create assignments based on selected group
+   - Track which sampling was used for assignments
+
+

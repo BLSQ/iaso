@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
+from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -26,11 +26,17 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningSamplingResultSerializer,
+    PlanningSamplingResultWriteSerializer,
     PlanningSerializer,
 )
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
+    serializer_action_classes = {
+        "list_sampling_results": PlanningSamplingResultSerializer,
+        "create_sampling_result": PlanningSamplingResultWriteSerializer,
+    }
     remove_results_key_if_paginated = True
     permission_classes = [ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     serializer_class = PlanningSerializer
@@ -55,6 +61,37 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return (
             self.queryset.filter_for_user(user).select_related("project", "org_unit", "team").prefetch_related("forms")
         )
+
+    def get_serializer_class(self):
+        if hasattr(self, "serializer_action_classes"):
+            serializer_class = self.serializer_action_classes.get(getattr(self, "action", None))
+            if serializer_class:
+                return serializer_class
+        return super().get_serializer_class()
+
+    @action(detail=True, methods=["GET"], url_path="samplings")
+    def list_sampling_results(self, request, pk=None):
+        planning = self.get_object()
+        orders = request.query_params.get("order", "-created_at").split(",")
+        queryset = planning.sampling_results.select_related("created_by", "group", "task")
+        queryset = queryset.order_by(*orders)
+
+        page = self.paginate_queryset(queryset)
+        serializer = PlanningSamplingResultSerializer(
+            page if page is not None else queryset, many=True, context={"request": request}
+        )
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+    @list_sampling_results.mapping.post
+    def create_sampling_result(self, request, pk=None):
+        planning = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save(planning=planning, created_by=request.user)
+        response_serializer = PlanningSamplingResultSerializer(instance, context={"request": request})
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AssignmentViewSet(AuditMixin, ModelViewSet):

@@ -6,8 +6,8 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
-from iaso.models import Form, OrgUnit, OrgUnitType, Project
-from iaso.models.microplanning import Assignment, Planning
+from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project, Task
+from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
 
@@ -23,6 +23,7 @@ class NestedUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username"]
+        ref_name = "MicroplanningNestedUser"
 
 
 class NestedOrgUnitSerializer(serializers.ModelSerializer):
@@ -128,6 +129,84 @@ class PlanningSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(validation_errors)
 
         return validated_data
+
+
+class SamplingGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ["id", "name"]
+
+
+class SamplingTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ["id", "name", "status"]
+
+
+class PlanningSamplingResultSerializer(serializers.ModelSerializer):
+    planning = serializers.PrimaryKeyRelatedField(read_only=True)
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.none(), allow_null=True, required=False)
+    task = serializers.PrimaryKeyRelatedField(queryset=Task.objects.none(), allow_null=True, required=False)
+    created_by_details = NestedUserSerializer(source="created_by", read_only=True)
+    group_details = SamplingGroupSerializer(source="group", read_only=True)
+    task_details = SamplingTaskSerializer(source="task", read_only=True)
+
+    class Meta:
+        model = PlanningSamplingResult
+        fields = [
+            "id",
+            "planning",
+            "task",
+            "task_details",
+            "pipeline_id",
+            "pipeline_version",
+            "group",
+            "group_details",
+            "parameters",
+            "status",
+            "created_at",
+            "created_by",
+            "created_by_details",
+        ]
+        read_only_fields = [
+            "id",
+            "planning",
+            "created_at",
+            "created_by",
+            "created_by_details",
+            "group_details",
+            "task_details",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            account = user.iaso_profile.account
+            self.fields["group"].queryset = Group.objects.filter_for_user(user)
+            self.fields["task"].queryset = Task.objects.filter(account=account)
+        else:
+            self.fields["group"].queryset = Group.objects.none()
+            self.fields["task"].queryset = Task.objects.none()
+
+
+class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlanningSamplingResult
+        fields = ["task", "pipeline_id", "pipeline_version", "group", "parameters", "status"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            account = user.iaso_profile.account
+            self.fields["group"].queryset = Group.objects.filter_for_user(user)
+            self.fields["task"].queryset = Task.objects.filter(account=account)
+        else:
+            self.fields["group"].queryset = Group.objects.none()
+            self.fields["task"].queryset = Task.objects.none()
 
 
 class AuditPlanningSerializer(serializers.ModelSerializer):

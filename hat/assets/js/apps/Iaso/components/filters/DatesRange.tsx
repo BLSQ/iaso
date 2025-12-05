@@ -10,13 +10,13 @@ import {
     useSkipEffectOnMount,
     IntlMessage,
 } from 'bluesquare-components';
+import { Moment } from 'moment';
 import {
     getUrlParamDateObject,
     dateFormat,
     getLocaleDateFormat,
 } from '../../utils/dates';
 import MESSAGES from './messages';
-import { Moment } from 'moment';
 
 const useStyles = makeStyles(theme => ({
     clearDateButton: {
@@ -126,6 +126,7 @@ const DatesRange: FunctionComponent<Props> = ({
             setTo(dateTo);
         }
     }, [dateTo]);
+    console.log(getLocaleDateFormat('L'));
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>

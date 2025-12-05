@@ -548,7 +548,7 @@ class PlanningTestCase(APITestCase):
         result = results[0]
         self.assertEqual(result["id"], sampling.id)
         self.assertEqual(result["pipeline_id"], "pipeline-1")
-        self.assertEqual(result["task"], task.id)
+        self.assertEqual(result["task_id"], task.id)
 
     def test_planning_sampling_results_create(self):
         user_with_perms = self.create_user_with_profile(
@@ -563,10 +563,10 @@ class PlanningTestCase(APITestCase):
         group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
 
         payload = {
-            "task": task.id,
+            "task_id": task.id,
             "pipeline_id": "pipeline-2",
             "pipeline_version": "v2",
-            "group": group.id,
+            "group_id": group.id,
             "parameters": {"limit": 10},
             "status": "SUCCESS",
         }

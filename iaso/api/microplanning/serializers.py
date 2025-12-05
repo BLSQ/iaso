@@ -145,8 +145,8 @@ class SamplingTaskSerializer(serializers.ModelSerializer):
 
 class PlanningSamplingResultSerializer(serializers.ModelSerializer):
     planning = serializers.PrimaryKeyRelatedField(read_only=True)
-    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.none(), allow_null=True, required=False)
-    task = serializers.PrimaryKeyRelatedField(queryset=Task.objects.none(), allow_null=True, required=False)
+    group_id = serializers.IntegerField(read_only=True, allow_null=True)
+    task_id = serializers.IntegerField(read_only=True, allow_null=True)
     created_by_details = NestedUserSerializer(source="created_by", read_only=True)
     group_details = SamplingGroupSerializer(source="group", read_only=True)
     task_details = SamplingTaskSerializer(source="task", read_only=True)
@@ -156,11 +156,11 @@ class PlanningSamplingResultSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "planning",
-            "task",
+            "task_id",
             "task_details",
             "pipeline_id",
             "pipeline_version",
-            "group",
+            "group_id",
             "group_details",
             "parameters",
             "status",
@@ -178,23 +178,24 @@ class PlanningSamplingResultSerializer(serializers.ModelSerializer):
             "task_details",
         ]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        if user and user.is_authenticated:
-            account = user.iaso_profile.account
-            self.fields["group"].queryset = Group.objects.filter_for_user(user)
-            self.fields["task"].queryset = Task.objects.filter(account=account)
-        else:
-            self.fields["group"].queryset = Group.objects.none()
-            self.fields["task"].queryset = Task.objects.none()
-
 
 class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
+    group_id = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.none(),
+        allow_null=True,
+        required=False,
+        source="group",
+    )
+    task_id = serializers.PrimaryKeyRelatedField(
+        queryset=Task.objects.none(),
+        allow_null=True,
+        required=False,
+        source="task",
+    )
+
     class Meta:
         model = PlanningSamplingResult
-        fields = ["task", "pipeline_id", "pipeline_version", "group", "parameters", "status"]
+        fields = ["task_id", "pipeline_id", "pipeline_version", "group_id", "parameters", "status"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -202,11 +203,11 @@ class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None)
         if user and user.is_authenticated:
             account = user.iaso_profile.account
-            self.fields["group"].queryset = Group.objects.filter_for_user(user)
-            self.fields["task"].queryset = Task.objects.filter(account=account)
+            self.fields["group_id"].queryset = Group.objects.filter_for_user(user)
+            self.fields["task_id"].queryset = Task.objects.filter(account=account)
         else:
-            self.fields["group"].queryset = Group.objects.none()
-            self.fields["task"].queryset = Task.objects.none()
+            self.fields["group_id"].queryset = Group.objects.none()
+            self.fields["task_id"].queryset = Task.objects.none()
 
 
 class AuditPlanningSerializer(serializers.ModelSerializer):

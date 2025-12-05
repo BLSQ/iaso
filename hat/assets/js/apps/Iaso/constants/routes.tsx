@@ -43,6 +43,7 @@ import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
 import { Planning } from '../domains/plannings';
+import { Details as PlanningDetails } from '../domains/plannings/details';
 import { Projects } from '../domains/projects';
 import { Registry } from '../domains/registry';
 import { SetupAccount } from '../domains/setup';
@@ -379,6 +380,12 @@ export const planningPath = {
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <Planning />,
 };
+export const planningDetailsPath = {
+    baseUrl: baseUrls.planningDetails,
+    routerUrl: `${baseUrls.planningDetails}/*`,
+    permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
+    element: <PlanningDetails />,
+};
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     routerUrl: `${baseUrls.assignments}/*`,
@@ -529,6 +536,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     page500,
     teamsPath,
     planningPath,
+    planningDetailsPath,
     assignmentsPath,
     entitiesPath,
     entityDetailsPath,

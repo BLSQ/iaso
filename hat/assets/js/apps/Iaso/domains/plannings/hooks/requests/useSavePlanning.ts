@@ -120,19 +120,19 @@ export const useSavePlanning = (
     const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
-        invalidateQueryKey: ['planningsList'],
+        invalidateQueryKey: ['planningsList', 'planning'],
         ignoreErrorCodes,
     });
     const createPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => {
             return postPlanning(data);
         },
-        invalidateQueryKey: ['planningsList'],
+        invalidateQueryKey: ['planningsList', 'planning'],
         ignoreErrorCodes,
     });
     const copyPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => duplicatePlanning(data),
-        invalidateQueryKey: ['planningsList'],
+        invalidateQueryKey: ['planningsList', 'planning'],
         ignoreErrorCodes,
     });
 

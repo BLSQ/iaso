@@ -1,19 +1,17 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Grid, Box, Paper } from '@mui/material';
+import { Grid, Box, Button } from '@mui/material';
 import {
-    AddButton,
     IntlFormatMessage,
     useSafeIntl,
-    ConfirmCancelModal,
-    makeFullModal,
     InputWithInfos,
+    useGoBack,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-
-import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
-import { Planning } from 'Iaso/domains/assignments/types/planning';
+import moment from 'moment';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
@@ -23,27 +21,34 @@ import {
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { SxStyles } from 'Iaso/types/general';
-import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
+import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
-import DatesRange from '../../../components/filters/DatesRange';
-import InputComponent from '../../../components/forms/InputComponent';
+import DatesRange from '../../components/filters/DatesRange';
+import InputComponent from '../../components/forms/InputComponent';
+import TopBar from '../../components/nav/TopBarComponent';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
-} from '../../../libs/validation';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
-import { useGetPublishingStatusOptions } from '../constants';
+} from '../../libs/validation';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { commaSeparatedIdsToArray } from '../../utils/forms';
+import { useGetProjectsDropDown } from '../projects/hooks/requests/useGetProjectsDropDown';
+import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
+import { useGetPublishingStatusOptions } from './constants';
+import { useGetPlanningDetails } from './hooks/requests/useGetPlanningDetails';
+import {
+    tableDefaults,
+    useGetPlanningSamplingResults,
+} from './hooks/requests/useGetPlanningSamplingResults';
 import {
     convertAPIErrorsToState,
     SavePlanningQuery,
     useSavePlanning,
-} from '../hooks/requests/useSavePlanning';
-import { usePlanningValidation } from '../hooks/validation';
-import MESSAGES from '../messages';
+} from './hooks/requests/useSavePlanning';
+import { usePlanningValidation } from './hooks/validation';
+import MESSAGES from './messages';
 
-type ModalMode = 'create' | 'edit' | 'copy';
+type ModalMode = 'create' | 'edit';
 
 const styles: SxStyles = {
     paper: {
@@ -56,12 +61,6 @@ const styles: SxStyles = {
     },
 };
 
-type Props = {
-    type: ModalMode;
-    planning?: Planning;
-    closeDialog: () => void;
-    isOpen: boolean;
-};
 // TODO move to utils
 export const makeResetTouched =
     (
@@ -86,24 +85,21 @@ const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
             return formatMessage(MESSAGES.createPlanning);
         case 'edit':
             return formatMessage(MESSAGES.editPlanning);
-        case 'copy':
-            return formatMessage(MESSAGES.duplicatePlanning);
         default:
             return formatMessage(MESSAGES.createPlanning);
     }
 };
 
-export const CreateEditPlanning: FunctionComponent<Props> = ({
-    type,
-    planning,
-    closeDialog,
-    isOpen,
-}) => {
+export const Details: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.planningDetails);
+    const { planningId } = params;
+    const { data: planning } = useGetPlanningDetails(planningId);
+
     const {
         id,
         name,
-        started_at: startDate,
-        ended_at: endDate,
+        started_at,
+        ended_at,
         org_unit: selectedOrgUnit,
         team: selectedTeam,
         forms,
@@ -113,9 +109,13 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         pipeline_uuids: pipelineUuids,
         target_org_unit_type: targetOrgUnitType,
     } = planning ?? {};
+    const startDate = started_at ? moment(started_at).format('L') : undefined;
+    const endDate = ended_at ? moment(ended_at).format('L') : undefined;
     const publishingStatus = published_at ? 'published' : 'draft';
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: savePlanning } = useSavePlanning(type);
+    const { mutateAsync: savePlanning } = useSavePlanning(
+        params.planningId === '0' ? 'create' : 'edit',
+    );
     const {
         apiErrors,
         payload,
@@ -163,10 +163,34 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         errors,
         isValid,
         handleSubmit,
-        resetForm,
         validateField,
     } = formik;
+    const allowConfirm = isValid && !isEqual(values, initialValues);
+    const { data: samplingResults, isFetching: isFetchingSamplingResults } =
+        useGetPlanningSamplingResults(planningId, params);
 
+    const samplingResultsColumns = [
+        {
+            Header: 'Id',
+            accessor: 'id',
+            width: 80,
+        },
+        {
+            Header: 'Pipeline',
+            accessor: 'pipeline_id',
+        },
+        {
+            Header: 'Status',
+            accessor: 'status',
+            id: 'status',
+        },
+        {
+            Header: 'GROUP',
+            accessor: 'group_details',
+            id: 'group_details',
+            Cell: settings => settings.row.original.group_details.name,
+        },
+    ];
     const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
         useGetOrgUnit(values.selectedOrgUnit?.toString());
     const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
@@ -227,8 +251,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         touched,
         messages: MESSAGES,
     });
-    const titleMessage = formatTitle(type, formatMessage);
-
+    const titleMessage = formatTitle(
+        params.planningId === '0' ? 'create' : 'edit',
+        formatMessage,
+    );
     useEffect(() => {
         if (
             // Separating the check on formsDropDown and the find to skip the effect as long as forms haven't been fetched
@@ -256,30 +282,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         }
     }, [values?.project, teamsDropdown, setFieldValue, setFieldTouched]);
     const publishingStatusOptions = useGetPublishingStatusOptions();
-
-    console.log(values.startDate);
+    const goBack = useGoBack(baseUrls.planning);
     return (
-        <FormikProvider value={formik}>
-            <ConfirmCancelModal
-                allowConfirm={isValid && !isEqual(values, initialValues)}
-                titleMessage={titleMessage}
-                onConfirm={() => {
-                    handleSubmit();
-                }}
-                open={isOpen}
-                onCancel={() => {
-                    resetForm();
-                    closeDialog();
-                }}
-                closeDialog={closeDialog}
-                maxWidth="lg"
-                onClose={() => null}
-                cancelMessage={MESSAGES.cancel}
-                confirmMessage={MESSAGES.save}
-                id={`${id ?? 'create'}-planning-dialog`}
-                dataTestId={`${id ?? 'create'}-planning-dialog`}
-            >
-                <Box mt={1}>
+        <>
+            <TopBar title={titleMessage} displayBackButton goBack={goBack} />
+            <MainWrapper sx={{ p: 4 }}>
+                <FormikProvider value={formik}>
                     <Grid container spacing={2}>
                         <Grid xs={12} md={6} item>
                             <Grid container spacing={2}>
@@ -449,40 +457,31 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             />
                         </Grid>
                     </Grid>
-                </Box>
-            </ConfirmCancelModal>
-        </FormikProvider>
+                    <Box mt={2} justifyContent="flex-end" display="flex">
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleSubmit()}
+                            disabled={!allowConfirm}
+                        >
+                            {formatMessage(MESSAGES.save)}
+                        </Button>
+                    </Box>
+                </FormikProvider>
+                <TableWithDeepLink
+                    baseUrl={baseUrls.planningDetails}
+                    data={samplingResults?.results ?? []}
+                    params={params}
+                    defaultSorted={[{ id: 'created_at', desc: true }]}
+                    pages={samplingResults?.pages ?? tableDefaults.page}
+                    count={samplingResults?.count ?? 0}
+                    columns={samplingResultsColumns}
+                    extraProps={{
+                        loading: isFetchingSamplingResults,
+                        defaultPageSize: tableDefaults.limit,
+                    }}
+                />
+            </MainWrapper>
+        </>
     );
-};
-
-type DuplicateButtonProps = {
-    onClick: () => void;
-    disabled?: boolean;
-};
-
-const DuplicateIconButton: FunctionComponent<DuplicateButtonProps> = ({
-    onClick,
-    disabled = false,
-}) => {
-    return (
-        <EditIconButton
-            onClick={onClick}
-            overrideIcon={FileCopyIcon}
-            message={MESSAGES.duplicatePlanning}
-            disabled={disabled}
-        />
-    );
-};
-
-const modalCreateButton = makeFullModal(CreateEditPlanning, AddButton);
-const modalEditIcon = makeFullModal(CreateEditPlanning, EditIconButton);
-const modalDuplicateIcon = makeFullModal(
-    CreateEditPlanning,
-    DuplicateIconButton,
-);
-
-export {
-    modalCreateButton as CreatePlanning,
-    modalEditIcon as EditPlanning,
-    modalDuplicateIcon as DuplicatePlanning,
 };

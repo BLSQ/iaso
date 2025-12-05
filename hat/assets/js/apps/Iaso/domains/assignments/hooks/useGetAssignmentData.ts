@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 
+import { useGetPlanningDetails } from 'Iaso/domains/plannings/hooks/requests/useGetPlanningDetails';
 import {
     OrgUnitTypeHierarchyDropdownValues,
     useGetOrgUnitTypesHierarchy,
@@ -25,7 +26,6 @@ import {
 } from './requests/useGetAssignments';
 import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
 import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
-import { useGetPlanning } from './requests/useGetPlanning';
 import { ProfileWithColor, useGetProfiles } from './requests/useGetProfiles';
 
 import {
@@ -88,7 +88,7 @@ export const useGetAssignmentData = ({
     }: {
         data?: Planning;
         isLoading: boolean;
-    } = useGetPlanning(planningId);
+    } = useGetPlanningDetails(planningId);
     const { data: teams = [], isFetched: isTeamsFetched } = useGetTeamsDropdown(
         { ancestor: `${planning?.team}` },
         undefined,

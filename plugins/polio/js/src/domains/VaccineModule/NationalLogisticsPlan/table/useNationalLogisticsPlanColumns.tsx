@@ -12,6 +12,7 @@ import {
 import MESSAGES from '../messages';
 import { EditNationalLogisticsPlanModal } from '../modals/CreateEditModal';
 import { useDeleteNationalLogisticsPlan } from '../hooks/api';
+import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 
 export const useNationalLogisticsPlanColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -100,12 +101,12 @@ export const useNationalLogisticsPlanColumns = (): Column[] => {
                                     POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
                                 ]}
                             >
-                                <DeleteDialog
+                                <DeleteModal
+                                    type="icon"
                                     titleMessage={formatMessage(
                                         MESSAGES.deleteNationalLogisticsPlan,
                                         { name: recordName },
                                     )}
-                                    message={formatMessage(MESSAGES.deleteText)}
                                     onConfirm={() =>
                                         deleteNationalLogisticsPlan(
                                             nationaPlanData.id,

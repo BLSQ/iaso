@@ -31,11 +31,13 @@ class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     permission_classes = [CountryPlanPermission]
     filter_backends = [
         filters.OrderingFilter,
+        filters.SearchFilter,
         django_filters.rest_framework.DjangoFilterBackend,
     ]
     filterset_class = PerformanceThresholdFilter
     ordering_fields = ["indicator", "created_at", "updated_at"]
     http_method_names = ["get", "post", "patch", "delete"]
+    search_fields = ["indicator"]
     audit_serializer = PerformanceThresholdReadSerializer
 
     def get_queryset(self):

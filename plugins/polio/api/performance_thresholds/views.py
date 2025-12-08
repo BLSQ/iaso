@@ -15,15 +15,15 @@ from plugins.polio.models.performance_thresholds import PerformanceThresholds
 
 class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     """
-    API endpoint for Performance dashboard tresholds.
+    API endpoint for Performance dashboard thresholds.
 
     This endpoint supports filtering by:
     - indicator
 
     The permissions are structured as follows:
-    - **Read-only**: Can only list and retrieve tresholds.
-    - **Non-admin**: Can create and update tresholds.
-    - **Admin**: Can delete tresholds.
+    - **Read-only**: Can only list and retrieve thresholds.
+    - **Non-admin**: Can create and update thresholds.
+    - **Admin**: Can delete thresholds.
 
     We are reusing the performance dashboard permissions since the features are related from a business point of view
     """

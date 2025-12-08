@@ -4,7 +4,6 @@ import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/compon
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasOneOfPermissions } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import {
     POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
     POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
@@ -102,6 +101,7 @@ export const useNationalLogisticsPlanColumns = (): Column[] => {
                                 ]}
                             >
                                 <DeleteModal
+                                    key={`${nationaPlanData.id}`}
                                     type="icon"
                                     titleMessage={formatMessage(
                                         MESSAGES.deleteNationalLogisticsPlan,
@@ -112,6 +112,7 @@ export const useNationalLogisticsPlanColumns = (): Column[] => {
                                             nationaPlanData.id,
                                         )
                                     }
+                                    backdropClick
                                 />
                             </DisplayIfUserHasPerm>
                         </>

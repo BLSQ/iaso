@@ -3,7 +3,6 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     QueryBuilderInput,
-    QueryBuilderListToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
@@ -15,60 +14,15 @@ import { PerformanceThreshold } from '../types';
 import { isEqual } from 'lodash';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { useSavePerformanceThreshold } from '../hooks/api';
-import { blue, purple } from '@mui/material/colors';
 import { parseJson } from 'Iaso/domains/instances/utils/jsonLogicParse';
+import { defaultLogic, queryBuilderFields } from '../constants';
+import { getHumanReadableJsonLogic } from '../utils';
+import { usePerformanceThresholdValidation } from './validation';
 
 type Props = {
     performanceThreshold?: PerformanceThreshold;
     isOpen: boolean;
     closeDialog: () => void;
-};
-const queryBuilderListToReplace: QueryBuilderListToReplace[] = [
-    {
-        color: purple[700],
-        items: ['AND', 'OR'],
-    },
-
-    {
-        color: blue[700],
-        items: ['=', '>', '<', '>=', '<='],
-    },
-];
-
-const defaultLogic = { and: [{ '>=': [{ var: 'value' }, 0] }] };
-
-const queryBuilderFields = {
-    value: {
-        type: 'number',
-        queryBuilder: {
-            type: 'number',
-            operators: [
-                'equal',
-                'greater',
-                'less',
-                'greater_or_equal',
-                'less_or_equal',
-            ],
-            preferWidgets: ['number'],
-        },
-    },
-};
-
-export const getHumanReadableJsonLogic = (json: string) => {
-    if (!json) return '';
-
-    const parsed = typeof json === 'string' ? JSON.parse(json) : json;
-    const value = parsed['and'];
-    return value
-        ?.map((rule, index) => {
-            const operator = Object.keys(rule)[0];
-            const compareTo = rule[operator][1];
-            if (index === 0) {
-                return `value ${operator} ${compareTo}`;
-            }
-            return ` & value ${operator} ${compareTo}`;
-        })
-        .join('');
 };
 
 export const CreateEditModal: FunctionComponent<Props> = ({
@@ -79,7 +33,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSavePerformanceThreshold();
 
-    // const validationSchema = usePerformanceThresholdValidation();
+    const validationSchema = usePerformanceThresholdValidation();
     const formik = useFormik<any>({
         initialValues: {
             id: performanceThreshold?.id,
@@ -91,7 +45,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
             updated_at: performanceThreshold?.updated_at,
         },
         onSubmit: values => save(values),
-        // validationSchema,
+        validationSchema,
     });
 
     const { setFieldValue, setFieldTouched } = formik;

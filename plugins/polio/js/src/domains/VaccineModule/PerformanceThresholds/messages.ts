@@ -33,6 +33,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create',
         id: 'iaso.label.create',
     },
+    requiredField: {
+        id: 'iaso.polio.validation.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
     performanceThresholds: {
         id: 'iaso.polio.label.performanceThresholds',
         defaultMessage: 'Performance Thresholds',

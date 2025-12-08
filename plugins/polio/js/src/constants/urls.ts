@@ -49,6 +49,7 @@ export const CHRONOGRAM_BASE_URL = `${VACCINE_MODULE}/chronogram`;
 export const CHRONOGRAM_TEMPLATE_TASK = `${CHRONOGRAM_BASE_URL}/templateTask`;
 export const CHRONOGRAM_DETAILS = `${CHRONOGRAM_BASE_URL}/details`;
 export const NATIONAL_LOGISTICS_PLAN = `${VACCINE_MODULE}/nationalLogisticsPlan`;
+export const PERFORMANCE_THRESHOLDS = `${VACCINE_MODULE}/performanceThresholds`;
 
 export const campaignParams = [
     'countries',
@@ -327,6 +328,14 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             `${EARMARKED}Page`,
         ],
     },
+    nationalLogisticsPlan: {
+        url: NATIONAL_LOGISTICS_PLAN,
+        params: [...paginationPathParams, 'country_blocks', 'country'],
+    },
+    performanceThresholds: {
+        url: PERFORMANCE_THRESHOLDS,
+        params: [...paginationPathParams],
+    },
     countryConfig: {
         url: CONFIG_COUNTRY_URL,
         params: [...paginationPathParams],
@@ -371,10 +380,6 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'status',
         ],
     },
-    nationalLogisticsPlan: {
-        url: NATIONAL_LOGISTICS_PLAN,
-        params: [...paginationPathParams, 'country_blocks', 'country'],
-    },
 };
 
 export type PolioBaseUrls = {
@@ -409,6 +414,7 @@ export type PolioBaseUrls = {
     chronogramTemplateTask: string;
     chronogramDetails: string;
     nationalLogisticsPlan: string;
+    performanceThresholds: string;
 };
 export const baseUrls = extractUrls(polioRouteConfigs) as PolioBaseUrls;
 export const baseParams = extractParams(polioRouteConfigs);

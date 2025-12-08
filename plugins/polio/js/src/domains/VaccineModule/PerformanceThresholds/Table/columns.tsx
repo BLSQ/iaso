@@ -2,10 +2,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import MESSAGES from '../messages';
 import { DateTimeCellRfc } from 'Iaso/components/Cells/DateTimeCell';
-import {
-    EditPerformanceThreshold,
-    getHumanReadableJsonLogic,
-} from '../Modal/CreateEditModal';
+import { EditPerformanceThreshold } from '../Modal/CreateEditModal';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useDeletePerformanceThreshold } from '../hooks/api';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
@@ -16,6 +13,8 @@ import {
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import React from 'react';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
+
+import { useGetJSonLogicConverter } from '../hooks/useGetJsonLogicToString';
 
 export const useTableColumns = () => {
     const { formatMessage } = useSafeIntl();
@@ -28,6 +27,7 @@ export const useTableColumns = () => {
         ],
         currentUser,
     );
+    const convertJsonLogicToString = useGetJSonLogicConverter();
     return useMemo(() => {
         const columns = [
             {
@@ -43,19 +43,19 @@ export const useTableColumns = () => {
                 Header: formatMessage(MESSAGES.successThreshold),
                 accessor: 'success_threshold',
                 sortable: false,
-                Cell: ({ value }) => getHumanReadableJsonLogic(value),
+                Cell: ({ value }) => convertJsonLogicToString(value),
             },
             {
                 Header: formatMessage(MESSAGES.warningThreshold),
                 accessor: 'warning_threshold',
                 sortable: false,
-                Cell: ({ value }) => getHumanReadableJsonLogic(value),
+                Cell: ({ value }) => convertJsonLogicToString(value),
             },
             {
                 Header: formatMessage(MESSAGES.failThreshold),
                 accessor: 'fail_threshold',
                 sortable: false,
-                Cell: ({ value }) => getHumanReadableJsonLogic(value),
+                Cell: ({ value }) => convertJsonLogicToString(value),
             },
             {
                 Header: formatMessage(MESSAGES.createdAt),
@@ -117,5 +117,11 @@ export const useTableColumns = () => {
             });
             return columns;
         }
-    }, [formatMessage, hasActionPermission, deleteThreshold, currentUser]);
+    }, [
+        formatMessage,
+        hasActionPermission,
+        deleteThreshold,
+        currentUser,
+        convertJsonLogicToString,
+    ]);
 };

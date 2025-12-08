@@ -13,6 +13,16 @@ export const queryBuilderFields = {
                 'less_or_equal',
             ],
             preferWidgets: ['number'],
+            valueSources: ['value', 'field'],
+        },
+    },
+    // Field only used for input
+    average: {
+        type: 'number',
+        queryBuilder: {
+            type: 'number',
+            label: 'Average',
+            valueSources: ['value'],
         },
     },
 };

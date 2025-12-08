@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.deletePerformanceThreshold.delete',
         defaultMessage: 'Delete Performance Threshold: {name}',
     },
+    average: {
+        id: 'iaso.polio.average',
+        defaultMessage: 'Average',
+    },
 });
 
 export default MESSAGES;

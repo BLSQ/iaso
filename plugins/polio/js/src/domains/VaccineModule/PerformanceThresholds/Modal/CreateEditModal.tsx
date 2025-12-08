@@ -16,8 +16,8 @@ import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { useSavePerformanceThreshold } from '../hooks/api';
 import { parseJson } from 'Iaso/domains/instances/utils/jsonLogicParse';
 import { defaultLogic, queryBuilderFields } from '../constants';
-import { getHumanReadableJsonLogic } from '../utils';
 import { usePerformanceThresholdValidation } from './validation';
+import { useGetJSonLogicConverter } from '../hooks/useGetJsonLogicToString';
 
 type Props = {
     performanceThreshold?: PerformanceThreshold;
@@ -32,7 +32,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSavePerformanceThreshold();
-
+    const convertJsonLogicToString = useGetJSonLogicConverter();
     const validationSchema = usePerformanceThresholdValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -110,7 +110,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         iconProps={{
                             label: MESSAGES.successThreshold,
                             value: formik.values.success_threshold
-                                ? (getHumanReadableJsonLogic(
+                                ? (convertJsonLogicToString(
                                       formik.values.success_threshold,
                                   ) as string)
                                 : '',
@@ -134,7 +134,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         iconProps={{
                             label: MESSAGES.warningThreshold,
                             value: formik.values.warning_threshold
-                                ? (getHumanReadableJsonLogic(
+                                ? (convertJsonLogicToString(
                                       formik.values.warning_threshold,
                                   ) as string)
                                 : '',
@@ -158,7 +158,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         iconProps={{
                             label: MESSAGES.failThreshold,
                             value: formik.values.fail_threshold
-                                ? (getHumanReadableJsonLogic(
+                                ? (convertJsonLogicToString(
                                       formik.values.fail_threshold,
                                   ) as string)
                                 : '',

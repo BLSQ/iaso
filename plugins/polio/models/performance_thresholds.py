@@ -1,3 +1,4 @@
+import json
 import typing
 
 from django.contrib.auth.models import AnonymousUser, User
@@ -93,12 +94,16 @@ class PerformanceThresholds(SoftDeletableModel):
     def is_json_logic_expression(data):
         if not data:
             return False
-        keys = data.keys()
+        if isinstance(data, str):
+            dict_data = json.loads(data)
+        else:
+            dict_data = data
+        keys = dict_data.keys()
 
         if "and" not in keys and "or" not in keys:
-            return PerformanceThresholds.is_json_logic_rule(data)
+            return PerformanceThresholds.is_json_logic_rule(dict_data)
 
-        values = data.values()
+        values = dict_data.values()
         found_invalid_data = False
         for entry in values:
             if not isinstance(entry, list):

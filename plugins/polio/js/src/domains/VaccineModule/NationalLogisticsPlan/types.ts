@@ -1,4 +1,4 @@
-export type PerformanceData = {
+export type NationalLogisticsPlanData = {
     id: number;
     date: string;
     status: string;
@@ -22,8 +22,8 @@ export type PerformanceData = {
     };
 };
 
-export type PerformanceList = {
-    results: PerformanceData[];
+export type NationalLogisticsPlanList = {
+    results: NationalLogisticsPlanData[];
     count: number;
     pages: number;
     has_next: boolean;

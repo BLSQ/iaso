@@ -2,7 +2,7 @@ import * as yup from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
-export const usePerformanceDashboardSchema = () => {
+export const useNationalLogisticsPlanSchema = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
         date: yup

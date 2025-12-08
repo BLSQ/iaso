@@ -9,18 +9,18 @@ import { baseUrls } from '../../../../constants/urls';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
 
-export const usePerformanceDashboardFilters = (params: Partial<UrlParams>) => {
-    return useFilterState({ baseUrl: baseUrls.performanceDashboard, params });
+export const usenationalLogisticsPlanFilters = (params: Partial<UrlParams>) => {
+    return useFilterState({ baseUrl: baseUrls.nationalLogisticsPlan, params });
 };
 
 type Props = { params: any };
 
-export const PerformanceDashboardFilters: FunctionComponent<Props> = ({
+export const NationalLogisticsPlanFilters: FunctionComponent<Props> = ({
     params,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        usePerformanceDashboardFilters(params);
+        usenationalLogisticsPlanFilters(params);
     const { data: countries, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =

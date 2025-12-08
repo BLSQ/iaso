@@ -13,26 +13,26 @@ import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
-import { useSavePerformance } from '../hooks/api';
+import { useSaveNationalLogisticsPlan } from '../hooks/api';
 import { vaccineOptions, useStatusOptions } from '../hooks/options';
 import MESSAGES from '../messages';
-import { PerformanceData } from '../types';
-import { usePerformanceDashboardSchema } from './validation';
+import { NationalLogisticsPlanData } from '../types';
+import { useNationalLogisticsPlanSchema } from './validation';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    performanceData?: PerformanceData;
+    nationaPlanData?: NationalLogisticsPlanData;
 };
 
-const CreateEditPerformanceModal: FunctionComponent<Props> = ({
+const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
-    performanceData,
+    nationaPlanData,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { mutate: save } = useSavePerformance();
-    const schema = usePerformanceDashboardSchema();
+    const { mutate: save } = useSaveNationalLogisticsPlan();
+    const schema = useNationalLogisticsPlanSchema();
 
     const { data: countries, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
@@ -40,11 +40,11 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
 
     const formik = useFormik({
         initialValues: {
-            id: performanceData?.id,
-            date: performanceData?.date,
-            status: performanceData?.status,
-            country_id: performanceData?.country_id,
-            vaccine: performanceData?.vaccine,
+            id: nationaPlanData?.id,
+            date: nationaPlanData?.date,
+            status: nationaPlanData?.status,
+            country_id: nationaPlanData?.country_id,
+            vaccine: nationaPlanData?.vaccine,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -62,9 +62,9 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
     const allowConfirm =
         !formik.isSubmitting && formik.isValid && isFormChanged;
 
-    const title = performanceData?.id
-        ? formatMessage(MESSAGES.editPerformance)
-        : formatMessage(MESSAGES.addPerformance);
+    const title = nationaPlanData?.id
+        ? formatMessage(MESSAGES.editNationalLogisticsPlan)
+        : formatMessage(MESSAGES.addNationalLogisticsPlan);
 
     return (
         <FormikProvider value={formik}>
@@ -72,8 +72,8 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
                 open={isOpen}
                 closeDialog={closeDialog}
                 onClose={() => null}
-                id="create-edit-performance"
-                dataTestId="create-edit-performance"
+                id="create-edit-country_plan"
+                dataTestId="create-edit-country_plan"
                 titleMessage={title}
                 onConfirm={() => formik.handleSubmit()}
                 onCancel={() => null}
@@ -131,8 +131,14 @@ const CreateEditPerformanceModal: FunctionComponent<Props> = ({
     );
 };
 
-const modalWithIcon = makeFullModal(CreateEditPerformanceModal, EditIconButton);
-const modalWithButton = makeFullModal(CreateEditPerformanceModal, AddButton);
+const modalWithIcon = makeFullModal(
+    CreateEditNationalLogisticsPlanModal,
+    EditIconButton,
+);
+const modalWithButton = makeFullModal(
+    CreateEditNationalLogisticsPlanModal,
+    AddButton,
+);
 
-export { modalWithIcon as EditPerformanceModal };
-export { modalWithButton as CreatePerformanceModal };
+export { modalWithIcon as EditNationalLogisticsPlanModal };
+export { modalWithButton as CreateNationalLogisticsPlanModal };

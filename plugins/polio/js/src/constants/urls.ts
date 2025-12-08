@@ -334,7 +334,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     performanceThresholds: {
         url: PERFORMANCE_THRESHOLDS,
-        params: [...paginationPathParams],
+        params: [...paginationPathParams, 'search'],
     },
     countryConfig: {
         url: CONFIG_COUNTRY_URL,

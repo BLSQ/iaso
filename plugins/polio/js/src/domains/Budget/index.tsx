@@ -85,7 +85,7 @@ export const BudgetProcessList: FunctionComponent = () => {
     );
 
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
-    const columns = useBudgetColumns(isUserPolioBudgetAdmin);
+    const columns = useBudgetColumns(isUserPolioBudgetAdmin, apiParams, budgets?.count ?? 0);
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 

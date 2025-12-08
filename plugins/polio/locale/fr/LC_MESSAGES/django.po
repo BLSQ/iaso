@@ -694,16 +694,16 @@ msgid "Performance Dashboard"
 msgstr "Tableau des performances"
 
 #: plugins/polio/permissions.py
-msgid "Polio Performance Read Only"
-msgstr "Polio - Performance (lecture seule)"
+msgid "Polio Country Plan Read Only"
+msgstr "Polio - Plan pays (lecture seule)"
 
 #: plugins/polio/permissions.py
-msgid "Polio Performance Non Admin"
-msgstr "Polio - Performance Non Admin"
+msgid "Polio Country Plan Non Admin"
+msgstr "Polio - Plan pays (non admin)"
 
 #: plugins/polio/permissions.py
-msgid "Polio performance Admin"
-msgstr "Polio - Performance Admin"
+msgid "Polio Country Plan Admin"
+msgstr "Polio - Plan pays (admin)"
 
 #: plugins/polio/models/performance_thresholds.py
 msgid "Performance Threshold"

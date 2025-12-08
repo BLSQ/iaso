@@ -4,16 +4,33 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 
 import MESSAGES from '../../messages';
 import { Team } from '../../types/team';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../../constants/urls';
 
-export const useDeleteTeam = (): UseMutationResult => {
+type useDeleteArgs = {
+    params: any;
+    count: number;
+}
+
+export const useDeleteTeam = ({params, count}: useDeleteArgs): UseMutationResult => {
+    const onSuccessRedirect = useDeleteTableRow({
+        count,
+        params,
+        pageKey: 'page',
+        pageSizeKey: 'pageSize',
+        invalidateQueries: ['teamsList'],
+        baseUrl: baseUrls.teams,
+    })
+
     const queryClient = useQueryClient();
     return useSnackMutation({
         mutationFn: body => deleteRequest(`/api/teams/${body.id}/`),
-        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         options: {
-            onSuccess: (_, variables: Team) => {
+            onSuccess: (data, variables: Team) => {
+                onSuccessRedirect();
+            
                 queryClient.invalidateQueries(['team', `team-${variables.id}`]);
             },
         },

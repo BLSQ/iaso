@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Assignment } from '@mui/icons-material';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
@@ -9,7 +10,6 @@ import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { useDeletePlanning } from '../hooks/requests/useDeletePlanning';
 import MESSAGES from '../messages';
-import { DuplicatePlanning, EditPlanning } from './PlanningDialog';
 
 const getAssignmentUrl = (planning: Planning): string => {
     return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
@@ -21,7 +21,12 @@ export const ActionsCell: FunctionComponent<ColumnCell<Planning>> = ({
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
-                <EditPlanning type="edit" iconProps={{}} planning={planning} />
+                <IconButtonComponent
+                    url={`/${baseUrls.planningDetails}/planningId/${planning.id}/mode/edit`}
+                    tooltipMessage={MESSAGES.editPlanning}
+                    icon="edit"
+                    size="small"
+                />
             </DisplayIfUserHasPerm>
             <IconButtonComponent
                 url={getAssignmentUrl(planning)}
@@ -31,10 +36,11 @@ export const ActionsCell: FunctionComponent<ColumnCell<Planning>> = ({
                 overrideIcon={Assignment}
             />
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
-                <DuplicatePlanning
-                    iconProps={{}}
-                    type="copy"
-                    planning={planning}
+                <IconButtonComponent
+                    url={`/${baseUrls.planningDetails}/planningId/${planning.id}/mode/copy`}
+                    tooltipMessage={MESSAGES.editPlanning}
+                    overrideIcon={FileCopyIcon}
+                    size="small"
                 />
             </DisplayIfUserHasPerm>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>

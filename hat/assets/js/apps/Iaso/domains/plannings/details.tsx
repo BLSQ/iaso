@@ -48,43 +48,26 @@ import {
 import { usePlanningValidation } from './hooks/validation';
 import MESSAGES from './messages';
 
-type ModalMode = 'create' | 'edit';
+type PageMode = 'create' | 'edit' | 'copy';
 
 const styles: SxStyles = {
     paper: {
         px: 2,
         pb: 2,
-        mt: 2,
         border: theme =>
             // @ts-ignore
             `1px solid ${theme.palette.border.main}`,
     },
 };
 
-// TODO move to utils
-export const makeResetTouched =
-    (
-        formValues: Record<string, any>,
-        setTouched: (
-            fields: { [field: string]: boolean },
-            shouldValidate?: boolean,
-        ) => void,
-    ) =>
-    (): void => {
-        const formKeys = Object.keys(formValues);
-        const fields = {};
-        formKeys.forEach(formKey => {
-            fields[formKey] = true;
-        });
-        setTouched(fields);
-    };
-
-const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
+const formatTitle = (type: PageMode, formatMessage: IntlFormatMessage) => {
     switch (type) {
         case 'create':
             return formatMessage(MESSAGES.createPlanning);
         case 'edit':
             return formatMessage(MESSAGES.editPlanning);
+        case 'copy':
+            return formatMessage(MESSAGES.duplicatePlanning);
         default:
             return formatMessage(MESSAGES.createPlanning);
     }
@@ -114,7 +97,7 @@ export const Details: FunctionComponent = () => {
     const publishingStatus = published_at ? 'published' : 'draft';
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: savePlanning } = useSavePlanning(
-        params.planningId === '0' ? 'create' : 'edit',
+        params.mode as PageMode,
     );
     const {
         apiErrors,
@@ -165,7 +148,8 @@ export const Details: FunctionComponent = () => {
         handleSubmit,
         validateField,
     } = formik;
-    const allowConfirm = isValid && !isEqual(values, initialValues);
+    const allowConfirm =
+        isValid && (!isEqual(values, initialValues) || params.mode === 'copy');
     const { data: samplingResults, isFetching: isFetchingSamplingResults } =
         useGetPlanningSamplingResults(planningId, params);
 
@@ -220,8 +204,6 @@ export const Details: FunctionComponent = () => {
         useGetProjectsDropDown();
 
     const onChange = (keyValue, value) => {
-        setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
         if (keyValue === 'project') {
             setFieldValue('selectedTeam', null);
             setFieldTouched('selectedTeam', false);
@@ -232,6 +214,8 @@ export const Details: FunctionComponent = () => {
             setFieldValue('targetOrgUnitType', null);
             setFieldTouched('targetOrgUnitType', false);
         }
+        setFieldTouched(keyValue, true);
+        setFieldValue(keyValue, value);
         // Reset validation from server to not block the user.
         // If this is not called, even changing a field won't mark the form as valid.
         validateField(keyValue);
@@ -251,10 +235,7 @@ export const Details: FunctionComponent = () => {
         touched,
         messages: MESSAGES,
     });
-    const titleMessage = formatTitle(
-        params.planningId === '0' ? 'create' : 'edit',
-        formatMessage,
-    );
+    const titleMessage = formatTitle(params.mode as PageMode, formatMessage);
     useEffect(() => {
         if (
             // Separating the check on formsDropDown and the find to skip the effect as long as forms haven't been fetched
@@ -289,21 +270,43 @@ export const Details: FunctionComponent = () => {
             <MainWrapper sx={{ p: 4 }}>
                 <FormikProvider value={formik}>
                     <Grid container spacing={2}>
-                        <Grid xs={12} md={6} item>
-                            <Grid container spacing={2}>
-                                <Grid xs={12} item>
-                                    <InputComponent
-                                        keyValue="name"
-                                        onChange={onChange}
-                                        value={values.name}
-                                        errors={getErrors('name')}
-                                        type="text"
-                                        label={MESSAGES.name}
-                                        required
-                                        withMarginTop={false}
-                                    />
-                                </Grid>
-                            </Grid>
+                        <Grid xs={12} md={4} item>
+                            <InputComponent
+                                keyValue="name"
+                                onChange={onChange}
+                                value={values.name}
+                                errors={getErrors('name')}
+                                type="text"
+                                label={MESSAGES.name}
+                                required
+                                withMarginTop={false}
+                            />
+
+                            <DatesRange
+                                onChangeDate={onChangeDate}
+                                dateFrom={values.startDate}
+                                dateTo={values.endDate}
+                                labelFrom={MESSAGES.startDatefrom}
+                                labelTo={MESSAGES.endDateUntil}
+                                keyDateFrom="startDate"
+                                keyDateTo="endDate"
+                                errors={[
+                                    getErrors('startDate'),
+                                    getErrors('endDate'),
+                                ]}
+                                blockInvalidDates={false}
+                            />
+                            <InputComponent
+                                keyValue="description"
+                                onChange={onChange}
+                                value={values.description}
+                                errors={getErrors('description')}
+                                type="textarea"
+                                label={MESSAGES.description}
+                            />
+                        </Grid>
+
+                        <Grid xs={12} md={4} item>
                             <InputWithInfos
                                 infos={formatMessage(
                                     MESSAGES.projectSelectHelperText,
@@ -365,6 +368,28 @@ export const Details: FunctionComponent = () => {
                                     />
                                 </Box>
                             </InputWithInfos>
+
+                            {hasPipelineConfig && (
+                                <InputComponent
+                                    type="select"
+                                    multi
+                                    keyValue="pipelineUuids"
+                                    onChange={(keyValue, value) =>
+                                        onChange(
+                                            keyValue,
+                                            value ? value.split(',') : [],
+                                        )
+                                    }
+                                    loading={isFetchingPipelineUuids}
+                                    options={pipelineUuidsOptions}
+                                    value={values.pipelineUuids}
+                                    errors={getErrors('pipelineUuids')}
+                                    label={MESSAGES.pipelines}
+                                />
+                            )}
+                        </Grid>
+
+                        <Grid xs={12} md={4} item>
                             <InputWithInfos
                                 infos={formatMessage(
                                     MESSAGES.targetOrgUnitTypeInfos,
@@ -401,72 +426,43 @@ export const Details: FunctionComponent = () => {
                                     />
                                 </Box>
                             </InputWithInfos>
-                        </Grid>
-
-                        <Grid xs={12} md={6} item>
-                            <DatesRange
-                                onChangeDate={onChangeDate}
-                                dateFrom={values.startDate}
-                                dateTo={values.endDate}
-                                labelFrom={MESSAGES.startDatefrom}
-                                labelTo={MESSAGES.endDateUntil}
-                                keyDateFrom="startDate"
-                                keyDateTo="endDate"
-                                errors={[
-                                    getErrors('startDate'),
-                                    getErrors('endDate'),
-                                ]}
-                                blockInvalidDates={false}
-                                marginTop={0}
-                            />
-                            <InputComponent
-                                keyValue="description"
-                                onChange={onChange}
-                                value={values.description}
-                                errors={getErrors('description')}
-                                type="textarea"
-                                label={MESSAGES.description}
-                            />
-                            {hasPipelineConfig && (
-                                <InputComponent
-                                    type="select"
-                                    multi
-                                    keyValue="pipelineUuids"
-                                    onChange={(keyValue, value) =>
-                                        onChange(
-                                            keyValue,
-                                            value ? value.split(',') : [],
-                                        )
-                                    }
-                                    loading={isFetchingPipelineUuids}
-                                    options={pipelineUuidsOptions}
-                                    value={values.pipelineUuids}
-                                    errors={getErrors('pipelineUuids')}
-                                    label={MESSAGES.pipelines}
-                                />
-                            )}
-                            <InputComponent
-                                type="radio"
-                                keyValue="publishingStatus"
-                                onChange={onChange}
-                                value={values.publishingStatus}
-                                errors={getErrors('publishingStatus')}
-                                label={MESSAGES.publishingStatus}
-                                options={publishingStatusOptions}
-                                required
-                            />
+                            <Grid container spacing={2}>
+                                <Grid xs={6} lg={5} item>
+                                    <Box sx={styles.paper} mt={2}>
+                                        <InputComponent
+                                            type="radio"
+                                            keyValue="publishingStatus"
+                                            onChange={onChange}
+                                            value={values.publishingStatus}
+                                            errors={getErrors(
+                                                'publishingStatus',
+                                            )}
+                                            label={MESSAGES.publishingStatus}
+                                            options={publishingStatusOptions}
+                                            required
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid
+                                    xs={6}
+                                    lg={7}
+                                    item
+                                    justifyContent="flex-end"
+                                    display="flex"
+                                    alignItems="flex-end"
+                                >
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => handleSubmit()}
+                                        disabled={!allowConfirm}
+                                    >
+                                        {formatMessage(MESSAGES.save)}
+                                    </Button>
+                                </Grid>
+                            </Grid>
                         </Grid>
                     </Grid>
-                    <Box mt={2} justifyContent="flex-end" display="flex">
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleSubmit()}
-                            disabled={!allowConfirm}
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-                    </Box>
                 </FormikProvider>
                 <TableWithDeepLink
                     baseUrl={baseUrls.planningDetails}

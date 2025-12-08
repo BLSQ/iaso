@@ -62,23 +62,6 @@ type Props = {
     closeDialog: () => void;
     isOpen: boolean;
 };
-// TODO move to utils
-export const makeResetTouched =
-    (
-        formValues: Record<string, any>,
-        setTouched: (
-            fields: { [field: string]: boolean },
-            shouldValidate?: boolean,
-        ) => void,
-    ) =>
-    (): void => {
-        const formKeys = Object.keys(formValues);
-        const fields = {};
-        formKeys.forEach(formKey => {
-            fields[formKey] = true;
-        });
-        setTouched(fields);
-    };
 
 const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
     switch (type) {

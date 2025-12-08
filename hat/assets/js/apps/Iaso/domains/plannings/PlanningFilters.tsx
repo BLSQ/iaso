@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
+import { AddButton } from 'bluesquare-components';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
@@ -8,7 +9,6 @@ import DatesRange from '../../components/filters/DatesRange';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
 import { useFilterState } from '../../hooks/useFilterState';
-import { CreatePlanning } from './components/PlanningDialog';
 import { publishingStatuses } from './constants';
 import MESSAGES from './messages';
 import { PlanningParams } from './types';
@@ -36,6 +36,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const statusOptions = useStatusOptions();
+    const redirectTo = useRedirectTo();
     return (
         <Grid container spacing={0}>
             <Grid container spacing={2}>
@@ -87,7 +88,14 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             onSearch={handleSearch}
                         />
                         <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
-                            <CreatePlanning type="create" iconProps={{}} />
+                            <AddButton
+                                message={MESSAGES.create}
+                                onClick={() =>
+                                    redirectTo(baseUrls.planningDetails, {
+                                        mode: 'create',
+                                    })
+                                }
+                            />
                         </DisplayIfUserHasPerm>
                     </Box>
                 </Grid>

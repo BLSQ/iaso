@@ -12,14 +12,33 @@ import { useCurrentUser } from '../../../../../utils/usersUtils';
 import MESSAGES from '../../messages';
 import { EntityType } from '../../types/entityType';
 import { PaginatedEntityTypes } from '../../types/paginatedEntityTypes';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import {baseUrls} from "../../../../../constants/urls";
 
-export const useDelete = (): UseMutationResult =>
-    useSnackMutation(
-        body => deleteRequest(`/api/entitytypes/${body.id}/`),
-        MESSAGES.deleteSuccess,
-        MESSAGES.deleteError,
-        ['entitytypes', 'entityTypesOptions'],
-    );
+type useDeleteArgs = {
+    params: Params;
+    count: number;
+};
+
+
+export const useDelete = ({params, count}: useDeleteArgs): UseMutationResult =>{
+    const onSuccess = useDeleteTableRow({
+        count,
+        params,
+        pageKey: 'page',
+        pageSizeKey: 'pageSize',
+        invalidateQueries: ['entitytypes', 'entityTypesOptions'],
+        baseUrl: baseUrls.entityTypes,
+    });
+    return useSnackMutation({
+        mutationFn: body => deleteRequest(`/api/entitytypes/${body.id}/`),
+        snackSuccessMessage: MESSAGES.deleteSuccess,
+        snackErrorMsg: MESSAGES.deleteError,
+        options: { 
+            onSuccess 
+        },
+    });
+};
 
 type Params = {
     pageSize: string;

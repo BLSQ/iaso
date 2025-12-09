@@ -67,7 +67,7 @@ export const CampaignDetails: FunctionComponent = () => {
                     handleChange={handleChangeTab}
                 />
                 <FormikProvider value={formik}>
-                    <Form>
+                    <Form isModal={false}>
                         <ActiveForm />
                     </Form>
                 </FormikProvider>

@@ -48,8 +48,8 @@ STOCK_LEDGER_ITEMS_JSON = "stockLedgerItems.json"
 logger = logging.getLogger(__name__)
 
 TASK_LOCK_RETRY_INTERVAL = 60
-TASK_LOCK_MAX_RETRIES = 120
-TASK_LOCK_MAX_DURATION = 1200
+TASK_LOCK_MAX_RETRIES = 240
+TASK_LOCK_MAX_DURATION = 2400
 TASK_LOCK_KEY = "process_mobile_bulk_upload"
 
 

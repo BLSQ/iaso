@@ -20,7 +20,7 @@ import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasA
 import { Notifications } from '../domains/Notifications';
 import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
 import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
-import { PerformanceDashboard } from '../domains/VaccineModule/PerformanceDashboard/PerformanceDashboard';
+import { NationalLogisticsPlan } from '../domains/VaccineModule/NationalLogisticsPlan/NationalLogisticsPlan';
 import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';
 import { VaccineStockManagementDetails } from '../domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
 import { PublicVaccineStock } from '../domains/VaccineModule/StockManagement/PublicPage/PublicVaccineStock';
@@ -42,9 +42,9 @@ import {
     SUPPLYCHAIN_READ,
     SUPPLYCHAIN_READ_ONLY,
     SUPPLYCHAIN_WRITE,
-    POLIO_PERFORMANCE_READ_ONLY_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
 } from './permissions';
 import {
     EMBEDDED_CALENDAR_URL,
@@ -275,14 +275,14 @@ export const chronogramDetailsPath: RoutePath = {
     element: <ChronogramDetails />,
     permissions: [CHRONOGRAM, CHRONOGRAM_RESTRICTED_WRITE],
 };
-export const performanceDashboardPath: RoutePath = {
-    baseUrl: baseUrls.performanceDashboard,
-    routerUrl: `${baseUrls.performanceDashboard}/*`,
-    element: <PerformanceDashboard />,
+export const nationalLogisticsPlanPath: RoutePath = {
+    baseUrl: baseUrls.nationalLogisticsPlan,
+    routerUrl: `${baseUrls.nationalLogisticsPlan}/*`,
+    element: <NationalLogisticsPlan />,
     permissions: [
-        POLIO_PERFORMANCE_READ_ONLY_PERMISSION,
-        POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
-        POLIO_PERFORMANCE_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
     ],
 };
 
@@ -315,7 +315,7 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     chronogramPath,
     chronogramTemplateTaskPath,
     chronogramDetailsPath,
-    performanceDashboardPath,
+    nationalLogisticsPlanPath,
     embeddedLqasCountryPath,
     embeddedLqasAfroPath,
 ];

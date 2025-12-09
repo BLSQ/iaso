@@ -25,7 +25,7 @@ type Props = {
     data: LqasDataForChart[];
     tooltipFormatter: GraphTooltipFormatter;
     colorPalette?: { ok: string; warning: string; fail: string };
-    colorTresholds?: { ok: number; warning: number };
+    colorThresholds?: { ok: number; warning: number };
     chartKey: string;
 };
 
@@ -37,7 +37,7 @@ export const PercentageBarChart: FunctionComponent<Props> = ({
         warning: WARNING_COLOR,
         fail: FAIL_COLOR,
     },
-    colorTresholds = {
+    colorThresholds = {
         ok: 95,
         warning: 90,
     },
@@ -77,7 +77,7 @@ export const PercentageBarChart: FunctionComponent<Props> = ({
                                     fill={determineColor(
                                         entry,
                                         colorPalette,
-                                        colorTresholds,
+                                        colorThresholds,
                                     )}
                                 />
                             );

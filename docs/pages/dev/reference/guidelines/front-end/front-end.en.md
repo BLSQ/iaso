@@ -85,7 +85,83 @@ Example:
      <Box sx={styles.root}>
      ...
 
+## Translating
 
+### Basic usage
+
+We are using [react-intl](https://www.npmjs.com/package/react-intl) to translate messages.
+To ease the use, there is a bluesquare-component wrapper named `useSafeIntl`.
+
+To make it work you will need two things, first an object to define a message id and a default translation:
+
+```typescript
+someLabel: {
+    id: 'iaso.label.some-label',
+    defaultMessage: 'Some label',
+},
+```
+
+Then translations files named as {language}.json in which you will define the actual translation for the message id.
+
+```json
+{
+    "iaso.label.some-label": "Some label translated",
+    ...
+}
+```
+
+Now in your component code you can use safe intl to translate:
+
+```tsx
+import { useSafeIntl } from 'bluesquare-components';
+
+const { formatMessage } = useSafeIntl();
+
+formatMessage(MESSAGES.someLabel);
+```
+
+### Reuse translation for a plugin
+
+To keep this clean and not have to refer iaso / faraway paths, you can have a message with the same id.
+And refer to this one, not having to duplicate the translation.
+This approach is not mandatory but will keep your plugin code as agnostic as possible.
+
+### Use rich text
+
+You can use rich text by using the values property of the formatMessage.
+
+Let's say you have a message like this:
+
+`Some <b>message</b>`
+
+If you just use formatMessage as usual, it will render the `<b>` tags as string.
+To have it rendered as bold text, you can do this:
+
+```tsx
+formatMessage(MESSAGES.someMessage, {
+    b: chunks => <b>chunks</b>,
+});
+```
+
+Note that the `<b>` tag in the message can be anything you want:
+`Some <superimportant>message</superimportant>`
+
+```tsx
+formatMessage(MESSAGES.someMessage, {
+    superimportant: chunks => <b>chuncks</b>,
+});
+```
+
+This also work with lists
+
+`Some items: <ul><li>item1</li><li>item2</li></ul>`
+
+```tsx
+formatMessage(MESSAGES.someListMessage, {
+    li: chunks => <li>chunks</li>,
+    ul: chunks => <ul>chunks</ul>,
+});
+```
 
 ## Maps
 

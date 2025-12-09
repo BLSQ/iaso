@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 class CountryPlanAuditSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
+    deleted_at = serializers.DateTimeField(read_only=True)
     country_name = serializers.CharField(source="country.name", read_only=True)
     country_id = serializers.CharField(source="country.id", read_only=True)
 
@@ -26,6 +27,7 @@ class CountryPlanAuditSerializer(serializers.ModelSerializer):
             "vaccine",
             "created_at",
             "updated_at",
+            "deleted_at",
         ]
 
 

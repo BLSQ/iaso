@@ -7,6 +7,7 @@ from iaso.api.common import ModelViewSet
 from plugins.polio.api.country_plan.permissions import CountryPlanPermission
 from plugins.polio.api.performance_thresholds.filters import PerformanceThresholdFilter
 from plugins.polio.api.performance_thresholds.serializers import (
+    PerformanceThresholdAuditSerializer,
     PerformanceThresholdReadSerializer,
     PerformanceThresholdWriteSerializer,
 )
@@ -15,7 +16,7 @@ from plugins.polio.models.performance_thresholds import PerformanceThresholds
 
 class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     """
-    API endpoint for Performance tresholds.
+    API endpoint for Performance thresholds.
 
     This endpoint supports filtering by:
     - indicator
@@ -38,7 +39,7 @@ class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     ordering_fields = ["indicator", "created_at", "updated_at"]
     http_method_names = ["get", "post", "patch", "delete"]
     search_fields = ["indicator"]
-    audit_serializer = PerformanceThresholdReadSerializer
+    audit_serializer = PerformanceThresholdAuditSerializer
 
     def get_queryset(self):
         """

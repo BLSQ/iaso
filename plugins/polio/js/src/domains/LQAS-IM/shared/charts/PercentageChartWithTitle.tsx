@@ -12,7 +12,7 @@ type Props = {
     isLoading: boolean;
     chartKey: string;
     showChart: boolean;
-    colorTresholds: { ok: number; warning: number };
+    colorThresholds: { ok: number; warning: number };
 };
 
 export const PercentageChartWithTitle: FunctionComponent<Props> = ({
@@ -22,7 +22,7 @@ export const PercentageChartWithTitle: FunctionComponent<Props> = ({
     isLoading,
     chartKey,
     showChart,
-    colorTresholds,
+    colorThresholds,
 }) => {
     return (
         <>
@@ -38,7 +38,7 @@ export const PercentageChartWithTitle: FunctionComponent<Props> = ({
                         data={data}
                         tooltipFormatter={tooltipFormatter}
                         chartKey={chartKey}
-                        colorTresholds={colorTresholds}
+                        colorThresholds={colorThresholds}
                     />
                 </>
             )}

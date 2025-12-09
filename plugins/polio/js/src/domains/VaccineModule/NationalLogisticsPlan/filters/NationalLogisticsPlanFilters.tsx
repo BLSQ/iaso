@@ -9,7 +9,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
 
-export const usenationalLogisticsPlanFilters = (params: Partial<UrlParams>) => {
+export const useNationalLogisticsPlanFilters = (params: Partial<UrlParams>) => {
     return useFilterState({ baseUrl: baseUrls.nationalLogisticsPlan, params });
 };
 
@@ -20,7 +20,7 @@ export const NationalLogisticsPlanFilters: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        usenationalLogisticsPlanFilters(params);
+        useNationalLogisticsPlanFilters(params);
     const { data: countries, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =

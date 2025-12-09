@@ -1,8 +1,9 @@
 from rest_framework import filters, serializers
 from rest_framework.fields import Field
 
-from iaso.api.common import ModelViewSet, UserSerializer
+from iaso.api.common import HasPermission, ModelViewSet, UserSerializer
 from iaso.models import OrgUnit
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 from ..models import CountryUsersGroup
 
@@ -39,6 +40,7 @@ class CountryUsersGroupViewSet(ModelViewSet):
     http_method_names = ["get", "put"]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["country__name", "language"]
+    permission_classes = [HasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
 
     def get_queryset(self):
         countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(

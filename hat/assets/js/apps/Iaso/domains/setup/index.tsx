@@ -299,9 +299,6 @@ export const SetupAccount: FunctionComponent = () => {
                                             )}
                                             value={values.create_main_org_unit}
                                             onChange={onChange}
-                                            helperText={formatMessage(
-                                                MESSAGES.createMainOrgUnitHint,
-                                            )}
                                         />
                                         <InputComponent
                                             type="checkbox"
@@ -311,9 +308,6 @@ export const SetupAccount: FunctionComponent = () => {
                                             )}
                                             value={values.create_demo_form}
                                             onChange={onChange}
-                                            helperText={formatMessage(
-                                                MESSAGES.createDemoFormHint,
-                                            )}
                                         />
                                         <Box
                                             mt={2}

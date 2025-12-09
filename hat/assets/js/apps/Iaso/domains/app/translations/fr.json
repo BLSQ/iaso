@@ -1395,6 +1395,8 @@
     "iaso.setup.accountNameAlreadyExist": "Un compte avec ce nom existe déjà",
     "iaso.setup.accountSetup": "Configuration d'un nouveau compte",
     "iaso.setup.confirmMessage": "Compte et profil créés avec succès, veuillez vous déconnecter et vous reconnecter avec le nouveau profil.",
+    "iaso.setup.createDemoForm": "Créer un formulaire de démo",
+    "iaso.setup.createMainOrgUnit": "Créer l'unité d'organisation principale",
     "iaso.setup.dataSourceNameAlreadyExist": "Une source avec ce nom existe déjà",
     "iaso.setup.modulesEmpty": "Les modules ne doivent pas être vides.",
     "iaso.setup.modulesNotExist": "Les modules n'existent pas",

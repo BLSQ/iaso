@@ -1394,6 +1394,8 @@
     "iaso.setup.accountNameAlreadyExist": "This account name is already taken",
     "iaso.setup.accountSetup": "Setup a new account",
     "iaso.setup.confirmMessage": "Account and profile created successfully, please logout and login again with the new profile.",
+    "iaso.setup.createDemoForm": "Create demo form",
+    "iaso.setup.createMainOrgUnit": "Create main organization unit",
     "iaso.setup.dataSourceNameAlreadyExist": "Data source name already exists",
     "iaso.setup.modulesEmpty": "Modules should not be empty",
     "iaso.setup.modulesNotExist": "Modules do not exist",

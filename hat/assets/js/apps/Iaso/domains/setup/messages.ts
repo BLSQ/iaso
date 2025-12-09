@@ -98,16 +98,8 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Create main organization unit',
         id: 'iaso.setup.createMainOrgUnit',
     },
-    createMainOrgUnitHint: {
-        defaultMessage: 'Automatically create a main organization unit for the account',
-        id: 'iaso.setup.createMainOrgUnitHint',
-    },
     createDemoForm: {
         defaultMessage: 'Create demo form',
         id: 'iaso.setup.createDemoForm',
-    },
-    createDemoFormHint: {
-        defaultMessage: 'Automatically create a demo form for testing',
-        id: 'iaso.setup.createDemoFormHint',
     },
 });

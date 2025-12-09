@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { Box } from '@mui/material';
 import { useStyles } from '../styles/theme';
 
-export const Form = ({ children }) => {
-    const classes = useStyles();
+type Props = {
+    children: ReactNode;
+};
+
+export const Form: FunctionComponent<Props> = ({ children }) => {
+    const classes: Record<string, string> = useStyles();
 
     return (
         <Box

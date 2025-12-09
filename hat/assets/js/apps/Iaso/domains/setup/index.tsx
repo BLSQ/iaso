@@ -82,6 +82,8 @@ export const SetupAccount: FunctionComponent = () => {
             email_invitation: false,
             language: 'en',
             modules: ['DATA_COLLECTION_FORMS'],
+            create_main_org_unit: true,
+            create_demo_form: true,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -288,6 +290,30 @@ export const SetupAccount: FunctionComponent = () => {
                                             errors={getErrors('modules')}
                                             loading={isFetchingModules}
                                             options={filteredModules}
+                                        />
+                                        <InputComponent
+                                            type="checkbox"
+                                            keyValue="create_main_org_unit"
+                                            labelString={formatMessage(
+                                                MESSAGES.createMainOrgUnit,
+                                            )}
+                                            value={values.create_main_org_unit}
+                                            onChange={onChange}
+                                            helperText={formatMessage(
+                                                MESSAGES.createMainOrgUnitHint,
+                                            )}
+                                        />
+                                        <InputComponent
+                                            type="checkbox"
+                                            keyValue="create_demo_form"
+                                            labelString={formatMessage(
+                                                MESSAGES.createDemoForm,
+                                            )}
+                                            value={values.create_demo_form}
+                                            onChange={onChange}
+                                            helperText={formatMessage(
+                                                MESSAGES.createDemoFormHint,
+                                            )}
                                         />
                                         <Box
                                             mt={2}

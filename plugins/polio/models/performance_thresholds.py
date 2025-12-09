@@ -16,6 +16,9 @@ from iaso.utils.models.soft_deletable import (
 )
 
 
+ENABLED_OPERATORS = ["==", ">", "<", ">=", "<="]
+
+
 class PerformanceThresholdQuerySet(QuerySet):
     def filter_for_user_and_app_id(
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str] = None
@@ -67,58 +70,42 @@ class PerformanceThresholds(SoftDeletableModel):
     def is_json_logic_rule(data):
         if not data:
             return False
-        keys = data.keys()
-        values = list(data.values())
-        operators = ["==", ">", "<", ">=", "<="]
-        unsupported_keys = [key for key in keys if key not in operators]
-        all_keys_valid = not unsupported_keys
-        correct_array_format = len([value for value in values if (isinstance(value, list) and len(value) == 2)]) == len(
-            keys
-        )
-        correct_reference_format = False
-        correct_argument_format = False
-        if correct_array_format:
-            correct_reference_format = len([value for value in values if (value[0] == {"var": "value"})]) == len(keys)
-
-            correct_argument_format = len(
-                [value for value in values if (value[1] == {"var": "average"} or isinstance(value[1], int))]
-            ) == len(keys)
-
-        if all_keys_valid and correct_array_format and correct_reference_format and correct_argument_format:
-            return True
-
-        return False
+        for key, value in data.items():
+            if key not in ENABLED_OPERATORS:
+                return False
+            if not isinstance(value, list) or len(value) != 2:
+                return False
+            if value[0] != {"var": "value"}:
+                return False
+            if value[1] != {"var": "average"} and not isinstance(value[1], int):
+                return False
+        return True
 
     # make method static for easier testing
     @staticmethod
     def is_json_logic_expression(data):
         if not data:
             return False
+
         if isinstance(data, str):
             dict_data = json.loads(data)
         else:
             dict_data = data
-        keys = dict_data.keys()
 
-        if "and" not in keys and "or" not in keys:
-            return PerformanceThresholds.is_json_logic_rule(dict_data)
-
-        values = dict_data.values()
-        found_invalid_data = False
-        for entry in values:
-            if not isinstance(entry, list):
+        for key, value in dict_data.items():
+            if key not in ["and", "or"]:
+                # Single rule
+                return PerformanceThresholds.is_json_logic_rule(data)
+            if not isinstance(value, list):
                 return False
-            entry_keys = sum([list(rule.keys()) for rule in entry], [])
-            # this model does not support nested operators
-            if "and" in entry_keys or "or" in entry_keys:
-                found_invalid_data = True
-            else:
-                found_invalid_data = (
-                    len([rule for rule in entry if not PerformanceThresholds.is_json_logic_rule(rule)]) > 0
-                )
-            if found_invalid_data:
-                break
-        return not found_invalid_data
+            for entry in value:
+                entry_keys = entry.keys()
+                if "and" in entry_keys or "or" in entry_keys:
+                    # this model does not support nested operators
+                    return False
+                return PerformanceThresholds.is_json_logic_rule(entry)
+
+        return True
 
     # expose json schema of model for testing
     @staticmethod

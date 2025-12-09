@@ -103,7 +103,8 @@ class PerformanceThresholds(SoftDeletableModel):
                 if "and" in entry_keys or "or" in entry_keys:
                     # this model does not support nested operators
                     return False
-                return PerformanceThresholds.is_json_logic_rule(entry)
+                if not PerformanceThresholds.is_json_logic_rule(entry):
+                    return False
 
         return True
 

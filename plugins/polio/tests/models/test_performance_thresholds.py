@@ -36,9 +36,15 @@ class PerformanceThresholdTestCase(TestCase):
         }  # testing only one incorrect child rule since all rules are tested by test_json_logic_rule_validation
         incorrect_operator = {"xor": [{">": [self.var, self.avg]}, {"<": [self.var, 95]}]}
         nested_expression = {"and": [{"and": [{">": [self.var, self.avg]}, {"<": [self.var, 95]}]}]}
+        bad_value = {"and": {">": [self.var, self.avg]}}
+        bare_rule_correct = self.rule_int_correct
+        bare_rule_incorrect = self.rule_bad_var
 
         self.assertTrue(PerformanceThresholds.is_json_logic_expression(correct_expression_and))
         self.assertTrue(PerformanceThresholds.is_json_logic_expression(correct_expression_or))
+        self.assertTrue(PerformanceThresholds.is_json_logic_expression(bare_rule_correct))
         self.assertFalse(PerformanceThresholds.is_json_logic_expression(incorrect_rule))
         self.assertFalse(PerformanceThresholds.is_json_logic_expression(incorrect_operator))
         self.assertFalse(PerformanceThresholds.is_json_logic_expression(nested_expression))
+        self.assertFalse(PerformanceThresholds.is_json_logic_expression(bad_value))
+        self.assertFalse(PerformanceThresholds.is_json_logic_expression(bare_rule_incorrect))

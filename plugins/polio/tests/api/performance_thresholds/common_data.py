@@ -16,7 +16,7 @@ class PerformanceThresholdsAPIBase(APITestCase):
     Sets up accounts, users, and initial threshold data.
     """
 
-    COUNTRY_PLAN_THRESHOLDS_API_URL = "/api/polio/performance_thresholds/"
+    PERFORMANCE_THRESHOLDS_API_URL = "/api/polio/performance_thresholds/"
 
     @classmethod
     def setUpTestData(cls):

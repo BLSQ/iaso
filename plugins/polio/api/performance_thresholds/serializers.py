@@ -8,6 +8,25 @@ from plugins.polio.models.performance_thresholds import PerformanceThresholds
 logger = logging.getLogger(__name__)
 
 
+class PerformanceThresholdAuditSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+    deleted_at = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = PerformanceThresholds
+        fields = [
+            "id",
+            "indicator",
+            "fail_threshold",
+            "warning_threshold",
+            "success_threshold",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
+
+
 class PerformanceThresholdReadSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)

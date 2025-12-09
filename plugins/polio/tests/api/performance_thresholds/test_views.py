@@ -16,7 +16,7 @@ name_and_id_schema = {
 
 model_json_schema = PerformanceThresholds.json_schema()
 
-COUNTRY_PLAN_THRESHOLD_LOG_SCHEMA = Modification.make_json_schema(model_json_schema, model_json_schema)
+PERFORMANCE_THRESHOLD_LOG_SCHEMA = Modification.make_json_schema(model_json_schema, model_json_schema)
 
 
 class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
@@ -25,16 +25,16 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
     """
 
     def test_read_access_is_public(self):
-        response = self.client.get(self.COUNTRY_PLAN_THRESHOLDS_API_URL)
+        response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL)
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.client.force_authenticate(self.user_no_perms)
-        response = self.client.get(self.COUNTRY_PLAN_THRESHOLDS_API_URL)
+        response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.client.force_authenticate(self.anon)
-        response = self.client.get(self.COUNTRY_PLAN_THRESHOLDS_API_URL)
+        response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         data = {
@@ -43,7 +43,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
             "warning_threshold": self.json_logic_rule_3,
             "fail_threshold": self.json_logic_rule_4,
         }
-        response = self.client.post(self.COUNTRY_PLAN_THRESHOLDS_API_URL, data, format="json")
+        response = self.client.post(self.PERFORMANCE_THRESHOLDS_API_URL, data, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_read_only_user_permissions(self):
@@ -53,20 +53,20 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         self.client.force_authenticate(self.user_read_only)
 
         # GET should work
-        response = self.client.get(self.COUNTRY_PLAN_THRESHOLDS_API_URL)
+        response = self.client.get(self.PERFORMANCE_THRESHOLDS_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # POST should fail
-        response = self.client.post(self.COUNTRY_PLAN_THRESHOLDS_API_URL, data={}, format="json")
+        response = self.client.post(self.PERFORMANCE_THRESHOLDS_API_URL, data={}, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # PATCH should fail
         threshold_id = self.threshold_stock_12m.id
-        response = self.client.patch(f"{self.COUNTRY_PLAN_THRESHOLDS_API_URL}{threshold_id}/", data={}, format="json")
+        response = self.client.patch(f"{self.PERFORMANCE_THRESHOLDS_API_URL}{threshold_id}/", data={}, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         # DELETE should fail
-        response = self.client.delete(f"{self.COUNTRY_PLAN_THRESHOLDS_API_URL}{threshold_id}/")
+        response = self.client.delete(f"{self.PERFORMANCE_THRESHOLDS_API_URL}{threshold_id}/")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_non_admin_user_can_create(self):
@@ -81,7 +81,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
             "warning_threshold": self.json_logic_rule_3,
             "fail_threshold": self.json_logic_rule_4,
         }
-        response = self.client.post(self.COUNTRY_PLAN_THRESHOLDS_API_URL, data=data, format="json")
+        response = self.client.post(self.PERFORMANCE_THRESHOLDS_API_URL, data=data, format="json")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         # Verify it exists in DB
@@ -99,7 +99,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         update_data = {"success_threshold": self.json_logic_expression_1}
 
         response = self.client.patch(
-            f"{self.COUNTRY_PLAN_THRESHOLDS_API_URL}{threshold.id}/", data=update_data, format="json"
+            f"{self.PERFORMANCE_THRESHOLDS_API_URL}{threshold.id}/", data=update_data, format="json"
         )
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -115,7 +115,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
 
         threshold_id = self.threshold_stock_12m.id
 
-        response = self.client.delete(f"{self.COUNTRY_PLAN_THRESHOLDS_API_URL}{threshold_id}/")
+        response = self.client.delete(f"{self.PERFORMANCE_THRESHOLDS_API_URL}{threshold_id}/")
         self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         # Check soft-deletion
@@ -128,7 +128,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         """
         self.client.force_authenticate(self.user_admin)
 
-        response = self.client.get(f"{self.COUNTRY_PLAN_THRESHOLDS_API_URL}?limit=10&page=1&order=indicator")
+        response = self.client.get(f"{self.PERFORMANCE_THRESHOLDS_API_URL}?limit=10&page=1&order=indicator")
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         results = data["results"]
         count = data["count"]
@@ -157,7 +157,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
             "success_threshold": self.json_logic_rule_2,
         }
         response = self.client.patch(
-            f"{self.COUNTRY_PLAN_THRESHOLDS_API_URL}{self.threshold_stock_12m.id}/", data=data, format="json"
+            f"{self.PERFORMANCE_THRESHOLDS_API_URL}{self.threshold_stock_12m.id}/", data=data, format="json"
         )
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -168,7 +168,7 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         log = logs["list"][0]
 
         try:
-            jsonschema.validate(instance=log, schema=COUNTRY_PLAN_THRESHOLD_LOG_SCHEMA)
+            jsonschema.validate(instance=log, schema=PERFORMANCE_THRESHOLD_LOG_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
@@ -182,3 +182,41 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
         self.assertEqual(new_value["fail_threshold"], self.json_logic_rule_6)
         self.assertEqual(new_value["warning_threshold"], self.json_logic_expression_2)
         self.assertEqual(new_value["success_threshold"], self.json_logic_rule_2)
+
+        # Test creation
+        data = {
+            "indicator": "lines of code per day",
+            "success_threshold": self.json_logic_rule_2,
+            "warning_threshold": self.json_logic_rule_2,
+            "fail_threshold": self.json_logic_rule_2,
+        }
+        response = self.client.post(f"{self.PERFORMANCE_THRESHOLDS_API_URL}", data=data, format="json")
+        result = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        response = self.client.get(
+            f"/api/logs/?contentType=polio.performancethresholds&fields=past_value,new_value&objectId={result['id']}"
+        )
+        logs = self.assertJSONResponse(response, status.HTTP_200_OK)
+        log = logs["list"][0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PERFORMANCE_THRESHOLD_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        # Test deletion
+        response = self.client.delete(f"{self.PERFORMANCE_THRESHOLDS_API_URL}{result['id']}/", format="json")
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(
+            f"/api/logs/?contentType=polio.performancethresholds&fields=past_value,new_value&objectId={result['id']}"
+        )
+        logs = self.assertJSONResponse(response, status.HTTP_200_OK)
+        log = logs["list"][0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PERFORMANCE_THRESHOLD_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+        self.assertIsNone(log["past_value"][0]["deleted_at"])
+        self.assertIsNotNone(log["new_value"][0]["deleted_at"])

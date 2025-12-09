@@ -227,3 +227,36 @@ class CountryPlanViewsAPITestCase(CountryPlanAPIBase):
         self.assertEqual(new_value["country_name"], self.west.name)
         self.assertEqual(new_value["country_id"], str(self.west.id))
         self.assertEqual(new_value["vaccine"], "nOPV2")
+
+        # Test creation
+        create_data = {"date": "2025-08-01", "status": "draft", "vaccine": "nOPV2", "country_id": self.west.id}
+        response = self.client.post(self.COUNTRY_PLAN_API_URL, data=create_data, format="json")
+        result = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        response = self.client.get(
+            f"/api/logs/?contentType=polio.countryplan&fields=past_value,new_value&objectId={result['id']}"
+        )
+        logs = self.assertJSONResponse(response, status.HTTP_200_OK)
+        log = logs["list"][0]
+
+        try:
+            jsonschema.validate(instance=log, schema=COUNTRY_PLAN_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        # Test deletion
+        response = self.client.delete(f"{self.COUNTRY_PLAN_API_URL}{result['id']}/", format="json")
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(
+            f"/api/logs/?contentType=polio.countryplan&fields=past_value,new_value&objectId={result['id']}"
+        )
+        logs = self.assertJSONResponse(response, status.HTTP_200_OK)
+        log = logs["list"][0]
+
+        try:
+            jsonschema.validate(instance=log, schema=COUNTRY_PLAN_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+        self.assertIsNone(log["past_value"][0]["deleted_at"])
+        self.assertIsNotNone(log["new_value"][0]["deleted_at"])

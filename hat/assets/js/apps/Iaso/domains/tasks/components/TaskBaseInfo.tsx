@@ -84,6 +84,12 @@ export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
                         label={formatMessage(MESSAGES.status)}
                         value={task ? <StatusCell task={task} /> : ''}
                     />
+                    {task.status !== 'RUNNING' && task.status !== 'QUEUED' && (
+                        <Row
+                            label={formatMessage(MESSAGES.result_message)}
+                            value={task.progress_message}
+                        />
+                    )}
                 </TableBody>
             </Table>
             {taskHasDownloadableFile && (

@@ -167,7 +167,7 @@ class Task(models.Model):
 
     def create_log_entry_if_needed(self, message: Optional[str]):
         if message:
-            TaskLog.objects.create(task=self, message=message)
+            TaskLog.objects.using("task_logs").create(task=self, message=message)
 
 
 class TaskLog(models.Model):

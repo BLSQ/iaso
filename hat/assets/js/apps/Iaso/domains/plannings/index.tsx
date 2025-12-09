@@ -10,7 +10,7 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { usePlanningColumns } from './config';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
-import { PlanningFilters } from './PlanningFilters';
+import { PlanningFilters } from './components/PlanningFilters';
 import { PlanningParams } from './types';
 
 const useStyles = makeStyles(theme => ({

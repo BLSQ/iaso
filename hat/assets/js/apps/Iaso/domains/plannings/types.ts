@@ -51,3 +51,4 @@ export type Planning = {
     target_org_unit_type?: number;
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
 };
+export type PageMode = 'create' | 'edit' | 'copy';

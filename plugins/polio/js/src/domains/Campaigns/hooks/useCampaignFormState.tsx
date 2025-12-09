@@ -13,16 +13,10 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
         string | undefined
     >(campaignId);
 
-    const {
-        saveCampaign,
-        isSaving,
-        selectedCampaign,
-        isFetching,
-        campaignLogs,
-    } = useCampaignAPI({
-        campaignId: enableAPI ? selectedCampaignId : undefined,
-        enableGetLogs: enableAPI,
-    });
+    const { saveCampaign, isSaving, selectedCampaign, isFetching } =
+        useCampaignAPI({
+            campaignId: enableAPI ? selectedCampaignId : undefined,
+        });
 
     const [isUpdated, setIsUpdated] = useState<boolean>(false);
     const {
@@ -156,7 +150,6 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
             isSaving,
             selectedCampaign,
             isFetching,
-            campaignLogs,
             saveDisabled,
         };
     }, [
@@ -174,7 +167,6 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
         isSaving,
         selectedCampaign,
         isFetching,
-        campaignLogs,
         saveDisabled,
     ]);
 };

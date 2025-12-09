@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import {
     BackdropClickModal,
-    IconButton,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -18,12 +17,12 @@ import { FormikProvider } from 'formik';
 import isEqual from 'lodash/isEqual';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
-import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { WarningModal } from './WarningModal/WarningModal';
 import { useCampaignFormState } from '../hooks/useCampaignFormState';
 import { useCampaignTabs } from '../hooks/useCampaignTabs';
+import { CampaignHistoryIconButton } from '../CampaignHistory/CampaignHistoryIconButton';
 
 type Props = {
     isOpen: boolean;
@@ -52,7 +51,6 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         isSaving,
         selectedCampaign,
         isFetching,
-        campaignLogs,
         saveDisabled,
     } = useCampaignFormState({
         campaignId,
@@ -119,26 +117,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                             </DialogTitle>
                         </Box>
                     </Grid>
-
-                    {selectedCampaign && Boolean(campaignLogs?.length) && (
-                        <Grid
-                            item
-                            xs={12}
-                            md={4}
-                            className={classes.historyLink}
-                        >
-                            <Box pr={4} alignItems="center">
-                                <IconButton
-                                    url={`/${baseUrls.campaignHistory}/campaignId/${selectedCampaign?.id}`}
-                                    icon="history"
-                                    tooltipMessage={MESSAGES.campaignHistory}
-                                    classes={{
-                                        linkButton: classes.linkButton,
-                                    }}
-                                />
-                            </Box>
-                        </Grid>
-                    )}
+                    <CampaignHistoryIconButton
+                        selectedCampaign={selectedCampaign}
+                    />
                 </Grid>
             </Box>
 

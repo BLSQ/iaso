@@ -1,22 +1,15 @@
 import { useMemo } from 'react';
-import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
 import { useGetCampaign } from './api/useGetCampaign';
 import { useSaveCampaign } from './api/useSaveCampaign';
 
 type Args = {
-    campaignId?: boolean;
-    enableGetLogs?: boolean;
+    campaignId?: string;
 };
 
-export const useCampaignAPI = ({ campaignId, enableGetLogs = false }) => {
+export const useCampaignAPI = ({ campaignId }: Args) => {
     const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
 
     const { data: selectedCampaign, isFetching } = useGetCampaign(campaignId);
-
-    const { data: campaignLogs } = useGetCampaignLogs(
-        selectedCampaign?.id,
-        enableGetLogs,
-    );
 
     return useMemo(() => {
         return {
@@ -24,7 +17,6 @@ export const useCampaignAPI = ({ campaignId, enableGetLogs = false }) => {
             isSaving,
             selectedCampaign,
             isFetching,
-            campaignLogs,
         };
-    }, [saveCampaign, isSaving, selectedCampaign, isFetching, campaignLogs]);
+    }, [saveCampaign, isSaving, selectedCampaign, isFetching]);
 };

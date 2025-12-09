@@ -161,6 +161,7 @@ class PlanningSamplingResultSerializer(serializers.ModelSerializer):
             "pipeline_id",
             "pipeline_version",
             "group_id",
+            "pipeline_name",
             "group_details",
             "parameters",
             "status",
@@ -195,7 +196,7 @@ class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlanningSamplingResult
-        fields = ["task_id", "pipeline_id", "pipeline_version", "group_id", "parameters", "status"]
+        fields = ["task", "pipeline_id", "pipeline_version", "pipeline_name", "group_id", "parameters", "status"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

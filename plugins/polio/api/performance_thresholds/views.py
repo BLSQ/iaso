@@ -15,7 +15,7 @@ from plugins.polio.models.performance_thresholds import PerformanceThresholds
 
 class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     """
-    API endpoint for Performance tresholds.
+    API endpoint for Performance thresholds.
 
     This endpoint supports filtering by:
     - indicator

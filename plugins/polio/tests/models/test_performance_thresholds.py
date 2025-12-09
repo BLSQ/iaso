@@ -3,7 +3,7 @@ from iaso.test import TestCase
 from plugins.polio.models.performance_thresholds import PerformanceThresholds
 
 
-class PerformanceTresholdTestCase(TestCase):
+class PerformanceThresholdTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Data Source")

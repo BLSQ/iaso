@@ -76,7 +76,7 @@ export const imNfmKeys = [
     'Tot_child_Others_HH',
     'Tot_child_VaccinatedRoutine',
 ];
-export const imBarColorTresholds = {
+export const imBarColorThresholds = {
     ok: 95,
     warning: 90,
 };

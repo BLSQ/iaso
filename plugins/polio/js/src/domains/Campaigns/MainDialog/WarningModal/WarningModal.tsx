@@ -5,7 +5,7 @@ import {
     IntlMessage,
     useSafeIntl,
 } from 'bluesquare-components';
-import MESSAGES from '../../../constants/messages';
+import MESSAGES from '../../../../constants/messages';
 
 type Props = {
     onConfirm: () => void;

@@ -1,10 +1,4 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useState,
-    useMemo,
-} from 'react';
-
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
     Box,
     Button,
@@ -20,24 +14,16 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { FormikProvider, useFormik } from 'formik';
-import { merge } from 'lodash';
-
+import { FormikProvider } from 'formik';
 import isEqual from 'lodash/isEqual';
-import { useQueryClient } from 'react-query';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
-import { CampaignFormValues } from '../../../constants/types';
 import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
-import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
-import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
-import { useGetCampaign } from '../hooks/api/useGetCampaign';
-import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
-import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
-import { usePolioDialogTabs } from './usePolioDialogTabs';
-import { WarningModal } from './WarningModal';
+import { WarningModal } from './WarningModal/WarningModal';
+import { useCampaignFormState } from '../hooks/useCampaignFormState';
+import { useCampaignTabs } from '../hooks/useCampaignTabs';
 
 type Props = {
     isOpen: boolean;
@@ -50,147 +36,54 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     onClose,
     campaignId,
 }) => {
-    const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
-    const [selectedCampaignId, setSelectedCampaignId] = useState<
-        string | undefined
-    >(campaignId);
-    const queryClient = useQueryClient();
-    const { data: selectedCampaign, isFetching } = useGetCampaign(
-        isOpen && selectedCampaignId,
-    );
-
-    const { data: campaignLogs } = useGetCampaignLogs(
-        selectedCampaign?.id,
-        isOpen,
-    );
-    const [isBackdropOpen, setIsBackdropOpen] = useState(false);
-    const [isScopeWarningOpen, setIsScopeWarningOpen] = useState(false);
-    const [isUpdated, setIsUpdated] = useState(false);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const validate = useValidateCampaign();
+    const [isBackdropOpen, setIsBackdropOpen] = useState(false);
 
-    const initialValues: CampaignFormValues = useMemo(() => {
-        const baseValues: CampaignFormValues = {
-            subactivity: undefined, // we save subactivities one by one, so no array here
-            rounds: [],
-            scopes: [],
-            group: {
-                name: 'hidden group',
-                org_units: [],
-            },
-            campaign_types: [],
-            is_preventive: false,
-            is_test: false,
-            on_hold: false,
-            is_planned: false,
-            enable_send_weekly_email: true,
-            // Those are Polio default values to be set if the types changes to Polio
-            has_data_in_budget_tool: false,
-            budget_current_state_key: '-',
-            detection_status: 'PENDING',
-            risk_assessment_status: 'TO_SUBMIT',
-            separate_scopes_per_round: false,
-            org_unit: undefined,
-            non_field_errors: undefined, // TODO find out whether we still use this formik state value or not
-        };
-
-        // Merge default values with the campaign data
-        return merge({}, baseValues, {
-            ...selectedCampaign,
-            rounds: selectedCampaign?.rounds
-                ? [...selectedCampaign.rounds].sort(
-                      (a, b) => a.number - b.number,
-                  )
-                : [],
-        });
-    }, [selectedCampaign]);
-
-    const formik = useFormik({
-        initialValues,
-        enableReinitialize: true,
-        validateOnBlur: true,
-        validate,
-        onSubmit: (values, helpers) => {
-            handleSubmit(values, helpers);
-        },
+    const {
+        formik,
+        isScopeWarningOpen,
+        closeWarning,
+        scopeWarningTitle,
+        scopeWarningBody,
+        warningDataTestId,
+        handleConfirm,
+        handleClose: handleCloseForm,
+        isSaving,
+        selectedCampaign,
+        isFetching,
+        campaignLogs,
+        saveDisabled,
+    } = useCampaignFormState({
+        campaignId,
+        enableAPI: isOpen,
     });
 
-    const handleSubmit = useCallback(
-        (values, helpers) => {
-            saveCampaign(convertEmptyStringToNull(values), {
-                onSuccess: result => {
-                    setIsUpdated(true);
-                    queryClient.setQueryData(
-                        ['campaign', selectedCampaignId],
-                        values,
-                    );
-                    if (!selectedCampaignId) {
-                        setSelectedCampaignId(result.id);
-                    }
-                },
-                onError: error => {
-                    if (error.details) {
-                        helpers.setErrors(error.details);
-                    }
-                },
-            });
-        },
-        [saveCampaign, queryClient, selectedCampaignId],
-    );
-    const { touched } = formik;
-    const handleClose = () => {
-        formik.resetForm();
-        if (isUpdated) {
-            queryClient.invalidateQueries('campaigns');
-            queryClient.invalidateQueries('subActivities');
-        }
+    const { tabs, ActiveForm, handleChangeTab, selectedTab } = useCampaignTabs({
+        formik,
+        selectedCampaign,
+    });
+
+    // calling modal specific onClose on top of handleCloseForm
+    const handleClose = useCallback(() => {
+        handleCloseForm();
         onClose();
-    };
-
-    const handleConfirm = useCallback(() => {
-        // If scope type has changed
-        if (
-            formik.values.separate_scopes_per_round !==
-                formik.initialValues.separate_scopes_per_round &&
-            formik.values.id
-        ) {
-            // Open warning modal
-            setIsScopeWarningOpen(true);
-        } else {
-            formik.handleSubmit();
-        }
-        // All hooks deps present, but ES-lint wants to add formik object, which is too much
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        formik.handleSubmit,
-        formik.values.id,
-        formik.values.separate_scopes_per_round,
-        formik.initialValues.separate_scopes_per_round,
-    ]);
-
-    const scopeWarningTitle = formatMessage(MESSAGES.scopeWarningTitle);
-    const scopeWarningBody = formatMessage(MESSAGES.scopesWillBeDeleted);
-    const tabs = usePolioDialogTabs(formik, selectedCampaign);
-    const [selectedTab, setSelectedTab] = useState(0);
-
-    const CurrentForm = tabs[selectedTab].form;
-    const isFormChanged = !isEqual(formik.values, formik.initialValues);
-
-    const saveDisabled =
-        !isFormChanged ||
-        (isFormChanged && !formik.isValid) ||
-        isSaving ||
-        isFetching;
+    }, [handleCloseForm, onClose]);
 
     return (
         <Dialog
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
-                if (reason === 'backdropClick' && !isEqual(touched, {})) {
+                if (
+                    reason === 'backdropClick' &&
+                    !isEqual(formik.touched, {})
+                ) {
                     setIsBackdropOpen(true);
-                } else if (reason === 'backdropClick' && isEqual(touched, {})) {
+                } else if (
+                    reason === 'backdropClick' &&
+                    isEqual(formik.touched, {})
+                ) {
                     handleClose();
                 }
             }}
@@ -207,9 +100,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 title={scopeWarningTitle}
                 body={scopeWarningBody}
                 open={isScopeWarningOpen}
-                closeDialog={() => setIsScopeWarningOpen(false)}
+                closeDialog={closeWarning}
                 onConfirm={() => formik.handleSubmit()}
-                dataTestId="scopewarning-modal"
+                dataTestId={warningDataTestId}
             />
             <Box pt={1}>
                 <Grid container spacing={0}>
@@ -253,13 +146,11 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 <PolioDialogTabs
                     tabs={tabs}
                     selectedTab={selectedTab}
-                    handleChange={(_event, newValue) => {
-                        setSelectedTab(newValue);
-                    }}
+                    handleChange={handleChangeTab}
                 />
                 <FormikProvider value={formik}>
                     <Form>
-                        <CurrentForm />
+                        <ActiveForm />
                     </Form>
                 </FormikProvider>
             </DialogContent>

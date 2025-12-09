@@ -4,7 +4,7 @@ from rest_framework import filters
 
 from hat.audit.audit_mixin import AuditMixin
 from iaso.api.common import ModelViewSet
-from plugins.polio.api.perfomance_dashboard.permissions import PerformanceDashboardPermission
+from plugins.polio.api.country_plan.permissions import CountryPlanPermission
 from plugins.polio.api.performance_thresholds.filters import PerformanceThresholdFilter
 from plugins.polio.api.performance_thresholds.serializers import (
     PerformanceThresholdReadSerializer,
@@ -15,7 +15,7 @@ from plugins.polio.models.performance_thresholds import PerformanceThresholds
 
 class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     """
-    API endpoint for Performance dashboard thresholds.
+    API endpoint for Performance thresholds.
 
     This endpoint supports filtering by:
     - indicator
@@ -25,10 +25,10 @@ class PerformanceThresholdsViewSet(AuditMixin, ModelViewSet):
     - **Non-admin**: Can create and update thresholds.
     - **Admin**: Can delete thresholds.
 
-    We are reusing the performance dashboard permissions since the features are related from a business point of view
+    We are reusing the country plan permissions since the features are related from a business point of view
     """
 
-    permission_classes = [PerformanceDashboardPermission]
+    permission_classes = [CountryPlanPermission]
     filter_backends = [
         filters.OrderingFilter,
         filters.SearchFilter,

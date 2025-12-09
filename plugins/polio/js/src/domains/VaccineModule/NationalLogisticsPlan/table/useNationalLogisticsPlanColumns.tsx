@@ -6,17 +6,19 @@ import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import { userHasOneOfPermissions } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import {
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
 } from '../../../../constants/permissions';
 import MESSAGES from '../messages';
-import { EditPerformanceModal } from '../modals/CreateEditModal';
-import { useDeletePerformance } from '../hooks/api';
+import { EditNationalLogisticsPlanModal } from '../modals/CreateEditModal';
+import { useDeleteNationalLogisticsPlan } from '../hooks/api';
+import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 
-export const usePerformanceDashboardColumns = (): Column[] => {
+export const useNationalLogisticsPlanColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const { mutate: deletePerformance } = useDeletePerformance();
+    const { mutate: deleteNationalLogisticsPlan } =
+        useDeleteNationalLogisticsPlan();
 
     return useMemo(() => {
         const columns: Column[] = [
@@ -67,8 +69,8 @@ export const usePerformanceDashboardColumns = (): Column[] => {
 
         const hasActionPermission = userHasOneOfPermissions(
             [
-                POLIO_PERFORMANCE_ADMIN_PERMISSION,
-                POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+                POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+                POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
             ],
             currentUser,
         );
@@ -79,34 +81,36 @@ export const usePerformanceDashboardColumns = (): Column[] => {
                 accessor: 'actions',
                 sortable: false,
                 Cell: (settings: any) => {
-                    const { original: performanceData } = settings.row;
-                    const recordName = `${performanceData.country_name} - ${performanceData.date}`;
+                    const { original: nationaPlanData } = settings.row;
+                    const recordName = `${nationaPlanData.country_name} - ${nationaPlanData.date}`;
                     return (
                         <>
                             <DisplayIfUserHasPerm
                                 permissions={[
-                                    POLIO_PERFORMANCE_ADMIN_PERMISSION,
-                                    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+                                    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+                                    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
                                 ]}
                             >
-                                <EditPerformanceModal
-                                    performanceData={performanceData}
+                                <EditNationalLogisticsPlanModal
+                                    nationaPlanData={nationaPlanData}
                                     iconProps={{}}
                                 />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
                                 permissions={[
-                                    POLIO_PERFORMANCE_ADMIN_PERMISSION,
+                                    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
                                 ]}
                             >
-                                <DeleteDialog
+                                <DeleteModal
+                                    type="icon"
                                     titleMessage={formatMessage(
-                                        MESSAGES.deletePerformance,
+                                        MESSAGES.deleteNationalLogisticsPlan,
                                         { name: recordName },
                                     )}
-                                    message={formatMessage(MESSAGES.deleteText)}
                                     onConfirm={() =>
-                                        deletePerformance(performanceData.id)
+                                        deleteNationalLogisticsPlan(
+                                            nationaPlanData.id,
+                                        )
                                     }
                                 />
                             </DisplayIfUserHasPerm>
@@ -116,5 +120,5 @@ export const usePerformanceDashboardColumns = (): Column[] => {
             });
         }
         return columns;
-    }, [formatMessage, currentUser, deletePerformance]);
+    }, [formatMessage, currentUser, deleteNationalLogisticsPlan]);
 };

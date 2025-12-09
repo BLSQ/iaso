@@ -6,6 +6,7 @@ from plugins.polio.api.campaigns.campaigns import CampaignViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from plugins.polio.api.campaigns.subactivities import SubActivityViewSet
 from plugins.polio.api.chronogram.views import ChronogramTaskViewSet, ChronogramTemplateTaskViewSet, ChronogramViewSet
+from plugins.polio.api.country_plan.views import CountryPlanViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
 from plugins.polio.api.dashboards.budget import BudgetDashboardViewSet
 from plugins.polio.api.dashboards.campaign import CampaignDashboardViewSet
@@ -37,7 +38,6 @@ from plugins.polio.api.lqas_im.lqas_im_dropdowns import (
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
 from plugins.polio.api.notifications.views import NotificationViewSet
-from plugins.polio.api.perfomance_dashboard.views import PerformanceDashboardViewSet
 from plugins.polio.api.performance_thresholds.views import PerformanceThresholdsViewSet
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
@@ -71,7 +71,7 @@ from plugins.polio.tasks.api.refresh_vrf_dashboard_data import RefreshVrfDataVie
 
 router = routers.SimpleRouter()
 router.register(r"polio/performance_thresholds", PerformanceThresholdsViewSet, basename="performance_thresholds")
-router.register(r"polio/performance_dashboard", PerformanceDashboardViewSet, basename="performance_dashboard")
+router.register(r"polio/country_plan", CountryPlanViewSet, basename="country_plan")
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaigns_subactivities", SubActivityViewSet, basename="campaigns_subactivities")

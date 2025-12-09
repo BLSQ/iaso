@@ -2,25 +2,25 @@ import React, { FunctionComponent } from 'react';
 import { UrlParams } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
-import { useGetPerformanceDashboard } from '../hooks/api';
-import { usePerformanceDashboardColumns } from './usePerformanceDashboardColumns';
+import { useGetNationalLogisticsPlan } from '../hooks/api';
+import { useNationalLogisticsPlanColumns } from './useNationalLogisticsPlanColumns';
 
 type Props = { params: Partial<UrlParams> };
 
-export const PerformanceDashboardTable: FunctionComponent<Props> = ({
+export const NationalLogisticsPlanTable: FunctionComponent<Props> = ({
     params,
 }) => {
-    const { data: performanceList, isFetching } =
-        useGetPerformanceDashboard(params);
-    const columns = usePerformanceDashboardColumns();
+    const { data: nationalPlansList, isFetching } =
+        useGetNationalLogisticsPlan(params);
+    const columns = useNationalLogisticsPlanColumns();
     return (
         <TableWithDeepLink
-            data={performanceList?.results ?? []}
-            count={performanceList?.count}
-            pages={performanceList?.pages}
+            data={nationalPlansList?.results ?? []}
+            count={nationalPlansList?.count}
+            pages={nationalPlansList?.pages}
             params={params}
             columns={columns}
-            baseUrl={baseUrls.performanceDashboard}
+            baseUrl={baseUrls.nationalLogisticsPlan}
             columnSelectorEnabled
             columnSelectorButtonType="button"
             marginTop={false}

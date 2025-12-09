@@ -1,13 +1,13 @@
 from rest_framework import status
 
-from plugins.polio.models.performance_dashboard import PerformanceDashboard
+from plugins.polio.models.country_plan import CountryPlan
 
-from .common_test_data import PerformanceDashboardAPIBase
+from .common_test_data import CountryPlanAPIBase
 
 
-class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
+class CountryPlanFiltersAPITestCase(CountryPlanAPIBase):
     """
-    Test cases for the filters of the Performance Dashboard API endpoint.
+    Test cases for the filters of the Country Plan API endpoint.
     """
 
     def test_filter_by_country(self):
@@ -16,11 +16,11 @@ class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
         """
         self.client.force_authenticate(self.user_admin_1)
 
-        response = self.client.get(f"{self.PERFORMANCE_DASHBOARD_API_URL}?country={self.east.id}")
+        response = self.client.get(f"{self.COUNTRY_PLAN_API_URL}?country={self.east.id}")
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         results = response_data.get("results", [])
         count = len(results)
-        expected_count = PerformanceDashboard.objects.filter(account=self.account_one, country=self.east).count()
+        expected_count = CountryPlan.objects.filter(account=self.account_one, country=self.east).count()
         self.assertEqual(count, expected_count)
 
         result_ids = {item["id"] for item in response_data["results"]}
@@ -34,7 +34,7 @@ class PerformanceDashboardFiltersAPITestCase(PerformanceDashboardAPIBase):
 
         self.client.force_authenticate(self.user_with_account2)
 
-        response = self.client.get(f"{self.PERFORMANCE_DASHBOARD_API_URL}?country_block={self.north.id}")
+        response = self.client.get(f"{self.COUNTRY_PLAN_API_URL}?country_block={self.north.id}")
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         results = response_data.get("results", [])
         count = len(results)

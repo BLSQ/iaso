@@ -5,49 +5,49 @@ import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Ia
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import {
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
 } from '../../../constants/permissions';
 import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
-import { PerformanceDashboardFilters } from './filters/PerformanceDashboardFilters';
+import { NationalLogisticsPlanFilters } from './filters/NationalLogisticsPlanFilters';
 import MESSAGES from './messages';
-import { CreatePerformanceModal } from './modals/CreateEditModal';
-import { PerformanceDashboardTable } from './table/PerformanceDashboardTable';
+import { CreateNationalLogisticsPlanModal } from './modals/CreateEditModal';
+import { NationalLogisticsPlanTable } from './table/NationalLogisticsPlanTable';
 
-type PerformanceDashboardParams = {
+type nationalLogisticsPlanParams = {
     country?: string;
     country_blocks?: string;
 } & Partial<UrlParams>;
 
-export const PerformanceDashboard: FunctionComponent = () => {
+export const NationalLogisticsPlan: FunctionComponent = () => {
     const params = useParamsObject(
-        baseUrls.performanceDashboard,
-    ) as PerformanceDashboardParams;
+        baseUrls.nationalLogisticsPlan,
+    ) as nationalLogisticsPlanParams;
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.performanceDashboard)}
+                title={formatMessage(MESSAGES.nationalLogisticsPlan)}
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <PerformanceDashboardFilters params={params} />
+                <NationalLogisticsPlanFilters params={params} />
                 <DisplayIfUserHasPerm
                     permissions={[
-                        POLIO_PERFORMANCE_ADMIN_PERMISSION,
-                        POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
+                        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+                        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
                     ]}
                 >
                     <Grid container justifyContent="flex-end">
                         <Box mt={2}>
-                            <CreatePerformanceModal iconProps={{}} />
+                            <CreateNationalLogisticsPlanModal iconProps={{}} />
                         </Box>
                     </Grid>
                 </DisplayIfUserHasPerm>
-                <PerformanceDashboardTable params={params} />
+                <NationalLogisticsPlanTable params={params} />
             </Box>
         </>
     );

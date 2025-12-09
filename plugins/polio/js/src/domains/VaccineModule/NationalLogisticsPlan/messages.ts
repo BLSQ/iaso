@@ -1,9 +1,9 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    performanceDashboard: {
-        id: 'iaso.polio.performanceDashboard',
-        defaultMessage: 'Performance Dashboard',
+    nationalLogisticsPlan: {
+        id: 'iaso.polio.nationalLogisticsPlan',
+        defaultMessage: 'National Logistics Plan',
     },
     country: {
         id: 'iaso.polio.table.label.country',
@@ -41,12 +41,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
-    deletePerformance: {
-        id: 'iaso.polio.performance.delete',
-        defaultMessage: 'Delete Performance Data: {name}',
+    deleteNationalLogisticsPlan: {
+        id: 'iaso.polio.nationalLogisticsPlan.delete',
+        defaultMessage: 'Delete National Logistic Plan Data: {name}',
     },
-    deletePerformanceWarning: {
-        id: 'iaso.polio.performance.deleteWarning',
+    deleteNationalLogisticsPlanWarning: {
+        id: 'iaso.polio.nationalLogisticsPlan.deleteWarning',
         defaultMessage: 'Are you sure you want to delete this entry?',
     },
     invalidDate: {
@@ -57,13 +57,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.validation.fieldRequired',
         defaultMessage: 'This field is required',
     },
-    editPerformance: {
-        id: 'iaso.polio.performance.edit',
-        defaultMessage: 'Edit Performance Data',
+    editNationalLogisticsPlan: {
+        id: 'iaso.polio.nationalLogisticsPlan.edit',
+        defaultMessage: 'Edit National Logistics Plan',
     },
-    addPerformance: {
-        id: 'iaso.polio.performance.add',
-        defaultMessage: 'Add Performance Data',
+    addNationalLogisticsPlan: {
+        id: 'iaso.polio.nationalLogisticsPlan.add',
+        defaultMessage: 'Add National Logistics Plan',
     },
     confirm: {
         id: 'iaso.label.confirm',
@@ -82,15 +82,15 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No',
     },
     draft: {
-        id: 'iaso.polio.performance.status.draft',
+        id: 'iaso.polio.nationalLogisticsPlan.status.draft',
         defaultMessage: 'Draft',
     },
     commented: {
-        id: 'iaso.polio.performance.status.commented',
+        id: 'iaso.polio.nationalLogisticsPlan.status.commented',
         defaultMessage: 'Commented',
     },
     final: {
-        id: 'iaso.polio.performance.status.final',
+        id: 'iaso.polio.nationalLogisticsPlan.status.final',
         defaultMessage: 'Final',
     },
     deleteText: {

@@ -2,16 +2,16 @@ from rest_framework import serializers
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
-from plugins.polio.api.perfomance_dashboard.serializers import (
-    PerformanceDashboardListSerializer,
-    PerformanceDashboardWriteSerializer,
+from plugins.polio.api.country_plan.serializers import (
+    CountryPlanListSerializer,
+    CountryPlanWriteSerializer,
 )
-from plugins.polio.models.performance_dashboard import PerformanceDashboard
+from plugins.polio.models.country_plan import CountryPlan
 
-from .common_test_data import PerformanceDashboardAPIBase
+from .common_test_data import CountryPlanAPIBase
 
 
-class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
+class CountryPlanSerializerAPITestCase(CountryPlanAPIBase):
     """
     Test cases for the Performance Dashboard serializers.
     """
@@ -21,7 +21,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
         Test that the List/Read serializer returns the correct structure and data.
         """
         dashboard = self.dashboard_1
-        serializer = PerformanceDashboardListSerializer(instance=dashboard)
+        serializer = CountryPlanListSerializer(instance=dashboard)
         data = serializer.data
 
         self.assertIn("id", data)
@@ -46,18 +46,18 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
             "country_id": self.east.id,
         }
         factory = APIRequestFactory()
-        django_request = factory.post(self.PERFORMANCE_DASHBOARD_API_URL, data, format="json")
+        django_request = factory.post(self.COUNTRY_PLAN_API_URL, data, format="json")
 
         drf_request = Request(django_request)
         drf_request.user = self.user_admin_1
 
-        serializer = PerformanceDashboardWriteSerializer(data=data, context={"request": drf_request})
+        serializer = CountryPlanWriteSerializer(data=data, context={"request": drf_request})
 
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
         new_dashboard = serializer.save()
 
-        self.assertIsInstance(new_dashboard, PerformanceDashboard)
+        self.assertIsInstance(new_dashboard, CountryPlan)
         self.assertEqual(new_dashboard.status, "draft")
         self.assertEqual(new_dashboard.country, self.east)
 
@@ -73,7 +73,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
             "vaccine": "nOPV2",
         }
 
-        serializer = PerformanceDashboardWriteSerializer(data=invalid_data)
+        serializer = CountryPlanWriteSerializer(data=invalid_data)
 
         self.assertFalse(serializer.is_valid())
 
@@ -88,7 +88,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
             "vaccine": "bOPV",
             "country_id": self.east.id,
         }
-        serializer = PerformanceDashboardWriteSerializer(data=data, context={})
+        serializer = CountryPlanWriteSerializer(data=data, context={})
         self.assertTrue(serializer.is_valid())
 
         with self.assertRaises(serializers.ValidationError) as e:
@@ -107,7 +107,7 @@ class PerformanceDashboardSerializerAPITestCase(PerformanceDashboardAPIBase):
             "country_id": 999999,
         }
 
-        serializer = PerformanceDashboardWriteSerializer(data=data)
+        serializer = CountryPlanWriteSerializer(data=data)
 
         self.assertFalse(serializer.is_valid(), "Serializer accepted a non-existent country ID!")
 

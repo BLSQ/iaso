@@ -11,9 +11,11 @@ import { WarningModal } from './MainDialog/WarningModal/WarningModal';
 import { CampaignHistoryIconButton } from './CampaignHistory/CampaignHistoryIconButton';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import { Button } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
+import { useStyles } from '../../styles/theme';
 
 export const CampaignDetails: FunctionComponent = () => {
+    const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrls.campaignDetails);
     const { campaignId } = params;
     const { formatMessage } = useSafeIntl();
@@ -55,29 +57,41 @@ export const CampaignDetails: FunctionComponent = () => {
                 onConfirm={() => formik.handleSubmit()}
                 dataTestId={warningDataTestId}
             />
-            <CampaignHistoryIconButton selectedCampaign={selectedCampaign} />
-            <PolioDialogTabs
-                tabs={tabs}
-                selectedTab={selectedTab}
-                handleChange={handleChangeTab}
-            />
-            <FormikProvider value={formik}>
-                <Form>
-                    <ActiveForm />
-                </Form>
-            </FormikProvider>
-            <Button onClick={handleCancel} color="primary" disabled={isSaving}>
-                {formatMessage(MESSAGES.cancel)}
-            </Button>
-            <Button
-                onClick={handleConfirm}
-                color="primary"
-                variant="contained"
-                autoFocus
-                disabled={saveDisabled}
-            >
-                {formatMessage(MESSAGES.confirm)}
-            </Button>
+            <Box className={classes.containerFullHeightPadded}>
+                <CampaignHistoryIconButton
+                    selectedCampaign={selectedCampaign}
+                />
+                <PolioDialogTabs
+                    tabs={tabs}
+                    selectedTab={selectedTab}
+                    handleChange={handleChangeTab}
+                />
+                <FormikProvider value={formik}>
+                    <Form>
+                        <ActiveForm />
+                    </Form>
+                </FormikProvider>
+                <Grid container spacing={2} justifyContent="flex-end" mt={2}>
+                    <Box mr={2}>
+                        <Button
+                            onClick={handleCancel}
+                            color="primary"
+                            disabled={isSaving}
+                        >
+                            {formatMessage(MESSAGES.cancel)}
+                        </Button>
+                    </Box>
+                    <Button
+                        onClick={handleConfirm}
+                        color="primary"
+                        variant="contained"
+                        autoFocus
+                        disabled={saveDisabled}
+                    >
+                        {formatMessage(MESSAGES.save)}
+                    </Button>
+                </Grid>
+            </Box>
         </>
     );
 };

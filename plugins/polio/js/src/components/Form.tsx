@@ -12,7 +12,7 @@ export const Form: FunctionComponent<Props> = ({ children }) => {
     return (
         <Box
             component="form"
-            className={classes.form}
+            className={classes.form} // change alignItems for page
             noValidate
             autoComplete="off"
         >

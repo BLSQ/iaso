@@ -25,10 +25,8 @@ class PerformanceThresholdsViewsAPITestCase(PerformanceThresholdsAPIBase):
     """
 
     def test_read_access_is_public(self):
-        """
-        Unauthenticated users should not be able to access the endpoint.
-        """
         response = self.client.get(self.COUNTRY_PLAN_THRESHOLDS_API_URL)
+
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.client.force_authenticate(self.user_no_perms)

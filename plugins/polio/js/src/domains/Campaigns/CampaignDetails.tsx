@@ -13,6 +13,24 @@ import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { Box, Button, Grid } from '@mui/material';
 import { useStyles } from '../../styles/theme';
+import { Campaign } from '../../constants/types';
+
+const useTitle = (
+    campaignId: string | undefined,
+    selectedCampaign?: Campaign,
+): string => {
+    const { formatMessage } = useSafeIntl();
+    if (selectedCampaign) {
+        return formatMessage(MESSAGES.campaignDetail, {
+            obrName: `${selectedCampaign.obr_name}`,
+        });
+    } else if (campaignId) {
+        return formatMessage(MESSAGES.campaignDetail, {
+            obrName: `${campaignId}`,
+        });
+    }
+    return formatMessage(MESSAGES.createCampaign);
+};
 
 export const CampaignDetails: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
@@ -41,9 +59,7 @@ export const CampaignDetails: FunctionComponent = () => {
         formik,
         selectedCampaign,
     });
-    const title = campaignId
-        ? formatMessage(MESSAGES.campaignDetail, { obrName: `${campaignId}` })
-        : formatMessage(MESSAGES.createCampaign);
+    const title = useTitle(campaignId, selectedCampaign);
 
     return (
         <>

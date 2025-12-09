@@ -3,7 +3,10 @@ from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+from iaso.api.permission_checks import (
+    AuthenticationEnforcedPermission,
+    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+)
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
 
@@ -32,7 +35,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
     GET /api/orgunittypes/
     """
 
-    permission_classes = [IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired]
+    permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired]
     serializer_class = OrgUnitTypeSerializerV1
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]

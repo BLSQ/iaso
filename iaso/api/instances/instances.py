@@ -41,6 +41,7 @@ from iaso.api.common import (
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
 from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
@@ -197,7 +198,7 @@ class InstancesViewSet(viewsets.ViewSet):
     PATCH /api/instances/<id>
     """
 
-    permission_classes = [HasInstancePermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasInstancePermission]
 
     def get_queryset(self):
         request = self.request

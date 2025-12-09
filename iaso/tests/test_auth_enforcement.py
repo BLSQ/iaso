@@ -1,10 +1,16 @@
 import re
 
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import get_resolver
 
 
-HTTP_METHODS = ["get", "post", "put", "delete"]
+# clearly don't really know what todo
+# about other Http methods ?
+#  - "options" for cors and other
+#  - "trace" normally used for debugging, I guess shouldn't be supported
+#  - "head"  - generally used for caching, perhaps some metadata/dropdown ?
+
+HTTP_METHODS = ["get", "post", "put", "delete", "patch"]
 
 
 def any_methods(path):
@@ -58,6 +64,8 @@ PUBLIC_ENDPOINTS = {
     *any_methods("/dashboard/polio/embeddedLqasMap/.*"),
     # documentation
     ("/models/", "GET"),
+    # okish
+    ("/sync/form_upload/", "POST"),
 }
 
 
@@ -156,6 +164,7 @@ class TestAuthEnforcement(TestCase):
     def setUp(self):
         self.client = Client()
 
+    @override_settings(AUTHENTICATION_ENFORCED=True)
     def test_all_endpoints_require_auth(self):
         unauthenticated_endpoints = []
         for path in list_all_real_paths():

@@ -14,7 +14,11 @@ from rest_framework.request import Request
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
-from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
+from iaso.api.permission_checks import (
+    AuthenticationEnforcedPermission,
+    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+    ReadOnly,
+)
 from iaso.models import EntityDuplicateAnalyzis, Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
@@ -254,7 +258,7 @@ class FormsViewSet(ModelViewSet):
     DELETE /api/forms/<id>
     """
 
-    permission_classes = [HasFormPermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasFormPermission]
     serializer_class = FormSerializer
     results_key = "forms"
 

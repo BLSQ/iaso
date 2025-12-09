@@ -18,7 +18,10 @@ from rest_framework.response import Response
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, safe_api_import
 from iaso.api.instances.instances import InstanceFileSerializer
 from iaso.api.org_units import import_org_units
-from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+from iaso.api.permission_checks import (
+    AuthenticationEnforcedPermission,
+    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+)
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
@@ -205,7 +208,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
     GET /api/mobile/orgunits/?app_id={APP_ID}&ids=id_1,id_2,id_3
     """
 
-    permission_classes = [HasOrgUnitPermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasOrgUnitPermission]
     serializer_class = MobileOrgUnitSerializer
     results_key = "orgUnits"
 

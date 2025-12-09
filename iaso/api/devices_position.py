@@ -1,6 +1,7 @@
 from django.contrib.gis.geos import Point
 from rest_framework import permissions, serializers
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import Device, DeviceOwnership, DevicePosition, Project
 
 from .common import ModelViewSet, TimestampField, safe_api_import
@@ -63,7 +64,7 @@ class DevicesPositionViewSet(ModelViewSet):
     POST /api/devicesposition/ [Deprecated] will be removed in the future
     """
 
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, permissions.AllowAny]
 
     http_method_names = ["get", "post", "head", "options", "trace"]
     results_key = "devicesposition"

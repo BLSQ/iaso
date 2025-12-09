@@ -1,8 +1,18 @@
+from django.conf import settings
 from rest_framework import permissions
 from rest_framework.exceptions import NotAuthenticated
 
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
+
+
+class AuthenticationEnforcedPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not settings.AUTHENTICATION_ENFORCED:
+            return True
+
+        if request.user is None or not request.user.is_authenticated:
+            raise NotAuthenticated()
 
 
 class ReadOnly(permissions.BasePermission):

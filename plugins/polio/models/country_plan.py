@@ -45,7 +45,7 @@ class CountryPlan(SoftDeletableModel):
     country = models.ForeignKey(
         OrgUnit,
         on_delete=models.PROTECT,
-        related_name="country_plan",
+        related_name="country_plans",
     )
     vaccine = models.CharField(max_length=20, choices=VACCINES)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="country_plan", null=False)

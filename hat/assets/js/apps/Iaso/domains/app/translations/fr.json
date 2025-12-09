@@ -1306,6 +1306,7 @@
     "iaso.permissions.workflows": "Workflows",
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Dupliquer planning",
+    "iaso.plannings.label.samplingResults": "Résultats d'échantillonnage",
     "iaso.plannings.label.selectOrgUnit": "Zone géographique cible",
     "iaso.projects.appId": "Identifiant de l'App",
     "iaso.projects.create": "Créer un projet",

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Column, useSafeIntl } from 'bluesquare-components';
+import { Column, formatThousand, useSafeIntl } from 'bluesquare-components';
 
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
@@ -69,6 +70,40 @@ export const usePlanningColumns = (): Column[] => {
                 resizable: false,
                 sortable: false,
                 Cell: settings => <ActionsCell {...settings} />,
+            },
+        ],
+        [formatMessage],
+    );
+};
+export const useSamplingResultsColumns = (): Column[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo<Column[]>(
+        () => [
+            {
+                Header: 'Id',
+                accessor: 'id',
+                width: 80,
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                accessor: 'created_at',
+                id: 'created_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: 'Pipeline',
+                accessor: 'pipeline_name',
+            },
+            {
+                Header: formatMessage(MESSAGES.orgUnitsCount),
+                accessor: 'group_details_org_unit_count',
+                id: 'group_details_org_unit_count',
+                sortable: false,
+                Cell: settings =>
+                    // -1 to remove root org unit from the count
+                    formatThousand(
+                        settings.row.original.group_details.org_unit_count - 1,
+                    ),
             },
         ],
         [formatMessage],

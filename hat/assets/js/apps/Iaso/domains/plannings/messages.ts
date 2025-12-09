@@ -195,6 +195,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.status',
         defaultMessage: 'Status',
     },
+    samplingResults: {
+        id: 'iaso.plannings.label.samplingResults',
+        defaultMessage: 'Sampling results',
+    },
+    orgUnitsCount: {
+        id: 'iaso.plannings.label.orgUnitsCount',
+        defaultMessage: 'Org units count',
+    },
+    created_at: {
+        id: 'iaso.label.created_at',
+        defaultMessage: 'Created',
+    },
 });
 
 export default MESSAGES;

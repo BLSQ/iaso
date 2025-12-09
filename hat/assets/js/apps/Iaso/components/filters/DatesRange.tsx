@@ -126,7 +126,6 @@ const DatesRange: FunctionComponent<Props> = ({
             setTo(dateTo);
         }
     }, [dateTo]);
-    console.log(getLocaleDateFormat('L'));
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>

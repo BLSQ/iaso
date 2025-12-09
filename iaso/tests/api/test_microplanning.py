@@ -524,6 +524,8 @@ class PlanningTestCase(APITestCase):
 
     def test_planning_sampling_results_list(self):
         self.client.force_authenticate(self.user)
+        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
         task = Task.objects.create(
             name="sampling",
             account=self.account,
@@ -534,6 +536,7 @@ class PlanningTestCase(APITestCase):
             task=task,
             pipeline_id="pipeline-1",
             pipeline_version="v1",
+            group=group,
             parameters={"foo": "bar"},
             status="SUCCESS",
             created_by=self.user,
@@ -549,6 +552,8 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(result["id"], sampling.id)
         self.assertEqual(result["pipeline_id"], "pipeline-1")
         self.assertEqual(result["task_id"], task.id)
+        self.assertEqual(result["group_details"]["org_unit_count"], 1)
+        self.assertIsInstance(result["created_at"], float)
 
     def test_planning_sampling_results_create(self):
         user_with_perms = self.create_user_with_profile(
@@ -561,6 +566,7 @@ class PlanningTestCase(APITestCase):
             created_by=user_with_perms,
         )
         group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
 
         payload = {
             "task_id": task.id,
@@ -579,6 +585,8 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(sampling.pipeline_id, "pipeline-2")
         self.assertEqual(sampling.created_by, user_with_perms)
         self.assertEqual(sampling.task, task)
+        self.assertEqual(data["group_details"]["org_unit_count"], 1)
+        self.assertIsInstance(data["created_at"], float)
 
     def test_planning_serializer_target_org_unit_type_wrong_project(self):
         """Test PlanningSerializer validation with target_org_unit_type from wrong project."""

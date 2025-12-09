@@ -73,7 +73,9 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     def list_sampling_results(self, request, pk=None):
         planning = self.get_object()
         orders = request.query_params.get("order", "-created_at").split(",")
-        queryset = planning.sampling_results.select_related("created_by", "group", "task")
+        queryset = planning.sampling_results.select_related("created_by", "group", "task").prefetch_related(
+            "group__org_units"
+        )
         queryset = queryset.order_by(*orders)
 
         page = self.paginate_queryset(queryset)

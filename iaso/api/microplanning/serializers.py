@@ -132,9 +132,14 @@ class PlanningSerializer(serializers.ModelSerializer):
 
 
 class SamplingGroupSerializer(serializers.ModelSerializer):
+    org_unit_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Group
-        fields = ["id", "name"]
+        fields = ["id", "name", "org_unit_count"]
+
+    def get_org_unit_count(self, group: Group) -> int:
+        return len(group.org_units.all())
 
 
 class SamplingTaskSerializer(serializers.ModelSerializer):
@@ -147,6 +152,7 @@ class PlanningSamplingResultSerializer(serializers.ModelSerializer):
     planning = serializers.PrimaryKeyRelatedField(read_only=True)
     group_id = serializers.IntegerField(read_only=True, allow_null=True)
     task_id = serializers.IntegerField(read_only=True, allow_null=True)
+    created_at = TimestampField(read_only=True)
     created_by_details = NestedUserSerializer(source="created_by", read_only=True)
     group_details = SamplingGroupSerializer(source="group", read_only=True)
     task_details = SamplingTaskSerializer(source="task", read_only=True)

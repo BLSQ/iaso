@@ -1305,6 +1305,8 @@
     "iaso.permissions.workflows": "Workflows",
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Duplicate planning",
+    "iaso.plannings.label.orgUnitsCount": "Org units count",
+    "iaso.plannings.label.samplingResults": "Sampling results",
     "iaso.plannings.label.selectOrgUnit": "Target geography",
     "iaso.projects.appId": "App ID",
     "iaso.projects.create": "Create project",

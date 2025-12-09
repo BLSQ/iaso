@@ -52,3 +52,20 @@ export type Planning = {
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
+
+export type SamplingGroupDetails = {
+    id: number;
+    name: string;
+    org_unit_count: number;
+};
+
+export type SamplingResult = {
+    id: number;
+    planning: number;
+    task: number;
+    pipeline_id: string;
+    pipeline_version: string;
+    pipeline_name: string;
+    group: number;
+    group_details: SamplingGroupDetails;
+};

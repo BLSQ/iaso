@@ -1,6 +1,10 @@
+import { UseQueryResult } from 'react-query';
 import { useApiParams } from 'Iaso/hooks/useApiParams';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { PaginatedResponse } from '../../../app/types';
+import { SamplingResult } from '../../types';
+
 export const tableDefaults = {
     page: 1,
     limit: 10,
@@ -9,7 +13,7 @@ export const tableDefaults = {
 export const useGetPlanningSamplingResults = (
     planningId: string,
     params: Record<string, string>,
-) => {
+): UseQueryResult<PaginatedResponse<SamplingResult>, Error> => {
     const safeParams = {
         page: params.page ? `${params.page}` : undefined,
         limit: params.pageSize ? `${params.pageSize}` : undefined,

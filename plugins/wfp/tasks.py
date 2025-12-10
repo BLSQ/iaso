@@ -157,3 +157,33 @@ def etl_ethiopia(all_data=None):
     )
     MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")
+
+
+@shared_task()
+def create_index_on_instance_uuid(self):
+    """
+    Celery task to create an index on the `uuid` field of the `iaso_instance` table.
+
+    This task is designed to be run manually from the Django admin. It uses
+    `CREATE INDEX CONCURRENTLY` to avoid locking the table during the operation,
+    which is crucial for production environments.
+    """
+    from django.db import connection
+
+    index_name = "iaso_instance_uuid_idx"
+    table_name = "iaso_instance"
+    column_name = "uuid"
+
+    sql = f"CREATE INDEX CONCURRENTLY IF NOT EXISTS {index_name} ON {table_name} ({column_name});"
+
+    logger.info(f"Starting task to create index: {sql}")
+
+    try:
+        # CREATE INDEX CONCURRENTLY must be run outside a transaction block.
+        # We explicitly set autocommit to True for this connection.
+        with connection.cursor() as cursor, connection.autocommit():
+            cursor.execute(sql)
+        logger.info("Index on iaso_instance(uuid) created successfully.")
+    except Exception as e:
+        logger.error(f"Error creating index on iaso_instance(uuid): {e}", exc_info=True)
+        raise

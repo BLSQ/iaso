@@ -484,6 +484,7 @@ class Instance(models.Model):
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
             models.Index(fields=["source_updated_at"]),
+            models.Index(fields=["uuid"], name="iaso_instance_uuid_idx"),  # this index is managed programmatically
         ]
 
     def __str__(self):

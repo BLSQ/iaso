@@ -159,6 +159,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'searchTabIndex',
             'searchActive',
             'searches',
+            'isClusterActive',
         ],
     },
     orgUnitDetails: {

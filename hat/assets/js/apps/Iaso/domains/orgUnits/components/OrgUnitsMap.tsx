@@ -1,11 +1,12 @@
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     IntlFormatMessage,
+    useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
     GeoJSON,
     MapContainer,
@@ -15,11 +16,18 @@ import {
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
-import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
-import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import OrgUnitPopupComponent from './OrgUnitPopupComponent';
+import { baseUrls } from 'Iaso/constants/urls';
 
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
+import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
+import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
+import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import tiles from '../../../constants/mapTiles';
+import { DropdownOptions } from '../../../types/utils';
 import {
     Bounds,
     circleColorMarkerOptions,
@@ -27,18 +35,11 @@ import {
     getLatLngBounds,
     getShapesBounds,
 } from '../../../utils/map/mapUtils';
-
-import { DropdownOptions } from '../../../types/utils';
-import { OrgUnit } from '../types/orgUnit';
-
-import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
-import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
-import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
-import tiles from '../../../constants/mapTiles';
 import MESSAGES from '../messages';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
+import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;
@@ -51,6 +52,7 @@ export type Locations = {
 type Props = {
     getSearchColor: (index: number) => string;
     orgUnits: Locations;
+    params: OrgUnitParams;
 };
 
 const getFullOrgUnits = orgUnits => {
@@ -99,11 +101,14 @@ const computeTriggerFitToBoundsId = (bounds: Bounds | undefined): string => {
 export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,
     orgUnits,
+    params,
 }) => {
     const classes = useStyles();
+    const redirectToReplace = useRedirectToReplace();
     const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
+    const isClusterActive =
+        !params.isClusterActive || params.isClusterActive === 'true';
 
     const [selectedOrgUnit, setSelectedOrgUnit] = useState<
         OrgUnit | undefined
@@ -200,6 +205,12 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
         padding: [10, 10],
         maxZoom: currentTile.maxZoom,
     };
+    const handleClusterActiveChange = (isClusterActive: boolean) => {
+        redirectToReplace(`/${baseUrls.orgUnits}`, {
+            ...params,
+            isClusterActive: `${isClusterActive}`,
+        });
+    };
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -216,7 +227,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                 <Box position="relative">
                     <MapToggleCluster
                         isClusterActive={isClusterActive}
-                        setIsClusterActive={setIsClusterActive}
+                        setIsClusterActive={handleClusterActiveChange}
                     />
                     <MapContainer
                         doubleClickZoom={false}

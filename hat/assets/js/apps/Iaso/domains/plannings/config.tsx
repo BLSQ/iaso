@@ -11,7 +11,6 @@ import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetColors } from 'Iaso/hooks/useGetColors';
 import { getColor } from 'Iaso/hooks/useGetColors';
-import { locationLimitMax } from '../orgUnits/constants/orgUnitConstants';
 import { encodeUriSearches } from '../orgUnits/utils';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
@@ -27,8 +26,10 @@ type Props = {
 
 const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
     const { data: colors } = useGetColors(true);
+    const greenColor = getColor(31, colors).replace('#', '');
+    const purpleColor = getColor(3, colors).replace('#', '');
     const urlParams: Record<string, any> = {
-        locationLimit: locationLimitMax,
+        locationLimit: 50000,
         order: 'id',
         pageSize: 50,
         page: 1,
@@ -38,13 +39,13 @@ const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
         searches: encodeUriSearches([
             {
                 validation_status: 'VALID',
-                color: getColor(1, colors).replace('#', ''),
+                color: greenColor,
                 levels: `${planning.org_unit}`,
                 orgUnitTypeId: `${planning.target_org_unit_type}`,
             },
             {
                 validation_status: 'VALID',
-                color: getColor(2, colors).replace('#', ''),
+                color: purpleColor,
                 group: `${samplingResult.group_id}`,
             },
         ]),
@@ -151,9 +152,8 @@ export const useSamplingResultsColumns = (planning: Planning): Column[] => {
                 id: 'group_details_org_unit_count',
                 sortable: false,
                 Cell: settings =>
-                    // -1 to remove root org unit from the count
                     formatThousand(
-                        settings.row.original.group_details.org_unit_count - 1,
+                        settings.row.original.group_details.org_unit_count,
                     ),
             },
             {

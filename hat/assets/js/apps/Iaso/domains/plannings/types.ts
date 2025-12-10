@@ -48,7 +48,7 @@ export type Planning = {
     published_at?: string;
     started_at?: string;
     ended_at?: string;
-    pipeline_uuids?: string[];
+    pipeline_uuids: string[];
     target_org_unit_type?: number;
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
 };

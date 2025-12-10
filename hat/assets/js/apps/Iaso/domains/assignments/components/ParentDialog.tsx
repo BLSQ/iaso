@@ -20,6 +20,7 @@ import { commonStyles, Table, useSafeIntl } from 'bluesquare-components';
 import { getStickyTableHeadStyles } from '../../../styles/utils';
 import { Profile } from '../../../utils/usersUtils';
 import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { Planning } from '../../plannings/types';
 import {
     DropdownTeamsOptions,
     SubTeam,
@@ -30,7 +31,6 @@ import { useColumns } from '../configs/ParentDialogColumns';
 import MESSAGES from '../messages';
 import { SaveAssignmentQuery } from '../types/assigment';
 import { ChildrenOrgUnits } from '../types/orgUnit';
-import { Planning } from '../types/planning';
 
 import { getMultiSaveParams, getTeamUserName } from '../utils';
 

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Grid, Box, Paper } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import {
     AddButton,
     IntlFormatMessage,
@@ -13,7 +13,6 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
-import { Planning } from 'Iaso/domains/assignments/types/planning';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
@@ -22,6 +21,7 @@ import {
     flattenHierarchy,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 

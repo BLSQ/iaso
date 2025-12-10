@@ -1,13 +1,18 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
-import { Grid, Box, Button } from '@mui/material';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
+import { Grid, Box } from '@mui/material';
 import {
     useSafeIntl,
     InputWithInfos,
     useRedirectToReplace,
+    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
+import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
@@ -17,6 +22,7 @@ import {
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { SxStyles } from 'Iaso/types/general';
+import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
 import DatesRange from '../../../components/filters/DatesRange';
@@ -29,6 +35,7 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetPublishingStatusOptions } from '../constants';
+import { useDeletePlanning } from '../hooks/requests/useDeletePlanning';
 import {
     convertAPIErrorsToState,
     SavePlanningQuery,
@@ -98,6 +105,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
         convertError: convertAPIErrorsToState,
     });
+    const { mutateAsync: deletePlanning } = useDeletePlanning();
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
         useGetPipelinesDropdown(Boolean(hasPipelineConfig));
@@ -394,14 +402,50 @@ export const PlanningForm: FunctionComponent<Props> = ({
                             display="flex"
                             alignItems="flex-end"
                         >
-                            <Button
-                                variant="contained"
+                            {mode === 'edit' && (
+                                <>
+                                    <DisplayIfUserHasPerm
+                                        permissions={[PLANNING_WRITE]}
+                                    >
+                                        <DeleteDialog
+                                            iconColor="error"
+                                            titleMessage={{
+                                                ...MESSAGES.deletePlanning,
+                                                values: {
+                                                    planningName: values.name,
+                                                },
+                                            }}
+                                            message={{
+                                                ...MESSAGES.deleteWarning,
+                                                values: {
+                                                    name: values.name,
+                                                },
+                                            }}
+                                            disabled={false}
+                                            onConfirm={() =>
+                                                deletePlanning(values.id)
+                                            }
+                                            keyName="delete-planning"
+                                        />
+
+                                        <IconButtonComponent
+                                            url={`/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`}
+                                            tooltipMessage={
+                                                MESSAGES.duplicatePlanning
+                                            }
+                                            overrideIcon={FileCopyIcon}
+                                            size="small"
+                                        />
+                                    </DisplayIfUserHasPerm>
+                                </>
+                            )}
+                            <IconButtonComponent
                                 color="primary"
                                 onClick={() => handleSubmit()}
                                 disabled={!allowConfirm}
-                            >
-                                {formatMessage(MESSAGES.save)}
-                            </Button>
+                                overrideIcon={SaveRoundedIcon}
+                                tooltipMessage={MESSAGES.save}
+                            />
                         </Grid>
                     </Grid>
                 </Grid>

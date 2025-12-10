@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 
-import { Box, Grid, Typography } from '@mui/material';
+import { Paper, Box, Divider } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -9,6 +10,7 @@ import { OpenhexaIntegrationDrawer } from 'Iaso/domains/assignments/sampling/Ope
 import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning } from 'Iaso/domains/plannings/types';
+import { SxStyles } from 'Iaso/types/general';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { useSamplingResultsColumns } from '../config';
 import {
@@ -19,6 +21,16 @@ import MESSAGES from '../messages';
 
 type Props = {
     planning: Planning;
+};
+const styles: SxStyles = {
+    paper: {
+        px: 0,
+        mt: 2,
+        border: theme =>
+            // @ts-ignore
+            `1px solid ${theme.palette.border.main}`,
+        borderRadius: 1,
+    },
 };
 
 export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
@@ -40,28 +52,40 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
     );
 
     return (
-        <Box mt={2}>
+        <Paper sx={styles.paper}>
             <Grid container spacing={2}>
                 <Grid item xs={8}>
-                    <Typography color="primary" variant="h6">
+                    <Typography
+                        color="primary"
+                        variant="h6"
+                        sx={{ px: 2, pt: 2 }}
+                    >
                         {formatMessage(MESSAGES.samplingResults)}
                     </Typography>
                 </Grid>
-                <Grid
-                    item
-                    xs={4}
-                    sx={{ display: 'flex', justifyContent: 'flex-end' }}
-                >
+                <Grid item xs={4}>
                     {planning && planning?.pipeline_uuids?.length > 0 && (
-                        <OpenhexaIntegrationDrawer
-                            planning={planning}
-                            orgunitTypes={orgunitTypes}
-                            isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                        />
+                        <Box
+                            sx={{
+                                p: 2,
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                width: '100%',
+                            }}
+                        >
+                            <OpenhexaIntegrationDrawer
+                                planning={planning}
+                                orgunitTypes={orgunitTypes}
+                                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                            />
+                        </Box>
                     )}
                 </Grid>
             </Grid>
+            <Divider />
             <TableWithDeepLink
+                marginBottom={false}
+                marginTop={false}
                 baseUrl={baseUrls.planningDetails}
                 data={samplingResults?.results ?? []}
                 params={params}
@@ -69,12 +93,13 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
                 pages={samplingResults?.pages ?? tableDefaults.page}
                 count={samplingResults?.count ?? 0}
                 columns={columns}
+                elevation={0}
                 countOnTop={false}
                 extraProps={{
                     loading: isFetchingSamplingResults,
                     defaultPageSize: tableDefaults.limit,
                 }}
             />
-        </Box>
+        </Paper>
     );
 };

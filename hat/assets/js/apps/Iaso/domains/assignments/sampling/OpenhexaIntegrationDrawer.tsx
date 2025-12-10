@@ -4,6 +4,7 @@ import React, {
     useEffect,
     useState,
 } from 'react';
+import PlusIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -157,6 +158,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                         sx={styles.button}
                         disabled={disabled}
                     >
+                        <PlusIcon sx={styles.icon} />
                         {formatMessage(MESSAGES.openHexaIntegration)}
                     </Button>
                 </Box>

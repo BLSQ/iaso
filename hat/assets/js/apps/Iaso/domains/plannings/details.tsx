@@ -29,7 +29,6 @@ const formatTitle = (type: PageMode, formatMessage: IntlFormatMessage) => {
             return formatMessage(MESSAGES.createPlanning);
     }
 };
-
 export const Details: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.planningDetails);
     const { planningId } = params;

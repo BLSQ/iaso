@@ -5,6 +5,7 @@ import re
 
 from time import gmtime, strftime
 from typing import Any, List, Union
+from uuid import UUID
 
 import pytz
 
@@ -101,6 +102,12 @@ class EntityViewSet(ModelViewSet):
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
+            # Trypelim-specific: autodetect uuids in the search field
+            try:
+                if str(UUID(search, version=4)) == search:
+                    queryset = queryset.filter(uuid=search)
+            except ValueError:
+                pass
             if search.startswith("ids:"):
                 ids = re.findall("\d+", search)
                 if not ids:

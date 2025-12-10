@@ -10,6 +10,11 @@ from plugins.wfp.models import *
 logger = logging.getLogger(__name__)
 
 ADMISSION_ANTHROPOMETRIC_FORMS = ["wfp_coda_pbwg_anthropometric", "PBWG_BSFP"]
+ANTHROPOMETRIC_FOLLOWUP_FORMS = [
+    "wfp_coda_pbwg_luctating_followup_anthro",
+    "wfp_coda_pbwg_followup_anthro",
+    "PBWG_BSFP",
+]
 
 
 class PBWG:
@@ -87,15 +92,10 @@ class PBWG:
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
-        anthropometric_visit_forms = [
-            "wfp_coda_pbwg_luctating_followup_anthro",
-            "wfp_coda_pbwg_followup_anthro",
-        ]
-
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] == "wfp_coda_pbwg_registration"][0]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = visit_nutrition_program.get("physiology_status", None)
-        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
+        journey = ETL().entity_journey_mapper(visits, ANTHROPOMETRIC_FOLLOWUP_FORMS, admission_form, current_journey)
         return journey
 
     def group_visit_by_entity(self, entities):

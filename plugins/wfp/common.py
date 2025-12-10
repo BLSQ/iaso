@@ -401,7 +401,7 @@ class ETL:
             exit = {
                 "exit_type": current_journey.get("exit_type"),
                 "start_date": current_journey.get("start_date"),
-                "end_date": current_journey.get("end_date"),
+                "end_date": datetime.strptime(current_journey.get("end_date"), "%Y-%m-%d"),
             }
 
         """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
@@ -423,7 +423,10 @@ class ETL:
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
             duration = (
-                datetime.strptime(exit.get("end_date"), "%Y-%m-%d")
+                datetime.strptime(
+                    datetime.strftime(exit.get("end_date"), "%Y-%m-%d"),
+                    "%Y-%m-%d",
+                )
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
             ).days
             current_journey["duration"] = duration
@@ -514,6 +517,8 @@ class ETL:
 
             if step.get("ration_to_distribute") is not None:
                 ration_type = step.get("ration_to_distribute")
+            if step.get("ration") is not None:
+                ration_type = step.get("ration")
             assistance = {
                 "type": ration_type,
                 "quantity": quantity,
@@ -1041,6 +1046,7 @@ class ETL:
                             dataElement_by_sub_category = dataElement.get("otp_reporting")
                         elif nutrition_programme == "BSFP":
                             dataElement_by_sub_category = dataElement.get("bsfp_reporting")
+                            sub_categories = ["new_case"]
                         if dataElement_by_sub_category is not None:
                             if dataElement_by_category is not None:
                                 dataElement_by_main_category = dataElement_by_category.get(main_category)

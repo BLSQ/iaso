@@ -3,6 +3,7 @@ import traceback
 from logging import getLogger
 from typing import Optional
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -167,7 +168,9 @@ class Task(models.Model):
 
     def create_log_entry_if_needed(self, message: Optional[str]):
         if message:
-            TaskLog.objects.using("task_logs").create(task=self, message=message)
+            # In tests, everything is in a transaction so trying to go around it will always result in failure.
+            database = "task_logs" if not settings.IN_TESTS else "default"
+            TaskLog.objects.using(database).create(task=self, message=message)
 
 
 class TaskLog(models.Model):

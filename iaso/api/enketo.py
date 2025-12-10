@@ -309,6 +309,9 @@ def enketo_form_list(request):
     Implement https://docs.getodk.org/openrosa-form-list/#the-manifest-document
 
     Require a param `formID` which is actually an Instance UUID"""
+    if not request.GET.get("formId"):
+        return HttpResponse("", status=status.HTTP_400_BAD_REQUEST)
+
     form_id_str = request.GET["formID"]
     try:
         i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
@@ -355,6 +358,9 @@ def enketo_form_download(request):
     We insert the instance Id In the form definition so the "Form" is unique per instance.
     """
     uuid = request.GET.get("uuid")
+    if not uuid:
+        return HttpResponse("missing uuid", status=status.HTTP_400_BAD_REQUEST)
+
     try:
         i = Instance.objects.get(uuid=uuid)
     except Instance.MultipleObjectsReturned:

@@ -2,6 +2,7 @@ import re
 
 from django.test import Client, TestCase, override_settings
 from django.urls import get_resolver
+from rest_framework import status
 
 
 # clearly don't really know what todo
@@ -39,7 +40,9 @@ PUBLIC_ENDPOINTS = {
     ("/api/enketo/formDownload/", "GET"),
     ("/api/enketo/submission", "GET"),
     ("/api/enketo/submission", "POST"),
+    # verify signature but return 400 to not interfere with enketo
     ("/api/forms/1/manifest_enketo/", "GET"),
+    ("/api/mobile/forms/1/manifest_enketo/", "GET"),
     # task worker endpoints
     *any_methods("/tasks/launch_task/export_task/my_user_name/"),
     *any_methods("/tasks/cron/"),
@@ -63,7 +66,7 @@ PUBLIC_ENDPOINTS = {
     *any_methods("/dashboard/polio/embeddedLqasCountry/.*"),
     *any_methods("/dashboard/polio/embeddedLqasMap/.*"),
     # documentation
-    ("/models/", "GET"),
+    ("/api/colors/", "GET"),
     # okish
     ("/sync/form_upload/", "POST"),
 }
@@ -165,7 +168,7 @@ class TestAuthEnforcement(TestCase):
         self.client = Client()
 
     @override_settings(AUTHENTICATION_ENFORCED=True)
-    def test_all_endpoints_require_auth(self):
+    def test_with_authentification_enforced_all_endpoints_require_auth_except_some_exceptions(self):
         unauthenticated_endpoints = []
         for path in list_all_real_paths():
             for method in HTTP_METHODS:
@@ -189,6 +192,42 @@ class TestAuthEnforcement(TestCase):
                     print(key[0], "\t", key[1], "\t", str(e))
                     unauthenticated_endpoints.append((key, "\t", e))
 
-        print(unauthenticated_endpoints)
-
         self.assertEqual(unauthenticated_endpoints, [])
+
+    @override_settings(AUTHENTICATION_ENFORCED=True)
+    def test_with_authentification_enforced_all_public_endpoints_should_stay_public(self):
+        public_endpoints = []
+        for path in list_all_real_paths():
+            for method in HTTP_METHODS:
+                key = (path, method.upper())
+
+                if key not in PUBLIC_ENDPOINTS:
+                    continue
+
+                # skip task and sync/upload either need a less generic way to test
+                if path in ["/tasks/task/", "/sync/form_upload/"]:
+                    continue
+
+                try:
+                    if not supports_method(path, method):
+                        continue
+                    resp = getattr(self.client, method)(path)
+                    # print(key, resp)
+                    self.assertIn(
+                        resp.status_code,
+                        [
+                            200,  # 200 everything is fine
+                            status.HTTP_204_NO_CONTENT,
+                            status.HTTP_400_BAD_REQUEST,  # 400 bad request missing params
+                            405,  # 405 unsupported method]
+                        ],
+                        msg=f"{method.upper()} {path} should not require auth",
+                    )
+                    # 302 => redirect to login
+                    # 405 allowed: method exists but not for this view
+
+                except Exception as e:
+                    print(key[0], "\t", key[1], "\t", e.__class__.__name__, str(e))
+                    public_endpoints.append((key, "\t", e))
+
+        self.assertEqual(public_endpoints, [])

@@ -84,7 +84,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
     GET /api/v2/orgunittypes/
     """
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticatedOrReadOnly]
     serializer_class = OrgUnitTypeSerializerV2
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
@@ -117,7 +117,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         return queryset.order_by("depth").distinct().order_by(*orders)
 
     @action(
-        permission_classes=[IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
+        permission_classes=[AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
         detail=False,
         methods=["GET"],
         serializer_class=OrgUnitTypesDropdownSerializer,

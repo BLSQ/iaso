@@ -66,9 +66,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Campaigns',
         id: 'iaso.polio.label.campaigns',
     },
-    performanceDashboard: {
-        id: 'iaso.polio.performanceDashboard',
-        defaultMessage: 'Performance Dashboard',
+    nationalLogisticsPlan: {
+        id: 'iaso.polio.nationalLogisticsPlan',
+        defaultMessage: 'National Logistics Plan',
     },
     campaign: {
         defaultMessage: 'Campaign',

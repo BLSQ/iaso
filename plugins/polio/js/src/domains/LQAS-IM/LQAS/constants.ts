@@ -112,7 +112,7 @@ export const lqasRfaKeys = [
     'Travelled',
     'unknown',
 ];
-export const lqasBarColorTresholds = {
+export const lqasBarColorThresholds = {
     ok: 80,
     warning: 50,
 };

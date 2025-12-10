@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-01 12:29+0000\n"
+"POT-Creation-Date: 2025-12-10 15:51+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -141,6 +141,10 @@ msgstr "Référé du SC"
 #: plugins/wfp/models.py
 msgid "Referred from TSFP (MAM)"
 msgstr "Référé du TSFP (MAM)"
+
+#: plugins/wfp/models.py
+msgid "Referred from BSFP"
+msgstr "Référé du BSFP"
 
 #: plugins/wfp/models.py
 msgid "Relapse"

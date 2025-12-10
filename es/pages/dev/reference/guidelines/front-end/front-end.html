@@ -773,6 +773,40 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#translating" class="md-nav__link">
+    Translating
+  </a>
+  
+    <nav class="md-nav" aria-label="Translating">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    Basic usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reuse-translation-for-a-plugin" class="md-nav__link">
+    Reuse translation for a plugin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-rich-text" class="md-nav__link">
+    Use rich text
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#maps" class="md-nav__link">
     Maps
   </a>
@@ -973,6 +1007,56 @@ config: used to store constants like defaultOrder, columns, 'baseUrls'
 ...
  &lt;Box sx={styles.root}&gt;
  ...
+</code></pre>
+<h2 id="translating">Translating<a class="headerlink" href="#translating" title="Permanent link">#</a></h2>
+<h3 id="basic-usage">Basic usage<a class="headerlink" href="#basic-usage" title="Permanent link">#</a></h3>
+<p>We are using <a href="https://www.npmjs.com/package/react-intl">react-intl</a> to translate messages.
+To ease the use, there is a bluesquare-component wrapper named <code>useSafeIntl</code>.</p>
+<p>To make it work you will need two things, first an object to define a message id and a default translation:</p>
+<pre><code class="language-typescript">someLabel: {
+    id: 'iaso.label.some-label',
+    defaultMessage: 'Some label',
+},
+</code></pre>
+<p>Then translations files named as {language}.json in which you will define the actual translation for the message id.</p>
+<pre><code class="language-json">{
+    &quot;iaso.label.some-label&quot;: &quot;Some label translated&quot;,
+    ...
+}
+</code></pre>
+<p>Now in your component code you can use safe intl to translate:</p>
+<pre><code class="language-tsx">import { useSafeIntl } from 'bluesquare-components';
+
+const { formatMessage } = useSafeIntl();
+
+formatMessage(MESSAGES.someLabel);
+</code></pre>
+<h3 id="reuse-translation-for-a-plugin">Reuse translation for a plugin<a class="headerlink" href="#reuse-translation-for-a-plugin" title="Permanent link">#</a></h3>
+<p>To keep this clean and not have to refer iaso / faraway paths, you can have a message with the same id.
+And refer to this one, not having to duplicate the translation.
+This approach is not mandatory but will keep your plugin code as agnostic as possible.</p>
+<h3 id="use-rich-text">Use rich text<a class="headerlink" href="#use-rich-text" title="Permanent link">#</a></h3>
+<p>You can use rich text by using the values property of the formatMessage.</p>
+<p>Let's say you have a message like this:</p>
+<p><code>Some &lt;b&gt;message&lt;/b&gt;</code></p>
+<p>If you just use formatMessage as usual, it will render the <code>&lt;b&gt;</code> tags as string.
+To have it rendered as bold text, you can do this:</p>
+<pre><code class="language-tsx">formatMessage(MESSAGES.someMessage, {
+    b: chunks =&gt; &lt;b&gt;chunks&lt;/b&gt;,
+});
+</code></pre>
+<p>Note that the <code>&lt;b&gt;</code> tag in the message can be anything you want:
+<code>Some &lt;superimportant&gt;message&lt;/superimportant&gt;</code></p>
+<pre><code class="language-tsx">formatMessage(MESSAGES.someMessage, {
+    superimportant: chunks =&gt; &lt;b&gt;chuncks&lt;/b&gt;,
+});
+</code></pre>
+<p>This also work with lists</p>
+<p><code>Some items: &lt;ul&gt;&lt;li&gt;item1&lt;/li&gt;&lt;li&gt;item2&lt;/li&gt;&lt;/ul&gt;</code></p>
+<pre><code class="language-tsx">formatMessage(MESSAGES.someListMessage, {
+    li: chunks =&gt; &lt;li&gt;chunks&lt;/li&gt;,
+    ul: chunks =&gt; &lt;ul&gt;chunks&lt;/ul&gt;,
+});
 </code></pre>
 <h2 id="maps">Maps<a class="headerlink" href="#maps" title="Permanent link">#</a></h2>
 <p>We are using <a href="https://leafletjs.com/reference.html">leaflet</a> latest version and <a href="https://react-leaflet.js.org/docs/v3/start-introduction/">react-leaflet</a> (LTS version 3).

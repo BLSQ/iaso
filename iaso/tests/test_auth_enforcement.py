@@ -163,6 +163,12 @@ def supports_method(path, method):
     return resp.status_code != 404
 
 
+# polio endpoints are out of scope
+# and wfp auth urls
+def should_skip(path):
+    return path.startswith(("/api/polio", "/wfp_auth", "/dashboard/polio/"))
+
+
 class TestAuthEnforcement(TestCase):
     def setUp(self):
         self.client = Client()
@@ -172,7 +178,7 @@ class TestAuthEnforcement(TestCase):
         unauthenticated_endpoints = []
         for path in list_all_real_paths():
             # polio endpoints are out of scope
-            if path.startswith(("/api/polio", "/wfp_auth", "'/dashboard/polio/")):
+            if should_skip(path):
                 continue
 
             for method in HTTP_METHODS:
@@ -203,8 +209,7 @@ class TestAuthEnforcement(TestCase):
     def test_with_authentification_enforced_all_public_endpoints_should_stay_public(self):
         public_endpoints = []
         for path in list_all_real_paths():
-            # polio endpoints are out of scope
-            if path.startswith(("/api/polio", "/wfp_auth", "'/dashboard/polio/")):
+            if should_skip(path):
                 continue
 
             for method in HTTP_METHODS:

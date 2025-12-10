@@ -38,7 +38,7 @@ export const ActionsCell: FunctionComponent<ColumnCell<Planning>> = ({
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
                 <IconButtonComponent
                     url={`/${baseUrls.planningDetails}/planningId/${planning.id}/mode/copy`}
-                    tooltipMessage={MESSAGES.editPlanning}
+                    tooltipMessage={MESSAGES.duplicatePlanning}
                     overrideIcon={FileCopyIcon}
                     size="small"
                 />

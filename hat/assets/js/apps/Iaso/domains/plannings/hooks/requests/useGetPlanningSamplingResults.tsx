@@ -22,7 +22,7 @@ export const useGetPlanningSamplingResults = (
     const apiParams = useApiParams(safeParams, tableDefaults);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['planningSamplingResults', queryString],
+        queryKey: ['planningSamplingResults', queryString, planningId],
         queryFn: () =>
             getRequest(
                 `/api/microplanning/plannings/${planningId}/samplings/?${queryString}`,
@@ -33,7 +33,6 @@ export const useGetPlanningSamplingResults = (
             retry: false,
             staleTime: Infinity,
             cacheTime: 60000,
-            keepPreviousData: true,
         },
     });
 };

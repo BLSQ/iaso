@@ -1,9 +1,14 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Grid, Box, Button } from '@mui/material';
-import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    InputWithInfos,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
+import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
@@ -24,7 +29,6 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetPublishingStatusOptions } from '../constants';
-
 import {
     convertAPIErrorsToState,
     SavePlanningQuery,
@@ -75,6 +79,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const endDate = ended_at ? moment(ended_at).format('L') : undefined;
     const publishingStatus = published_at ? 'published' : 'draft';
     const { formatMessage } = useSafeIntl();
+    const redirectToReplace = useRedirectToReplace();
     const { mutateAsync: savePlanning } = useSavePlanning(mode);
     const {
         apiErrors,
@@ -82,8 +87,13 @@ export const PlanningForm: FunctionComponent<Props> = ({
         mutation: save,
     } = useApiErrorValidation<Partial<SavePlanningQuery>, any>({
         mutationFn: savePlanning,
-        onSuccess: () => {
-            formik.resetForm();
+        onSuccess: (result: Planning) => {
+            if (mode !== 'edit') {
+                redirectToReplace(`/${baseUrls.planningDetails}`, {
+                    mode: 'edit',
+                    planningId: `${result.id}`,
+                });
+            }
         },
 
         convertError: convertAPIErrorsToState,

@@ -51,7 +51,7 @@ export const Details: FunctionComponent = () => {
                     planning={planning}
                     mode={params.mode as PageMode}
                 />
-                {hasPipelineConfig && planning && (
+                {hasPipelineConfig && planning && params.mode !== 'copy' && (
                     <SamplingResults planning={planning} />
                 )}
             </MainWrapper>

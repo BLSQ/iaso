@@ -36,6 +36,7 @@ const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
         searchTabIndex: 0,
         searchActive: true,
         tab: 'map',
+        isClusterActive: false,
         searches: encodeUriSearches([
             {
                 validation_status: 'VALID',

@@ -2,6 +2,7 @@ import json
 import re
 
 from datetime import datetime
+from uuid import UUID
 
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
@@ -60,6 +61,13 @@ class EntityFilterSet(FilterSet):
             if not uuids:
                 raise ValidationError(f"Failed parsing uuids in search '{value}'")
             return queryset.filter(uuid__in=uuids)
+
+        # Trypelim-specific: autodetect uuids in the search field
+        try:
+            if str(UUID(value, version=4)) == value:
+                return queryset.filter(uuid=value)
+        except ValueError:
+            pass
 
         q = Q()
         for token in value.split():

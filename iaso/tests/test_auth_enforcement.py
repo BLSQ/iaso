@@ -172,7 +172,7 @@ class TestAuthEnforcement(TestCase):
         unauthenticated_endpoints = []
         for path in list_all_real_paths():
             # polio endpoints are out of scope
-            if path.startswith(("/api/polio", "/wfp_auth")):
+            if path.startswith(("/api/polio", "/wfp_auth", "'/dashboard/polio/")):
                 continue
 
             for method in HTTP_METHODS:
@@ -203,6 +203,10 @@ class TestAuthEnforcement(TestCase):
     def test_with_authentification_enforced_all_public_endpoints_should_stay_public(self):
         public_endpoints = []
         for path in list_all_real_paths():
+            # polio endpoints are out of scope
+            if path.startswith(("/api/polio", "/wfp_auth", "'/dashboard/polio/")):
+                continue
+
             for method in HTTP_METHODS:
                 key = (path, method.upper())
 

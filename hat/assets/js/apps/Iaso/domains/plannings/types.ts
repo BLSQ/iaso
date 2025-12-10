@@ -1,4 +1,5 @@
 import { UrlParams } from 'bluesquare-components';
+import { TaskStatus } from 'Iaso/domains/tasks/types';
 
 export type PublishingStatus = 'all' | 'draft' | 'published';
 
@@ -59,13 +60,30 @@ export type SamplingGroupDetails = {
     org_unit_count: number;
 };
 
+export type SamplingTaskDetails = {
+    id: number;
+    name: string;
+    status: TaskStatus;
+};
+
+export type UserDetails = {
+    id: number;
+    username: string;
+};
+
 export type SamplingResult = {
     id: number;
     planning: number;
-    task: number;
+    task_id: number;
+    task_details: SamplingTaskDetails;
     pipeline_id: string;
     pipeline_version: string;
     pipeline_name: string;
-    group: number;
-    group_details: SamplingGroupDetails;
+    group_id?: number;
+    group_details?: SamplingGroupDetails;
+    parameters: Record<string, any>;
+    status: 'SUCCESS' | 'FAILED';
+    created_at: string;
+    created_by: number;
+    created_by_details: UserDetails;
 };

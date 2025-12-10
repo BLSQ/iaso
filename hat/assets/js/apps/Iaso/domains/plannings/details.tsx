@@ -13,6 +13,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { PlanningForm } from './components/PlanningForm';
 import { SamplingResults } from './components/SamplingResults';
+import { useGetPlanningDetails } from './hooks/requests/useGetPlanningDetails';
 import MESSAGES from './messages';
 import { PageMode } from './types';
 
@@ -31,7 +32,7 @@ const formatTitle = (type: PageMode, formatMessage: IntlFormatMessage) => {
 
 export const Details: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.planningDetails);
-
+    const { planningId } = params;
     const { data: config } = useGetPipelineConfig();
     const hasPipelineConfig = config?.configured;
 
@@ -39,13 +40,20 @@ export const Details: FunctionComponent = () => {
 
     const titleMessage = formatTitle(params.mode as PageMode, formatMessage);
 
+    const { data: planning } = useGetPlanningDetails(planningId);
     const goBack = useGoBack(baseUrls.planning);
     return (
         <>
             <TopBar title={titleMessage} displayBackButton goBack={goBack} />
             <MainWrapper sx={{ p: 4 }}>
-                <PlanningForm hasPipelineConfig={hasPipelineConfig || false} />
-                {hasPipelineConfig && <SamplingResults />}
+                <PlanningForm
+                    hasPipelineConfig={hasPipelineConfig || false}
+                    planning={planning}
+                    mode={params.mode as PageMode}
+                />
+                {hasPipelineConfig && planning && (
+                    <SamplingResults planning={planning} />
+                )}
             </MainWrapper>
         </>
     );

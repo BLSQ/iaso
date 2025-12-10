@@ -12,16 +12,20 @@ import {
     useGetPlanningSamplingResults,
 } from '../hooks/requests/useGetPlanningSamplingResults';
 import MESSAGES from '../messages';
+import { Planning } from '../types';
 
-export const SamplingResults: FunctionComponent = () => {
+type Props = {
+    planning: Planning;
+};
+
+export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
     const params = useParamsObject(baseUrls.planningDetails);
     const { formatMessage } = useSafeIntl();
-    const { planningId } = params;
 
     const { data: samplingResults, isFetching: isFetchingSamplingResults } =
-        useGetPlanningSamplingResults(planningId, params);
+        useGetPlanningSamplingResults(`${planning.id}`, params);
 
-    const columns = useSamplingResultsColumns();
+    const columns = useSamplingResultsColumns(planning);
 
     return (
         <>

@@ -4,7 +4,6 @@ import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
-import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
@@ -21,12 +20,10 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../../libs/validation';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetPublishingStatusOptions } from '../constants';
-import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
 
 import {
     convertAPIErrorsToState,
@@ -35,6 +32,7 @@ import {
 } from '../hooks/requests/useSavePlanning';
 import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
+import { Planning } from '../types';
 import { PageMode } from '../types';
 
 const styles: SxStyles = {
@@ -50,15 +48,15 @@ const styles: SxStyles = {
 
 type Props = {
     hasPipelineConfig: boolean;
+    planning?: Planning;
+    mode: PageMode;
 };
 
 export const PlanningForm: FunctionComponent<Props> = ({
     hasPipelineConfig,
+    planning,
+    mode,
 }) => {
-    const params = useParamsObject(baseUrls.planningDetails);
-    const { planningId } = params;
-    const { data: planning } = useGetPlanningDetails(planningId);
-
     const {
         id,
         name,
@@ -77,9 +75,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const endDate = ended_at ? moment(ended_at).format('L') : undefined;
     const publishingStatus = published_at ? 'published' : 'draft';
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: savePlanning } = useSavePlanning(
-        params.mode as PageMode,
-    );
+    const { mutateAsync: savePlanning } = useSavePlanning(mode);
     const {
         apiErrors,
         payload,
@@ -128,7 +124,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
         validateField,
     } = formik;
     const allowConfirm =
-        isValid && (!isEqual(values, initialValues) || params.mode === 'copy');
+        isValid && (!isEqual(values, initialValues) || mode === 'copy');
 
     const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
         useGetOrgUnit(values.selectedOrgUnit?.toString());

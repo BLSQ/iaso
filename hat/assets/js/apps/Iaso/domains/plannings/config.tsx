@@ -1,12 +1,63 @@
-import React, { useMemo } from 'react';
-import { Column, formatThousand, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, useMemo } from 'react';
+import {
+    Column,
+    formatThousand,
+    IconButton,
+    makeRedirectionUrl,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useGetColors } from 'Iaso/hooks/useGetColors';
+import { getColor } from 'Iaso/hooks/useGetColors';
+import { locationLimitMax } from '../orgUnits/constants/orgUnitConstants';
+import { encodeUriSearches } from '../orgUnits/utils';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
 import MESSAGES from './messages';
+import { Planning, SamplingResult } from './types';
+
+type Props = {
+    samplingResult: SamplingResult;
+    planning: Planning;
+};
+
+const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
+    const { data: colors } = useGetColors(true);
+    const urlParams: Record<string, any> = {
+        locationLimit: locationLimitMax,
+        order: 'id',
+        pageSize: 50,
+        page: 1,
+        searchTabIndex: 0,
+        searchActive: true,
+        tab: 'map',
+        searches: encodeUriSearches([
+            {
+                validation_status: 'VALID',
+                color: getColor(1, colors).replace('#', ''),
+                levels: `${planning.org_unit}`,
+                orgUnitTypeId: `${planning.target_org_unit_type}`,
+            },
+            {
+                validation_status: 'VALID',
+                color: getColor(2, colors).replace('#', ''),
+                group: `${samplingResult.group_id}`,
+            },
+        ]),
+    };
+
+    return (
+        <IconButton
+            url={makeRedirectionUrl(baseUrls.orgUnits, urlParams)}
+            icon="remove-red-eye"
+            tooltipMessage={MESSAGES.seeSamplingResults}
+        />
+    );
+};
 
 export const usePlanningColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -75,7 +126,7 @@ export const usePlanningColumns = (): Column[] => {
         [formatMessage],
     );
 };
-export const useSamplingResultsColumns = (): Column[] => {
+export const useSamplingResultsColumns = (planning: Planning): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo<Column[]>(
         () => [
@@ -105,7 +156,18 @@ export const useSamplingResultsColumns = (): Column[] => {
                         settings.row.original.group_details.org_unit_count - 1,
                     ),
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                sortable: false,
+                Cell: settings => (
+                    <ActionCell
+                        samplingResult={settings.row.original}
+                        planning={planning}
+                    />
+                ),
+            },
         ],
-        [formatMessage],
+        [formatMessage, planning],
     );
 };

@@ -207,6 +207,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.created_at',
         defaultMessage: 'Created',
     },
+    seeSamplingResults: {
+        id: 'iaso.plannings.label.seeSamplingResults',
+        defaultMessage: 'See sampling results',
+    },
 });
 
 export default MESSAGES;

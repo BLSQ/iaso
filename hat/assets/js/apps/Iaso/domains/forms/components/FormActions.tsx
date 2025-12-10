@@ -19,6 +19,7 @@ type Props = {
     baseUrls: any;
     showDeleted: boolean;
     hasDhis2Module: boolean;
+    deleteForm: (body: {id: number}) => Promise<any>;
 };
 
 export const FormActions: FunctionComponent<Props> = ({
@@ -27,6 +28,7 @@ export const FormActions: FunctionComponent<Props> = ({
     baseUrls,
     showDeleted,
     hasDhis2Module,
+    deleteForm,
 }) => {
     // XLS and XML download states and functions
     const [anchorEl, setAnchorEl] = useState(null);
@@ -45,7 +47,6 @@ export const FormActions: FunctionComponent<Props> = ({
     urlToInstances = `${urlToInstances}/tab/list`;
     // Restore and delete form's hooks
     const { mutateAsync: restoreForm } = useRestoreForm();
-    const { mutateAsync: deleteForm } = useDeleteForm();
 
     return (
         <section>
@@ -132,7 +133,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                     titleMessage={MESSAGES.deleteFormTitle}
                                     onConfirm={closeDialog =>
                                         deleteForm(
-                                            settings.row.original.id,
+                                            {id: settings.row.original.id},
                                         ).then(closeDialog)
                                     }
                                 />

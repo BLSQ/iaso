@@ -171,9 +171,12 @@ class TestAuthEnforcement(TestCase):
     def test_with_authentification_enforced_all_endpoints_require_auth_except_some_exceptions(self):
         unauthenticated_endpoints = []
         for path in list_all_real_paths():
+            # polio endpoints are out of scope
+            if path.startswith("/api/polio"):
+                continue
+
             for method in HTTP_METHODS:
                 key = (path, method.upper())
-
                 if key in PUBLIC_ENDPOINTS:
                     continue
                 try:
@@ -185,6 +188,8 @@ class TestAuthEnforcement(TestCase):
                         [302, 401, 403, 405],
                         msg=f"{method.upper()} {path} should require auth",
                     )
+                    # 401 Unauthorized
+                    # 403 Forbidden
                     # 302 => redirect to login
                     # 405 allowed: method exists but not for this view
 

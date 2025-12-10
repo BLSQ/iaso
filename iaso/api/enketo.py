@@ -309,8 +309,8 @@ def enketo_form_list(request):
     Implement https://docs.getodk.org/openrosa-form-list/#the-manifest-document
 
     Require a param `formID` which is actually an Instance UUID"""
-    if not request.GET.get("formId"):
-        return HttpResponse("", status=status.HTTP_400_BAD_REQUEST)
+    if not request.GET.get("formID"):
+        return HttpResponse("formID is required", status=status.HTTP_400_BAD_REQUEST)
 
     form_id_str = request.GET["formID"]
     try:

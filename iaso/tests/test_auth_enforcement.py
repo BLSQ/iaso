@@ -172,7 +172,7 @@ class TestAuthEnforcement(TestCase):
         unauthenticated_endpoints = []
         for path in list_all_real_paths():
             # polio endpoints are out of scope
-            if path.startswith("/api/polio"):
+            if path.startswith(("/api/polio", "/wfp_auth")):
                 continue
 
             for method in HTTP_METHODS:

@@ -181,13 +181,15 @@ class ETL:
         exit_type = None
         if visit.get("new_programme", None) is not None and visit.get("new_programme", None) == "NONE":
             exit_type = visit.get("reason_for_not_continuing", None)
-        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP") and (
-            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
-        ):
+        elif (
+            (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP")
+            and (visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1")
+        ) or (visit.get("eligible_for_TSFP") is not None and visit.get("eligible_for_TSFP") == "1"):
             exit_type = "transfer_to_tsfp"
-        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "OTP") and (
-            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
-        ):
+        elif (
+            (visit.get("new_programme") is not None and visit.get("new_programme") == "OTP")
+            and (visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1")
+        ) or (visit.get("eligible_for_OTP") is not None and visit.get("eligible_for_OTP") == "1"):
             exit_type = "transfer_to_otp"
         elif (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1") or (
             visit.get("transfer_from_otp__bool__") is not None and visit.get("transfer_from_otp__bool__") == "1"
@@ -266,8 +268,7 @@ class ETL:
         followUp_steps.insert(0, admission)
         return followUp_steps
 
-    def exit_by_defaulter(self, visits, visit, anthropometric_visit_forms):
-        exit = None
+    def exit_by_defaulter(self, visits, visit, anthropometric_visit_forms, exit):
         next_visit_date = ""
         next_visit_days = 0
         nextSecondVisitDate = ""
@@ -368,7 +369,7 @@ class ETL:
         if visit["form_id"] in anthropometric_visit_form:
             default_admission_form = visit["form_id"]
             current_journey["instance_id"] = visit.get("instance_id", None)
-            current_journey["start_date"] = visit.get("start_date", None)
+            current_journey["start_date"] = visits[0].get("date", visit.get("start_date", None))
             current_journey["initial_weight"] = visit.get("initial_weight", None)
             current_journey["muac_size"] = visit.get("muac", visit.get("muac_size"))
             current_journey["whz_score"] = visit.get("whz_score", None)
@@ -397,6 +398,11 @@ class ETL:
             current_journey["discharge_weight"] = visit.get("discharge_weight", None)
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
+            exit = {
+                "exit_type": current_journey.get("exit_type"),
+                "start_date": current_journey.get("start_date"),
+                "end_date": current_journey.get("end_date"),
+            }
 
         """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
         admission form(previous form) and next visit date in the antropometric followup visit form.
@@ -405,23 +411,19 @@ class ETL:
 
         if visit["form_id"] in default_anthropometric_followup_forms:
             index = index - 1
-            exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+            exit = self.exit_by_defaulter(visits, visits[index], followup_forms, exit)
         else:
-            exit = self.exit_by_defaulter(visits, visit, followup_forms)
-
+            exit = self.exit_by_defaulter(visits, visit, followup_forms, exit)
         if (
             exit is not None
             and exit.get("exit_type") is not None
-            and current_journey.get("exit_type") is None
+            and exit.get("end_date") is not None
             and current_journey.get("start_date") is not None
         ):
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
             duration = (
-                datetime.strptime(
-                    datetime.strftime(exit["end_date"], "%Y-%m-%d"),
-                    "%Y-%m-%d",
-                )
+                datetime.strptime(exit.get("end_date"), "%Y-%m-%d")
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
             ).days
             current_journey["duration"] = duration
@@ -446,14 +448,18 @@ class ETL:
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
         ration_size = ""
-        if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
-            step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
+        if (
+            (step.get("net_given") is not None and step.get("net_given") == "yes")
+            or (step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1")
+            or (step.get("_net") is not None and step.get("_net") == "1")
         ):
             assistance = {"type": "Mosquito Net", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if (step.get("soap_given") is not None and step.get("soap_given") == "yes") or (
-            step.get("soap_given__bool__") is not None and step.get("soap_given__bool__") == "1"
+        if (
+            (step.get("soap_given") is not None and step.get("soap_given") == "yes")
+            or (step.get("soap_given__bool__") is not None and step.get("soap_given__bool__") == "1")
+            or (step.get("_soap") is not None and step.get("_soap") == "1")
         ):
             assistance = {"type": "Soap", "quantity": quantity}
             given_assistance.append(assistance)
@@ -711,6 +717,8 @@ class ETL:
             new_journey_after_transfer["initial_weight"] = current_journey.get("discharge_weight")
         journey.append(current_journey)
         if new_journey_after_transfer.get("programme_type") is not None:
+            if current_journey.get("nutrition_programme") == "BSFP":
+                new_journey_after_transfer["admission_type"] = "referred_from_BSFP"
             journey.append(new_journey_after_transfer)
         return journey
 

@@ -117,7 +117,7 @@ def reset_superuser_password() -> str:
 
 def run_setuper(account_name: str, password: str):
     server_url = f"https://{settings.DNS_DOMAIN}"
-    command = [
+    command_for_logging = [
         "python3",
         "setuper/setuper.py",
         "--additional_projects",
@@ -125,12 +125,15 @@ def run_setuper(account_name: str, password: str):
         account_name,
         "-u",
         "cron_task_sandbox_user",
-        "-p",
-        password,
         "-s",
         server_url,
     ]
-    logger.info(f"Executing command: {' '.join(command)}")
+    logger.info(f"Executing command: {' '.join(command_for_logging)}")
+    command = [
+        *command_for_logging,
+        "-p",
+        password,
+    ]
     try:
         process = subprocess.run(command, capture_output=True, text=True, check=True)
         logger.info(f"Stdout:\n{process.stdout}")

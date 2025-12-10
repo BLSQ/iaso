@@ -5,9 +5,14 @@ import { endpoint } from '../../constants';
 
 const deletePlanning = (id: number) => deleteRequest(`${endpoint}${id}/`);
 
-export const useDeletePlanning = (): UseMutationResult => {
+export const useDeletePlanning = (
+    onSuccess?: () => void,
+): UseMutationResult => {
     return useSnackMutation({
         mutationFn: deletePlanning,
         invalidateQueryKey: ['planningsList'],
+        options: {
+            onSuccess,
+        },
     });
 };

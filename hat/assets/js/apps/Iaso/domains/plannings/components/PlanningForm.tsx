@@ -7,6 +7,7 @@ import {
     InputWithInfos,
     useRedirectToReplace,
     IconButton as IconButtonComponent,
+    useRedirectTo,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
@@ -87,6 +88,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const publishingStatus = published_at ? 'published' : 'draft';
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
+    const redirectTo = useRedirectTo();
     const { mutateAsync: savePlanning } = useSavePlanning(mode);
     const {
         apiErrors,
@@ -105,7 +107,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
         convertError: convertAPIErrorsToState,
     });
-    const { mutateAsync: deletePlanning } = useDeletePlanning();
+    const { mutateAsync: deletePlanning } = useDeletePlanning(() => {
+        redirectTo(`/${baseUrls.planning}`);
+    });
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
         useGetPipelinesDropdown(Boolean(hasPipelineConfig));

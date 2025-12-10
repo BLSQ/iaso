@@ -2,7 +2,6 @@ import React, {
     ComponentType,
     FunctionComponent,
     useCallback,
-    useMemo,
     useState,
 } from 'react';
 import { NavigateBefore, NavigateNext } from '@mui/icons-material';
@@ -12,13 +11,13 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle,
     IconButton,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { fileScanResultInfected } from '../../../constants/fileScanResults';
-import { SxStyles } from '../../../types/general';
+import { useNavigate } from 'react-router-dom';
+import { fileScanResultInfected } from 'Iaso/constants/fileScanResults';
+import { SxStyles } from 'Iaso/types/general';
 import { FileScanHeader } from './FileScanHeader';
 import { FileScanStatusOpenButton } from './FileScanStatusOpenButton';
 import MESSAGES from './messages';
@@ -42,7 +41,10 @@ type PdfPreviewProps = {
     scanResult?: string | undefined;
     scanTimestamp?: number | undefined;
     coloredScanResultIcon?: boolean;
-    fileInfo?: string;
+    url?: string;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
+    getInfos?: (filePath: string) => React.ReactNode;
+    getExtraInfos?: (filePath: string) => React.ReactNode;
 };
 
 const styles: SxStyles = {
@@ -78,6 +80,16 @@ const styles: SxStyles = {
         justifyContent: 'flex-end',
         width: '100%',
     },
+    infos: {
+        position: 'absolute',
+        top: theme => theme.spacing(0.5),
+        left: theme => theme.spacing(1),
+    },
+    extra_infos: {
+        position: 'absolute',
+        top: theme => theme.spacing(0.5),
+        right: theme => theme.spacing(1),
+    },
 };
 
 export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
@@ -87,8 +99,12 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
     scanResult,
     scanTimestamp,
     coloredScanResultIcon,
-    fileInfo,
+    url = undefined,
+    urlLabel = undefined,
+    getInfos = () => null,
+    getExtraInfos = () => null,
 }) => {
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(1);
@@ -110,8 +126,7 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
             const link = document.createElement('a');
             link.href = pdfUrl;
             const urlParts = pdfUrl.split('/');
-            const fileName = urlParts[urlParts.length - 1] || 'document.pdf';
-            link.download = fileName;
+            link.download = urlParts[urlParts.length - 1] || 'document.pdf';
             link.click();
         }
     }, [isFileSafeToDisplayAndDownload, pdfUrl]);
@@ -151,11 +166,12 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                     onClose={handleClose}
                 >
                     <DialogContent sx={styles.dialogContent}>
-                        {fileInfo && <DialogTitle>{fileInfo}</DialogTitle>}
-                        <FileScanHeader
-                            scanResult={scanResult}
-                            scanTimestamp={scanTimestamp}
-                        />
+                        <Box mt={4}>
+                            <FileScanHeader
+                                scanResult={scanResult}
+                                scanTimestamp={scanTimestamp}
+                            />
+                        </Box>
                         {isFileSafeToDisplayAndDownload && (
                             <Box sx={styles.documentContainer}>
                                 <Document
@@ -172,6 +188,12 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                                 </Document>
                             </Box>
                         )}
+                        <Box sx={styles.infos}>
+                            {getInfos(pdfUrl ? pdfUrl : '')}
+                        </Box>
+                        <Box sx={styles.extra_infos}>
+                            {getExtraInfos(pdfUrl ? pdfUrl : '')}
+                        </Box>
                     </DialogContent>
                     <DialogActions sx={styles.dialogActions}>
                         {isFileSafeToDisplayAndDownload && (
@@ -198,7 +220,13 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                                 </IconButton>
                             </Box>
                         )}
+
                         <Box sx={styles.dialogActionsButtons}>
+                            {url && (
+                                <Button onClick={() => navigate(url)}>
+                                    {formatMessage(urlLabel)}
+                                </Button>
+                            )}
                             <Button
                                 onClick={handleDownload}
                                 color="primary"

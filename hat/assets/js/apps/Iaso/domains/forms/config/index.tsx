@@ -154,9 +154,6 @@ export const useFormsTableColumns = ({
 
     const { mutateAsync: deleteForm } = useDeleteForm({ params, count }); 
 
-    console.log('DEBUG (useFormsTableColumns): Initializing Delete Hook');
-    console.log('DEBUG (useFormsTableColumns): Params:', params);
-    console.log('DEBUG (useFormsTableColumns): Count:', count);
 
     return useMemo(() => {
         const cols: Column[] = [

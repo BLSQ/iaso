@@ -17,10 +17,6 @@ type useDeleteArgs = {
 export const useDeleteForm = ({params, count}: useDeleteArgs): UseMutationResult => {
     const queryClient = useQueryClient();
 
-    console.log('DEBUG (useDeleteForm): Hook Initialized');
-    console.log('DEBUG (useDeleteForm): Received Params:', params);
-    console.log('DEBUG (useDeleteForm): Received Count:', count);
-
     const onSuccessNavigateOrInvalidate = useDeleteTableRow({
         count,
         params,

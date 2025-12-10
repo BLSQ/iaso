@@ -33,11 +33,6 @@ export const FormsTable: FunctionComponent<Props> = ({
         true,
     );
 
-     console.log('DEBUG (FormsTable): Data Fetch Result');
-    console.log('DEBUG (FormsTable): forms?.count:', forms?.count);
-    console.log('DEBUG (FormsTable): apiParams:', apiParams);
-
-
     const columns = useFormsTableColumns({
         showDeleted: params?.showDeleted === 'true',
         orgUnitId: params?.orgUnitId,

@@ -130,19 +130,19 @@ def create_patient_and_first_record(instance, import_source):
     if not isinstance(file_content, dict):
         raise DataImportError("file_content is not a dictionary.")
 
-    # --- 1. Extract and Validate Patient Identifier ---
-    # Prefer "computed_code_patient" if available, otherwise "code_patient"
-    patient_identifier_code = file_content.get("computed_code_patient") or file_content.get("code_patient")
-    if not patient_identifier_code:
-        raise DataImportError(
-            "Patient identifier ('computed_code_patient' or 'code_patient') is missing from file_content."
-        )
-
-    # --- 2. Fetch Related OrgUnit ---
-    code_ets = file_content.get("code_ets")
-
     try:
         with transaction.atomic():
+            # --- 1. Extract and Validate Patient Identifier ---
+            # Prefer "computed_code_patient" if available, otherwise "code_patient"
+            patient_identifier_code = file_content.get("computed_code_patient") or file_content.get("code_patient")
+            if not patient_identifier_code:
+                logger.warning(
+                    "Patient identifier ('computed_code_patient' or 'code_patient') is missing from file_content."
+                )
+                return None
+
+            # --- 2. Fetch Related OrgUnit ---
+            code_ets = file_content.get("code_ets")
             # --- 3. Get or Create Patient ---
             # We use get_or_create to avoid creating duplicates based on identifier_code
             patient, patient_created = Patient.objects.get_or_create(
@@ -289,10 +289,11 @@ def create_followup_record(instance, import_source):
 
     # --- 1. Extract and Validate Patient Identifier ---
     # For follow-up forms, we need to find the existing patient
+
     patient_identifier_code = file_content.get("code_patient")
     if not patient_identifier_code:
-        raise DataImportError("Patient identifier ('code_patient') is missing from file_content.")
-
+        logger.warning("Patient identifier ('code_patient') is missing from file_content.")
+        return None
     try:
         # Find the existing patient
         patient = Patient.objects.get(identifier_code=patient_identifier_code)
@@ -438,4 +439,5 @@ def create_followup_record(instance, import_source):
 
     except Exception as e:
         logger.exception(f"Error creating follow-up record for patient {patient_identifier_code}: {e}")
-        raise DataImportError(f"Failed to create follow-up record: {e}")
+        logger.warning(f"Failed to create follow-up record: {e}")
+        return None

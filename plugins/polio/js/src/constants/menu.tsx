@@ -41,7 +41,7 @@ import {
     stockManagementPath,
     supplychainPath,
     vaccineRepositoryPath,
-    performanceDashboardPath,
+    nationalLogisticsPlanPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -147,9 +147,9 @@ export const menu: MenuItem[] = [
                         icon: props => <StorageIcon {...props} />,
                     },
                     {
-                        label: MESSAGES.performanceDashboard,
-                        key: 'performanceDashboard',
-                        permissions: performanceDashboardPath.permissions,
+                        label: MESSAGES.nationalLogisticsPlan,
+                        key: 'nationalLogisticsPlan',
+                        permissions: nationalLogisticsPlanPath.permissions,
                         icon: props => <BarChartIcon {...props} />,
                     },
                     {

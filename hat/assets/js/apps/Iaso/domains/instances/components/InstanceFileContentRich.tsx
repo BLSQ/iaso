@@ -12,9 +12,12 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { textPlaceholder } from 'bluesquare-components';
-import isPlainObject from 'lodash/isPlainObject';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
+import {
+    slugifyValue,
+    translateLabel,
+} from 'Iaso/domains/instances/utils/questions';
 import { getFileName, getFileType } from 'Iaso/utils/filesUtils';
 import { useLocale } from '../../app/contexts/LocaleContext';
 import { InstanceImagePreview } from './InstanceImagePreview';
@@ -131,60 +134,6 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-/**
- * Slugification function that matches Django's slugify_underscore behavior
- * Replaces spaces with underscores, converts accented characters to ASCII, and removes parentheses and commas
- * @param value - The string to slugify
- * @returns The slugified string
- */
-const slugifyValue = (value: string): string => {
-    return value
-        .normalize('NFD') // Decompose characters into base + accent
-        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents)
-        .replace(/[(),]/g, '') // Remove parentheses and commas
-        .replace(/\s+/g, '_'); // Replace spaces with underscores
-};
-
-/**
- * Translate the provided label if it is translatable
- * If the locale language matches the user language, we display it
- * if not, we display it in English by default
- * if there is no english version, we display the first one
- * @param label
- * @returns {*}
- */
-
-const labelLocales = { fr: 'French', en: 'English' };
-
-const translateLabel = (
-    label: Record<string, string> | string,
-    activeLocale: string,
-): string => {
-    if (isPlainObject(label)) {
-        const correctKey = Object.keys(label as Record<string, string>).find(
-            key => {
-                if (
-                    labelLocales[
-                        activeLocale as keyof typeof labelLocales
-                    ]?.includes(key)
-                ) {
-                    return true;
-                }
-                return labelLocales.en.includes(key);
-            },
-        );
-
-        if (correctKey) {
-            return (label as Record<string, string>)[correctKey];
-        }
-        return (label as Record<string, string>)[
-            Object.keys(label as Record<string, string>)[0]
-        ];
-    }
-
-    return label as string;
-};
-
 const getRawValue = (descriptor: Descriptor, data: Data): string => {
     const value = data[descriptor.name];
     if (value === undefined) {
@@ -276,7 +225,15 @@ const PhotoField: FunctionComponent<PhotoFieldProps> = ({
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
             const slugifiedValue = slugifyValue(value);
-            return files.find(f => f.includes(slugifiedValue));
+            return files.find(f => {
+                if (slugifiedValue.endsWith('jpg')) {
+                    return (
+                        f.includes(slugifiedValue) ||
+                        f.includes(slugifiedValue.replace('.jpg', '.webp'))
+                    );
+                }
+                return f.includes(slugifiedValue);
+            });
         }
         return null;
     }, [value, files]);

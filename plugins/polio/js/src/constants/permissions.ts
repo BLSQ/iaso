@@ -12,11 +12,11 @@ const STOCK_MANAGEMENT_READ_ONLY =
     'iaso_polio_vaccine_stock_management_read_only';
 const STOCK_MANAGEMENT_WRITE = 'iaso_polio_vaccine_stock_management_write';
 
-const POLIO_PERFORMANCE_READ_ONLY_PERMISSION =
-    'iaso_polio_performance_read_only';
-const POLIO_PERFORMANCE_NON_ADMIN_PERMISSION =
-    'iaso_polio_performance_non_admin';
-const POLIO_PERFORMANCE_ADMIN_PERMISSION = 'iaso_polio_performance_admin';
+const POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION =
+    'iaso_polio_country_plan_read_only';
+const POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION =
+    'iaso_polio_country_plan_non_admin';
+const POLIO_COUNTRY_PLAN_ADMIN_PERMISSION = 'iaso_polio_country_plan_admin';
 const NOTIFICATION = 'iaso_polio_notifications';
 const CHRONOGRAM = 'iaso_polio_chronogram';
 const CHRONOGRAM_RESTRICTED_WRITE = 'iaso_polio_chronogram_restricted_write';
@@ -36,9 +36,9 @@ export {
     STOCK_MANAGEMENT_READ,
     STOCK_MANAGEMENT_WRITE,
     STOCK_MANAGEMENT_READ_ONLY,
-    POLIO_PERFORMANCE_READ_ONLY_PERMISSION,
-    POLIO_PERFORMANCE_NON_ADMIN_PERMISSION,
-    POLIO_PERFORMANCE_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
     NOTIFICATION,
     CHRONOGRAM,
     CHRONOGRAM_RESTRICTED_WRITE,

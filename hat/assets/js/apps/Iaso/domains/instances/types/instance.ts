@@ -2,7 +2,7 @@ import { Pagination } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
 import { Entity } from '../../entities/types/entity';
 import { OrgUnitChangeRequest } from '../../orgUnits/reviewChanges/types';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Lock = {
     id: number;
@@ -16,6 +16,11 @@ export type ShortFile = {
     itemId: number;
     createdAt: number;
     path: string;
+    submittedAt: number;
+    orgUnit: ShortOrgUnit;
+    formName: string;
+    questionName: string;
+    questionId: string;
     file_type?: MimeType;
 };
 
@@ -24,6 +29,11 @@ export type File = {
     instance_id: number;
     file: string;
     created_at: number;
+    submitted_at: number;
+    org_unit: ShortOrgUnit;
+    form_name: string;
+    question_name: string;
+    question_id: string;
     file_type: MimeType;
 };
 

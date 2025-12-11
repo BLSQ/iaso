@@ -21,7 +21,7 @@ import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 
 import { getColor } from 'Iaso/hooks/useGetColors';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
-import { apiDateFormat } from 'Iaso/utils/dates';
+import { dateFormat } from 'Iaso/utils/dates';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -299,7 +299,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         onChange={date => {
                             handleChange(
                                 'open_date',
-                                date ? date.format(apiDateFormat) : null,
+                                date ? date.format(dateFormat) : null,
                             );
                         }}
                     />

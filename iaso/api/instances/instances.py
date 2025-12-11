@@ -192,6 +192,9 @@ class LockAnnotation(TypedDict):
     count_active_lock: int
 
 
+PERMISSION_CLASSES_RW = [AuthenticationEnforcedPermission, permissions.IsAuthenticated, HasInstancePermission]
+
+
 class InstancesViewSet(viewsets.ViewSet):
     f"""Instances API
 
@@ -625,7 +628,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         return response
 
-    @action(detail=True, methods=["POST"])
+    @action(detail=True, permission_classes=PERMISSION_CLASSES_RW, methods=["POST"])
     def add_lock(self, request, pk):
         # would use get_object usually, but we are not in a ModelViewSet
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -634,7 +637,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"status": "lock added", "lock_id": new_lock.id})
 
     # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
-    @action(detail=False, methods=["POST"])
+    @action(detail=False, permission_classes=PERMISSION_CLASSES_RW, methods=["POST"])
     def unlock_lock(self, request):
         serializer = UnlockSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

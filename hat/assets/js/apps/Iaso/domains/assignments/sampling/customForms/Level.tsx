@@ -11,10 +11,10 @@ import {
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 import MESSAGES from '../../messages';
-import { Planning } from '../../types/planning';
 import { useGetCriteriaOptions } from './constants';
 import { ExcludedOrgUnits } from './ExcludedOrgUnits';
 import { ParameterValues } from './LQASForm';

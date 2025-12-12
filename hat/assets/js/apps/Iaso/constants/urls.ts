@@ -159,6 +159,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'searchTabIndex',
             'searchActive',
             'searches',
+            'isClusterActive',
         ],
     },
     orgUnitDetails: {
@@ -480,6 +481,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    planningDetails: {
+        url: 'planning/details',
+        params: ['accountId', 'planningId', 'mode', ...paginationPathParams],
+    },
     assignments: {
         url: 'planning/assignments',
         params: [
@@ -700,6 +705,7 @@ type IasoBaseUrls = {
     entityDuplicateAnalyses: string;
     pages: string;
     planning: string;
+    planningDetails: string;
     assignments: string;
     teams: string;
     storages: string;

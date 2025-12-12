@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Grid, Box, Paper } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import {
     AddButton,
     IntlFormatMessage,
@@ -13,7 +13,6 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
-import { Planning } from 'Iaso/domains/assignments/types/planning';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
@@ -22,6 +21,7 @@ import {
     flattenHierarchy,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
@@ -62,23 +62,6 @@ type Props = {
     closeDialog: () => void;
     isOpen: boolean;
 };
-// TODO move to utils
-export const makeResetTouched =
-    (
-        formValues: Record<string, any>,
-        setTouched: (
-            fields: { [field: string]: boolean },
-            shouldValidate?: boolean,
-        ) => void,
-    ) =>
-    (): void => {
-        const formKeys = Object.keys(formValues);
-        const fields = {};
-        formKeys.forEach(formKey => {
-            fields[formKey] = true;
-        });
-        setTouched(fields);
-    };
 
 const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
     switch (type) {
@@ -256,6 +239,8 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         }
     }, [values?.project, teamsDropdown, setFieldValue, setFieldTouched]);
     const publishingStatusOptions = useGetPublishingStatusOptions();
+
+    console.log(values.startDate);
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal

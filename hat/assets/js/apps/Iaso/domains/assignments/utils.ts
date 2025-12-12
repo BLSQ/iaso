@@ -1,4 +1,5 @@
 // types
+import { Planning } from 'Iaso/domains/plannings/types';
 import { Profile, getDisplayName } from '../../utils/usersUtils';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
 import { DropdownTeamsOptions, SubTeam, User, Team } from '../teams/types/team';
@@ -8,7 +9,6 @@ import {
     SaveAssignmentQuery,
 } from './types/assigment';
 import { OrgUnitMarker, OrgUnitShape, BaseLocation } from './types/locations';
-import { Planning } from './types/planning';
 
 export type AssignedUser = Profile & {
     color: string;

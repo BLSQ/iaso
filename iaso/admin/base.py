@@ -90,7 +90,7 @@ from ..models import (
     WorkflowVersion,
 )
 from ..models.data_store import JsonDataStore
-from ..models.microplanning import Assignment, Planning
+from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
 from ..models.team import Team
 from ..utils.gis import convert_2d_point_to_3d
 
@@ -742,6 +742,27 @@ class AssignmentAdmin(admin.ModelAdmin):
         "planning",
     )
     list_filter = ("planning",)
+    date_hierarchy = "created_at"
+
+
+@admin.register(PlanningSamplingResult)
+@admin_attr_decorator
+class PlanningSamplingResultAdmin(admin.ModelAdmin):
+    raw_id_fields = ("planning", "group", "task", "created_by")
+    readonly_fields = ("created_at",)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = (
+        "id",
+        "planning",
+        "status",
+        "pipeline_id",
+        "pipeline_version",
+        "group",
+        "task",
+        "created_at",
+    )
+    list_filter = ("status", "planning")
+    search_fields = ("pipeline_id", "pipeline_version")
     date_hierarchy = "created_at"
 
 

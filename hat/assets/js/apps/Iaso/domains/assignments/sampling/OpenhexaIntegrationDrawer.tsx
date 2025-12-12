@@ -3,9 +3,8 @@ import React, {
     useCallback,
     useEffect,
     useState,
-    Dispatch,
-    SetStateAction,
 } from 'react';
+import PlusIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -19,7 +18,6 @@ import {
     Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
 import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
@@ -29,8 +27,8 @@ import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
+import { Planning } from '../../plannings/types';
 import MESSAGES from '../messages';
-import { Planning } from '../types/planning';
 import { PipelineInfos } from './components/PipelineInfos';
 import { PipelineSelect } from './components/PipelineSelect';
 
@@ -40,7 +38,6 @@ type Props = {
     disabledMessage?: string;
     orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     isFetchingOrgunitTypes: boolean;
-    setExtraFilters: Dispatch<SetStateAction<Record<string, any>>>;
 };
 
 const styles: SxStyles = {
@@ -73,7 +70,6 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     disabledMessage,
     orgunitTypes,
     isFetchingOrgunitTypes,
-    setExtraFilters,
 }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -85,8 +81,8 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const [selectedPipelineId, setSelectedPipelineId] = useState<
         string | undefined
     >(
-        planning.pipeline_uuids.length === 1
-            ? planning.pipeline_uuids[0]
+        planning.pipeline_uuids?.length === 1
+            ? planning.pipeline_uuids?.[0]
             : undefined,
     );
 
@@ -162,7 +158,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                         sx={styles.button}
                         disabled={disabled}
                     >
-                        <OpenHexaSvg sx={styles.icon} disabled={disabled} />
+                        <PlusIcon sx={styles.icon} />
                         {formatMessage(MESSAGES.openHexaIntegration)}
                     </Button>
                 </Box>
@@ -268,7 +264,6 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                 setAllowConfirm={setAllowConfirm}
                                 orgunitTypes={orgunitTypes}
                                 isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                                setExtraFilters={setExtraFilters}
                                 taskStatus={taskStatus}
                                 taskId={taskId}
                             />

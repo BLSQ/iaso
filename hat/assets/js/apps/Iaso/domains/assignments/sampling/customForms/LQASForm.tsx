@@ -4,14 +4,14 @@ import React, {
     useMemo,
     useState,
     useEffect,
-    Dispatch,
-    SetStateAction,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
 import { Box, Button, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { Planning } from 'Iaso/domains/plannings/types';
 import { useGetTaskDetails } from 'Iaso/domains/tasks/hooks/useGetTasks';
 import { SxStyles } from 'Iaso/types/general';
 import {
@@ -20,7 +20,6 @@ import {
     updateArrayAtIndex,
 } from 'Iaso/utils/arrays';
 import MESSAGES from '../../messages';
-import { Planning } from '../../types/planning';
 
 import { Criteria, TaskStatus } from '../types';
 import { Level } from './Level';
@@ -63,7 +62,6 @@ type Props = {
     orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     isFetchingOrgunitTypes: boolean;
     taskStatus: TaskStatus;
-    setExtraFilters: Dispatch<SetStateAction<Record<string, any>>>;
     taskId?: number;
 };
 
@@ -76,7 +74,6 @@ export const LQASForm: FunctionComponent<Props> = ({
     isFetchingOrgunitTypes,
     taskStatus,
     taskId,
-    setExtraFilters,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [expandedLevels, setExpandedLevels] = useState<boolean[]>([false]);
@@ -173,16 +170,15 @@ export const LQASForm: FunctionComponent<Props> = ({
     const { data: taskDetails } = useGetTaskDetails(
         taskStatus === 'SUCCESS' ? taskId : undefined,
     );
+    const queryClient = useQueryClient();
     useEffect(() => {
         if (taskDetails?.result?.group_id) {
-            setExtraFilters({
-                group: taskDetails.result.group_id,
-            });
+            queryClient.invalidateQueries('planningSamplingResults');
         }
     }, [
-        setExtraFilters,
         taskDetails?.result?.bulk_update_task_id,
         taskDetails?.result?.group_id,
+        queryClient,
     ]);
 
     // Memoized values

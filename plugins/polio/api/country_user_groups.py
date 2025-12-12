@@ -46,9 +46,12 @@ class CountryUsersGroupViewSet(ModelViewSet):
         countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(
             org_unit_type__category="COUNTRY"
         )
-        countries_without_group = countries.filter(countryusersgroup__isnull=True).values_list("id", flat=True)
+        countries_without_group = countries.filter(countryusersgroup__isnull=True)
+
         if countries_without_group.exists():
-            groups_to_create = [CountryUsersGroup(country_id=country_id) for country_id in countries_without_group]
+            groups_to_create = [CountryUsersGroup(country=country) for country in countries_without_group]
             CountryUsersGroup.objects.bulk_create(groups_to_create, ignore_conflicts=True)
 
-        return CountryUsersGroup.objects.filter(country__in=countries)
+        queryset = CountryUsersGroup.objects.select_related("country").prefetch_related("users", "teams")
+
+        return queryset.filter(country__in=countries)

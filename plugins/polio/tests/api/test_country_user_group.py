@@ -149,7 +149,17 @@ class CountryUsersGroupAPITestCase(APITestCase):
         """Test that GET request doesn't cause excessive database queries."""
         self.client.force_authenticate(self.user_with_perms)
 
-        with self.assertNumQueries(19):
+        with self.assertNumQueries(9):
+            # get_queryset
+            #   1. SELECT auth_permission
+            #   2. SELECT auth_permission & auth_user_groups
+            #   3. SELECT EXISTS iaso_orgunit & iaso_profile_org_units
+            #   4. SELECT EXISTS iaso_orgunit & iaso_orgunittype
+            #   5. SELECT iaso_orgunit
+            #   6. INSERT INTO polio_countryusersgroup
+            #   7. SELECT polio_countryusersgroup
+            #   8. PREFETCH polio_countryusersgroup_users
+            #   9. PREFETCH polio_countryusersgroup_teams
             response = self.client.get(BASE_URL)
             self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -161,6 +171,14 @@ class CountryUsersGroupAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_perms)
 
         # Should have fewer queries since no bulk_create is needed
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(7):
+            # get_queryset
+            #   1. SELECT auth_permission
+            #   2. SELECT auth_permission & auth_user_groups
+            #   3. SELECT EXISTS iaso_orgunit & iaso_profile_org_units
+            #   4. SELECT EXISTS iaso_orgunit & iaso_orgunittype
+            #   5. SELECT polio_countryusersgroup
+            #   6. PREFETCH polio_countryusersgroup_users
+            #   7. PREFETCH polio_countryusersgroup_teams
             response = self.client.get(BASE_URL)
             self.assertJSONResponse(response, status.HTTP_200_OK)

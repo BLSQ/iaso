@@ -25,6 +25,7 @@ import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/ty
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../../../constants/messages';
+
 import { CampaignLogDetail } from './CampaignLogDetail';
 import {
     CampaignLogDetailResult,

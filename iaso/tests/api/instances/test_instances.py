@@ -1998,6 +1998,123 @@ class InstancesAPITestCase(TaskAPITestCase):
             response, [self.instance_3, self.instance_4, self.instance_8, another_instance]
         )
 
+    def test_attachments_list_question_name(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = m.FormVersion.objects.create(
+            form=self.form_1,
+            form_descriptor=json.loads("""{
+  "name": "data",
+  "type": "survey",
+  "title": "Test image",
+  "_xpath": {
+    "Form": "/data/Form",
+    "data": "/data",
+    "meta": "/data/meta",
+    "jpg": "/data/Form/jpg",
+    "webp": "/data/Form/webp",
+    "jpg2": "/data/Form/Repeat/jpg2",
+    "file": "/data/Form/Repeat/file",
+    "instanceID": "/data/meta/instanceID"
+  },
+  "version": "2024080601",
+  "children": [
+    {
+      "name": "Form",
+      "type": "group",
+      "control": {
+        "appearance": "field-list"
+      },
+      "children": [
+        {
+          "name": "jpg",
+          "type": "photo",
+          "label": "Take a JPG picture"
+        },
+        {
+          "name": "webp",
+          "type": "file",
+          "label": "Take a WEBP picture"
+        },
+        {
+          "name": "Repeat",
+          "type": "repeat",
+          "children": [
+            {
+              "name": "jpg2",
+              "type": "photo",
+              "label": "Take another JPG picture"
+            },
+            {
+              "name": "file",
+              "type": "file",
+              "label": "Upload a file"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {
+        "bodyless": true
+      },
+      "children": [
+        {
+          "bind": {
+            "readonly": "true()",
+            "jr:preload": "uid"
+          },
+          "name": "instanceID",
+          "type": "calculate"
+        }
+      ]
+    }
+  ],
+  "id_string": "test_image",
+  "sms_keyword": "test_image",
+  "default_language": "default"
+}"""),
+        )
+        instance = self.create_form_instance(
+            form=self.form_1,
+            form_version=form_version,
+            project=self.project,
+            org_unit=self.ou_top_1,
+            json={
+                "jpg": "test1.jpg",
+                "webp": "test2.webp",
+                "repeat": [
+                    {
+                        "jpg2": "test3.jpg",
+                        "file": "test4.pdf",
+                    },
+                ],
+            },
+        )
+        attachment1 = m.InstanceFile.objects.create(instance=instance, file="test1.jpg", name="test1.jpg")
+        attachment2 = m.InstanceFile.objects.create(instance=instance, file="test2.webp", name="test2.webp")
+        attachment3 = m.InstanceFile.objects.create(instance=instance, file="test3.webp", name="test3.webp")
+        attachment4 = m.InstanceFile.objects.create(instance=instance, file="test4.pdf", name="test4.pdf")
+
+        response = self.client.get("/api/instances/attachments/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 4)
+        self.assertEqual(data[0]["id"], attachment1.id)
+        self.assertEqual(data[0]["question_id"], "jpg")
+        self.assertEqual(data[0]["question_name"], "Take a JPG picture")
+        self.assertEqual(data[1]["id"], attachment2.id)
+        self.assertEqual(data[1]["question_id"], "webp")
+        self.assertEqual(data[1]["question_name"], "Take a WEBP picture")
+        self.assertEqual(data[2]["id"], attachment3.id)
+        self.assertEqual(data[2]["question_id"], "jpg2")
+        self.assertEqual(data[2]["question_name"], "Take another JPG picture")
+        self.assertEqual(data[3]["id"], attachment4.id)
+        self.assertEqual(data[3]["question_id"], "file")
+        self.assertEqual(data[3]["question_name"], "Upload a file")
+
     def test_attachments_list(self):
         self.client.force_authenticate(self.yoda)
         instance = self.create_form_instance(form=self.form_1, project=self.project)

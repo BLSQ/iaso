@@ -6,7 +6,6 @@ import {
 import { BudgetProcessList } from '../domains/Budget';
 import { BudgetProcessDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
 import { Calendar } from '../domains/Calendar/Calendar';
-import { CampaignHistory } from '../domains/Campaigns/CampaignHistory/CampaignHistory';
 import { Dashboard } from '../domains/Campaigns/CampaignsList/Dashboard';
 import { Chronogram } from '../domains/Chronogram/Chronogram';
 import { ChronogramDetails } from '../domains/Chronogram/ChronogramDetails';
@@ -54,6 +53,7 @@ import {
     baseUrls,
 } from './urls';
 import { CampaignDetails } from '../domains/Campaigns/CampaignDetails';
+import { CampaignHistory } from '../domains/Campaigns/CampaignHistory/CampaignHistory';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {

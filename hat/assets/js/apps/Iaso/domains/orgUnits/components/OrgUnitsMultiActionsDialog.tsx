@@ -25,7 +25,7 @@ import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
 import { useSourceVersionIds } from '../hooks/utils/useSourceVersionIds';
 import MESSAGES from '../messages';
@@ -138,7 +138,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus();
+    } = useGetOrgUnitValidationStatus();
     const handleSetEditGroups = editEnabled => {
         if (!editEnabled) {
             setGroupsAdded([]);

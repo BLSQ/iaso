@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponse
 from qr_code.qrcode.maker import make_qr_code_image
 from qr_code.qrcode.utils import QRCodeOptions
@@ -6,7 +6,7 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 
-from iaso.models import Project
+from iaso.models import Project, ProjectFeatureFlags
 
 from ...permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION
 from ..common import ModelViewSet
@@ -39,7 +39,12 @@ class ProjectsViewSet(ModelViewSet):
         querystring_serializer.is_valid(raise_exception=True)
         bypass_restrictions = querystring_serializer.validated_data.get("bypass_restrictions")
 
-        projects = Project.objects.filter(account=self.request.user.iaso_profile.account)
+        projects = Project.objects.filter(account=self.request.user.iaso_profile.account).prefetch_related(
+            Prefetch(
+                "projectfeatureflags_set",
+                queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
+            )
+        )
 
         if not bypass_restrictions:
             projects = projects.filter_on_user_projects(self.request.user)

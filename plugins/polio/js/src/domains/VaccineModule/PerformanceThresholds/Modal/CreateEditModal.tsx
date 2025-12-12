@@ -99,7 +99,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                 setFieldTouched('warning_threshold', false);
             },
         };
-    }, [setFieldValue, setFieldTouched, formik.values.success_threshold]);
+    }, [setFieldValue, setFieldTouched, formik.values.warning_threshold]);
     const failIconProps = useMemo(() => {
         return {
             label: MESSAGES.failThreshold,
@@ -113,7 +113,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                 setFieldTouched('fail_threshold', false);
             },
         };
-    }, [setFieldValue, setFieldTouched, formik.values.success_threshold]);
+    }, [setFieldValue, setFieldTouched, formik.values.fail_threshold]);
 
     return (
         <FormikProvider value={formik}>

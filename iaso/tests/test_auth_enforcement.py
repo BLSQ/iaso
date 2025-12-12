@@ -80,8 +80,7 @@ CONVERTER_SAMPLES = {
     "int": "1",
     "str": "dummy",
     "slug": "dummy-slug",
-    # "uuid": "11111111-1111-1111-1111-111111111111",
-    "path": "field",  # important for <path:>
+    "path": "field",
     "uuid": "385689b3b55f4739b80dcba5540c5f87",
     "form_uuid": "385689b3b55f4739b80dcba5540c5f87",
     "url": "https://demo.com",

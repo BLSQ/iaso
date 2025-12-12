@@ -26,6 +26,7 @@ NUTRITION_PROGRAMMES = [
     ("TSFP", _("TSFP")),
     ("OTP", _("OTP")),
     ("OTP - Under 6", _("OTP - Under 6")),
+    ("BSFP", _("BSFP")),
     ("breastfeeding", _("Breastfeeding")),
     ("pregnant", _("Pregnant")),
 ]
@@ -45,6 +46,7 @@ ADMISSION_TYPES = [
     ("referred_from_otp_sam", _("Referred from OTP (SAM)")),
     ("referred_from_sc", _("Referred from SC")),
     ("referred_from_tsfp_mam", _("Referred from TSFP (MAM)")),
+    ("referred_from_BSFP", _("Referred from BSFP")),
     ("relapse", _("Relapse")),
     ("returned_defaulter", _("Returned defaulter")),
     ("returned_referral", _("Returned referral")),

@@ -181,13 +181,15 @@ class ETL:
         exit_type = None
         if visit.get("new_programme", None) is not None and visit.get("new_programme", None) == "NONE":
             exit_type = visit.get("reason_for_not_continuing", None)
-        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP") and (
-            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
-        ):
+        elif (
+            (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP")
+            and (visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1")
+        ) or (visit.get("eligible_for_TSFP") is not None and visit.get("eligible_for_TSFP") == "1"):
             exit_type = "transfer_to_tsfp"
-        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "OTP") and (
-            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
-        ):
+        elif (
+            (visit.get("new_programme") is not None and visit.get("new_programme") == "OTP")
+            and (visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1")
+        ) or (visit.get("eligible_for_OTP") is not None and visit.get("eligible_for_OTP") == "1"):
             exit_type = "transfer_to_otp"
         elif (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1") or (
             visit.get("transfer_from_otp__bool__") is not None and visit.get("transfer_from_otp__bool__") == "1"
@@ -266,8 +268,7 @@ class ETL:
         followUp_steps.insert(0, admission)
         return followUp_steps
 
-    def exit_by_defaulter(self, visits, visit, anthropometric_visit_forms):
-        exit = None
+    def exit_by_defaulter(self, visits, visit, anthropometric_visit_forms, exit):
         next_visit_date = ""
         next_visit_days = 0
         nextSecondVisitDate = ""
@@ -285,6 +286,8 @@ class ETL:
             "ethiopia_child_assistance_follow_up",
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",
+            "Anthropometric_BSFP_child_2",
+            "PBWG_BSFP",
         ]:
             if visit.get("next_visit__date__") is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
@@ -366,7 +369,7 @@ class ETL:
         if visit["form_id"] in anthropometric_visit_form:
             default_admission_form = visit["form_id"]
             current_journey["instance_id"] = visit.get("instance_id", None)
-            current_journey["start_date"] = visit.get("start_date", None)
+            current_journey["start_date"] = visits[0].get("date", visit.get("start_date", None))
             current_journey["initial_weight"] = visit.get("initial_weight", None)
             current_journey["muac_size"] = visit.get("muac", visit.get("muac_size"))
             current_journey["whz_score"] = visit.get("whz_score", None)
@@ -395,6 +398,11 @@ class ETL:
             current_journey["discharge_weight"] = visit.get("discharge_weight", None)
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
+            exit = {
+                "exit_type": current_journey.get("exit_type"),
+                "start_date": current_journey.get("start_date"),
+                "end_date": datetime.strptime(current_journey.get("end_date"), "%Y-%m-%d"),
+            }
 
         """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
         admission form(previous form) and next visit date in the antropometric followup visit form.
@@ -403,21 +411,20 @@ class ETL:
 
         if visit["form_id"] in default_anthropometric_followup_forms:
             index = index - 1
-            exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+            exit = self.exit_by_defaulter(visits, visits[index], followup_forms, exit)
         else:
-            exit = self.exit_by_defaulter(visits, visit, followup_forms)
-
+            exit = self.exit_by_defaulter(visits, visit, followup_forms, exit)
         if (
             exit is not None
             and exit.get("exit_type") is not None
-            and current_journey.get("exit_type") is None
+            and exit.get("end_date") is not None
             and current_journey.get("start_date") is not None
         ):
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
             duration = (
                 datetime.strptime(
-                    datetime.strftime(exit["end_date"], "%Y-%m-%d"),
+                    datetime.strftime(exit.get("end_date"), "%Y-%m-%d"),
                     "%Y-%m-%d",
                 )
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
@@ -444,14 +451,18 @@ class ETL:
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
         ration_size = ""
-        if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
-            step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
+        if (
+            (step.get("net_given") is not None and step.get("net_given") == "yes")
+            or (step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1")
+            or (step.get("_net") is not None and step.get("_net") == "1")
         ):
             assistance = {"type": "Mosquito Net", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if (step.get("soap_given") is not None and step.get("soap_given") == "yes") or (
-            step.get("soap_given__bool__") is not None and step.get("soap_given__bool__") == "1"
+        if (
+            (step.get("soap_given") is not None and step.get("soap_given") == "yes")
+            or (step.get("soap_given__bool__") is not None and step.get("soap_given__bool__") == "1")
+            or (step.get("_soap") is not None and step.get("_soap") == "1")
         ):
             assistance = {"type": "Soap", "quantity": quantity}
             given_assistance.append(assistance)
@@ -497,7 +508,7 @@ class ETL:
             given_assistance.append(assistance)
 
         if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
-            quantity = 0
+            quantity = step.get("quantity", 0)
             ration_type = ""
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets", 0)
@@ -506,6 +517,8 @@ class ETL:
 
             if step.get("ration_to_distribute") is not None:
                 ration_type = step.get("ration_to_distribute")
+            if step.get("ration") is not None:
+                ration_type = step.get("ration")
             assistance = {
                 "type": ration_type,
                 "quantity": quantity,
@@ -709,6 +722,8 @@ class ETL:
             new_journey_after_transfer["initial_weight"] = current_journey.get("discharge_weight")
         journey.append(current_journey)
         if new_journey_after_transfer.get("programme_type") is not None:
+            if current_journey.get("nutrition_programme") == "BSFP":
+                new_journey_after_transfer["admission_type"] = "referred_from_BSFP"
             journey.append(new_journey_after_transfer)
         return journey
 
@@ -967,7 +982,6 @@ class ETL:
         )
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
-        dataElements = None
         # Reading the dhis2 datalement mapper json file
         with open("plugins/wfp/dhis2_mapper.json") as mapper:
             data = json.load(mapper)
@@ -981,7 +995,8 @@ class ETL:
                 dataSet["period"] = period
                 journeys_by_program_type = groupby(list(journey_period), key=itemgetter("programme_type"))
                 dataValues.extend(self.map_dhis2_data(journeys_by_program_type, data))
-            dataSet["dataValues"] = dataValues
+            dataSet["dataValues"] = sorted(dataValues, key=itemgetter("value"), reverse=True)
+
             dhis2_aggregated_data.append(dataSet)
         return dhis2_aggregated_data
 
@@ -993,7 +1008,7 @@ class ETL:
             categories = []
             sub_categories = []
             if program_type == "U5":
-                categories = ["screening_reporting", "tsfp_reporting", "otp_reporting"]
+                categories = ["screening_reporting", "tsfp_reporting", "otp_reporting", "bsfp_reporting"]
                 sub_categories = [
                     "muac_under_11_5",
                     "muac_11_5_12_4",
@@ -1005,7 +1020,7 @@ class ETL:
                 ]
                 journey = groupby(list(journey_by_program), key=itemgetter("gender"))
             elif program_type == "PLW":
-                categories = ["screening_reporting", "tsfp_reporting"]
+                categories = ["screening_reporting", "tsfp_reporting", "bsfp_reporting"]
                 sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23", "total_with_exit_type"]
                 journey = groupby(list(journey_by_program), key=itemgetter("nutrition_programme"))
 
@@ -1029,6 +1044,9 @@ class ETL:
                             dataElement_by_sub_category = dataElement.get("tsfp_reporting")
                         elif nutrition_programme == "OTP":
                             dataElement_by_sub_category = dataElement.get("otp_reporting")
+                        elif nutrition_programme == "BSFP":
+                            dataElement_by_sub_category = dataElement.get("bsfp_reporting")
+                            sub_categories = ["new_case"]
                         if dataElement_by_sub_category is not None:
                             if dataElement_by_category is not None:
                                 dataElement_by_main_category = dataElement_by_category.get(main_category)
@@ -1041,4 +1059,9 @@ class ETL:
                                             rows[sub_category] = rows["total_beneficiary"]
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": rows[sub_category]})
+        dataValues = list(
+            {
+                (dataValue["dataElement"], dataValue["categoryOptionCombo"]): dataValue for dataValue in dataValues
+            }.values()
+        )
         return dataValues

@@ -52,4 +52,6 @@ class CountryUsersGroupViewSet(ModelViewSet):
             groups_to_create = [CountryUsersGroup(country=country) for country in countries_without_group]
             CountryUsersGroup.objects.bulk_create(groups_to_create, ignore_conflicts=True)
 
-        return CountryUsersGroup.objects.filter(country__in=countries)
+        queryset = CountryUsersGroup.objects.select_related("country").prefetch_related("users", "teams")
+
+        return queryset.filter(country__in=countries)

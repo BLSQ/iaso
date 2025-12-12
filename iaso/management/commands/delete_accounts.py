@@ -1,4 +1,6 @@
 import datetime
+import random
+import time
 import traceback
 
 from collections import defaultdict
@@ -10,7 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
 from django.core.management.base import BaseCommand
 from django.db import connection
-from django.db.models import Count, Q, TextField
+from django.db.models import Count, Q, Subquery, TextField
 from django.db.models.functions import Cast
 from django_sql_dashboard.models import Dashboard
 
@@ -20,10 +22,12 @@ from iaso.models import (
     BulkCreateUserCsvFile,
     CommentIaso,
     ExportLog,
+    Form,
     OrgUnitType,
     StorageDevice,
     StorageLogEntry,
     StoragePassword,
+    Task,
     TenantUser,
 )
 from iaso.models.base import (
@@ -33,11 +37,9 @@ from iaso.models.base import (
     ExternalCredentials,
     Mapping,
     Profile,
-    Task,
 )
 from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
-from iaso.models.forms import Form
 from iaso.models.instances import Instance, InstanceFile, InstanceLock
 from iaso.models.microplanning import Assignment, Planning
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -54,6 +56,51 @@ def fullname(m):
     if m is None:
         return ""
     return m.__module__ + "." + m.__name__
+
+
+def chunked_delete_records(queryset, chunk_size=1000):
+    """
+    Efficiently deletes a large queryset in smaller chunks.
+    """
+    model = queryset.model
+    total_deleted = 0
+    start_time = time.time()
+
+    # Use .iterator() to avoid loading all 1.2M objects into memory
+    pk_list = list(queryset.values_list("pk", flat=True).iterator())
+    total_to_delete = len(pk_list)
+
+    print(f"Starting deletion of {total_to_delete} records...", model)
+
+    # Iterate over primary keys in chunks
+    for i in range(0, total_to_delete, chunk_size):
+        chunk_pks = pk_list[i : i + chunk_size]
+
+        try:
+            # Use QuerySet._raw_delete() for efficiency within the database
+            # but fallback to .delete() in the except if there were other references to cascade
+            chunk_queryset = model.objects.filter(pk__in=chunk_pks)
+            deleted_count = chunk_queryset._raw_delete(using=queryset.db)
+            total_deleted += deleted_count
+
+            elapsed_time = time.time() - start_time
+            print(f"Deleted {total_deleted} / {total_to_delete} records so far in {elapsed_time:.2f}s...")
+        except Exception as err:
+            print("failed to _raw_delete, trying with delete", err, repr(err), err.args)
+            try:
+                chunk_queryset = model.objects.filter(pk__in=chunk_pks)
+                deleted_count = chunk_queryset.delete()
+                elapsed_time = time.time() - start_time
+                print(f"Deleted {total_deleted} / {total_to_delete} records so far in {elapsed_time:.2f}s...")
+            except Exception as err:
+                print(
+                    f"Failed to delete chunk :  {total_deleted} / {total_to_delete} | {elapsed_time:.2f}s...",
+                    err,
+                    repr(err),
+                )
+
+    end_time = time.time()
+    print(f"Finished deleting all {total_deleted} records in total elapsed time: {end_time - start_time:.2f} seconds.")
 
 
 def dump_counts():
@@ -100,11 +147,125 @@ def dump_modification_stats():
         print(ContentType.objects.get(pk=tuple["content_type"]), tuple["content_type_count"])
 
 
+# how to test this crazyness
+#
+# launch the seed commands for different versions
+#    docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.40.10
+#    docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.42.3.1
+#    docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.42.3.1
+#
+# this clearly won't reproduce all potential issues in like in production
+# (seed gives low volumes, good data quality)
+#
+# then launch the delete command with appropriate account to delete (or don't specify it a list will be displayed)
+#
+#    docker compose run --rm iaso manage delete_accounts --account-to-keep 1
+
+
 class Command(BaseCommand):
     help = "Local hosting delete all the data related to other accounts"
 
     def add_arguments(self, parser):
         parser.add_argument("--account-to-keep", type=int)
+
+    def delete_project(self, account, project):
+        Form.objects.raw(
+            f"delete vector_control_apiimport where headers->>'QUERY_STRING' like 'app_id={project.app_id}%'"
+        )
+        forms = Form.objects_include_deleted.filter(projects__in=[project])
+
+        print(
+            "OrgUnitChangeRequestConfiguration delete",
+            project.orgunitchangerequestconfiguration_set.all().delete(),
+        )
+
+        print(
+            "OrgUnit remove reference_instance",
+            OrgUnitReferenceInstance.objects.filter(instance__in=Instance.objects.filter(project=project)).delete(),
+        )
+        print("Instance update", Instance.objects.filter(project=project).update(entity=None))
+
+        for entity_type in EntityType.objects.filter(account=account):
+            if entity_type.reference_form:
+                chunked_delete_records(
+                    Entity.objects_include_deleted.filter(
+                        attributes__in=Subquery(entity_type.reference_form.instances.values("id"))
+                    )
+                )
+                print(
+                    "reference form: entities delete",
+                    Entity.objects_include_deleted.filter(attributes__in=entity_type.reference_form.instances.all())
+                    .all()
+                    .delete(),
+                )
+
+                print(
+                    "reference form : InstanceFile delete",
+                    InstanceFile.objects.filter(instance__in=entity_type.reference_form.instances.all()).delete(),
+                )
+                chunked_delete_records(entity_type.reference_form.instances.all())
+                print(
+                    "reference form : delete instances witht reference form",
+                    entity_type.reference_form.instances.all().delete(),
+                )
+
+        for entity in Entity.objects_include_deleted.filter(account=account):
+            if entity and entity.attributes:
+                print("Entity attributes", entity.attributes.delete())
+
+        print("Entity", Entity.objects_include_deleted.filter(account=account).delete())
+
+        print("EntityType", EntityType.objects.filter(account=account).delete())
+        print(
+            "InstanceFile delete",
+            InstanceFile.objects.filter(instance__in=Instance.objects.filter(project=project)).delete(),
+        )
+
+        chunked_delete_records(Instance.objects.filter(project=project))
+
+        print("InstanceFile delete", InstanceFile.objects.filter(instance__form__in=forms).delete())
+        print("Instance delete", Instance.objects.filter(form__in=forms).delete())
+        print("Mapping", Mapping.objects.filter(form__in=forms).delete())
+        print("Forms", [f.name for f in forms])
+        for f in forms:
+            try:
+                print("Instance delete", Instance.objects.filter(form__in=forms).delete())
+                f.delete_hard()
+            except:
+                print("can't hard delete form ", f, "soft deleting")
+                f.delete()
+
+        print(
+            "Assignment",
+            Assignment.objects.filter(team__in=Team.objects.filter(project=project)).delete(),
+        )
+        print("Planning", Planning.objects.filter(project=project).delete())
+        print("Teams with parents")
+
+        teams = [t for t in Team.objects.order_by("path").all()]
+        teams.sort(key=lambda x: str(x.path).count("."), reverse=True)
+        # delete leafs before parents
+        for team in teams:
+            print("Hard delete team", team, team.path)
+            team.delete_hard()
+
+        datasources = project.data_sources.all()
+        for data_source in datasources:
+            print("missing related datasource", datasources)
+            print(
+                Entity.objects.filter(
+                    attributes__in=Instance.objects.filter(org_unit__version__in=data_source.versions.all()).all()
+                )
+                .all()
+                .delete()
+            )
+            print(InstanceFile.objects.filter(instance__org_unit__version__in=data_source.versions.all()).delete())
+            chunked_delete_records(Instance.objects.filter(org_unit__version__in=data_source.versions.all()))
+
+        print("deleting datasources might take awhile (all versions, orgunits, groups,...)")
+        print("datasources", datasources.delete())
+        print("StoragePassword", StoragePassword.objects.filter(project=project).delete())
+        print("project", project.delete())
 
     def delete_account(self, account):
         print("************ deleting data related to ", account.id, account.name)
@@ -119,121 +280,16 @@ class Command(BaseCommand):
 
             print("Instance without project", Instance.objects.filter(form=form, project=None).delete())
 
-            print(
-                form.name,
-                Instance.objects.filter(form=form)
-                .values("project__name")
-                .annotate(Count("project__name", distinct=True)),
-            )
-
         projects = Project.objects.filter(account=account)
         for project in projects:
             try:
-                Form.objects.raw(
-                    f"delete vector_control_apiimport where headers->>'QUERY_STRING' like 'app_id={project.app_id}%'"
-                )
-                forms = Form.objects_include_deleted.filter(projects__in=[project])
-
-                print(
-                    "OrgUnitChangeRequestConfiguration delete",
-                    project.orgunitchangerequestconfiguration_set.all().delete(),
-                )
-
-                print(
-                    "OrgUnit remove reference_instance",
-                    OrgUnitReferenceInstance.objects.filter(
-                        instance__in=Instance.objects.filter(project=project)
-                    ).delete(),
-                )
-                print("Instance update", Instance.objects.filter(project=project).update(entity=None))
-
-                for entity_type in EntityType.objects.filter(account=account):
-                    if entity_type.reference_form:
-                        print(
-                            "reference form: entities delete",
-                            Entity.objects_include_deleted.filter(
-                                attributes__in=entity_type.reference_form.instances.all()
-                            )
-                            .all()
-                            .delete(),
-                        )
-
-                        print(
-                            "reference form : InstanceFile delete",
-                            InstanceFile.objects.filter(
-                                instance__in=entity_type.reference_form.instances.all()
-                            ).delete(),
-                        )
-                        print(
-                            "reference form : delete instances witht reference form",
-                            entity_type.reference_form.instances.all().delete(),
-                        )
-
-                for entity in Entity.objects_include_deleted.filter(account=account):
-                    if entity and entity.attributes:
-                        print("Entity attributes", entity.attributes.delete())
-
-                print("Entity", Entity.objects_include_deleted.filter(account=account).delete())
-
-                print("EntityType", EntityType.objects.filter(account=account).delete())
-                print(
-                    "InstanceFile delete",
-                    InstanceFile.objects.filter(instance__in=Instance.objects.filter(project=project)).delete(),
-                )
-                print("Instance delete", Instance.objects.filter(project=project).delete())
-                print("InstanceFile delete", InstanceFile.objects.filter(instance__form__in=forms).delete())
-                print("Instance delete", Instance.objects.filter(form__in=forms).delete())
-                print("Mapping", Mapping.objects.filter(form__in=forms).delete())
-                print("Forms", [f.name for f in forms])
-                for f in forms:
-                    try:
-                        print("Instance delete", Instance.objects.filter(form__in=forms).delete())
-                        f.delete_hard()
-                    except:
-                        print("can't hard delete form ", f, "soft deleting")
-                        f.delete()
-
-                print(
-                    "Assignment",
-                    Assignment.objects.filter(team__in=Team.objects.filter(project=project)).delete(),
-                )
-                print("Planning", Planning.objects.filter(project=project).delete())
-                print("Teams with parents")
-
-                teams = [t for t in Team.objects.order_by("path").all()]
-                teams.sort(key=lambda x: str(x.path).count("."), reverse=True)
-                # delete leafs before parents
-                for team in teams:
-                    print("Hard delete team", team, team.path)
-                    team.delete_hard()
-
-                datasources = project.data_sources.all()
-                for data_source in datasources:
-                    print("missing related datasource", datasources)
-                    print(
-                        Entity.objects.filter(
-                            attributes__in=Instance.objects.filter(
-                                org_unit__version__in=data_source.versions.all()
-                            ).all()
-                        )
-                        .all()
-                        .delete()
-                    )
-
-                    print(
-                        InstanceFile.objects.filter(instance__org_unit__version__in=data_source.versions.all()).delete()
-                    )
-                    print(Instance.objects.filter(org_unit__version__in=data_source.versions.all()).delete())
-                print("deleting datasources might take awhile")
-                print("datasources", datasources.delete())
-                print("StoragePassword", StoragePassword.objects.filter(project=project).delete())
-                print("project", project.delete())
+                self.delete_project(account, project)
             except Exception as err:
                 # Sometimes the "delete by project" don't because there are multiple projects sharing a common pyramid
                 # the statements outside this will try to take care of it
                 # that's why I'm catching the error, and give a chance to the next project and the code below
-                traceback.print_exception(type(err), err, err.__traceback__)
-                print("can't delete project", project, err, traceback.format_exc())
+                # traceback.print_exception(type(err), err, err.__traceback__)
+                print("can't delete project", project, type(err), traceback.format_exc())  # , traceback.format_exc())
 
         profiles = Profile.objects.filter(account=account)
 
@@ -382,12 +438,15 @@ class Command(BaseCommand):
         counts_before = dump_counts()
 
         print("keeping ", account_to_keep.name)
-        accounts = Account.objects.filter(~Q(id=account_id_to_keep)).order_by("id")
+        accounts = Account.objects.filter(~Q(id=account_id_to_keep)).order_by("-id")
         print("all the others")
+
+        # sometime we are hitting always the same wall, so let's shuffle hoping another account will be processable
+        random.shuffle(accounts)
 
         cursor = connection.cursor()
 
-        # OLD triplelym table, it's safe
+        # OLD triplelym table, it's safe to delete and ignore if not there
         try:
             cursor.execute("delete from users_profile")
         except django.db.utils.ProgrammingError:
@@ -420,8 +479,8 @@ class Command(BaseCommand):
                 # uncomment to dry run
                 # raise Exception("don't delete for now")
             except Exception as err:
-                traceback.print_exception(type(err), err, err.__traceback__)
-                print("can't delete account", account, err, traceback.format_exc())
+                # traceback.print_exception(type(err), err, err.__traceback__)
+                print("can't delete account", type(err))  # account, err, traceback.format_exc())
 
         # TODO delete remaining
         # iaso.models.base.DataSource	27	27	0
@@ -447,7 +506,7 @@ class Command(BaseCommand):
                 print(Instance.objects.filter(org_unit__version__in=data_source.versions.all()).delete())
             except Exception as err:
                 traceback.print_exception(type(err), err, err.__traceback__)
-                print("can't delete account", account, err, traceback.format_exc())
+                print("can't delete account", err, traceback.format_exc())
 
         print(datasources_to_delete.delete())
 
@@ -472,9 +531,19 @@ class Command(BaseCommand):
         print(Device.objects.filter(projects=None).delete())
 
         for f in forms_without_projects:
-            print(OrgUnitType.reference_forms.through.objects.filter(form=f).delete())
+            print("form_without_projects", f)
+            print("referenceforms", OrgUnitType.reference_forms.through.objects.filter(form=f).delete())
             f.org_unit_types.clear()
+            print(
+                "instances files used one of the form_versions",
+                InstanceFile.objects.filter(instance__form_version__in=f.form_versions.all()).delete(),
+            )
+            print(
+                "instances used one of the form_versions",
+                Instance.objects.filter(form_version__in=f.form_versions.all()).delete(),
+            )
             print("deleting hard", f.name)
+
             f.delete_hard()
 
         print("sql dashboard", Dashboard.objects.all().delete())

@@ -1,14 +1,19 @@
 import typing
 
 from django.core.files import File
+from django.db.models import Exists, OuterRef
 from django.utils.timezone import now
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
+from iaso.api.forms import FormSerializer
 from iaso.api.query_params import APP_ID
 from iaso.models import (
     AGGREGATE,
     Form,
+    FormAttachment,
     Instance,
     Mapping,
     OrgUnit,
@@ -794,3 +799,54 @@ class FormsAPITestCase(APITestCase):
         form_ids = [form["id"] for form in response.json()["forms"]]
         # Assert that each form id appears only once
         self.assertEqual(len(form_ids), len(set(form_ids)), "Duplicate forms found in API response!")
+
+    def test_forms_list_has_attachments_only_when_requested(self):
+        """
+        Ensure has_attachments is only returned when explicitly requested and uses the
+        annotated value from the queryset.
+        """
+        FormAttachment.objects.create(
+            form=self.form_1,
+            name="media.png",
+            file=self.create_file_mock(name="media.png"),
+            md5="0" * 32,
+        )
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get("/api/forms/?fields=id,name", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        for form_data in response.json()["forms"]:
+            self.assertNotIn("has_attachments", form_data)
+
+        response = self.client.get(
+            "/api/forms/?fields=id,name,has_attachments", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertTrue(self.find_forms_data_for(response, self.form_1)["has_attachments"])
+        self.assertFalse(self.find_forms_data_for(response, self.form_2)["has_attachments"])
+
+    def test_form_serializer_uses_annotation_for_has_attachments(self):
+        """
+        The serializer should use the annotated has_attachments flag without issuing
+        extra database queries.
+        """
+        FormAttachment.objects.create(
+            form=self.form_1,
+            name="media-annotated.png",
+            file=self.create_file_mock(name="media-annotated.png"),
+            md5="f" * 32,
+        )
+
+        annotated_form = (
+            Form.objects.filter(pk=self.form_1.pk)
+            .annotate(has_attachments=Exists(FormAttachment.objects.filter(form_id=OuterRef("pk"))))
+            .get()
+        )
+
+        api_request = Request(APIRequestFactory().get("/api/forms/?fields=id,has_attachments"))
+        api_request.user = self.yoda
+
+        with self.assertNumQueries(0):
+            serializer = FormSerializer(annotated_form, context={"request": api_request})
+            self.assertTrue(serializer.data["has_attachments"])

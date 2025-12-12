@@ -86,7 +86,6 @@ class PerformanceThresholds(SoftDeletableModel):
     def is_json_logic_expression(data):
         if not data:
             return False
-
         if isinstance(data, str):
             dict_data = json.loads(data)
         else:

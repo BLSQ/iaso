@@ -53,6 +53,7 @@ import {
     EMBEDDED_VACCINE_STOCK_URL,
     baseUrls,
 } from './urls';
+import { PerformanceThresholds } from '../domains/VaccineModule/PerformanceThresholds/PerformanceThresholds';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -233,7 +234,26 @@ export const stockVariationPath: RoutePath = {
         STOCK_MANAGEMENT_READ_ONLY,
     ],
 };
-
+export const nationalLogisticsPlanPath: RoutePath = {
+    baseUrl: baseUrls.nationalLogisticsPlan,
+    routerUrl: `${baseUrls.nationalLogisticsPlan}/*`,
+    element: <NationalLogisticsPlan />,
+    permissions: [
+        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    ],
+};
+export const performanceThresholdsPath: RoutePath = {
+    baseUrl: baseUrls.performanceThresholds,
+    routerUrl: `${baseUrls.performanceThresholds}/*`,
+    element: <PerformanceThresholds />,
+    permissions: [
+        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    ],
+};
 export const notificationPath: RoutePath = {
     baseUrl: baseUrls.notification,
     routerUrl: `${baseUrls.notification}/*`,
@@ -275,16 +295,6 @@ export const chronogramDetailsPath: RoutePath = {
     element: <ChronogramDetails />,
     permissions: [CHRONOGRAM, CHRONOGRAM_RESTRICTED_WRITE],
 };
-export const nationalLogisticsPlanPath: RoutePath = {
-    baseUrl: baseUrls.nationalLogisticsPlan,
-    routerUrl: `${baseUrls.nationalLogisticsPlan}/*`,
-    element: <NationalLogisticsPlan />,
-    permissions: [
-        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
-        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
-        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
-    ],
-};
 
 export const routes: (RoutePath | AnonymousRoutePath)[] = [
     campaignsPath,
@@ -318,4 +328,5 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     nationalLogisticsPlanPath,
     embeddedLqasCountryPath,
     embeddedLqasAfroPath,
+    performanceThresholdsPath,
 ];

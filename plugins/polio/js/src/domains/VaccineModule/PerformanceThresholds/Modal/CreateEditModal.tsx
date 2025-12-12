@@ -72,6 +72,49 @@ export const CreateEditModal: FunctionComponent<Props> = ({
 
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
+    const successIconProps = useMemo(() => {
+        return {
+            label: MESSAGES.successThreshold,
+            value: formik.values.success_threshold
+                ? (convertJsonLogicToString(
+                      formik.values.success_threshold,
+                  ) as string)
+                : '',
+            onClear: () => {
+                setFieldValue('success_threshold', undefined);
+                setFieldTouched('success_threshold', false);
+            },
+        };
+    }, [setFieldValue, setFieldTouched, formik.values.success_threshold]);
+    const warningIconProps = useMemo(() => {
+        return {
+            label: MESSAGES.warningThreshold,
+            value: formik.values.warning_threshold
+                ? (convertJsonLogicToString(
+                      formik.values.warning_threshold,
+                  ) as string)
+                : '',
+            onClear: () => {
+                setFieldValue('warning_threshold', undefined);
+                setFieldTouched('warning_threshold', false);
+            },
+        };
+    }, [setFieldValue, setFieldTouched, formik.values.success_threshold]);
+    const failIconProps = useMemo(() => {
+        return {
+            label: MESSAGES.failThreshold,
+            value: formik.values.fail_threshold
+                ? (convertJsonLogicToString(
+                      formik.values.fail_threshold,
+                  ) as string)
+                : '',
+            onClear: () => {
+                setFieldValue('fail_threshold', undefined);
+                setFieldTouched('fail_threshold', false);
+            },
+        };
+    }, [setFieldValue, setFieldTouched, formik.values.success_threshold]);
+
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -107,18 +150,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                             formik.values.success_threshold ?? defaultLogic
                         }
                         fields={queryBuilderFields}
-                        iconProps={{
-                            label: MESSAGES.successThreshold,
-                            value: formik.values.success_threshold
-                                ? (convertJsonLogicToString(
-                                      formik.values.success_threshold,
-                                  ) as string)
-                                : '',
-                            onClear: () => {
-                                setFieldValue('success_threshold', undefined);
-                                setFieldTouched('success_threshold', false);
-                            },
-                        }}
+                        iconProps={successIconProps}
                     />
                 </Box>
                 <Box mb={2}>
@@ -131,18 +163,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                             formik.values.warning_threshold ?? defaultLogic
                         }
                         fields={queryBuilderFields}
-                        iconProps={{
-                            label: MESSAGES.warningThreshold,
-                            value: formik.values.warning_threshold
-                                ? (convertJsonLogicToString(
-                                      formik.values.warning_threshold,
-                                  ) as string)
-                                : '',
-                            onClear: () => {
-                                setFieldValue('warning_threshold', undefined);
-                                setFieldTouched('warning_threshold', false);
-                            },
-                        }}
+                        iconProps={warningIconProps}
                     />
                 </Box>
                 <Box mb={2}>
@@ -155,18 +176,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                             formik.values.fail_threshold ?? defaultLogic
                         }
                         fields={queryBuilderFields}
-                        iconProps={{
-                            label: MESSAGES.failThreshold,
-                            value: formik.values.fail_threshold
-                                ? (convertJsonLogicToString(
-                                      formik.values.fail_threshold,
-                                  ) as string)
-                                : '',
-                            onClear: () => {
-                                setFieldValue('fail_threshold', undefined);
-                                setFieldTouched('fail_threshold', false);
-                            },
-                        }}
+                        iconProps={failIconProps}
                     />
                 </Box>
             </ConfirmCancelModal>

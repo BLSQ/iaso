@@ -6,7 +6,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { Table } from './Table';
 import { Filters } from './Filters';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import { useStyles } from '../../../styles/theme';
 import { CreatePerformanceThreshold } from './Modal/CreateEditModal';
 
@@ -22,12 +22,9 @@ export const PerformanceThresholds: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
-                <Grid container justifyContent="flex-end">
-                    <Box mt={2}>
-                        <CreatePerformanceThreshold iconProps={{}} />
-                    </Box>
-                </Grid>
-
+                <Box mt={2} justifyContent="flex-end" display="flex">
+                    <CreatePerformanceThreshold iconProps={{}} />
+                </Box>
                 <Table params={params} />
             </Box>
         </>

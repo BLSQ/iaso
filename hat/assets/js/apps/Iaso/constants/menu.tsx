@@ -493,4 +493,3 @@ export const useMenuItems = (): MenuItems => {
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };
-export const DOC_URL = 'https://docs.openiaso.com';

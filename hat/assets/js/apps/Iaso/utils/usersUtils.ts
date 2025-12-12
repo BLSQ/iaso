@@ -61,6 +61,8 @@ export type Account = {
     feature_flags: string[];
     modules: string[];
     custom_translations: Record<string, Record<string, string>>;
+    user_manual_path?: string;
+    discussion_manual_path?: string;
 };
 
 export type User = {

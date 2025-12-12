@@ -73,6 +73,8 @@ def setup_account(account_name, server_url, username, password):
             "SHOW_LINK_INSTANCE_REFERENCE",
             "ALLOW_CATCHMENT_EDITION",
         ],
+        "create_main_org_unit": True,
+        "create_demo_form": True,
     }
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)

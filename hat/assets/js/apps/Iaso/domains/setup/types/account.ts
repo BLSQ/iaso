@@ -8,6 +8,8 @@ export type SaveAccountQuery = {
     email_invitation: boolean;
     language: string;
     modules: string[];
+    create_main_org_unit: boolean;
+    create_demo_form: boolean;
 };
 
 export type Module = {

@@ -1284,3 +1284,43 @@ class SetupAccountApiTestCase(APITestCase):
         # Project should have proper app_id
         expected_app_id = "unittest_account"
         self.assertEqual(project.app_id, expected_app_id)
+
+    def test_setup_account_create_main_org_unit_false(self):
+        """Test that setting create_main_org_unit to False skips org unit creation"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+            "create_main_org_unit": False,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that main org unit was NOT created
+        org_unit = m.OrgUnit.objects.filter(name="Main org unit").first()
+        self.assertIsNone(org_unit)
+
+        # Check that main org unit type was NOT created
+        org_unit_type = m.OrgUnitType.objects.filter(name="Main org unit type").first()
+        self.assertIsNone(org_unit_type)
+
+    def test_setup_account_create_demo_form_false(self):
+        """Test that setting create_demo_form to False skips demo form creation"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+            "create_demo_form": False,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that demo form was NOT created
+        form = m.Form.objects.filter(name="Demo Form").first()
+        self.assertIsNone(form)

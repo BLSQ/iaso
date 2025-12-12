@@ -94,4 +94,12 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching modules',
         id: 'iaso.snackBar.fetchModules',
     },
+    createMainOrgUnit: {
+        defaultMessage: 'Create main organization unit',
+        id: 'iaso.setup.createMainOrgUnit',
+    },
+    createDemoForm: {
+        defaultMessage: 'Create demo form',
+        id: 'iaso.setup.createDemoForm',
+    },
 });

@@ -56,6 +56,16 @@ class SetupAccountSerializer(serializers.Serializer):
     feature_flags = serializers.JSONField(
         required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
     )
+    create_main_org_unit = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text="Whether to create a main org unit and org unit type during account setup",
+    )
+    create_demo_form = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text="Whether to create a demo form during account setup",
+    )
     created_account_id = serializers.IntegerField(read_only=True)
 
     def validate_account_name(self, value):
@@ -187,36 +197,47 @@ class SetupAccountSerializer(serializers.Serializer):
         data_source.default_version = source_version
         data_source.save()
 
-        # Create a main org unit type for immediate use
-        main_org_unit_type = OrgUnitType.objects.create(
-            name="Main org unit type",
-            short_name="Main ou type",
-            depth=0,
-        )
-        main_org_unit_type.projects.set([initial_project])
+        # Create a main org unit type and org unit if requested
+        create_main_org_unit = validated_data.get("create_main_org_unit", True)
+        main_org_unit_type = None
 
-        # Create a main org unit using the created type
-        OrgUnit.objects.create(
-            name="Main org unit",
-            org_unit_type=main_org_unit_type,
-            version=source_version,
-            validation_status=OrgUnit.VALIDATION_VALID,
-        )
+        if create_main_org_unit:
+            # Create a main org unit type for immediate use
+            main_org_unit_type = OrgUnitType.objects.create(
+                name="Main org unit type",
+                short_name="Main ou type",
+                depth=0,
+            )
+            main_org_unit_type.projects.set([initial_project])
 
-        # Create a demo form using the demo form file
-        demo_form = Form.objects.create(
-            name="Demo Form",
-            form_id="demo_form",
-            location_field="gps",
-        )
-        demo_form.org_unit_types.add(main_org_unit_type)
-        demo_form.projects.add(initial_project)
+            # Create a main org unit using the created type
+            OrgUnit.objects.create(
+                name="Main org unit",
+                org_unit_type=main_org_unit_type,
+                version=source_version,
+                validation_status=OrgUnit.VALIDATION_VALID,
+            )
 
-        # Create the first version of the form using the demo form file
-        with open("setuper/data/demo_form.xlsx", "rb") as demo_form_file:
-            survey = parsing.parse_xls_form(demo_form_file)
-            demo_form_file.seek(0)  # Reset file pointer to beginning
-            FormVersion.objects.create_for_form_and_survey(form=demo_form, survey=survey, xls_file=File(demo_form_file))
+        # Create a demo form using the demo form file if requested
+        create_demo_form = validated_data.get("create_demo_form", True)
+
+        if create_demo_form:
+            demo_form = Form.objects.create(
+                name="Demo Form",
+                form_id="demo_form",
+                location_field="gps",
+            )
+            if main_org_unit_type:
+                demo_form.org_unit_types.add(main_org_unit_type)
+            demo_form.projects.add(initial_project)
+
+            # Create the first version of the form using the demo form file
+            with open("setuper/data/demo_form.xlsx", "rb") as demo_form_file:
+                survey = parsing.parse_xls_form(demo_form_file)
+                demo_form_file.seek(0)  # Reset file pointer to beginning
+                FormVersion.objects.create_for_form_and_survey(
+                    form=demo_form, survey=survey, xls_file=File(demo_form_file)
+                )
 
         # Get language from validated data, defaulting to English
         language = validated_data.get("language", "en")
@@ -269,6 +290,8 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             "project_feature_flags": [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD],
             "requesting_user": request.user.username if request.user else None,
             "requesting_user_id": request.user.id if request.user else None,
+            "create_main_org_unit": request.data.get("create_main_org_unit", True),
+            "create_demo_form": request.data.get("create_demo_form", True),
         }
 
         try:

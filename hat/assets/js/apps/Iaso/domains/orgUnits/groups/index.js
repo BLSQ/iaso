@@ -31,7 +31,10 @@ const Groups = () => {
     const { formatMessage } = useSafeIntl();
 
     const { data, isFetching } = useGetGroups(params);
-    const { mutate: deleteGroup, isLoading: deleting } = useDeleteGroups();
+    const { mutate: deleteGroup, isLoading: deleting } = useDeleteGroups({
+        params,
+        count: data?.count ?? 0,
+    });
     const { mutateAsync: saveGroup, isLoading: saving } = useSaveGroups();
     const { csvUrl, xlsxUrl } = usePrepareGroupExportUrls(params);
     const tableColumns = useTableColumns(params, deleteGroup, saveGroup);

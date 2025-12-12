@@ -7,6 +7,9 @@ import {
 } from '../../../../libs/Api';
 
 import MESSAGES from '../messages';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrl } from '../config';
+import { baseUrls } from 'Iaso/constants/urls';
 
 export const useGetGroups = params => {
     const newParams = {
@@ -39,6 +42,7 @@ export const useGetGroups = params => {
     );
 };
 
+
 export const useSaveGroups = () =>
     useSnackMutation(
         body =>
@@ -50,10 +54,21 @@ export const useSaveGroups = () =>
         ['groups'],
     );
 
-export const useDeleteGroups = () =>
-    useSnackMutation(
-        body => deleteRequest(`/api/groups/${body.id}/`),
-        MESSAGES.deleteSuccess,
-        MESSAGES.deleteError,
-        ['groups'],
-    );
+export const useDeleteGroups = ({ params, count }) => {
+    const onSuccess = useDeleteTableRow({
+        count,
+        params,
+        pageKey: 'page',
+        pageSizeKey: 'pageSize',
+        invalidateQueries: ['groups'],
+        baseUrl: baseUrls.groups,
+    });
+    return useSnackMutation({
+        mutationFn: body => deleteRequest(`/api/groups/${body.id}/`),
+        snackSuccessMessage: MESSAGES.deleteSuccess,
+        snackErrorMsg: MESSAGES.deleteError,
+        options: {
+            onSuccess
+        },
+    });
+}

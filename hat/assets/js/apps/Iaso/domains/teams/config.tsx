@@ -11,8 +11,8 @@ import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { useSaveTeam } from './hooks/requests/useSaveTeam';
 import MESSAGES from './messages';
 
-export const useTeamColumns = (): Column[] => {
-    const { mutate: deleteTeam } = useDeleteTeam();
+export const useTeamColumns = ({params, data}): Column[] => {
+    const { mutate: deleteTeam } = useDeleteTeam({params, count: data?.count ?? 0});
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
     return [

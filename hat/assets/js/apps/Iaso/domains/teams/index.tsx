@@ -26,7 +26,7 @@ export const Teams: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetTeams(apiParams);
     const defaultSorted = [{ id: 'id', desc: true }];
-    const columns = useTeamColumns();
+    const columns = useTeamColumns({params: apiParams, data});
 
     return (
         <>

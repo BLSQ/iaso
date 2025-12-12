@@ -14,10 +14,15 @@ import { DuplicatePlanning, EditPlanning } from './PlanningDialog';
 const getAssignmentUrl = (planning: Planning): string => {
     return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
 };
-export const ActionsCell: FunctionComponent<ColumnCell<Planning>> = ({
+
+interface ActionsCellProps extends ColumnCell<Planning> {
+    deletePlanning: (id: number) => void;
+}
+export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     row: { original: planning },
+    deletePlanning,
 }) => {
-    const { mutateAsync: deletePlanning } = useDeletePlanning();
+    
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>

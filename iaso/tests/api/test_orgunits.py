@@ -544,7 +544,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         def get_at_date(date: str):
             return self.client.get(
-                '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1", "date_open": "'
+                '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1", "open_date": "'
                 + date
                 + '"}]&limit=50'
             )

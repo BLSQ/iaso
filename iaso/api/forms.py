@@ -4,7 +4,7 @@ from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from django.db.models import BooleanField, Case, Count, Max, Q, When
+from django.db.models import BooleanField, Case, Count, Exists, Max, OuterRef, Prefetch, Q, When
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import permissions, serializers, status
@@ -19,7 +19,16 @@ from iaso.api.permission_checks import (
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
     ReadOnly,
 )
-from iaso.models import EntityDuplicateAnalyzis, Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
+from iaso.models import (
+    EntityDuplicateAnalyzis,
+    Form,
+    FormAttachment,
+    FormVersion,
+    OrgUnit,
+    OrgUnitType,
+    Project,
+    ProjectFeatureFlags,
+)
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
@@ -166,7 +175,9 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def get_has_attachments(obj: Form):
-        return len(obj.attachments.all()) > 0
+        if hasattr(obj, "has_attachments"):
+            return obj.has_attachments
+        return obj.attachments.exists()
 
     @staticmethod
     def get_possible_fields_with_latest_version(obj: Form):
@@ -319,6 +330,10 @@ class FormsViewSet(ModelViewSet):
                 ),
             )
 
+        if is_field_referenced("has_attachments", requested_fields, order) and not is_request_from_manifest:
+            attachment_exists = FormAttachment.objects.filter(form_id=OuterRef("pk"))
+            queryset = queryset.annotate(has_attachments=Exists(attachment_exists))
+
         if not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile
         else:
@@ -386,7 +401,7 @@ class FormsViewSet(ModelViewSet):
             #  - be smarter cfr is_field_referenced
             #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
 
-            queryset = queryset.prefetch_related(
+            prefetch_relations = [
                 "form_versions",
                 "projects",
                 "projects__feature_flags",
@@ -395,7 +410,15 @@ class FormsViewSet(ModelViewSet):
                 "org_unit_types__reference_forms",
                 "org_unit_types__sub_unit_types",
                 "org_unit_types__allow_creating_sub_unit_types",
-            )
+            ]
+            if not mobile:
+                prefetch_relations.append(
+                    Prefetch(
+                        "projects__projectfeatureflags_set",
+                        queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
+                    )
+                )
+            queryset = queryset.prefetch_related(*prefetch_relations)
 
         # optimize latest version loading to not trigger a select n+1 on form_version
         queryset = queryset.with_latest_version()

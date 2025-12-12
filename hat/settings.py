@@ -316,6 +316,14 @@ DATABASES = {
         "HOST": DB_HOST,
         "PORT": DB_PORT,
     },
+    "task_logs": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": DB_NAME,
+        "USER": DB_USERNAME,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+    },
 }
 
 """

@@ -26,7 +26,14 @@ class SupersetTokenViewSet(viewsets.ViewSet):
     def create(self, request):
         dashboard_id = request.data.get("dashboard_id")
 
+        if not dashboard_id:
+            return Response({"error": "dashboard_id required"}, status=status.HTTP_400_BAD_REQUEST)
+
         base_url = settings.SUPERSET_URL
+
+        if not base_url:
+            return Response({"error": "no superset configured"}, status=status.HTTP_404_NOT_FOUND)
+
         headers = {"Content-Type": "application/json"}
 
         # Log in to Superset to get access_token

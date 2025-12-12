@@ -21,7 +21,7 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router-dom';
-import { DOC_URL, useMenuItems } from '../../../constants/menu';
+import { useMenuItems } from '../../../constants/menu';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -109,7 +109,8 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
     const menuItems = useMenuItems();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
-    const userGuideUrl = currentUser.account?.user_manual_path || DOC_URL;
+    const userGuideUrl = currentUser.account?.user_manual_path;
+    const discussionBoardUrl = currentUser.account?.discussion_manual_path;
 
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
@@ -141,60 +142,64 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                     ))}
                 </List>
                 <List className={`${classes.list} ${classes.user}`}>
-                    <Tooltip
-                        classes={{ popper: classes.popperFixed }}
-                        placement="top-start"
-                        title={formatMessage(MESSAGES.viewUserManual)}
-                    >
-                        <ListItem
-                            className={classes.bottomLinkItem}
-                            button
-                            component="a"
-                            href={userGuideUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                    {userGuideUrl && (
+                        <Tooltip
+                            classes={{ popper: classes.popperFixed }}
+                            placement="top-start"
+                            title={formatMessage(MESSAGES.viewUserManual)}
                         >
-                            <ListItemIcon>
-                                <MenuBookIcon />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary={
-                                    <Typography variant="body2">
-                                        <FormattedMessage
-                                            {...MESSAGES.userManual}
-                                        />
-                                    </Typography>
-                                }
-                            />
-                        </ListItem>
-                    </Tooltip>
-                    <Tooltip
-                        classes={{ popper: classes.popperFixed }}
-                        placement="top-start"
-                        title={formatMessage(MESSAGES.viewDiscussionBoard)}
-                    >
-                        <ListItem
-                            className={classes.bottomLinkItem}
-                            button
-                            component="a"
-                            href="https://forum.openiaso.com"
-                            target="_blank"
-                            rel="noreferrer"
+                            <ListItem
+                                className={classes.bottomLinkItem}
+                                button
+                                component="a"
+                                href={userGuideUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <ListItemIcon>
+                                    <MenuBookIcon />
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={
+                                        <Typography variant="body2">
+                                            <FormattedMessage
+                                                {...MESSAGES.userManual}
+                                            />
+                                        </Typography>
+                                    }
+                                />
+                            </ListItem>
+                        </Tooltip>
+                    )}
+                    {discussionBoardUrl && (
+                        <Tooltip
+                            classes={{ popper: classes.popperFixed }}
+                            placement="top-start"
+                            title={formatMessage(MESSAGES.viewDiscussionBoard)}
                         >
-                            <ListItemIcon>
-                                <ChatIcon />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary={
-                                    <Typography variant="body2">
-                                        <FormattedMessage
-                                            {...MESSAGES.discussionBoard}
-                                        />
-                                    </Typography>
-                                }
-                            />
-                        </ListItem>
-                    </Tooltip>
+                            <ListItem
+                                className={classes.bottomLinkItem}
+                                button
+                                component="a"
+                                href={discussionBoardUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <ListItemIcon>
+                                    <ChatIcon />
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={
+                                        <Typography variant="body2">
+                                            <FormattedMessage
+                                                {...MESSAGES.discussionBoard}
+                                            />
+                                        </Typography>
+                                    }
+                                />
+                            </ListItem>
+                        </Tooltip>
+                    )}
                 </List>
             </div>
         </Drawer>

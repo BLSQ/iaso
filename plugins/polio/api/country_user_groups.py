@@ -46,10 +46,10 @@ class CountryUsersGroupViewSet(ModelViewSet):
         countries = OrgUnit.objects.filter_for_user_and_app_id(self.request.user).filter(
             org_unit_type__category="COUNTRY"
         )
-        for country in countries:
-            cug, created = CountryUsersGroup.objects.get_or_create(
-                country=country
-            )  # ensuring that such a model always exist
-            if created:
-                print(f"created {cug}")
+        countries_without_group = countries.filter(countryusersgroup__isnull=True)
+
+        if countries_without_group.exists():
+            groups_to_create = [CountryUsersGroup(country=country) for country in countries_without_group]
+            CountryUsersGroup.objects.bulk_create(groups_to_create, ignore_conflicts=True)
+
         return CountryUsersGroup.objects.filter(country__in=countries)

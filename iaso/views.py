@@ -188,12 +188,10 @@ from iaso import models as iaso_models
 
 
 class ModelDataView(View):
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return HttpResponseForbidden("authentication required")
-        return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
         model_data = self.get_model_data()
         return render(request, "iaso/model_diagram.html", {"model_data": json.dumps(model_data)})
 

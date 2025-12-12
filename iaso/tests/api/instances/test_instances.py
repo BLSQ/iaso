@@ -1433,6 +1433,21 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/instances/stats_sum/")
         self.assertJSONResponse(response, 200)
 
+    def test_lock_instance_anonymous_not_allowed(self):
+        instance = self.create_form_instance(
+            org_unit=self.jedi_council_corruscant,
+            period="202002",
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unlock_anonymous_not_allowed(self):
+        response = self.client.post("/api/instances/unlock_lock/", {"lock": 1}, json=True)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)
 

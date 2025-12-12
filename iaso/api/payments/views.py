@@ -23,6 +23,7 @@ from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
     potential_payments as potential_payments_filters,
 )
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.org_unit import OrgUnit
@@ -639,7 +640,7 @@ class PaymentsViewSet(ModelViewSet):
 
 
 class PaymentOptionsViewSet(DropdownOptionsListViewSet):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnly]
     http_method_names = ["get"]
     serializer = DropdownOptionsSerializer
     choices = PaymentStatuses

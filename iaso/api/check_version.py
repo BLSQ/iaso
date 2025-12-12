@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID, APP_VERSION
 from iaso.models import Project
 
@@ -22,7 +23,7 @@ class CheckVersionViewSet(ViewSet):
     `GET /api/mobile/checkversion/?app_id=some.app.id&app_version=1234`
     """
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticatedOrReadOnly]
     http_method_names = ["get", "head", "options"]
     lookup_url_kwarg = [APP_ID, APP_VERSION]
 

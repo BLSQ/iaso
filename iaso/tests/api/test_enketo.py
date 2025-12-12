@@ -333,9 +333,17 @@ class EnketoAPITestCase(APITestCase):
         self.assertXmlResponse(response, 204)
         self.assertEqual("100000000", response.get("x-openrosa-accept-content-length"))
 
+    def test_when_anonymous_get_formList_should_validate_formId_is_present(self):
+        instance = self.form_1.instances.first()
+        response = self.client.get("/api/enketo/formList")
+
+        self.assertEqual(response.content.decode(), "formID is required")
+        self.assertEqual(response.status_code, 400)
+
     def test_when_anonymous_get_formList_should_work_1(self):
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/enketo/formList?formID={instance.uuid}")
+
         self.assertXmlResponse(response, 200)
 
         expected_list = "".join(

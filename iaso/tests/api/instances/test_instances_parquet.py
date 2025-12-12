@@ -273,7 +273,9 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                 headers={"Content-Type": "text/csv"},
             )
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response["Content-Type"], "application/octet-stream")
+
+            self.assert_parquet_content_type(response)
+
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
                 write_response_to_file(response, f)
 

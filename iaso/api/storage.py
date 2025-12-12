@@ -15,6 +15,7 @@ from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from iaso.api.entity import EntitySerializer
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import AppIdSerializer, OrgUnitSerializer
 from iaso.models import Entity, Instance, OrgUnit, Project, StorageDevice, StorageLogEntry
 from iaso.permissions.core_permissions import CORE_STORAGE_PERMISSION
@@ -578,7 +579,7 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
     serializer_class = StorageSerializerForBlacklisted
 
-    permission_classes = [AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, AllowAny]
 
     def list(self, request):
         """

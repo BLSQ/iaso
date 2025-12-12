@@ -180,6 +180,7 @@ import json
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
+from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.views import View
 
@@ -188,6 +189,9 @@ from iaso import models as iaso_models
 
 class ModelDataView(View):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden("authentication required")
+
         model_data = self.get_model_data()
         return render(request, "iaso/model_diagram.html", {"model_data": json.dumps(model_data)})
 

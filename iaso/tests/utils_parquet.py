@@ -15,6 +15,12 @@ from iaso.test import IasoTestCaseMixin
 class BaseAPITransactionTestCase(TransactionTestCase, IasoTestCaseMixin):
     client_class = APIClient
 
+    def assert_parquet_content_type(self, response):
+        self.assertIn(
+            response["Content-Type"],
+            ["application/octet-stream", "application/vnd.apache.parquet"],
+        )
+
 
 def parquet_to_df(path):
     with duckdb.connect() as con:

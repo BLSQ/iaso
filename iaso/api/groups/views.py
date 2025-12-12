@@ -10,6 +10,7 @@ from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.groups.filters import GroupListFilter
 from iaso.api.groups.serializers import GroupDropdownSerializer, GroupExportSerializer, GroupSerializer
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import Group, OrgUnit, Project, SourceVersion
 from iaso.permissions.core_permissions import (
     CORE_COMPLETENESS_STATS_PERMISSION,
@@ -43,6 +44,7 @@ class GroupsViewSet(ModelViewSet):
     """
 
     permission_classes = [
+        AuthenticationEnforcedPermission,
         permissions.IsAuthenticated,
         HasPermission(CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION, CORE_COMPLETENESS_STATS_PERMISSION),
         HasGroupPermission,
@@ -110,7 +112,12 @@ class GroupsViewSet(ModelViewSet):
 
         return queryset.order_by(*order)
 
-    @action(permission_classes=[], detail=False, methods=["GET"], serializer_class=GroupDropdownSerializer)
+    @action(
+        permission_classes=[AuthenticationEnforcedPermission],
+        detail=False,
+        methods=["GET"],
+        serializer_class=GroupDropdownSerializer,
+    )
     def dropdown(self, request, *args):
         """To be used in dropdowns (filters)
 

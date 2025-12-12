@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-
 import {
     Box,
     Button,
@@ -8,26 +7,43 @@ import {
     TextField,
     Tooltip,
 } from '@mui/material';
-
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    useRedirectToReplace,
+    convertObjectToUrlParams,
+} from 'bluesquare-components';
 import { Link } from 'react-router-dom';
-// @ts-ignore
 import moment, { Moment } from 'moment';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 import MESSAGES from '../../../constants/messages';
-import { useGenUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { GenUrlFunction } from 'Iaso/routing/routing';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 
 type Props = {
     currentMonday: Moment;
     currentDate: Moment;
     url: string;
+};
+
+const useGenUrl = (url: string): GenUrlFunction => {
+    const currentParams = useParamsObject(url);
+    return useCallback(
+        (
+            newParams: Record<string, string | number | null | undefined>,
+        ): string => {
+            const updatedParams = { ...currentParams, ...newParams };
+            const paramsAsString = convertObjectToUrlParams(updatedParams);
+            return `/${url}${paramsAsString}`;
+        },
+        [url, currentParams],
+    );
 };
 
 export const Nav: FunctionComponent<Props> = ({
@@ -38,7 +54,7 @@ export const Nav: FunctionComponent<Props> = ({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const genUrl = useGenUrl();
+    const genUrl = useGenUrl(url);
     const redirectToReplace = useRedirectToReplace();
     const urlForDate = useCallback(
         (date: Moment) =>

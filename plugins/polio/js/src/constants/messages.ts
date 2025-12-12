@@ -2513,6 +2513,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.fieldMandatoryForPlanned',
         defaultMessage: 'Field mandatory for planned round/campaign',
     },
+    campaignDetail: {
+        id: 'iaso.polio.label.campaignDetail',
+        defaultMessage: 'Campaign: {obrName}',
+    },
 });
 
 export default MESSAGES;

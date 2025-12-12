@@ -42,13 +42,14 @@ export const useBaseUrls = (): Record<string, string> => {
     }, [plugins]);
 };
 
-type GenUrlFunction = (
+export type GenUrlFunction = (
     newParams: Record<string, string | number | null | undefined>,
 ) => string;
 
 export const useGenUrl = (): GenUrlFunction => {
     const { pathname } = useLocation();
     const allBaseUrls = useBaseUrls();
+
     // If several urls match, the correct one is the longest
     const currentBaseUrl =
         Object.values(allBaseUrls)

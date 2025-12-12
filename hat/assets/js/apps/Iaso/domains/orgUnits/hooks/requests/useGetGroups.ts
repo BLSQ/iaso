@@ -1,16 +1,8 @@
 import { UseQueryResult } from 'react-query';
-// @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-// @ts-ignore
 import { DropdownOptionsWithOriginal } from '../../../../types/utils';
-
-import { staleTime } from '../../config';
 import MESSAGES from '../../messages';
-
-// TODO CODE REVIEW
-// don't know why but useGetGroupDropdown endpoint
-// version vs sourceVersionId
 
 // Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
@@ -79,7 +71,8 @@ export const useGetGroupDropdown = (
         snackErrorMsg: MESSAGES.fetchGroupsError,
         options: {
             enabled,
-            staleTime,
+            staleTime: Infinity,
+            cacheTime: Infinity,
             select: data => {
                 if (!data) return [];
                 return data.map(group => {

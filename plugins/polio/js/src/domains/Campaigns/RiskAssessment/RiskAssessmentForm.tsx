@@ -1,10 +1,11 @@
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import React, { useCallback } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { DateInput, NumberInput } from '../../../components/Inputs';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
+import { Campaign } from '../../../constants/types';
 
 export const riskAssessmentFormFields = [
     'risk_assessment_status',
@@ -17,17 +18,17 @@ export const riskAssessmentFormFields = [
     // 'dg_authorized_at',
 ];
 
-export const RiskAssessmentForm = () => {
+export const RiskAssessmentForm: FunctionComponent = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { values, setFieldValue } = useFormikContext();
+    const { values, setFieldValue } = useFormikContext<Campaign>();
     const { rounds = [] } = values;
     const updateFirstDraftSubmission = useCallback(
-        (fieldName, date) => {
-            if (date && !values.risk_assessment_rrt_oprtt_approval_at) {
+        (_, date) => {
+            if (date && !values.risk_assessment_rrt_oprrt_approval_at) {
                 setFieldValue('risk_assessment_status', 'SUBMITTED');
             }
-            if (!date && !values.risk_assessment_rrt_oprtt_approval_at) {
+            if (!date && !values.risk_assessment_rrt_oprrt_approval_at) {
                 setFieldValue('risk_assessment_status', 'TO_SUBMIT');
             }
             // if (
@@ -48,7 +49,7 @@ export const RiskAssessmentForm = () => {
         [
             setFieldValue,
             // values.dg_authorized_at,
-            values.risk_assessment_rrt_oprtt_approval_at,
+            values.risk_assessment_rrt_oprrt_approval_at,
         ],
     );
     const updateRRTApproval = useCallback(

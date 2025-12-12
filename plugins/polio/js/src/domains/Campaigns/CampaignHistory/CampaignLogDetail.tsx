@@ -13,8 +13,8 @@ import ErrorPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/co
 
 import MESSAGES from '../../../constants/messages';
 
-import { useGetConfig } from './config';
 import { useGetMapLog } from './useGetMapLog';
+import { useGetConfig } from './config';
 import { Head } from './Head';
 
 type Props = {

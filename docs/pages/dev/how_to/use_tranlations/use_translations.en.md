@@ -5,6 +5,7 @@ Iaso uses a centralized translation system that works across the main applicatio
 ## Overview
 
 The translation system allows you to:
+
 - Maintain translations in a centralized location
 - Share translations between the main app, plugins, and shared components
 - Add new languages without modifying the core codebase
@@ -74,7 +75,7 @@ new ModuleFederationPlugin({
             requiredVersion: false,
         },
     },
-})
+});
 ```
 
 Additionally, the webpack configuration includes aliases for these exposed modules:
@@ -131,19 +132,19 @@ Translation files are JSON files with a flat structure of key-value pairs:
 
 ```json
 {
-  "common.button.save": "Save",
-  "common.button.cancel": "Cancel",
-  "common.button.edit": "Edit",
-  "common.button.delete": "Delete",
-  "common.message.confirm": "Are you sure?",
-  "common.message.success": "Operation completed successfully",
-  "common.message.error": "An error occurred",
-  "common.label.name": "Name",
-  "common.label.description": "Description",
-  "common.label.status": "Status",
-  "common.label.date": "Date",
-  "common.label.type": "Type",
-  "common.label.actions": "Actions"
+    "common.button.save": "Save",
+    "common.button.cancel": "Cancel",
+    "common.button.edit": "Edit",
+    "common.button.delete": "Delete",
+    "common.message.confirm": "Are you sure?",
+    "common.message.success": "Operation completed successfully",
+    "common.message.error": "An error occurred",
+    "common.label.name": "Name",
+    "common.label.description": "Description",
+    "common.label.status": "Status",
+    "common.label.date": "Date",
+    "common.label.type": "Type",
+    "common.label.actions": "Actions"
 }
 ```
 
@@ -168,6 +169,7 @@ export default {
 ```
 
 These configuration files are used to:
+
 - Set the display name of the language in the UI
 - Configure date and time formats
 - Set number formatting preferences (thousand, lakh, wan)
@@ -177,6 +179,7 @@ These configuration files are used to:
 ### Development Mode
 
 In development (`webpack.dev.js`):
+
 - Translation files are generated on-the-fly when changes are detected
 - Hot Module Replacement (HMR) is enabled for quick development
 - Changes to translation files are automatically detected and reloaded
@@ -184,6 +187,7 @@ In development (`webpack.dev.js`):
 ### Production Mode
 
 In production (`webpack.prod.js`):
+
 - Translation files are generated once during the build process
 - Translations are optimized and minified
 - Source maps are optional (configurable)
@@ -191,6 +195,7 @@ In production (`webpack.prod.js`):
 ## Loading Translations at Runtime
 
 The main application:
+
 1. Loads translations from `./assets/js/apps/Iaso/bundle/generated/combinedTranslations.js`
 2. Loads language configurations from `./assets/js/apps/Iaso/bundle/generated/languageConfigs.js`
 3. Loads plugin configurations from `./assets/js/apps/Iaso/bundle/generated/combinedPluginConfigs.js`
@@ -214,7 +219,6 @@ export AVAILABLE_LANGUAGES="en,fr,es"
 AVAILABLE_LANGUAGES=en,fr,es
 ```
 
-
 ### 2. Copy and Translate Existing Language Files
 
 The simplest way to add a new language is to copy an existing language file (e.g., `en.json`) and translate all the keys:
@@ -232,24 +236,23 @@ cp plugins/your_plugin/js/translations/en.json plugins/your_plugin/js/translatio
 cp bluesquare-components/src/translations/en.json bluesquare-components/src/translations/es.json
 ```
 
-
 Then edit each file to translate the values while keeping the keys the same:
 
 ```json
 {
-  "common.button.save": "Guardar",
-  "common.button.cancel": "Cancelar",
-  "common.button.edit": "Editar",
-  "common.button.delete": "Eliminar",
-  "common.message.confirm": "¿Estás seguro?",
-  "common.message.success": "Operación completada con éxito",
-  "common.message.error": "Se produjo un error",
-  "common.label.name": "Nombre",
-  "common.label.description": "Descripción",
-  "common.label.status": "Estado",
-  "common.label.date": "Fecha",
-  "common.label.type": "Tipo",
-  "common.label.actions": "Acciones"
+    "common.button.save": "Guardar",
+    "common.button.cancel": "Cancelar",
+    "common.button.edit": "Editar",
+    "common.button.delete": "Eliminar",
+    "common.message.confirm": "¿Estás seguro?",
+    "common.message.success": "Operación completada con éxito",
+    "common.message.error": "Se produjo un error",
+    "common.label.name": "Nombre",
+    "common.label.description": "Descripción",
+    "common.label.status": "Estado",
+    "common.label.date": "Fecha",
+    "common.label.type": "Tipo",
+    "common.label.actions": "Acciones"
 }
 ```
 
@@ -301,15 +304,15 @@ Iaso supports account-specific custom translations that can be managed through t
 ### How It Works
 
 1. **Account Custom Translations Storage**:
-   - Custom translations are stored in the `custom_translations` field of the Account model
-   - The field is a JSON field that follows the same structure as regular translation files
-   - Each account can have its own set of custom translations
+    - Custom translations are stored in the `custom_translations` field of the Account model
+    - The field is a JSON field that follows the same structure as regular translation files
+    - Each account can have its own set of custom translations
 
 2. **Translation Override Process**:
-   - When a user logs in, their account's custom translations are loaded
-   - These custom translations are merged with the default translations
-   - Custom translations take precedence over default translations
-   - The merging happens at the key level for each language
+    - When a user logs in, their account's custom translations are loaded
+    - These custom translations are merged with the default translations
+    - Custom translations take precedence over default translations
+    - The merging happens at the key level for each language
 
 ### Example of Custom Translations Structure
 
@@ -350,40 +353,40 @@ To manage custom translations for an account:
 Several components can be enhanced to use language-specific date formats:
 
 1. **formatValue Function** (`hat/assets/js/apps/Iaso/domains/instances/utils/index.tsx`):
-   - Use language-specific formats for date and datetime values
-   - Ensure consistent date formatting across the application
+    - Use language-specific formats for date and datetime values
+    - Ensure consistent date formatting across the application
 
-2. **convertDate Function** (`plugins/polio/js/src/domains/Campaigns/campaignHistory/config.tsx`):
-   - Update to use language configs for date formatting
-   - Ensure dates are displayed according to the user's locale
+2. **convertDate Function** (`plugins/polio/js/src/domains/Campaigns/CampaignHistory/config.tsx`):
+    - Update to use language configs for date formatting
+    - Ensure dates are displayed according to the user's locale
 
 ## Number Formatting
 
 The application already has some components using language configs for number formatting, but this can be extended:
 
 1. **NumberCell Component**:
-   - Already uses language configs for thousand separators and decimal points
-   - Can be used as a reference for other number formatting components
+    - Already uses language configs for thousand separators and decimal points
+    - Can be used as a reference for other number formatting components
 
 2. **formatThousand Function**:
-   - Extend to use language-specific formatting
-   - Ensure consistent number formatting across the application
+    - Extend to use language-specific formatting
+    - Ensure consistent number formatting across the application
 
 3. **formatRoundNumber Function** (`plugins/polio/js/src/domains/Budget/utils.tsx`):
-   - Update to use language-specific formatting
-   - Ensure numbers are displayed according to the user's locale
+    - Update to use language-specific formatting
+    - Ensure numbers are displayed according to the user's locale
 
 ## Form Inputs
 
 Form inputs can be enhanced to support language-specific formatting:
 
 1. **InputComponent**:
-   - Already has good support for language-specific number formatting
-   - Can be used as a reference for other input types
+    - Already has good support for language-specific number formatting
+    - Can be used as a reference for other input types
 
 2. **Other Input Types**:
-   - Extend language-specific formatting to other input types
-   - Ensure consistent input formatting across the application
+    - Extend language-specific formatting to other input types
+    - Ensure consistent input formatting across the application
 
 ## Plugin Translations
 
@@ -411,16 +414,17 @@ To avoid conflicts with the main application and other plugins, plugin translati
 
 ```json
 {
-  "myPlugin.title": "My Plugin Title",
-  "myPlugin.description": "Plugin description",
-  "myPlugin.button.save": "Save",
-  "myPlugin.button.cancel": "Cancel"
+    "myPlugin.title": "My Plugin Title",
+    "myPlugin.description": "Plugin description",
+    "myPlugin.button.save": "Save",
+    "myPlugin.button.cancel": "Cancel"
 }
 ```
 
 ### Plugin Translation Integration
 
 During the build process:
+
 1. The system scans all plugins for translation files
 2. Plugin translations are combined with the main application translations
 3. The combined translations are exposed through Module Federation
@@ -436,7 +440,7 @@ import { useIntl } from 'react-intl';
 
 const MyPluginComponent: React.FC = () => {
     const intl = useIntl();
-    
+
     return (
         <div>
             <h1>{intl.formatMessage({ id: 'myPlugin.title' })}</h1>
@@ -452,6 +456,7 @@ export default MyPluginComponent;
 ### Plugin Translation Fallbacks
 
 The system uses a fallback mechanism to ensure all strings are translated:
+
 1. If a translation is missing for a specific language, the system will use the English translation
 2. If the English translation is also missing, the system will use the key itself
 3. Warnings will be displayed in the console during build when fallbacks are used

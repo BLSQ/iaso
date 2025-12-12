@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Tooltip } from '@mui/material';
-import { Column, useSafeIntl } from 'bluesquare-components';
+import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
@@ -8,6 +8,8 @@ import MESSAGES from '../../../constants/messages';
 import { CampaignListItem } from '../../../constants/types';
 import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
 import { CampaignCategoryCell } from './CampaignCategoryCell';
+import { LinkTo } from 'Iaso/components/nav/LinkTo';
+import { baseUrls } from '../../../constants/urls';
 
 type Args = {
     showOnlyDeleted: boolean;
@@ -95,10 +97,13 @@ export const useCampaignsTableColumns = ({
                     <>
                         {!showOnlyDeleted && (
                             <>
-                                <EditCampaignModal
-                                    params={params}
-                                    campaignId={settings.value}
+                                <LinkTo
+                                    condition
+                                    useIcon
+                                    icon="edit"
+                                    url={`/${baseUrls.campaignDetails}/campaignId/${settings.value}`}
                                 />
+
                                 <DeleteModal
                                     type="icon"
                                     onConfirm={() =>

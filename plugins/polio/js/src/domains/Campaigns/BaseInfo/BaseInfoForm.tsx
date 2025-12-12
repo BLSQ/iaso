@@ -112,7 +112,7 @@ export const BaseInfoForm: FunctionComponent = () => {
     }, [touched, values.rounds, setTouched, values.is_planned]);
 
     return (
-        <Box maxWidth={isPolio ? '100%' : '400px'}>
+        <Box width={'100%'}>
             <Grid container spacing={2}>
                 <Grid container item spacing={2}>
                     <Grid xs={12} md={isPolio ? 6 : 12} item>

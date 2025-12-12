@@ -96,7 +96,7 @@ export const RoundsForm: FunctionComponent = () => {
     }, [rounds]);
 
     return (
-        <Box minWidth="70vw">
+        <Box width="100%">
             <Box mt={rounds.length > 0 ? -4 : 0} display="flex">
                 {displayAddZeroRound && (
                     <Box mr={rounds.length === 0 ? 2 : 0} mt="14px">

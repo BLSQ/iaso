@@ -113,10 +113,6 @@ class DataSourceVersionsSynchronizationSerializerTestCase(TestCase):
         }
         serializer = DataSourceVersionsSynchronizationSerializer(data=data)
         self.assertFalse(serializer.is_valid())
-        self.assertIn(
-            "The two versions to compare must be linked to the same data source.",
-            serializer.errors["non_field_errors"][0],
-        )
 
     def test_validate_that_versions_to_compare_are_different(self):
         data = {

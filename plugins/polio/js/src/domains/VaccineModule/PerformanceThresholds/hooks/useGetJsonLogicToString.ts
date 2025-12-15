@@ -9,7 +9,8 @@ export const useGetJSonLogicConverter = () => {
             if (!json) return '';
 
             const parsed = typeof json === 'string' ? JSON.parse(json) : json;
-            const value = parsed['and'];
+            const value = parsed['and'] ?? parsed['or'];
+            const connector = parsed['and'] ? 'AND' : 'OR';
             return value
                 ?.map((rule, index) => {
                     const operator = Object.keys(rule)[0];
@@ -21,7 +22,7 @@ export const useGetJSonLogicConverter = () => {
                     if (index === 0) {
                         return `value ${operator} ${rightHandValue}`;
                     }
-                    return ` & value ${operator} ${rightHandValue}`;
+                    return ` ${connector} value ${operator} ${rightHandValue}`;
                 })
                 .join('');
         },

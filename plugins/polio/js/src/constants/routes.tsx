@@ -6,7 +6,6 @@ import {
 import { BudgetProcessList } from '../domains/Budget';
 import { BudgetProcessDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
 import { Calendar } from '../domains/Calendar/Calendar';
-import { CampaignHistory } from '../domains/Campaigns/campaignHistory/CampaignHistory';
 import { Dashboard } from '../domains/Campaigns/CampaignsList/Dashboard';
 import { Chronogram } from '../domains/Chronogram/Chronogram';
 import { ChronogramDetails } from '../domains/Chronogram/ChronogramDetails';
@@ -53,6 +52,8 @@ import {
     EMBEDDED_VACCINE_STOCK_URL,
     baseUrls,
 } from './urls';
+import { CampaignDetails } from '../domains/Campaigns/CampaignDetails';
+import { CampaignHistory } from '../domains/Campaigns/CampaignHistory/CampaignHistory';
 import { PerformanceThresholds } from '../domains/VaccineModule/PerformanceThresholds/PerformanceThresholds';
 
 // We store the path in a variable so we can import it and use its permissions
@@ -62,6 +63,12 @@ export const campaignsPath: RoutePath = {
     element: <Dashboard />,
     permissions: [POLIO, POLIO_ADMIN],
     isRootUrl: true,
+};
+export const campaignsDetailsPath: RoutePath = {
+    baseUrl: baseUrls.campaignDetails,
+    routerUrl: `${baseUrls.campaignDetails}/*`,
+    element: <CampaignDetails />,
+    permissions: [POLIO, POLIO_ADMIN],
 };
 
 export const campaignHistoryPath: RoutePath = {
@@ -328,5 +335,6 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     nationalLogisticsPlanPath,
     embeddedLqasCountryPath,
     embeddedLqasAfroPath,
+    campaignsDetailsPath,
     performanceThresholdsPath,
 ];

@@ -16,6 +16,7 @@ import {
 } from '../domains/VaccineModule/StockManagement/constants';
 
 export const DASHBOARD_BASE_URL = 'polio/list';
+export const CAMPAIGN_DETAILS_URL = 'polio/campaign';
 export const CAMPAIGN_HISTORY_URL = 'polio/campaignHistory';
 export const CALENDAR_BASE_URL = 'polio/calendar';
 export const EMBEDDED_CALENDAR_URL = 'polio/embeddedCalendar';
@@ -75,6 +76,10 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'fieldset',
             'orgUnitGroups',
         ],
+    },
+    campaignDetails: {
+        url: CAMPAIGN_DETAILS_URL,
+        params: ['campaignId'],
     },
     campaignHistory: {
         url: CAMPAIGN_HISTORY_URL,
@@ -414,6 +419,7 @@ export type PolioBaseUrls = {
     chronogramTemplateTask: string;
     chronogramDetails: string;
     nationalLogisticsPlan: string;
+    campaignDetails: string;
     performanceThresholds: string;
 };
 export const baseUrls = extractUrls(polioRouteConfigs) as PolioBaseUrls;

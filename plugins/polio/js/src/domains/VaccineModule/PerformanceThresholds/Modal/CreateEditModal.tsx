@@ -57,11 +57,11 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                     value,
                     fields: queryBuilderFields,
                 });
+            setFieldTouched(keyValue, true);
             setFieldValue(
                 keyValue,
                 value ? JSON.stringify(parsedValue) : undefined,
             );
-            setFieldTouched(keyValue, true);
         },
         [setFieldValue, setFieldTouched],
     );
@@ -71,6 +71,9 @@ export const CreateEditModal: FunctionComponent<Props> = ({
         : MESSAGES.create;
 
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+    console.log('VALID', formik.isValid);
+    console.log('TOUCHED', formik.touched);
+    console.log('ERRORS', formik.errors);
 
     const successIconProps = useMemo(() => {
         return {

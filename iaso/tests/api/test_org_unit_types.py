@@ -1,11 +1,12 @@
 import typing
 
+from django.test import override_settings
+
 from iaso import models as m
 from iaso.api.query_params import APP_ID
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
-from django.test import override_settings
 
 class OrgUnitTypesAPITestCase(APITestCase):
     @classmethod

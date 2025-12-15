@@ -13,7 +13,7 @@ class AuthenticationEnforcedPermission(permissions.BasePermission):
 
         if request.user is None or not request.user.is_authenticated:
             raise NotAuthenticated()
-            
+
         # if we are here, the user is authenticated, other Permission classes will handle the rest
         return True
 

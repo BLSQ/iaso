@@ -71,9 +71,6 @@ export const CreateEditModal: FunctionComponent<Props> = ({
         : MESSAGES.create;
 
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
-    console.log('VALID', formik.isValid);
-    console.log('TOUCHED', formik.touched);
-    console.log('ERRORS', formik.errors);
 
     const successIconProps = useMemo(() => {
         return {

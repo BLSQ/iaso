@@ -48,6 +48,7 @@ const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
                 validation_status: 'VALID',
                 color: purpleColor,
                 group: `${samplingResult.group_id}`,
+                orgUnitTypeId: `${planning.target_org_unit_type}`,
             },
         ]),
     };

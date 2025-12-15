@@ -7,7 +7,6 @@ export const useGetJSonLogicConverter = () => {
     return useCallback(
         (json: string) => {
             if (!json) return '';
-
             const parsed = typeof json === 'string' ? JSON.parse(json) : json;
             const value = parsed['and'] ?? parsed['or'];
             const connector = parsed['and'] ? 'AND' : 'OR';

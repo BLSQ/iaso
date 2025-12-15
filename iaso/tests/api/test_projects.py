@@ -69,6 +69,17 @@ class ProjectsAPITestCase(APITestCase):
         self.assertIn("color", response.json()["projects"][0])
         self.assertEqual(response.json()["projects"][0]["color"], "#FF5733")
 
+    def test_projects_list_query_count(self):
+        """
+        Ensure projects list query count is controlled (prefetch feature flags, etc.).
+        Note: Count set deliberately to refine during debugging.
+        """
+        self.client.force_authenticate(self.jane)
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/projects/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 2)
+
     def test_projects_list_paginated(self):
         """GET /projects/ paginated happy path"""
 

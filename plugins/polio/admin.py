@@ -42,6 +42,7 @@ from .models import (
     VaccineStock,
     create_polio_notifications_async,
 )
+from .models.performance_thresholds import PerformanceThresholds
 
 
 @admin.register(Campaign)
@@ -441,6 +442,21 @@ class ChronogramTemplateTaskAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
         else:
             obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(PerformanceThresholds)
+class PerformanceThresholdsAdmin(admin.ModelAdmin):
+    list_display = ("indicator", "account", "updated_at", "deleted_at")
+    list_filter = ("account",)
+    search_fields = ("indicator",)
+    readonly_fields = ("created_at", "updated_at")
+    raw_id_fields = ("account",)
+    formfield_overrides = {
+        models.JSONField: {"widget": IasoJSONEditorWidget},
+    }
+
+    def get_queryset(self, request):
+        return PerformanceThresholds.objects_include_deleted.all()
 
 
 admin.site.register(RoundDateHistoryEntry)

@@ -27,7 +27,7 @@ import { ProjectInfos, ProjectForm } from './ProjectInfos';
 type Tab = 'infos' | 'feature_flags';
 
 type Props = {
-    initialData?: Project | null;
+    initialData?: Project;
     saveProject: (s: Project) => Promise<any>;
     closeDialog: () => void;
     isOpen: boolean;
@@ -78,11 +78,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     dialogType = 'create',
     closeDialog,
     isOpen,
-    initialData = {
-        name: null,
-        app_id: null,
-        feature_flags: [],
-    },
+    initialData,
     saveProject,
 }) => {
     const { data: featureFlags, isFetching: isFetchingFeatureFlags } =

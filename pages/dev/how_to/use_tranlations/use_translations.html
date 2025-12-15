@@ -1013,12 +1013,14 @@
 <h1 id="using-translations-in-iaso-frontend">Using Translations in Iaso Frontend<a class="headerlink" href="#using-translations-in-iaso-frontend" title="Permanent link">#</a></h1>
 <p>Iaso uses a centralized translation system that works across the main application, plugins, and shared components. This guide explains how the translation system works and how to add new languages.</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
-<p>The translation system allows you to:
-- Maintain translations in a centralized location
-- Share translations between the main app, plugins, and shared components
-- Add new languages without modifying the core codebase
-- Use translations in both development and production environments
-- Configure language-specific settings like date formats and number formatting</p>
+<p>The translation system allows you to:</p>
+<ul>
+<li>Maintain translations in a centralized location</li>
+<li>Share translations between the main app, plugins, and shared components</li>
+<li>Add new languages without modifying the core codebase</li>
+<li>Use translations in both development and production environments</li>
+<li>Configure language-specific settings like date formats and number formatting</li>
+</ul>
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">#</a></h2>
 <h3 id="translation-discovery">Translation Discovery<a class="headerlink" href="#translation-discovery" title="Permanent link">#</a></h3>
 <p>During the build process (both development and production), Iaso:</p>
@@ -1076,7 +1078,7 @@
             requiredVersion: false,
         },
     },
-})
+});
 </code></pre>
 <p>Additionally, the webpack configuration includes aliases for these exposed modules:</p>
 <pre><code class="language-javascript">resolve: {
@@ -1122,19 +1124,19 @@ bluesquare-components/
 <h3 id="translation-file-format">Translation File Format<a class="headerlink" href="#translation-file-format" title="Permanent link">#</a></h3>
 <p>Translation files are JSON files with a flat structure of key-value pairs:</p>
 <pre><code class="language-json">{
-  &quot;common.button.save&quot;: &quot;Save&quot;,
-  &quot;common.button.cancel&quot;: &quot;Cancel&quot;,
-  &quot;common.button.edit&quot;: &quot;Edit&quot;,
-  &quot;common.button.delete&quot;: &quot;Delete&quot;,
-  &quot;common.message.confirm&quot;: &quot;Are you sure?&quot;,
-  &quot;common.message.success&quot;: &quot;Operation completed successfully&quot;,
-  &quot;common.message.error&quot;: &quot;An error occurred&quot;,
-  &quot;common.label.name&quot;: &quot;Name&quot;,
-  &quot;common.label.description&quot;: &quot;Description&quot;,
-  &quot;common.label.status&quot;: &quot;Status&quot;,
-  &quot;common.label.date&quot;: &quot;Date&quot;,
-  &quot;common.label.type&quot;: &quot;Type&quot;,
-  &quot;common.label.actions&quot;: &quot;Actions&quot;
+    &quot;common.button.save&quot;: &quot;Save&quot;,
+    &quot;common.button.cancel&quot;: &quot;Cancel&quot;,
+    &quot;common.button.edit&quot;: &quot;Edit&quot;,
+    &quot;common.button.delete&quot;: &quot;Delete&quot;,
+    &quot;common.message.confirm&quot;: &quot;Are you sure?&quot;,
+    &quot;common.message.success&quot;: &quot;Operation completed successfully&quot;,
+    &quot;common.message.error&quot;: &quot;An error occurred&quot;,
+    &quot;common.label.name&quot;: &quot;Name&quot;,
+    &quot;common.label.description&quot;: &quot;Description&quot;,
+    &quot;common.label.status&quot;: &quot;Status&quot;,
+    &quot;common.label.date&quot;: &quot;Date&quot;,
+    &quot;common.label.type&quot;: &quot;Type&quot;,
+    &quot;common.label.actions&quot;: &quot;Actions&quot;
 }
 </code></pre>
 <h3 id="language-configuration-files">Language Configuration Files<a class="headerlink" href="#language-configuration-files" title="Permanent link">#</a></h3>
@@ -1153,29 +1155,37 @@ export default {
     thousandGroupStyle: 'thousand',
 };
 </code></pre>
-<p>These configuration files are used to:
-- Set the display name of the language in the UI
-- Configure date and time formats
-- Set number formatting preferences (thousand, lakh, wan)</p>
+<p>These configuration files are used to:</p>
+<ul>
+<li>Set the display name of the language in the UI</li>
+<li>Configure date and time formats</li>
+<li>Set number formatting preferences (thousand, lakh, wan)</li>
+</ul>
 <h2 id="development-vs-production">Development vs Production<a class="headerlink" href="#development-vs-production" title="Permanent link">#</a></h2>
 <h3 id="development-mode">Development Mode<a class="headerlink" href="#development-mode" title="Permanent link">#</a></h3>
-<p>In development (<code>webpack.dev.js</code>):
-- Translation files are generated on-the-fly when changes are detected
-- Hot Module Replacement (HMR) is enabled for quick development
-- Changes to translation files are automatically detected and reloaded</p>
+<p>In development (<code>webpack.dev.js</code>):</p>
+<ul>
+<li>Translation files are generated on-the-fly when changes are detected</li>
+<li>Hot Module Replacement (HMR) is enabled for quick development</li>
+<li>Changes to translation files are automatically detected and reloaded</li>
+</ul>
 <h3 id="production-mode">Production Mode<a class="headerlink" href="#production-mode" title="Permanent link">#</a></h3>
-<p>In production (<code>webpack.prod.js</code>):
-- Translation files are generated once during the build process
-- Translations are optimized and minified
-- Source maps are optional (configurable)</p>
+<p>In production (<code>webpack.prod.js</code>):</p>
+<ul>
+<li>Translation files are generated once during the build process</li>
+<li>Translations are optimized and minified</li>
+<li>Source maps are optional (configurable)</li>
+</ul>
 <h2 id="loading-translations-at-runtime">Loading Translations at Runtime<a class="headerlink" href="#loading-translations-at-runtime" title="Permanent link">#</a></h2>
-<p>The main application:
-1. Loads translations from <code>./assets/js/apps/Iaso/bundle/generated/combinedTranslations.js</code>
-2. Loads language configurations from <code>./assets/js/apps/Iaso/bundle/generated/languageConfigs.js</code>
-3. Loads plugin configurations from <code>./assets/js/apps/Iaso/bundle/generated/combinedPluginConfigs.js</code>
-4. Loads plugin keys from <code>./assets/js/apps/Iaso/bundle/generated/pluginKeys.js</code>
-5. Initializes the React-Intl provider with the loaded translations
-6. Makes translations available to all components through the React-Intl context</p>
+<p>The main application:</p>
+<ol>
+<li>Loads translations from <code>./assets/js/apps/Iaso/bundle/generated/combinedTranslations.js</code></li>
+<li>Loads language configurations from <code>./assets/js/apps/Iaso/bundle/generated/languageConfigs.js</code></li>
+<li>Loads plugin configurations from <code>./assets/js/apps/Iaso/bundle/generated/combinedPluginConfigs.js</code></li>
+<li>Loads plugin keys from <code>./assets/js/apps/Iaso/bundle/generated/pluginKeys.js</code></li>
+<li>Initializes the React-Intl provider with the loaded translations</li>
+<li>Makes translations available to all components through the React-Intl context</li>
+</ol>
 <h2 id="adding-a-new-language">Adding a New Language<a class="headerlink" href="#adding-a-new-language" title="Permanent link">#</a></h2>
 <p>To add a new language to the system, follow these steps:</p>
 <h3 id="1-add-the-language-to-available_languages-environment-variable">1. Add the Language to AVAILABLE_LANGUAGES Environment Variable<a class="headerlink" href="#1-add-the-language-to-available_languages-environment-variable" title="Permanent link">#</a></h3>
@@ -1201,19 +1211,19 @@ cp bluesquare-components/src/translations/en.json bluesquare-components/src/tran
 </code></pre>
 <p>Then edit each file to translate the values while keeping the keys the same:</p>
 <pre><code class="language-json">{
-  &quot;common.button.save&quot;: &quot;Guardar&quot;,
-  &quot;common.button.cancel&quot;: &quot;Cancelar&quot;,
-  &quot;common.button.edit&quot;: &quot;Editar&quot;,
-  &quot;common.button.delete&quot;: &quot;Eliminar&quot;,
-  &quot;common.message.confirm&quot;: &quot;¿Estás seguro?&quot;,
-  &quot;common.message.success&quot;: &quot;Operación completada con éxito&quot;,
-  &quot;common.message.error&quot;: &quot;Se produjo un error&quot;,
-  &quot;common.label.name&quot;: &quot;Nombre&quot;,
-  &quot;common.label.description&quot;: &quot;Descripción&quot;,
-  &quot;common.label.status&quot;: &quot;Estado&quot;,
-  &quot;common.label.date&quot;: &quot;Fecha&quot;,
-  &quot;common.label.type&quot;: &quot;Tipo&quot;,
-  &quot;common.label.actions&quot;: &quot;Acciones&quot;
+    &quot;common.button.save&quot;: &quot;Guardar&quot;,
+    &quot;common.button.cancel&quot;: &quot;Cancelar&quot;,
+    &quot;common.button.edit&quot;: &quot;Editar&quot;,
+    &quot;common.button.delete&quot;: &quot;Eliminar&quot;,
+    &quot;common.message.confirm&quot;: &quot;¿Estás seguro?&quot;,
+    &quot;common.message.success&quot;: &quot;Operación completada con éxito&quot;,
+    &quot;common.message.error&quot;: &quot;Se produjo un error&quot;,
+    &quot;common.label.name&quot;: &quot;Nombre&quot;,
+    &quot;common.label.description&quot;: &quot;Descripción&quot;,
+    &quot;common.label.status&quot;: &quot;Estado&quot;,
+    &quot;common.label.date&quot;: &quot;Fecha&quot;,
+    &quot;common.label.type&quot;: &quot;Tipo&quot;,
+    &quot;common.label.actions&quot;: &quot;Acciones&quot;
 }
 </code></pre>
 <h3 id="3-create-a-language-configuration-file-optional">3. Create a Language Configuration File (Optional)<a class="headerlink" href="#3-create-a-language-configuration-file-optional" title="Permanent link">#</a></h3>
@@ -1249,19 +1259,23 @@ npm run build
 <p>Iaso supports account-specific custom translations that can be managed through the Django admin interface. This feature allows administrators to override default translations for specific accounts.</p>
 <h3 id="how-it-works_1">How It Works<a class="headerlink" href="#how-it-works_1" title="Permanent link">#</a></h3>
 <ol>
-<li><strong>Account Custom Translations Storage</strong>:</li>
+<li>
+<p><strong>Account Custom Translations Storage</strong>:</p>
+<ul>
 <li>Custom translations are stored in the <code>custom_translations</code> field of the Account model</li>
 <li>The field is a JSON field that follows the same structure as regular translation files</li>
-<li>
-<p>Each account can have its own set of custom translations</p>
+<li>Each account can have its own set of custom translations</li>
+</ul>
 </li>
 <li>
 <p><strong>Translation Override Process</strong>:</p>
-</li>
+<ul>
 <li>When a user logs in, their account's custom translations are loaded</li>
 <li>These custom translations are merged with the default translations</li>
 <li>Custom translations take precedence over default translations</li>
 <li>The merging happens at the key level for each language</li>
+</ul>
+</li>
 </ol>
 <h3 id="example-of-custom-translations-structure">Example of Custom Translations Structure<a class="headerlink" href="#example-of-custom-translations-structure" title="Permanent link">#</a></h3>
 <pre><code class="language-json">{
@@ -1296,51 +1310,63 @@ npm run build
 <h2 id="date-formatting-in-components">Date Formatting in Components<a class="headerlink" href="#date-formatting-in-components" title="Permanent link">#</a></h2>
 <p>Several components can be enhanced to use language-specific date formats:</p>
 <ol>
-<li><strong>formatValue Function</strong> (<code>hat/assets/js/apps/Iaso/domains/instances/utils/index.tsx</code>):</li>
+<li>
+<p><strong>formatValue Function</strong> (<code>hat/assets/js/apps/Iaso/domains/instances/utils/index.tsx</code>):</p>
+<ul>
 <li>Use language-specific formats for date and datetime values</li>
-<li>
-<p>Ensure consistent date formatting across the application</p>
+<li>Ensure consistent date formatting across the application</li>
+</ul>
 </li>
 <li>
-<p><strong>convertDate Function</strong> (<code>plugins/polio/js/src/domains/Campaigns/campaignHistory/config.tsx</code>):</p>
-</li>
+<p><strong>convertDate Function</strong> (<code>plugins/polio/js/src/domains/Campaigns/CampaignHistory/config.tsx</code>):</p>
+<ul>
 <li>Update to use language configs for date formatting</li>
 <li>Ensure dates are displayed according to the user's locale</li>
+</ul>
+</li>
 </ol>
 <h2 id="number-formatting">Number Formatting<a class="headerlink" href="#number-formatting" title="Permanent link">#</a></h2>
 <p>The application already has some components using language configs for number formatting, but this can be extended:</p>
 <ol>
-<li><strong>NumberCell Component</strong>:</li>
-<li>Already uses language configs for thousand separators and decimal points</li>
 <li>
-<p>Can be used as a reference for other number formatting components</p>
+<p><strong>NumberCell Component</strong>:</p>
+<ul>
+<li>Already uses language configs for thousand separators and decimal points</li>
+<li>Can be used as a reference for other number formatting components</li>
+</ul>
 </li>
 <li>
 <p><strong>formatThousand Function</strong>:</p>
-</li>
+<ul>
 <li>Extend to use language-specific formatting</li>
-<li>
-<p>Ensure consistent number formatting across the application</p>
+<li>Ensure consistent number formatting across the application</li>
+</ul>
 </li>
 <li>
 <p><strong>formatRoundNumber Function</strong> (<code>plugins/polio/js/src/domains/Budget/utils.tsx</code>):</p>
-</li>
+<ul>
 <li>Update to use language-specific formatting</li>
 <li>Ensure numbers are displayed according to the user's locale</li>
+</ul>
+</li>
 </ol>
 <h2 id="form-inputs">Form Inputs<a class="headerlink" href="#form-inputs" title="Permanent link">#</a></h2>
 <p>Form inputs can be enhanced to support language-specific formatting:</p>
 <ol>
-<li><strong>InputComponent</strong>:</li>
-<li>Already has good support for language-specific number formatting</li>
 <li>
-<p>Can be used as a reference for other input types</p>
+<p><strong>InputComponent</strong>:</p>
+<ul>
+<li>Already has good support for language-specific number formatting</li>
+<li>Can be used as a reference for other input types</li>
+</ul>
 </li>
 <li>
 <p><strong>Other Input Types</strong>:</p>
-</li>
+<ul>
 <li>Extend language-specific formatting to other input types</li>
 <li>Ensure consistent input formatting across the application</li>
+</ul>
+</li>
 </ol>
 <h2 id="plugin-translations">Plugin Translations<a class="headerlink" href="#plugin-translations" title="Permanent link">#</a></h2>
 <p>Plugins can provide their own translations that are automatically integrated into the main translation system. This allows plugins to be fully localized without modifying the core application.</p>
@@ -1359,18 +1385,20 @@ npm run build
 <h3 id="plugin-translation-keys">Plugin Translation Keys<a class="headerlink" href="#plugin-translation-keys" title="Permanent link">#</a></h3>
 <p>To avoid conflicts with the main application and other plugins, plugin translation keys should be prefixed with the plugin's name:</p>
 <pre><code class="language-json">{
-  &quot;myPlugin.title&quot;: &quot;My Plugin Title&quot;,
-  &quot;myPlugin.description&quot;: &quot;Plugin description&quot;,
-  &quot;myPlugin.button.save&quot;: &quot;Save&quot;,
-  &quot;myPlugin.button.cancel&quot;: &quot;Cancel&quot;
+    &quot;myPlugin.title&quot;: &quot;My Plugin Title&quot;,
+    &quot;myPlugin.description&quot;: &quot;Plugin description&quot;,
+    &quot;myPlugin.button.save&quot;: &quot;Save&quot;,
+    &quot;myPlugin.button.cancel&quot;: &quot;Cancel&quot;
 }
 </code></pre>
 <h3 id="plugin-translation-integration">Plugin Translation Integration<a class="headerlink" href="#plugin-translation-integration" title="Permanent link">#</a></h3>
-<p>During the build process:
-1. The system scans all plugins for translation files
-2. Plugin translations are combined with the main application translations
-3. The combined translations are exposed through Module Federation
-4. Plugins can access their translations using the same React-Intl hooks as the main application</p>
+<p>During the build process:</p>
+<ol>
+<li>The system scans all plugins for translation files</li>
+<li>Plugin translations are combined with the main application translations</li>
+<li>The combined translations are exposed through Module Federation</li>
+<li>Plugins can access their translations using the same React-Intl hooks as the main application</li>
+</ol>
 <h3 id="plugin-translation-example">Plugin Translation Example<a class="headerlink" href="#plugin-translation-example" title="Permanent link">#</a></h3>
 <p>Here's an example of how to use translations in a plugin component:</p>
 <pre><code class="language-typescript">import React from 'react';
@@ -1391,10 +1419,12 @@ const MyPluginComponent: React.FC = () =&gt; {
 export default MyPluginComponent;
 </code></pre>
 <h3 id="plugin-translation-fallbacks">Plugin Translation Fallbacks<a class="headerlink" href="#plugin-translation-fallbacks" title="Permanent link">#</a></h3>
-<p>The system uses a fallback mechanism to ensure all strings are translated:
-1. If a translation is missing for a specific language, the system will use the English translation
-2. If the English translation is also missing, the system will use the key itself
-3. Warnings will be displayed in the console during build when fallbacks are used</p>
+<p>The system uses a fallback mechanism to ensure all strings are translated:</p>
+<ol>
+<li>If a translation is missing for a specific language, the system will use the English translation</li>
+<li>If the English translation is also missing, the system will use the key itself</li>
+<li>Warnings will be displayed in the console during build when fallbacks are used</li>
+</ol>
 <p>For more information on creating plugins with translations, see <a href="../use_plugins/use_plugins.html">Using Plugins in Iaso Frontend</a>.</p>
 
 

@@ -1,3 +1,5 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -6,18 +8,16 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import MESSAGES from '../messages';
-import { Box } from '@mui/material';
-import { TextInput } from '../../../../../src/components/Inputs';
-import { PerformanceThreshold } from '../types';
 import { isEqual } from 'lodash';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
-import { useSavePerformanceThreshold } from '../hooks/api';
 import { parseJson } from 'Iaso/domains/instances/utils/jsonLogicParse';
+import { TextInput } from '../../../../../src/components/Inputs';
 import { defaultLogic, queryBuilderFields } from '../constants';
-import { usePerformanceThresholdValidation } from './validation';
+import { useSavePerformanceThreshold } from '../hooks/api';
 import { useGetJSonLogicConverter } from '../hooks/useGetJsonLogicToString';
+import MESSAGES from '../messages';
+import { PerformanceThreshold } from '../types';
+import { usePerformanceThresholdValidation } from './validation';
 
 type Props = {
     performanceThreshold?: PerformanceThreshold;
@@ -85,7 +85,12 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                 setFieldTouched('success_threshold', false);
             },
         };
-    }, [setFieldValue, setFieldTouched, formik.values.success_threshold]);
+    }, [
+        formik.values.success_threshold,
+        convertJsonLogicToString,
+        setFieldValue,
+        setFieldTouched,
+    ]);
     const warningIconProps = useMemo(() => {
         return {
             label: MESSAGES.warningThreshold,
@@ -99,7 +104,12 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                 setFieldTouched('warning_threshold', false);
             },
         };
-    }, [setFieldValue, setFieldTouched, formik.values.warning_threshold]);
+    }, [
+        formik.values.warning_threshold,
+        convertJsonLogicToString,
+        setFieldValue,
+        setFieldTouched,
+    ]);
     const failIconProps = useMemo(() => {
         return {
             label: MESSAGES.failThreshold,
@@ -113,8 +123,22 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                 setFieldTouched('fail_threshold', false);
             },
         };
-    }, [setFieldValue, setFieldTouched, formik.values.fail_threshold]);
+    }, [
+        formik.values.fail_threshold,
+        convertJsonLogicToString,
+        setFieldValue,
+        setFieldTouched,
+    ]);
+    const getJsonValue = useCallback(
+        keyValue => {
+            const jsonValue = formik.values[keyValue]
+                ? JSON.parse(formik.values[keyValue])
+                : undefined;
 
+            return jsonValue || defaultLogic;
+        },
+        [formik.values],
+    );
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -146,9 +170,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         onChange={logic =>
                             handleChangeQueryBuilder('success_threshold', logic)
                         }
-                        initialLogic={
-                            formik.values.success_threshold ?? defaultLogic
-                        }
+                        initialLogic={getJsonValue('success_threshold')}
                         fields={queryBuilderFields}
                         iconProps={successIconProps}
                     />
@@ -159,9 +181,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         onChange={logic =>
                             handleChangeQueryBuilder('warning_threshold', logic)
                         }
-                        initialLogic={
-                            formik.values.warning_threshold ?? defaultLogic
-                        }
+                        initialLogic={getJsonValue('warning_threshold')}
                         fields={queryBuilderFields}
                         iconProps={warningIconProps}
                     />
@@ -172,9 +192,7 @@ export const CreateEditModal: FunctionComponent<Props> = ({
                         onChange={logic =>
                             handleChangeQueryBuilder('fail_threshold', logic)
                         }
-                        initialLogic={
-                            formik.values.fail_threshold ?? defaultLogic
-                        }
+                        initialLogic={getJsonValue('fail_threshold')}
                         fields={queryBuilderFields}
                         iconProps={failIconProps}
                     />

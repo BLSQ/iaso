@@ -3,7 +3,8 @@ import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../../../../constants/messages';
-import { AfroMapParams, Side } from './types';
+import { Side } from '../../../../constants/types';
+import { AfroMapParams } from './types';
 import { useOptions } from './utils';
 
 type Props = {

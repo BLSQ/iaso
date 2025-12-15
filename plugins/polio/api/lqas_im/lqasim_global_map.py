@@ -1,24 +1,28 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions
 from rest_framework.response import Response
 
+from iaso.api.common import ReadOnlyOrHasPermission
 from iaso.models import OrgUnit
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
 from plugins.polio.api.common import LQASStatus, RoundSelection, calculate_country_status, get_data_for_round
 from plugins.polio.api.lqas_im.base_viewset import LqasAfroViewset
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import get_latest_active_campaign_and_rounds
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 @swagger_auto_schema(tags=["lqasglobal"])
 class LQASIMGlobalMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     results_key = "results"
 
     def get_queryset(self):
-        # TODO see if we need to filter per user as with Campaign
-        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
+        return (
+            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+            .filter(org_unit_type__category="COUNTRY")
+            .exclude(simplified_geom__isnull=True)
+        )
 
     def list(self, request):
         results = []

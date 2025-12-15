@@ -27,6 +27,23 @@ export const useGetTasks = ({
         options: {
             retry: false,
             keepPreviousData: true,
+            staleTime: Infinity,
+        },
+    });
+};
+
+export const useGetTaskDetails = (
+    taskId?: number,
+    pollBulkTask: boolean = false,
+): UseQueryResult<Task<any>, Error> => {
+    return useSnackQuery({
+        queryKey: ['tasks', taskId],
+        queryFn: () => getRequest(`/api/tasks/${taskId}/`),
+        options: {
+            retry: false,
+            enabled: Boolean(taskId),
+            staleTime: Infinity,
+            refetchInterval: pollBulkTask ? 5000 : false,
         },
     });
 };

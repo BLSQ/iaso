@@ -13,7 +13,7 @@ from django.db import transaction
 from django.db.models import Q
 
 from hat.audit import models as audit_models
-from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, SourceVersion
+from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, SourceVersion, Task
 from iaso.models.org_unit import get_or_create_org_unit_type
 from iaso.utils.gis import simplify_geom
 
@@ -278,15 +278,21 @@ def import_gpkg_file2(
     validation_status,
     user: Optional[User],
     description,
-    task,
+    task: Optional[Task],
 ):
     if version_number is None:
         last_version = source.versions.all().order_by("number").last()
         version_number = last_version.number + 1 if last_version else 0
+        if task:
+            task.report_progress_and_stop_if_killed(progress_message=f"Creating source version {version_number}")
     version, created = SourceVersion.objects.get_or_create(
         number=version_number, data_source=source, defaults={"description": description}
     )
     if not source.default_version:
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message=f"Setting source's default version to {version_number}"
+            )
         source.default_version = version
         source.save()
 
@@ -302,15 +308,21 @@ def import_gpkg_file2(
     first_project = source_projects.first()
     account = first_project.account  # type: ignore
     if not account.default_version:  # type: ignore
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message=f"Setting account's default version to {version_number}"
+            )
         account.default_version = version  # type: ignore
         account.save()  # type: ignore
 
     # Create and update all the groups and put them in a dict indexed by ref
     # Do it in sqlite because Fiona is not great with Attributes table (without geom)
+    if task:
+        task.report_progress_and_stop_if_killed(progress_value=0, end_value=100, progress_message="Reading groups...")
     ref_group: Dict[str, Group] = {get_ref(group): group for group in Group.objects.filter(source_version=version)}
     with sqlite3.connect(filename) as conn:
         cur = conn.cursor()
-        rows = cur.execute("select ref, name from groups")
+        rows = cur.execute("SELECT ref, name FROM groups")
         for ref, name in rows:
             if ref and ref.startswith(OLD_INTERNAL_REF):
                 ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
@@ -320,13 +332,21 @@ def import_gpkg_file2(
             group = create_or_update_group(ref_group.get(ref), ref, name, version)  # type: ignore
             ref_group[get_ref(group)] = group
             audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT, user=user)
+    if task:
+        task.report_progress_and_stop_if_killed(progress_value=20, progress_message=f"Found {len(ref_group)} groups.")
 
     # index all existing OrgUnit per ref
+    if task:
+        task.report_progress_and_stop_if_killed(progress_message="Retrieving existing OUs' references...")
     existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
     ref_ou: Dict[str, OrgUnit] = {}
     for ou in existing_orgunits:
         ref = get_ref(ou)
         ref_ou[ref] = ou
+    if task:
+        task.report_progress_and_stop_if_killed(
+            progress_value=40, progress_message=f"Retrieved {len(existing_orgunits)} references."
+        )
 
     # The child may be created before the parent, so we keep a list to update after creating them all
     to_update_with_parent: List[Tuple[str, str]] = []
@@ -388,7 +408,8 @@ def import_gpkg_file2(
             total_org_unit += 1
     if task:
         task.report_progress_and_stop_if_killed(
-            progress_message=f"processing parents : total_org_unit : {total_org_unit} to_update_with_parent : {len(to_update_with_parent)}"
+            progress_value=80,
+            progress_message=f"processing parents : total_org_unit : {total_org_unit} to_update_with_parent : {len(to_update_with_parent)}",
         )
     parent_count = 0
     for ref, parent_ref in to_update_with_parent:

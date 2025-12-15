@@ -28,6 +28,7 @@ export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`
 export const EMBEDDED_LQAS_COUNTRY_URL = 'polio/embeddedLqasCountry';
 export const LQAS_BASE_URL = 'polio/lqas/lqas';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
+export const EMBEDDED_LQAS_AFRO_MAP_URL = 'polio/embeddedLqasMap';
 export const IM_GLOBAL = 'polio/im/global';
 export const IM_OHH = 'polio/im/ohh';
 export const IM_HH = 'polio/im/hh';
@@ -47,6 +48,8 @@ export const NOTIFICATIONS_BASE_URL = 'polio/notifications';
 export const CHRONOGRAM_BASE_URL = `${VACCINE_MODULE}/chronogram`;
 export const CHRONOGRAM_TEMPLATE_TASK = `${CHRONOGRAM_BASE_URL}/templateTask`;
 export const CHRONOGRAM_DETAILS = `${CHRONOGRAM_BASE_URL}/details`;
+export const NATIONAL_LOGISTICS_PLAN = `${VACCINE_MODULE}/nationalLogisticsPlan`;
+export const PERFORMANCE_THRESHOLDS = `${VACCINE_MODULE}/performanceThresholds`;
 
 export const campaignParams = [
     'countries',
@@ -200,6 +203,23 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'rightTab',
         ],
     },
+    embeddedLqasAfroPath: {
+        url: EMBEDDED_LQAS_AFRO_MAP_URL,
+        params: [
+            'rounds',
+            'startDate',
+            'endDate',
+            'period',
+            'displayedShapesLeft',
+            'zoomLeft',
+            'centerLeft',
+            'zoomRight',
+            'centerRight',
+            'displayedShapesRight',
+            'leftTab',
+            'rightTab',
+        ],
+    },
     imGlobal: {
         url: IM_GLOBAL,
         params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
@@ -308,6 +328,14 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             `${EARMARKED}Page`,
         ],
     },
+    nationalLogisticsPlan: {
+        url: NATIONAL_LOGISTICS_PLAN,
+        params: [...paginationPathParams, 'country_blocks', 'country'],
+    },
+    performanceThresholds: {
+        url: PERFORMANCE_THRESHOLDS,
+        params: [...paginationPathParams, 'search'],
+    },
     countryConfig: {
         url: CONFIG_COUNTRY_URL,
         params: [...paginationPathParams],
@@ -380,10 +408,13 @@ export type PolioBaseUrls = {
     embeddedVaccineRepository: string;
     embeddedVaccineStock: string;
     embeddedLqasCountry: string;
+    embeddedLqasAfroPath: string;
     notification: string;
     chronogram: string;
     chronogramTemplateTask: string;
     chronogramDetails: string;
+    nationalLogisticsPlan: string;
+    performanceThresholds: string;
 };
 export const baseUrls = extractUrls(polioRouteConfigs) as PolioBaseUrls;
 export const baseParams = extractParams(polioRouteConfigs);

@@ -1,7 +1,7 @@
 /**
  * check if user has the permission
  *
- * @param {String} permission
+ * @param {String, Array} permission
  * @param {Object} user
  * @return {Boolean}
  */

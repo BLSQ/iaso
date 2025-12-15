@@ -20,10 +20,12 @@ import { postGeoPkg } from '../requests';
 import { VersionDescription } from './VersionDescription';
 
 type Props = {
-    renderTrigger: ReactNode;
+    renderTrigger:
+        | (({ openDialog }: { openDialog: () => void }) => React.JSX.Element)
+        | ReactNode;
     sourceId: string;
     sourceName: string;
-    versionNumber: number | null;
+    versionNumber?: number | null;
 };
 
 const initialFormState = () => ({
@@ -37,7 +39,7 @@ export const ImportGeoPkgDialog: FC<Props> = ({
     renderTrigger,
     sourceId,
     sourceName,
-    versionNumber,
+    versionNumber = null,
 }) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();

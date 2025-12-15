@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -10,7 +10,7 @@ from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.groups.filters import GroupListFilter
 from iaso.api.groups.serializers import GroupDropdownSerializer, GroupExportSerializer, GroupSerializer
-from iaso.models import Group, Project, SourceVersion
+from iaso.models import Group, OrgUnit, Project, SourceVersion
 from iaso.permissions.core_permissions import (
     CORE_COMPLETENESS_STATS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,
@@ -56,16 +56,20 @@ class GroupsViewSet(ModelViewSet):
             return Group.objects.none()
 
         profile = self.request.user.iaso_profile
-        queryset = Group.objects.filter(
-            source_version__data_source__projects__in=profile.account.project_set.all()
-        ).select_related("source_version", "source_version__data_source")
-        queryset = queryset.prefetch_related("group_sets")
+        queryset = (
+            Group.objects.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+            .select_related("source_version", "source_version__data_source")
+            .prefetch_related(
+                "group_sets",
+                Prefetch("org_units", queryset=OrgUnit.objects.only("id")),
+            )
+        )
         return queryset
 
     def filter_queryset(self, queryset, allow_anon=False):
         light = self.request.GET.get("light", False)
         if not light:
-            queryset = queryset.annotate(org_unit_count=Count("org_units"))
+            queryset = queryset.annotate(org_unit_count=Count("org_units", distinct=True))
 
         version = self.request.query_params.get("version", None)
         version_ids = self.request.query_params.get(

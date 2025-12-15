@@ -19,8 +19,6 @@ RUN pip install -r requirements-dev.txt
 # Uncomment to debug snt-malaria budgeting
 # ENV PYTHONPATH="/opt/snt-malaria-budgeting:${PYTHONPATH}"
 
-# RUN pip uninstall -y snt-malaria-budgeting || true
-
 # don't copy app we mount everything afterwards for hot reloading anyway
 #COPY . /opt/app
 

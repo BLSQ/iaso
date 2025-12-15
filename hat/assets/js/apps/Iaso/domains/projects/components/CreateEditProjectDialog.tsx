@@ -13,8 +13,8 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import get from 'lodash/get';
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { useGetFeatureFlags } from '../hooks/requests';
@@ -27,7 +27,7 @@ import { ProjectInfos, ProjectForm } from './ProjectInfos';
 type Tab = 'infos' | 'feature_flags';
 
 type Props = {
-    initialData?: Project | null;
+    initialData?: Project;
     saveProject: (s: Project) => Promise<any>;
     closeDialog: () => void;
     isOpen: boolean;
@@ -78,11 +78,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     dialogType = 'create',
     closeDialog,
     isOpen,
-    initialData = {
-        name: null,
-        app_id: null,
-        feature_flags: [],
-    },
+    initialData,
     saveProject,
 }) => {
     const { data: featureFlags, isFetching: isFetchingFeatureFlags } =
@@ -296,10 +292,6 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
             </div>
         </ConfirmCancelModal>
     );
-};
-
-CreateEditProjectDialog.defaultProps = {
-    initialData: null,
 };
 
 const createProjectModalWithButton = makeFullModal(

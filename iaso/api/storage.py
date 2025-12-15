@@ -28,7 +28,7 @@ from .common import (
     UserSerializer,
     safe_api_import,
 )
-from .instances.instances import FileFormatEnum
+from .instances.instances import FileFormatEnum, find_entity
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -393,12 +393,11 @@ def import_storage_logs(data, user):
             if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
                 concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
 
+            account = user.iaso_profile.account
             concerned_entity = None
             entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
             if entity_id:
-                concerned_entity = Entity.objects.get(uuid=entity_id)
-
-            account = user.iaso_profile.account
+                concerned_entity = find_entity(account, entity_id)
 
             # 1. Create the storage device, if needed
             device, _ = StorageDevice.objects.get_or_create(

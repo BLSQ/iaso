@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 
 import {
     OrgUnitTypeHierarchyDropdownValues,
@@ -66,6 +66,7 @@ type Result = {
     isLoadingAssignments: boolean;
     isTeamsFetched: boolean;
     setProfiles: (profiles: ProfileWithColor[]) => void;
+    setExtraFilters: Dispatch<SetStateAction<Record<string, any>>>;
 };
 
 export const useGetAssignmentData = ({
@@ -77,6 +78,9 @@ export const useGetAssignmentData = ({
     selectedItem,
     search,
 }: Props): Result => {
+    const [extraFilters, setExtraFilters] = useState<Record<string, string>>(
+        {},
+    );
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
         data: planning,
@@ -146,6 +150,7 @@ export const useGetAssignmentData = ({
             currentType: currentTeam?.type,
             order,
             search,
+            extraFilters,
         });
     const { data: orgUnitsList, isFetching: isFetchingOrgUnitsList } =
         useGetOrgUnitsList({
@@ -158,6 +163,7 @@ export const useGetAssignmentData = ({
             baseOrgunitType,
             order,
             search,
+            extraFilters,
         });
     const [orgUnits] = useBoundState<Locations | undefined>(
         undefined,
@@ -190,5 +196,6 @@ export const useGetAssignmentData = ({
         isTeamsFetched,
         saveMultiAssignments,
         setProfiles,
+        setExtraFilters,
     };
 };

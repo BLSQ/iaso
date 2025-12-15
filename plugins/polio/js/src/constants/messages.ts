@@ -66,6 +66,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Campaigns',
         id: 'iaso.polio.label.campaigns',
     },
+    nationalLogisticsPlan: {
+        id: 'iaso.polio.nationalLogisticsPlan',
+        defaultMessage: 'National Logistics Plan',
+    },
     campaign: {
         defaultMessage: 'Campaign',
         id: 'iaso.polio.label.campaign',
@@ -2508,6 +2512,10 @@ const MESSAGES = defineMessages({
     fieldMandatoryForPlanned: {
         id: 'iaso.polio.label.fieldMandatoryForPlanned',
         defaultMessage: 'Field mandatory for planned round/campaign',
+    },
+    performanceThresholds: {
+        id: 'iaso.polio.label.performanceThresholds',
+        defaultMessage: 'Performance Thresholds',
     },
 });
 

@@ -20,6 +20,7 @@ import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasA
 import { Notifications } from '../domains/Notifications';
 import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
 import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
+import { NationalLogisticsPlan } from '../domains/VaccineModule/NationalLogisticsPlan/NationalLogisticsPlan';
 import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';
 import { VaccineStockManagementDetails } from '../domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
 import { PublicVaccineStock } from '../domains/VaccineModule/StockManagement/PublicPage/PublicVaccineStock';
@@ -41,6 +42,9 @@ import {
     SUPPLYCHAIN_READ,
     SUPPLYCHAIN_READ_ONLY,
     SUPPLYCHAIN_WRITE,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
 } from './permissions';
 import {
     EMBEDDED_CALENDAR_URL,
@@ -49,6 +53,7 @@ import {
     EMBEDDED_VACCINE_STOCK_URL,
     baseUrls,
 } from './urls';
+import { PerformanceThresholds } from '../domains/VaccineModule/PerformanceThresholds/PerformanceThresholds';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -128,6 +133,12 @@ export const lqasAfroPath: RoutePath = {
     routerUrl: `${baseUrls.lqasAfro}/*`,
     element: <LqasAfroOverview />,
     permissions: [POLIO, POLIO_ADMIN],
+};
+export const embeddedLqasAfroPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: baseUrls.embeddedLqasAfroPath,
+    routerUrl: `${baseUrls.embeddedLqasAfroPath}/*`,
+    element: <LqasAfroOverview />,
 };
 
 export const imGlobalPath: RoutePath = {
@@ -223,7 +234,26 @@ export const stockVariationPath: RoutePath = {
         STOCK_MANAGEMENT_READ_ONLY,
     ],
 };
-
+export const nationalLogisticsPlanPath: RoutePath = {
+    baseUrl: baseUrls.nationalLogisticsPlan,
+    routerUrl: `${baseUrls.nationalLogisticsPlan}/*`,
+    element: <NationalLogisticsPlan />,
+    permissions: [
+        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    ],
+};
+export const performanceThresholdsPath: RoutePath = {
+    baseUrl: baseUrls.performanceThresholds,
+    routerUrl: `${baseUrls.performanceThresholds}/*`,
+    element: <PerformanceThresholds />,
+    permissions: [
+        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    ],
+};
 export const notificationPath: RoutePath = {
     baseUrl: baseUrls.notification,
     routerUrl: `${baseUrls.notification}/*`,
@@ -295,5 +325,8 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     chronogramPath,
     chronogramTemplateTaskPath,
     chronogramDetailsPath,
+    nationalLogisticsPlanPath,
     embeddedLqasCountryPath,
+    embeddedLqasAfroPath,
+    performanceThresholdsPath,
 ];

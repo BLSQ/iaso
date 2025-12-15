@@ -1,4 +1,9 @@
-import React, { useState, FunctionComponent, ReactElement } from 'react';
+import React, {
+    useState,
+    FunctionComponent,
+    ReactElement,
+    ReactNode,
+} from 'react';
 
 import { Paper, Divider, Typography, Grid, Collapse, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -56,6 +61,7 @@ type Props = {
     showHeader?: boolean;
     className?: string;
     elevation?: number;
+    children?: ReactNode;
 };
 export const WidgetPaper: FunctionComponent<Props> = ({
     IconButton,

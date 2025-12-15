@@ -446,7 +446,7 @@ class ChronogramTemplateTaskAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
 
 @admin.register(PerformanceThresholds)
 class PerformanceThresholdsAdmin(admin.ModelAdmin):
-    list_display = ("indicator", "account", "updated_at")
+    list_display = ("indicator", "account", "updated_at", "deleted_at")
     list_filter = ("account",)
     search_fields = ("indicator",)
     readonly_fields = ("created_at", "updated_at")
@@ -454,6 +454,9 @@ class PerformanceThresholdsAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.JSONField: {"widget": IasoJSONEditorWidget},
     }
+
+    def get_queryset(self, request):
+        return PerformanceThresholds.objects_include_deleted.all()
 
 
 admin.site.register(RoundDateHistoryEntry)

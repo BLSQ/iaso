@@ -196,7 +196,13 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
-    list_filter = ("org_unit_type", "custom", "validation_status", "sub_source", "version__data_source__projects__account")
+    list_filter = (
+        "org_unit_type",
+        "custom",
+        "validation_status",
+        "sub_source",
+        "version__data_source__projects__account",
+    )
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -221,9 +227,9 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        queryset = queryset.prefetch_related("org_unit_type",
-                                             "parent__org_unit_type",
-                                             "version__data_source__projects__account")
+        queryset = queryset.prefetch_related(
+            "org_unit_type", "parent__org_unit_type", "version__data_source__projects__account"
+        )
         return queryset
 
 
@@ -267,7 +273,6 @@ class FormAdmin(admin.GeoModelAdmin):
     def get_account_names(self, obj):
         accounts = set(project.account.name for project in obj.projects.all())
         return ",".join(sorted(accounts)) if accounts else "-"
-
 
     def get_queryset(self, request):
         return Form.objects_include_deleted.all().prefetch_related("projects__account")

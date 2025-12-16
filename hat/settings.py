@@ -726,6 +726,9 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+# stricter mode where no public except white listed one
+AUTHENTICATION_ENFORCED = os.environ.get("AUTHENTICATION_ENFORCED", "false") == "true"
+
 SITE_ID = 1
 
 ACCOUNT_EMAIL_VERIFICATION = "none"

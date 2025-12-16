@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import Paginator
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import GroupSet, Project, SourceVersion
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 
@@ -58,6 +59,7 @@ class GroupSetsViewSet(ModelViewSet):
     lookup_field = "id"
 
     permission_classes = [
+        AuthenticationEnforcedPermission,
         permissions.IsAuthenticated,
         HasPermission(CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION),  # type: ignore
         HasGroupsetPermission,
@@ -94,7 +96,12 @@ class GroupSetsViewSet(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(permission_classes=[], detail=False, methods=["GET"], serializer_class=GroupSetDropdownSerializer)
+    @action(
+        permission_classes=[AuthenticationEnforcedPermission],
+        detail=False,
+        methods=["GET"],
+        serializer_class=GroupSetDropdownSerializer,
+    )
     def dropdown(self, request, *args):
         """To be used in dropdowns (filters)
 

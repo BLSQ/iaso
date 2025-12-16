@@ -196,7 +196,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
-    list_filter = ("org_unit_type", "custom", "validation_status", "sub_source")
+    list_filter = ("org_unit_type", "custom", "validation_status", "sub_source", "version__data_source__projects__account")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -208,11 +208,26 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "name",
         "uuid",
         "parent",
+        "get_account_name",
     )
+
+    @admin.display(description="Account")
+    def get_account_name(self, obj):
+        if obj.version and obj.version.data_source:
+            first_project = obj.version.data_source.projects.first()
+            if first_project and first_project.account:
+                return first_project.account.name
+            return "-"
+
+        # self.get_account_name.admin_order_field = "version__data_source__project_set__account__name"
+
+
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        queryset = queryset.prefetch_related("org_unit_type", "parent__org_unit_type")
+        queryset = queryset.prefetch_related("org_unit_type",
+                                             "parent__org_unit_type",
+                                             "version__data_source__projects__account")
         return queryset
 
 

@@ -13,6 +13,7 @@ from iaso.api.common import (
     ModelViewSet,
     ReadOnlyOrHasPermission,
 )
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
@@ -38,7 +39,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         "create_sampling_result": PlanningSamplingResultWriteSerializer,
     }
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
+    permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [

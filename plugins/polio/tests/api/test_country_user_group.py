@@ -72,8 +72,8 @@ class CountryUsersGroupAPITestCase(APITestCase):
     def test_authenticated_user_without_permissions_forbidden(self):
         """Authenticated users without POLIO_PERMISSION should be forbidden."""
         self.client.force_authenticate(self.user_without_perms)
-        # response = self.client.get(BASE_URL)
-        # self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+        response = self.client.get(BASE_URL)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
         response = self.client.put(
             f"{BASE_URL}{self.country_users_group_1.id}/", data={"language": "PT"}, format="json"

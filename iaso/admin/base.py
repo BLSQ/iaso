@@ -219,10 +219,6 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
                 return first_project.account.name
             return "-"
 
-        # self.get_account_name.admin_order_field = "version__data_source__project_set__account__name"
-
-
-
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         queryset = queryset.prefetch_related("org_unit_type",
@@ -257,6 +253,7 @@ class FormAdmin(admin.GeoModelAdmin):
         "periods_before_allowed",
         "periods_after_allowed",
         "derived",
+        "get_account_names",
         "created_at",
         "updated_at",
         "deleted_at",
@@ -266,8 +263,14 @@ class FormAdmin(admin.GeoModelAdmin):
 
     list_filter = ["projects__account"]
 
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(project.account.name for project in obj.projects.all())
+        return ",".join(sorted(accounts)) if accounts else "-"
+
+
     def get_queryset(self, request):
-        return Form.objects_include_deleted.all()
+        return Form.objects_include_deleted.all().prefetch_related("projects__account")
 
 
 @admin.register(FormVersion)

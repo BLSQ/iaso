@@ -13,5 +13,6 @@ export const useGetPlanning = (
     return useSnackQuery(queryKey, () => getPlanning(planningId), undefined, {
         retry: false,
         enabled: Boolean(planningId),
+        staleTime: Infinity,
     });
 };

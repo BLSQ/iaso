@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from hat.api_import.models import APIImport
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Project
@@ -42,7 +43,7 @@ class ZipFileSerializer(serializers.Serializer):
 
 class MobileBulkUploadsViewSet(ViewSet):
     parser_classes = [MultiPartParser]
-    permission_classes = [MobileBulkUploadsPermission]
+    permission_classes = [AuthenticationEnforcedPermission, MobileBulkUploadsPermission]
 
     app_id_param = openapi.Parameter(
         name=APP_ID,

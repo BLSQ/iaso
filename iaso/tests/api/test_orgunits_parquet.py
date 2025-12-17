@@ -204,7 +204,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             response = self.client.get("/api/orgunits/?order=id&parquet=true")
 
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response["Content-Type"], "application/octet-stream")
+            self.assert_parquet_content_type(response)
 
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
                 write_response_to_file(response, f)
@@ -247,7 +247,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=:all")
 
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response["Content-Type"], "application/octet-stream")
+            self.assert_parquet_content_type(response)
 
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
                 write_response_to_file(response, f)

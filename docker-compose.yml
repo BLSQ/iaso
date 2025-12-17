@@ -37,6 +37,7 @@ services:
             - db
         environment: &hat_environment
             APP_TITLE:
+            AUTHENTICATION_ENFORCED: ${AUTHENTICATION_ENFORCED:-false}
             AWS_ACCESS_KEY_ID:
             AWS_SECRET_ACCESS_KEY:
             AWS_STORAGE_BUCKET_NAME:

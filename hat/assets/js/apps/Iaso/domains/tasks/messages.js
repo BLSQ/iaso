@@ -146,6 +146,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parameters',
         id: 'iaso.label.parameters',
     },
+    result_message: {
+        defaultMessage: 'Result Message',
+        id: 'iaso.label.result_message',
+    },
 });
 
 export default MESSAGES;

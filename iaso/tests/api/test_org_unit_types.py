@@ -1,5 +1,7 @@
 import typing
 
+from django.test import override_settings
+
 from iaso import models as m
 from iaso.api.query_params import APP_ID
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -56,6 +58,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 401)
 
     def test_orgunittypes_list_with_auth_for_project_requiring_auth(self):
+        """GET /orgunittypes/ with auth for project which requires it: 200"""
+
+        self.client.force_authenticate(user=self.jane)
+        response = self.client.get("/api/orgunittypes/", {APP_ID: self.ead.app_id})
+        self.assertJSONResponse(response, 200)
+
+    @override_settings(AUTHENTICATION_ENFORCED=True)
+    def test_orgunittypes_list_with_auth_for_project_requiring_auth_strict(self):
         """GET /orgunittypes/ with auth for project which requires it: 200"""
 
         self.client.force_authenticate(user=self.jane)

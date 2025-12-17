@@ -30,7 +30,7 @@ from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, User
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
-from iaso.utils import is_mobile_request
+from iaso.utils import is_mobile_request, search_by_ids_refs
 
 
 PK_ME = "me"
@@ -93,12 +93,17 @@ def get_filtered_profiles(
     ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
     if search:
-        queryset = queryset.filter(
-            Q(user__username__icontains=search)
-            | Q(user__tenant_user__main_user__username__icontains=search)
-            | Q(user__first_name__icontains=search)
-            | Q(user__last_name__icontains=search)
-        ).distinct()
+        if search.startswith("ids:"):
+            queryset = queryset.filter(id__in=search_by_ids_refs.parse_ids("ids:", search))
+        elif search.startswith("refs:"):
+            queryset = queryset.filter(dhis2_id__in=search_by_ids_refs.parse_ids("refs:", search))
+        else:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search)
+                | Q(user__tenant_user__main_user__username__icontains=search)
+                | Q(user__first_name__icontains=search)
+                | Q(user__last_name__icontains=search)
+            ).distinct()
 
     if perms:
         queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
@@ -532,13 +537,14 @@ class ProfilesViewSet(viewsets.ViewSet):
     def list_export(
         queryset: "QuerySet[Profile]", file_format: FileFormatEnum
     ) -> Union[HttpResponse, StreamingHttpResponse]:
-        columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
+        columns = [{"title": column} for column in ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST]
 
         def get_row(profile: Profile, **_) -> List[Any]:
             org_units = profile.org_units.order_by("id").only("id", "source_ref")
             editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
 
             return [
+                profile.id,
                 profile.user.username,
                 "",  # Password is left empty on purpose.
                 profile.user.email,

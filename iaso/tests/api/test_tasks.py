@@ -380,6 +380,8 @@ class IasoTasksTestCase(APITestCase):
         response = self.client.get(f"/api/tasks/{task.id}/logs/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], SUCCESS)
+        self.assertEqual(response.json()["end_value"], 1)
+        self.assertEqual(response.json()["progress_value"], 1)
         self.assertEqual(len(response.json()["logs"]), 3)
         self.assertEqual(response.json()["logs"][0]["message"], "We have the best task.")
         self.assertEqual(response.json()["logs"][1]["message"], "Simply the best task.")

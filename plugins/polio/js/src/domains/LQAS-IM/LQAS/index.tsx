@@ -9,6 +9,8 @@ import { Box, Grid } from '@mui/material';
 import { NumberAsString, UuidAsString } from '../../../constants/types';
 import { LqasTabValue } from '../types';
 import { LqasCountryView } from './CountryOverview/LqasCountryView';
+import { useLocation } from 'react-router-dom';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 
 export type LqasUrlParams = {
     accountId: string;
@@ -27,11 +29,15 @@ export type LqasUrlParams = {
 };
 
 const baseUrl = baseUrls.lqasCountry;
+const embeddedUrl = baseUrls.embeddedLqasCountry;
 
 export const Lqas = () => {
+    const location = useLocation();
+    const isEmbedded = location.pathname.includes(embeddedUrl);
+    const currentUrl = isEmbedded ? embeddedUrl : baseUrl;
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const params = useParamsObject(baseUrl) as LqasUrlParams;
+    const params = useParamsObject(currentUrl) as LqasUrlParams;
     const {
         leftCountry,
         rightCountry,
@@ -51,24 +57,34 @@ export const Lqas = () => {
                 title={formatMessage(MESSAGES.lqas)}
                 displayBackButton={false}
             />
-            <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container spacing={2} direction="row">
-                    <Grid
-                        item
-                        xs={6}
-                        key={`left-${leftCountry}-${leftCampaign}-${leftMonth}-${leftRound}-${leftTab}`}
-                    >
-                        <LqasCountryView side="left" params={params} />
+            <MainWrapper embedded={isEmbedded}>
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Grid container spacing={2} direction="row">
+                        <Grid
+                            item
+                            xs={6}
+                            key={`left-${leftCountry}-${leftCampaign}-${leftMonth}-${leftRound}-${leftTab}`}
+                        >
+                            <LqasCountryView
+                                side="left"
+                                params={params}
+                                isEmbedded={isEmbedded}
+                            />
+                        </Grid>
+                        <Grid
+                            item
+                            xs={6}
+                            key={`right-${rightCountry}-${rightCampaign}-${rightMonth}-${rightRound}-${rightTab}`}
+                        >
+                            <LqasCountryView
+                                side="right"
+                                params={params}
+                                isEmbedded={isEmbedded}
+                            />
+                        </Grid>
                     </Grid>
-                    <Grid
-                        item
-                        xs={6}
-                        key={`right-${rightCountry}-${rightCampaign}-${rightMonth}-${rightRound}-${rightTab}`}
-                    >
-                        <LqasCountryView side="right" params={params} />
-                    </Grid>
-                </Grid>
-            </Box>
+                </Box>
+            </MainWrapper>
         </>
     );
 };

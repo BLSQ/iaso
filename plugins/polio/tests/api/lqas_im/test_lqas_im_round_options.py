@@ -1,11 +1,29 @@
 import datetime
 
+from typing_extensions import override
+
 from plugins.polio.models import Round
 from plugins.polio.tests.api.lqas_im.test_lqas_im_options import LqasImOptionsTestCase
 
 
 class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
     endpoint = "/api/polio/lqasim/roundoptions/"
+
+    @override
+    def test_get_without_auth(self):
+        """GET - Read-only access to anonymous users for page embedding"""
+        response = self.client.get(self.endpoint)
+        self.assertJSONResponse(response, 200)
+
+    @override
+    def test_get_without_perm(self):
+        """GET - Read-only access  for page embedding"""
+        self.client.force_authenticate(self.anon)
+        response = self.client.get(self.endpoint)
+        self.assertJSONResponse(response, 200)
+        self.client.force_authenticate(self.user_no_perms)
+        response = self.client.get(self.endpoint)
+        self.assertJSONResponse(response, 200)
 
     def test_filter_rounds_for_user(self):
         # Add a rnd 4 to the India campaign to test it's not returned in the results

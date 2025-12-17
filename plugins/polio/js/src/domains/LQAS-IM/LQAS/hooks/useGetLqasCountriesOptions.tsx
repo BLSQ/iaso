@@ -11,15 +11,21 @@ import moment from 'moment';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { appId } from '../../../../constants/app';
 
-const getLqasCountriesOptions = (monthYear?: MonthYear) => {
+const getLqasCountriesOptions = (monthYear?: MonthYear, isEmbedded = false) => {
     const endpoint = '/api/polio/lqasim/countriesoptions';
-    return getRequest(`${endpoint}/?month=${monthYear}`);
+    const url = `${endpoint}/?month=${monthYear}`;
+    if (isEmbedded) {
+        return getRequest(`${url}&app_id=${appId}`);
+    }
+    return getRequest(url);
 };
 
 type UseGetLqasCountriesOptionsArgs = {
     side: Side;
     params: LqasUrlParams;
+    isEmbedded?: boolean;
 };
 
 const useMonthYear = ({
@@ -39,13 +45,14 @@ const useMonthYear = ({
 export const useGetLqasCountriesOptions = ({
     side,
     params,
+    isEmbedded = false,
 }: UseGetLqasCountriesOptionsArgs): UseQueryResult<
     DropdownOptions<number>[]
 > => {
     const monthYear: MonthYear | undefined = useMonthYear({ side, params });
     return useSnackQuery({
-        queryKey: ['lqasCountries', monthYear],
-        queryFn: () => getLqasCountriesOptions(monthYear),
+        queryKey: ['lqasCountries', monthYear], // not including isEmbedded to the queryKey since it has no impact on the result
+        queryFn: () => getLqasCountriesOptions(monthYear, isEmbedded),
         options: {
             enabled: Boolean(monthYear),
             staleTime: 1000 * 60 * 15, // in MS

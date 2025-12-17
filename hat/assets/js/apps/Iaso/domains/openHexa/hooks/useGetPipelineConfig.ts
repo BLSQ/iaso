@@ -16,7 +16,7 @@ export const useGetPipelineConfig = () => {
         options: {
             keepPreviousData: true,
             cacheTime: 60000,
-            staleTime: 60000,
+            staleTime: Infinity,
             retry: false,
         },
     });

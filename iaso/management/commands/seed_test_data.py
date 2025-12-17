@@ -117,7 +117,7 @@ class Command(BaseCommand):
 
         project, p_created = Project.objects.get_or_create(name="Test" + dhis2_version, account=account)
 
-        project.app_id = f"org.bluesquare.play{dhis2_version}"
+        project.app_id = f"org.bluesquare.play{dhis2_version}".replace("-", "").replace("_", "")
         project.save()
 
         datasource, _ds_created = DataSource.objects.get_or_create(
@@ -178,6 +178,7 @@ class Command(BaseCommand):
             quantity_form,
             datasource,
             credentials,
+            user=user,
             mapping_type="AGGREGATE",
             mapping_file="./testdata/seed-data-command-form-mapping.json",
         )
@@ -189,6 +190,8 @@ class Command(BaseCommand):
             period_type="QUARTER",
             single_per_period=True,
         )
+        quality_form.save()
+
         quality_form.org_unit_types.add(orgunit_type)
         project.forms.add(quality_form)
 
@@ -199,6 +202,7 @@ class Command(BaseCommand):
             quality_form,
             datasource,
             credentials,
+            user=user,
             mapping_type="AGGREGATE",
             mapping_file="./testdata/seed-data-command-form-mapping.json",
             xls_file="testdata/seed-data-command-form-i18n.xlsx",
@@ -222,6 +226,7 @@ class Command(BaseCommand):
             cvs_form,
             datasource,
             credentials,
+            user=user,
             mapping_type="EVENT",
             mapping_file="./testdata/seed-data-command-cvs_survey-mapping.json",
             xls_file="./testdata/seed-data-command-cvs_survey.xlsx",
@@ -243,6 +248,7 @@ class Command(BaseCommand):
             cvs_stat_form,
             datasource,
             credentials,
+            user=user,
             mapping_type="DERIVED",
             mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
             xls_file="./testdata/seed-data-command-form-cvs-stats.xlsx",
@@ -251,7 +257,9 @@ class Command(BaseCommand):
         project.forms.add(cvs_stat_form)
 
         event_tracker_form, created = Form.objects.get_or_create(
-            form_id="event_tracker" + dhis2_version, name="Event Tracker " + dhis2_version, single_per_period=False
+            form_id="event_tracker" + dhis2_version,
+            name="Event Tracker " + dhis2_version,
+            single_per_period=False,
         )
 
         event_tracker_form.device_field = "imei"
@@ -263,6 +271,7 @@ class Command(BaseCommand):
             event_tracker_form,
             datasource,
             credentials,
+            user=user,
             mapping_type="EVENT_TRACKER",
             mapping_file="./testdata/seed-data-command-event-tracker-form-mapping.json",
             xls_file="./testdata/seed-data-command-event-tracker-form.xlsx",
@@ -304,6 +313,11 @@ class Command(BaseCommand):
         periods = ["201801", "201802", "201803"]
         quarter_periods = ["2018Q1", "2018Q2"]
 
+        for f in project.forms.all():
+            if f.possible_fields is None:
+                f.update_possible_fields()
+                f.save()
+
         print("********* FORM seed done")
         if mode == "seed":
             print("******** delete previous instances and plannings")
@@ -341,6 +355,7 @@ class Command(BaseCommand):
                 event_tracker_form,
                 [None],
                 event_tracker_form_version,
+                user=user,
                 fixed_instance_count=1,
             )
             print("generated", event_tracker_form.name, event_tracker_form.instances.count(), "instances")
@@ -351,6 +366,7 @@ class Command(BaseCommand):
                 cvs_form,
                 quarter_periods[0:1],
                 cvs_mapping_version,
+                user=user,
                 fixed_instance_count=50,
             )
             print("generated", cvs_form.name, cvs_form.instances.count(), "instances")
@@ -409,7 +425,7 @@ class Command(BaseCommand):
         print("")
         print("For Iaso mobile")
         print("  now you need to start ngrok")
-        print("     with : ngrok http 8081")
+        print("     with : ngrok http 8081 --region eu")
         print("  install the generic iaso mobile app and launch the app")
         print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
         print("     in the menu ")
@@ -454,12 +470,14 @@ class Command(BaseCommand):
         form,
         datasource,
         credentials,
+        user=None,
         mapping_type="AGGREGATE",
         mapping_file=None,
         xls_file="testdata/seed-data-command-form.xlsx",
         xls_xml_file="./testdata/seed-data-command-form.xml",
     ):
         form_version, created = FormVersion.objects.get_or_create(form=form, version_id=1)
+        form_version.created_by = user
         # don't use uploadedFile in get_or_create, it will end up non-unique
         form_version.file = UploadedFile(
             # TODO: use better fixture
@@ -535,7 +553,9 @@ class Command(BaseCommand):
             instance.save()
 
     @transaction.atomic
-    def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):
+    def seed_instances(
+        self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None, user=None
+    ):
         out = OrgUnitType.objects.filter(org_units__version=source_version).distinct()
         form.org_unit_types.set(out)
 
@@ -563,6 +583,8 @@ class Command(BaseCommand):
                     instance.period = period
                     instance.file_name = "fake_it_until_you_make_it.xml"
                     instance.uuid = str(uuid4())
+                    instance.created_by = user
+
                     if with_location:
                         instance.location = Point(-11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0)
 

@@ -1,6 +1,8 @@
 from django.contrib.gis.geos import Point
 from rest_framework import permissions, serializers
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import Device, DeviceOwnership, DevicePosition, Project
 
 from .common import ModelViewSet, TimestampField, safe_api_import
@@ -52,6 +54,16 @@ class DevicePositionSerializer(serializers.Serializer):
         return dp
 
 
+class GetAndListRequiresAuth(BasePermission):
+    def has_permission(self, request, view):
+        if self._is_read(request):
+            return request.user and request.user.is_authenticated
+        return True
+
+    def _is_read(self, request):
+        return request.method in SAFE_METHODS
+
+
 class DevicesPositionViewSet(ModelViewSet):
     """Iaso Devices position API
 
@@ -63,7 +75,7 @@ class DevicesPositionViewSet(ModelViewSet):
     POST /api/devicesposition/ [Deprecated] will be removed in the future
     """
 
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, GetAndListRequiresAuth, permissions.AllowAny]
 
     http_method_names = ["get", "post", "head", "options", "trace"]
     results_key = "devicesposition"

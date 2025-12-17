@@ -20,24 +20,30 @@ import { LqasCountryCharts } from './LqasCountryCharts';
 type Props = {
     side: Side;
     params: LqasUrlParams;
+    isEmbedded: boolean;
 };
 
 const baseUrl = baseUrls.lqasCountry;
+const embeddedUrl = baseUrls.embeddedLqasCountry;
 
-export const LqasCountryView: FunctionComponent<Props> = ({ side, params }) => {
+export const LqasCountryView: FunctionComponent<Props> = ({
+    side,
+    params,
+    isEmbedded,
+}) => {
     const countryId = params[`${side}Country`];
     const campaignId = params[`${side}Campaign`];
     const redirectToReplace = useRedirectToReplace();
+    const currentUrl = isEmbedded ? embeddedUrl : baseUrl;
     const { data: lqasData, isFetching }: UseQueryResult<LqasImData> =
-        useLqasIm('lqas', countryId);
+        useLqasIm('lqas', countryId, isEmbedded);
     const { data: campaign, isFetching: isFetchingCampaign } =
         useGetCampaign(campaignId);
     const campaignObrName = campaign?.obr_name;
     const roundNumber = params[`${side}Round`]
         ? parseInt(params[`${side}Round`] as string, 10)
         : undefined;
-    const { data: roundOptions, isFetching: isFetchingRoundOptions } =
-        useGetLqasRoundOptions({ side, params });
+    const { data: roundOptions } = useGetLqasRoundOptions({ side, params });
 
     const {
         convertedData,
@@ -53,18 +59,23 @@ export const LqasCountryView: FunctionComponent<Props> = ({ side, params }) => {
 
     const onRoundChange = useCallback(
         (value: number | NumberAsString) => {
-            redirectToReplace(baseUrl, {
+            redirectToReplace(currentUrl, {
                 ...params,
                 [`${side}Round`]: value,
             });
         },
-        [params, side, redirectToReplace],
+        [params, side, redirectToReplace, currentUrl],
     );
     const hasRoundNumber = Number.isSafeInteger(roundNumber);
     return (
         <>
             <Box>
-                <LqasCountryFilter side={side} params={params} />
+                <LqasCountryFilter
+                    side={side}
+                    params={params}
+                    currentUrl={currentUrl}
+                    isEmbedded={isEmbedded}
+                />
                 <LqasCountryDataView
                     params={params}
                     side={side}
@@ -76,6 +87,8 @@ export const LqasCountryView: FunctionComponent<Props> = ({ side, params }) => {
                     debugData={debugData}
                     roundOptions={roundOptions}
                     onRoundChange={onRoundChange}
+                    isEmbedded={isEmbedded}
+                    currentUrl={currentUrl}
                 />
                 {!isFetchingCampaign && !isFetching && hasRoundNumber && (
                     <LqasCountryCharts
@@ -88,6 +101,7 @@ export const LqasCountryView: FunctionComponent<Props> = ({ side, params }) => {
                         campaignObrName={campaignObrName}
                         convertedData={convertedData}
                         countryId={countryId}
+                        isEmbedded={isEmbedded}
                     />
                 )}
             </Box>

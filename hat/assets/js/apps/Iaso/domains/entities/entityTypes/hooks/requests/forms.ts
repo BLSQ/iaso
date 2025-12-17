@@ -15,7 +15,7 @@ export const useGetForms = (
     const url = fields ? `${apiUrl},${fields.join(',')}` : apiUrl;
 
     return useSnackQuery({
-        queryKey: ['forms'],
+        queryKey: ['entitiesForms', 'forms'],
         queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,

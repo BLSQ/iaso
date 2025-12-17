@@ -771,7 +771,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         _, total_usable_doses = calculator.get_total_of_usable_vials()
         (
-            _,
+            total_unusable_vials,
             total_unusable_doses,
         ) = calculator.get_total_of_unusable_vials()
         (
@@ -786,6 +786,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "total_usable_doses": total_usable_doses,
             "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
+            "total_unusable_vials": total_unusable_vials,
         }
 
         return Response(summary_data, status=status.HTTP_200_OK)

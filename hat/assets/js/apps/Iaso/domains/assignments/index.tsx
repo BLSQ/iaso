@@ -13,6 +13,7 @@ import {
     useSkipEffectOnMount,
     useRedirectTo,
     useRedirectToReplace,
+    useGoBack,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
@@ -97,6 +98,7 @@ export const Assignments: FunctionComponent = () => {
         isLoadingAssignments,
         isTeamsFetched,
         setProfiles,
+        setExtraFilters,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -262,13 +264,15 @@ export const Assignments: FunctionComponent = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [planning?.id, currentTeam?.id]);
+    const goBack = useGoBack(baseUrls.planning);
     return (
         <>
             <TopBar
                 title={`${formatMessage(MESSAGES.title)}: ${
                     planning?.name ?? ''
                 }`}
-                displayBackButton={false}
+                displayBackButton
+                goBack={goBack}
             />
             <ParentDialog
                 childrenOrgunits={childrenOrgunits}
@@ -303,6 +307,7 @@ export const Assignments: FunctionComponent = () => {
                                 )}
                                 orgunitTypes={orgunitTypes}
                                 isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                                setExtraFilters={setExtraFilters}
                             />
                         )}
                 </Box>

@@ -35,7 +35,7 @@ import {
 } from '../../../../../utils/map/mapUtils';
 import * as Permission from '../../../../../utils/permissions';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
-import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
+import { FormsFilterComponent } from '../../../../forms/components/FormsFilterComponent';
 import { userHasPermission } from '../../../../users/utils';
 import MESSAGES from '../../../messages';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
@@ -578,21 +578,21 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         </>
                     )}
                     {/* Markers section  */}
-                    <>
-                        <SelectedMarkers
-                            data={mappedOrgUnitTypesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                        <SelectedMarkers
-                            data={mappedSourcesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
 
-                        <FormsMarkers
-                            forms={state.formsSelected.value}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                    </>
+                    <SelectedMarkers
+                        data={mappedOrgUnitTypesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+                    <SelectedMarkers
+                        data={mappedSourcesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
+                    <FormsMarkers
+                        forms={state.formsSelected.value}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
                     {hasMarker && (
                         <CurrentOrgUnitMarker
                             isEdit={state.currentOption.value === 'edit'}

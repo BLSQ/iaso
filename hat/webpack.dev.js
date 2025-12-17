@@ -25,10 +25,13 @@ const LOCALE = 'fr';
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet
-const WEBPACK_HOST = process.env.WEBPACK_HOST || 'localhost';
-const WEBPACK_PORT = process.env.WEBPACK_PORT || '3000';
-const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL || 'http';
-const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
+const WEBPACK_HOST = process.env.WEBPACK_HOST;
+const WEBPACK_PORT = process.env.WEBPACK_PORT;
+const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL;
+const WEBPACK_URL =
+    WEBPACK_HOST && WEBPACK_PORT && WEBPACK_PROTOCOL
+        ? `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`
+        : '';
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
@@ -82,7 +85,7 @@ module.exports = {
         path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
-        publicPath: ``, // replace here with `${WEBPACK_URL}/` to use another url for webpack
+        publicPath: WEBPACK_URL,
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
         scriptType: 'text/javascript',
         compareBeforeEmit: true,
@@ -238,7 +241,7 @@ module.exports = {
 
     resolve: {
         alias: {
-            'react/jsx-runtime': 'react/jsx-runtime.js',
+            'react/jsx-runtime.js': 'react/jsx-runtime',
             // Add alias for the combined config
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,

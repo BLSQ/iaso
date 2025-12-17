@@ -14,12 +14,13 @@ export type SavePlanningQuery = {
     startDate: string;
     endDate: string;
     forms: number[];
-    selectedOrgUnit: number[];
+    selectedOrgUnit: number;
     selectedTeam: number;
     description?: string;
     project: number;
     publishingStatus: 'published' | 'draft';
     pipelineUuids: string[];
+    targetOrgUnitType: number;
 };
 
 const convertToApi = data => {
@@ -30,6 +31,7 @@ const convertToApi = data => {
         startDate,
         publishingStatus,
         pipelineUuids,
+        targetOrgUnitType,
         ...converted
     } = data;
     if (selectedTeam !== undefined) {
@@ -52,6 +54,9 @@ const convertToApi = data => {
     }
     if (pipelineUuids !== undefined) {
         converted.pipeline_uuids = pipelineUuids;
+    }
+    if (targetOrgUnitType !== undefined) {
+        converted.target_org_unit_type = targetOrgUnitType;
     }
 
     return converted;

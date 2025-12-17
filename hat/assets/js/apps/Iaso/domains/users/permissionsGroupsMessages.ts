@@ -59,6 +59,10 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     saas: {
         id: 'iaso.permissions.group.saas',
         defaultMessage: 'SaaS:',
+    },
+    stock_management: {
+        id: 'iaso.permissions.group.stock_management',
+        defaultMessage: 'Stock management:',
     }
 });
 

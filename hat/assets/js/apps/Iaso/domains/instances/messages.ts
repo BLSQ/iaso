@@ -123,8 +123,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Created in Iaso',
     },
     updated_at: {
-        id: 'iaso.instance.last_sync_at',
+        id: 'iaso.instance.updated_at',
         defaultMessage: 'Updated',
+    },
+    deleted_at: {
+        id: 'iaso.instance.deleted_at',
+        defaultMessage: 'Deleted',
     },
     source_created_at: {
         id: 'iaso.instance.source_created_at',
@@ -133,6 +137,10 @@ const MESSAGES = defineMessages({
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
         defaultMessage: 'Modified by',
+    },
+    deleted_by: {
+        id: 'iaso.instance.deleted_by',
+        defaultMessage: 'Deleted by',
     },
     files: {
         id: 'iaso.instance.files',

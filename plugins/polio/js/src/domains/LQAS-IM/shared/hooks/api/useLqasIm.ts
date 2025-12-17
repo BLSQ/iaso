@@ -10,10 +10,12 @@ import {
 } from '../../../IM/constants';
 import { LQAS_COUNTRY_URL } from '../../../LQAS/constants';
 import { LqasImData, LqasIMType } from '../../../types';
+import { appId } from '../../../../../constants/app';
 
 export const getLqasIm = (
     type: LqasIMType,
     countryId?: string,
+    isEmbedded = false,
 ): Promise<any> => {
     switch (type) {
         case 'imOHH':
@@ -25,6 +27,11 @@ export const getLqasIm = (
                 `${IM_COUNTRY_URL}${IM_GLOBAL_SLUG}_${countryId}`,
             );
         case 'lqas':
+            if (isEmbedded) {
+                return getRequest(
+                    `${LQAS_COUNTRY_URL}${countryId}/?app_id=${appId}`,
+                );
+            }
             return getRequest(`${LQAS_COUNTRY_URL}${countryId}/`);
         default:
             throw new Error(
@@ -36,10 +43,11 @@ export const getLqasIm = (
 export const useLqasIm = (
     type: LqasIMType,
     countryId?: string,
+    isEmbedded = false,
 ): UseQueryResult<LqasImData> => {
     return useSnackQuery({
         queryKey: [type, countryId, getLqasIm],
-        queryFn: async () => getLqasIm(type, countryId),
+        queryFn: async () => getLqasIm(type, countryId, isEmbedded),
         dispatchOnError: false,
         options: {
             select: data => {

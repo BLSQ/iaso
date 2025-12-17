@@ -276,10 +276,10 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                         lg={12}
                         onChangeDate={(key, value) => {
                             if (key === 'dateFrom') {
-                                setRoundStartFrom(value);
+                                setRoundStartFrom(value ?? null);
                             }
                             if (key === 'dateTo') {
-                                setRoundStartTo(value);
+                                setRoundStartTo(value ?? null);
                             }
                         }}
                         labelFrom={MESSAGES.RoundStartFrom}

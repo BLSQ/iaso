@@ -1,10 +1,9 @@
-// @ts-ignore
 import _ from 'lodash';
 import { UseQueryResult } from 'react-query';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { getRequest } from 'Iaso/libs/Api';
-// @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { cleanupParams } from 'bluesquare-components';
 
 type Params = {
     // eslint-disable-next-line camelcase
@@ -15,24 +14,33 @@ type Params = {
     orgUnitParentId?: string;
     asLocation?: 'true' | 'false';
     limit?: string;
+    app_id?: string;
 };
 
-export const useGetGeoJson = (
-    topParentId: number | undefined,
-    orgUnitCategory: string,
-    validationStatus: string | undefined = 'all',
-): UseQueryResult<OrgUnit[]> => {
+type Args = {
+    topParentId: number | undefined;
+    orgUnitCategory: string;
+    validationStatus?: string;
+    appId?: string;
+};
+export const useGetGeoJson = ({
+    topParentId,
+    orgUnitCategory,
+    validationStatus = 'all',
+    appId,
+}: Args): UseQueryResult<OrgUnit[]> => {
     const params: Params = {
         validation_status: validationStatus,
         withShapes: 'true',
         order: 'id',
         orgUnitTypeCategory: orgUnitCategory,
+        app_id: appId,
     };
     if (_.isNumber(topParentId)) {
         params.orgUnitParentId = `${topParentId}`;
     }
 
-    const urlParams = new URLSearchParams(params);
+    const urlParams = new URLSearchParams(cleanupParams(params));
 
     return useSnackQuery(
         ['geo_json', params],

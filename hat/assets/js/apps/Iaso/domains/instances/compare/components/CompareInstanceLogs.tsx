@@ -176,7 +176,7 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                                         logAInitialValue),
                             )}
                             loading={isFetchingInstanceLogs}
-                            user={instanceLogA?.user}
+                            user={instanceLogB?.user}
                             infos={instanceLogContent.logB}
                             dropDownLoading={isInstanceLogBFetching}
                         />

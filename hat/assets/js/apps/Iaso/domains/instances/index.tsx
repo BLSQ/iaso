@@ -114,7 +114,7 @@ const Instances = () => {
     const refetchInstances = () => queryClient.invalidateQueries(['instances']);
 
     const { data: formDetails } = useSnackQuery(
-        ['formDetailsForInstance', `${formId}`],
+        ['forms', formId],
         () => fetchFormDetailsForInstance(formId),
         undefined,
         { enabled: Boolean(formId) },

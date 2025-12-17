@@ -6,6 +6,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.fields import Field
 from rest_framework.response import Response
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import Form, FormAttachment, Project
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.encryption import calculate_md5
@@ -99,7 +100,7 @@ class FormAttachmentsViewSet(ModelViewSet):
     DELETE /api/formattachments/<id>/
     """
 
-    permission_classes = [HasFormAttachmentPermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasFormAttachmentPermission]
     serializer_class = FormAttachmentSerializer
     queryset = FormAttachment.objects.all()
     ordering_fields = ["order"]

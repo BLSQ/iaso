@@ -108,12 +108,14 @@ class TaskSourceViewSet(ModelViewSet):
     @action(detail=True, methods=["get"], url_path="logs")
     def get_logs(self, request, pk=None):
         task = get_object_or_404(Task, pk=pk)
-
-        logs = TaskLog.objects.filter(task=task)
+        order = request.query_params.get("order", "created_at")
+        logs = TaskLog.objects.filter(task=task).order_by(order)
         serializer = TaskLogSerializer(logs, many=True, context=self.get_serializer_context())
         response = {
             "status": task.status,
             "logs": serializer.data,
+            "end_value": task.end_value,
+            "progress_value": task.progress_value,
         }
         return Response(response)
 

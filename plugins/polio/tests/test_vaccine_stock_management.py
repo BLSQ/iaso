@@ -678,6 +678,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "vaccine_type": {"type": "string"},
                 "total_usable_doses": {"type": "integer"},
                 "total_unusable_doses": {"type": "integer"},
+                "total_unusable_vials": {"type": "integer"},
                 "total_earmarked_doses": {"type": "integer"},
             },
             "required": [
@@ -685,6 +686,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "vaccine_type",
                 "total_usable_doses",
                 "total_unusable_doses",
+                "total_unusable_vials",
                 "total_earmarked_doses",
             ],
         }
@@ -700,6 +702,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
         self.assertEqual(data["total_usable_doses"], 460)
         self.assertEqual(data["total_unusable_doses"], 540)
+        self.assertEqual(data["total_unusable_vials"], 27)
         self.assertEqual(data["total_earmarked_doses"], 0)  # No earmarked stock in test data
 
     def test_delete(self):

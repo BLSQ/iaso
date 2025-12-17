@@ -45,7 +45,7 @@ export type TableDefaults = {
 };
 export const useQueryString = (
     params: Record<string, string>,
-    tableDefaults: TableDefaults,
+    tableDefaults?: TableDefaults,
 ): string => {
     const apiParams = useApiParams(params, tableDefaults);
     return new URLSearchParams(apiParams).toString();

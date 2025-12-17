@@ -6,7 +6,6 @@ import {
 import { BudgetProcessList } from '../domains/Budget';
 import { BudgetProcessDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
 import { Calendar } from '../domains/Calendar/Calendar';
-import { CampaignHistory } from '../domains/Campaigns/campaignHistory/CampaignHistory';
 import { Dashboard } from '../domains/Campaigns/CampaignsList/Dashboard';
 import { Chronogram } from '../domains/Chronogram/Chronogram';
 import { ChronogramDetails } from '../domains/Chronogram/ChronogramDetails';
@@ -20,6 +19,7 @@ import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasA
 import { Notifications } from '../domains/Notifications';
 import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
 import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
+import { NationalLogisticsPlan } from '../domains/VaccineModule/NationalLogisticsPlan/NationalLogisticsPlan';
 import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';
 import { VaccineStockManagementDetails } from '../domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
 import { PublicVaccineStock } from '../domains/VaccineModule/StockManagement/PublicPage/PublicVaccineStock';
@@ -41,13 +41,20 @@ import {
     SUPPLYCHAIN_READ,
     SUPPLYCHAIN_READ_ONLY,
     SUPPLYCHAIN_WRITE,
+    POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
 } from './permissions';
 import {
     EMBEDDED_CALENDAR_URL,
+    EMBEDDED_LQAS_COUNTRY_URL,
     EMBEDDED_VACCINE_REPOSITORY_URL,
     EMBEDDED_VACCINE_STOCK_URL,
     baseUrls,
 } from './urls';
+import { CampaignDetails } from '../domains/Campaigns/CampaignDetails';
+import { CampaignHistory } from '../domains/Campaigns/CampaignHistory/CampaignHistory';
+import { PerformanceThresholds } from '../domains/VaccineModule/PerformanceThresholds/PerformanceThresholds';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -56,6 +63,12 @@ export const campaignsPath: RoutePath = {
     element: <Dashboard />,
     permissions: [POLIO, POLIO_ADMIN],
     isRootUrl: true,
+};
+export const campaignsDetailsPath: RoutePath = {
+    baseUrl: baseUrls.campaignDetails,
+    routerUrl: `${baseUrls.campaignDetails}/*`,
+    element: <CampaignDetails />,
+    permissions: [POLIO, POLIO_ADMIN],
 };
 
 export const campaignHistoryPath: RoutePath = {
@@ -108,6 +121,13 @@ export const embeddedVaccineStockPath: AnonymousRoutePath = {
     isRootUrl: false,
 };
 
+export const embeddedLqasCountryPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: baseUrls.embeddedLqasCountry,
+    routerUrl: `${EMBEDDED_LQAS_COUNTRY_URL}/*`,
+    element: <Lqas />,
+    isRootUrl: false,
+};
 export const lqasCountryPath: RoutePath = {
     baseUrl: baseUrls.lqasCountry,
     routerUrl: `${baseUrls.lqasCountry}/*`,
@@ -120,6 +140,12 @@ export const lqasAfroPath: RoutePath = {
     routerUrl: `${baseUrls.lqasAfro}/*`,
     element: <LqasAfroOverview />,
     permissions: [POLIO, POLIO_ADMIN],
+};
+export const embeddedLqasAfroPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: baseUrls.embeddedLqasAfroPath,
+    routerUrl: `${baseUrls.embeddedLqasAfroPath}/*`,
+    element: <LqasAfroOverview />,
 };
 
 export const imGlobalPath: RoutePath = {
@@ -215,7 +241,26 @@ export const stockVariationPath: RoutePath = {
         STOCK_MANAGEMENT_READ_ONLY,
     ],
 };
-
+export const nationalLogisticsPlanPath: RoutePath = {
+    baseUrl: baseUrls.nationalLogisticsPlan,
+    routerUrl: `${baseUrls.nationalLogisticsPlan}/*`,
+    element: <NationalLogisticsPlan />,
+    permissions: [
+        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    ],
+};
+export const performanceThresholdsPath: RoutePath = {
+    baseUrl: baseUrls.performanceThresholds,
+    routerUrl: `${baseUrls.performanceThresholds}/*`,
+    element: <PerformanceThresholds />,
+    permissions: [
+        POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION,
+        POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
+        POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
+    ],
+};
 export const notificationPath: RoutePath = {
     baseUrl: baseUrls.notification,
     routerUrl: `${baseUrls.notification}/*`,
@@ -287,4 +332,9 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     chronogramPath,
     chronogramTemplateTaskPath,
     chronogramDetailsPath,
+    nationalLogisticsPlanPath,
+    embeddedLqasCountryPath,
+    embeddedLqasAfroPath,
+    campaignsDetailsPath,
+    performanceThresholdsPath,
 ];

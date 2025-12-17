@@ -7,6 +7,7 @@ from iaso import models as m
 from iaso.models import Account
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
+from plugins.polio.api.campaigns.campaigns import AnonymousCampaignSerializer
 from plugins.polio.models import (
     CampaignScope,
     CampaignType,
@@ -149,7 +150,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         json_response = self.client.get("/api/polio/campaigns/").json()
         self.assertEqual(len(json_response), 3)
 
-    def test_campaings_list_authenticated_account_id_ignored(self):
+    def test_campaigns_list_authenticated_account_id_ignored(self):
         """Campaigns list endpoint: authenticated users cannot make use of the account_id parameter
 
         Notes:
@@ -183,16 +184,15 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         """
         Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
         Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
-
         response = self.client.get("/api/polio/campaigns/")
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(len(json_response), 2)
-
+        fields = AnonymousCampaignSerializer.Meta.fields
         for campaign_data in json_response:
             # Both are part of the same account
             self.assertEqual(campaign_data["account"], self.account.pk)
-            # TODO: test other fields (all that's needed for anonymous access) here
+            self.assertEqual(list(campaign_data.keys()), list(fields))
 
     def test_create_campaign_account_not_mandatory(self):
         """Campaigns ca be created without an account"""

@@ -1,26 +1,15 @@
-import React, { ReactElement, useMemo } from 'react';
-import {
-    Column,
-    IconButton as IconButtonComponent,
-    useSafeIntl,
-} from 'bluesquare-components';
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { baseUrls } from '../../constants/urls';
-import { PLANNING_WRITE } from '../../utils/permissions';
+import React, { useMemo } from 'react';
+import { Column, useSafeIntl } from 'bluesquare-components';
+
 import { ProjectChip } from '../projects/components/ProjectChip';
-import { EditPlanning, DuplicatePlanning } from './components/PlanningDialog';
-import { PlanningApi } from './hooks/requests/useGetPlannings';
+import { TeamChip } from '../teams/components/TeamChip';
+import { ActionsCell } from './components/ActionsCell';
+import { PlanningStatusChip } from './components/PlanningStatusChip';
 import MESSAGES from './messages';
 
-const getAssignmentUrl = (planning: PlanningApi): string => {
-    return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
-};
-export const usePlanningColumns = (
-    deletePlanning: (id: number) => void,
-): Column[] => {
+export const usePlanningColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
+    return useMemo<Column[]>(
         () => [
             {
                 Header: 'Id',
@@ -62,121 +51,26 @@ export const usePlanningColumns = (
                 Header: formatMessage(MESSAGES.team),
                 accessor: 'team',
                 id: 'team',
-                Cell: settings => settings.row.original.team_details.name,
+                Cell: settings => (
+                    <TeamChip team={settings.row.original.team_details} />
+                ),
             },
             {
-                Header: formatMessage(MESSAGES.published),
+                Header: formatMessage(MESSAGES.status),
                 accessor: 'status',
                 id: 'status',
-                Cell: settings => {
-                    if (settings.row.original.status === 'published')
-                        return formatMessage(MESSAGES.yes);
-                    return formatMessage(MESSAGES.no);
-                },
+                Cell: settings => (
+                    <PlanningStatusChip status={settings.row.original.status} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: (settings): ReactElement => {
-                    return (
-                        // TODO: limit to user permissions
-                        <section>
-                            <IconButtonComponent
-                                url={getAssignmentUrl(settings.row.original)}
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.viewPlanning}
-                                size="small"
-                            />
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <EditPlanning
-                                    type="edit"
-                                    iconProps={{}}
-                                    id={settings.row.original.id}
-                                    name={settings.row.original?.name}
-                                    selectedTeam={settings.row.original?.team}
-                                    selectedOrgUnit={
-                                        settings.row.original?.org_unit
-                                    }
-                                    startDate={
-                                        settings.row.original?.started_at
-                                    }
-                                    endDate={settings.row.original?.ended_at}
-                                    forms={settings.row.original?.forms ?? []}
-                                    publishingStatus={
-                                        settings.row.original?.status
-                                    }
-                                    project={settings.row.original?.project}
-                                    description={
-                                        settings.row.original?.description
-                                    }
-                                    pipelineUuids={
-                                        settings.row.original?.pipeline_uuids ??
-                                        []
-                                    }
-                                />
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <DuplicatePlanning
-                                    iconProps={{}}
-                                    type="copy"
-                                    name={settings.row.original?.name}
-                                    selectedTeam={settings.row.original?.team}
-                                    selectedOrgUnit={
-                                        settings.row.original?.org_unit
-                                    }
-                                    startDate={
-                                        settings.row.original?.started_at
-                                    }
-                                    endDate={settings.row.original?.ended_at}
-                                    forms={settings.row.original?.forms ?? []}
-                                    publishingStatus={
-                                        settings.row.original?.status
-                                    }
-                                    project={settings.row.original?.project}
-                                    description={
-                                        settings.row.original?.description
-                                    }
-                                    pipelineUuids={
-                                        settings.row.original?.pipeline_uuids ??
-                                        []
-                                    }
-                                />
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <DeleteDialog
-                                    titleMessage={{
-                                        ...MESSAGES.deletePlanning,
-                                        values: {
-                                            planningName:
-                                                settings.row.original.name,
-                                        },
-                                    }}
-                                    message={{
-                                        ...MESSAGES.deleteWarning,
-                                        values: {
-                                            name: settings.row.original.name,
-                                        },
-                                    }}
-                                    disabled={false}
-                                    onConfirm={() =>
-                                        deletePlanning(settings.row.original.id)
-                                    }
-                                    keyName="delete-planning"
-                                />
-                            </DisplayIfUserHasPerm>
-                        </section>
-                    );
-                },
+                Cell: settings => <ActionsCell {...settings} />,
             },
         ],
-        [deletePlanning, formatMessage],
+        [formatMessage],
     );
 };

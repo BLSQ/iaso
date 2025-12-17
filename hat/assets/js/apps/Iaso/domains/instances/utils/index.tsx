@@ -18,17 +18,18 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 
-import { baseUrls } from '../../../constants/urls';
-import { getCookie } from '../../../utils/cookies';
+import { baseUrls } from 'Iaso/constants/urls';
+import { findDescriptor } from 'Iaso/domains/instances/utils/questions';
+import { getCookie } from 'Iaso/utils/cookies';
 
 import {
     apiDateFormat,
     apiDateTimeFormat,
     getFromDateString,
     getToDateString,
-} from '../../../utils/dates';
+} from 'Iaso/utils/dates';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { Form, PossibleField } from '../../forms/types/forms';
 import { Selection } from '../../orgUnits/types/selection';
 import { getLatestOrgUnitLevelId } from '../../orgUnits/utils';
@@ -208,7 +209,7 @@ export const formatLabel = (field: Field): string => {
 
 const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
     const { key } = c;
-    // eslint-disable-next-line camelcase
+
     const { file_content } = settings.row.original;
     const value = file_content[key];
 
@@ -231,7 +232,6 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
 };
 
 export const useInstancesColumns = (
-    // eslint-disable-next-line default-param-last
     getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
     ),
@@ -395,7 +395,7 @@ const getDefaultCols = (
 };
 
 type UseInstanceVisibleColumnsArgs = {
-    formDetails: Form;
+    formDetails: Partial<Form>;
     formIds: string[];
     instanceMetasFields?: InstanceMetasField[];
     labelKeys: string[];
@@ -455,20 +455,24 @@ export const useInstanceVisibleColumns = ({
 };
 
 export const getInstancesFilesList = (instances?: Instance[]): ShortFile[] => {
-    const filesList: ShortFile[] = [];
-    instances?.forEach(i => {
-        if (i.files?.length > 0) {
-            i.files?.forEach(path => {
-                const file = {
-                    itemId: i.id,
-                    createdAt: i.created_at,
-                    path: `${path}`,
-                };
-                filesList.push(file);
-            });
-        }
-    });
-    return filesList;
+    return (
+        instances?.flatMap(
+            i =>
+                i.files?.map(path => {
+                    const descriptor = findDescriptor(i, path);
+                    return {
+                        itemId: i.id,
+                        createdAt: i.created_at,
+                        path: `${path}`,
+                        submittedAt: i.created_at,
+                        formName: i.form_name,
+                        questionName: descriptor?.label,
+                        questionId: descriptor?.name,
+                        orgUnit: i.org_unit,
+                    } as ShortFile;
+                }) || [],
+        ) || []
+    );
 };
 
 type SelectionAction = {
@@ -483,7 +487,7 @@ type SelectionAction = {
 export const useSelectionActions = (
     filters: Record<string, string>,
     setForceRefresh: () => void,
-    // eslint-disable-next-line default-param-last
+
     isUnDeleteAction = false,
     classes: Record<string, string>,
 ): SelectionAction[] => {

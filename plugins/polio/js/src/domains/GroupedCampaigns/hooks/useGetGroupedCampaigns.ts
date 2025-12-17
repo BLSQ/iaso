@@ -25,10 +25,14 @@ export const useGetGroupedCampaigns = (
           }
         : {};
 
-    return useSnackQuery(
-        ['groupedCampaigns', paramsForBackend],
-        ({ signal }) => getGroupedCampaigns(paramsForBackend || {}, signal),
-        undefined,
-        undefined,
-    );
+    return useSnackQuery({
+        queryKey: ['groupedCampaigns', paramsForBackend],
+        queryFn: ({ signal }) =>
+            getGroupedCampaigns(paramsForBackend || {}, signal),
+        options: {
+            keepPreviousData: true,
+            cacheTime: Infinity,
+            staleTime: Infinity,
+        },
+    });
 };

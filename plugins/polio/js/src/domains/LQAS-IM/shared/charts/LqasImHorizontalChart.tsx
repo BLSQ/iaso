@@ -3,9 +3,9 @@ import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { UseQueryResult } from 'react-query';
-import { imBarColorTresholds } from '../../IM/constants';
+import { imBarColorThresholds } from '../../IM/constants';
 import { formatImDataForChart, imTooltipFormatter } from '../../IM/utils';
-import { lqasBarColorTresholds } from '../../LQAS/constants';
+import { lqasBarColorThresholds } from '../../LQAS/constants';
 import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
@@ -23,6 +23,7 @@ type Props = {
     countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
+    isEmbedded?: boolean;
 };
 
 export const LqasImHorizontalChart: FunctionComponent<Props> = ({
@@ -32,6 +33,7 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
     countryId,
     data,
     isLoading,
+    isEmbedded = false,
 }) => {
     // TODO: add consition on scope
     const { formatMessage } = useSafeIntl();
@@ -40,8 +42,10 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
     const {
         data: regions,
         isLoading: isLoadingRegions,
-    }: UseQueryResult<{ name: string; id: number }[]> =
-        useGetRegions(countryId);
+    }: UseQueryResult<{ name: string; id: number }[]> = useGetRegions(
+        countryId,
+        isEmbedded,
+    );
 
     const chartData = useMemo(() => {
         if (type === 'lqas') {
@@ -66,8 +70,8 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
         return baseFormatter(formatMessage);
     }, [formatMessage, type]);
 
-    const colorTresholds =
-        type === 'lqas' ? lqasBarColorTresholds : imBarColorTresholds;
+    const colorThresholds =
+        type === 'lqas' ? lqasBarColorThresholds : imBarColorThresholds;
 
     const hasData =
         data && campaign && data[campaign] && round
@@ -84,7 +88,7 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
                         chartKey={`LQASIMChart-${round}-${campaign}-${type}`}
                         isLoading={isLoading || isLoadingRegions}
                         showChart={Boolean(campaign)}
-                        colorTresholds={colorTresholds}
+                        colorThresholds={colorThresholds}
                     />
                 </Box>
             )}

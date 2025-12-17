@@ -40,6 +40,7 @@ MODULE_DATA_VALIDATION = IasoModule(
     name="Data validation", codename="DATA_VALIDATION", fr_name="Validation des données"
 )
 MODULE_SAAS = IasoModule(name="SaaS", codename="SAAS", fr_name="SaaS")
+MODULE_STOCK = IasoModule(name="Stock management", codename="STOCK_MANAGEMENT", fr_name="Gestion des stocks")
 
 MODULES = [
     module for name, module in globals().items() if name.startswith("MODULE_") and isinstance(module, IasoModule)

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
     IntlFormatMessage,
     IntlMessage,
@@ -14,11 +14,10 @@ import isEqual from 'lodash/isEqual';
 import * as yup from 'yup';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
-import { useGetFormsDropdownOptions } from 'Iaso/domains/mappings/hooks/requests/useGetFormsDropdownOptions';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
 import { useTranslatedErrors } from 'Iaso/libs/validation';
-import { SxStyles } from 'Iaso/types/general';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -36,20 +35,6 @@ type Props = {
         e: StockKeepingUnitDto | EmptyStockKeepingUnit,
         options: Record<string, () => void>,
     ) => void;
-};
-
-const styles: SxStyles = {
-    inputWithInfos: {
-        '& .MuiSvgIcon-root': {
-            mt: 2,
-        },
-        '& .MuiGrid-item': {
-            alignContent: 'center',
-        },
-        '& .MuiGrid-item > .MuiBox-root': {
-            top: 'auto',
-        },
-    },
 };
 
 const useGetSchema = () => {
@@ -150,7 +135,7 @@ const SkuDialog: FunctionComponent<Props> = ({
         messages: MESSAGES,
     });
     const { data: formsList, isFetching: isFetchingForms } =
-        useGetFormsDropdownOptions({});
+        useGetFormsDropdownOptions();
     const { data: orgUnitTypesList, isFetching: isFetchingOrgUnitTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: projectsList, isFetching: isFetchingProjects } =
@@ -241,27 +226,25 @@ const SkuDialog: FunctionComponent<Props> = ({
                                 clearable
                                 multi
                             />
-                            <Box sx={styles.inputWithInfos}>
-                                <InputWithInfos
-                                    infos={formatMessage(
-                                        MESSAGES.directStockManipulationFormsExplanation,
-                                    )}
-                                >
-                                    <InputComponent
-                                        keyValue="forms"
-                                        onChange={onListChange}
-                                        value={values.forms}
-                                        type="select"
-                                        options={formsList}
-                                        label={
-                                            MESSAGES.directStockManipulationForms
-                                        }
-                                        loading={isFetchingForms}
-                                        clearable
-                                        multi
-                                    />
-                                </InputWithInfos>
-                            </Box>
+                            <InputWithInfos
+                                infos={formatMessage(
+                                    MESSAGES.directStockManipulationFormsExplanation,
+                                )}
+                            >
+                                <InputComponent
+                                    keyValue="forms"
+                                    onChange={onListChange}
+                                    value={values.forms}
+                                    type="select"
+                                    options={formsList}
+                                    label={
+                                        MESSAGES.directStockManipulationForms
+                                    }
+                                    loading={isFetchingForms}
+                                    clearable
+                                    multi
+                                />
+                            </InputWithInfos>
                         </>
                     )}
                 </div>

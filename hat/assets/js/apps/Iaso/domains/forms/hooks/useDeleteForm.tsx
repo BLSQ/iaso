@@ -7,9 +7,10 @@ const deleteForm = (id: number) => {
     return deleteRequest(`/api/forms/${id}/`);
 };
 
-export const useDeleteForm = (): UseMutationResult =>
-    useSnackMutation({
+export const useDeleteForm = (): UseMutationResult => {
+    return useSnackMutation({
         mutationFn: deleteForm,
         snackSuccessMessage: MESSAGES.formDeleted,
-        invalidateQueryKey: 'forms',
+        invalidateQueryKey: ['forms'],
     });
+};

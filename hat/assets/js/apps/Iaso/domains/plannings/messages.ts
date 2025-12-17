@@ -14,8 +14,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.publishingStatus',
     },
     all: {
-        defaultMessage: 'All',
-        id: 'iaso.label.all',
+        defaultMessage: 'Show all',
+        id: 'iaso.label.showAll',
     },
     draft: {
         defaultMessage: 'Draft',
@@ -91,7 +91,7 @@ const MESSAGES = defineMessages({
     },
     selectOrgUnit: {
         id: 'iaso.plannings.label.selectOrgUnit',
-        defaultMessage: 'Please select org unit',
+        defaultMessage: 'Target geography',
     },
     duplicatePlanning: {
         id: 'iaso.plannings.label.duplicatePlanning',
@@ -137,6 +137,16 @@ const MESSAGES = defineMessages({
         id: 'iaso.error.label.planningAndTeams',
         defaultMessage: 'Planning and teams must be in the same project',
     },
+    planningAndTargetOrgUnitType: {
+        id: 'iaso.error.label.planningAndTargetOrgUnitType',
+        defaultMessage:
+            'Planning and target org unit type must be in the same project',
+    },
+    noOrgUnitsOfTypeInHierarchy: {
+        id: 'iaso.error.label.noOrgUnitsOfTypeInHierarchy',
+        defaultMessage:
+            'No org units of this type exist below the selected org unit',
+    },
     planningsError: {
         id: 'iaso.snackBar.fetchPlanningsError',
         defaultMessage: 'An error occurred while fetching plannings list',
@@ -157,13 +167,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.error.label.publishedWithoutEndDate',
         defaultMessage: 'End date must be set when publishing',
     },
-    formSelectHelperText: {
-        id: 'iaso.label.formSelectHelperText',
-        defaultMessage: 'You must select a project before selecting a form',
-    },
-    teamSelectHelperText: {
-        id: 'iaso.label.teamSelectHelperText',
-        defaultMessage: 'You must select a project before selecting a team',
+    projectSelectHelperText: {
+        id: 'iaso.label.projectSelectHelperText',
+        defaultMessage: 'You must select a project first',
     },
     orgUnit: {
         id: 'iaso.label.orgUnitSingle',
@@ -172,6 +178,18 @@ const MESSAGES = defineMessages({
     pipelines: {
         id: 'iaso.label.pipelines',
         defaultMessage: 'Pipelines',
+    },
+    targetOrgUnitType: {
+        id: 'iaso.label.targetOrgUnitType',
+        defaultMessage: 'Assignments level',
+    },
+    targetOrgUnitTypeInfos: {
+        id: 'iaso.label.targetOrgUnitTypeInfos',
+        defaultMessage: 'Select the target geography first',
+    },
+    status: {
+        id: 'iaso.label.status',
+        defaultMessage: 'Status',
     },
 });
 

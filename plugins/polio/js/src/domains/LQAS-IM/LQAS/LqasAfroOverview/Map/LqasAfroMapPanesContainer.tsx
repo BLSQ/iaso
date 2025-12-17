@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { LoadingSpinner, useRedirectToReplace } from 'bluesquare-components';
 import { useMapEvents } from 'react-leaflet';
-import { baseUrls } from '../../../../../constants/urls';
 import { defaultShapeStyle } from '../../../../../utils';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
 import { COUNTRY, DISTRICT } from '../../../shared/constants';
@@ -18,10 +17,12 @@ import {
     useGetZoomedInBackgroundShapes,
     useGetZoomedInShapes,
 } from '../hooks/useAfroMapShapes';
-import { AfroMapParams, Side } from '../types';
+import { AfroMapParams } from '../types';
 import { getRound } from '../utils';
 import { LqasAfroPopup } from './LqasAfroPopUp';
 import { LqasAfroTooltip } from './LqasAfroTooltip';
+import { Side } from '../../../../../constants/types';
+import { baseUrls } from '../../../../../constants/urls';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -37,14 +38,17 @@ const getBackgroundLayerStyle = () => {
 };
 
 type Props = {
-    params: AfroMapParams;
+    params: AfroMapParams & { accountId: string };
     side: Side;
+    currentUrl: string;
 };
-const baseUrl = baseUrls.lqasAfro;
+
 export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     params,
     side,
+    currentUrl,
 }) => {
+    const isEmbedded = currentUrl === baseUrls.embeddedLqasAfroPath;
     const redirectToReplace = useRedirectToReplace();
     const handleEvent = useCallback(
         currentMap => {
@@ -68,9 +72,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             if (side === 'right') {
                 newParams.centerRight = paramCenter;
             }
-            redirectToReplace(baseUrl, newParams);
+            redirectToReplace(currentUrl, newParams);
         },
-        [params, redirectToReplace, side],
+        [params, redirectToReplace, side, currentUrl],
     );
     const map = useMapEvents({
         zoomend: () => {
@@ -97,6 +101,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             params,
             selectedRound,
             side,
+            isEmbedded,
         });
 
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
@@ -107,6 +112,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             params,
             selectedRound,
             side,
+            isEmbedded,
         });
 
     const {
@@ -115,6 +121,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     } = useGetZoomedInBackgroundShapes({
         bounds: JSON.stringify(bounds),
         enabled: !showCountries && Boolean(bounds),
+        isEmbedded,
     });
     const paramsAsString = JSON.stringify(params);
     const isLoading =

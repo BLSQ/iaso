@@ -27,9 +27,8 @@ export const useUsersTableColumns = ({
         () => [
             {
                 Header: formatMessage(MESSAGES.projects),
-                id: 'projects',
+                id: 'projects__name',
                 accessor: 'projects',
-                sortable: false,
                 Cell: settings => <ProjectChips projects={settings.value} />,
             },
             {

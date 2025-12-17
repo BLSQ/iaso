@@ -1,6 +1,7 @@
 import React from 'react';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import CalendarToday from '@mui/icons-material/CalendarToday';
 import DonutSmallIcon from '@mui/icons-material/DonutSmall';
 import ExtensionIcon from '@mui/icons-material/Extension';
@@ -20,6 +21,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
 import { MenuItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/types';
 import MESSAGES from './messages';
 import {
@@ -40,6 +42,8 @@ import {
     stockManagementPath,
     supplychainPath,
     vaccineRepositoryPath,
+    nationalLogisticsPlanPath,
+    performanceThresholdsPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -143,6 +147,18 @@ export const menu: MenuItem[] = [
                         key: 'stockmanagement',
                         permissions: stockManagementPath.permissions,
                         icon: props => <StorageIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.nationalLogisticsPlan,
+                        key: 'nationalLogisticsPlan',
+                        permissions: nationalLogisticsPlanPath.permissions,
+                        icon: props => <BarChartIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.performanceThresholds,
+                        key: 'performanceThresholds',
+                        permissions: performanceThresholdsPath.permissions,
+                        icon: props => <DataThresholdingIcon {...props} />,
                     },
                     {
                         label: MESSAGES.vaccineRepository,

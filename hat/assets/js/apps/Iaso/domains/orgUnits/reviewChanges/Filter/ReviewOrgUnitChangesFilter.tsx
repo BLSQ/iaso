@@ -18,6 +18,7 @@ import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useCheckBoxFilter, useFilterState } from 'Iaso/hooks/useFilterState';
 import { DropdownOptions } from 'Iaso/types/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
@@ -31,7 +32,6 @@ import {
 import { useDefaultSourceVersion } from '../../../dataSources/utils';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
-import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
 import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../components/TreeView/requests';
 import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
@@ -80,7 +80,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
-    const { data: forms, isFetching: isLoadingForms } = useGetForms();
+    const { data: formOptions, isFetching: isLoadingForms } =
+        useGetFormsDropdownOptions();
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
 
@@ -122,14 +123,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const [dataSource, setDataSource] = useState<string>(
         sourceParam || defaultSourceVersion?.source?.id.toString(),
     );
-    const formOptions = useMemo(
-        () =>
-            forms?.map(form => ({
-                label: form.name,
-                value: form.id,
-            })) || [],
-        [forms],
-    );
+
     // Get the initial data source id
     const initialDataSource = useMemo(
         () =>

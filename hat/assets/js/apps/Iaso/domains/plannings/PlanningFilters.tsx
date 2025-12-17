@@ -1,11 +1,14 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
-import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
+import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import DatesRange from '../../components/filters/DatesRange';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
 import { useFilterState } from '../../hooks/useFilterState';
+import { CreatePlanning } from './components/PlanningDialog';
 import { publishingStatuses } from './constants';
 import MESSAGES from './messages';
 import { PlanningParams } from './types';
@@ -14,25 +17,29 @@ type Props = {
     params: PlanningParams;
 };
 
-const statusOptions = (formatMessage: IntlFormatMessage) => {
-    return publishingStatuses.map(status => {
-        return {
-            value: status,
-            label: formatMessage(MESSAGES[status]),
-        };
-    });
+const useStatusOptions = () => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () =>
+            publishingStatuses.map(status => {
+                return {
+                    value: status,
+                    label: formatMessage(MESSAGES[status]),
+                };
+            }),
+        [formatMessage],
+    );
 };
 const baseUrl = baseUrls.planning;
 export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const { formatMessage } = useSafeIntl();
-
+    const statusOptions = useStatusOptions();
     return (
         <Grid container spacing={0}>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={4}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -44,7 +51,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         blockForbiddenChars
                     />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
                     <DatesRange
                         onChangeDate={handleChange}
                         dateFrom={filters.dateFrom}
@@ -53,23 +60,35 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         labelTo={MESSAGES.endDateUntil}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={2}>
                     <InputComponent
                         type="select"
                         multi={false}
                         keyValue="publishingStatus"
                         onChange={handleChange}
                         value={filters.publishingStatus}
-                        options={statusOptions(formatMessage)}
-                        label={MESSAGES.publishingStatus}
+                        options={statusOptions}
+                        label={MESSAGES.status}
                     />
                 </Grid>
-                <Grid container item xs={12} justifyContent="flex-end">
-                    <Box mt={2} mb={2}>
+                <Grid item xs={12} md={2} justifyContent="flex-end">
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            gap: 2,
+                            height: theme => theme.spacing(7),
+                            mt: 2,
+                        }}
+                    >
                         <SearchButton
                             disabled={textSearchError || !filtersUpdated}
                             onSearch={handleSearch}
                         />
+                        <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
+                            <CreatePlanning type="create" iconProps={{}} />
+                        </DisplayIfUserHasPerm>
                     </Box>
                 </Grid>
             </Grid>

@@ -29,7 +29,7 @@ from django.utils.translation import gettext_lazy as _
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
 from iaso.utils.emoji import fix_emoji
 from iaso.utils.file_utils import get_file_type
-from iaso.utils.jsonlogic import instance_jsonlogic_to_q
+from iaso.utils.jsonlogic import annotate_suffixed_json_fields, instance_jsonlogic_to_q
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
@@ -331,7 +331,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         if json_content:
             q = instance_jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
-            queryset = queryset.filter(q)
+            queryset = annotate_suffixed_json_fields(queryset, json_content, "json").filter(q)
 
         return queryset
 

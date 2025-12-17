@@ -201,6 +201,7 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "custom",
         "validation_status",
         "sub_source",
+        "version__data_source",
         "version__data_source__projects__account",
     )
     search_fields = ("name", "source_ref", "uuid")
@@ -214,23 +215,22 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "name",
         "uuid",
         "parent",
-        "get_account_name",
+        "version",
+        "get_account_names",
     )
 
-    @admin.display(description="Account")
-    def get_account_name(self, obj):
-        if obj.version and obj.version.data_source:
-            first_project = obj.version.data_source.projects.first()
-            if first_project and first_project.account:
-                return first_project.account.name
-            return "-"
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(
+            f"{project.account.name} ({project.account.id})" for project in obj.version.data_source.projects.all()
+        )
+        return ", ".join(sorted(accounts)) if accounts else "-"
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        queryset = queryset.prefetch_related(
-            "org_unit_type", "parent__org_unit_type", "version__data_source__projects__account"
+        return queryset.select_related("org_unit_type", "parent", "version", "version__data_source").prefetch_related(
+            "version__data_source__projects__account"
         )
-        return queryset
 
 
 @admin.register(OrgUnitType)
@@ -271,11 +271,11 @@ class FormAdmin(admin.GeoModelAdmin):
 
     @admin.display(description="Accounts")
     def get_account_names(self, obj):
-        accounts = set(project.account.name for project in obj.projects.all())
-        return ",".join(sorted(accounts)) if accounts else "-"
+        accounts = set(f"{project.account.name} ({project.account.id})" for project in obj.projects.all())
+        return ", ".join(sorted(accounts)) if accounts else "-"
 
     def get_queryset(self, request):
-        return Form.objects_include_deleted.all().prefetch_related("projects__account")
+        return Form.objects_include_deleted.prefetch_related("projects__account")
 
 
 @admin.register(FormVersion)

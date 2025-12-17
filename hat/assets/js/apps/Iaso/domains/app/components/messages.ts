@@ -21,11 +21,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View user manual',
         id: 'iaso.tooltip.viewUserManual',
     },
-    discussionBoard: {
+    forum: {
         defaultMessage: 'Discussion board',
         id: 'iaso.label.discussionBoard',
     },
-    viewDiscussionBoard: {
+    viewForum: {
         defaultMessage: 'View discussion board',
         id: 'iaso.tooltip.viewDiscussionBoard',
     },

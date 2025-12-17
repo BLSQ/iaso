@@ -41,7 +41,7 @@ services:
             AWS_SECRET_ACCESS_KEY:
             AWS_STORAGE_BUCKET_NAME:
             CLAMAV_ACTIVE:
-            DISCUSSION_MANUAL_PATH:
+            FORUM_PATH:
             CLAMAV_FQDN:
             DB_READONLY_PASSWORD: postgres
             DB_READONLY_USERNAME: postgres

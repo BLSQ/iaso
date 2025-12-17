@@ -1,9 +1,9 @@
-import os
 import typing
 
 from logging import getLogger
 
 from django import forms as dj_forms
+from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -113,7 +113,7 @@ class Account(models.Model):
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
     user_manual_path = models.TextField(null=True, blank=True)
-    discussion_manual_path = models.TextField(null=True, blank=True)
+    forum_path = models.TextField(null=True, blank=True)
     modules = ChoiceArrayField(
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
@@ -144,8 +144,8 @@ class Account(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
-            "user_manual_path": self.user_manual_path or os.getenv("USER_MANUAL_PATH"),
-            "discussion_manual_path": self.discussion_manual_path or os.getenv("DISCUSSION_MANUAL_PATH"),
+            "user_manual_path": self.user_manual_path or settings.USER_MANUAL_PATH,
+            "forum_path": self.forum_path or settings.FORUM_PATH,
             "analytics_script": self.analytics_script,
             "custom_translations": self.custom_translations,
         }
@@ -158,8 +158,8 @@ class Account(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_small_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
-            "user_manual_path": self.user_manual_path or os.getenv("USER_MANUAL_PATH"),
-            "discussion_manual_path": self.discussion_manual_path or os.getenv("DISCUSSION_MANUAL_PATH"),
+            "user_manual_path": self.user_manual_path or settings.USER_MANUAL_PATH,
+            "forum_path": self.forum_path or settings.FORUM_PATH,
             "analytics_script": self.analytics_script,
             "modules": self.modules,
             "custom_translations": self.custom_translations,

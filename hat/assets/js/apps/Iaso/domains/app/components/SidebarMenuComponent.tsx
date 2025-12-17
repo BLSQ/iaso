@@ -110,7 +110,7 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const userGuideUrl = currentUser.account?.user_manual_path;
-    const discussionBoardUrl = currentUser.account?.discussion_manual_path;
+    const forumGuideUrl = currentUser.account?.forum_path;
 
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
@@ -171,17 +171,17 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                             </ListItem>
                         </Tooltip>
                     )}
-                    {discussionBoardUrl && (
+                    {forumGuideUrl && (
                         <Tooltip
                             classes={{ popper: classes.popperFixed }}
                             placement="top-start"
-                            title={formatMessage(MESSAGES.viewDiscussionBoard)}
+                            title={formatMessage(MESSAGES.viewForum)}
                         >
                             <ListItem
                                 className={classes.bottomLinkItem}
                                 button
                                 component="a"
-                                href={discussionBoardUrl}
+                                href={forumGuideUrl}
                                 target="_blank"
                                 rel="noreferrer"
                             >
@@ -192,7 +192,7 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                                     primary={
                                         <Typography variant="body2">
                                             <FormattedMessage
-                                                {...MESSAGES.discussionBoard}
+                                                {...MESSAGES.forum}
                                             />
                                         </Typography>
                                     }

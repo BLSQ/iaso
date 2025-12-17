@@ -62,7 +62,7 @@ export type Account = {
     modules: string[];
     custom_translations: Record<string, Record<string, string>>;
     user_manual_path?: string;
-    discussion_manual_path?: string;
+    forum_path?: string;
 };
 
 export type User = {

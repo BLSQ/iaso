@@ -1,9 +1,10 @@
+from django.db.models import Prefetch
 from django.http import Http404
 from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
-from ...models import Project
+from ...models import Project, ProjectFeatureFlags
 from ..common import ModelViewSet
 from .serializers import AppSerializer
 
@@ -33,7 +34,12 @@ class AppsViewSet(ModelViewSet):
     results_key = "apps"
 
     def get_queryset(self):
-        return Project.objects.all()
+        """Prefetch feature flags to avoid N+1 when serializing projectfeatureflags_set."""
+        feature_flags_prefetch = Prefetch(
+            "projectfeatureflags_set",
+            queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
+        )
+        return Project.objects.all().prefetch_related(feature_flags_prefetch, "forms")
 
     def get_object(self):
         """Override to handle GET /api/apps/current/?app_id=some.app.id"""

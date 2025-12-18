@@ -31,6 +31,8 @@ class MetricType(models.Model):
         default=LegendType.THRESHOLD,
     )
     legend_config = models.JSONField(blank=True, default=dict)
+    # This is meant to flag metric types that are used for system purposes (like population)
+    is_utility = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

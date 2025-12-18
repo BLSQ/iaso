@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0355_merge_20251125_1555"),
+        ("iaso", "0356_account_forum_path"),
     ]
 
     operations = [

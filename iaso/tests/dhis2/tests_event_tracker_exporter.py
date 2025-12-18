@@ -307,7 +307,6 @@ class DataValueExporterTests(TestCase):
 
         org_unit = OrgUnit()
         org_unit.name = "instance orgunit"
-        org_unit.validated = True
         org_unit.source_ref = "OU_DHIS2_ID"
         org_unit.version = source_version
         org_unit.save()
@@ -316,7 +315,6 @@ class DataValueExporterTests(TestCase):
 
         another_org_unit = OrgUnit()
         another_org_unit.name = "another_org_unit"
-        another_org_unit.validated = True
         another_org_unit.source_ref = "ANOTHER_OU_DHIS2_ID"
         another_org_unit.version = source_version
         another_org_unit.save()

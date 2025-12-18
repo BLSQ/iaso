@@ -65,7 +65,6 @@ class DerivedInstancesTests(APITestCase):
         datasource.projects.add(self.project)
 
         org_unit = m.OrgUnit()
-        org_unit.validated = True
         org_unit.source_ref = "OU_DHIS2_ID"
         org_unit.version = source_version
         org_unit.save()

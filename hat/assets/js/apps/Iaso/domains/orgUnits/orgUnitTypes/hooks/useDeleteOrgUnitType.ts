@@ -20,6 +20,7 @@ export const useDeleteOrgUnitType = ({params, count}: useDeleteArgs): UseMutatio
         pageSizeKey: 'pageSize',
         invalidateQueries: [
             'paginated-orgunit-types',
+            'orgunittypes-dropdown'
         ],
         baseUrl: baseUrls.orgUnitTypes,
     });

@@ -55,7 +55,8 @@ export const useDeleteTableRow = ({
                 [pageKey]: `${page - 1}`,
             };
             redirectToReplace(baseUrl, newParams);
-        }else if (invalidateQueries) { 
+        }
+        if (invalidateQueries) { 
             queryClient.invalidateQueries(invalidateQueries);
         }
     }, [

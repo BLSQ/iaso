@@ -18,7 +18,7 @@ export const useDeleteTeam = ({params, count}: useDeleteArgs): UseMutationResult
         params,
         pageKey: 'page',
         pageSizeKey: 'pageSize',
-        invalidateQueries: ['teamsList'],
+        invalidateQueries: ['teamsList', 'teamsDropdown'],
         baseUrl: baseUrls.teams,
     })
 

@@ -22,6 +22,7 @@ export const useDeleteForm = ({params, count}: useDeleteArgs): UseMutationResult
         params,
         pageKey: 'page',
         pageSizeKey: 'pageSize',
+        invalidateQueries: ['forms'],
         baseUrl: baseUrls.forms,
     })
 
@@ -30,10 +31,6 @@ export const useDeleteForm = ({params, count}: useDeleteArgs): UseMutationResult
         snackSuccessMessage: MESSAGES.formDeleted,
         options:{
             onSuccess:()=>{
-                queryClient.invalidateQueries(['forms']);
-                
-                // 2. Run the navigation/invalidation logic calculated by useDeleteTableRow.
-                // (This function will trigger the redirect to page 1).
                 onSuccessNavigateOrInvalidate(); 
             }
         }

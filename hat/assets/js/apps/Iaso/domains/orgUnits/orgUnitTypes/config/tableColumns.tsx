@@ -15,9 +15,9 @@ import MESSAGES from '../messages';
 
 export const baseUrl = baseUrls.orgUnitTypes;
 
-export const useGetColumns = (): Column[] => {
+export const useGetColumns = (params: any, count: number): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: deleteType } = useDeleteOrgUnitType();
+    const { mutateAsync: deleteType } = useDeleteOrgUnitType({ params, count });
     return [
         {
             Header: formatMessage(MESSAGES.name),

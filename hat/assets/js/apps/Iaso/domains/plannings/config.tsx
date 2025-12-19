@@ -6,9 +6,11 @@ import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
 import MESSAGES from './messages';
+import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 
-export const usePlanningColumns = (): Column[] => {
+export const usePlanningColumns = (params: any, count: number): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const { mutateAsync: deletePlanning } = useDeletePlanning({params, count});
     return useMemo<Column[]>(
         () => [
             {
@@ -68,9 +70,12 @@ export const usePlanningColumns = (): Column[] => {
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: settings => <ActionsCell {...settings} />,
+                Cell: settings => <ActionsCell {
+                    ...settings}
+                    deletePlanning={deletePlanning}
+                    />,
             },
         ],
-        [formatMessage],
+        [formatMessage, deletePlanning],
     );
 };

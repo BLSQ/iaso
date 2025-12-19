@@ -43,7 +43,10 @@ export const EntityTypes: FunctionComponent = () => {
     const redirectTo = useRedirectTo();
 
     const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
-    const { mutate: deleteEntityType, isLoading: deleting } = useDelete();
+    const { mutate: deleteEntityType, isLoading: deleting } = useDelete({
+        params,
+        count: data?.count ?? 0,
+    });
     const { mutateAsync: saveEntityType, isLoading: saving } = useSave();
 
     const isLoading = fetchingEntities || deleting || saving;

@@ -12,14 +12,18 @@ type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     budgetProcess: Budget;
+    params: any;
+    count: number;
 };
 
 const DeleteBudgetProcessModal: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
     budgetProcess,
+    params,
+    count,
 }) => {
-    const { mutate: deleteBudgetProcess } = useDeleteBudgetProcess();
+    const { mutate: deleteBudgetProcess } = useDeleteBudgetProcess({params, count});
     const onDelete = useCallback(
         () => deleteBudgetProcess(budgetProcess.id),
         [budgetProcess.id, deleteBudgetProcess],

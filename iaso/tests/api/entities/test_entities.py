@@ -559,7 +559,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ent1_instance1 = Instance.objects.create(
             org_unit=self.ou_country,
             form=self.form_1,
-            json={"gender": "F"},
+            json={"gender": "F", "age__int__": "28"},
         )
         ent1 = Entity.objects.create(
             name="Ent 1",
@@ -580,7 +580,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ent2_instance1 = Instance.objects.create(
             org_unit=self.ou_country,
             form=self.form_1,
-            json={"gender": "M"},
+            json={"gender": "M", "age__int__": "56"},
         )
         ent2 = Entity.objects.create(
             name="Ent 1",
@@ -648,6 +648,25 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 0)
+
+        # age is 56
+        response = self.client.get(
+            "/api/entities/",
+            {
+                "fields_search": json.dumps(
+                    {
+                        "some": [
+                            {"var": self.form_1.form_id},
+                            {"==": [{"var": "age__int__"}, 56]},
+                        ]
+                    }
+                )
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], ent2.id)
 
     def _generate_json_filter(self, operator, some_or_all, gender, residence):
         return json.dumps(

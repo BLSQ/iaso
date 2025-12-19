@@ -49,7 +49,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             cls.integrated_measles_country,
             cls.integrated_measles_district,
         ) = cls.create_campaign(
-            "Measles Campaign",
+            "Measles Campaign Integrated",
             cls.account,
             cls.source_version,
             cls.country_type,
@@ -85,7 +85,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             cls.measles2_country,
             cls.measles2_district,
         ) = cls.create_campaign(
-            "Measles Campaign",
+            "Measles Campaign 2",
             cls.account,
             cls.source_version,
             cls.country_type,
@@ -105,6 +105,11 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             CampaignType.objects.filter(name=CampaignType.MEASLES).first()
             if CampaignType.objects.filter(name=CampaignType.MEASLES).first()
             else CampaignType.objects.create(name=CampaignType.MEASLES)
+        )
+        cls.piri_type = (
+            CampaignType.objects.filter(name=CampaignType.PIRI).first()
+            if CampaignType.objects.filter(name=CampaignType.PIRI).first()
+            else CampaignType.objects.create(name=CampaignType.PIRI)
         )
 
         cls.campaign.campaign_types.add(cls.polio_type)
@@ -151,7 +156,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "account": self.account.pk,
             "detection_status": "PENDING",
             "integrated_to": self.campaign.obr_name,
-            "campaign_types": [self.measles_type],
+            "campaign_types": [self.measles_type.pk],
             "rounds": [
                 {
                     "number": 1,
@@ -161,7 +166,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             ],
         }
 
-        response = self.client.post(f"{CAMPAIGN_URL}/", data, format="json")
+        response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         result = self.assertJSONResponse(response, HTTP_201_CREATED)
         self.assertEqual(result["integrated_to"], self.campaign.obr_name)
         self.assertIsNone(result["integrated_campaigns"])
@@ -177,7 +182,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "account": self.account.pk,
             "detection_status": "PENDING",
             "integrated_campaigns": [self.measles_campaign.obr_name],
-            "campaign_types": [self.polio_type],
+            "campaign_types": [self.polio_type.pk],
             "rounds": [
                 {
                     "number": 1,
@@ -187,7 +192,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             ],
         }
 
-        response = self.client.post(f"{CAMPAIGN_URL}/", data, format="json")
+        response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         result = self.assertJSONResponse(response, HTTP_201_CREATED)
         self.assertIsNone(result["integrated_to"])
         self.assertEqual(result["integrated_campaigns"], [self.measles_campaign.obr_name])
@@ -197,22 +202,22 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         Update a polio campaign's integrated campaigns. Using PUT method since it's the campaigns API (PATCH disabled)
         """
         self.client.force_authenticate(self.user)
-        res = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}")
+        res = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_campaigns"] = [self.measles_campaign.obr_name]
 
-        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}", campaign_data, format="json")
+        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}/", campaign_data, format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(result["integrated_campaigns"], [self.measles_campaign.obr_name])
 
-        res = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}")
+        res = self.client.get(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_campaigns"] = [
             self.integrated_measles_campaign.obr_name,
             self.measles_campaign.obr_name,
         ]
 
-        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}", campaign_data, format="json")
+        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/", campaign_data, format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(
             result["integrated_campaigns"],
@@ -227,19 +232,21 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         Update a non-polio campaign's "parent campaign" (the campaign it's integrated to). Using PUT method since it's the campaigns API (PATCH disabled)
         """
         self.client.force_authenticate(self.user)
-        res = self.client.get(f"{CAMPAIGN_URL}{self.measles_campaign.id}")
+        res = self.client.get(f"{CAMPAIGN_URL}{self.measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_to"] = self.campaign.obr_name
 
-        response = self.client.put(f"{CAMPAIGN_URL}{self.measles_campaign.id}", campaign_data, format="json")
+        response = self.client.put(f"{CAMPAIGN_URL}{self.measles_campaign.id}/", campaign_data, format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(result["integrated_to"], self.campaign.obr_name)
 
-        res = self.client.get(f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}")
+        res = self.client.get(f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_to"] = self.campaign.obr_name
 
-        response = self.client.put(f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}", campaign_data, format="json")
+        response = self.client.put(
+            f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/", campaign_data, format="json"
+        )
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(result["integrated_to"], self.campaign.obr_name)
 
@@ -254,7 +261,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "account": self.account.pk,
             "detection_status": "PENDING",
             "integrated_campaigns": [self.campaign.obr_name],
-            "campaign_types": [self.polio_type],
+            "campaign_types": [self.polio_type.pk],
             "rounds": [
                 {
                     "number": 1,
@@ -264,15 +271,15 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             ],
         }
 
-        response = self.client.post(f"{CAMPAIGN_URL}/", data, format="json")
+        response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
 
         self.client.force_authenticate(self.user)
-        res = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}")
+        res = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_campaigns"] = [self.campaign_with_integrated.obr_name]
 
-        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}", campaign_data, format="json")
+        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}/", campaign_data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
 
     def test_cannot_integrate_to_non_polio_campaign(self):
@@ -285,8 +292,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "obr_name": "Another Non Polio Campaign",
             "account": self.account.pk,
             "detection_status": "PENDING",
-            "inetgrated_to": self.measles_campaign.obr_name,
-            "campaign_types": [self.measles_type],
+            "integrated_to": self.measles_campaign.obr_name,
+            "campaign_types": [self.measles_type.pk],
             "rounds": [
                 {
                     "number": 1,
@@ -296,13 +303,41 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             ],
         }
 
-        response = self.client.post(f"{CAMPAIGN_URL}/", data, format="json")
+        response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
 
         self.client.force_authenticate(self.user)
-        res = self.client.get(f"{CAMPAIGN_URL}{self.measles_campaign.id}")
+        res = self.client.get(f"{CAMPAIGN_URL}{self.measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_to"] = self.measles_campaign2.obr_name
 
-        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}", campaign_data, format="json")
+        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}/", campaign_data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
+
+    def test_campaign_type_cannot_be_changed_if_integrated(self):
+        self.client.force_authenticate(self.user)
+
+        # Non polio campaign integrated to polio campaign
+        res = self.client.get(f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/")
+        campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
+        campaign_data["campaign_types"] = [self.piri_type.pk]
+
+        response = self.client.put(
+            f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/", campaign_data, format="json"
+        )
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(result["campaign_types"], [self.piri_type.pk])
+
+        campaign_data["campaign_types"] = [self.polio_type.pk]
+        response = self.client.put(
+            f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/", campaign_data, format="json"
+        )
+        result = self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
+
+        # # Polio campaign with integrated campaign
+        # res = self.client.get(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/")
+        # campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
+        # campaign_data["campaign_types"] = [self.measles_type.pk]
+
+        # response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/", campaign_data, format="json")
+        # self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)

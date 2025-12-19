@@ -1,7 +1,5 @@
-import { useRedirectTo } from 'bluesquare-components';
 import moment from 'moment';
 import { UseMutationResult } from 'react-query';
-import { baseUrls } from 'Iaso/constants/urls';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 import {
@@ -119,33 +117,28 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
 
 export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
+    onSuccess?: (data: Planning) => void,
 ): UseMutationResult => {
     const ignoreErrorCodes = [400];
-    const redirectTo = useRedirectTo();
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
-        invalidateQueryKey: ['planningsList', 'planning'],
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
+        options: { onSuccess },
     });
     const createPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => {
             return postPlanning(data);
         },
-        invalidateQueryKey: ['planningsList', 'planning'],
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
-        options: {
-            onSuccess: (data: Planning) => {
-                redirectTo(baseUrls.planningDetails, {
-                    mode: 'edit',
-                    planningId: data.id,
-                });
-            },
-        },
+        options: { onSuccess },
     });
     const copyPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => duplicatePlanning(data),
-        invalidateQueryKey: ['planningsList', 'planning'],
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
+        options: { onSuccess },
     });
 
     switch (type) {

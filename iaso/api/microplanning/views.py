@@ -29,7 +29,7 @@ from .serializers import (
     BulkDeleteAssignmentSerializer,
     PlanningSamplingResult,
     PlanningSamplingResultListSerializer,
-    PlanningSamplingResultSerializer,
+    PlanningSamplingResultReadSerializer,
     PlanningSamplingResultWriteSerializer,
     PlanningSerializer,
 )
@@ -68,7 +68,7 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
     http_method_names = ["get", "post", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
-    serializer_class = PlanningSamplingResultSerializer
+    serializer_class = PlanningSamplingResultReadSerializer
     filter_backends = [filters.OrderingFilter]
     ordering_fields = [
         "id",
@@ -84,7 +84,7 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return PlanningSamplingResultWriteSerializer
-        return PlanningSamplingResultSerializer
+        return PlanningSamplingResultReadSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -113,7 +113,7 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
         serializer = self.get_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save(created_by=request.user)
-        read_serializer = PlanningSamplingResultSerializer(serializer.instance, context={"request": request})
+        read_serializer = PlanningSamplingResultReadSerializer(serializer.instance, context={"request": request})
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
 

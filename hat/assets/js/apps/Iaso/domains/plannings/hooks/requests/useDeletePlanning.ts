@@ -10,7 +10,7 @@ export const useDeletePlanning = (
 ): UseMutationResult => {
     return useSnackMutation({
         mutationFn: deletePlanning,
-        invalidateQueryKey: ['planningsList'],
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
         options: {
             onSuccess,
         },

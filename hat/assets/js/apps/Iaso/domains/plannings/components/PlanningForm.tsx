@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import { Grid, Box } from '@mui/material';
@@ -25,7 +25,7 @@ import {
 import { SxStyles } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
-
+import { useSkipEffectUntilValue } from '../../../../../../../../plugins/polio/js/src/domains/VaccineModule/SupplyChain/hooks/utils';
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
@@ -46,7 +46,6 @@ import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
 import { Planning } from '../types';
 import { PageMode } from '../types';
-
 const styles: SxStyles = {
     paper: {
         px: 2,
@@ -82,14 +81,25 @@ export const PlanningForm: FunctionComponent<Props> = ({
         published_at,
         pipeline_uuids: pipelineUuids,
         target_org_unit_type: targetOrgUnitType,
-    } = planning ?? {};
+    } = useMemo(() => planning ?? {}, [planning]) as Planning;
     const startDate = started_at ? moment(started_at).format('L') : undefined;
     const endDate = ended_at ? moment(ended_at).format('L') : undefined;
     const publishingStatus = published_at ? 'published' : 'draft';
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
     const redirectTo = useRedirectTo();
-    const { mutateAsync: savePlanning } = useSavePlanning(mode);
+    const onSaveSuccess = useCallback(
+        result => {
+            if (mode !== 'edit') {
+                redirectToReplace(baseUrls.planningDetails, {
+                    mode: 'edit',
+                    planningId: `${result.id}`,
+                });
+            }
+        },
+        [mode, redirectToReplace],
+    );
+    const { mutateAsync: savePlanning } = useSavePlanning(mode, onSaveSuccess);
     const {
         apiErrors,
         payload,
@@ -178,14 +188,14 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
     const onChange = (keyValue, value) => {
         if (keyValue === 'project') {
-            setFieldValue('selectedTeam', null);
             setFieldTouched('selectedTeam', false);
-            setFieldValue('forms', null);
             setFieldTouched('forms', false);
+            setFieldValue('selectedTeam', null);
+            setFieldValue('forms', null);
         }
         if (keyValue === 'selectedOrgUnit') {
-            setFieldValue('targetOrgUnitType', null);
             setFieldTouched('targetOrgUnitType', false);
+            setFieldValue('targetOrgUnitType', null);
         }
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
@@ -208,9 +218,8 @@ export const PlanningForm: FunctionComponent<Props> = ({
         touched,
         messages: MESSAGES,
     });
-    useEffect(() => {
+    const resetFormsOnProjectChange = React.useCallback(() => {
         if (
-            // Separating the check on formsDropDown and the find to skip the effect as long as forms haven't been fetched
             formsDropdown &&
             !formsDropdown?.find(
                 form =>
@@ -218,12 +227,12 @@ export const PlanningForm: FunctionComponent<Props> = ({
                     form.original?.project_ids?.includes(values?.project),
             )
         ) {
-            setFieldValue('forms', null);
             setFieldTouched('forms', false);
+            setFieldValue('forms', null);
         }
-    }, [values?.project, formsDropdown, setFieldValue, setFieldTouched]);
+    }, [formsDropdown, setFieldTouched, setFieldValue, values?.project]);
 
-    useEffect(() => {
+    const resetTeamsOnProjectChange = React.useCallback(() => {
         if (
             teamsDropdown &&
             !teamsDropdown?.find(
@@ -233,7 +242,10 @@ export const PlanningForm: FunctionComponent<Props> = ({
             setFieldValue('selectedTeam', null);
             setFieldTouched('selectedTeam', false);
         }
-    }, [values?.project, teamsDropdown, setFieldValue, setFieldTouched]);
+    }, [teamsDropdown, setFieldTouched, setFieldValue, values?.project]);
+
+    useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
+    useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
     const publishingStatusOptions = useGetPublishingStatusOptions();
     return (
         <FormikProvider value={formik}>

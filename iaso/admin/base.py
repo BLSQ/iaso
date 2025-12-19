@@ -749,8 +749,7 @@ class AssignmentAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class PlanningSamplingResultAdmin(admin.ModelAdmin):
     raw_id_fields = ("planning", "group", "task", "created_by")
-    readonly_fields = ("created_at",)
-    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    readonly_fields = ("created_at", "parameters")
     list_display = (
         "id",
         "planning",

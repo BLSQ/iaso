@@ -1,10 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import {
-    IntlFormatMessage,
-    useSafeIntl,
-    useGoBack,
-} from 'bluesquare-components';
+import { useSafeIntl, useGoBack } from 'bluesquare-components';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
@@ -17,7 +13,8 @@ import { useGetPlanningDetails } from './hooks/requests/useGetPlanningDetails';
 import MESSAGES from './messages';
 import { PageMode } from './types';
 
-const formatTitle = (type: PageMode, formatMessage: IntlFormatMessage) => {
+const useFormatTitle = (type: PageMode) => {
+    const { formatMessage } = useSafeIntl();
     switch (type) {
         case 'create':
             return formatMessage(MESSAGES.createPlanning);
@@ -35,9 +32,7 @@ export const Details: FunctionComponent = () => {
     const { data: config } = useGetPipelineConfig();
     const hasPipelineConfig = config?.configured;
 
-    const { formatMessage } = useSafeIntl();
-
-    const titleMessage = formatTitle(params.mode as PageMode, formatMessage);
+    const titleMessage = useFormatTitle(params.mode as PageMode);
 
     const { data: planning } = useGetPlanningDetails(planningId);
     const goBack = useGoBack(baseUrls.planning);

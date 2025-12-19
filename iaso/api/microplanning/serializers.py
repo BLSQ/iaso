@@ -148,7 +148,7 @@ class SamplingTaskSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "status"]
 
 
-class PlanningSamplingResultSerializer(serializers.ModelSerializer):
+class PlanningSamplingResultReadSerializer(serializers.ModelSerializer):
     planning = serializers.PrimaryKeyRelatedField(read_only=True)
     group_id = serializers.IntegerField(read_only=True, allow_null=True)
     task_id = serializers.IntegerField(read_only=True, allow_null=True)

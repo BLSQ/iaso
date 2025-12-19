@@ -3,7 +3,7 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 export const useGetPlanningDetails = (planningId: string) => {
     return useSnackQuery({
-        queryKey: ['planning', planningId],
+        queryKey: ['planningDetails', planningId],
         queryFn: () =>
             getRequest(`/api/microplanning/plannings/${planningId}/`),
         options: {

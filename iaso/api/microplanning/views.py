@@ -69,6 +69,18 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
     serializer_class = PlanningSamplingResultSerializer
     queryset = PlanningSamplingResult.objects.all()
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = [
+        "id",
+        "created_at",
+        "pipeline_id",
+        "pipeline_version",
+        "pipeline_name",
+        "status",
+        "task_id",
+        "group_id",
+        "planning_id",
+    ]
 
     def get_serializer_class(self):
         if self.action == "create":

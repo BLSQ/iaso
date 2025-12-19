@@ -160,8 +160,15 @@ class CampaignSerializer(serializers.ModelSerializer):
     # Integrated campaigns
     integrated_to = serializers.CharField(
         source="integrated_to.obr_name", required=False, allow_null=True, read_only=False
-    )  # Not sure both are needed (see tests)
-    # integrated_campaigns = CampaignObrNameSerializer(many=True, read_only=False)
+    )
+    integrated_campaigns = serializers.SlugRelatedField(
+        many=True,
+        slug_field="obr_name",
+        read_only=False,
+        queryset=Campaign.objects.all(),  # TODO restrict campaigns by account or app_id
+        allow_empty=True,
+        required=False,
+    )
 
     scopes = CampaignScopeSerializer(many=True, required=False)
     obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])
@@ -214,9 +221,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         return data
 
     def validate_integrated_to(self, integrated_to):
-        print("-" * 80)
-        print("VALIDATE_INTEGARTED_TO", integrated_to)
-        print("-" * 80)
         if not integrated_to:
             return integrated_to
         polio_campaign = Campaign.objects.filter(obr_name=integrated_to).first()
@@ -228,6 +232,21 @@ class CampaignSerializer(serializers.ModelSerializer):
                 f"Campaign {integrated_to} is not a polio campaign: it cannot have other campaigns integrated to it"
             )
         return integrated_to
+
+    def validate_integrated_campaigns(self, value):
+        """Convert None to empty list for many=True field"""
+        if value is None:
+            return []
+        campaign_objects = Campaign.objects.filter(obr_name__in=value)
+        if campaign_objects.count() < len(value):
+            raise serializers.ValidationError(f"Could not find corresponding campaign for all OBR names {value}")
+        polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        integrated_campaigns_with_wrong_type = campaign_objects.filter(campaign_types__contains=polio_type)
+        if integrated_campaigns_with_wrong_type.exists():
+            raise serializers.ValidationError(
+                f"Found polio campaign(s) in integrated campaigns: {list(integrated_campaigns_with_wrong_type.values_list('obr_name', flat=True))}"
+            )
+        return value
 
     @atomic
     def create(self, validated_data):

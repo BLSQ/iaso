@@ -212,9 +212,6 @@ class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
             account = user.iaso_profile.account
             self.fields["group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["task_id"].queryset = Task.objects.filter(account=account)
-        else:
-            self.fields["group_id"].queryset = Group.objects.none()
-            self.fields["task_id"].queryset = Task.objects.none()
 
 
 class AuditPlanningSerializer(serializers.ModelSerializer):

@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -14,7 +15,7 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models.microplanning import Assignment, Planning
+from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
 from .filters import (
@@ -34,10 +35,6 @@ from .serializers import (
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
-    serializer_action_classes = {
-        "list_sampling_results": PlanningSamplingResultSerializer,
-        "create_sampling_result": PlanningSamplingResultWriteSerializer,
-    }
     remove_results_key_if_paginated = True
     permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     serializer_class = PlanningSerializer
@@ -63,38 +60,46 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             self.queryset.filter_for_user(user).select_related("project", "org_unit", "team").prefetch_related("forms")
         )
 
+
+class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
+    """List/create sampling results scoped by planning."""
+
+    remove_results_key_if_paginated = True
+    http_method_names = ["get", "post", "head", "options"]
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
+    serializer_class = PlanningSamplingResultSerializer
+    queryset = PlanningSamplingResult.objects.all()
+
     def get_serializer_class(self):
-        if hasattr(self, "serializer_action_classes"):
-            serializer_class = self.serializer_action_classes.get(getattr(self, "action", None))
-            if serializer_class:
-                return serializer_class
-        return super().get_serializer_class()
+        if self.action == "create":
+            return PlanningSamplingResultWriteSerializer
+        return PlanningSamplingResultSerializer
 
-    @action(detail=True, methods=["GET"], url_path="samplings")
-    def list_sampling_results(self, request, pk=None):
-        planning = self.get_object()
-        orders = request.query_params.get("order", "-created_at").split(",")
-        queryset = planning.sampling_results.select_related("created_by", "group", "task").prefetch_related(
-            "group__org_units"
+    def get_queryset(self):
+        user = self.request.user
+        planning_id = self.request.query_params.get("planning_id")
+        if not planning_id:
+            raise ValidationError({"planning_id": [_("This query parameter is required.")]})
+        return (
+            self.queryset.filter(planning__project__account=user.iaso_profile.account, planning_id=planning_id)
+            .select_related("planning", "created_by", "group", "task")
+            .prefetch_related("group__org_units")
         )
-        queryset = queryset.order_by(*orders)
 
-        page = self.paginate_queryset(queryset)
-        serializer = PlanningSamplingResultSerializer(
-            page if page is not None else queryset, many=True, context={"request": request}
-        )
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+    def create(self, request, *args, **kwargs):
+        planning_id = request.query_params.get("planning_id") or request.data.get("planning_id")
+        if not planning_id:
+            raise ValidationError({"planning_id": [_("This query parameter is required.")]})
+        try:
+            planning = Planning.objects.filter_for_user(request.user).get(id=planning_id)
+        except Planning.DoesNotExist:
+            raise ValidationError({"planning_id": [_("Unknown or inaccessible planning")]})
 
-    @list_sampling_results.mapping.post
-    def create_sampling_result(self, request, pk=None):
-        planning = self.get_object()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        instance = serializer.save(planning=planning, created_by=request.user)
-        response_serializer = PlanningSamplingResultSerializer(instance, context={"request": request})
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        serializer.save(planning=planning, created_by=request.user)
+        read_serializer = PlanningSamplingResultSerializer(serializer.instance, context={"request": request})
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AssignmentViewSet(AuditMixin, ModelViewSet):

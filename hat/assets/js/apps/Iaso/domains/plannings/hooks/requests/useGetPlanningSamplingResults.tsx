@@ -24,7 +24,7 @@ export const useGetPlanningSamplingResults = (
         queryKey: ['planningSamplingResults', queryString, planningId],
         queryFn: () =>
             getRequest(
-                `/api/microplanning/plannings/${planningId}/samplings/?${queryString}`,
+                `/api/microplanning/samplings/?planning_id=${planningId}&${queryString}`,
             ),
 
         options: {

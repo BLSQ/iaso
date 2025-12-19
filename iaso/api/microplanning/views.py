@@ -3,7 +3,6 @@ from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -28,6 +27,7 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningSamplingResultListSerializer,
     PlanningSamplingResultSerializer,
     PlanningSamplingResultWriteSerializer,
     PlanningSerializer,
@@ -89,27 +89,31 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        planning_id = self.request.query_params.get("planning_id")
-        if not planning_id:
-            raise ValidationError({"planning_id": [_("This query parameter is required.")]})
         return (
-            self.queryset.filter(planning__project__account=user.iaso_profile.account, planning_id=planning_id)
+            self.queryset.filter(planning__project__account=user.iaso_profile.account)
             .select_related("planning", "created_by", "group", "task")
             .prefetch_related("group__org_units")
         )
 
-    def create(self, request, *args, **kwargs):
-        planning_id = request.query_params.get("planning_id") or request.data.get("planning_id")
-        if not planning_id:
-            raise ValidationError({"planning_id": [_("This query parameter is required.")]})
-        try:
-            planning = Planning.objects.filter_for_user(request.user).get(id=planning_id)
-        except Planning.DoesNotExist:
-            raise ValidationError({"planning_id": [_("Unknown or inaccessible planning")]})
+    def list(self, request, *args, **kwargs):
+        query_serializer = PlanningSamplingResultListSerializer(data=request.query_params, context={"request": request})
+        query_serializer.is_valid(raise_exception=True)
+        planning = query_serializer.validated_data["planning_id"]
 
-        serializer = self.get_serializer(data=request.data)
+        queryset = self.filter_queryset(self.get_queryset().filter(planning=planning))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        serializer.save(planning=planning, created_by=request.user)
+        serializer.save(created_by=request.user)
         read_serializer = PlanningSamplingResultSerializer(serializer.instance, context={"request": request})
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 

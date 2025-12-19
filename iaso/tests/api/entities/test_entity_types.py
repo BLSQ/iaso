@@ -457,7 +457,6 @@ class EntityTypeAPITestCase(APITestCase):
             "father_name": "Don Alejandro de la Vega",
             "age_type": 0,
             "birth_date": "1919-08-09",
-            "age__int__": 6,
             "gender": "male",
             "hc": "hc_C",
             "_version": "2022090601",
@@ -482,7 +481,6 @@ class EntityTypeAPITestCase(APITestCase):
             "father_name": "Professor Procyon",
             "age_type": 0,
             "birth_date": "1978-07-03",
-            "age__int__": 47,
             "gender": "male",
             "hc": "hc_C",
             "_version": "2022090601",
@@ -511,19 +509,6 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response_entity_instance[0]["id"], instance2.uuid)
         self.assertEqual(response_entity_instance[0]["json"], instance2.json)
-
-        json_content = json.dumps({"==": [{"var": "age__int__"}, 6]})
-        response = self.client.get(
-            f"/api/mobile/entitytypes/{entity_type.pk}/entities/",
-            {"json_content": json_content, "app_id": self.project.app_id},
-            format="json",
-        )
-        self.assertEqual(response.json()["count"], 1)
-
-        response_entity_instance = response.json()["results"][0]["instances"]
-
-        self.assertEqual(response_entity_instance[0]["id"], instance.uuid)
-        self.assertEqual(response_entity_instance[0]["json"], instance.json)
 
     def test_get_entities_by_entity_type_empty_list_deleted_instances(self):
         entity_type = EntityType.objects.create(

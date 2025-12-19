@@ -15,9 +15,9 @@ class PlanningSamplingResult(models.Model):
 
     planning = models.ForeignKey("Planning", on_delete=models.CASCADE, related_name="sampling_results")
     task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="sampling_results")
-    pipeline_id = models.CharField(max_length=36, null=True, blank=True, help_text="OpenHexa pipeline UUID")
-    pipeline_version = models.CharField(max_length=100, null=True, blank=True, help_text="Pipeline version identifier")
-    pipeline_name = models.CharField(max_length=100, null=True, blank=True, help_text="Pipeline name")
+    pipeline_id = models.CharField(max_length=36, blank=True, help_text="OpenHexa pipeline UUID")
+    pipeline_version = models.CharField(max_length=100, blank=True, help_text="Pipeline version identifier")
+    pipeline_name = models.CharField(max_length=100, blank=True, help_text="Pipeline name")
     group = models.ForeignKey(
         "Group",
         on_delete=models.SET_NULL,

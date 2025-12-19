@@ -21,6 +21,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View user manual',
         id: 'iaso.tooltip.viewUserManual',
     },
+    forum: {
+        defaultMessage: 'Discussion board',
+        id: 'iaso.label.discussionBoard',
+    },
+    viewForum: {
+        defaultMessage: 'View discussion board',
+        id: 'iaso.tooltip.viewDiscussionBoard',
+    },
     djangoAdmin: {
         defaultMessage: 'Django Admin Panel',
         id: 'iaso.label.djangoAdmin',

@@ -76,7 +76,6 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
         "pipeline_id",
         "pipeline_version",
         "pipeline_name",
-        "status",
         "task_id",
         "group_id",
         "planning_id",

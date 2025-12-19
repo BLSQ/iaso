@@ -538,7 +538,6 @@ class PlanningTestCase(APITestCase):
             pipeline_version="v1",
             group=group,
             parameters={"foo": "bar"},
-            status="SUCCESS",
             created_by=self.user,
         )
 
@@ -581,7 +580,6 @@ class PlanningTestCase(APITestCase):
             "pipeline_version": "v2",
             "group_id": group.id,
             "parameters": {"limit": 10},
-            "status": "SUCCESS",
         }
 
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
@@ -609,7 +607,6 @@ class PlanningTestCase(APITestCase):
             "pipeline_version": "v1",
             "group_id": group.id,
             "parameters": {"limit": 5},
-            "status": "SUCCESS",
         }
 
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
@@ -633,38 +630,10 @@ class PlanningTestCase(APITestCase):
             "pipeline_version": "v1",
             "group_id": group.id,
             "parameters": {"limit": 10},
-            "status": "SUCCESS",
         }
 
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         self.assertJSONResponse(response, 403)
-
-    def test_planning_sampling_results_create_invalid_status(self):
-        user_with_perms = self.create_user_with_profile(
-            username="sampling_user_invalid", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
-        )
-        self.client.force_authenticate(user_with_perms)
-        task = Task.objects.create(
-            name="sampling-create-invalid",
-            account=self.account,
-            created_by=user_with_perms,
-        )
-        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
-        group.org_units.add(self.org_unit)
-
-        payload = {
-            "planning_id": self.planning.id,
-            "task_id": task.id,
-            "pipeline_id": "pipeline-invalid",
-            "pipeline_version": "v1",
-            "group_id": group.id,
-            "parameters": {"limit": 10},
-            "status": "NOT_A_STATUS",
-        }
-
-        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
-        data = self.assertJSONResponse(response, 400)
-        self.assertIn("status", data)
 
     def test_planning_serializer_target_org_unit_type_wrong_project(self):
         """Test PlanningSerializer validation with target_org_unit_type from wrong project."""

@@ -170,7 +170,6 @@ class PlanningSamplingResultSerializer(serializers.ModelSerializer):
             "pipeline_name",
             "group_details",
             "parameters",
-            "status",
             "created_at",
             "created_by",
             "created_by_details",
@@ -226,7 +225,6 @@ class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
             "pipeline_name",
             "group_id",
             "parameters",
-            "status",
         ]
 
     def __init__(self, *args, **kwargs):

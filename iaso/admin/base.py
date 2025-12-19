@@ -754,14 +754,13 @@ class PlanningSamplingResultAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "planning",
-        "status",
         "pipeline_id",
         "pipeline_version",
         "group",
         "task",
         "created_at",
     )
-    list_filter = ("status", "planning")
+    list_filter = ("planning",)
     search_fields = ("pipeline_id", "pipeline_version")
     date_hierarchy = "created_at"
 

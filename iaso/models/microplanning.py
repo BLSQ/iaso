@@ -26,13 +26,6 @@ class PlanningSamplingResult(models.Model):
         help_text="Created org unit group containing sampled units",
     )
     parameters = models.JSONField(help_text="Sampling parameters used for this run")
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ("SUCCESS", "Success"),
-            ("FAILED", "Failed"),
-        ],
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 

@@ -176,6 +176,16 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual(2, len(response_data["feature_flags"]))
 
+    def test_apps_retrieve_ok_queries_capped(self):
+        """Ensure app detail does not trigger N+1 on feature flags/forms."""
+
+        with self.assertNumQueries(3):
+            response = self.client.get(f"/api/apps/{self.project_2.app_id}/")
+            self.assertJSONResponse(response, 200)
+            response_data = response.json()
+            self.assertValidAppData(response_data)
+            self.assertEqual(2, len(response_data["feature_flags"]))
+
     def test_app_create_ok_with_auth(self):
         candidate_app = {
             "name": "This is a new app",

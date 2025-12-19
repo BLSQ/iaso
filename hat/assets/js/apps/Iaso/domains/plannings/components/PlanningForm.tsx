@@ -218,7 +218,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
         touched,
         messages: MESSAGES,
     });
-    const resetFormsOnProjectChange = React.useCallback(() => {
+    const resetFormsOnProjectChange = useCallback(() => {
         if (
             formsDropdown &&
             !formsDropdown?.find(
@@ -232,7 +232,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
         }
     }, [formsDropdown, setFieldTouched, setFieldValue, values?.project]);
 
-    const resetTeamsOnProjectChange = React.useCallback(() => {
+    const resetTeamsOnProjectChange = useCallback(() => {
         if (
             teamsDropdown &&
             !teamsDropdown?.find(

@@ -1,5 +1,5 @@
-import { ApiParams } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
+import { useApiParams } from 'Iaso/hooks/useApiParams';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { PaginatedResponse } from '../../../app/types';
@@ -14,14 +14,10 @@ export const useGetPlanningSamplingResults = (
     planningId: string,
     params: Record<string, string>,
 ): UseQueryResult<PaginatedResponse<SamplingResult>, Error> => {
-    const safeParams = {
-        page: params.page || tableDefaults.page,
-        limit: params.pageSize || tableDefaults.limit,
-        order: params.order || tableDefaults.order,
-    } as ApiParams;
+    const safeParams = useApiParams(params, tableDefaults);
     const queryString = new URLSearchParams(safeParams).toString();
     return useSnackQuery({
-        queryKey: ['planningSamplingResults', queryString, planningId],
+        queryKey: ['planningSamplingResults', safeParams, planningId],
         queryFn: () =>
             getRequest(
                 `/api/microplanning/samplings/?planning_id=${planningId}&${queryString}`,

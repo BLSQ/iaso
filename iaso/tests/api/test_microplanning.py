@@ -575,6 +575,7 @@ class PlanningTestCase(APITestCase):
         group.org_units.add(self.org_unit)
 
         payload = {
+            "planning_id": self.planning.id,
             "task_id": task.id,
             "pipeline_id": "pipeline-2",
             "pipeline_version": "v2",
@@ -583,9 +584,7 @@ class PlanningTestCase(APITestCase):
             "status": "SUCCESS",
         }
 
-        response = self.client.post(
-            f"/api/microplanning/samplings/?planning_id={self.planning.id}", data=payload, format="json"
-        )
+        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         data = self.assertJSONResponse(response, 201)
         sampling = PlanningSamplingResult.objects.get(id=data["id"])
         self.assertEqual(sampling.pipeline_id, "pipeline-2")
@@ -604,6 +603,7 @@ class PlanningTestCase(APITestCase):
         group.org_units.add(self.org_unit)
 
         payload = {
+            "planning_id": self.planning.id,
             "task_id": task.id,
             "pipeline_id": "pipeline-unauth",
             "pipeline_version": "v1",
@@ -612,9 +612,7 @@ class PlanningTestCase(APITestCase):
             "status": "SUCCESS",
         }
 
-        response = self.client.post(
-            f"/api/microplanning/samplings/?planning_id={self.planning.id}", data=payload, format="json"
-        )
+        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_planning_sampling_results_create_requires_permission(self):
@@ -629,6 +627,7 @@ class PlanningTestCase(APITestCase):
         group.org_units.add(self.org_unit)
 
         payload = {
+            "planning_id": self.planning.id,
             "task_id": task.id,
             "pipeline_id": "pipeline-no-perm",
             "pipeline_version": "v1",
@@ -637,9 +636,7 @@ class PlanningTestCase(APITestCase):
             "status": "SUCCESS",
         }
 
-        response = self.client.post(
-            f"/api/microplanning/samplings/?planning_id={self.planning.id}", data=payload, format="json"
-        )
+        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         self.assertJSONResponse(response, 403)
 
     def test_planning_sampling_results_create_invalid_status(self):
@@ -656,6 +653,7 @@ class PlanningTestCase(APITestCase):
         group.org_units.add(self.org_unit)
 
         payload = {
+            "planning_id": self.planning.id,
             "task_id": task.id,
             "pipeline_id": "pipeline-invalid",
             "pipeline_version": "v1",
@@ -664,9 +662,7 @@ class PlanningTestCase(APITestCase):
             "status": "NOT_A_STATUS",
         }
 
-        response = self.client.post(
-            f"/api/microplanning/samplings/?planning_id={self.planning.id}", data=payload, format="json"
-        )
+        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         data = self.assertJSONResponse(response, 400)
         self.assertIn("status", data)
 

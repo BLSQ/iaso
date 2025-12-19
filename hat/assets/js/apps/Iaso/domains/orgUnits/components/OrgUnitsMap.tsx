@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -188,6 +193,15 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
         ));
     }, [getSearchColor, isClusterActive, orgUnits.locations]);
 
+    const handleClusterActiveChange = useCallback(
+        (isClusterActive: boolean) => {
+            redirectToReplace(`/${baseUrls.orgUnits}`, {
+                ...params,
+                isClusterActive: `${isClusterActive}`,
+            });
+        },
+        [params, redirectToReplace],
+    );
     if (!bounds && orgUnitsTotal.length > 0) {
         return (
             <Grid container spacing={0}>
@@ -204,12 +218,6 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     const boundsOptions: Record<string, any> = {
         padding: [10, 10],
         maxZoom: currentTile.maxZoom,
-    };
-    const handleClusterActiveChange = (isClusterActive: boolean) => {
-        redirectToReplace(`/${baseUrls.orgUnits}`, {
-            ...params,
-            isClusterActive: `${isClusterActive}`,
-        });
     };
     return (
         <Grid container spacing={0}>

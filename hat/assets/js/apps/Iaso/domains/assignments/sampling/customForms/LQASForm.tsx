@@ -167,19 +167,16 @@ export const LQASForm: FunctionComponent<Props> = ({
         [update],
     );
 
-    const { data: taskDetails } = useGetTaskDetails(
-        taskStatus === 'SUCCESS' ? taskId : undefined,
-    );
     const queryClient = useQueryClient();
-    useEffect(() => {
-        if (taskDetails?.result?.group_id) {
-            queryClient.invalidateQueries('planningSamplingResults');
-        }
-    }, [
-        taskDetails?.result?.bulk_update_task_id,
-        taskDetails?.result?.group_id,
-        queryClient,
-    ]);
+    useGetTaskDetails(
+        taskStatus === 'SUCCESS' ? taskId : undefined,
+        false,
+        data => {
+            if (data.result?.group_id) {
+                queryClient.invalidateQueries('planningSamplingResults');
+            }
+        },
+    );
 
     // Memoized values
     const levels = useMemo(() => {

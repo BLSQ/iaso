@@ -14,7 +14,7 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
+from iaso.models.microplanning import Assignment, Planning
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
 from .filters import (
@@ -27,6 +27,7 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningSamplingResult,
     PlanningSamplingResultListSerializer,
     PlanningSamplingResultSerializer,
     PlanningSamplingResultWriteSerializer,
@@ -68,7 +69,6 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     http_method_names = ["get", "post", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
     serializer_class = PlanningSamplingResultSerializer
-    queryset = PlanningSamplingResult.objects.all()
     filter_backends = [filters.OrderingFilter]
     ordering_fields = [
         "id",
@@ -90,7 +90,7 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return (
-            self.queryset.filter(planning__project__account=user.iaso_profile.account)
+            PlanningSamplingResult.objects.filter(planning__project__account=user.iaso_profile.account)
             .select_related("planning", "created_by", "group", "task")
             .prefetch_related("group__org_units")
         )

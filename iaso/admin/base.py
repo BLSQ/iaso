@@ -196,7 +196,14 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
-    list_filter = ("org_unit_type", "custom", "validation_status", "sub_source")
+    list_filter = (
+        "org_unit_type",
+        "custom",
+        "validation_status",
+        "sub_source",
+        "version__data_source",
+        "version__data_source__projects__account",
+    )
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -208,12 +215,22 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "name",
         "uuid",
         "parent",
+        "version",
+        "get_account_names",
     )
+
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(
+            f"{project.account.name} ({project.account.id})" for project in obj.version.data_source.projects.all()
+        )
+        return ", ".join(sorted(accounts)) if accounts else "-"
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        queryset = queryset.prefetch_related("org_unit_type", "parent__org_unit_type")
-        return queryset
+        return queryset.select_related("org_unit_type", "parent", "version", "version__data_source").prefetch_related(
+            "version__data_source__projects__account"
+        )
 
 
 @admin.register(OrgUnitType)
@@ -242,6 +259,7 @@ class FormAdmin(admin.GeoModelAdmin):
         "periods_before_allowed",
         "periods_after_allowed",
         "derived",
+        "get_account_names",
         "created_at",
         "updated_at",
         "deleted_at",
@@ -251,8 +269,13 @@ class FormAdmin(admin.GeoModelAdmin):
 
     list_filter = ["projects__account"]
 
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(f"{project.account.name} ({project.account.id})" for project in obj.projects.all())
+        return ", ".join(sorted(accounts)) if accounts else "-"
+
     def get_queryset(self, request):
-        return Form.objects_include_deleted.all()
+        return Form.objects_include_deleted.prefetch_related("projects__account")
 
 
 @admin.register(FormVersion)

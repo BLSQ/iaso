@@ -15,7 +15,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { ORG_UNITS } from '../../../utils/permissions';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { Instance } from '../../instances/types/instance';
 import {
     GroupDropdownOption,
@@ -100,7 +100,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus();
+    } = useGetOrgUnitValidationStatus();
     const parentId = isNewOrgunit
         ? parentOrgUnitId
         : orgUnitState.parent.value?.id;

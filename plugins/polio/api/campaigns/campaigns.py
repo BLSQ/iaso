@@ -161,11 +161,8 @@ class CampaignSerializer(serializers.ModelSerializer):
     integrated_to = serializers.CharField(
         source="integrated_to.obr_name", required=False, allow_null=True, read_only=False
     )
-    integrated_campaigns = serializers.SlugRelatedField(
-        many=True,
-        slug_field="obr_name",
-        read_only=False,
-        queryset=Campaign.objects.all(),  # TODO restrict campaigns by account or app_id
+    integrated_campaigns = serializers.ListField(
+        child=serializers.CharField(),
         allow_empty=True,
         required=False,
     )
@@ -237,16 +234,17 @@ class CampaignSerializer(serializers.ModelSerializer):
         """Convert None to empty list for many=True field"""
         if value is None:
             return []
-        campaign_objects = Campaign.objects.filter(obr_name__in=value)
-        if campaign_objects.count() < len(value):
-            raise serializers.ValidationError(f"Could not find corresponding campaign for all OBR names {value}")
+        target_campaigns_qs = Campaign.objects.filter(obr_name__in=value)
+        target_campaigns_count = target_campaigns_qs.count()
+        if target_campaigns_count < len(value):
+            raise serializers.ValidationError(f"Could not find corresponding campaign for all OBR names {str(value)}")
         polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
-        integrated_campaigns_with_wrong_type = campaign_objects.filter(campaign_types__contains=polio_type)
+        integrated_campaigns_with_wrong_type = target_campaigns_qs.filter(campaign_types=polio_type)
         if integrated_campaigns_with_wrong_type.exists():
             raise serializers.ValidationError(
                 f"Found polio campaign(s) in integrated campaigns: {list(integrated_campaigns_with_wrong_type.values_list('obr_name', flat=True))}"
             )
-        return value
+        return list(target_campaigns_qs.values_list("id", flat=True))
 
     @atomic
     def create(self, validated_data):
@@ -256,6 +254,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         initial_org_unit = validated_data.get("initial_org_unit")
         obr_name = validated_data["obr_name"]
         integrated_to = validated_data.pop("integrated_to", {"obr_name": None})
+        integrated_campaigns = validated_data.pop("integrated_campaigns", [])
         account = self.context["request"].user.iaso_profile.account
 
         campaign_scopes = validated_data.pop("scopes", [])
@@ -321,7 +320,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     scope.group.save()
 
                 scope.group.org_units.set(org_units)
-
+        campaign.integrated_campaigns.set(integrated_campaigns)
         campaign.update_geojson_field()
         campaign.save()
         log_campaign_modification(campaign, None, self.context["request"].user)

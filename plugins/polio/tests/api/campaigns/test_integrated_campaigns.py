@@ -131,7 +131,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}/")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertIn("integrated_campaigns", result.keys())
-        self.assertIsNone(result["integrated_campaigns"])
+        self.assertEqual(result["integrated_campaigns"], [])
 
         response = self.client.get(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/")
         result = self.assertJSONResponse(response, HTTP_200_OK)
@@ -142,8 +142,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(len(integrated_campaigns), 1)
 
         integrated_campaign = integrated_campaigns[0]
-        self.assertEqual(integrated_campaign["id"], self.campaign_with_integrated.id)
-        self.assertEqual(integrated_campaign["obr_name"], self.campaign_with_integrated.obr_name)
+
+        self.assertEqual(integrated_campaign, self.integrated_measles_campaign.obr_name)
 
     def test_create_integrated_campaign(self):
         """
@@ -169,7 +169,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         result = self.assertJSONResponse(response, HTTP_201_CREATED)
         self.assertEqual(result["integrated_to"], self.campaign.obr_name)
-        self.assertIsNone(result["integrated_campaigns"])
+        self.assertEqual(result["integrated_campaigns"], [])
 
     def test_create_polio_campaign_with_integrated(self):
         """
@@ -219,8 +219,16 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/", campaign_data, format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(
-            result["integrated_campaigns"],
+        self.assertEqual(len(result["integrated_campaigns"]), 2)
+        self.assertIn(
+            result["integrated_campaigns"][0],
+            [
+                self.integrated_measles_campaign.obr_name,
+                self.measles_campaign.obr_name,
+            ],
+        )
+        self.assertIn(
+            result["integrated_campaigns"][1],
             [
                 self.integrated_measles_campaign.obr_name,
                 self.measles_campaign.obr_name,
@@ -335,9 +343,54 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         result = self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
 
         # # Polio campaign with integrated campaign
-        # res = self.client.get(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/")
-        # campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
-        # campaign_data["campaign_types"] = [self.measles_type.pk]
+        res = self.client.get(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/")
+        campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
+        campaign_data["campaign_types"] = [self.measles_type.pk]
 
-        # response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/", campaign_data, format="json")
-        # self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
+        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/", campaign_data, format="json")
+        self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
+
+    def test_validation(self):
+        self.client.force_authenticate(self.user)
+
+        data = {
+            "obr_name": "Yet Another Polio Campaign",
+            "account": self.account.pk,
+            "detection_status": "PENDING",
+            "integrated_campaigns": [f"{self.measles_campaign2.obr_name}", "Not a valid OBR name"],
+            "campaign_types": [self.polio_type.pk],
+            "rounds": [
+                {
+                    "number": 1,
+                    "started_at": "2021-02-01",
+                    "ended_at": "2021-02-20",
+                }
+            ],
+        }
+
+        response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
+        error = self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
+        print("INTEGRATED CAMPAIGNS", error)
+        self.assertEqual(
+            error["integrated_campaigns"],
+            [f"Could not find corresponding campaign for all OBR names {str(data['integrated_campaigns'])}"],
+        )
+
+        data = {
+            "obr_name": "Yet Another Non Polio Campaign",
+            "account": self.account.pk,
+            "detection_status": "PENDING",
+            "integrated_to": "Not a valid OBR name",
+            "campaign_types": [self.measles_type.pk],
+            "rounds": [
+                {
+                    "number": 1,
+                    "started_at": "2021-02-01",
+                    "ended_at": "2021-02-20",
+                }
+            ],
+        }
+
+        response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
+        error = self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
+        self.assertEqual(error["integrated_to"], [f"No campaign found for OBR name {data['integrated_to']}"])

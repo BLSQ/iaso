@@ -301,7 +301,8 @@ class FormsViewSet(ModelViewSet):
         requested_fields = self.request.query_params.get("fields")
 
         is_request_from_manifest = self.request.path.endswith("/manifest/")
-        default_order = "id" if is_request_from_manifest else "instance_updated_at"
+
+        default_order = "id" if is_request_from_manifest or self.action == "retrieve" else "instance_updated_at"
 
         order = self.request.query_params.get("order", default_order).split(",")
 

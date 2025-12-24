@@ -505,6 +505,30 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only_fields = ["creation_email_send_at", "group"]
 
 
+class RetrieveCampaignSerializer(CampaignSerializer):
+    # Override Integrated campaigns fields to send obr_name to the front-end
+    integrated_to = serializers.CharField(
+        source="integrated_to.obr_name", required=False, allow_null=True, read_only=False
+    )
+    integrated_campaigns = integrated_campaigns = serializers.SerializerMethodField()
+
+    def get_integrated_campaigns(self, obj):
+        """Convert integrated campaigns to list of obr_names"""
+        return list(obj.integrated_campaigns.values_list("obr_name", flat=True))
+
+    def validate(self, attrs):
+        # Skip parent validation since this serializer doesn't handle write methods
+        return serializers.ModelSerializer.validate(self, attrs)
+
+    def validate_integrated_to(self, value):
+        # Skip parent validation since this serializer doesn't handle write methods
+        return value
+
+    def validate_integrated_campaigns(self, value):
+        # Skip parent validation since this serializer doesn't handle write methods
+        return value
+
+
 class ListCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the List view in the web ui"""
 
@@ -818,18 +842,14 @@ class CampaignViewSet(ModelViewSet):
     use_field_order = False
 
     def get_serializer_class(self):
+        if self.request.query_params.get("fieldset") == "calendar" and self.request.method in permissions.SAFE_METHODS:
+            return CalendarCampaignSerializer
         if self.request.user.is_authenticated:
             if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
                 return ListCampaignSerializer
-            if (
-                self.request.query_params.get("fieldset") == "calendar"
-                and self.request.method in permissions.SAFE_METHODS
-            ):
-                return CalendarCampaignSerializer
-
+            if self.action == "retrieve":
+                return RetrieveCampaignSerializer
             return CampaignSerializer
-        if self.request.query_params.get("fieldset") == "calendar" and self.request.method in permissions.SAFE_METHODS:
-            return CalendarCampaignSerializer
         return AnonymousCampaignSerializer
 
     def filter_queryset(self, queryset):

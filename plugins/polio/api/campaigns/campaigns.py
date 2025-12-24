@@ -32,6 +32,7 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Group, OrgUnit
+from plugins.polio.api.campaigns.campaign_groups import CampaignNameSerializer
 from plugins.polio.api.campaigns.campaigns_log import (
     log_campaign_modification,
     serialize_campaign,
@@ -133,12 +134,6 @@ class CampaignTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignType
         fields = ["id", "name", "slug"]
-
-
-class CampaignObrNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Campaign
-        fields = ["obr_name"]
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -505,16 +500,24 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only_fields = ["creation_email_send_at", "group"]
 
 
+class CampaignTypeIdAndNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignType
+        fields = ["id", "name"]
+
+
+class IntegratedCampaignSerializer(serializers.ModelSerializer):
+    campaign_types = CampaignTypeIdAndNameSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Campaign
+        fields = ["id", "obr_name", "campaign_types"]
+
+
 class RetrieveCampaignSerializer(CampaignSerializer):
     # Override Integrated campaigns fields to send obr_name to the front-end
-    integrated_to = serializers.CharField(
-        source="integrated_to.obr_name", required=False, allow_null=True, read_only=False
-    )
-    integrated_campaigns = integrated_campaigns = serializers.SerializerMethodField()
-
-    def get_integrated_campaigns(self, obj):
-        """Convert integrated campaigns to list of obr_names"""
-        return list(obj.integrated_campaigns.values_list("obr_name", flat=True))
+    integrated_to = CampaignNameSerializer(read_only=True)
+    integrated_campaigns = IntegratedCampaignSerializer(many=True, read_only=True)
 
     def validate(self, attrs):
         # Skip parent validation since this serializer doesn't handle write methods

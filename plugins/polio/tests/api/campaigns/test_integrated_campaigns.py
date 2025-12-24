@@ -143,7 +143,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         integrated_campaign = integrated_campaigns[0]
 
-        self.assertEqual(integrated_campaign, self.integrated_measles_campaign.obr_name)
+        self.assertEqual(integrated_campaign, str(self.integrated_measles_campaign.id))
 
     def test_create_integrated_campaign(self):
         """
@@ -155,7 +155,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "obr_name": "New Non Polio Campaign",
             "account": self.account.pk,
             "detection_status": "PENDING",
-            "integrated_to": self.campaign.obr_name,
+            "integrated_to": self.campaign.pk,
             "campaign_types": [self.measles_type.pk],
             "rounds": [
                 {
@@ -168,7 +168,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         result = self.assertJSONResponse(response, HTTP_201_CREATED)
-        self.assertEqual(result["integrated_to"], self.campaign.obr_name)
+        self.assertEqual(result["integrated_to"], str(self.campaign.pk))
         self.assertEqual(result["integrated_campaigns"], [])
 
     def test_create_polio_campaign_with_integrated(self):
@@ -181,7 +181,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "obr_name": "New Polio Campaign",
             "account": self.account.pk,
             "detection_status": "PENDING",
-            "integrated_campaigns": [self.measles_campaign.obr_name],
+            "integrated_campaigns": [self.measles_campaign.pk],
             "campaign_types": [self.polio_type.pk],
             "rounds": [
                 {
@@ -195,7 +195,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         result = self.assertJSONResponse(response, HTTP_201_CREATED)
         self.assertIsNone(result["integrated_to"])
-        self.assertEqual(result["integrated_campaigns"], [self.measles_campaign.obr_name])
+        self.assertEqual(result["integrated_campaigns"], [str(self.measles_campaign.pk)])
 
     def test_update_integrated_campaigns(self):
         """
@@ -204,17 +204,17 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         res = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
-        campaign_data["integrated_campaigns"] = [self.measles_campaign.obr_name]
+        campaign_data["integrated_campaigns"] = [str(self.measles_campaign.pk)]
 
         response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}/", campaign_data, format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(result["integrated_campaigns"], [self.measles_campaign.obr_name])
+        self.assertEqual(result["integrated_campaigns"], [str(self.measles_campaign.pk)])
 
         res = self.client.get(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_campaigns"] = [
-            self.integrated_measles_campaign.obr_name,
-            self.measles_campaign.obr_name,
+            str(self.integrated_measles_campaign.pk),
+            str(self.measles_campaign.pk),
         ]
 
         response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/", campaign_data, format="json")
@@ -223,15 +223,15 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertIn(
             result["integrated_campaigns"][0],
             [
-                self.integrated_measles_campaign.obr_name,
-                self.measles_campaign.obr_name,
+                str(self.integrated_measles_campaign.pk),
+                str(self.measles_campaign.pk),
             ],
         )
         self.assertIn(
             result["integrated_campaigns"][1],
             [
-                self.integrated_measles_campaign.obr_name,
-                self.measles_campaign.obr_name,
+                str(self.integrated_measles_campaign.pk),
+                str(self.measles_campaign.pk),
             ],
         )
 
@@ -242,21 +242,21 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         res = self.client.get(f"{CAMPAIGN_URL}{self.measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
-        campaign_data["integrated_to"] = self.campaign.obr_name
+        campaign_data["integrated_to"] = self.campaign.pk
 
         response = self.client.put(f"{CAMPAIGN_URL}{self.measles_campaign.id}/", campaign_data, format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(result["integrated_to"], self.campaign.obr_name)
+        self.assertEqual(result["integrated_to"], str(self.campaign.pk))
 
         res = self.client.get(f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
-        campaign_data["integrated_to"] = self.campaign.obr_name
+        campaign_data["integrated_to"] = str(self.campaign.pk)
 
         response = self.client.put(
             f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/", campaign_data, format="json"
         )
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(result["integrated_to"], self.campaign.obr_name)
+        self.assertEqual(result["integrated_to"], str(self.campaign.pk))
 
     def test_cannot_integrate_polio_campaign(self):
         """
@@ -268,7 +268,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "obr_name": "Another Polio Campaign",
             "account": self.account.pk,
             "detection_status": "PENDING",
-            "integrated_campaigns": [self.campaign.obr_name],
+            "integrated_campaigns": [str(self.campaign.pk)],
             "campaign_types": [self.polio_type.pk],
             "rounds": [
                 {
@@ -278,14 +278,13 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
                 }
             ],
         }
-
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
 
         self.client.force_authenticate(self.user)
         res = self.client.get(f"{CAMPAIGN_URL}{self.campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
-        campaign_data["integrated_campaigns"] = [self.campaign_with_integrated.obr_name]
+        campaign_data["integrated_campaigns"] = [self.campaign_with_integrated.pk]
 
         response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}/", campaign_data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
@@ -300,7 +299,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "obr_name": "Another Non Polio Campaign",
             "account": self.account.pk,
             "detection_status": "PENDING",
-            "integrated_to": self.measles_campaign.obr_name,
+            "integrated_to": self.measles_campaign.pk,
             "campaign_types": [self.measles_type.pk],
             "rounds": [
                 {
@@ -317,7 +316,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         res = self.client.get(f"{CAMPAIGN_URL}{self.measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
-        campaign_data["integrated_to"] = self.measles_campaign2.obr_name
+        campaign_data["integrated_to"] = self.measles_campaign2.pk
 
         response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}/", campaign_data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
@@ -328,8 +327,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         # Non polio campaign integrated to polio campaign
         res = self.client.get(f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
-        campaign_data["campaign_types"] = [self.piri_type.pk]
 
+        campaign_data["campaign_types"] = [self.piri_type.pk]
         response = self.client.put(
             f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/", campaign_data, format="json"
         )
@@ -357,7 +356,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "obr_name": "Yet Another Polio Campaign",
             "account": self.account.pk,
             "detection_status": "PENDING",
-            "integrated_campaigns": [f"{self.measles_campaign2.obr_name}", "Not a valid OBR name"],
+            "integrated_campaigns": [f"{self.measles_campaign2.pk}", "Not a valid OBR name"],
             "campaign_types": [self.polio_type.pk],
             "rounds": [
                 {
@@ -370,10 +369,10 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         error = self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
-        print("INTEGRATED CAMPAIGNS", error)
+
         self.assertEqual(
             error["integrated_campaigns"],
-            [f"Could not find corresponding campaign for all OBR names {str(data['integrated_campaigns'])}"],
+            ["“Not a valid OBR name” is not a valid UUID."],
         )
 
         data = {
@@ -393,4 +392,4 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         error = self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
-        self.assertEqual(error["integrated_to"], [f"No campaign found for OBR name {data['integrated_to']}"])
+        self.assertEqual(error["integrated_to"], ["“Not a valid OBR name” is not a valid UUID."])

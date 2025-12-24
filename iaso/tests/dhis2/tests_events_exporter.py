@@ -176,12 +176,7 @@ class DataValueExporterTests(TestCase):
 
         datasource.projects.add(self.project)
 
-        org_unit = OrgUnit()
-        org_unit.source_ref = "OU_DHIS2_ID"
-        org_unit.version = source_version
-        org_unit.save()
-
-        self.org_unit = org_unit
+        self.org_unit = OrgUnit.objects.create(source_ref="OU_DHIS2_ID", version=source_version)
 
         mapping = Mapping(form=form, data_source=datasource, mapping_type=EVENT)
         mapping.save()

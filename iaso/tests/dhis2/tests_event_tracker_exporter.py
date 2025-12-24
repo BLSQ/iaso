@@ -269,7 +269,7 @@ class DataValueExporterTests(TestCase):
             self.assertEqual(status, export_request.status)
 
     def setUp(self):
-        form, created = Form.objects.get_or_create(
+        form, _ = Form.objects.get_or_create(
             form_id="patient", name="Patientform", period_type="month", single_per_period=True
         )
         self.form = form
@@ -285,13 +285,13 @@ class DataValueExporterTests(TestCase):
         self.form = form
         self.form_version = form_version
 
-        account, account_created = Account.objects.get_or_create(name="Organisation Name")
+        account, _ = Account.objects.get_or_create(name="Organisation Name")
 
-        user, user_created = User.objects.get_or_create(username="Test User Name", email="testemail@bluesquarehub.com")
+        user, _ = User.objects.get_or_create(username="Test User Name", email="testemail@bluesquarehub.com")
         self.user = user
         p = Profile(user=user, account=account)
         p.save()
-        credentials, creds_created = ExternalCredentials.objects.get_or_create(
+        credentials, _ = ExternalCredentials.objects.get_or_create(
             name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=account
         )
 
@@ -305,21 +305,13 @@ class DataValueExporterTests(TestCase):
 
         datasource.projects.add(self.project)
 
-        org_unit = OrgUnit()
-        org_unit.name = "instance orgunit"
-        org_unit.source_ref = "OU_DHIS2_ID"
-        org_unit.version = source_version
-        org_unit.save()
+        self.org_unit = OrgUnit.objects.create(
+            name="instance orgunit", source_ref="OU_DHIS2_ID", version=source_version
+        )
 
-        self.org_unit = org_unit
-
-        another_org_unit = OrgUnit()
-        another_org_unit.name = "another_org_unit"
-        another_org_unit.source_ref = "ANOTHER_OU_DHIS2_ID"
-        another_org_unit.version = source_version
-        another_org_unit.save()
-
-        self.another_org_unit = another_org_unit
+        self.another_org_unit = OrgUnit.objects.create(
+            name="another_org_unit", source_ref="ANOTHER_OU_DHIS2_ID", version=source_version
+        )
 
         mapping = Mapping(form=form, data_source=datasource, mapping_type=EVENT_TRACKER)
         mapping.save()

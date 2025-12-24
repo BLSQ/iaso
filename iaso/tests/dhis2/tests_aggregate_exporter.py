@@ -114,23 +114,23 @@ class DataValueExporterTests(TestCase):
             self.assertEqual(status, export_request.status)
 
     def setUp(self):
-        form, created = Form.objects.get_or_create(
+        form, _ = Form.objects.get_or_create(
             form_id="quantity_pca", name="Quantity PCA form", period_type="month", single_per_period=True
         )
         self.form = form
 
-        form_version, created = FormVersion.objects.get_or_create(form=form, version_id="1")
+        form_version, _ = FormVersion.objects.get_or_create(form=form, version_id="1")
 
         self.form = form
         self.form_version = form_version
 
-        account, account_created = Account.objects.get_or_create(name="Organisation Name")
+        account, _ = Account.objects.get_or_create(name="Organisation Name")
 
-        user, user_created = User.objects.get_or_create(username="Test User Name", email="testemail@bluesquarehub.com")
+        user, _ = User.objects.get_or_create(username="Test User Name", email="testemail@bluesquarehub.com")
         self.user = user
         p = Profile(user=user, account=account)
         p.save()
-        credentials, creds_created = ExternalCredentials.objects.get_or_create(
+        credentials, _ = ExternalCredentials.objects.get_or_create(
             name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=account
         )
 
@@ -144,12 +144,7 @@ class DataValueExporterTests(TestCase):
 
         datasource.projects.add(self.project)
 
-        org_unit = OrgUnit()
-        org_unit.source_ref = "OU_DHIS2_ID"
-        org_unit.version = source_version
-        org_unit.save()
-
-        self.org_unit = org_unit
+        self.org_unit = OrgUnit.objects.create(source_ref="OU_DHIS2_ID", version=source_version)
 
         mapping = Mapping(form=form, data_source=datasource, mapping_type=AGGREGATE)
         mapping.save()
@@ -158,12 +153,12 @@ class DataValueExporterTests(TestCase):
         self.task = Task.objects.create(name="dhis2_submission_exporter_task", account=account)
 
     def setUpFormQuality(self):
-        form_quality, created = Form.objects.get_or_create(
+        form_quality, _ = Form.objects.get_or_create(
             form_id="quality_pca", name="Quality PCA form", period_type="quarter", single_per_period=True
         )
         self.form_quality = form_quality
 
-        form_quality_version, created = FormVersion.objects.get_or_create(form=form_quality, version_id="1")
+        form_quality_version, _ = FormVersion.objects.get_or_create(form=form_quality, version_id="1")
 
         self.form_quality_version = form_quality_version
         mapping_quality = Mapping(form=form_quality, data_source=self.datasource, mapping_type=AGGREGATE)

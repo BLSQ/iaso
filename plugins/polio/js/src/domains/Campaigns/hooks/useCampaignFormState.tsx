@@ -1,6 +1,6 @@
 import { useQueryClient } from 'react-query';
 import { useValidateCampaign } from './useValidateCampaign';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CampaignFormValues } from '../../../constants/types';
 import { isEqual, merge } from 'lodash';
 import { useFormik } from 'formik';
@@ -12,6 +12,9 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
     const [selectedCampaignId, setSelectedCampaignId] = useState<
         string | undefined
     >(campaignId);
+    useEffect(() => {
+        setSelectedCampaignId(campaignId);
+    }, [campaignId]);
 
     const { saveCampaign, isSaving, selectedCampaign, isFetching } =
         useCampaignAPI({
@@ -40,6 +43,7 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
             },
             campaign_types: [],
             integrated_to: undefined,
+            integrated_campaigns: [],
             is_preventive: false,
             is_test: false,
             on_hold: false,

@@ -1,9 +1,10 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import { CampaignAsyncSelect } from '../../CampaignsAsyncSelect/CampaignsAsyncSelect';
 import { useFormikContext } from 'formik';
 import { AddIntegratedCampaignsButton } from './AddIntegratedCampaignsButton';
 import MESSAGES from '../../../../constants/messages';
+import { PolioCampaignValues } from '../../../../constants/types';
 
 type Props = {
     isOpen: boolean;
@@ -15,7 +16,7 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
     closeDialog,
 }) => {
     const { values, initialValues, touched, setFieldTouched, setFieldValue } =
-        useFormikContext();
+        useFormikContext<PolioCampaignValues>();
 
     const handleConfirm = useCallback(() => {
         setFieldTouched('integrated_campaigns', true);
@@ -44,7 +45,8 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values.integrated_campaigns],
     );
     const allowConfirm =
-        Boolean(values.integrated_campaigns) && touched.integrated_campaigns;
+        Boolean(values.integrated_campaigns) &&
+        Boolean(touched.integrated_campaigns);
     return (
         <ConfirmCancelModal
             dataTestId="add-integrated-campaigns-modal"

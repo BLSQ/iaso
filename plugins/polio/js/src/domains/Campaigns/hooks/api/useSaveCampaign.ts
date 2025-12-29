@@ -1,6 +1,6 @@
 // @ts-ignore
 import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
-import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
+import { postRequest, putRequest } from 'Iaso/libs/Api';
 // @ts-ignore
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
 import { openSnackBar } from '../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';

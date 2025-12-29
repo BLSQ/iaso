@@ -145,7 +145,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                             required
                             disabled={!isUserAdmin}
                         />
-                        <Field
+                        {/* <Field
                             label={'TEST'}
                             name="integrated_to"
                             component={TextInput}
@@ -153,7 +153,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                             className={classes.input}
                             required
                             disabled={!isUserAdmin}
-                        />
+                        /> */}
                         <Field
                             className={classes.input}
                             label={formatMessage(MESSAGES.description)}
@@ -167,7 +167,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                             component={TextInput}
                             shrinkLabel={false}
                         />
-                        {!isPolio && (
+                        {/* {!isPolio && (
                             <Box ml={2} mb={2} mt={2}>
                                 <Grid container justifyContent="flex-start">
                                     <Grid item xs={6} lg={5}>
@@ -189,7 +189,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                                     </Grid>
                                 </Grid>
                             </Box>
-                        )}
+                        )} */}
                         {isUserAdmin && (
                             <Field
                                 className={classes.input}

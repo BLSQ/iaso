@@ -5,7 +5,6 @@ import React, {
     useState,
 } from 'react';
 import { getRequest, IntlMessage } from 'bluesquare-components';
-
 import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
 import MESSAGES from '../../../constants/messages';
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
@@ -19,6 +18,7 @@ import {
 } from '../hooks/api/useGetCampaigns';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar } from 'Iaso/constants/snackBars';
+import { Campaign } from '../../../constants/types';
 
 const baseOptions = {
     fieldset: 'dropdown',
@@ -91,7 +91,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
 
     const campaignOptions = useMemo(() => {
         return (
-            selectedCampaigns?.map(selected => ({
+            (selectedCampaigns as Campaign[])?.map(selected => ({
                 label: selected.obr_name,
                 value: selected.id,
                 campaign_types: selected.campaign_types,

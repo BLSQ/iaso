@@ -3,22 +3,21 @@ import { TableRow, TableCell, Box } from '@mui/material';
 import { LinkTo } from 'Iaso/components/nav/LinkTo';
 import { DeleteIconButton } from 'Iaso/components/Buttons/DeleteIconButton';
 import { useFormikContext } from 'formik';
+import { PolioCampaignValues } from 'plugins/polio/js/src/constants/types';
 
 type Props = {
-    initialIntegrated: string[];
     campaignOption: {
         obr_name: string;
         id: string;
-        campaign_types: { id: number; name: string };
+        campaign_types: { id: number; name: string }[];
     };
 };
 
 export const IntegratedCampaignRow: FunctionComponent<Props> = ({
-    initialIntegrated,
     campaignOption,
 }) => {
-    const isNew = !initialIntegrated.includes(campaignOption.obr_name);
-    const { setFieldValue, setFieldTouched, values } = useFormikContext();
+    const { setFieldValue, setFieldTouched, values } =
+        useFormikContext<PolioCampaignValues>();
     const handleDelete = useCallback(
         campaignOption => {
             const newValue = values.integrated_campaigns.filter(

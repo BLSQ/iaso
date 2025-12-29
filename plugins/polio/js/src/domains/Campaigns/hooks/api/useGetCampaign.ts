@@ -8,7 +8,7 @@ export const useGetCampaign = campaignId => {
         undefined,
         {
             enabled: Boolean(campaignId),
-            keepPreviousData: true,
+            keepPreviousData: false,
         },
     );
 };

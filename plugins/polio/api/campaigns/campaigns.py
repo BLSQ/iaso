@@ -40,6 +40,7 @@ from plugins.polio.api.campaigns.campaigns_log import (
 from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
     missing_vaccine_authorization_for_campaign_email_alert,
 )
+from plugins.polio.api.lqas_im.lqas_im_dropdowns import CampaignDropDownSerializer
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
 from plugins.polio.api.shared_serializers import GroupSerializer, OrgUnitSerializer
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
@@ -626,6 +627,16 @@ class AnonymousCampaignSerializer(CampaignSerializer):
         read_only_fields = fields
 
 
+class CampaignDropDownSerializer(serializers.ModelSerializer):
+    label = serializers.CharField(source="obr_name")
+    value = serializers.CharField(source="id")
+    campaign_types = CampaignTypeIdAndNameSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Campaign
+        fields = ["value", "label", "campaign_types"]
+
+
 class CalendarCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
     Used by both anonymous and non-anonymous user"""
@@ -850,6 +861,11 @@ class CampaignViewSet(ModelViewSet):
         if self.request.user.is_authenticated:
             if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
                 return ListCampaignSerializer
+            if (
+                self.request.query_params.get("fieldset") == "dropdown"
+                and self.request.method in permissions.SAFE_METHODS
+            ):
+                return CampaignDropDownSerializer
             if self.action == "retrieve":
                 return RetrieveCampaignSerializer
             return CampaignSerializer

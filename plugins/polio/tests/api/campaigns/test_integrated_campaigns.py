@@ -143,7 +143,12 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         integrated_campaign = integrated_campaigns[0]
 
-        self.assertEqual(integrated_campaign, str(self.integrated_measles_campaign.id))
+        self.assertEqual(integrated_campaign["id"], str(self.integrated_measles_campaign.id))
+        self.assertEqual(integrated_campaign["obr_name"], str(self.integrated_measles_campaign.obr_name))
+        self.assertEqual(
+            len(integrated_campaign["campaign_types"]), self.integrated_measles_campaign.campaign_types.count()
+        )
+        self.assertEqual(integrated_campaign["campaign_types"][0]["name"], self.measles_type.name)
 
     def test_create_integrated_campaign(self):
         """
@@ -329,6 +334,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
 
         campaign_data["campaign_types"] = [self.piri_type.pk]
+        campaign_data["integrated_to"] = campaign_data["integrated_to"]["id"]
         response = self.client.put(
             f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/", campaign_data, format="json"
         )

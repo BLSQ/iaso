@@ -34,19 +34,22 @@ export const IntegratedCampaignRow: FunctionComponent<Props> = ({
             <TableCell>
                 {campaignOption.campaign_types.map(ct => ct.name).join(',')}
             </TableCell>
-            <TableCell>
+            <TableCell
+                align="center"
+                sx={{ padding: theme => theme.spacing(1, 2) }}
+            >
                 {/*  TODO use modal/drawer to keep react query cache up to date */}
-                <Box display="inline-flex" justifyItems={'center'}>
-                    <LinkTo
-                        useIcon
-                        condition
-                        url={`accountId/1/campaignId/${campaignOption.id}`}
-                    />
 
-                    <DeleteIconButton
-                        onClick={() => handleDelete(campaignOption)}
-                    />
-                </Box>
+                <LinkTo
+                    useIcon
+                    condition
+                    url={`accountId/1/campaignId/${campaignOption.id}`}
+                    icon="edit"
+                />
+
+                <DeleteIconButton
+                    onClick={() => handleDelete(campaignOption)}
+                />
             </TableCell>
         </TableRow>
     );

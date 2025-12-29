@@ -6,9 +6,15 @@ type Props = {
     onClick: () => void;
     id?: string;
     dataTestId?: string;
-    size?: string;
+    size?: 'small' | 'medium' | 'large';
 };
 
 export const AddIntegratedCampaignsButton: FunctionComponent<Props> = props => {
-    return <AddButton {...props} message={MESSAGES.addIntegratedCampaigns} />;
+    return (
+        <AddButton
+            {...props}
+            message={MESSAGES.addIntegratedCampaigns}
+            variant="outlined"
+        />
+    );
 };

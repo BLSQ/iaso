@@ -57,7 +57,7 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
             onClose={() => null}
             onCancel={() => handleCancel()}
             cancelMessage={MESSAGES.cancel}
-            confirmMessage={MESSAGES.save}
+            confirmMessage={MESSAGES.confirm}
             titleMessage={MESSAGES.addIntegratedCampaigns}
             allowConfirm={allowConfirm}
         >

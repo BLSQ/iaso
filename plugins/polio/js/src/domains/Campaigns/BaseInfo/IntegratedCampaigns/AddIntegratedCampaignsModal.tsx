@@ -5,6 +5,7 @@ import { useFormikContext } from 'formik';
 import { AddIntegratedCampaignsButton } from './AddIntegratedCampaignsButton';
 import MESSAGES from '../../../../constants/messages';
 import { PolioCampaignValues } from '../../../../constants/types';
+import { Box } from '@mui/material';
 
 type Props = {
     isOpen: boolean;
@@ -61,10 +62,12 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
             titleMessage={MESSAGES.addIntegratedCampaigns}
             allowConfirm={allowConfirm}
         >
-            <CampaignAsyncSelect
-                keyValue="integrated_campaigns"
-                handleChange={handleChange}
-            />
+            <Box mt={2}>
+                <CampaignAsyncSelect
+                    keyValue="integrated_campaigns"
+                    handleChange={handleChange}
+                />
+            </Box>
         </ConfirmCancelModal>
     );
 };

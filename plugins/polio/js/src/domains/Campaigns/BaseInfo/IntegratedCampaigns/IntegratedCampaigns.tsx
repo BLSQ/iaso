@@ -1,20 +1,29 @@
-import { useFormikContext } from 'formik';
 import React, { FunctionComponent } from 'react';
-import { CampaignFormValues } from '../../../../constants/types';
+import { useFormikContext } from 'formik';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import { CampaignFormValues } from '../../../../constants/types';
 import { IntegratedCampaignsInfo } from './IntegratedCampaignsInfo';
+import { AddIntegratedCampaignsModal } from './AddIntegratedCampaignsModal';
 
 type Props = {};
 
 export const IntegratedCampaigns: FunctionComponent<Props> = () => {
-    const { values, touched, setFieldValue, setTouched } =
-        useFormikContext<CampaignFormValues>();
+    const { values } = useFormikContext<CampaignFormValues>();
+    console.log('VALUES', values);
 
     return (
-        <WidgetPaper title="Integrated campaigns" elevation={1}>
-            <IntegratedCampaignsInfo
-                integratedCampaigns={values.integrated_campaigns}
-            />
-        </WidgetPaper>
+        <>
+            <WidgetPaper
+                title="Integrated campaigns"
+                elevation={1}
+                sx={{ marginBottom: theme => theme.spacing(2) }}
+            >
+                <IntegratedCampaignsInfo
+                    integratedCampaigns={values.integrated_campaigns}
+                />
+            </WidgetPaper>
+
+            <AddIntegratedCampaignsModal iconProps={{}} />
+        </>
     );
 };

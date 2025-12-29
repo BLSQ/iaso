@@ -8,7 +8,7 @@ import TopBar from 'Iaso/components/nav/TopBarComponent';
 import {
     LoadingSpinner,
     useGoBack,
-    useRedirectTo,
+    useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
@@ -44,7 +44,7 @@ export const CampaignDetails: FunctionComponent = () => {
     const campaignIdRef = useRef(campaignId);
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack();
-    const redirectTo = useRedirectTo();
+    const redirectToReplace = useRedirectToReplace();
     const {
         formik,
         isScopeWarningOpen,
@@ -71,9 +71,11 @@ export const CampaignDetails: FunctionComponent = () => {
     useEffect(() => {
         if (campaignIdRef.current !== campaignId) {
             campaignIdRef.current = campaignId;
-            redirectTo(`${baseUrls.campaignDetails}/campaignId/${campaignId}`);
+            redirectToReplace(
+                `${baseUrls.campaignDetails}/campaignId/${campaignId}`,
+            );
         }
-    }, [redirectTo, campaignId]);
+    }, [redirectToReplace, campaignId]);
 
     return (
         <>

@@ -9,7 +9,6 @@ type Props = {};
 
 export const IntegratedCampaigns: FunctionComponent<Props> = () => {
     const { values } = useFormikContext<CampaignFormValues>();
-    console.log('VALUES', values);
 
     return (
         <>

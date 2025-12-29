@@ -40,7 +40,7 @@ const saveSubActivity = values => {
 
 const save = (body: CampaignFormValues) => {
     // @ts-ignore
-    const { subactivity, ...campaignBody } = body;
+    const { subactivity, integrated_campaigns, ...campaignBody } = body;
     // TODO remove this hack when we get the real multiselect in polio
     // @ts-ignore
     const hackedBody = campaignBody.grouped_campaigns
@@ -50,6 +50,7 @@ const save = (body: CampaignFormValues) => {
                   // @ts-ignore
                   campaignBody.grouped_campaigns,
               ),
+              integrated_campaigns: integrated_campaigns.map(cmp => cmp.id),
           }
         : body;
 

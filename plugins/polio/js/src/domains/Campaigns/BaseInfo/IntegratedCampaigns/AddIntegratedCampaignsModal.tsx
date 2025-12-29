@@ -35,7 +35,7 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
             setFieldValue('integrated_campaigns', [
                 ...values.integrated_campaigns,
                 {
-                    value: value.value,
+                    id: value.value,
                     obr_name: value.label,
                     campaign_types: value.campaign_types,
                 },

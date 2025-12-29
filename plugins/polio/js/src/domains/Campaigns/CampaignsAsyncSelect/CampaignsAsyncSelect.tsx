@@ -8,18 +8,17 @@ import { getRequest, IntlMessage } from 'bluesquare-components';
 
 import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
 import MESSAGES from '../../../constants/messages';
-import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import {
     CampaignCategory,
     CAMPAIGNS_ENDPOINT,
-    GetCampaignsParams,
     getURL,
     makeCampaignOptions,
     Options,
     useGetCampaigns,
-    useGetCampaignsOptions,
 } from '../hooks/api/useGetCampaigns';
+import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
+import { errorSnackBar } from 'Iaso/constants/snackBars';
 
 const baseOptions = {
     fieldset: 'dropdown',
@@ -67,18 +66,38 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
                 campaignType: nonPolioTypes,
             });
             const url = getURL(campaignOptions, CAMPAIGNS_ENDPOINT);
-
-            return getRequest(url);
+            try {
+                const searchResult = await getRequest(url);
+                const result = searchResult.map(option => ({
+                    label: option.obr_name,
+                    value: option.id,
+                    campaign_types: option.campaign_types,
+                }));
+                return result;
+            } catch (e) {
+                openSnackBar(errorSnackBar(undefined, MESSAGES.error, e));
+                return [];
+            }
         },
         [nonPolioTypes],
     );
 
-    const { data: selectedCampaigns, isFetching } = useGetCampaigns(
+    const { data: selectedCampaigns, isFetched } = useGetCampaigns(
         options,
         CAMPAIGNS_ENDPOINT,
         undefined,
         { keepPreviousData: false },
     );
+
+    const campaignOptions = useMemo(() => {
+        return (
+            selectedCampaigns?.map(selected => ({
+                label: selected.obr_name,
+                value: selected.id,
+                campaign_types: selected.campaign_types,
+            })) ?? []
+        );
+    }, [selectedCampaigns, isFetched]);
 
     const handleChangeCampaigns = useCallback(
         (keyValue, newValue) => {
@@ -95,7 +114,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
         <AsyncSelect
             keyValue={keyValue}
             label={MESSAGES.campaign}
-            value={selectedCampaigns ?? ''}
+            value={campaignOptions ?? ''}
             onChange={handleChangeCampaigns}
             debounceTime={500}
             multi={multi}

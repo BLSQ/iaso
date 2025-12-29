@@ -52,7 +52,10 @@ const save = (body: CampaignFormValues) => {
               ),
               integrated_campaigns: integrated_campaigns.map(cmp => cmp.id),
           }
-        : body;
+        : {
+              ...body,
+              integrated_campaigns: integrated_campaigns.map(cmp => cmp.id),
+          };
 
     const saveCampaign = hackedBody.id
         ? () => putRequest(`/api/polio/campaigns/${hackedBody.id}/`, hackedBody)

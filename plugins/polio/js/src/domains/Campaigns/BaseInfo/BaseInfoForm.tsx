@@ -28,6 +28,7 @@ import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
 import { IntegratedCampaigns } from './IntegratedCampaigns/IntegratedCampaigns';
 import { LinkTo } from 'Iaso/components/nav/LinkTo';
+import { CampaignAsyncSelect } from '../CampaignsAsyncSelect/CampaignsAsyncSelect';
 
 export const baseInfoFormFields: string[] = [
     'epid',
@@ -63,7 +64,7 @@ export const BaseInfoForm: FunctionComponent = () => {
     );
     const controlRef = useRef(false);
 
-    const { values, touched, setFieldValue, setTouched } =
+    const { values, touched, setFieldValue, setTouched, setFieldTouched } =
         useFormikContext<CampaignFormValues>();
     const { data: types, isFetching: isFetchingTypes } =
         useGetCampaignTypes(true);
@@ -112,6 +113,20 @@ export const BaseInfoForm: FunctionComponent = () => {
         }
     }, [touched, values.rounds, setTouched, values.is_planned]);
 
+    const handleChangeIntegratedTo = useCallback(
+        (_, value) => {
+            setFieldTouched('integrated_to', true);
+            setFieldValue('integrated_to', [
+                {
+                    id: value.value,
+                    obr_name: value.label,
+                    campaign_types: value.campaign_types,
+                },
+            ]);
+        },
+        [setFieldTouched, setFieldValue, values.integrated_to],
+    );
+
     return (
         <Box width={'100%'}>
             <Grid container spacing={2}>
@@ -145,15 +160,19 @@ export const BaseInfoForm: FunctionComponent = () => {
                             required
                             disabled={!isUserAdmin}
                         />
-                        {/* <Field
-                            label={'TEST'}
-                            name="integrated_to"
-                            component={TextInput}
-                            shrinkLabel={false}
-                            className={classes.input}
-                            required
-                            disabled={!isUserAdmin}
-                        /> */}
+
+                        {!isPolio && (
+                            <Box mb={2}>
+                                <CampaignAsyncSelect
+                                    keyValue="integrated_to"
+                                    handleChange={handleChangeIntegratedTo}
+                                    initialValue={
+                                        values?.integrated_to?.obr_name
+                                    }
+                                />
+                            </Box>
+                        )}
+
                         <Field
                             className={classes.input}
                             label={formatMessage(MESSAGES.description)}

@@ -66,6 +66,7 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
                 <CampaignAsyncSelect
                     keyValue="integrated_campaigns"
                     handleChange={handleChange}
+                    campaignType="non-polio"
                 />
             </Box>
         </ConfirmCancelModal>

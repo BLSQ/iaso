@@ -4,6 +4,7 @@ import { CampaignAsyncSelect } from '../../../CampaignsAsyncSelect/CampaignsAsyn
 import { LinkTo } from 'Iaso/components/nav/LinkTo';
 import { IntlMessage } from 'bluesquare-components';
 import { IntegratedCampaign } from 'plugins/polio/js/src/constants/types';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 type Props = {
     onChange: (keyValue: string, value: unknown) => void;
@@ -32,7 +33,7 @@ export const IntegratedCampaignField: FunctionComponent<Props> = ({
                         url={`campaignId/${value?.id}`}
                         condition
                         useIcon
-                        icon="edit"
+                        overrideIcon={OpenInNewIcon}
                     />
                 </Box>
             </Grid>

@@ -24,6 +24,7 @@ export const IntegratedCampaigns: FunctionComponent<Props> = () => {
                         marginBottom: theme => theme.spacing(2),
                         //@ts-ignore
                         height: theme => theme.spacing(43), //344 px for alignment
+                        overflow: 'auto',
                     }}
                 >
                     <IntegratedCampaignsInfo

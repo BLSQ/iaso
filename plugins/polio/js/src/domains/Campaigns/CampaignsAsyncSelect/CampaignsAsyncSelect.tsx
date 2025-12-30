@@ -30,6 +30,14 @@ type Props = {
     campaignType?: 'polio' | 'non-polio' | string;
 };
 
+/**
+ * A wrapper on AsyncSelect geared towards polio campaigns
+ * The filters to apply to the campaigns API can be parametrized using the components props
+ * The component will automatically pass fieldset=dropdown to limit the fields returned by the API and reformat
+ * the response to be usable by AsyncSelect
+ *
+ */
+
 export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     keyValue = 'campaigns',
     handleChange,

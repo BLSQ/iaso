@@ -5,7 +5,7 @@ import React, {
     useMemo,
     useRef,
 } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
@@ -26,9 +26,10 @@ import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroup
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
-import { IntegratedCampaigns } from './IntegratedCampaigns/IntegratedCampaigns';
+import { IntegratedCampaigns } from './IntegratedCampaigns/Widget/IntegratedCampaigns';
 import { LinkTo } from 'Iaso/components/nav/LinkTo';
 import { CampaignAsyncSelect } from '../CampaignsAsyncSelect/CampaignsAsyncSelect';
+import { IntegratedCampaignField } from './IntegratedCampaigns/IntegratedTo/IntegratedCampaignField';
 
 export const baseInfoFormFields: string[] = [
     'epid',
@@ -116,13 +117,11 @@ export const BaseInfoForm: FunctionComponent = () => {
     const handleChangeIntegratedTo = useCallback(
         (_, value) => {
             setFieldTouched('integrated_to', true);
-            setFieldValue('integrated_to', [
-                {
-                    id: value.value,
-                    obr_name: value.label,
-                    campaign_types: value.campaign_types,
-                },
-            ]);
+            setFieldValue('integrated_to', {
+                id: value.value,
+                obr_name: value.label,
+                campaign_types: value.campaign_types,
+            });
         },
         [setFieldTouched, setFieldValue, values.integrated_to],
     );
@@ -163,14 +162,10 @@ export const BaseInfoForm: FunctionComponent = () => {
 
                         {!isPolio && (
                             <Box mb={2}>
-                                <CampaignAsyncSelect
-                                    keyValue="integrated_to"
-                                    handleChange={handleChangeIntegratedTo}
-                                    initialValue={
-                                        Array.isArray(values?.integrated_to)
-                                            ? values.integrated_to[0].obr_name
-                                            : values?.integrated_to?.obr_name
-                                    }
+                                <IntegratedCampaignField
+                                    label={MESSAGES.integratedToCampaign}
+                                    value={values?.integrated_to}
+                                    onChange={handleChangeIntegratedTo}
                                 />
                             </Box>
                         )}
@@ -188,29 +183,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                             component={TextInput}
                             shrinkLabel={false}
                         />
-                        {/* {!isPolio && (
-                            <Box ml={2} mb={2} mt={2}>
-                                <Grid container justifyContent="flex-start">
-                                    <Grid item xs={6} lg={5}>
-                                        <Typography variant="button">
-                                            Integrated to Polio campaign:
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={6} lg={7}>
-                                        <Typography variant="button">
-                                            <LinkTo
-                                                url={`campaignId/${values.integrated_to?.id}`}
-                                                condition
-                                                text={
-                                                    values.integrated_to
-                                                        ?.obr_name
-                                                }
-                                            />
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Box>
-                        )} */}
+
                         {isUserAdmin && (
                             <Field
                                 className={classes.input}

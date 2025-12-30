@@ -474,7 +474,7 @@ export type DefaultCampaignValues = {
     has_data_in_budget_tool: boolean;
     id?: string; // uuid
     initial_org_unit?: number;
-    integrated_to?: [IntegratedCampaign] | IntegratedCampaign;
+    integrated_to?: IntegratedCampaign;
     is_planned: boolean;
     is_preventive: boolean;
     is_test: boolean;

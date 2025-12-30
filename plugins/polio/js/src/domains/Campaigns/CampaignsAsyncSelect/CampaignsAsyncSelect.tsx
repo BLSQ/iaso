@@ -41,6 +41,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     showPlanned = true,
     showTest = false,
     campaignType = 'polio',
+    label = MESSAGES.campaign,
 }) => {
     const campaignTypes = useCampaignTypeNames(campaignType);
     const [search, setSearch, isStateSet] = useAsyncInitialState<
@@ -120,7 +121,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     return (
         <AsyncSelect
             keyValue={keyValue}
-            label={MESSAGES.campaign}
+            label={label}
             value={campaignOptions ?? ''}
             onChange={handleChangeCampaigns}
             debounceTime={500}

@@ -59,18 +59,14 @@ const save = (body: CampaignFormValues) => {
               integrated_campaigns: (integrated_campaigns ?? []).map(
                   cmp => cmp.id,
               ),
-              integrated_to: (integrated_to ?? [undefined]).map(
-                  cmp => cmp.id,
-              )[0],
+              integrated_to: integrated_to?.id,
           }
         : {
               ...body,
               integrated_campaigns: (integrated_campaigns ?? []).map(
                   cmp => cmp.id,
               ),
-              integrated_to: (integrated_to ?? [undefined]).map(
-                  cmp => cmp.id,
-              )[0],
+              integrated_to: integrated_to?.id,
           };
 
     const saveCampaign = hackedBody.id

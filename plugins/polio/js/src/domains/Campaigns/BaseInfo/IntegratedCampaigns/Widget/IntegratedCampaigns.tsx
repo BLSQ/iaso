@@ -19,16 +19,18 @@ export const IntegratedCampaigns: FunctionComponent<Props> = () => {
                 <WidgetPaper
                     title="Integrated campaigns"
                     elevation={1}
-                    //@ts-ignore
-                    sx={{ marginBottom: theme => theme.spacing(2) }}
+                    sx={{
+                        //@ts-ignore
+                        marginBottom: theme => theme.spacing(2),
+                        //@ts-ignore
+                        height: theme => theme.spacing(43), //344 px for alignment
+                    }}
                 >
                     <IntegratedCampaignsInfo
                         integratedCampaigns={values.integrated_campaigns}
                     />
                 </WidgetPaper>
             )}
-
-            <AddIntegratedCampaignsModal iconProps={{}} />
         </>
     );
 };

@@ -167,7 +167,9 @@ export const BaseInfoForm: FunctionComponent = () => {
                                     keyValue="integrated_to"
                                     handleChange={handleChangeIntegratedTo}
                                     initialValue={
-                                        values?.integrated_to?.obr_name
+                                        Array.isArray(values?.integrated_to)
+                                            ? values.integrated_to[0].obr_name
+                                            : values?.integrated_to?.obr_name
                                     }
                                 />
                             </Box>

@@ -7,7 +7,9 @@ import {
     CAMPAIGNS_ENDPOINT,
     getURL,
     makeCampaignOptions,
+    makeCampaignQueryKey,
     Options,
+    useCampaignsQueryKey,
     useGetCampaigns,
 } from '../hooks/api/useGetCampaigns';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
@@ -15,6 +17,7 @@ import { errorSnackBar } from 'Iaso/constants/snackBars';
 import { Campaign } from '../../../constants/types';
 import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import { useCampaignTypeNames } from './useCampaignTypeNames';
+import { useQueryClient } from 'react-query';
 
 type Props = {
     handleChange: (keyValue: string, value: unknown) => void;
@@ -51,6 +54,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     campaignType = 'polio',
     label = MESSAGES.campaign,
 }) => {
+    const queryClient = useQueryClient();
     const campaignTypes = useCampaignTypeNames(campaignType);
     const [search, setSearch, isStateSet] = useAsyncInitialState<
         string | undefined
@@ -76,12 +80,21 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
 
     const fetchOptions = useCallback(
         async (query: string): Promise<any[]> => {
-            const campaignOptions = makeCampaignOptions({
-                search: query,
-                ...baseOptions,
-                campaignType: campaignTypes,
+            const { queryKey, params: campaignOptions } = makeCampaignQueryKey({
+                options: {
+                    enabled: true, // explicitly passing to get same query key as useGetCampaigns
+                    search: query,
+                    ...baseOptions,
+                    campaignType: campaignTypes,
+                },
             });
+            // Return cached result if exists
+            const cachedResult = queryClient.getQueryData(queryKey);
+            if (cachedResult) {
+                return cachedResult as any;
+            }
             const url = getURL(campaignOptions, CAMPAIGNS_ENDPOINT);
+
             try {
                 const searchResult = await getRequest(url);
                 const result = searchResult.map(option => ({
@@ -89,6 +102,8 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
                     value: option.id,
                     campaign_types: option.campaign_types,
                 }));
+                // Store result in query cache to avoid double fetching
+                queryClient.setQueryData(queryKey, result);
                 return result;
             } catch (e) {
                 openSnackBar(errorSnackBar(undefined, MESSAGES.error, e));

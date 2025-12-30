@@ -126,6 +126,57 @@ export const useGetCampaignsOptions = (
     );
 };
 
+export const makeCampaignQueryKey = ({
+    queryKey,
+    options,
+    asCsv = false,
+}: {
+    queryKey?: string | unknown[];
+    options: Options;
+    asCsv?: boolean;
+}): { queryKey: QueryKey; params: GetCampaignsParams } => {
+    const params: GetCampaignsParams = makeCampaignOptions(options, asCsv);
+    const key: unknown[] = ['campaigns', params];
+    if (queryKey) {
+        key.push(queryKey);
+    }
+
+    return { queryKey: key as QueryKey, params };
+};
+
+export const useCampaignsQueryKey = ({
+    queryKey,
+    options,
+    asCsv = false,
+}: {
+    queryKey?: string | unknown[];
+    options: Options;
+    asCsv?: boolean;
+}): { queryKey: QueryKey; params: GetCampaignsParams } => {
+    return useMemo(() => {
+        return makeCampaignQueryKey({ queryKey, options, asCsv });
+    }, [
+        queryKey,
+        asCsv,
+        options.pageSize,
+        options.page,
+        options.order,
+        options.countries,
+        options.search,
+        options.roundStartFrom,
+        options.roundStartTo,
+        options.showOnlyDeleted,
+        options.campaignType,
+        options.campaignCategory,
+        options.campaignGroups,
+        options.orgUnitGroups,
+        options.show_test,
+        options.enabled,
+        options.fieldset,
+        options.on_hold,
+        options.is_embedded,
+    ]);
+};
 export const useGetCampaigns = (
     // eslint-disable-next-line default-param-last
     options: Options = {},
@@ -134,18 +185,12 @@ export const useGetCampaigns = (
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
 ): UseQueryResult<CampaignAPIResponse | Campaign[], Error> => {
-    const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
-    const effectiveQueryKey: QueryKey = useMemo(() => {
-        const key: any[] = ['campaigns', params];
-        if (queryKey) {
-            key.push(queryKey);
-        }
-        if (queryOptions) {
-            key.push(queryOptions);
-        }
-        return key;
-    }, [params, queryKey, queryOptions]);
+    const { queryKey: effectiveQueryKey, params } = useCampaignsQueryKey({
+        options,
+        queryKey,
+    });
+
     return useSnackQuery({
         queryKey: effectiveQueryKey,
         queryFn: (): Promise<Campaign[] | PaginatedResponse<Campaign>> =>

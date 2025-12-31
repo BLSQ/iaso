@@ -11,11 +11,12 @@ import {
     InputWithInfos,
     useRedirectToReplace,
     useSafeIntl,
+    AsyncSelect
 } from 'bluesquare-components';
 
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
-import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
+// import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';

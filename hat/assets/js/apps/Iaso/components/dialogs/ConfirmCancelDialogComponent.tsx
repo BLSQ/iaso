@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { Button, DialogActions } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { IntlMessage } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import DialogComponent from './DialogComponent';
 import MESSAGES from './messages';
-import { IntlMessage } from 'bluesquare-components';
 
 const useActionStyles = makeStyles(theme => ({
     action: {
@@ -100,6 +100,7 @@ type Props = {
         openDialog: () => void;
     }) => React.JSX.Element;
     children?: React.JSX.Element;
+    defaultOpen?: boolean;
 };
 
 /** @deprecated */
@@ -122,6 +123,7 @@ const ConfirmCancelDialogComponent: FunctionComponent<Props> = ({
     onOpen = () => {},
     children,
     titleMessage,
+    defaultOpen = false,
 }) => {
     return (
         <DialogComponent
@@ -145,9 +147,11 @@ const ConfirmCancelDialogComponent: FunctionComponent<Props> = ({
             onOpen={onOpen}
             onClosed={onClosed}
             renderTrigger={renderTrigger}
-            children={children}
             titleMessage={titleMessage}
-        />
+            defaultOpen={defaultOpen}
+        >
+            {children}
+        </DialogComponent>
     );
 };
 

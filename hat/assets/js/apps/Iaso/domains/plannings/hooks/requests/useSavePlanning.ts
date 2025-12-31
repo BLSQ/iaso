@@ -7,6 +7,7 @@ import {
     getApiParamDateTimeString,
 } from '../../../../utils/dates';
 import { endpoint } from '../../constants';
+import { Planning } from '../../types';
 
 export type SavePlanningQuery = {
     id?: number;
@@ -116,24 +117,28 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
 
 export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
+    onSuccess?: (data: Planning) => void,
 ): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
-        invalidateQueryKey: ['planningsList'],
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
+        options: { onSuccess },
     });
     const createPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => {
             return postPlanning(data);
         },
-        invalidateQueryKey: ['planningsList'],
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
+        options: { onSuccess },
     });
     const copyPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => duplicatePlanning(data),
-        invalidateQueryKey: ['planningsList'],
+        invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
+        options: { onSuccess },
     });
 
     switch (type) {

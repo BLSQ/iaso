@@ -27,7 +27,7 @@ from django.db.models import Exists, OuterRef, Prefetch, Q, Subquery
 
 from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import EntityDuplicate, ValidationStatus
-from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.utils.jsonlogic import annotate_suffixed_json_fields, jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
@@ -118,13 +118,15 @@ class EntityQuerySet(models.QuerySet):
         return self.filter(id__in=Subquery(instances.values("entity_id").distinct()))
 
     def filter_for_mobile_entity(self, limit_date=None, json_content=None):
+        queryset = self
         if limit_date:
-            self = self._filter_entities_with_instances(limit_date=limit_date)
+            queryset = queryset._filter_entities_with_instances(limit_date=limit_date)
 
         if json_content:
             try:
-                q = jsonlogic_to_q(jsonlogic=json.loads(json_content), field_prefix="attributes__json__")  # type: ignore
-                self = self.filter(q)
+                json_logic = json.loads(json_content)
+                q = jsonlogic_to_q(jsonlogic=json_logic, field_prefix="attributes__json__")  # type: ignore
+                queryset = annotate_suffixed_json_fields(queryset, json_logic, "attributes__json").filter(q)
             except ValidationError:
                 raise InvalidJsonContentError(f"Invalid Json Content {json_content}")
 
@@ -135,11 +137,11 @@ class EntityQuerySet(models.QuerySet):
             ).exclude(file=""),
         )
 
-        self = self.filter(attributes_id__isnull=False, attributes__deleted=False)
+        queryset = queryset.filter(attributes_id__isnull=False, attributes__deleted=False)
 
-        self = self.prefetch_related(p).prefetch_related("instances__form")
+        queryset = queryset.prefetch_related(p).prefetch_related("instances__form")
 
-        return self
+        return queryset
 
     def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:

@@ -1,8 +1,8 @@
 import React, { FC, useCallback } from 'react';
-import { IntlMessage } from 'bluesquare-components';
+import { AsyncSelect } from 'bluesquare-components';
+import type { IntlMessage } from 'bluesquare-components';
 import { getUsersDropDown } from '../../domains/instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../../domains/instances/hooks/useGetProfilesDropdown';
-import { AsyncSelect } from '../forms/AsyncSelect';
 import MESSAGES from './messages';
 
 type Props = {

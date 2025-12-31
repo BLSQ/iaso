@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
+import { Planning } from '../../plannings/types';
 import { Team } from '../../teams/types/team';
 import { AssignmentsApi } from '../types/assigment';
-import { Planning } from '../types/planning';
 
 type Props = {
     currentTeam: Team | undefined;

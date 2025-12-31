@@ -1,6 +1,6 @@
 import { Pagination } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
-import { Planning } from 'Iaso/domains/assignments/types/planning';
+import { Planning } from 'Iaso/domains/plannings/types';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';

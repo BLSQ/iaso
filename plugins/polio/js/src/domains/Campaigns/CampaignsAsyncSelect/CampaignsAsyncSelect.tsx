@@ -5,10 +5,8 @@ import {
     CampaignCategory,
     CAMPAIGNS_ENDPOINT,
     getURL,
-    makeCampaignOptions,
     makeCampaignQueryKey,
     Options,
-    useCampaignsQueryKey,
     useGetCampaigns,
 } from '../hooks/api/useGetCampaigns';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';

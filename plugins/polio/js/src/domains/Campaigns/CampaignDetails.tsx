@@ -1,11 +1,16 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { PolioDialogTabs } from './MainDialog/PolioDialogTabs';
 import { FormikProvider } from 'formik';
 import { useCampaignFormState } from './hooks/useCampaignFormState';
 import { useCampaignTabs } from './hooks/useCampaignTabs';
 import { Form } from '../../components/Form';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
+import {
+    LoadingSpinner,
+    useGoBack,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import { WarningModal } from './MainDialog/WarningModal/WarningModal';
 import { CampaignHistoryIconButton } from './CampaignHistory/CampaignHistoryIconButton';
@@ -36,8 +41,10 @@ export const CampaignDetails: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrls.campaignDetails);
     const { campaignId } = params;
+    const campaignIdRef = useRef(campaignId);
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack();
+    const redirectToReplace = useRedirectToReplace();
     const {
         formik,
         isScopeWarningOpen,
@@ -60,6 +67,15 @@ export const CampaignDetails: FunctionComponent = () => {
         selectedCampaign,
     });
     const title = useTitle(campaignId, selectedCampaign);
+    // // force refresh on redirection from integrated campaign
+    useEffect(() => {
+        if (campaignIdRef.current !== campaignId) {
+            campaignIdRef.current = campaignId;
+            redirectToReplace(
+                `${baseUrls.campaignDetails}/campaignId/${campaignId}`,
+            );
+        }
+    }, [redirectToReplace, campaignId]);
 
     return (
         <>

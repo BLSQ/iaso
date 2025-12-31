@@ -2521,6 +2521,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.performanceThresholds',
         defaultMessage: 'Performance Thresholds',
     },
+    addIntegratedCampaigns: {
+        id: 'iaso.polio.label.addIntegratedCampaigns',
+        defaultMessage: 'Add integrated campaigns',
+    },
 });
 
 export default MESSAGES;

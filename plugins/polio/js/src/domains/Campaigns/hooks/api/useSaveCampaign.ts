@@ -1,6 +1,6 @@
 // @ts-ignore
 import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
-import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
+import { postRequest, putRequest } from 'Iaso/libs/Api';
 // @ts-ignore
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
 import { openSnackBar } from '../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
@@ -40,7 +40,7 @@ const saveSubActivity = values => {
 
 const save = (body: CampaignFormValues) => {
     // @ts-ignore
-    const { subactivity, ...campaignBody } = body;
+    const { subactivity, integrated_campaigns, ...campaignBody } = body;
     // TODO remove this hack when we get the real multiselect in polio
     // @ts-ignore
     const hackedBody = campaignBody.grouped_campaigns
@@ -50,8 +50,12 @@ const save = (body: CampaignFormValues) => {
                   // @ts-ignore
                   campaignBody.grouped_campaigns,
               ),
+              integrated_campaigns: integrated_campaigns.map(cmp => cmp.id),
           }
-        : body;
+        : {
+              ...body,
+              integrated_campaigns: integrated_campaigns.map(cmp => cmp.id),
+          };
 
     const saveCampaign = hackedBody.id
         ? () => putRequest(`/api/polio/campaigns/${hackedBody.id}/`, hackedBody)

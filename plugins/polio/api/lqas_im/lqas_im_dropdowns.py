@@ -196,7 +196,7 @@ class LqasImRoundOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Round.objects.filter_for_user(user).filter(on_hold=False)
+        return Round.objects.filter_for_user(user)
 
 
 class CountryBlockDropDownSerializer(serializers.ModelSerializer):

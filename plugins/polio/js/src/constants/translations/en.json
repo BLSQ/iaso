@@ -518,6 +518,7 @@
     "iaso.polio.label.indicator": "Indicator",
     "iaso.polio.label.INITIAL_DATA": "Initial data",
     "iaso.polio.label.inScope": "No data found",
+    "iaso.polio.label.integratedToCampaign": "Integrated to campaign",
     "iaso.polio.label.internal": "Internal",
     "iaso.polio.label.invalidData": "Invalid data",
     "iaso.polio.label.is_test": "Test campaign/On hold status",

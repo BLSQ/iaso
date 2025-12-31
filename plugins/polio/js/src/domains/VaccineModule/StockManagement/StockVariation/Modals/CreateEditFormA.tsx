@@ -24,7 +24,6 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
-import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
@@ -32,6 +31,7 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import { DropdownOptions } from 'Iaso/types/utils';
 import { DosesPerVialDropdown } from '../../types';
 import { useAvailablePresentations } from './dropdownOptions';
+import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 
 type Props = {
     formA?: any;

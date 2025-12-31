@@ -38,8 +38,6 @@ export const IntegratedCampaignRow: FunctionComponent<Props> = ({
                 align="center"
                 sx={{ padding: theme => theme.spacing(1, 2) }}
             >
-                {/*  TODO use modal/drawer to keep react query cache up to date */}
-
                 <LinkTo
                     useIcon
                     condition

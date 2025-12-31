@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
-import { CampaignAsyncSelect } from '../../CampaignsAsyncSelect/CampaignsAsyncSelect';
+import { CampaignAsyncSelect } from '../../../CampaignsAsyncSelect/CampaignsAsyncSelect';
 import { useFormikContext } from 'formik';
 import { AddIntegratedCampaignsButton } from './AddIntegratedCampaignsButton';
-import MESSAGES from '../../../../constants/messages';
-import { PolioCampaignValues } from '../../../../constants/types';
+import MESSAGES from '../../../../../constants/messages';
+import { PolioCampaignValues } from '../../../../../constants/types';
 import { Box } from '@mui/material';
 
 type Props = {
@@ -66,6 +66,7 @@ const AddIntegratedCampaignsModal: FunctionComponent<Props> = ({
                 <CampaignAsyncSelect
                     keyValue="integrated_campaigns"
                     handleChange={handleChange}
+                    campaignType="non-polio"
                 />
             </Box>
         </ConfirmCancelModal>

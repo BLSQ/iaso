@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { AddButton } from 'bluesquare-components';
-import MESSAGES from '../../../../constants/messages';
+import MESSAGES from '../../../../../constants/messages';
 
 type Props = {
     onClick: () => void;

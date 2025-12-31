@@ -4,7 +4,7 @@ import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import {
     CampaignFormValues,
     PolioCampaignValues,
-} from '../../../../constants/types';
+} from '../../../../../constants/types';
 import { IntegratedCampaignsInfo } from './IntegratedCampaignsInfo';
 import { AddIntegratedCampaignsModal } from './AddIntegratedCampaignsModal';
 

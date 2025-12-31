@@ -15,9 +15,11 @@ import { appId } from '../../../../constants/app';
 
 const getLqasCountriesOptions = (monthYear?: MonthYear, isEmbedded = false) => {
     const endpoint = '/api/polio/lqasim/countriesoptions';
-    const url = `${endpoint}/?month=${monthYear}`;
+    const url = monthYear ? `${endpoint}/?month=${monthYear}` : `${endpoint}/`;
     if (isEmbedded) {
-        return getRequest(`${url}&app_id=${appId}`);
+        return monthYear
+            ? getRequest(`${url}&app_id=${appId}`)
+            : getRequest(`${url}/?app_id=${appId}`);
     }
     return getRequest(url);
 };
@@ -97,9 +99,17 @@ const getLqasRoundOptions = (
     campaign?: UuidAsString,
 ) => {
     const endpoint = '/api/polio/lqasim/roundoptions';
-    return getRequest(
-        `${endpoint}/?month=${monthYear}&campaign_id=${campaign}`,
-    );
+    if (monthYear && campaign) {
+        return getRequest(
+            `${endpoint}/?month=${monthYear}&campaign_id=${campaign}`,
+        );
+    }
+    if (monthYear) {
+        return getRequest(`${endpoint}/?month=${monthYear}`);
+    }
+    if (campaign) {
+        return getRequest(`${endpoint}/?campaign_id=${campaign}`);
+    }
 };
 
 type UseGetLqasRoundOptionsArgs = UseGetLqasCountriesOptionsArgs;
@@ -116,7 +126,7 @@ export const useGetLqasRoundOptions = ({
         queryKey: ['lqasRounds', monthYear, campaign],
         queryFn: () => getLqasRoundOptions(monthYear, campaign),
         options: {
-            enabled: Boolean(monthYear) && Boolean(campaign),
+            enabled: Boolean(campaign),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: false,

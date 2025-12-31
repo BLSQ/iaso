@@ -12,59 +12,64 @@ import {
     IconButton,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import MESSAGES from '../../../constants/messages';
-import { POLIO_ADMIN } from '../../../constants/permissions';
-import { baseUrls } from '../../../constants/urls';
-import { makeCampaignsDropDown } from '../../../utils/index';
-import { IMType, LqasImFilterParams, LqasIMType } from '../types';
-import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
-import { RefreshLqasIMData } from './RefreshLqasIMData';
+import { DisplayIfUserHasPerm } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import MESSAGES from '../../../../../constants/messages';
+import { POLIO_ADMIN } from '../../../../../constants/permissions';
+import { baseUrls } from '../../../../../constants/urls';
+import { RefreshLqasIMData } from '../../../shared/RefreshLqasIMData';
+import { Campaign, Side } from '../../../../../constants/types';
+import { UseQueryResult } from 'react-query';
+import { useGetCampaigns } from '../../../../Campaigns/hooks/api/useGetCampaigns';
+import { LqasUrlParams } from '../..';
+import { useGetLqasImCountriesOptions } from '../../../shared/hooks/api/useGetLqasImCountriesOptions';
+import { sortCampaignNames } from '../../../../../utils';
 
-type FiltersState = {
-    campaign: string | undefined;
-    country: string | undefined;
-};
+const makeCampaignsDropDown = (
+    campaigns: Campaign[] | undefined,
+): { label: string; value: string }[] =>
+    campaigns
+        ?.map(campaign => ({
+            label: campaign.obr_name,
+            value: campaign.id,
+        }))
+        .sort(sortCampaignNames) ?? [];
 
 type Props = {
     isFetching: boolean;
-    campaigns: any[];
-    campaignsFetching: boolean;
-    params: LqasImFilterParams;
-    imType?: IMType;
+    params: LqasUrlParams;
+    side: Side;
+    isEmbedded: boolean;
 };
 
-const getCurrentUrl = (imType?: LqasIMType | 'imHH'): string => {
-    if (imType === 'imGlobal') {
-        return baseUrls.imGlobal;
-    }
-    if (imType === 'imHH' || imType === 'imIHH') {
-        return baseUrls.imHH;
-    }
-    if (imType === 'imOHH') {
-        return baseUrls.imOHH;
-    }
-    return baseUrls.lqasCountry;
-};
-
-export const Filters: FunctionComponent<Props> = ({
+export const LqasFilterByCountry: FunctionComponent<Props> = ({
     isFetching,
-    campaigns,
-    campaignsFetching,
     params,
-    imType,
+    side,
+    isEmbedded,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const country = side === 'left' ? params.leftCountry : params.rightCountry;
+    const campaign =
+        side === 'left' ? params.leftCampaign : params.rightCampaign;
     const redirectToReplace = useRedirectToReplace();
-    const currentUrl = getCurrentUrl(imType);
-    const [filters, setFilters] = useState<FiltersState>({
-        campaign: params?.campaign,
-        country: params?.country,
-    });
-    const { campaign, country } = params;
+    const currentUrl = isEmbedded
+        ? baseUrls.embeddedLqasCountry
+        : baseUrls.lqasCountry;
 
     const { data: countriesOptions, isFetching: countriesLoading } =
-        useGetLqasImCountriesOptions();
+        useGetLqasImCountriesOptions(isEmbedded);
+
+    const { data: campaigns = [], isFetching: campaignsFetching } =
+        useGetCampaigns({
+            countries: country,
+            enabled: Boolean(country),
+            show_test: false,
+            on_hold: true,
+            is_embedded: isEmbedded,
+        }) as UseQueryResult<Campaign[], Error>;
+
+    // FIXME: use new params
+    const [filters, setFilters] = useState<LqasUrlParams>({ ...params });
 
     const dropDownOptions = useMemo(() => {
         const displayedCampaigns = country
@@ -73,29 +78,33 @@ export const Filters: FunctionComponent<Props> = ({
         return makeCampaignsDropDown(displayedCampaigns);
     }, [country, campaigns]);
 
+    //FIXME use new params
     const onChange = useCallback(
         (key, value) => {
             const newFilters = {
                 ...filters,
-                rounds: undefined, // This
-                // rounds: '1,2', // This
+                leftRound: side === 'left' ? undefined : filters.leftRound,
+                rightRound: side === 'right' ? undefined : filters.rightRound, // This
                 [key]: value,
             };
-            if (key === 'country') {
-                newFilters.campaign = undefined;
+            if (key === 'leftCountry') {
+                newFilters.leftCampaign = undefined;
+            }
+            if (key === 'rightCountry') {
+                newFilters.rightCampaign = undefined;
             }
 
             setFilters(newFilters);
             redirectToReplace(currentUrl, newFilters);
         },
-        [currentUrl, filters, redirectToReplace],
+        [currentUrl, filters, redirectToReplace, side],
     );
     const campaignObj = campaigns.find(c => c.obr_name === campaign);
     const campaignLink = campaignObj
         ? `/${baseUrls.campaigns}/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
     return (
-        <Box mt={2} width="100%">
+        <Box my={2} width="100%">
             <Grid container item spacing={2}>
                 <Grid item xs={4}>
                     <Select
@@ -105,10 +114,8 @@ export const Filters: FunctionComponent<Props> = ({
                         clearable
                         multi={false}
                         value={country?.toString()}
-                        // ts-error from blsq-comp
-                        // @ts-ignore
                         options={countriesOptions}
-                        onChange={value => onChange('country', value)}
+                        onChange={value => onChange(`${side}Country`, value)}
                     />
                 </Grid>
                 <Grid item xs={4}>
@@ -119,11 +126,9 @@ export const Filters: FunctionComponent<Props> = ({
                         clearable
                         multi={false}
                         value={campaign}
-                        // Not showing campaigns before Im data has been fetched because selecting a campaign before the end of data fetching will cause bugs in the map
-                        // ts-error from blsq-comp
-                        // @ts-ignore
+                        // Not showing campaigns before data has been fetched because selecting a campaign before the end of data fetching will cause bugs in the map
                         options={isFetching ? [] : dropDownOptions}
-                        onChange={value => onChange('campaign', value)}
+                        onChange={value => onChange(`${side}Campaign`, value)}
                         disabled={Boolean(!country) && isFetching}
                     />
                 </Grid>
@@ -142,10 +147,7 @@ export const Filters: FunctionComponent<Props> = ({
 
                 <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
                     <Grid item md={campaignLink ? 3 : 4}>
-                        <RefreshLqasIMData
-                            imType={imType}
-                            countryId={country}
-                        />
+                        <RefreshLqasIMData countryId={country} />
                     </Grid>
                 </DisplayIfUserHasPerm>
             </Grid>

@@ -160,6 +160,8 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     lqasCountry: {
         url: LQAS_BASE_URL,
         params: [
+            'leftFilterType',
+            'rightFilterType',
             'leftCountry',
             'leftCampaign',
             'leftRound',
@@ -177,6 +179,8 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     embeddedLqasCountry: {
         url: EMBEDDED_LQAS_COUNTRY_URL,
         params: [
+            'leftFilterType',
+            'rightFilterType',
             'leftCountry',
             'leftCampaign',
             'leftRound',

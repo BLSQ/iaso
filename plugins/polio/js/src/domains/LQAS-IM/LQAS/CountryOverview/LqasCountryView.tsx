@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { NumberAsString, Side } from '../../../../constants/types';
 import { LqasUrlParams } from '..';
-import { LqasCountryFilter } from './LqasCountryFilter';
+import { LqasFilterByDate } from './Filters/LqasFilterByDate';
 import { Box } from '@mui/material';
 import { UseQueryResult } from 'react-query';
 import { LqasImData } from '../../types';
@@ -16,6 +16,8 @@ import { useGetLqasRoundOptions } from '../hooks/useGetLqasCountriesOptions';
 import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from '../../../../constants/urls';
 import { LqasCountryCharts } from './LqasCountryCharts';
+import { Filters } from '../../shared/Filters';
+import { LqasCountryViewFilters } from './Filters/LqasCountryViewFilters';
 
 type Props = {
     side: Side;
@@ -70,11 +72,12 @@ export const LqasCountryView: FunctionComponent<Props> = ({
     return (
         <>
             <Box>
-                <LqasCountryFilter
+                <LqasCountryViewFilters
                     side={side}
                     params={params}
                     currentUrl={currentUrl}
                     isEmbedded={isEmbedded}
+                    isFetching={isFetching}
                 />
                 <LqasCountryDataView
                     params={params}

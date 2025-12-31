@@ -4,21 +4,21 @@ import {
     useSafeIntl,
     Select,
 } from 'bluesquare-components';
-import { LqasUrlParams } from '..';
+import { LqasUrlParams } from '../..';
 import { Box, Grid } from '@mui/material';
-import MESSAGES from '../../../../constants/messages';
+import MESSAGES from '../../../../../constants/messages';
 import {
     useGetLqasCampaignsOptions,
     useGetLqasCountriesOptions,
-} from '../hooks/useGetLqasCountriesOptions';
-import { NumberAsString, Side } from '../../../../constants/types';
+} from '../../hooks/useGetLqasCountriesOptions';
+import { NumberAsString, Side } from '../../../../../constants/types';
 import { DropdownOptions } from 'Iaso/types/utils';
 import moment from 'moment';
 
 type Props = {
     params: LqasUrlParams;
-    side: Side;
     currentUrl: string;
+    side: Side;
     isEmbedded: boolean;
 };
 
@@ -54,7 +54,7 @@ const generateYearOptions = (
 };
 const yearOptions = generateYearOptions();
 
-export const LqasCountryFilter: FunctionComponent<Props> = ({
+export const LqasFilterByDate: FunctionComponent<Props> = ({
     params,
     side,
     currentUrl,
@@ -95,7 +95,7 @@ export const LqasCountryFilter: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box mb={2}>
+        <Box my={2}>
             <Grid container spacing={2}>
                 <Grid container item xs={12} spacing={2}>
                     <Grid item xs={6}>

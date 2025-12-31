@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetOrgUnitsByOrgUnitTypeId } from 'Iaso/domains/assignments/hooks/requests/useGetOrgUnits';
-import { Planning } from 'Iaso/domains/assignments/types/planning';
+import { Planning } from 'Iaso/domains/plannings/types';
 import MESSAGES from '../../messages';
 import { ParameterValues } from './LQASForm';
 

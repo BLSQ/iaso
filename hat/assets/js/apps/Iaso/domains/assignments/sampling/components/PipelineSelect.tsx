@@ -1,10 +1,4 @@
-import React, {
-    FunctionComponent,
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    useMemo,
-} from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -19,9 +13,9 @@ import {
 
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 
+import { Planning } from 'Iaso/domains/plannings/types';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 import MESSAGES from '../../messages';
-import { Planning } from '../../types/planning';
 
 type Props = {
     planning: Planning;
@@ -32,7 +26,6 @@ type Props = {
     setParameterValues: (values: ParameterValues) => void;
     orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     isFetchingOrgunitTypes: boolean;
-    setExtraFilters: Dispatch<SetStateAction<Record<string, any>>>;
     setAllowConfirm: React.Dispatch<React.SetStateAction<boolean>>;
     taskStatus?: TaskStatus;
     taskId?: number;
@@ -48,7 +41,6 @@ export const PipelineSelect: FunctionComponent<Props> = ({
     setAllowConfirm,
     orgunitTypes,
     isFetchingOrgunitTypes,
-    setExtraFilters,
     taskStatus,
     taskId,
 }) => {
@@ -61,7 +53,7 @@ export const PipelineSelect: FunctionComponent<Props> = ({
     const pipelineUuidsOptions = useMemo(
         () =>
             data?.filter(pipeline =>
-                planning.pipeline_uuids.includes(pipeline.value),
+                planning.pipeline_uuids?.includes(pipeline.value),
             ),
         [data, planning.pipeline_uuids],
     );
@@ -88,7 +80,7 @@ export const PipelineSelect: FunctionComponent<Props> = ({
                 required
                 disabled={
                     isFetchingPipelineUuids ||
-                    planning.pipeline_uuids.length === 1
+                    planning.pipeline_uuids?.length === 1
                 }
             />
             {pipeline && (
@@ -107,7 +99,6 @@ export const PipelineSelect: FunctionComponent<Props> = ({
                             orgunitTypes={orgunitTypes}
                             isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                             taskStatus={taskStatus ?? 'QUEUED'}
-                            setExtraFilters={setExtraFilters}
                             taskId={taskId}
                         />
                     )}

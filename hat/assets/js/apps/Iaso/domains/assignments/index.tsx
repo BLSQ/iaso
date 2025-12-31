@@ -18,7 +18,6 @@ import {
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useGetPipelineConfig } from '../openHexa/hooks/useGetPipelineConfig';
 import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
 import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
 import { Team, SubTeam, User } from '../teams/types/team';
@@ -30,7 +29,6 @@ import { DeleteAssignments } from './components/DeleteAssignments';
 import { ParentDialog } from './components/ParentDialog';
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 import MESSAGES from './messages';
-import { OpenhexaIntegrationDrawer } from './sampling/OpenhexaIntegrationDrawer';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { AssignmentUnit } from './types/locations';
 import { getSaveParams } from './utils';
@@ -98,7 +96,6 @@ export const Assignments: FunctionComponent = () => {
         isLoadingAssignments,
         isTeamsFetched,
         setProfiles,
-        setExtraFilters,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -134,7 +131,6 @@ export const Assignments: FunctionComponent = () => {
             });
         }
     };
-    const { data: hasPipelineConfig } = useGetPipelineConfig();
     const handleSaveAssignment = useCallback(
         (selectedOrgUnit: AssignmentUnit) => {
             if (planning && selectedItem) {
@@ -294,22 +290,6 @@ export const Assignments: FunctionComponent = () => {
                         disabled={isLoading || allAssignments.length === 0}
                         count={allAssignments.length}
                     />
-                    {planning &&
-                        hasPipelineConfig &&
-                        planning.pipeline_uuids.length > 0 && (
-                            <OpenhexaIntegrationDrawer
-                                planning={planning}
-                                disabled={
-                                    isLoading || allAssignments.length > 0
-                                }
-                                disabledMessage={formatMessage(
-                                    MESSAGES.deleteAssignmentsInfos,
-                                )}
-                                orgunitTypes={orgunitTypes}
-                                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                                setExtraFilters={setExtraFilters}
-                            />
-                        )}
                 </Box>
                 <AssignmentsFilters
                     params={params}

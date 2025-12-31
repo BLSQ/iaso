@@ -225,6 +225,7 @@ export const OrgUnits: FunctionComponent = () => {
                     <Box className={tab === 'map' ? '' : classes.hiddenOpacity}>
                         <Box className={classes.containerMarginNeg}>
                             <OrgUnitsMap
+                                params={params}
                                 getSearchColor={getSearchColor}
                                 orgUnits={
                                     orgUnitsDataLocation || {

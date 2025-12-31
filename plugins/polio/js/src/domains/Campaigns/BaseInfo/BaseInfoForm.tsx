@@ -27,9 +27,8 @@ import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
 import { IntegratedCampaigns } from './IntegratedCampaigns/Widget/IntegratedCampaigns';
-import { LinkTo } from 'Iaso/components/nav/LinkTo';
-import { CampaignAsyncSelect } from '../CampaignsAsyncSelect/CampaignsAsyncSelect';
 import { IntegratedCampaignField } from './IntegratedCampaigns/IntegratedTo/IntegratedCampaignField';
+import { AddIntegratedCampaignsModal } from './IntegratedCampaigns/Widget/AddIntegratedCampaignsModal';
 
 export const baseInfoFormFields: string[] = [
     'epid',
@@ -130,7 +129,7 @@ export const BaseInfoForm: FunctionComponent = () => {
         <Box width={'100%'}>
             <Grid container spacing={2}>
                 <Grid container item spacing={2}>
-                    <Grid xs={12} md={isPolio ? 6 : 12} item>
+                    <Grid xs={12} md={isPolio ? 4 : 12} item>
                         <Field
                             label={formatMessage(MESSAGES.campaignType)}
                             name="campaign_types"
@@ -176,6 +175,13 @@ export const BaseInfoForm: FunctionComponent = () => {
                             name="description"
                             component={TextInput}
                             shrinkLabel={false}
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.epid)}
+                            name="epid"
+                            component={TextInput}
+                            shrinkLabel={false}
+                            className={classes.input}
                         />
                         <Field
                             label={getLabelByKey('gpei_coordinator')}
@@ -238,7 +244,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                     </Grid>
                     {/* POLIO FIELDS */}
                     {isPolio && (
-                        <Grid item xs={12} md={6}>
+                        <Grid item xs={12} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.virus)}
                                 name="virus"
@@ -262,20 +268,15 @@ export const BaseInfoForm: FunctionComponent = () => {
                             </Box>
                             <Box mt={2}>
                                 <Field
-                                    label={formatMessage(MESSAGES.epid)}
-                                    name="epid"
-                                    component={TextInput}
-                                    shrinkLabel={false}
-                                    className={classes.input}
+                                    label={formatMessage(
+                                        MESSAGES.groupedCampaigns,
+                                    )}
+                                    name="grouped_campaigns"
+                                    options={groupedCampaignsOptions}
+                                    withMarginTop={false}
+                                    component={MultiSelect}
                                 />
                             </Box>
-                            <Field
-                                label={formatMessage(MESSAGES.groupedCampaigns)}
-                                name="grouped_campaigns"
-                                options={groupedCampaignsOptions}
-                                withMarginTop={false}
-                                component={MultiSelect}
-                            />
                             <Box mt={2}>
                                 <Field
                                     label={formatMessage(
@@ -302,8 +303,19 @@ export const BaseInfoForm: FunctionComponent = () => {
                                     component={DateInput}
                                 />
                             </Box>
-                            <IntegratedCampaigns />
                         </Grid>
+                    )}
+                    {isPolio && (
+                        <>
+                            <Grid item xs={12} md={4}>
+                                <IntegratedCampaigns />
+                                <Box display="flex" justifyContent="flex-end">
+                                    <AddIntegratedCampaignsModal
+                                        iconProps={{}}
+                                    />
+                                </Box>
+                            </Grid>
+                        </>
                     )}
                 </Grid>
             </Grid>

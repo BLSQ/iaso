@@ -4,8 +4,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { getRequest, IntlMessage } from 'bluesquare-components';
-import { AsyncSelect } from 'Iaso/components/forms/AsyncSelect';
+import { getRequest, IntlMessage, AsyncSelect } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import {

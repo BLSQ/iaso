@@ -8,8 +8,8 @@ from django.utils.timezone import now
 
 from hat.audit.models import Modification
 from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningSerializer
-from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
-from iaso.models.microplanning import Assignment, Planning
+from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, SourceVersion, Task
+from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase
@@ -521,6 +521,119 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 400)
         self.assertIn("target_org_unit_type", r)
         self.assertEqual(r["target_org_unit_type"][0], "planningAndTargetOrgUnitType")
+
+    def test_planning_sampling_results_list(self):
+        self.client.force_authenticate(self.user)
+        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
+        task = Task.objects.create(
+            name="sampling",
+            account=self.account,
+            created_by=self.user,
+        )
+        sampling = PlanningSamplingResult.objects.create(
+            planning=self.planning,
+            task=task,
+            pipeline_id="pipeline-1",
+            pipeline_version="v1",
+            group=group,
+            parameters={"foo": "bar"},
+            created_by=self.user,
+        )
+
+        response = self.client.get(
+            f"/api/microplanning/samplings/?planning_id={self.planning.id}&order=-id", format="json"
+        )
+        data = self.assertJSONResponse(response, 200)
+        results = data["results"] if isinstance(data, dict) and "results" in data else data
+        self.assertEqual(len(results), 1)
+        result = results[0]
+        self.assertEqual(result["id"], sampling.id)
+        self.assertEqual(result["pipeline_id"], "pipeline-1")
+        self.assertEqual(result["task_id"], task.id)
+        self.assertEqual(result["group_details"]["org_unit_count"], 1)
+        self.assertIsInstance(result["created_at"], float)
+
+    def test_planning_sampling_results_list_requires_auth(self):
+        response = self.client.get(
+            f"/api/microplanning/samplings/?planning_id={self.planning.id}&order=-id", format="json"
+        )
+        self.assertJSONResponse(response, 401)
+
+    def test_planning_sampling_results_create(self):
+        user_with_perms = self.create_user_with_profile(
+            username="sampling_user", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+        task = Task.objects.create(
+            name="sampling-create",
+            account=self.account,
+            created_by=user_with_perms,
+        )
+        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
+
+        payload = {
+            "planning_id": self.planning.id,
+            "task_id": task.id,
+            "pipeline_id": "pipeline-2",
+            "pipeline_version": "v2",
+            "group_id": group.id,
+            "parameters": {"limit": 10},
+        }
+
+        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
+        data = self.assertJSONResponse(response, 201)
+        sampling = PlanningSamplingResult.objects.get(id=data["id"])
+        self.assertEqual(sampling.pipeline_id, "pipeline-2")
+        self.assertEqual(sampling.created_by, user_with_perms)
+        self.assertEqual(sampling.task, task)
+        self.assertEqual(data["group_details"]["org_unit_count"], 1)
+        self.assertIsInstance(data["created_at"], float)
+
+    def test_planning_sampling_results_create_requires_auth(self):
+        task = Task.objects.create(
+            name="sampling-create-no-auth",
+            account=self.account,
+            created_by=self.user,
+        )
+        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
+
+        payload = {
+            "planning_id": self.planning.id,
+            "task_id": task.id,
+            "pipeline_id": "pipeline-unauth",
+            "pipeline_version": "v1",
+            "group_id": group.id,
+            "parameters": {"limit": 5},
+        }
+
+        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
+        self.assertJSONResponse(response, 401)
+
+    def test_planning_sampling_results_create_requires_permission(self):
+        user_no_perms = self.create_user_with_profile(username="sampling_no_perm", account=self.account, permissions=[])
+        self.client.force_authenticate(user_no_perms)
+        task = Task.objects.create(
+            name="sampling-create-no-perm",
+            account=self.account,
+            created_by=user_no_perms,
+        )
+        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
+
+        payload = {
+            "planning_id": self.planning.id,
+            "task_id": task.id,
+            "pipeline_id": "pipeline-no-perm",
+            "pipeline_version": "v1",
+            "group_id": group.id,
+            "parameters": {"limit": 10},
+        }
+
+        response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
+        self.assertJSONResponse(response, 403)
 
     def test_planning_serializer_target_org_unit_type_wrong_project(self):
         """Test PlanningSerializer validation with target_org_unit_type from wrong project."""

@@ -9,12 +9,11 @@ import {
     useSafeIntl,
     useSkipEffectOnMount,
     InputWithInfos,
-    AsyncSelect
+    AsyncSelect,
 } from 'bluesquare-components';
 
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import DatesRange from '../../../components/filters/DatesRange';
-// import { AsyncSelect } from '../../../components/forms/AsyncSelect';
 import InputComponent from '../../../components/forms/InputComponent';
 import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';

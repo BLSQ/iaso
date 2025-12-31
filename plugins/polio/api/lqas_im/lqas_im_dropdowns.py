@@ -81,8 +81,8 @@ class LqasImCountriesOptionsViewset(PolioOrgunitViewSet):
         return OrgUnitDropdownSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(org_unit_type__category="COUNTRY")  # TODO add filter by user and app id
+        queryset = super().get_queryset()  # parent class filters by user and app_id
+        queryset = queryset.filter(org_unit_type__category="COUNTRY")
         return queryset
 
 

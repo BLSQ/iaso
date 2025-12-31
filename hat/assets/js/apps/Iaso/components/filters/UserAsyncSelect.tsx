@@ -1,5 +1,4 @@
 import React, { FC, useCallback } from 'react';
-import * as All from 'bluesquare-components';
 import { AsyncSelect } from 'bluesquare-components';
 import type { IntlMessage } from 'bluesquare-components';
 import { getUsersDropDown } from '../../domains/instances/hooks/requests/getUsersDropDown';
@@ -21,7 +20,6 @@ export const UserAsyncSelect: FC<Props> = ({
     label = MESSAGES.user,
     multi = true,
 }) => {
-    console.log('All bluesquare-components', All);
     const { data: selectedUsers } = useGetProfilesDropdown(filterUsers);
     const handleChangeUsers = useCallback(
         (keyValue, newValue) => {

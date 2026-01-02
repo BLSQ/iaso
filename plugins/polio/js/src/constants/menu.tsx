@@ -21,6 +21,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
 import { MenuItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/types';
 import MESSAGES from './messages';
@@ -44,6 +45,7 @@ import {
     vaccineRepositoryPath,
     nationalLogisticsPlanPath,
     performanceThresholdsPath,
+    performanceDashboardPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -147,6 +149,12 @@ export const menu: MenuItem[] = [
                         key: 'stockmanagement',
                         permissions: stockManagementPath.permissions,
                         icon: props => <StorageIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.performanceDashboard,
+                        key: 'performanceDashboard',
+                        permissions: performanceDashboardPath.permissions,
+                        icon: props => <DashboardIcon {...props} />,
                     },
                     {
                         label: MESSAGES.nationalLogisticsPlan,

@@ -73,7 +73,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
             search,
             ...baseOptions,
         };
-    }, [campaignTypes, search]);
+    }, [campaignTypes, search, isStateSet, baseOptions]);
 
     const fetchOptions = useCallback(
         async (query: string): Promise<any[]> => {

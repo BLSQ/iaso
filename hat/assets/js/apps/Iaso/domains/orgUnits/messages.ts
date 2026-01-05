@@ -482,7 +482,7 @@ const MESSAGES = defineMessages({
     },
     ID: {
         defaultMessage: 'ID',
-        id: 'iaso.orgUnits.id',
+        id: 'iaso.label.id',
     },
     detailTitle: {
         defaultMessage: 'Form',

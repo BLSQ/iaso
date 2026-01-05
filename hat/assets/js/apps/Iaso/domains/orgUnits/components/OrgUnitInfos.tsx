@@ -136,15 +136,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
-                <InputComponent 
-                    keyValue="id"
-                    type="text"
-                    required
-                    value={orgUnit.id || ''}
-                    // errors={orgUnit.id.errors}
-                    label={MESSAGES.ID}
-                    disabled={true}
-                />
                 <InputComponent
                     keyValue="name"
                     type="text"
@@ -255,7 +246,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         resetTrigger={resetTrigger}
                         disabled={disabled}
                     />
-                </FormControlComponent>
+                </FormControlComponent> 
                 <DatesRange
                     keyDateFrom="opening_date"
                     keyDateTo="closed_date"

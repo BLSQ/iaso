@@ -59,6 +59,11 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                 <Table size="medium">
                     <TableBody>
                         <Row
+                            label={formatMessage(MESSAGES.ID)}
+                            value={orgUnit.id ?? '-'}
+                            dataTestId="orgunit-id"
+                        />
+                        <Row
                             label={formatMessage(MESSAGES.source)}
                             value={
                                 orgUnit.source ??

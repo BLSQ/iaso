@@ -56,7 +56,6 @@ export const LqasCountryViewFilters: FunctionComponent<Props> = ({
             ...emptyParams[side],
             [`${side}FilterType`]: !classicModeOn ? 'country' : 'date',
         };
-        console.log('NEW PARAMS', newParams);
         redirectToReplace(currentUrl, newParams);
     }, [redirectToReplace, currentUrl, classicModeOn]);
 

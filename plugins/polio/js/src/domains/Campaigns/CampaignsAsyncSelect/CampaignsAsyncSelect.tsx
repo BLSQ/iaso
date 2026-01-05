@@ -107,7 +107,12 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
                 return [];
             }
         },
-        [campaignTypes],
+        [
+            campaignTypes,
+            baseOptions,
+            queryClient.getQueryData,
+            queryClient.setQueryData,
+        ],
     );
 
     const { data: selectedCampaigns } = useGetCampaigns(

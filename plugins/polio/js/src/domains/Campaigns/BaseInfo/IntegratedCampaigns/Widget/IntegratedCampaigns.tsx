@@ -1,12 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useFormikContext } from 'formik';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
-import {
-    CampaignFormValues,
-    PolioCampaignValues,
-} from '../../../../../constants/types';
+import { PolioCampaignValues } from '../../../../../constants/types';
 import { IntegratedCampaignsInfo } from './IntegratedCampaignsInfo';
-import { AddIntegratedCampaignsModal } from './AddIntegratedCampaignsModal';
 
 type Props = {};
 

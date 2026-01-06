@@ -24,7 +24,7 @@ export const Planning: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetPlannings(apiParams);
-    const columns = usePlanningColumns();
+    const columns = usePlanningColumns(params, data?.count ?? 0);
 
     return (
         <>

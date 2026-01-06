@@ -198,17 +198,19 @@ export const RiskAssessmentForm: FunctionComponent = () => {
                 <Grid item md={6}>
                     {rounds.map((round, i) => {
                         return (
-                            <Field
-                                key={round.number}
-                                label={`${formatMessage(
-                                    MESSAGES.dosesRequested,
-                                )} ${formatMessage(MESSAGES.round)} ${
-                                    round.number
-                                }`}
-                                name={`rounds[${i}].doses_requested`}
-                                component={NumberInput}
-                                className={classes.input}
-                            />
+                            <Box mt={i === 0 ? 0 : 2}>
+                                <Field
+                                    key={round.number}
+                                    label={`${formatMessage(
+                                        MESSAGES.dosesRequested,
+                                    )} ${formatMessage(MESSAGES.round)} ${
+                                        round.number
+                                    }`}
+                                    name={`rounds[${i}].doses_requested`}
+                                    component={NumberInput}
+                                    className={classes.input}
+                                />
+                            </Box>
                         );
                     })}
                 </Grid>

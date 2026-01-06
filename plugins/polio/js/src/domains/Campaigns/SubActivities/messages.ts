@@ -39,7 +39,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.subActivities.actions',
     },
     ageMax: {
         defaultMessage: 'Age max',

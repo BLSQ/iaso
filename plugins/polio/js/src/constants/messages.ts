@@ -1203,7 +1203,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This operation cannot be undone.',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.polio.label.save',
         defaultMessage: 'Save',
     },
     close: {

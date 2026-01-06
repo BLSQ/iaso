@@ -67,7 +67,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.supplyChain.actions',
     },
     edit: {
         id: 'iaso.label.edit',
@@ -103,7 +103,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Supply chain status',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.supplyChain.save',
         defaultMessage: 'Save',
     },
     cancel: {

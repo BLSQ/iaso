@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     actions: {
-        id: 'iaso.label.actions',
+        id: 'iaso.chronogram.actions',
         defaultMessage: 'Action(s)',
     },
     details: {
@@ -22,7 +22,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cancel',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.chronogram.save',
         defaultMessage: 'Save',
     },
     updatedAt: {

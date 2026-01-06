@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 export const MESSAGES = defineMessages({
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.legend.save',
         defaultMessage: 'Save',
     },
     cancel: {

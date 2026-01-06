@@ -74,7 +74,7 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Cancel',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.algorithmRuns.save',
         defaultMessage: 'Save',
     },
     requiredField: {

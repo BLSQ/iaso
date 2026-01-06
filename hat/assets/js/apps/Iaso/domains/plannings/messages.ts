@@ -70,7 +70,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cancel',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.plannings.save',
         defaultMessage: 'Save',
     },
     editPlanning: {
@@ -90,7 +90,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
     },
     create: {
-        id: 'iaso.label.create',
+        id: 'iaso.plannings.create',
         defaultMessage: 'Create',
     },
     selectOrgUnit: {

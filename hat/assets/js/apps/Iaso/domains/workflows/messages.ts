@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'All versions',
     },
     actions: {
-        id: 'iaso.label.actions',
+        id: 'iaso.workflows.actions',
         defaultMessage: 'Action(s)',
     },
     version: {
@@ -155,7 +155,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This operation cannot be undone.',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.workflows.save',
         defaultMessage: 'Save',
     },
     publish: {

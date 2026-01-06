@@ -3,11 +3,11 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.dataSources.actions',
     },
     dataSources: {
         defaultMessage: 'Data Sources',
-        id: 'iaso.label.dataSources',
+        id: 'iaso.dataSources.title',
     },
     dataSourceName: {
         defaultMessage: 'Data Source name',

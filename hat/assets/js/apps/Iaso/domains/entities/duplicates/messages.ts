@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     actions: {
-        id: 'iaso.label.actions',
+        id: 'iaso.duplicates.actions',
         defaultMessage: 'Action(s)',
     },
     addParameters: {

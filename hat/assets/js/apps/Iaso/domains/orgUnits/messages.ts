@@ -139,7 +139,7 @@ const MESSAGES = defineMessages({
     },
     save: {
         defaultMessage: 'Save',
-        id: 'iaso.label.save',
+        id: 'iaso.orgUnits.save',
     },
     see: {
         defaultMessage: 'See',

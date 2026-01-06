@@ -14,7 +14,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Group by type',
     },
     orgUnit: {
-        id: 'iaso.instance.org_unit',
+        id: 'iaso.completenessStats.orgUnit',
         defaultMessage: 'Org unit',
     },
     form: {

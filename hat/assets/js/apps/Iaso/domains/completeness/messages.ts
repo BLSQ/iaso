@@ -99,7 +99,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.completeness.actions',
     },
     generateDerivedInstances: {
         id: 'iaso.completeness.generateDerivedInstances',

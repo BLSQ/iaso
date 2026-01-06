@@ -38,7 +38,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cancel',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.entities.save',
         defaultMessage: 'Save',
     },
     viewInstance: {
@@ -138,7 +138,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.see',
     },
     orgUnit: {
-        id: 'iaso.instance.org_unit',
+        id: 'iaso.entities.orgUnit',
         defaultMessage: 'Org unit',
     },
     title: {
@@ -206,11 +206,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Vaccination number',
     },
     'org_unit.name': {
-        id: 'iaso.instance.org_unit',
+        id: 'iaso.entities.org_unit.name',
         defaultMessage: 'Org unit',
     },
     OrgUnitName: {
-        id: 'iaso.instance.org_unit',
+        id: 'iaso.entities.orgUnitName',
         defaultMessage: 'Org unit',
     },
     form: {

@@ -9,6 +9,8 @@ export const useGetCampaign = campaignId => {
         {
             enabled: Boolean(campaignId),
             keepPreviousData: false,
+            staleTime: Infinity,
+            cacheTime: Infinity,
         },
     );
 };

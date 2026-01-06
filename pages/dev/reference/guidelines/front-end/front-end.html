@@ -844,6 +844,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#convenience-hooks" class="md-nav__link">
+    Convenience hooks:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#code-style" class="md-nav__link">
     Code style
   </a>
@@ -949,7 +956,7 @@
 <p>Make sure you installed eslint extension too.<br />
 On each file you can have only one component.<br />
 Use constants, and config files to store static data.<br />
-Don't be afraid to split your code into smaller parts, using understandable naming convention. It will help to understand what you are doing in your code.  </p>
+Don't be afraid to split your code into smaller parts, using understandable naming convention. It will help to understand what you are doing in your code.</p>
 <h2 id="legacy">Legacy<a class="headerlink" href="#legacy" title="Permanent link">#</a></h2>
 <p>Class component, proptypes are still old way to create features in IASO.<br />
 Please use <code>hooks</code>, <code>typescript</code> and <code>arrow component</code>.<br />
@@ -957,24 +964,26 @@ We already have a lot of typing done in each domain of the application (forms, s
 <h2 id="bluesquare-components">Bluesquare-components<a class="headerlink" href="#bluesquare-components" title="Permanent link">#</a></h2>
 <p>Lots of components used in IASO has been moved to a separate <a href="https://github.com/BLSQ/bluesquare-components">repo</a>.<br />
 We tried to be the most generic has possible in this repo, people from outside IASO should be able to use it in their own project.<br />
-To use it locally, checkout the repo on the same level has ISO and run:  <code>LIVE_COMPONENTS=true pm run dev</code> in IASO folder.<br />
+To use it locally, checkout the repo on the same level has ISO and run: <code>LIVE_COMPONENTS=true pm run dev</code> in IASO folder.<br />
 This will use directly the code from your local repo.<br />
-To make it available too everybody you have to build new files with <code>npm run clean &amp;&amp; npm run build</code> in bluesquare-component folder. </p>
+To make it available too everybody you have to build new files with <code>npm run clean &amp;&amp; npm run build</code> in bluesquare-component folder.</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">#</a></h2>
 <p>Main index file is located here: <code>hat/assets/js/apps/Iaso/index</code><br />
-This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins,...  </p>
+This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins,...</p>
 <p><strong><code>components</code></strong><br />
 Used to store generic components that can be used everywhere, like <code>inputComponent</code>, <code>buttons</code>, ...</p>
 <p><strong><code>domains</code></strong><br />
-For every big feature entity in IASO (forms, org units, plannings, ...) we have a domain folder allowing to display related pages.<br />
-- <code>index</code> is generally used to display a list of items 
-- <code>details</code> the details of an item
-- <code>config</code> used to store constants for the domain (columns, default order, ...)
-- <code>hooks</code>: dedicated hooks to make requests or compute specitic data for the domain
-- <code>components</code>: mostly intermediate components using smaller ones to construct domain page
-- <code>messages</code>: translations messages used for this specific domain
-config: used to store constants like defaultOrder, columns, 'baseUrls' 
-- <code>types</code>: All types related to the domain</p>
+For every big feature entity in IASO (forms, org units, plannings, ...) we have a domain folder allowing to display related pages.</p>
+<ul>
+<li><code>index</code> is generally used to display a list of items</li>
+<li><code>details</code> the details of an item</li>
+<li><code>config</code> used to store constants for the domain (columns, default order, ...)</li>
+<li><code>hooks</code>: dedicated hooks to make requests or compute specitic data for the domain</li>
+<li><code>components</code>: mostly intermediate components using smaller ones to construct domain page</li>
+<li><code>messages</code>: translations messages used for this specific domain
+  config: used to store constants like defaultOrder, columns, 'baseUrls'</li>
+<li><code>types</code>: All types related to the domain</li>
+</ul>
 <h2 id="styling-components">Styling components<a class="headerlink" href="#styling-components" title="Permanent link">#</a></h2>
 <p>In our effort to maintain readability and conciseness in our code, we are transitioning away from the <code>makeStyles</code> hook and adopting a new approach for styling our components. We will now use a separate object, <code>styles</code>, to define our styles outside of the component function. This object will then be referenced within the <code>sx</code> prop in our JSX.</p>
 <p>Here's how to apply this approach:</p>
@@ -1067,14 +1076,16 @@ To use latest version of react-leaflet we need to upgrade to react 18.</p>
 <h3 id="from-react-leaflet">From react-leaflet<a class="headerlink" href="#from-react-leaflet" title="Permanent link">#</a></h3>
 <p><strong>MapContainer</strong></p>
 <p>The main container of the Map.
-Props we use:
-- <code>bounds</code>: not required, bounds of markers and shapes displayed, used by fit to bound, doc <a href="https://leafletjs.com/reference.html#latlngbounds">here</a>.
-- <code>boundsOptions</code>: not required, options related to bounds, doc <a href="https://leafletjs.com/reference.html#fitbounds-options">here</a>.
-- <code>zoomControl</code>: required and set to <code>false</code>, in order to use the <code>CustomZoomControl</code>.
-- <code>whenCreated</code>: not required,to use a ref of the map in the same component as the MapContainer, you get it by doing
-    whenCreated={mapInstance =&gt; {
-        map.current = mapInstance;
-    }}</p>
+Props we use:</p>
+<ul>
+<li><code>bounds</code>: not required, bounds of markers and shapes displayed, used by fit to bound, doc <a href="https://leafletjs.com/reference.html#latlngbounds">here</a>.</li>
+<li><code>boundsOptions</code>: not required, options related to bounds, doc <a href="https://leafletjs.com/reference.html#fitbounds-options">here</a>.</li>
+<li><code>zoomControl</code>: required and set to <code>false</code>, in order to use the <code>CustomZoomControl</code>.</li>
+<li><code>whenCreated</code>: not required,to use a ref of the map in the same component as the MapContainer, you get it by doing
+  whenCreated={mapInstance =&gt; {
+  map.current = mapInstance;
+  }}</li>
+</ul>
 <p>default props:</p>
 <pre><code>doubleClickZoom={false}
 scrollWheelZoom={false}
@@ -1088,25 +1099,33 @@ boundsOptions={boundsOptions}
 </code></pre>
 <p><strong>Scalecontrol</strong></p>
 <p>Used to display a scale on the bottom left of the map.</p>
-<p>Props we use:
-- <code>imperial</code>: always set to <code>false</code></p>
+<p>Props we use:</p>
+<ul>
+<li><code>imperial</code>: always set to <code>false</code></li>
+</ul>
 <p>We use other component from react-leaflet not listed here as they are optionnal and used like describe in their <a href="https://react-leaflet.js.org/docs/v3/api-components/">docs</a>.</p>
 <h3 id="custom-components">Custom components<a class="headerlink" href="#custom-components" title="Permanent link">#</a></h3>
-<p><strong>CustomZoomControl</strong>  </p>
+<p><strong>CustomZoomControl</strong></p>
 <p>This will display an extended zoom control on the top left of the map.
-You can zoom in and out, select an area to zoom in and fit the map to the bounds of the map.  </p>
-<p>Props:
-- <code>bounds</code>: not required, computed bounds displayed on the map, doc <a href="https://leafletjs.com/reference.html#latlngbounds">here</a>.
-- <code>boundsOptions</code>: not required, options related to bounds, doc <a href="https://leafletjs.com/reference.html#fitbounds-options">here</a>.
-- <code>bound</code>: not required, a boolean to fit to bounds on load, not working if bounds stays undefined.</p>
-<p><strong>CustomTileLayer + TilesSwitchDialog</strong>  </p>
+You can zoom in and out, select an area to zoom in and fit the map to the bounds of the map.</p>
+<p>Props:</p>
+<ul>
+<li><code>bounds</code>: not required, computed bounds displayed on the map, doc <a href="https://leafletjs.com/reference.html#latlngbounds">here</a>.</li>
+<li><code>boundsOptions</code>: not required, options related to bounds, doc <a href="https://leafletjs.com/reference.html#fitbounds-options">here</a>.</li>
+<li><code>bound</code>: not required, a boolean to fit to bounds on load, not working if bounds stays undefined.</li>
+</ul>
+<p><strong>CustomTileLayer + TilesSwitchDialog</strong></p>
 <p>Control to display a dialog allowing to change the tile layer of the map, on the top right of the map
 Those twot components are going together, maybe we should refactor it to a single component.</p>
-<p>CustomTileLayer Props:
-- <code>currentTile</code>: required, active tile of the map, usually setted in the map itself with a <code>useState</code>.</p>
-<p>TilesSwitchDialog Props:
-- <code>currentTile</code>: required, active tile of the map, usually setted in the map itself with a <code>useState</code>.
-- <code>setCurrentTile</code>: required, method to update current tile on the map.</p>
+<p>CustomTileLayer Props:</p>
+<ul>
+<li><code>currentTile</code>: required, active tile of the map, usually setted in the map itself with a <code>useState</code>.</li>
+</ul>
+<p>TilesSwitchDialog Props:</p>
+<ul>
+<li><code>currentTile</code>: required, active tile of the map, usually setted in the map itself with a <code>useState</code>.</li>
+<li><code>setCurrentTile</code>: required, method to update current tile on the map.</li>
+</ul>
 <p><strong>MapToggleTooltips</strong></p>
 <p>A switch to show or hide tooltips on the map.</p>
 <p>Props:</p>
@@ -1114,7 +1133,7 @@ Those twot components are going together, maybe we should refactor it to a singl
 <li><code>showTooltip</code>: required, usually setted in the map itself with a <code>useState</code>.</li>
 <li><code>setShowTooltip</code>: required, method to showTooltip or not.</li>
 </ul>
-<p><strong>MapToggleFullscreen</strong>  </p>
+<p><strong>MapToggleFullscreen</strong></p>
 <p>A switch to set the map fullscreen or not.</p>
 <p>Props:</p>
 <ul>
@@ -1123,7 +1142,7 @@ Those twot components are going together, maybe we should refactor it to a singl
 </ul>
 <p><strong>MapToggleCluster</strong></p>
 <p>A switch to allow clustering or not of marker on the map.
-You should use <code>MarkerClusterGroup</code> from <code>react-leaflet-markercluster</code> </p>
+You should use <code>MarkerClusterGroup</code> from <code>react-leaflet-markercluster</code></p>
 <p>Props:</p>
 <ul>
 <li><code>isClusterActive</code>: required, usually setted in the map itself with a <code>useState</code>.</li>
@@ -1131,34 +1150,40 @@ You should use <code>MarkerClusterGroup</code> from <code>react-leaflet-markercl
 </ul>
 <p><strong>MarkerComponent / CircleMarkerComponent</strong><br />
 Components used to display a marker on the map.
-Props:
-- see js file for not required props, mainly the same props as <code>Marker</code> from react-leaflet.
-- <code>PopupComponent</code>: not required, Popup used while clicking on the marker
-- <code>TooltipComponent</code>: not required, Tooltip used while hovering the marker
-- <code>item</code>: required, an object with <code>latitude</code> an <code>longitude</code> arguments, those are numbers</p>
+Props:</p>
+<ul>
+<li>see js file for not required props, mainly the same props as <code>Marker</code> from react-leaflet.</li>
+<li><code>PopupComponent</code>: not required, Popup used while clicking on the marker</li>
+<li><code>TooltipComponent</code>: not required, Tooltip used while hovering the marker</li>
+<li><code>item</code>: required, an object with <code>latitude</code> an <code>longitude</code> arguments, those are numbers</li>
+</ul>
 <p><strong>MarkersListComponent</strong><br />
 Used to display a list of markers</p>
-<p>Props:
-- <code>markerProps</code>: not required, props spreaded to the marker
-- <code>items</code>: required, array of items use by previous component
-- <code>PopupComponent</code>: not required, Popup used while clicking on the marker
-- <code>TooltipComponent</code>: not required, Tooltip used while hovering the marker
-- <code>onMarkerClick</code>: not required, method applied while clicking on the marker on the map
-- <code>isCircle</code>: not required, display marker as a circle or not
-- <code>onContextmenu</code>: not required, method applied while right clicking on the marker on the map</p>
+<p>Props:</p>
+<ul>
+<li><code>markerProps</code>: not required, props spreaded to the marker</li>
+<li><code>items</code>: required, array of items use by previous component</li>
+<li><code>PopupComponent</code>: not required, Popup used while clicking on the marker</li>
+<li><code>TooltipComponent</code>: not required, Tooltip used while hovering the marker</li>
+<li><code>onMarkerClick</code>: not required, method applied while clicking on the marker on the map</li>
+<li><code>isCircle</code>: not required, display marker as a circle or not</li>
+<li><code>onContextmenu</code>: not required, method applied while right clicking on the marker on the map</li>
+</ul>
 <h3 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">#</a></h3>
 <p>Most tables we use need to support filters and deep linking. We have a <code>TableWithDeepLinking</code> component for that purpose, which is a wrapper on the <code>Table</code> from Bluesuare-components.</p>
-<p>The typical props to pass are:
-- <code>data</code>: the table data. Usually originate s from a <code>react-query</code> hook
-- <code>page</code>: the current page. Usually returned by the API
-- <code>pageSize</code>: the amount of rows to display on each page. Also comes from the API
-- <code>count</code>: the total amount of items in the page. From the API
-- <code>pages: total number of pages. From the API
--</code>baseUrl<code>: the baseUrl the table will redirect to 
--</code>params<code>: the params of the current location.</code>TableWithDeepLink<code>will combine them with</code>baseUrl<code>to redirect to the correct location
--</code>extraProps<code>: an object. The</code>loading<code>key will be used to manage the table's loading state. Other values will force a table re-render when they change (similar to</code>useEffect<code>deps array), which can be useful in some situations
--</code>columns<code>: an array of objects of type</code>Column` (imported from bluesquare-components). It's usually defined in a custom hook in order to easily handle translations.</p>
-<p><strong>Note: <code>useDeleteTableRow</code></strong> 
+<p>The typical props to pass are:</p>
+<ul>
+<li><code>data</code>: the table data. Usually originate s from a <code>react-query</code> hook</li>
+<li><code>page</code>: the current page. Usually returned by the API</li>
+<li><code>pageSize</code>: the amount of rows to display on each page. Also comes from the API</li>
+<li><code>count</code>: the total amount of items in the page. From the API</li>
+<li>`pages: total number of pages. From the API</li>
+<li><code>baseUrl</code>: the baseUrl the table will redirect to</li>
+<li><code>params</code>: the params of the current location. <code>TableWithDeepLink</code> will combine them with <code>baseUrl</code>to redirect to the correct location</li>
+<li><code>extraProps</code>: an object. The <code>loading</code> key will be used to manage the table's loading state. Other values will force a table re-render when they change (similar to <code>useEffect</code> deps array), which can be useful in some situations</li>
+<li><code>columns</code>: an array of objects of type <code>Column</code> (imported from bluesquare-components). It's usually defined in a custom hook in order to easily handle translations.</li>
+</ul>
+<p><strong>Note: <code>useDeleteTableRow</code></strong>
 When performing <code>DELETE</code> operations from the table that will reduce the amount of table rows, we can run into a pagination bug. To avoid it, use <code>useDeleteTableRow</code> in the <code>useDelete&lt;whatever&gt;</code> hook that will return the delete function:</p>
 <pre><code class="language-javascript">export const useDeleteWhatever = (
     params: Record&lt;string, any&gt;,
@@ -1195,75 +1220,80 @@ When performing <code>DELETE</code> operations from the table that will reduce t
 <li><code>OrgUnitTreeviewModal</code>: handles searches on org units</li>
 <li><code>DatePicker</code> and <code>DateRange</code>: handle dates</li>
 </ul>
-<p><code>InputComponent</code> takes a <code>keyValue</code> prop, which is a string that corresponds to the url parameter that stores the filter value, and an <code>onChange</code> prop which is a function with the signature (keyValue,value) =&gt; void. <code>DateRange</code> takes a <code>keyDateFrom</code> and a <code>keyDateTo</code> that play the same role for the start and end date respectively. </p>
+<p><code>InputComponent</code> takes a <code>keyValue</code> prop, which is a string that corresponds to the url parameter that stores the filter value, and an <code>onChange</code> prop which is a function with the signature (keyValue,value) =&gt; void. <code>DateRange</code> takes a <code>keyDateFrom</code> and a <code>keyDateTo</code> that play the same role for the start and end date respectively.</p>
 <p>We also have a <code>useFilterState</code> hook that handles the state and update methods for filters of a given page:</p>
-<pre><code class="language-typescript"> const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({
-            baseUrl,
-            params,
-            withPagination: false,
-            saveSearchInHistory: false,
-        });
+<pre><code class="language-typescript">const { filters, handleSearch, handleChange, filtersUpdated } = useFilterState({
+    baseUrl,
+    params,
+    withPagination: false,
+    saveSearchInHistory: false,
+});
 </code></pre>
 <ul>
 <li><code>baseUrl</code>: is the url of the page</li>
-<li><code>params</code>: the parameters passed to the url. <code>useFilterState</code>  will generate the state for the filters based on those. </li>
-<li>withPagination: if <code>false</code>  the hook will remove parameters related to table pagination (<code>page</code>, <code>pageSize</code> and so on)</li>
-<li><code>saveSearchInHistory</code>: if <code>true</code>, the redirection will use <code>redirect</code>  i.o <code>redirectToReplace</code> and the searchg will be saved in the router's history, meaning that using the back arrow will bring the user to the previous search and not the previous page. </li>
+<li><code>params</code>: the parameters passed to the url. <code>useFilterState</code> will generate the state for the filters based on those.</li>
+<li>withPagination: if <code>false</code> the hook will remove parameters related to table pagination (<code>page</code>, <code>pageSize</code> and so on)</li>
+<li><code>saveSearchInHistory</code>: if <code>true</code>, the redirection will use <code>redirect</code> i.o <code>redirectToReplace</code> and the searchg will be saved in the router's history, meaning that using the back arrow will bring the user to the previous search and not the previous page.</li>
 </ul>
+<h2 id="convenience-hooks">Convenience hooks:<a class="headerlink" href="#convenience-hooks" title="Permanent link">#</a></h2>
+<p><code>useAsyncInitialState</code>: used when <code>useState</code>'s initial value is fetched, to avoid having it set to `undefined``</p>
+<p><code>useSkipEffectUntilValue</code>: same idea but with <code>useEffect</code></p>
+<p><code>useObjectState</code>: when we have an object-like state, allows to update a state value using the old class-component syntax: <code>setState(key,value)</code> instead of `setState({...prevState,key:value}). Does not support nested objects</p>
+<p><code>useArrayState</code>: convenience hook for when the state is an array and we want to update elements based on index</p>
 <h2 id="code-style">Code style<a class="headerlink" href="#code-style" title="Permanent link">#</a></h2>
 <ul>
 <li>Prefer <code>type?:string</code> to <code>type: string | undefined</code></li>
 <li>Prefer <code>const</code> to <code>let</code>:</li>
 </ul>
-<p>```javascript
- // BAD
-let myVar = "placeholder" 
+<pre><code class="language-javascript">// BAD
+let myVar = &quot;placeholder&quot;
 if(otherVAlue) {
-    myVar = otherValue
-}</p>
-<p>// GOOD
-const myVar = otherValue ?? "placeholder </p>
-<p>```</p>
+   myVar = otherValue
+}
+
+// GOOD
+const myVar = otherValue ?? &quot;placeholder
+
+</code></pre>
 <ul>
 <li>Function names should include a verb:</li>
 </ul>
 <pre><code class="language-javascript">// BAD
-const username = user =&gt; user.firstname + user.lastname
+const username = user =&gt; user.firstname + user.lastname;
 
 // GOOD
-const makeUsername = user =&gt; user.firstname + user.lastname
+const makeUsername = user =&gt; user.firstname + user.lastname;
 </code></pre>
 <ul>
 <li>Not all functions are hooks. Hooks should either have some sort of internal state or trigger a side-effect:</li>
 </ul>
 <pre><code class="language-typescript">// BAD, we're just returning a value
-const useMyValue = (value :string) =&gt; {
-    return parseInt(value,10)
-}
+const useMyValue = (value: string) =&gt; {
+    return parseInt(value, 10);
+};
 
 // GOOD, because of useSafeIntl, the return value will change with user locale
-const useMyValue = (value :IntlMessage) =&gt; {
-    const { formatMessage } = useSafeIntl()
-    return formatMessage(value)
-}
+const useMyValue = (value: IntlMessage) =&gt; {
+    const { formatMessage } = useSafeIntl();
+    return formatMessage(value);
+};
 
 //GOOD, the returned object is memoized
 const useMyValue = (value: string) =&gt; {
     return useMemo(() =&gt; {
         const result = {
-            isNumber:false, 
-            value
-            }
-        if (parseFloat(value)){
-            result.isNumber = true
+            isNumber: false,
+            value,
+        };
+        if (parseFloat(value)) {
+            result.isNumber = true;
         }
-        return result
-    },[value])
-}
+        return result;
+    }, [value]);
+};
 
 // GOOD, as side effect will be triggered after the first render
-export const useSkipEffectOnMount = (func:Function, deps:Array&lt;unknown&gt;) =&gt; {
+export const useSkipEffectOnMount = (func: Function, deps: Array&lt;unknown&gt;) =&gt; {
     const didMount = useRef(false);
 
     useEffect(() =&gt; {
@@ -1274,25 +1304,19 @@ export const useSkipEffectOnMount = (func:Function, deps:Array&lt;unknown&gt;) =
         }
     }, deps);
 };
-
 </code></pre>
 <h2 id="react-query-best-practices">React Query Best Practices<a class="headerlink" href="#react-query-best-practices" title="Permanent link">#</a></h2>
 <h3 id="query-key-structure">Query Key Structure<a class="headerlink" href="#query-key-structure" title="Permanent link">#</a></h3>
 <p>Query keys in React Query use hierarchical matching for cache invalidation. Following a consistent structure is critical for maintainability and performance.</p>
 <h4 id="recommended-pattern">Recommended Pattern<a class="headerlink" href="#recommended-pattern" title="Permanent link">#</a></h4>
 <pre><code class="language-typescript">// List queries - plural noun
-['forms']
-['orgUnits']
-['users']
-
-// Individual item - [resource, id]
-['forms', formId]  // formId as number, not string
-['orgUnits', orgUnitId]
-
-// Nested data - [resource, id, property]
-['forms', formId, 'possible_fields']
-['forms', formId, 'versions']
-['orgUnits', orgUnitId, 'children']
+['forms']['orgUnits']['users'][
+    // Individual item - [resource, id]
+    ('forms', formId)
+][('orgUnits', orgUnitId)][ // formId as number, not string
+    // Nested data - [resource, id, property]
+    ('forms', formId, 'possible_fields')
+][('forms', formId, 'versions')][('orgUnits', orgUnitId, 'children')];
 </code></pre>
 <p><strong>Key Principles:</strong></p>
 <ol>
@@ -1321,20 +1345,22 @@ const apiParams = useApiParams(tableParams, tableDefaults);
 const queryString = new URLSearchParams(apiParams).toString();
 
 useSnackQuery({
-    queryKey: ['forms', apiParams],  // Object handles order automatically
+    queryKey: ['forms', apiParams], // Object handles order automatically
     queryFn: () =&gt; getRequest(`/api/forms/?${queryString}`),
 });
 
 // ❌ BAD - query string in key (parameter order creates duplicate cache entries)
 useSnackQuery({
-    queryKey: ['forms', queryString],  // 'page=1&amp;limit=10' vs 'limit=10&amp;page=1' = different keys!
+    queryKey: ['forms', queryString], // 'page=1&amp;limit=10' vs 'limit=10&amp;page=1' = different keys!
     queryFn: () =&gt; getRequest(`/api/forms/?${queryString}`),
 });
 </code></pre>
-<p><strong>Benefits:</strong>
-- React Query normalizes object keys, preventing duplicate cache entries due to parameter order
-- Easier to invalidate selectively (e.g., all pages for a specific filter)
-- More readable and maintainable</p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>React Query normalizes object keys, preventing duplicate cache entries due to parameter order</li>
+<li>Easier to invalidate selectively (e.g., all pages for a specific filter)</li>
+<li>More readable and maintainable</li>
+</ul>
 <h4 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">#</a></h4>
 <p><strong>After mutation, invalidate related queries:</strong></p>
 <pre><code class="language-typescript">// Creating a new form
@@ -1342,7 +1368,7 @@ useMutation({
     mutationFn: createForm,
     onSuccess: () =&gt; {
         queryClient.invalidateQueries(['forms']); // Refresh the list
-    }
+    },
 });
 
 // Updating an existing form
@@ -1354,7 +1380,7 @@ useMutation({
 
         // Option 2: Only invalidate this specific form (if list doesn't show form details)
         // queryClient.invalidateQueries(['forms', variables.id]);
-    }
+    },
 });
 
 // Deleting a form
@@ -1362,7 +1388,7 @@ useMutation({
     mutationFn: deleteForm,
     onSuccess: () =&gt; {
         queryClient.invalidateQueries(['forms']); // Only refresh list
-    }
+    },
 });
 </code></pre>
 <p><strong>Using nested query keys:</strong></p>
@@ -1370,7 +1396,8 @@ useMutation({
 export const useGetPossibleFields = (formId: number) =&gt; {
     return useSnackQuery({
         queryKey: ['forms', formId, 'possible_fields'],
-        queryFn: () =&gt; getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+        queryFn: () =&gt;
+            getRequest(`/api/forms/${formId}/?fields=possible_fields`),
         options: {
             enabled: Boolean(formId),
         },
@@ -1378,7 +1405,7 @@ export const useGetPossibleFields = (formId: number) =&gt; {
 };
 
 // When form is updated, invalidate all its data
-queryClient.invalidateQueries(['forms', formId]); 
+queryClient.invalidateQueries(['forms', formId]);
 // This invalidates 'possible_fields', 'versions', etc.
 </code></pre>
 <h2 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">#</a></h2>

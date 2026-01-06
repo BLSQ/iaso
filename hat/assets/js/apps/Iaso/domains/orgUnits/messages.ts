@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    ID: {
+        id: 'iaso.label.id',
+        defaultMessage: 'ID',
+    },
     images: {
         defaultMessage: 'Images',
         id: 'iaso.label.images',

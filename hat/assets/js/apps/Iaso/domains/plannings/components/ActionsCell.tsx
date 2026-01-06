@@ -21,7 +21,6 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     row: { original: planning },
     deletePlanning,
 }) => {
-    
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>

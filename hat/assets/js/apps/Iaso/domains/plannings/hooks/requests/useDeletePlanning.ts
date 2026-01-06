@@ -10,7 +10,7 @@ const deletePlanning = (id: number) => deleteRequest(`${endpoint}${id}/`);
 type useDeleteArgs = {
     params: any;
     count: number;
-}
+};
 
 export const useDeletePlanning = ({
     params,

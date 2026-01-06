@@ -1,7 +1,7 @@
 from django.db.models import ProtectedError
 
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Project, SourceVersion, Team
-from iaso.models.microplanning import Planning
+from iaso.models.microplanning import Planning, PlanningSamplingResult
 from iaso.test import APITestCase
 
 
@@ -195,3 +195,19 @@ class PlanningPipelineIntegrationTestCase(APITestCase):
 
         self.planning.refresh_from_db()
         self.assertEqual(self.planning.target_org_unit_type, target_type)
+
+    def test_selected_sampling_results_field(self):
+        """Selected sampling result can be set and read back on planning."""
+        sampling = PlanningSamplingResult.objects.create(
+            planning=self.planning,
+            pipeline_id="pipeline-123",
+            pipeline_version="v1",
+            pipeline_name="sample-run",
+            parameters={"foo": "bar"},
+        )
+
+        self.planning.selected_sampling_results = sampling
+        self.planning.save()
+        self.planning.refresh_from_db()
+
+        self.assertEqual(self.planning.selected_sampling_results, sampling)

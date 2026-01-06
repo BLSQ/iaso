@@ -38,6 +38,12 @@ class NestedOrgUnitTypeSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
+class NestedPlanningSamplingResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlanningSamplingResult
+        fields = ["id", "pipeline_id", "pipeline_version", "pipeline_name", "group_id", "task_id"]
+
+
 class PlanningSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -68,6 +74,7 @@ class PlanningSerializer(serializers.ModelSerializer):
             "pipeline_uuids",
             "target_org_unit_type",
             "target_org_unit_type_details",
+            "selected_sampling_results",
         ]
         read_only_fields = ["created_at", "parent"]
 
@@ -76,6 +83,7 @@ class PlanningSerializer(serializers.ModelSerializer):
     project_details = NestedProjectSerializer(source="project", read_only=True)
     target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
     pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
+    selected_sampling_results = NestedPlanningSamplingResultSerializer(read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)

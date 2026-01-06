@@ -92,6 +92,7 @@ class PlanningTestCase(APITestCase):
                 "pipeline_uuids": [],
                 "target_org_unit_type": None,
                 "target_org_unit_type_details": None,
+                "selected_sampling_results": None,
             },
             r,
         )
@@ -634,6 +635,34 @@ class PlanningTestCase(APITestCase):
 
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         self.assertJSONResponse(response, 403)
+
+    def test_planning_detail_includes_selected_sampling_results(self):
+        self.client.force_authenticate(self.user)
+        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
+        task = Task.objects.create(name="sampling-detail", account=self.account, created_by=self.user)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=self.planning,
+            task=task,
+            pipeline_id="pipeline-detail",
+            pipeline_version="v1",
+            pipeline_name="detail run",
+            group=group,
+            parameters={"limit": 5},
+            created_by=self.user,
+        )
+        self.planning.selected_sampling_results = sampling
+        self.planning.save()
+
+        response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        selected = r["selected_sampling_results"]
+        self.assertEqual(selected["id"], sampling.id)
+        self.assertEqual(selected["pipeline_id"], "pipeline-detail")
+        self.assertEqual(selected["pipeline_version"], "v1")
+        self.assertEqual(selected["pipeline_name"], "detail run")
+        self.assertEqual(selected["group_id"], group.id)
+        self.assertEqual(selected["task_id"], task.id)
 
     def test_planning_serializer_target_org_unit_type_wrong_project(self):
         """Test PlanningSerializer validation with target_org_unit_type from wrong project."""

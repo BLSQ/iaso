@@ -134,31 +134,31 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',
     },
-    QUEUED: {
+    Queued: {
         id: 'iaso.assignments.queued',
         defaultMessage: 'Queued',
     },
-    RUNNING: {
+    Running: {
         id: 'iaso.assignments.running',
         defaultMessage: 'Running',
     },
-    ERRORED: {
+    Errored: {
         id: 'iaso.assignments.errored',
         defaultMessage: 'Errored',
     },
-    EXPORTED: {
+    Exported: {
         id: 'iaso.assignments.exported',
         defaultMessage: 'Exported',
     },
-    SUCCESS: {
+    Success: {
         id: 'iaso.assignments.success',
         defaultMessage: 'Success',
     },
-    SKIPPED: {
+    Skipped: {
         id: 'iaso.assignments.skipped',
         defaultMessage: 'Skipped',
     },
-    KILLED: {
+    Killed: {
         id: 'iaso.assignments.killed',
         defaultMessage: 'Killed',
     },

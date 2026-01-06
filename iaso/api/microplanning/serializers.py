@@ -74,6 +74,7 @@ class PlanningSerializer(serializers.ModelSerializer):
             "pipeline_uuids",
             "target_org_unit_type",
             "target_org_unit_type_details",
+            "selected_sampling_results_id",
             "selected_sampling_results",
         ]
         read_only_fields = ["created_at", "parent"]
@@ -83,6 +84,9 @@ class PlanningSerializer(serializers.ModelSerializer):
     project_details = NestedProjectSerializer(source="project", read_only=True)
     target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
     pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
+    selected_sampling_results_id = serializers.PrimaryKeyRelatedField(
+        queryset=PlanningSamplingResult.objects.all(), required=False, allow_null=True, write_only=True
+    )
     selected_sampling_results = NestedPlanningSamplingResultSerializer(read_only=True)
 
     def validate(self, attrs):
@@ -133,10 +137,22 @@ class PlanningSerializer(serializers.ModelSerializer):
                 if not descendant_org_units.exists():
                     validation_errors["target_org_unit_type"] = "noOrgUnitsOfTypeInHierarchy"
 
+        selected_sampling_result = validated_data.pop("selected_sampling_results_id", None)
+        if selected_sampling_result and self.instance and selected_sampling_result.planning_id != self.instance.id:
+            validation_errors["selected_sampling_results_id"] = "samplingNotForPlanning"
+        if selected_sampling_result:
+            validated_data["selected_sampling_results"] = selected_sampling_result
+
         if validation_errors:
             raise serializers.ValidationError(validation_errors)
 
         return validated_data
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        sampling = instance.selected_sampling_results
+        data["selected_sampling_results"] = NestedPlanningSamplingResultSerializer(sampling).data if sampling else None
+        return data
 
 
 class SamplingGroupSerializer(serializers.ModelSerializer):

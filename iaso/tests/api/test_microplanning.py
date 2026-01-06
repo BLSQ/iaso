@@ -636,6 +636,58 @@ class PlanningTestCase(APITestCase):
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         self.assertJSONResponse(response, 403)
 
+    def test_planning_patch_sets_selected_sampling_results(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=self.planning,
+            pipeline_id="pipeline-detail",
+            pipeline_version="v1",
+            pipeline_name="detail run",
+            parameters={"limit": 5},
+            created_by=user_with_perms,
+        )
+
+        response = self.client.patch(
+            f"/api/microplanning/plannings/{self.planning.id}/",
+            data={"selected_sampling_results_id": sampling.id},
+            format="json",
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.planning.refresh_from_db()
+
+        self.assertEqual(self.planning.selected_sampling_results, sampling)
+        self.assertEqual(r["selected_sampling_results"]["id"], sampling.id)
+        self.assertEqual(r["selected_sampling_results"]["pipeline_id"], "pipeline-detail")
+
+    def test_planning_patch_selected_sampling_results_wrong_planning(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+        other_planning = Planning.objects.create(
+            project=self.project1, name="other", team=self.team1, org_unit=self.org_unit
+        )
+        sampling = PlanningSamplingResult.objects.create(
+            planning=other_planning,
+            pipeline_id="pipeline-wrong",
+            pipeline_version="v1",
+            pipeline_name="wrong run",
+            parameters={"limit": 1},
+            created_by=user_with_perms,
+        )
+
+        response = self.client.patch(
+            f"/api/microplanning/plannings/{self.planning.id}/",
+            data={"selected_sampling_results_id": sampling.id},
+            format="json",
+        )
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("selected_sampling_results_id", r)
+        self.assertEqual(r["selected_sampling_results_id"][0], "samplingNotForPlanning")
+
     def test_planning_detail_includes_selected_sampling_results(self):
         self.client.force_authenticate(self.user)
         group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)

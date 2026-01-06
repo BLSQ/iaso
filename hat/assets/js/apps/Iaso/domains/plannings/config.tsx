@@ -18,6 +18,7 @@ import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
 import MESSAGES from './messages';
 import { Planning, SamplingResult } from './types';
+import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 
 type Props = {
     samplingResult: SamplingResult;
@@ -140,6 +141,11 @@ export const useSamplingResultsColumns = (planning: Planning): Column[] => {
                 Header: 'Id',
                 accessor: 'id',
                 width: 80,
+            },
+            {
+                Header: 'Sampling Name',
+                accessor: 'group_details.name',
+                Cell: BreakWordCell,
             },
             {
                 Header: formatMessage(MESSAGES.created_at),

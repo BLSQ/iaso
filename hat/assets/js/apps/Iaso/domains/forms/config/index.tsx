@@ -20,6 +20,7 @@ import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
+import { useDeleteForm } from '../hooks/useDeleteForm';
 
 export const baseUrl = baseUrls.forms;
 
@@ -136,17 +137,23 @@ const getActionsColWidth = (user: User): number => {
 type FormsTableColumnsProps = {
     orgUnitId: string;
     showDeleted: boolean;
-    params?: FormsParams;
+    params: FormsParams;
+    count: number;
 };
 
 export const useFormsTableColumns = ({
     orgUnitId,
     showDeleted,
+    params,
+    count,
 }: FormsTableColumnsProps): Column[] => {
     const user = useCurrentUser();
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
 
     const { formatMessage } = useSafeIntl();
+
+    const { mutateAsync: deleteForm } = useDeleteForm({ params, count }); 
+
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -211,6 +218,7 @@ export const useFormsTableColumns = ({
                             baseUrls={baseUrls}
                             showDeleted={showDeleted}
                             hasDhis2Module={hasDhis2Module}
+                            deleteForm={deleteForm}
                         />
                     );
                 },
@@ -225,7 +233,7 @@ export const useFormsTableColumns = ({
             });
         }
         return cols;
-    }, [formatMessage, user, showDeleted, orgUnitId, hasDhis2Module]);
+    }, [formatMessage, user, showDeleted, orgUnitId, hasDhis2Module, deleteForm]);
 };
 
 export const requiredFields = [

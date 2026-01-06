@@ -5,7 +5,7 @@ import React, {
     useMemo,
     useRef,
 } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
@@ -303,6 +303,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                                     component={DateInput}
                                 />
                             </Box>
+                            <IntegratedCampaigns />
                         </Grid>
                     )}
                     {isPolio && (

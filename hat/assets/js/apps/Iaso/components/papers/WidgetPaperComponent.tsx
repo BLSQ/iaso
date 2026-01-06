@@ -70,7 +70,7 @@ type Props = {
     className?: string;
     elevation?: number;
     children?: ReactNode;
-    sx?: SxProps;
+    sx?: SxProps<Theme>;
 };
 export const WidgetPaper: FunctionComponent<Props> = ({
     IconButton,

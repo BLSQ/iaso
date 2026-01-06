@@ -1,10 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { useFormikContext } from 'formik';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
-import { PolioCampaignValues } from '../../../../../constants/types';
+import { PolioCampaignValues } from '../../../../constants/types';
 import { IntegratedCampaignsInfo } from './IntegratedCampaignsInfo';
+import { AddIntegratedCampaignsModal } from './AddIntegratedCampaignsModal';
 
-export const IntegratedCampaigns: FunctionComponent = () => {
+type Props = {};
+
+export const IntegratedCampaigns: FunctionComponent<Props> = () => {
     const { values } = useFormikContext<PolioCampaignValues>();
 
     return (
@@ -13,18 +16,15 @@ export const IntegratedCampaigns: FunctionComponent = () => {
                 <WidgetPaper
                     title="Integrated campaigns"
                     elevation={1}
-                    sx={{
-                        marginBottom: theme => theme.spacing(2),
-
-                        height: theme => theme.spacing(43), //344 px for alignment
-                        overflow: 'auto',
-                    }}
+                    sx={{ marginBottom: theme => theme.spacing(2) }}
                 >
                     <IntegratedCampaignsInfo
                         integratedCampaigns={values.integrated_campaigns}
                     />
                 </WidgetPaper>
             )}
+
+            <AddIntegratedCampaignsModal iconProps={{}} />
         </>
     );
 };

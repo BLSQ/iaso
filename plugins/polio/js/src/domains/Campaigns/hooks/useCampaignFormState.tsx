@@ -43,6 +43,7 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
             },
             campaign_types: [],
             integrated_campaigns: [],
+            integrated_to: undefined,
             is_preventive: false,
             is_test: false,
             on_hold: false,

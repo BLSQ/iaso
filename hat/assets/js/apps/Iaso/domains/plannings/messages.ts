@@ -211,6 +211,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.plannings.label.seeSamplingResults',
         defaultMessage: 'See sampling results',
     },
+    samplingName: {
+        id: 'iaso.plannings.label.samplingName',
+        defaultMessage: 'Sampling name',
+    },
 });
 
 export default MESSAGES;

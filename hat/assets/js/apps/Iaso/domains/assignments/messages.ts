@@ -234,6 +234,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Progress',
         id: 'iaso.tasks.progress',
     },
+    samplingName: {
+        id: 'iaso.plannings.label.samplingName',
+        defaultMessage: 'Sampling name',
+    },
 });
 
 export default MESSAGES;

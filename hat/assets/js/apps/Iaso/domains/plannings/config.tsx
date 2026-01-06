@@ -143,7 +143,7 @@ export const useSamplingResultsColumns = (planning: Planning): Column[] => {
                 width: 80,
             },
             {
-                Header: 'Sampling Name',
+                Header: formatMessage(MESSAGES.samplingName),
                 accessor: 'group_details.name',
                 Cell: BreakWordCell,
             },

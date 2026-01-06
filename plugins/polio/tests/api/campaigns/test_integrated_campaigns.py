@@ -18,11 +18,6 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
     Testing the integrated campaigns part of the campaigns API. Separated from the general API tests for clarity
     """
 
-    data_source: m.DataSource
-    source_version_1: m.SourceVersion
-    org_unit: m.OrgUnit
-    child_org_unit: m.OrgUnit
-
     @classmethod
     def setUpTestData(cls):
         cls.now = timezone.now()
@@ -173,8 +168,13 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         result = self.assertJSONResponse(response, HTTP_201_CREATED)
+        new_uuid = result["id"]
         self.assertEqual(result["integrated_to"], str(self.campaign.pk))
         self.assertEqual(result["integrated_campaigns"], [])
+
+        # double-check that the DB has been updated
+        self.campaign.refresh_from_db()
+        self.assertTrue(self.campaign.integrated_campaigns.filter(id=new_uuid).exists())
 
     def test_create_polio_campaign_with_integrated(self):
         """
@@ -199,8 +199,13 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.post(f"{CAMPAIGN_URL}", data, format="json")
         result = self.assertJSONResponse(response, HTTP_201_CREATED)
+        new_uuid = result["id"]
         self.assertIsNone(result["integrated_to"])
         self.assertEqual(result["integrated_campaigns"], [str(self.measles_campaign.pk)])
+
+        # double check that the campaign has been updated in db
+        self.measles_campaign.refresh_from_db()
+        self.assertEqual(str(self.measles_campaign.integrated_to.id), new_uuid)
 
     def test_update_integrated_campaigns(self):
         """
@@ -215,6 +220,10 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(result["integrated_campaigns"], [str(self.measles_campaign.pk)])
 
+        # double-check that the DB has been updated
+        self.campaign.refresh_from_db()
+        self.assertTrue(self.campaign.integrated_campaigns.filter(id=self.measles_campaign.pk).exists())
+
         res = self.client.get(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_campaigns"] = [
@@ -225,20 +234,16 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.put(f"{CAMPAIGN_URL}{self.campaign_with_integrated.id}/", campaign_data, format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(len(result["integrated_campaigns"]), 2)
-        self.assertIn(
-            result["integrated_campaigns"][0],
+        self.assertCountEqual(
+            result["integrated_campaigns"],
             [
                 str(self.integrated_measles_campaign.pk),
                 str(self.measles_campaign.pk),
             ],
         )
-        self.assertIn(
-            result["integrated_campaigns"][1],
-            [
-                str(self.integrated_measles_campaign.pk),
-                str(self.measles_campaign.pk),
-            ],
-        )
+        # double-check that the DB has been updated
+        self.campaign_with_integrated.refresh_from_db()
+        self.assertTrue(self.campaign_with_integrated.integrated_campaigns.filter(id=self.measles_campaign.pk).exists())
 
     def test_update_parent_campaign(self):
         """
@@ -253,6 +258,10 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(result["integrated_to"], str(self.campaign.pk))
 
+        # double check that the campaign has been updated in db
+        self.measles_campaign.refresh_from_db()
+        self.assertEqual(self.measles_campaign.integrated_to.id, self.campaign.pk)
+
         res = self.client.get(f"{CAMPAIGN_URL}{self.integrated_measles_campaign.id}/")
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_to"] = str(self.campaign.pk)
@@ -263,9 +272,13 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(result["integrated_to"], str(self.campaign.pk))
 
+        # double check that the campaign has been updated in db
+        self.integrated_measles_campaign.refresh_from_db()
+        self.assertEqual(self.integrated_measles_campaign.integrated_to.id, self.campaign.pk)
+
     def test_cannot_integrate_polio_campaign(self):
         """
-        Non-polio campaigns cannot be created or updated to be integrated to other non-polio campaigns
+        Polio campaigns cannot be created or updated to be integrated to other polio campaigns
         """
         self.client.force_authenticate(self.user)
 
@@ -296,7 +309,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
     def test_cannot_integrate_to_non_polio_campaign(self):
         """
-        Polio campaigns cannot be created or updated to be integrated to other polio campaigns
+        Non-Polio campaigns cannot be created or updated to be integrated to other non-polio campaigns
         """
         self.client.force_authenticate(self.user)
 
@@ -323,7 +336,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign_data = self.assertJSONResponse(res, HTTP_200_OK)
         campaign_data["integrated_to"] = self.measles_campaign2.pk
 
-        response = self.client.put(f"{CAMPAIGN_URL}{self.campaign.id}/", campaign_data, format="json")
+        response = self.client.put(f"{CAMPAIGN_URL}{self.measles_campaign.id}/", campaign_data, format="json")
         self.assertJSONResponse(response, HTTP_400_BAD_REQUEST)
 
     def test_campaign_type_cannot_be_changed_if_integrated(self):

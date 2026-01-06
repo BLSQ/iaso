@@ -910,7 +910,6 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get("/api/polio/campaigns/?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json")
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(len(response_data), 0)
-        response_data = response.json()
 
     def test_campaigns_list_dropdown_fieldset(self):
         """Test campaigns list endpoint with fieldset=dropdown parameter returns dropdown serializer format"""

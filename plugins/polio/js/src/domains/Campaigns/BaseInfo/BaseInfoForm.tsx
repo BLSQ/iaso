@@ -155,6 +155,15 @@ export const BaseInfoForm: FunctionComponent = () => {
                             disabled={!isUserAdmin}
                         /> */}
                         <Field
+                            label={'TEST'}
+                            name="integrated_to"
+                            component={TextInput}
+                            shrinkLabel={false}
+                            className={classes.input}
+                            required
+                            disabled={!isUserAdmin}
+                        />
+                        <Field
                             className={classes.input}
                             label={formatMessage(MESSAGES.description)}
                             name="description"

@@ -9,15 +9,16 @@ import {
 
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from 'Iaso/constants/urls';
-import { useGetColors } from 'Iaso/hooks/useGetColors';
-import { getColor } from 'Iaso/hooks/useGetColors';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
+import { Planning } from '../assignments/types/planning';
 import { encodeUriSearches } from '../orgUnits/utils';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
+import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import MESSAGES from './messages';
-import { Planning, SamplingResult } from './types';
+import { SamplingResult } from './types';
 
 type Props = {
     samplingResult: SamplingResult;
@@ -65,8 +66,12 @@ const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
     );
 };
 
-export const usePlanningColumns = (): Column[] => {
+export const usePlanningColumns = (params: any, count: number): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const { mutateAsync: deletePlanning } = useDeletePlanning({
+        params,
+        count,
+    });
     return useMemo<Column[]>(
         () => [
             {
@@ -126,12 +131,18 @@ export const usePlanningColumns = (): Column[] => {
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: settings => <ActionsCell {...settings} />,
+                Cell: settings => (
+                    <ActionsCell
+                        {...settings}
+                        deletePlanning={deletePlanning}
+                    />
+                ),
             },
         ],
-        [formatMessage],
+        [formatMessage, deletePlanning],
     );
 };
+
 export const useSamplingResultsColumns = (planning: Planning): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo<Column[]>(

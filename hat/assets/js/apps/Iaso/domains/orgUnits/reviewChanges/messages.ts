@@ -110,7 +110,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Location',
     },
     openingDate: {
-        id: 'iaso.changeRequest.openingDate',
+        id: 'iaso.orgUnits.reviewChanges.openingDate',
         defaultMessage: 'Opening date',
     },
     closingDate: {

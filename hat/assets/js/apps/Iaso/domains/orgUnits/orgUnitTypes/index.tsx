@@ -31,11 +31,11 @@ const OrgUnitTypes: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as OrgUnitTypesParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const columns: Column[] = useGetColumns();
     const { data, isFetching } = useGetOrgUnitTypes({
         ...params,
         with_units_count: true,
     });
+    const columns: Column[] = useGetColumns(params, data?.count ?? 0);
     return (
         <>
             <TopBar

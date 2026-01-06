@@ -6,7 +6,7 @@ from logging import getLogger
 
 from django.apps import apps
 from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
@@ -27,6 +27,9 @@ def task(request):
 
 @csrf_exempt
 def cron(request):
+    if request.headers.get("x-aws-sqsd-taskname") is None:
+        return HttpResponseBadRequest("missing x-aws-sqsd-taskname header")
+
     module, method = request.headers["x-aws-sqsd-taskname"].rsplit(".", 1)
     task_service.run(module, method, [], {})
     return HttpResponse()

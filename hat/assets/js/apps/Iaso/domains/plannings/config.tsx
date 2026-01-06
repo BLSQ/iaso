@@ -6,6 +6,14 @@ import {
     makeRedirectionUrl,
     useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent, useMemo } from 'react';
+import {
+    Column,
+    formatThousand,
+    IconButton,
+    makeRedirectionUrl,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -143,6 +151,50 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
     );
 };
 
+export const useSamplingResultsColumns = (planning: Planning): Column[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo<Column[]>(
+        () => [
+            {
+                Header: 'Id',
+                accessor: 'id',
+                width: 80,
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                accessor: 'created_at',
+                id: 'created_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: 'Pipeline',
+                accessor: 'pipeline_name',
+            },
+            {
+                Header: formatMessage(MESSAGES.orgUnitsCount),
+                accessor: 'group_details_org_unit_count',
+                id: 'group_details_org_unit_count',
+                sortable: false,
+                Cell: settings =>
+                    formatThousand(
+                        settings.row.original.group_details.org_unit_count,
+                    ),
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                sortable: false,
+                Cell: settings => (
+                    <ActionCell
+                        samplingResult={settings.row.original}
+                        planning={planning}
+                    />
+                ),
+            },
+        ],
+        [formatMessage, planning],
+    );
+};
 export const useSamplingResultsColumns = (planning: Planning): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo<Column[]>(

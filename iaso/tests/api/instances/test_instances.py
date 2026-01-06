@@ -747,7 +747,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "a", "age": "18", "gender": "M"},
+            json={"name": "a", "age__int__": "18", "gender": "M"},
         )
 
         b = self.create_form_instance(
@@ -755,7 +755,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "b", "age": "19", "gender": "F"},
+            json={"name": "b", "age__int__": "19", "gender": "F"},
         )
 
         self.create_form_instance(
@@ -763,11 +763,11 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "c", "age": "30", "gender": "F"},
+            json={"name": "c", "age__int__": "30", "gender": "F"},
         )
 
         self.client.force_authenticate(self.yoda)
-        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
+        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age__int__"}, 25]}]})
         with self.assertNumQueries(6):
             response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, 200)
@@ -1433,6 +1433,21 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/instances/stats_sum/")
         self.assertJSONResponse(response, 200)
 
+    def test_lock_instance_anonymous_not_allowed(self):
+        instance = self.create_form_instance(
+            org_unit=self.jedi_council_corruscant,
+            period="202002",
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unlock_anonymous_not_allowed(self):
+        response = self.client.post("/api/instances/unlock_lock/", {"lock": 1}, json=True)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)
 
@@ -1997,6 +2012,123 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertInstanceListContainsStrictly(
             response, [self.instance_3, self.instance_4, self.instance_8, another_instance]
         )
+
+    def test_attachments_list_question_name(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = m.FormVersion.objects.create(
+            form=self.form_1,
+            form_descriptor=json.loads("""{
+  "name": "data",
+  "type": "survey",
+  "title": "Test image",
+  "_xpath": {
+    "Form": "/data/Form",
+    "data": "/data",
+    "meta": "/data/meta",
+    "jpg": "/data/Form/jpg",
+    "webp": "/data/Form/webp",
+    "jpg2": "/data/Form/Repeat/jpg2",
+    "file": "/data/Form/Repeat/file",
+    "instanceID": "/data/meta/instanceID"
+  },
+  "version": "2024080601",
+  "children": [
+    {
+      "name": "Form",
+      "type": "group",
+      "control": {
+        "appearance": "field-list"
+      },
+      "children": [
+        {
+          "name": "jpg",
+          "type": "photo",
+          "label": "Take a JPG picture"
+        },
+        {
+          "name": "webp",
+          "type": "file",
+          "label": "Take a WEBP picture"
+        },
+        {
+          "name": "Repeat",
+          "type": "repeat",
+          "children": [
+            {
+              "name": "jpg2",
+              "type": "photo",
+              "label": "Take another JPG picture"
+            },
+            {
+              "name": "file",
+              "type": "file",
+              "label": "Upload a file"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {
+        "bodyless": true
+      },
+      "children": [
+        {
+          "bind": {
+            "readonly": "true()",
+            "jr:preload": "uid"
+          },
+          "name": "instanceID",
+          "type": "calculate"
+        }
+      ]
+    }
+  ],
+  "id_string": "test_image",
+  "sms_keyword": "test_image",
+  "default_language": "default"
+}"""),
+        )
+        instance = self.create_form_instance(
+            form=self.form_1,
+            form_version=form_version,
+            project=self.project,
+            org_unit=self.ou_top_1,
+            json={
+                "jpg": "test1.jpg",
+                "webp": "test2.webp",
+                "repeat": [
+                    {
+                        "jpg2": "test3.jpg",
+                        "file": "test4.pdf",
+                    },
+                ],
+            },
+        )
+        attachment1 = m.InstanceFile.objects.create(instance=instance, file="test1.jpg", name="test1.jpg")
+        attachment2 = m.InstanceFile.objects.create(instance=instance, file="test2.webp", name="test2.webp")
+        attachment3 = m.InstanceFile.objects.create(instance=instance, file="test3.webp", name="test3.webp")
+        attachment4 = m.InstanceFile.objects.create(instance=instance, file="test4.pdf", name="test4.pdf")
+
+        response = self.client.get("/api/instances/attachments/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 4)
+        self.assertEqual(data[0]["id"], attachment1.id)
+        self.assertEqual(data[0]["question_id"], "jpg")
+        self.assertEqual(data[0]["question_name"], "Take a JPG picture")
+        self.assertEqual(data[1]["id"], attachment2.id)
+        self.assertEqual(data[1]["question_id"], "webp")
+        self.assertEqual(data[1]["question_name"], "Take a WEBP picture")
+        self.assertEqual(data[2]["id"], attachment3.id)
+        self.assertEqual(data[2]["question_id"], "jpg2")
+        self.assertEqual(data[2]["question_name"], "Take another JPG picture")
+        self.assertEqual(data[3]["id"], attachment4.id)
+        self.assertEqual(data[3]["question_id"], "file")
+        self.assertEqual(data[3]["question_name"], "Upload a file")
 
     def test_attachments_list(self):
         self.client.force_authenticate(self.yoda)

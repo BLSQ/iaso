@@ -93,6 +93,10 @@ PRODUCT_FRUITS_WORKSPACE_CODE = os.environ.get("PRODUCT_FRUITS_WORKSPACE_CODE", 
 
 LEARN_MORE_URL = os.environ.get("LEARN_MORE_URL", None)
 
+# Documentation and help resources
+USER_MANUAL_PATH = os.environ.get("USER_MANUAL_PATH", "")
+FORUM_PATH = os.environ.get("FORUM_PATH", "")
+
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
 USE_CELERY = os.environ.get("USE_CELERY", "")
@@ -309,6 +313,14 @@ SNS_NOTIFICATION_TOPIC = os.environ.get("SNS_NOTIFICATION_TOPIC", None)
 
 DATABASES = {
     "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": DB_NAME,
+        "USER": DB_USERNAME,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+    },
+    "task_logs": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": DB_NAME,
         "USER": DB_USERNAME,
@@ -718,6 +730,9 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+# stricter mode where no public except white listed one
+AUTHENTICATION_ENFORCED = os.environ.get("AUTHENTICATION_ENFORCED", "false") == "true"
+
 SITE_ID = 1
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
@@ -825,3 +840,5 @@ if IN_TESTS:
     }
     if not ENCRYPTED_TEXT_FIELD_KEY:
         ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="
+
+ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"

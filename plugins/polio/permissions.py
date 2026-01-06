@@ -168,30 +168,30 @@ POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION = PolioPermission(
     ui_type_in_category="admin",
     ui_order_in_category=3,
 )
-POLIO_PERFORMANCE_READ_ONLY_PERMISSION = PolioPermission(
-    codename="iaso_polio_performance_read_only",
-    label=_("Polio Performance Read Only"),
+POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION = PolioPermission(
+    codename="iaso_polio_country_plan_read_only",
+    label=_("Polio Country Plan Read Only"),
     module=MODULE_POLIO_PROJECT,
     ui_group=PERMISSION_GROUP_POLIO,
-    ui_category="iaso_polio_performance_permissions",
+    ui_category="iaso_polio_country_plan_permissions",
     ui_type_in_category="read_only",
     ui_order_in_category=1,
 )
-POLIO_PERFORMANCE_NON_ADMIN_PERMISSION = PolioPermission(
-    codename="iaso_polio_performance_non_admin",
-    label=_("Polio Performance Non Admin"),
+POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION = PolioPermission(
+    codename="iaso_polio_country_plan_non_admin",
+    label=_("Polio Country Plan Non Admin"),
     module=MODULE_POLIO_PROJECT,
     ui_group=PERMISSION_GROUP_POLIO,
-    ui_category="iaso_polio_performance_permissions",
+    ui_category="iaso_polio_country_plan_permissions",
     ui_type_in_category="no_admin",
     ui_order_in_category=2,
 )
-POLIO_PERFORMANCE_ADMIN_PERMISSION = PolioPermission(
-    codename="iaso_polio_performance_admin",
-    label=_("Polio performance Admin"),
+POLIO_COUNTRY_PLAN_ADMIN_PERMISSION = PolioPermission(
+    codename="iaso_polio_country_plan_admin",
+    label=_("Polio Country Plan Admin"),
     module=MODULE_POLIO_PROJECT,
     ui_group=PERMISSION_GROUP_POLIO,
-    ui_category="iaso_polio_performance_permissions",
+    ui_category="iaso_polio_country_plan_permissions",
     ui_type_in_category="admin",
     ui_order_in_category=3,
 )

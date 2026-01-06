@@ -15,8 +15,8 @@ type Props = {
     onConfirm: () => void;
     iconColor?: string;
     keyName?: string;
-    Trigger: React.ComponentType<any>;
-    triggerProps: Record<string, any>;
+    Trigger?: React.ComponentType<any>;
+    triggerProps?: Record<string, any>;
     disabled?: boolean;
 };
 

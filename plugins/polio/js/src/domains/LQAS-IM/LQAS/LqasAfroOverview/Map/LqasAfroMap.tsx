@@ -14,11 +14,16 @@ import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import { Side } from '../../../../../../src/constants/types';
 
 type Props = {
-    params: AfroMapParams;
+    params: AfroMapParams & { accountId: string };
     side: Side;
+    currentUrl: string;
 };
 
-export const LqasAfroMap: FunctionComponent<Props> = ({ params, side }) => {
+export const LqasAfroMap: FunctionComponent<Props> = ({
+    params,
+    side,
+    currentUrl,
+}) => {
     const { bounds, setBounds } = useContext(LqasAfroOverviewContext);
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const defaultCenter = useMemo(
@@ -67,7 +72,11 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ params, side }) => {
                     bounds={bounds}
                 />
             )}
-            <LqasAfroMapPanesContainer params={params} side={side} />
+            <LqasAfroMapPanesContainer
+                params={params}
+                side={side}
+                currentUrl={currentUrl}
+            />
         </MapContainer>
     );
 };

@@ -3,10 +3,11 @@
 import operator
 import re
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Union
 
-from django.db.models import Exists, OuterRef, Q, Transform
-from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
+from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
+from django.db.models.expressions import NegatedExpression
+from django.db.models.fields.json import JSONField, KeyTransform, KeyTransformTextLookupMixin
 
 
 # JsonLogic operator to Django lookup mappings
@@ -26,6 +27,7 @@ EXTENDED_OPERATOR_LOOKUPS = {
     "in": "icontains",
 }
 
+DOUBLE_UNDERSCORE_REPLACEMENTS = "uu"
 
 # This is used to cast a json value from string into a float.
 # Didn't find a simple way to do that.
@@ -53,6 +55,57 @@ class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
 
 
 JSONField.register_lookup(ExtractForceFloat)
+
+
+def extract_field_name(op: str, jsonlogic: Dict[str, Any], params: Any) -> str:
+    if len(params) != 2:
+        raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
+
+    if op not in EXTENDED_OPERATOR_LOOKUPS:
+        raise ValueError(
+            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: {list(EXTENDED_OPERATOR_LOOKUPS.keys())}"
+        )
+
+    field_position = 1 if op == "in" else 0
+    field = params[field_position]
+    if "var" not in field:
+        raise ValueError(
+            f"Unsupported JsonLogic. Argument[{field_position}] must contain a variable for given "
+            f"operator : {jsonlogic}"
+        )
+    return field["var"]
+
+
+def annotate_suffixed_json_fields(queryset: QuerySet, jsonlogic: Dict[str, Any], json_field: str) -> QuerySet:
+    """
+    Keys in JSONField with `__` in their names cannot be used as is. We first have to annotate the key to a temporary
+    field to reference that temporary field later.
+    """
+    if "!" in jsonlogic:
+        return annotate_suffixed_json_fields(queryset, jsonlogic["!"], json_field)
+
+    if "and" in jsonlogic:
+        for lookup in jsonlogic["and"]:
+            queryset = annotate_suffixed_json_fields(queryset, lookup, json_field)
+        return queryset
+    if "or" in jsonlogic:
+        for lookup in jsonlogic["or"]:
+            queryset = annotate_suffixed_json_fields(queryset, lookup, json_field)
+        return queryset
+
+    if "some" in jsonlogic or "all" in jsonlogic or "none" in jsonlogic:
+        operator = list(jsonlogic.keys())[0]  # there's only 1 key
+        form_var, jsonlogic = jsonlogic[operator]
+        return annotate_suffixed_json_fields(queryset, jsonlogic, json_field)
+
+    op = list(jsonlogic.keys())[0]
+    params = jsonlogic[op]
+    field_name = extract_field_name(op, jsonlogic, params)
+    if "__" in field_name:
+        queryset = queryset.annotate(
+            **{field_name.replace("__", DOUBLE_UNDERSCORE_REPLACEMENTS): KeyTransform(field_name, json_field)}
+        )
+    return queryset
 
 
 def jsonlogic_to_q(
@@ -90,22 +143,11 @@ def jsonlogic_to_q(
     # Binary operators
     op = list(jsonlogic.keys())[0]
     params = jsonlogic[op]
-    if len(params) != 2:
-        raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
-
-    if op not in EXTENDED_OPERATOR_LOOKUPS:
-        raise ValueError(
-            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: {list(EXTENDED_OPERATOR_LOOKUPS.keys())}"
-        )
-
-    field_position = 1 if op == "in" else 0
-    field = params[field_position]
-    if "var" not in field:
-        raise ValueError(
-            f"Unsupported JsonLogic. Argument[{field_position}] must contain a variable for given "
-            f"operator : {jsonlogic}"
-        )
-    field_name = field["var"]
+    field_name = extract_field_name(op, jsonlogic, params)
+    if "__" in field_name:
+        field_name = field_name.replace("__", DOUBLE_UNDERSCORE_REPLACEMENTS)
+    else:
+        field_name = f"{field_prefix}{field_name}"
     value = params[0] if op == "in" else params[1]
 
     extract = ""
@@ -115,7 +157,7 @@ def jsonlogic_to_q(
 
     lookup = EXTENDED_OPERATOR_LOOKUPS[op]
 
-    f = f"{field_prefix}{field_name}{extract}__{lookup}"
+    f = f"{field_name}{extract}__{lookup}"
     q = Q(**{f: value})
 
     if op == "!=":
@@ -343,14 +385,18 @@ def _handle_in_operator(params: list, field_prefix: str) -> Q:
         raise ValueError("Unsupported 'in' usage: field must be a variable")
 
     field_name = field["var"]
+    if "__" in field_name:
+        field_name = field_name.replace("__", DOUBLE_UNDERSCORE_REPLACEMENTS)
+    else:
+        field_name = f"{field_prefix}{field_name}"
 
     if isinstance(value, list):
         # Field in array: {"in": [{"var": "status"}, ["active", "pending"]]}
-        return Q(**{f"{field_prefix}{field_name}__in": value})
+        return Q(**{f"{field_name}__in": value})
 
     if isinstance(value, str):
         # String containment: {"in": [{"var": "name"}, "john"]}
-        return Q(**{f"{field_prefix}{field_name}__icontains": value})
+        return Q(**{f"{field_name}__icontains": value})
 
     raise ValueError(f"Unsupported 'in' usage: {params}")
 
@@ -378,7 +424,12 @@ def _handle_comparison_operators(op: str, params: list, field_prefix: str) -> Q:
         extract = "__forcefloat"
 
     lookup = COMPARISON_OPERATOR_LOOKUPS[op]
-    field_lookup = f"{field_prefix}{field_name}{extract}__{lookup}"
+    field_name = field["var"]
+    if "__" in field_name:
+        field_name = field_name.replace("__", DOUBLE_UNDERSCORE_REPLACEMENTS)
+    else:
+        field_name = f"{field_prefix}{field_name}"
+    field_lookup = f"{field_name}{extract}__{lookup}"
     q = Q(**{field_lookup: value})
 
     # Handle negation for != operator
@@ -456,7 +507,9 @@ def jsonlogic_to_exists_q_clauses(
     return q
 
 
-def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
+def entities_jsonlogic_to_q(
+    jsonlogic: Dict[str, Any], field_prefix: str = ""
+) -> Union[None, Exists, Q, NegatedExpression]:
     """This enhances the jsonlogic_to_q() method to allow filtering entities on
     the submitted values of their instances.
     It also converts a JsonLogic query to a Django Q object.
@@ -496,23 +549,35 @@ def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -
         form_id_filter = Q(entity_id=OuterRef("id")) & Q(form__form_id=form_id)
 
         if operator == "some":
-            return Exists(Instance.objects.filter(form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)))
+            return Exists(
+                annotate_suffixed_json_fields(Instance.objects, conditions, "json").filter(
+                    form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)
+                )
+            )
         if operator == "all":
             # In case of "all", we do a double filter:
             # - EXIST on the form without conditions to exclude entities that don't have the form
             # - NOT EXIST on the form with inverted conditions, so only get forms that only have
             #   the desired conditions
-            return Exists(Instance.objects.filter(form_id_filter)) & ~Exists(
-                Instance.objects.filter(form_id_filter & ~entities_jsonlogic_to_q(conditions, field_prefix))
+            return Exists(
+                annotate_suffixed_json_fields(Instance.objects, conditions, "json").filter(form_id_filter)
+            ) & ~Exists(
+                annotate_suffixed_json_fields(Instance.objects, conditions, "json").filter(
+                    form_id_filter & ~entities_jsonlogic_to_q(conditions, field_prefix)
+                )
             )
-        if operator == "none":
-            return ~Exists(Instance.objects.filter(form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)))
-    else:
-        return jsonlogic_to_q(
-            jsonlogic,
-            field_prefix="json__",
-            recursion_func=entities_jsonlogic_to_q,
+        # if operator == "none":
+        return ~Exists(
+            annotate_suffixed_json_fields(Instance.objects, conditions, "json").filter(
+                form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)
+            )
         )
+
+    return jsonlogic_to_q(
+        jsonlogic,
+        field_prefix="json__",
+        recursion_func=entities_jsonlogic_to_q,
+    )
 
 
 def matches_all(field_value, expected_list):

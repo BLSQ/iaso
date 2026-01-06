@@ -5,7 +5,7 @@ import { deleteRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 import { endpoint } from '../../constants';
 
-const deletePlanning = (id: number) => deleteRequest(`${endpoint}${id}`);
+const deletePlanning = (id: number) => deleteRequest(`${endpoint}${id}/`);
 
 type useDeleteArgs = {
     params: any;

@@ -37,10 +37,12 @@ services:
             - db
         environment: &hat_environment
             APP_TITLE:
+            AUTHENTICATION_ENFORCED: ${AUTHENTICATION_ENFORCED:-false}
             AWS_ACCESS_KEY_ID:
             AWS_SECRET_ACCESS_KEY:
             AWS_STORAGE_BUCKET_NAME:
             CLAMAV_ACTIVE:
+            FORUM_PATH:
             CLAMAV_FQDN:
             DB_READONLY_PASSWORD: postgres
             DB_READONLY_USERNAME: postgres
@@ -90,6 +92,7 @@ services:
             THEME_PRIMARY_BACKGROUND_COLOR: #OpenHexa API token
             THEME_PRIMARY_COLOR:
             THEME_SECONDARY_COLOR:
+            USER_MANUAL_PATH:
             WFP_AUTH_ACCOUNT:
             WFP_AUTH_CLIENT_ID:
             WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:

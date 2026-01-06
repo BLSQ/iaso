@@ -10,13 +10,13 @@ import {
     useSkipEffectOnMount,
     IntlMessage,
 } from 'bluesquare-components';
+import { Moment } from 'moment';
 import {
     getUrlParamDateObject,
     dateFormat,
     getLocaleDateFormat,
 } from '../../utils/dates';
 import MESSAGES from './messages';
-import { Moment } from 'moment';
 
 const useStyles = makeStyles(theme => ({
     clearDateButton: {

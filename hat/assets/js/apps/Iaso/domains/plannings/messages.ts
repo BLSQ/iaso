@@ -97,6 +97,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    create: {
+        id: 'iaso.label.create',
+        defaultMessage: 'Create',
+    },
     selectOrgUnit: {
         id: 'iaso.plannings.label.selectOrgUnit',
         defaultMessage: 'Target geography',
@@ -199,8 +203,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.status',
         defaultMessage: 'Status',
     },
+    samplingResults: {
+        id: 'iaso.plannings.label.samplingResults',
+        defaultMessage: 'Sampling results',
+    },
+    orgUnitsCount: {
+        id: 'iaso.plannings.label.orgUnitsCount',
+        defaultMessage: 'Org units count',
+    },
+    created_at: {
+        id: 'iaso.label.created_at',
+        defaultMessage: 'Created',
+    },
     seeSamplingResults: {
-        id: 'iaso.label.seeSamplingResults',
+        id: 'iaso.plannings.label.seeSamplingResults',
         defaultMessage: 'See sampling results',
     },
 });

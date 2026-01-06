@@ -31,7 +31,7 @@ export const SubActivitiesForm: FunctionComponent = () => {
         );
     }, [excludedTestAndOnHoldRounds, tab]);
     return (
-        <Box minWidth="70vw" mt={-4}>
+        <Box width="100%" mt={-4}>
             <TabContext value={tab}>
                 <TabList onChange={handleChangeTab}>
                     {excludedTestAndOnHoldRounds.map(rnd => (
@@ -45,14 +45,12 @@ export const SubActivitiesForm: FunctionComponent = () => {
                                 },
                             })}
                             key={rnd.number}
-                            label={`${formatMessage(MESSAGES.round)} ${
-                                rnd.number
-                            }`}
+                            label={`${formatMessage(MESSAGES.round)} ${rnd.number}`}
                             value={`${rnd.number}`}
                         />
                     ))}
                 </TabList>
-                <Box mt={2} minWidth="70vw">
+                <Box mt={2}>
                     <SubActivityForm round={round} />
                 </Box>
             </TabContext>

@@ -44,6 +44,8 @@ export const useAccountValidation = (
                 })
                 .test(apiValidator('password')),
             modules: array().of(string()).nullable().required('requiredField'),
+            create_main_org_unit: boolean().nullable(),
+            create_demo_form: boolean().nullable(),
         });
     }, [apiValidator]);
     return schema;

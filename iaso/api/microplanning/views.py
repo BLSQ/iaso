@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
+from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,6 +13,7 @@ from iaso.api.common import (
     ModelViewSet,
     ReadOnlyOrHasPermission,
 )
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
@@ -26,13 +27,17 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningSamplingResult,
+    PlanningSamplingResultListSerializer,
+    PlanningSamplingResultReadSerializer,
+    PlanningSamplingResultWriteSerializer,
     PlanningSerializer,
 )
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
+    permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -55,6 +60,61 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return (
             self.queryset.filter_for_user(user).select_related("project", "org_unit", "team").prefetch_related("forms")
         )
+
+
+class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
+    """List/create sampling results scoped by planning."""
+
+    remove_results_key_if_paginated = True
+    http_method_names = ["get", "post", "head", "options"]
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
+    serializer_class = PlanningSamplingResultReadSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = [
+        "id",
+        "created_at",
+        "pipeline_id",
+        "pipeline_version",
+        "pipeline_name",
+        "task_id",
+        "group_id",
+        "planning_id",
+    ]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return PlanningSamplingResultWriteSerializer
+        return PlanningSamplingResultReadSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            PlanningSamplingResult.objects.filter(planning__project__account=user.iaso_profile.account)
+            .select_related("planning", "created_by", "group", "task")
+            .prefetch_related("group__org_units")
+        )
+
+    def list(self, request, *args, **kwargs):
+        query_serializer = PlanningSamplingResultListSerializer(data=request.query_params, context={"request": request})
+        query_serializer.is_valid(raise_exception=True)
+        planning = query_serializer.validated_data["planning_id"]
+
+        queryset = self.filter_queryset(self.get_queryset().filter(planning=planning))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=request.user)
+        read_serializer = PlanningSamplingResultReadSerializer(serializer.instance, context={"request": request})
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AssignmentViewSet(AuditMixin, ModelViewSet):

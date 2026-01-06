@@ -92,7 +92,7 @@ export const ScopeForm: FunctionComponent = () => {
     }, [filteredDistricts]);
 
     return (
-        <Box minWidth="70vw">
+        <Box width="100%">
             <Grid container spacing={4} justifyContent="space-between">
                 <Grid xs={12} md={6} item>
                     <Field

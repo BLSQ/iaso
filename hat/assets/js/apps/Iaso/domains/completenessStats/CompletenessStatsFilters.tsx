@@ -24,7 +24,7 @@ import { baseUrls } from '../../constants/urls';
 import { useFilterState } from '../../hooks/useFilterState';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
 import { PLANNING_READ, PLANNING_WRITE } from '../../utils/permissions';
-import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
+import { useGetOrgUnitValidationStatus } from '../orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from '../orgUnits/hooks/requests/useGetGroups';
@@ -158,7 +158,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus();
+    } = useGetOrgUnitValidationStatus();
 
     return (
         <>

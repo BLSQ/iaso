@@ -49,14 +49,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.dateTo',
         defaultMessage: 'End date',
     },
-    created_at: {
-        id: 'iaso.label.created_at',
-        defaultMessage: 'Created at',
-    },
-    orgUnitsCount: {
-        id: 'iaso.label.orgUnitsCount',
-        defaultMessage: 'Org units count',
-    },
     yes: {
         defaultMessage: 'Yes',
         id: 'iaso.label.yes',

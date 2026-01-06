@@ -628,13 +628,13 @@ class AnonymousCampaignSerializer(CampaignSerializer):
 
 
 class CampaignDropDownSerializer(serializers.ModelSerializer):
-    label = serializers.CharField(source="obr_name")
-    value = serializers.CharField(source="id")
+    obr_name = serializers.CharField()
+    id = serializers.CharField()
     campaign_types = CampaignTypeIdAndNameSerializer(many=True, read_only=True)
 
     class Meta:
         model = Campaign
-        fields = ["value", "label", "campaign_types"]
+        fields = ["id", "obr_name", "campaign_types"]
 
 
 class CalendarCampaignSerializer(CampaignSerializer):

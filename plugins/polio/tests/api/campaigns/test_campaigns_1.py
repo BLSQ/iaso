@@ -909,7 +909,6 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         # Filter by non-existing campaign type
         response = self.client.get("/api/polio/campaigns/?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json")
         self.assertEqual(response.status_code, 200, response.content)
-        response_data = response.json()
         self.assertEqual(len(response_data), 0)
 
     def test_campaigns_list_dropdown_fieldset(self):
@@ -930,11 +929,11 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign_data = response_data[0]
 
         # Verify dropdown serializer structure
-        self.assertIn("value", campaign_data)
-        self.assertIn("label", campaign_data)
+        self.assertIn("id", campaign_data)
+        self.assertIn("obr_name", campaign_data)
         self.assertIn("campaign_types", campaign_data)
-        self.assertEqual(campaign_data["value"], str(campaign.id))
-        self.assertEqual(campaign_data["label"], campaign.obr_name)
+        self.assertEqual(campaign_data["id"], str(campaign.id))
+        self.assertEqual(campaign_data["obr_name"], campaign.obr_name)
         self.assertIsInstance(campaign_data["campaign_types"], list)
         self.assertEqual(len(campaign_data["campaign_types"]), 1)
         campaign_type = campaign_data["campaign_types"][0]
@@ -949,6 +948,5 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response_data = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertGreater(len(response_data), 0)
         first_item = response_data[0]
-        # Anonymous serializer doesn't have value and label fields
-        self.assertNotIn("value", first_item)
-        self.assertNotIn("label", first_item)
+        keys_count = len(first_item.keys())
+        self.assertGreater(keys_count, 3)  # dropdwon serializer has only 3 fields. Anonymous has way more

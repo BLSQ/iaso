@@ -26,8 +26,8 @@ import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroup
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
+import { IntegratedCampaignField } from './IntegratedCampaigns/IntegratedTo/IntegratedCampaignField';
 import { IntegratedCampaigns } from './IntegratedCampaigns/IntegratedCampaigns';
-import { LinkTo } from 'Iaso/components/nav/LinkTo';
 
 export const baseInfoFormFields: string[] = [
     'epid',
@@ -63,7 +63,7 @@ export const BaseInfoForm: FunctionComponent = () => {
     );
     const controlRef = useRef(false);
 
-    const { values, touched, setFieldValue, setTouched } =
+    const { values, touched, setFieldValue, setTouched, setFieldTouched } =
         useFormikContext<CampaignFormValues>();
     const { data: types, isFetching: isFetchingTypes } =
         useGetCampaignTypes(true);
@@ -112,6 +112,18 @@ export const BaseInfoForm: FunctionComponent = () => {
         }
     }, [touched, values.rounds, setTouched, values.is_planned]);
 
+    const handleChangeIntegratedTo = useCallback(
+        (_, value) => {
+            setFieldTouched('integrated_to', true);
+            setFieldValue('integrated_to', {
+                id: value.value,
+                obr_name: value.label,
+                campaign_types: value.campaign_types,
+            });
+        },
+        [setFieldTouched, setFieldValue, values.integrated_to],
+    );
+
     return (
         <Box width={'100%'}>
             <Grid container spacing={2}>
@@ -145,24 +157,17 @@ export const BaseInfoForm: FunctionComponent = () => {
                             required
                             disabled={!isUserAdmin}
                         />
-                        {/* <Field
-                            label={'TEST'}
-                            name="integrated_to"
-                            component={TextInput}
-                            shrinkLabel={false}
-                            className={classes.input}
-                            required
-                            disabled={!isUserAdmin}
-                        /> */}
-                        <Field
-                            label={'TEST'}
-                            name="integrated_to"
-                            component={TextInput}
-                            shrinkLabel={false}
-                            className={classes.input}
-                            required
-                            disabled={!isUserAdmin}
-                        />
+
+                        {!isPolio && (
+                            <Box mb={2}>
+                                <IntegratedCampaignField
+                                    label={MESSAGES.integratedToCampaign}
+                                    value={values?.integrated_to}
+                                    onChange={handleChangeIntegratedTo}
+                                />
+                            </Box>
+                        )}
+
                         <Field
                             className={classes.input}
                             label={formatMessage(MESSAGES.description)}
@@ -176,29 +181,6 @@ export const BaseInfoForm: FunctionComponent = () => {
                             component={TextInput}
                             shrinkLabel={false}
                         />
-                        {/* {!isPolio && (
-                            <Box ml={2} mb={2} mt={2}>
-                                <Grid container justifyContent="flex-start">
-                                    <Grid item xs={6} lg={5}>
-                                        <Typography variant="button">
-                                            Integrated to Polio campaign:
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={6} lg={7}>
-                                        <Typography variant="button">
-                                            <LinkTo
-                                                url={`campaignId/${values.integrated_to?.id}`}
-                                                condition
-                                                text={
-                                                    values.integrated_to
-                                                        ?.obr_name
-                                                }
-                                            />
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Box>
-                        )} */}
                         {isUserAdmin && (
                             <Field
                                 className={classes.input}

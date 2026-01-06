@@ -459,7 +459,11 @@ export type CampaignListItem = {
     top_level_org_unit_id: number;
     top_level_org_unit_name: Nullable<string>;
 };
-
+export type IntegratedCampaign = {
+    id: string;
+    obr_name: string;
+    campaign_types: { name: string; id: number };
+};
 export type DefaultCampaignValues = {
     budget_current_state_key: string;
     campaign_types: number[];
@@ -470,6 +474,7 @@ export type DefaultCampaignValues = {
     has_data_in_budget_tool: boolean;
     id?: string; // uuid
     initial_org_unit?: number;
+    integrated_to?: IntegratedCampaign;
     is_planned: boolean;
     is_preventive: boolean;
     is_test: boolean;
@@ -501,11 +506,7 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     feedback_sent_to_rrt2_at_WFEDITABLE?: string | null;
     gpei_consolidated_budgets_at_WFEDITABLE?: string | null;
     grouped_campaigns?: number[];
-    integrated_campaigns: {
-        id: string;
-        obr_name: string;
-        campaign_types: { name: string; id: number };
-    }[];
+    integrated_campaigns: IntegratedCampaign[];
     investigation_at?: string | null;
     no_regret_fund_amount?: number;
     onset_at?: string | null;

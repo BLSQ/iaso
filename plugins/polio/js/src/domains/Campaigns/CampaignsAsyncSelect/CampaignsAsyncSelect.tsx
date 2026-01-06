@@ -1,12 +1,6 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { getRequest, IntlMessage, AsyncSelect } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
-import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import {
     CampaignCategory,
     CAMPAIGNS_ENDPOINT,
@@ -18,14 +12,8 @@ import {
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar } from 'Iaso/constants/snackBars';
 import { Campaign } from '../../../constants/types';
-
-const baseOptions = {
-    fieldset: 'dropdown',
-    campaignCategory: 'regular' as CampaignCategory,
-    on_hold: true,
-    is_planned: true,
-    show_test: false,
-};
+import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
+import { useCampaignTypeNames } from './useCampaignTypeNames';
 
 type Props = {
     handleChange: (keyValue: string, value: unknown) => void;
@@ -33,36 +21,64 @@ type Props = {
     multi?: boolean;
     keyValue?: string;
     clearable?: boolean;
+    initialValue?: string; // obr name
+    onHold?: boolean;
+    showTest?: boolean;
+    showPlanned?: boolean;
+    campaignCategory?: CampaignCategory;
+    campaignType?: 'polio' | 'non-polio' | string;
 };
+
+/**
+ * A wrapper on AsyncSelect geared towards polio campaigns
+ * The filters to apply to the campaigns API can be parametrized using the components props
+ * The component will automatically pass fieldset=dropdown to limit the fields returned by the API and reformat
+ * the response to be usable by AsyncSelect
+ *
+ */
 
 export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     keyValue = 'campaigns',
     handleChange,
     multi,
     clearable,
+    initialValue,
+    campaignCategory = 'regular' as CampaignCategory,
+    onHold = true,
+    showPlanned = true,
+    showTest = false,
+    campaignType = 'polio',
+    label = MESSAGES.campaign,
 }) => {
-    const { data: types } = useGetCampaignTypes();
-    const [search, setSearch] = useState();
-    const nonPolioTypes = (types ?? [])
-        .filter(typeOption => typeOption.value !== 'polio')
-        .map(typeOption => typeOption.value)
-        .join(',');
+    const campaignTypes = useCampaignTypeNames(campaignType);
+    const [search, setSearch, isStateSet] = useAsyncInitialState<
+        string | undefined
+    >(initialValue);
 
+    const baseOptions = useMemo(() => {
+        return {
+            fieldset: 'dropdown',
+            campaignCategory,
+            on_hold: onHold,
+            is_planned: showPlanned,
+            show_test: showTest,
+        };
+    }, [campaignCategory, onHold, showPlanned, showTest]);
     const options: Options = useMemo(() => {
         return {
-            enabled: Boolean(search),
-            campaignType: nonPolioTypes,
+            enabled: isStateSet,
+            campaignType: campaignTypes,
             search,
             ...baseOptions,
         };
-    }, [nonPolioTypes, search]);
+    }, [campaignTypes, search]);
 
     const fetchOptions = useCallback(
         async (query: string): Promise<any[]> => {
             const campaignOptions = makeCampaignOptions({
                 search: query,
                 ...baseOptions,
-                campaignType: nonPolioTypes,
+                campaignType: campaignTypes,
             });
             const url = getURL(campaignOptions, CAMPAIGNS_ENDPOINT);
             try {
@@ -78,10 +94,10 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
                 return [];
             }
         },
-        [nonPolioTypes],
+        [campaignTypes],
     );
 
-    const { data: selectedCampaigns, isFetched } = useGetCampaigns(
+    const { data: selectedCampaigns } = useGetCampaigns(
         options,
         CAMPAIGNS_ENDPOINT,
         undefined,
@@ -96,14 +112,14 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
                 campaign_types: selected.campaign_types,
             })) ?? []
         );
-    }, [selectedCampaigns, isFetched]);
+    }, [selectedCampaigns]);
 
     const handleChangeCampaigns = useCallback(
         (keyValue, newValue) => {
             const val = multi
                 ? newValue?.map(r => r.label)?.join(',') // using label i.o value to get the obr name
                 : newValue;
-            setSearch(val.label ? val.label : undefined);
+            setSearch(val?.label ? val.label : undefined);
             handleChange(keyValue, val ? val : undefined);
         },
         [handleChange],
@@ -112,7 +128,7 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     return (
         <AsyncSelect
             keyValue={keyValue}
-            label={MESSAGES.campaign}
+            label={label}
             value={campaignOptions ?? ''}
             onChange={handleChangeCampaigns}
             debounceTime={500}

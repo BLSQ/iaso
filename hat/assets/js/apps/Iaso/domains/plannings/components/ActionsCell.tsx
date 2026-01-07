@@ -7,17 +7,20 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
-import { useDeletePlanning } from '../hooks/requests/useDeletePlanning';
 import MESSAGES from '../messages';
 import { Planning } from '../types';
 
 const getAssignmentUrl = (planning: Planning): string => {
     return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
 };
-export const ActionsCell: FunctionComponent<ColumnCell<Planning>> = ({
+
+interface ActionsCellProps extends ColumnCell<Planning> {
+    deletePlanning: (id: number) => void;
+}
+export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     row: { original: planning },
+    deletePlanning,
 }) => {
-    const { mutateAsync: deletePlanning } = useDeletePlanning();
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>

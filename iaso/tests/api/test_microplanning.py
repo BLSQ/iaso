@@ -662,6 +662,60 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(r["selected_sampling_results"]["id"], sampling.id)
         self.assertEqual(r["selected_sampling_results"]["pipeline_id"], "pipeline-detail")
 
+    def test_planning_patch_keeps_selected_sampling_results_when_field_absent(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=self.planning,
+            pipeline_id="pipeline-keep",
+            pipeline_version="v1",
+            pipeline_name="keep run",
+            parameters={"limit": 1},
+            created_by=user_with_perms,
+        )
+        self.planning.selected_sampling_results = sampling
+        self.planning.save()
+
+        response = self.client.patch(
+            f"/api/microplanning/plannings/{self.planning.id}/",
+            data={"name": "updated name"},
+            format="json",
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.planning.refresh_from_db()
+
+        self.assertEqual(self.planning.selected_sampling_results, sampling)
+        self.assertEqual(r["selected_sampling_results"]["id"], sampling.id)
+
+    def test_planning_patch_unsets_selected_sampling_results_with_null(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=self.planning,
+            pipeline_id="pipeline-clear",
+            pipeline_version="v1",
+            pipeline_name="clear run",
+            parameters={"limit": 2},
+            created_by=user_with_perms,
+        )
+        self.planning.selected_sampling_results = sampling
+        self.planning.save()
+
+        response = self.client.patch(
+            f"/api/microplanning/plannings/{self.planning.id}/",
+            data={"selected_sampling_results_id": None},
+            format="json",
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.planning.refresh_from_db()
+
+        self.assertIsNone(self.planning.selected_sampling_results)
+        self.assertIsNone(r["selected_sampling_results"])
+
     def test_planning_patch_selected_sampling_results_wrong_planning(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]

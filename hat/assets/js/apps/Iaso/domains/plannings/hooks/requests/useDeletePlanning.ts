@@ -8,17 +8,19 @@ import { endpoint } from '../../constants';
 const deletePlanning = (id: number) => deleteRequest(`${endpoint}${id}/`);
 
 type useDeleteArgs = {
-    params: any;
-    count: number;
+    params?: any;
+    count?: number;
+    onSuccess?: () => void;
 };
 
 export const useDeletePlanning = ({
     params,
     count,
+    onSuccess,
 }: useDeleteArgs): UseMutationResult => {
-    const onSuccess = useDeleteTableRow({
-        count,
-        params,
+    const defautOnSuccess = useDeleteTableRow({
+        count: count || 0,
+        params: params || {},
         pageKey: 'page',
         pageSizeKey: 'pageSize',
         invalidateQueries: ['planningsList'],
@@ -28,7 +30,7 @@ export const useDeletePlanning = ({
     return useSnackMutation({
         mutationFn: deletePlanning,
         options: {
-            onSuccess,
+            onSuccess: onSuccess || defautOnSuccess,
         },
     });
 };

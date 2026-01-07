@@ -12,6 +12,7 @@ import {
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
+import { useQueryClient } from 'react-query';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -116,8 +117,12 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
         convertError: convertAPIErrorsToState,
     });
-    const { mutateAsync: deletePlanning } = useDeletePlanning(() => {
-        redirectTo(`/${baseUrls.planning}`);
+    const queryClient = useQueryClient();
+    const { mutateAsync: deletePlanning } = useDeletePlanning({
+        onSuccess: () => {
+            queryClient.invalidateQueries(['planningsList']);
+            redirectTo(`/${baseUrls.planning}`);
+        },
     });
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =

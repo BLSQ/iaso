@@ -46,6 +46,7 @@ import {
     SavePlanningQuery,
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
+import { useCanAssign } from '../hooks/useCanAssign';
 import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
 import { Planning, PageMode } from '../types';
@@ -256,9 +257,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
     const publishingStatusOptions = useGetPublishingStatusOptions();
-    const canAssign =
-        Boolean(planning?.selected_sampling_results) &&
-        Boolean(planning?.published_at);
+    const canAssign = useCanAssign(planning);
     return (
         <FormikProvider value={formik}>
             <Grid container spacing={2}>

@@ -7,19 +7,19 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
+import { useCanAssign } from '../hooks/useCanAssign';
 import MESSAGES from '../messages';
 import { Planning } from '../types';
 
 interface ActionsCellProps extends ColumnCell<Planning> {
     deletePlanning: (id: number) => void;
 }
+
 export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     row: { original: planning },
     deletePlanning,
 }) => {
-    const canAssign =
-        Boolean(planning.selected_sampling_results) &&
-        Boolean(planning.published_at);
+    const canAssign = useCanAssign(planning);
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>

@@ -118,6 +118,7 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
 export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
     onSuccess?: (data: Planning) => void,
+    showSuccessSnackBar = true,
 ): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation({
@@ -125,6 +126,7 @@ export const useSavePlanning = (
         invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
         options: { onSuccess },
+        showSuccessSnackBar,
     });
     const createPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => {

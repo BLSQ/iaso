@@ -51,6 +51,7 @@ export type Planning = {
     pipeline_uuids: string[];
     target_org_unit_type?: number;
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
+    selected_sampling_results?: SamplingResult;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 
@@ -71,6 +72,14 @@ export type UserDetails = {
     username: string;
 };
 
+export type SelectedSamplingResult = {
+    id: number;
+    task_id: number;
+    pipeline_id: string;
+    pipeline_version: string;
+    pipeline_name: string;
+    group_id?: number;
+};
 export type SamplingResult = {
     id: number;
     planning: number;

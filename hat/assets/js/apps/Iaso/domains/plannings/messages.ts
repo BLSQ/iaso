@@ -129,6 +129,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.deleteWarning',
         defaultMessage: 'Are you sure you want to delete {name}?',
     },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
     planningAndOrgUnit: {
         id: 'iaso.error.label.planningAndOrgUnit',
         defaultMessage: 'Planning and org unit must be in the same project',
@@ -210,6 +214,10 @@ const MESSAGES = defineMessages({
     seeSamplingResults: {
         id: 'iaso.plannings.label.seeSamplingResults',
         defaultMessage: 'See sampling results',
+    },
+    selectSamplingResult: {
+        id: 'iaso.plannings.label.selectSamplingResult',
+        defaultMessage: 'Select sampling result',
     },
 });
 

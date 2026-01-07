@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
-import { Grid, Box } from '@mui/material';
+import { Grid, Box, Button } from '@mui/material';
 import {
     useSafeIntl,
     InputWithInfos,
     useRedirectToReplace,
-    IconButton as IconButtonComponent,
     useRedirectTo,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
@@ -44,8 +44,7 @@ import {
 } from '../hooks/requests/useSavePlanning';
 import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
-import { Planning } from '../types';
-import { PageMode } from '../types';
+import { Planning, PageMode } from '../types';
 const styles: SxStyles = {
     paper: {
         px: 2,
@@ -243,7 +242,11 @@ export const PlanningForm: FunctionComponent<Props> = ({
             setFieldTouched('selectedTeam', false);
         }
     }, [teamsDropdown, setFieldTouched, setFieldValue, values?.project]);
-
+    const duplicatePlanning = useCallback(() => {
+        redirectTo(
+            `/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`,
+        );
+    }, [redirectTo, values.id]);
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
     const publishingStatusOptions = useGetPublishingStatusOptions();
@@ -410,58 +413,77 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 />
                             </Box>
                         </Grid>
-                        <Grid
-                            xs={6}
-                            lg={7}
-                            item
-                            justifyContent="flex-end"
-                            display="flex"
-                            alignItems="flex-end"
-                        >
-                            {mode === 'edit' && (
-                                <>
-                                    <DisplayIfUserHasPerm
-                                        permissions={[PLANNING_WRITE]}
-                                    >
-                                        <DeleteDialog
-                                            iconColor="error"
-                                            titleMessage={{
-                                                ...MESSAGES.deletePlanning,
-                                                values: {
-                                                    planningName: values.name,
-                                                },
-                                            }}
-                                            message={{
-                                                ...MESSAGES.deleteWarning,
-                                                values: {
-                                                    name: values.name,
-                                                },
-                                            }}
-                                            disabled={false}
-                                            onConfirm={() =>
-                                                deletePlanning(values.id)
-                                            }
-                                            keyName="delete-planning"
-                                        />
-
-                                        <IconButtonComponent
-                                            url={`/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`}
-                                            tooltipMessage={
-                                                MESSAGES.duplicatePlanning
-                                            }
-                                            overrideIcon={FileCopyIcon}
-                                            size="small"
-                                        />
-                                    </DisplayIfUserHasPerm>
-                                </>
-                            )}
-                            <IconButtonComponent
-                                color="primary"
-                                onClick={() => handleSubmit()}
-                                disabled={!allowConfirm}
-                                overrideIcon={SaveRoundedIcon}
-                                tooltipMessage={MESSAGES.save}
-                            />
+                        <Grid item xs={6} lg={7}>
+                            <Box
+                                display="flex"
+                                gap={2}
+                                flexDirection="column"
+                                justifyContent="flex-end"
+                                alignItems="flex-end"
+                                mt={2}
+                            >
+                                <Button
+                                    disabled={!allowConfirm}
+                                    color="primary"
+                                    variant="contained"
+                                    startIcon={<SaveRoundedIcon />}
+                                    onClick={() => handleSubmit()}
+                                >
+                                    {formatMessage(MESSAGES.save)}
+                                </Button>
+                                {mode === 'edit' && (
+                                    <>
+                                        <DisplayIfUserHasPerm
+                                            permissions={[PLANNING_WRITE]}
+                                        >
+                                            <DeleteDialog
+                                                iconColor="error"
+                                                titleMessage={{
+                                                    ...MESSAGES.deletePlanning,
+                                                    values: {
+                                                        planningName:
+                                                            values.name,
+                                                    },
+                                                }}
+                                                message={{
+                                                    ...MESSAGES.deleteWarning,
+                                                    values: {
+                                                        name: values.name,
+                                                    },
+                                                }}
+                                                disabled={false}
+                                                onConfirm={() =>
+                                                    deletePlanning(values.id)
+                                                }
+                                                keyName="delete-planning"
+                                                Trigger={({ onClick }) => (
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={onClick}
+                                                        startIcon={
+                                                            <DeleteIcon />
+                                                        }
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.delete,
+                                                        )}
+                                                    </Button>
+                                                )}
+                                            />
+                                        </DisplayIfUserHasPerm>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={duplicatePlanning}
+                                            startIcon={<FileCopyIcon />}
+                                        >
+                                            {formatMessage(
+                                                MESSAGES.duplicatePlanning,
+                                            )}
+                                        </Button>
+                                    </>
+                                )}
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

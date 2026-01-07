@@ -30,6 +30,9 @@ const styles: SxStyles = {
             // @ts-ignore
             `1px solid ${theme.palette.border.main}`,
         borderRadius: 1,
+        '& .MuiSpeedDial-root': {
+            display: 'none',
+        },
     },
 };
 
@@ -98,6 +101,7 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
                 extraProps={{
                     loading: isFetchingSamplingResults,
                     defaultPageSize: tableDefaults.limit,
+                    planning,
                 }}
             />
         </Paper>

@@ -45,6 +45,28 @@ from .models import (
 from .models.performance_thresholds import PerformanceThresholds
 
 
+class IntegratedCampaignsInline(admin.TabularInline):
+    """Inline to show/edit campaigns that integrate into this campaign"""
+
+    model = Campaign
+    fk_name = "integrated_to"
+    extra = 0
+    fields = ["obr_name"]
+    raw_id_fields = ("integrated_to",)
+    can_delete = True
+    show_change_link = True
+    verbose_name_plural = "Integrated Campaigns"
+
+    def get_queryset(self, request):
+        """Optimize queryset"""
+        qs = super().get_queryset(request)
+        return qs.select_related("account", "initial_org_unit")
+
+    def has_add_permission(self, request, obj=None):
+        """Prevent adding new campaigns through the inline - they must be created separately and then linked"""
+        return False
+
+
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
     raw_id_fields = ("initial_org_unit",)
@@ -52,6 +74,32 @@ class CampaignAdmin(admin.ModelAdmin):
         models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
     }
     list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status", "campaign_types"]
+    inlines = [IntegratedCampaignsInline]
+
+    # Exclude old budget tool fields
+    exclude = (
+        "ra_completed_at_WFEDITABLE",
+        "who_sent_budget_at_WFEDITABLE",
+        "unicef_sent_budget_at_WFEDITABLE",
+        "gpei_consolidated_budgets_at_WFEDITABLE",
+        "submitted_to_rrt_at_WFEDITABLE",
+        "feedback_sent_to_gpei_at_WFEDITABLE",
+        "re_submitted_to_rrt_at_WFEDITABLE",
+        "submitted_to_orpg_operations1_at_WFEDITABLE",
+        "feedback_sent_to_rrt1_at_WFEDITABLE",
+        "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+        "submitted_to_orpg_wider_at_WFEDITABLE",
+        "submitted_to_orpg_operations2_at_WFEDITABLE",
+        "feedback_sent_to_rrt2_at_WFEDITABLE",
+        "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+        "submitted_for_approval_at_WFEDITABLE",
+        "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+        "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+        "approved_by_who_at_WFEDITABLE",
+        "approved_by_unicef_at_WFEDITABLE",
+        "approved_at_WFEDITABLE",
+        "approval_confirmed_at_WFEDITABLE",
+    )
 
     def save_model(self, request, obj: Campaign, form, change):
         obj.update_geojson_field()

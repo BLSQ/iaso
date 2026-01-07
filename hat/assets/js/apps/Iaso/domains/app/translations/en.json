@@ -1307,6 +1307,7 @@
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Duplicate planning",
     "iaso.plannings.label.orgUnitsCount": "Org units count",
+    "iaso.plannings.label.samplingName": "Sampling name",
     "iaso.plannings.label.samplingResults": "Sampling results",
     "iaso.plannings.label.seeSamplingResults": "See sampling results",
     "iaso.plannings.label.selectOrgUnit": "Target geography",

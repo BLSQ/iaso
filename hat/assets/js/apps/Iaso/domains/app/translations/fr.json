@@ -1308,6 +1308,7 @@
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Dupliquer planning",
     "iaso.plannings.label.orgUnitsCount": "Nombre d'unités d'org.",
+    "iaso.plannings.label.samplingName": "Nom de l'échantillonage",
     "iaso.plannings.label.samplingResults": "Résultats d'échantillonnage",
     "iaso.plannings.label.seeSamplingResults": "Voir les résultats d'échantillonnage",
     "iaso.plannings.label.selectOrgUnit": "Zone géographique cible",

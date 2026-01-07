@@ -48,6 +48,7 @@ const styles: SxStyles = {
 };
 export type ParameterValues =
     | {
+          sampling_name?: string;
           org_unit_type_quantities?: number[];
           org_unit_type_sequence_identifiers?: number[];
           org_unit_type_exceptions?: string[];
@@ -234,6 +235,7 @@ export const LQASForm: FunctionComponent<Props> = ({
         planning.target_org_unit_type,
         latestOptions?.value,
     ]);
+
     return (
         <Paper sx={styles.paper}>
             {levels.map((orgUnitTypeId, index) => {

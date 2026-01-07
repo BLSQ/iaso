@@ -67,6 +67,7 @@ export const PipelineSelect: FunctionComponent<Props> = ({
         },
         [setParameterValues],
     );
+
     return (
         <Box>
             <InputComponent
@@ -82,6 +83,13 @@ export const PipelineSelect: FunctionComponent<Props> = ({
                     isFetchingPipelineUuids ||
                     planning.pipeline_uuids?.length === 1
                 }
+            />
+            <InputComponent
+                type="text"
+                onChange={handleParameterChange}
+                keyValue="sampling_name"
+                value={parameterValues?.sampling_name ?? ''}
+                labelString={formatMessage(MESSAGES.samplingName)}
             />
             {pipeline && (
                 <>

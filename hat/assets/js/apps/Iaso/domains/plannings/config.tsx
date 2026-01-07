@@ -10,7 +10,6 @@ import {
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from 'Iaso/constants/urls';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
-import { Planning } from '../assignments/types/planning';
 import { encodeUriSearches } from '../orgUnits/utils';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
@@ -18,7 +17,8 @@ import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import MESSAGES from './messages';
-import { SamplingResult } from './types';
+import { Planning, SamplingResult } from './types';
+import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 
 type Props = {
     samplingResult: SamplingResult;
@@ -151,6 +151,11 @@ export const useSamplingResultsColumns = (planning: Planning): Column[] => {
                 Header: 'Id',
                 accessor: 'id',
                 width: 80,
+            },
+            {
+                Header: formatMessage(MESSAGES.samplingName),
+                accessor: 'group_details.name',
+                Cell: BreakWordCell,
             },
             {
                 Header: formatMessage(MESSAGES.created_at),

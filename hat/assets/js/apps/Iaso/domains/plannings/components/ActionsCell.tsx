@@ -10,10 +10,6 @@ import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import MESSAGES from '../messages';
 import { Planning } from '../types';
 
-const getAssignmentUrl = (planning: Planning): string => {
-    return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
-};
-
 interface ActionsCellProps extends ColumnCell<Planning> {
     deletePlanning: (id: number) => void;
 }
@@ -21,6 +17,9 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     row: { original: planning },
     deletePlanning,
 }) => {
+    const canAssign =
+        Boolean(planning.selected_sampling_results) &&
+        Boolean(planning.published_at);
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
@@ -32,11 +31,12 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
                 />
             </DisplayIfUserHasPerm>
             <IconButtonComponent
-                url={getAssignmentUrl(planning)}
+                url={`/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`}
                 tooltipMessage={MESSAGES.viewPlanning}
                 size="small"
                 replace={false}
                 overrideIcon={Assignment}
+                disabled={!canAssign}
             />
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
                 <IconButtonComponent

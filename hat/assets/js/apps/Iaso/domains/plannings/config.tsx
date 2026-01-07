@@ -8,6 +8,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from 'Iaso/constants/urls';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
@@ -17,10 +18,9 @@ import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
-import { useSavePlanning } from './hooks/requests/useSavePlanning';
+import { SavePlanningQuery } from './hooks/requests/useSavePlanning';
 import MESSAGES from './messages';
 import { Planning, SamplingResult } from './types';
-import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 
 type Props = {
     samplingResult: SamplingResult;
@@ -145,21 +145,23 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
     );
 };
 
-export const useSamplingResultsColumns = (planning: Planning): Column[] => {
+export const useSamplingResultsColumns = (
+    planning: Planning,
+    savePlanning: (data: Partial<SavePlanningQuery>) => void,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: savePlanning } = useSavePlanning(
-        'edit',
-        undefined,
-        false,
-    );
+
     const handleSelectSamplingResult = useCallback(
         (samplingResultId: number) => {
             savePlanning({
                 id: planning.id,
-                selected_sampling_results_id: samplingResultId,
+                selected_sampling_results_id:
+                    samplingResultId === planning.selected_sampling_results?.id
+                        ? null
+                        : samplingResultId,
             });
         },
-        [savePlanning, planning.id],
+        [savePlanning, planning.id, planning.selected_sampling_results?.id],
     );
     return useMemo<Column[]>(
         () => [

@@ -142,6 +142,8 @@ class PlanningSerializer(serializers.ModelSerializer):
             validation_errors["selected_sampling_results_id"] = "samplingNotForPlanning"
         if selected_sampling_result:
             validated_data["selected_sampling_results"] = selected_sampling_result
+        else:
+            validated_data["selected_sampling_results"] = None
 
         if validation_errors:
             raise serializers.ValidationError(validation_errors)

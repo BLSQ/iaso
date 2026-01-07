@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Assignment } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
@@ -8,6 +9,7 @@ import {
     InputWithInfos,
     useRedirectToReplace,
     useRedirectTo,
+    LinkButton,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
@@ -23,6 +25,7 @@ import {
     flattenHierarchy,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import { SxStyles } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
@@ -46,7 +49,7 @@ import {
 import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
 import { Planning, PageMode } from '../types';
-import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
+
 const styles: SxStyles = {
     paper: {
         px: 2,
@@ -83,6 +86,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
         pipeline_uuids: pipelineUuids,
         target_org_unit_type: targetOrgUnitType,
     } = useMemo(() => planning ?? {}, [planning]) as Planning;
+    const assignmentUrl = `/${baseUrls.assignments}/planningId/${id}/team/${selectedTeam}`;
     const startDate = started_at ? moment(started_at).format('L') : undefined;
     const endDate = ended_at ? moment(ended_at).format('L') : undefined;
     const publishingStatus = published_at ? 'published' : 'draft';
@@ -248,14 +252,13 @@ export const PlanningForm: FunctionComponent<Props> = ({
             setFieldTouched('selectedTeam', false);
         }
     }, [teamsDropdown, setFieldTouched, setFieldValue, values?.project]);
-    const duplicatePlanning = useCallback(() => {
-        redirectTo(
-            `/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`,
-        );
-    }, [redirectTo, values.id]);
+
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
     const publishingStatusOptions = useGetPublishingStatusOptions();
+    const canAssign =
+        Boolean(planning?.selected_sampling_results) &&
+        Boolean(planning?.published_at);
     return (
         <FormikProvider value={formik}>
             <Grid container spacing={2}>
@@ -478,15 +481,25 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                 )}
                                             />
                                         </DisplayIfUserHasPerm>
-                                        <Button
+                                        <LinkButton
                                             variant="outlined"
-                                            onClick={duplicatePlanning}
                                             startIcon={<FileCopyIcon />}
+                                            to={`/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`}
                                         >
                                             {formatMessage(
                                                 MESSAGES.duplicatePlanning,
                                             )}
-                                        </Button>
+                                        </LinkButton>
+                                        <LinkButton
+                                            disabled={!canAssign}
+                                            to={assignmentUrl}
+                                            variant="outlined"
+                                            startIcon={<Assignment />}
+                                        >
+                                            {formatMessage(
+                                                MESSAGES.viewPlanning,
+                                            )}
+                                        </LinkButton>
                                     </>
                                 )}
                             </Box>

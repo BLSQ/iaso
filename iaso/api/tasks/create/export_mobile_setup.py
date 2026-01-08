@@ -12,6 +12,7 @@ class ExportMobileSetupSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=True)
     project_id = serializers.IntegerField(required=True)
     password = serializers.CharField(required=True)
+    options = serializers.DictField(required=True)
 
     def validate_password(self, password):
         validate_password(password)
@@ -32,6 +33,7 @@ class ExportMobileSetupViewSet(viewsets.ViewSet):
         user_id = request.data.get("user_id", None)
         project_id = request.data.get("project_id", None)
         password = request.data.get("password", None)
+        options = request.data.get("options", {})
 
         current_user = self.request.user
 
@@ -40,6 +42,7 @@ class ExportMobileSetupViewSet(viewsets.ViewSet):
             project_id=project_id,
             password=password,
             user=current_user,
+            options=options,
         )
 
         return Response(

@@ -1,3 +1,5 @@
+import io
+import json
 import os
 import shutil
 import tempfile
@@ -12,6 +14,7 @@ from iaso.models import SUCCESS, Account, Project, Task
 from iaso.tasks.export_mobile_app_setup_for_user import (
     _call_cursor_pagination_page,
     _get_cursor_pagination_metadata,
+    _get_resource,
     export_mobile_app_setup_for_user,
 )
 from iaso.utils.encryption import decrypt_file
@@ -107,6 +110,7 @@ class ExportMobileAppSetupForUserTest(TestCase):
             project_id=self.project.id,
             password="supersecret",
             task=self.task,
+            options={},
             _immediate=True,
         )
 
@@ -135,6 +139,80 @@ class ExportMobileAppSetupForUserTest(TestCase):
         self.assertIn("storage-blacklisted.json", created_files)
         self.assertIn("storage-passwords.json", created_files)
         self.assertIn("workflows.json", created_files)
+
+
+class MockZip:
+    """Mock object for ZipFileWriter."""
+
+    def __init__(self):
+        self.captured_files = {}
+
+    def open(self, filename, *args, **kwargs):
+        return self._FileContext(self, filename)
+
+    class _FileContext:
+        def __init__(self, parent_mock, filename):
+            self.parent_mock = parent_mock
+            self.filename = filename
+            self.stream = io.StringIO()
+
+        def __enter__(self):
+            return self.stream
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.parent_mock.captured_files[self.filename] = self.stream.getvalue()
+            self.stream.close()
+
+
+class ExportMobileAppSetupTrypelimFeatures(TestCase):
+    """Test trypelim-specific features for the export mobile setup task."""
+
+    def setUp(self):
+        self.call = {
+            "path": "/api/internal/entities/",
+            "filename": "entities",
+            "required_feature_flag": "ENTITY",
+            "filename": "entities",
+            "paginated": True,
+            "cursor_pagination": {"shim": True, "legacy_url": "/api/mobile/entities/"},
+        }
+        self.app_id = "org.test.app"
+        self.feature_flags = ["ENTITY"]
+
+    def test_strip_visited_at(self):
+        """SLEEP-1698: Test that `visited_at` is set to null when `strip_visited_at` options is set."""
+
+        iaso_client_mock = mock.MagicMock()
+        iaso_client_mock.get.side_effect = [
+            {"count": 4},
+            {
+                "next": None,
+                "previous": None,
+                "results": {
+                    "instances": [
+                        {"id": 1, "json": {"visited_at": "2021-03-10"}},
+                        {"id": 2, "json": {"visited_at": None}},
+                        {"id": 3, "json": {}},
+                        {"id": 4},
+                    ],
+                },
+            },
+        ]
+        options = {
+            "strip_visited_at": True,
+        }
+        zipf_mock = MockZip()
+        _get_resource(iaso_client_mock, self.call, zipf_mock, self.app_id, self.feature_flags, options)
+        self.assertIn("entities-1.json", zipf_mock.captured_files)
+        expected = {
+            "instances": [
+                {"id": 1, "json": {"visited_at": None}},
+                {"id": 2, "json": {"visited_at": None}},
+                {"id": 3, "json": {}},
+                {"id": 4},
+            ],
+        }
+        self.assertDictEqual(json.loads(zipf_mock.captured_files["entities-1.json"])["results"], expected)
 
 
 class CursorPaginationShimTest(TestCase):

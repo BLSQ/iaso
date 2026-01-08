@@ -155,6 +155,12 @@ class PlanningSerializer(serializers.ModelSerializer):
         return data
 
 
+class PlanningWriteSerializer(PlanningSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields.pop("selected_sampling_results", None)
+
+
 class SamplingGroupSerializer(serializers.ModelSerializer):
     org_unit_count = serializers.SerializerMethodField()
 

@@ -32,6 +32,7 @@ from .serializers import (
     PlanningSamplingResultReadSerializer,
     PlanningSamplingResultWriteSerializer,
     PlanningSerializer,
+    PlanningWriteSerializer,
 )
 
 
@@ -55,11 +56,33 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     }
     audit_serializer = AuditPlanningSerializer  # type: ignore
 
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return PlanningWriteSerializer
+        return PlanningSerializer
+
     def get_queryset(self):
         user = self.request.user
         return (
             self.queryset.filter_for_user(user).select_related("project", "org_unit", "team").prefetch_related("forms")
         )
+
+    def _read_response(self, instance, status_code=status.HTTP_200_OK):
+        read_serializer = PlanningSerializer(instance, context=self.get_serializer_context())
+        return Response(read_serializer.data, status=status_code)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return self._read_response(serializer.instance, status_code=status.HTTP_201_CREATED)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return self._read_response(instance)
 
 
 class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):

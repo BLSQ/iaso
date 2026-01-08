@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.utils.timezone import now
 
 from hat.audit.models import Modification
-from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningSerializer
+from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningWriteSerializer
 from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, SourceVersion, Task
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.team import Team
@@ -101,7 +101,7 @@ class PlanningTestCase(APITestCase):
         user = User.objects.get(username="test")
         request = mock.Mock(user=user)
         org_unit = self.org_unit
-        planning_serializer = PlanningSerializer(
+        planning_serializer = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "My Planning",
@@ -116,7 +116,7 @@ class PlanningTestCase(APITestCase):
             },
         )
         self.assertTrue(planning_serializer.is_valid(), planning_serializer.errors)
-        failing_dates = PlanningSerializer(
+        failing_dates = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "My Planning",
@@ -130,7 +130,7 @@ class PlanningTestCase(APITestCase):
             },
         )
         self.assertFalse(failing_dates.is_valid(), failing_dates.errors)
-        failing_teams = PlanningSerializer(
+        failing_teams = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "My Planning",
@@ -257,7 +257,7 @@ class PlanningTestCase(APITestCase):
         valid_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
 
         # Test valid pipeline_uuids
-        serializer = PlanningSerializer(
+        serializer = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "Test Planning with Pipelines",
@@ -282,7 +282,7 @@ class PlanningTestCase(APITestCase):
         request = mock.Mock(user=user)
 
         # Test invalid UUID format
-        serializer = PlanningSerializer(
+        serializer = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "Test Planning with Invalid UUIDs",
@@ -303,7 +303,7 @@ class PlanningTestCase(APITestCase):
         request = mock.Mock(user=user)
 
         # Test non-list value
-        serializer = PlanningSerializer(
+        serializer = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "Test Planning with Non-List UUIDs",
@@ -446,7 +446,7 @@ class PlanningTestCase(APITestCase):
             version=version, name="Child Health Center", org_unit_type=org_unit_type, parent=root_org_unit
         )
 
-        serializer = PlanningSerializer(
+        serializer = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "Test Planning with Target Type",
@@ -778,7 +778,7 @@ class PlanningTestCase(APITestCase):
         org_unit_type = OrgUnitType.objects.create(name="Wrong Type")
         org_unit_type.projects.add(self.project2)
 
-        serializer = PlanningSerializer(
+        serializer = PlanningWriteSerializer(
             context={"request": request},
             data={
                 "name": "Test Planning Wrong Type",

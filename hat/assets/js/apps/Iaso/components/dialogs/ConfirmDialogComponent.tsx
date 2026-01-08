@@ -1,6 +1,6 @@
 import React, { Fragment, FunctionComponent, ReactNode } from 'react';
 
-import { Box, Button, Tooltip } from '@mui/material';
+import { Box, Button, IconButton, Tooltip } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,6 +13,7 @@ import MESSAGES from './messages';
 
 type Props = {
     btnMessage: string;
+    BtnIcon?: React.ElementType;
     message: string | ReactNode;
     question: string | ReactNode;
     confirm: () => void;
@@ -27,6 +28,7 @@ type Props = {
 
 const ConfirmDialog: FunctionComponent<Props> = ({
     btnMessage,
+    BtnIcon,
     message,
     question,
     confirm,
@@ -56,15 +58,27 @@ const ConfirmDialog: FunctionComponent<Props> = ({
         <>
             <Tooltip title={tooltipMessage}>
                 <Box>
-                    <Button
-                        variant={btnVariant}
-                        size={btnSize}
-                        color="primary"
-                        disabled={btnDisabled}
-                        onClick={() => handleClickOpen()}
-                    >
-                        {btnMessage}
-                    </Button>
+                    {BtnIcon ? (
+                        <Tooltip title={tooltipMessage}>
+                            <IconButton
+                                disabled={btnDisabled}
+                                color="primary"
+                                onClick={() => handleClickOpen()}
+                            >
+                                <BtnIcon></BtnIcon>
+                            </IconButton>
+                        </Tooltip>
+                    ) : (
+                        <Button
+                            variant={btnVariant}
+                            size={btnSize}
+                            color="primary"
+                            disabled={btnDisabled}
+                            onClick={() => handleClickOpen()}
+                        >
+                            {btnMessage}
+                        </Button>
+                    )}
                 </Box>
             </Tooltip>
             <Dialog

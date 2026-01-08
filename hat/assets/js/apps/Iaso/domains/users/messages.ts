@@ -337,6 +337,11 @@ const MESSAGES = defineMessages({
             'Caution: This file will contain sensitive information, for this reason the exported file will be encrypted. Please choose a password of at least 8 characters to encrypt the file. You will need to provide this password when setting up the mobile application.',
         id: 'iaso.users.exportMobileAppBodyWarning',
     },
+    exportMobileAppBodyExcludeFromFilters: {
+        defaultMessage:
+            'Exclude the exported participants from the mobile app filter counts.',
+        id: 'iaso.users.exportMobileAppBodyExcludeFromFilters',
+    },
     exportMobileAppBodySure: {
         defaultMessage: 'Are you sure you wish to create the export file?',
         id: 'iaso.users.exportMobileAppBodySure',

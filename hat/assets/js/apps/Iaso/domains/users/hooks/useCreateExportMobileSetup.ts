@@ -7,17 +7,19 @@ export type ExportPayload = {
     userId: number;
     projectId: number;
     password: string;
+    options: object;
 };
 
 export const useCreateExportMobileSetup = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: (data: ExportPayload) => {
-            const { userId, projectId, password } = data;
+            const { userId, projectId, password, options } = data;
 
             return postRequest('/api/tasks/create/exportmobilesetup/', {
                 user_id: userId,
                 project_id: projectId,
                 password,
+                options,
             });
         },
         showSuccessSnackBar: false,

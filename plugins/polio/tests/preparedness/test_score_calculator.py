@@ -4,7 +4,7 @@ from iaso.test import TestCase
 from plugins.polio.preparedness.calculator import get_preparedness_score
 
 
-class CampaignCalculatorTestCase(TestCase):
+class ScoreCalculatorTestCase(TestCase):
     def setUp(self) -> None:
         with open("./plugins/polio/preparedness/test_data/example1.json") as json_data:
             self.preparedness_preview = json.load(json_data)

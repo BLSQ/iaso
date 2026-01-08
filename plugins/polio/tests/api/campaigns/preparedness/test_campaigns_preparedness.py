@@ -42,7 +42,7 @@ class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
 
     def test_two_campaign_round_empty(self):
-        type, created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+        type, _ = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
         campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
         campaign_a.campaign_types.add(type)
         campaign_a.rounds.create(number=1)
@@ -60,7 +60,7 @@ class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(len(r), 0)
 
     def test_two_campaign_round_error(self):
-        type, created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+        type, _ = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
         campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
         campaign_a.campaign_types.add(type)
         round_one = campaign_a.rounds.create(number=1)

@@ -11,7 +11,7 @@ from plugins.polio.api.campaigns.serializers.campaigns import CampaignSerializer
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 
-class LQASIMPolioTestCase(APITestCase):
+class CampaignStatusPolioTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")

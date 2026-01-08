@@ -5,7 +5,7 @@ from iaso.test import APITestCase
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 
-class TeamAPITestCase(APITestCase):
+class CampaignLogsAPITestCase(APITestCase):
     fixtures = ["user.yaml"]
     c: Campaign
     user: User

@@ -5,7 +5,15 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Alert, Box, Button, Typography } from '@mui/material';
+import {
+    Alert,
+    Box,
+    Button,
+    Typography,
+    Checkbox,
+    FormGroup,
+    FormControlLabel,
+} from '@mui/material';
 import LinearProgress, {
     LinearProgressProps,
 } from '@mui/material/LinearProgress';
@@ -92,6 +100,8 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
     );
     const [password, setPassword] = useState<string>();
     const [passwordErrors, setPasswordErrors] = useState<string>();
+    // Trypelim-specific option (SLEEP-1698):
+    const [excludeFromFilters, setexcludeFromFilters] = useState<boolean>(true);
     const [isExporting, setIsExporting] = useState<boolean>(false);
     const [taskId, setTaskId] = useState<number>();
     const [presignedUrl, setPresignedUrl] = useState<string>();
@@ -122,6 +132,9 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
             userId: selectedUser.user_id,
             projectId: selectedProject.id,
             password,
+            options: {
+                strip_visited_at: excludeFromFilters,
+            },
         })
             .then((task: TaskApiResponse<any>) => {
                 setIsExporting(true);
@@ -266,6 +279,24 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
                                 value={password}
                                 errors={passwordErrors}
                             />
+                            <Typography my={2}>
+                                <FormGroup>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                size="small"
+                                                checked={excludeFromFilters}
+                                                onChange={(_, value) =>
+                                                    setexcludeFromFilters(value)
+                                                }
+                                            />
+                                        }
+                                        label={formatMessage(
+                                            MESSAGES.exportMobileAppBodyExcludeFromFilters,
+                                        )}
+                                    />
+                                </FormGroup>
+                            </Typography>
                             <Typography my={2}>
                                 {formatMessage(
                                     MESSAGES.exportMobileAppBodySure,

@@ -1,10 +1,9 @@
 from rest_framework import routers
 
 from iaso.api.config import ConfigViewSet
-from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
-from plugins.polio.api.campaigns.campaigns import CampaignViewSet
+from plugins.polio.api.campaign_groups.views import CampaignGroupViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
-from plugins.polio.api.campaigns.subactivities import SubActivityViewSet
+from plugins.polio.api.campaigns.views.campaigns import CampaignViewSet
 from plugins.polio.api.chronogram.views import ChronogramTaskViewSet, ChronogramTemplateTaskViewSet, ChronogramViewSet
 from plugins.polio.api.country_plan.views import CountryPlanViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
@@ -41,8 +40,9 @@ from plugins.polio.api.notifications.views import NotificationViewSet
 from plugins.polio.api.performance_thresholds.views import PerformanceThresholdsViewSet
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
-from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
+from plugins.polio.api.rounds.views import RoundViewSet
+from plugins.polio.api.subactivities.views import SubActivityViewSet
 from plugins.polio.api.vaccines.doses_per_vaccine import DosesPerVialViewset
 from plugins.polio.api.vaccines.public_vaccine_stock import PublicVaccineStockViewset
 from plugins.polio.api.vaccines.repository_forms import VaccineRepositoryFormsViewSet

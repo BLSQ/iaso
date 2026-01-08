@@ -51,6 +51,7 @@ def export_mobile_app_setup_for_user(
     user_id,
     project_id,
     password,
+    options,
     task=None,
 ):
     the_task = task
@@ -88,7 +89,7 @@ def export_mobile_app_setup_for_user(
                     progress_value=the_task.progress_value + 1,
                     progress_message=f"Fetching {call['filename']}",
                 )
-                _get_resource(iaso_client, call, zipf, project.app_id, feature_flags)
+                _get_resource(iaso_client, call, zipf, project.app_id, feature_flags, options)
 
         s3_object_name = _encrypt_and_upload_to_s3(tmp_dir, export_name, password)
 
@@ -231,7 +232,7 @@ def _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state):
     return result, filename
 
 
-def _get_resource(iaso_client, call, zipf, app_id, feature_flags):
+def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
     if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
         logger.info(f"{call['filename']}: not writing, feature flag missing.")
         return
@@ -292,6 +293,13 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags):
             for record in result["results"]:
                 # don't use _extract_filename_from_url to preserve subpath
                 record["file"] = "formattachments/" + urlparse(record["file"]).path.split("/form_attachments/")[-1]
+
+        # trypelim-specific
+        # SLEEP-1698: set `visited_at` attribute to null so that the instances are excluded from filters
+        if call["filename"] == "entities" and options.get("strip_visited_at", False) and "results" in result:
+            for instance in result["results"].get("instances", []):
+                if "visited_at" in instance.get("json", []):
+                    instance["json"]["visited_at"] = None
 
         with zipf.open(filename) as json_file:
             json.dump(result, json_file)
@@ -403,8 +411,6 @@ def _download_and_save_file(iaso_client, zipf, folder_name, url, non_s3_url):
 def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
     dest_name = f"{source_name}.zip"
 
-    logger.info("Encrypting zipfile")
-
     encrypted_file_path = encrypt_file(
         file_path=tmp_dir,
         file_name_in=source_name,
@@ -412,7 +418,7 @@ def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
         password=password,
     )
 
-    logger.info("Uploading zipfile to S3")
+    logger.info(f"Uploading zipfile to S3 {dest_name}")
     s3_object_name = "export-files/" + dest_name
     upload_file_to_s3(encrypted_file_path, object_name=s3_object_name)
     return s3_object_name

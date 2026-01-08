@@ -208,6 +208,7 @@ class IasoTasksTestCase(APITestCase):
                     "user_id": 1,
                     "password": "XXXXXXXXXX",
                     "project_id": self.project.id,
+                    "options": {},
                 },
                 "method": "export_mobile_app_setup_for_user",
                 "module": "iaso.tasks.export_mobile_app_setup_for_user",

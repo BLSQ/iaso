@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from hat.audit.audit_mixin import AuditMixin
 from iaso.api.common import HasPermission, ModelViewSet
 from plugins.polio.api.rounds.reasons_for_delay.serializers import (
+    AuditReasonForDelaySerializer,
     ReasonForDelayForCampaignSerializer,
     ReasonForDelaySerializer,
 )
@@ -23,7 +24,7 @@ class ReasonForDelayViewSet(AuditMixin, ModelViewSet):
         DjangoFilterBackend,
     ]
 
-    audit_serializer = AuditReasonForDelaySerializer  # type: ignore
+    audit_serializer = AuditReasonForDelaySerializer
 
     # TODO annotate to be able to sort on time_selected
     def get_queryset(self):

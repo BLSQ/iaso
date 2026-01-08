@@ -3,7 +3,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions
 
 from iaso.api.common import ModelViewSet
-from plugins.polio.api.shared_serializers import RoundDateHistoryEntrySerializer
+from plugins.polio.api.rounds.round_date_history.serializers import RoundDateHistoryEntrySerializer
 from plugins.polio.models import RoundDateHistoryEntry
 
 

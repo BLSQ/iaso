@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.fields import Field
 
 from iaso.api.common import UserSerializer
-from plugins.polio.api.rounds.reasons_for_delay import (
+from plugins.polio.api.rounds.reasons_for_delay.serializers import (
     ReasonForDelayFieldSerializer,
     ReasonForDelayForCampaignSerializer,
 )

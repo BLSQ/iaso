@@ -39,8 +39,8 @@ from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgrou
 from plugins.polio.api.notifications.views import NotificationViewSet
 from plugins.polio.api.performance_thresholds.views import PerformanceThresholdsViewSet
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
-from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
-from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
+from plugins.polio.api.rounds.reasons_for_delay.views import ReasonForDelayViewSet
+from plugins.polio.api.rounds.round_date_history.views import RoundDateHistoryEntryViewset
 from plugins.polio.api.rounds.views import RoundViewSet
 from plugins.polio.api.subactivities.views import SubActivityViewSet
 from plugins.polio.api.vaccines.doses_per_vaccine import DosesPerVialViewset

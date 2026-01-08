@@ -297,9 +297,10 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
         # trypelim-specific
         # SLEEP-1698: set `visited_at` attribute to null so that the instances are excluded from filters
         if call["filename"] == "entities" and options.get("strip_visited_at", False) and "results" in result:
-            for instance in result["results"].get("instances", []):
-                if "visited_at" in instance.get("json", []):
-                    instance["json"]["visited_at"] = None
+            for entity in result["results"]:
+                for instance in entity.get("instances", []):
+                    if "visited_at" in instance.get("json", []):
+                        instance["json"]["visited_at"] = None
 
         with zipf.open(filename) as json_file:
             json.dump(result, json_file)

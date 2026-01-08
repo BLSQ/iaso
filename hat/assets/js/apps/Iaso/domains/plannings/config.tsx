@@ -68,12 +68,9 @@ const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
     );
 };
 
-export const usePlanningColumns = (params: any, count: number): Column[] => {
+export const usePlanningColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: deletePlanning } = useDeletePlanning({
-        params,
-        count,
-    });
+    const { mutateAsync: deletePlanning } = useDeletePlanning();
     return useMemo<Column[]>(
         () => [
             {

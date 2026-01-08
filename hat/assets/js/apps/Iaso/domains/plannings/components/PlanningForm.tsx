@@ -14,7 +14,6 @@ import {
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
-import { useQueryClient } from 'react-query';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -46,10 +45,10 @@ import {
     SavePlanningQuery,
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
-import { useCanAssign } from '../hooks/useCanAssign';
 import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
 import { Planning, PageMode } from '../types';
+import { canAssignPlanning } from '../utils';
 
 const styles: SxStyles = {
     paper: {
@@ -105,7 +104,10 @@ export const PlanningForm: FunctionComponent<Props> = ({
         },
         [mode, redirectToReplace],
     );
-    const { mutateAsync: savePlanning } = useSavePlanning(mode, onSaveSuccess);
+    const { mutateAsync: savePlanning } = useSavePlanning({
+        type: mode,
+        onSuccess: onSaveSuccess,
+    });
     const {
         apiErrors,
         payload,
@@ -123,12 +125,8 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
         convertError: convertAPIErrorsToState,
     });
-    const queryClient = useQueryClient();
-    const { mutateAsync: deletePlanning } = useDeletePlanning({
-        onSuccess: () => {
-            queryClient.invalidateQueries(['planningsList']);
-            redirectTo(`/${baseUrls.planning}`);
-        },
+    const { mutateAsync: deletePlanning } = useDeletePlanning(() => {
+        redirectTo(`/${baseUrls.planning}`);
     });
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
@@ -257,7 +255,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
     const publishingStatusOptions = useGetPublishingStatusOptions();
-    const canAssign = useCanAssign(planning);
+    const canAssign = canAssignPlanning(planning);
     return (
         <FormikProvider value={formik}>
             <Grid container spacing={2}>
@@ -496,7 +494,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             startIcon={<Assignment />}
                                         >
                                             {formatMessage(
-                                                MESSAGES.viewPlanning,
+                                                MESSAGES.assignments,
                                             )}
                                         </LinkButton>
                                     </>

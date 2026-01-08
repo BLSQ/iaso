@@ -61,9 +61,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Team',
         id: 'iaso.label.team',
     },
-    viewPlanning: {
+    assignments: {
         defaultMessage: 'Assignments',
-        id: 'iaso.label.viewPlanning',
+        id: 'iaso.label.assignments',
     },
     cancel: {
         id: 'iaso.label.cancel',

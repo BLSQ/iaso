@@ -7,9 +7,9 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
-import { useCanAssign } from '../hooks/useCanAssign';
 import MESSAGES from '../messages';
 import { Planning } from '../types';
+import { canAssignPlanning } from '../utils';
 
 interface ActionsCellProps extends ColumnCell<Planning> {
     deletePlanning: (id: number) => void;
@@ -19,7 +19,7 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     row: { original: planning },
     deletePlanning,
 }) => {
-    const canAssign = useCanAssign(planning);
+    const canAssign = canAssignPlanning(planning);
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
@@ -32,7 +32,7 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
             </DisplayIfUserHasPerm>
             <IconButtonComponent
                 url={`/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`}
-                tooltipMessage={MESSAGES.viewPlanning}
+                tooltipMessage={MESSAGES.assignments}
                 size="small"
                 replace={false}
                 overrideIcon={Assignment}

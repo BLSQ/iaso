@@ -1,6 +1,6 @@
-import { Planning } from '../types';
+import { Planning } from './types';
 
-export const useCanAssign = (planning?: Planning): boolean => {
+export const canAssignPlanning = (planning?: Planning): boolean => {
     if (!planning) return false;
 
     const hasPipelines =

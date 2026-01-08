@@ -53,7 +53,7 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
         [orgUnitTypeHierarchy],
     );
     const { mutateAsync: savePlanning, isLoading: isSavingPlanningResults } =
-        useSavePlanning('edit', undefined, false);
+        useSavePlanning({ type: 'edit', showSuccessSnackBar: false });
 
     const columns = useSamplingResultsColumns(planning, savePlanning);
     return (

@@ -169,7 +169,7 @@ class Task(models.Model):
     def create_log_entry_if_needed(self, message: Optional[str]):
         if message:
             # In tests, everything is in a transaction so trying to go around it will always result in failure.
-            database = "task_logs" if not settings.IN_TESTS else "default"
+            database = "task_logs" if "task_logs" in settings.DATABASES and not settings.IN_TESTS else "default"
             TaskLog.objects.using(database).create(task=self, message=message)
 
 

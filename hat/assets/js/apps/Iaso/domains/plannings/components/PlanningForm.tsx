@@ -125,8 +125,10 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
         convertError: convertAPIErrorsToState,
     });
-    const { mutateAsync: deletePlanning } = useDeletePlanning(() => {
-        redirectTo(`/${baseUrls.planning}`);
+    const { mutateAsync: deletePlanning } = useDeletePlanning({
+        onSuccessCustomAction: () => {
+            redirectTo(`/${baseUrls.planning}`);
+        },
     });
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =

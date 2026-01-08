@@ -31,6 +31,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
             f"{BASE_URL}?app_id={APP_ID}",
             {"zip_file": SimpleUploadedFile(file_name, b"Some file content")},
             format="multipart",
+            HTTP_USER_AGENT="my_user_agent",
         )
         self.assertJSONResponse(response, 204)
 
@@ -39,6 +40,8 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         self.assertEqual(api_import.import_type, "bulk")
         self.assertFalse(api_import.has_problem)
         self.assertIsNotNone(api_import.file)
+        self.assertIn("user_agent", api_import.json_body)
+        self.assertEqual(api_import.json_body["user_agent"], "my_user_agent")
 
         expected_file_name = api_import_upload_to(api_import, file_name)
         self.assertEqual(api_import.file.name, expected_file_name)
@@ -53,6 +56,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
             f"{BASE_URL}?app_id={APP_ID}",
             {"zip_file": SimpleUploadedFile("file.zip", b"Some file content")},
             format="multipart",
+            HTTP_USER_AGENT="my_user_agent",
         )
         self.assertJSONResponse(response, 204)
 
@@ -61,6 +65,8 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         self.assertEqual(api_import.import_type, "bulk")
         self.assertFalse(api_import.has_problem)
         self.assertIsNotNone(api_import.file)
+        self.assertIn("user_agent", api_import.json_body)
+        self.assertEqual(api_import.json_body["user_agent"], "my_user_agent")
 
         task = Task.objects.last()
         self.assertEqual(task.created_by, None)

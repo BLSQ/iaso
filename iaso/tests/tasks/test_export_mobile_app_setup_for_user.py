@@ -188,14 +188,16 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
             {
                 "next": None,
                 "previous": None,
-                "results": {
-                    "instances": [
-                        {"id": 1, "json": {"visited_at": "2021-03-10"}},
-                        {"id": 2, "json": {"visited_at": None}},
-                        {"id": 3, "json": {}},
-                        {"id": 4},
-                    ],
-                },
+                "results": [
+                    {
+                        "instances": [
+                            {"id": 1, "json": {"visited_at": "2021-03-10"}},
+                            {"id": 2, "json": {"visited_at": None}},
+                            {"id": 3, "json": {}},
+                            {"id": 4},
+                        ]
+                    }
+                ],
             },
         ]
         options = {
@@ -212,7 +214,7 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
                 {"id": 4},
             ],
         }
-        self.assertDictEqual(json.loads(zipf_mock.captured_files["entities-1.json"])["results"], expected)
+        self.assertDictEqual(json.loads(zipf_mock.captured_files["entities-1.json"])["results"][0], expected)
 
 
 class CursorPaginationShimTest(TestCase):

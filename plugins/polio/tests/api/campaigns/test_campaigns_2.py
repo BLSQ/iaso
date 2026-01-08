@@ -98,7 +98,7 @@ class PolioAPITestCase(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(self.yoda)
 
-    @mock.patch("plugins.polio.api.campaigns.campaigns.SpreadSheetImport")
+    @mock.patch("plugins.polio.api.preparedness.utils.SpreadSheetImport")
     def test_preview_invalid_document(self, mock_SpreadSheetImport, *_):
         mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
         url = "https://docs.google.com/spreadsheets/d/1"

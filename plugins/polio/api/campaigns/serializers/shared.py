@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from plugins.polio.api.lqas_im.lqas_im_dropdowns import CampaignDropDownSerializer
 from plugins.polio.api.shared_serializers import GroupSerializer
 from plugins.polio.models import (
     Campaign,

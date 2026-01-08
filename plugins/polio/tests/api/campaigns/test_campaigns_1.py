@@ -8,7 +8,7 @@ from iaso import models as m
 from iaso.models import Account
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
-from plugins.polio.api.campaigns.campaigns import AnonymousCampaignSerializer
+from plugins.polio.api.campaigns.serializers.anonymous import AnonymousCampaignSerializer
 from plugins.polio.models import (
     Campaign,
     CampaignScope,

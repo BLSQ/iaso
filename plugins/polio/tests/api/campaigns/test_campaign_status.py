@@ -7,7 +7,7 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
-from plugins.polio.api.campaigns.campaigns import CampaignSerializer
+from plugins.polio.api.campaigns.serializers.campaigns import CampaignSerializer
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 

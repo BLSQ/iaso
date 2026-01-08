@@ -8,7 +8,7 @@ from iaso import models as m
 from iaso.models import Account
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
-from plugins.polio.api.campaigns.campaigns import CampaignViewSet
+from plugins.polio.api.campaigns.views.campaigns import CampaignViewSet
 from plugins.polio.models import CampaignScope
 from plugins.polio.preparedness.spreadsheet_manager import *
 

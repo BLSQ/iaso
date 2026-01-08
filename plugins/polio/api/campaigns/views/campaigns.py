@@ -34,8 +34,7 @@ from plugins.polio.api.campaigns.serializers.calendar import CalendarCampaignSer
 from plugins.polio.api.campaigns.serializers.campaigns import CampaignSerializer
 from plugins.polio.api.campaigns.serializers.list import ListCampaignSerializer
 from plugins.polio.api.campaigns.serializers.retrieve import RetrieveCampaignSerializer
-from plugins.polio.api.campaigns.serializers.shared import CampaignTypeSerializer
-from plugins.polio.api.lqas_im.lqas_im_dropdowns import CampaignDropDownSerializer
+from plugins.polio.api.campaigns.serializers.shared import CampaignDropDownSerializer, CampaignTypeSerializer
 from plugins.polio.api.preparedness.serializers import (
     CampaignPreparednessSpreadsheetSerializer,
     PreparednessPreviewSerializer,

@@ -51,7 +51,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.see',
     },
     actions: {
-        id: 'iaso.label.actions',
+        id: 'iaso.storages.actions',
         defaultMessage: 'Action(s)',
     },
     last_sync_at: {

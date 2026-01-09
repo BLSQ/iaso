@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     actions: {
-        id: 'iaso.label.actions',
+        id: 'iaso.chronogramTemplateTask.actions',
         defaultMessage: 'Actions',
     },
     no: {

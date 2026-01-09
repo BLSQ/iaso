@@ -54,7 +54,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cancel',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.userRoles.save',
         defaultMessage: 'Save',
     },
     fetchPermissionsError: {

@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.reviewChangeProposal',
     },
     orgUnit: {
-        id: 'iaso.instance.org_unit',
+        id: 'iaso.reviewChanges.orgUnit',
         defaultMessage: 'Org Unit',
     },
     orgUnitType: {
@@ -82,7 +82,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Updated by',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.reviewChanges.save',
         defaultMessage: 'Save',
     },
     cancel: {
@@ -110,7 +110,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Location',
     },
     openingDate: {
-        id: 'iaso.changeRequest.openingDate',
+        id: 'iaso.orgUnits.reviewChanges.openingDate',
         defaultMessage: 'Opening date',
     },
     closingDate: {

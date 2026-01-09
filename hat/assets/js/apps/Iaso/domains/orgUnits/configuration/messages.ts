@@ -43,7 +43,7 @@ const MESSAGES = defineMessages({
     },
     editable_fields: {
         defaultMessage: 'Editable fields',
-        id: 'iaso.label.editableFields',
+        id: 'iaso.orgUnits.configuration.editableFields',
     },
     edition: {
         id: 'iaso.label.edition',
@@ -119,7 +119,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Aliases',
     },
     openingDate: {
-        id: 'iaso.changeRequest.openingDate',
+        id: 'iaso.orgUnits.configuration.openingDate',
         defaultMessage: 'Opening Date',
     },
     closedDate: {
@@ -131,7 +131,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Location',
     },
     editableFields: {
-        id: 'iaso.label.editableFields',
+        id: 'iaso.orgUnits.configuration.editableFieldsTitle',
         defaultMessage: 'Editable Fields',
     },
     possibleTypeIds: {

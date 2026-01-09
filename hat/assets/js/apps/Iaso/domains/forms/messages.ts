@@ -35,7 +35,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.forms.actions',
     },
     ok: {
         id: 'iaso.label.ok',
@@ -358,7 +358,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Semester',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.forms.save',
         defaultMessage: 'Save',
     },
     cancel: {

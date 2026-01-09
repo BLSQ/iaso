@@ -22,7 +22,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cancel',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.stock.save',
         defaultMessage: 'Save',
     },
     name: {
@@ -59,7 +59,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.stock.actions',
     },
     updated_at: {
         defaultMessage: 'Updated',
@@ -138,7 +138,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Are you sure you want to delete this version?',
     },
     deleteError: {
-        id: 'iaso.errors.label',
+        id: 'iaso.stock.deleteError',
         defaultMessage: 'An error occurred',
     },
     deleteSuccess: {
@@ -146,7 +146,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Deleted successfully',
     },
     saveError: {
-        id: 'iaso.errors.label',
+        id: 'iaso.stock.saveError',
         defaultMessage: 'An error occurred',
     },
     saveSuccess: {

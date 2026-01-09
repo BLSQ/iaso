@@ -34,7 +34,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Updated',
     },
     actions: {
-        id: 'iaso.label.actions',
+        id: 'iaso.nationalLogisticsPlan.actions',
         defaultMessage: 'Actions',
     },
     edit: {

@@ -54,7 +54,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create a new lot of payments',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.payments.save',
         defaultMessage: 'Save',
     },
     cancel: {
@@ -115,7 +115,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.payments.actions',
     },
     mark_as_sent: {
         defaultMessage: 'Mark as sent',

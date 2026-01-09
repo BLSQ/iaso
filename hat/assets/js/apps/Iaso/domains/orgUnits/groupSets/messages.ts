@@ -2,15 +2,15 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     actions: {
-        id: 'iaso.label.actions',
+        id: 'iaso.groupSets.actions',
         defaultMessage: 'Action(s)',
     },
     createButton: {
-        id: 'iaso.label.create',
+        id: 'iaso.groupSets.create',
         default: 'Create',
     },
     saveButton: {
-        id: 'iaso.label.save',
+        id: 'iaso.groupSets.save',
         default: 'Save',
     },
     created_at: {

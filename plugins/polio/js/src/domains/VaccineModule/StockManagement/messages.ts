@@ -23,7 +23,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.stockManagement.actions',
     },
     edit: {
         id: 'iaso.label.edit',
@@ -230,7 +230,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Stock correction',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.stockManagement.save',
         defaultMessage: 'Save',
     },
     cancel: {

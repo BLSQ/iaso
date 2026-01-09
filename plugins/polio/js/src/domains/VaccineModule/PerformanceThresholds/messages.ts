@@ -15,14 +15,14 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.label.actions',
+        id: 'iaso.performanceThresholds.actions',
     },
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
     save: {
-        id: 'iaso.label.save',
+        id: 'iaso.performanceThresholds.save',
         defaultMessage: 'Save',
     },
     cancel: {

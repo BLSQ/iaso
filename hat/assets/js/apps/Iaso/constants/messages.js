@@ -243,7 +243,7 @@ const MESSAGES = defineMessages({
     },
     stockItems: {
         defaultMessage: 'Stock entries',
-        id: 'iaso.label.stockItems',
+        id: 'iaso.constants.stockItems',
     },
 });
 

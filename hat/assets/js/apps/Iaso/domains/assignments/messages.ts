@@ -134,32 +134,32 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',
     },
-    QUEUED: {
-        id: 'iaso.tasks.queued',
+    Queued: {
+        id: 'iaso.assignments.queued',
         defaultMessage: 'Queued',
     },
-    RUNNING: {
-        id: 'iaso.tasks.running',
+    Running: {
+        id: 'iaso.assignments.running',
         defaultMessage: 'Running',
     },
-    ERRORED: {
-        id: 'iaso.tasks.errored',
+    Errored: {
+        id: 'iaso.assignments.errored',
         defaultMessage: 'Errored',
     },
-    EXPORTED: {
-        id: 'iaso.tasks.exported',
+    Exported: {
+        id: 'iaso.assignments.exported',
         defaultMessage: 'Exported',
     },
-    SUCCESS: {
-        id: 'iaso.tasks.success',
+    Success: {
+        id: 'iaso.assignments.success',
         defaultMessage: 'Success',
     },
-    SKIPPED: {
-        id: 'iaso.tasks.skipped',
+    Skipped: {
+        id: 'iaso.assignments.skipped',
         defaultMessage: 'Skipped',
     },
-    KILLED: {
-        id: 'iaso.tasks.killed',
+    Killed: {
+        id: 'iaso.assignments.killed',
         defaultMessage: 'Killed',
     },
     addLevel: {

@@ -59,7 +59,7 @@ const MESSAGES = defineMessages({
     },
     org_unit: {
         defaultMessage: 'Org unit',
-        id: 'iaso.instance.org_unit',
+        id: 'iaso.instances.compare.orgUnit',
     },
     period: {
         defaultMessage: 'Period',

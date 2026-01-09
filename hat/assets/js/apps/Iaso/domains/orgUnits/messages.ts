@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    ID: {
+        id: 'iaso.label.id',
+        defaultMessage: 'ID',
+    },
     images: {
         defaultMessage: 'Images',
         id: 'iaso.label.images',
@@ -139,7 +143,7 @@ const MESSAGES = defineMessages({
     },
     save: {
         defaultMessage: 'Save',
-        id: 'iaso.label.save',
+        id: 'iaso.orgUnits.save',
     },
     see: {
         defaultMessage: 'See',

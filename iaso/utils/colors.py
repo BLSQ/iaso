@@ -1,4 +1,4 @@
-from iaso.models.project import DEFAULT_PROJECT_COLOR
+DEFAULT_COLOR = "#1976D2"
 
 
 COLOR_CHOICES = (
@@ -12,7 +12,7 @@ COLOR_CHOICES = (
     ("#4527a0", "Deep Purple 800"),
     ("#5c6bc0", "Indigo 400"),
     ("#42a5f5", "Light Blue 400"),
-    (DEFAULT_PROJECT_COLOR, "Default color"),
+    (DEFAULT_COLOR, "Default color"),
     ("#78909c", "Blue grey 400"),
     ("#26c6da", "Cyan 400"),
     ("#00838f", "Cyan 800"),

@@ -222,13 +222,15 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
     def _create_multiple_campaigns(self, count: int) -> None:
         self.client.force_authenticate(self.user)
+        created_ids = []
         for n in range(count):
             payload = {
                 "account": self.account.pk,
                 "obr_name": f"campaign_{n}",
                 "detection_status": "PENDING",
             }
-            self.client.post("/api/polio/campaigns/", payload, format="json")
+            result = self.client.post("/api/polio/campaigns/", payload, format="json")
+            created_ids.append(result["id"])
 
     def test_filter_by_campaign_types(self):
         self.client.force_authenticate(self.user)
@@ -293,7 +295,10 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
     def test_filter_test_campaigns(self):
         self.client.force_authenticate(self.user)
-        self.assertEqual(Campaign.objects.count(), 0)
+        # Count existing test campaigns from setUpTestData
+        initial_test_count = Campaign.objects.filter(is_test=True).count()
+        # Count existing visible non-test campaigns from setUpTestData (default filters: show_test=false, on_hold=false)
+        initial_visible_count = Campaign.objects.filter(is_test=False, on_hold=False).count()
 
         payload1 = {
             "account": self.account.pk,
@@ -315,53 +320,63 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         response = self.client.get("/api/polio/campaigns/?is_test=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
 
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), initial_test_count + 1)
         self.assertTrue(result[0]["is_test"])
 
         # return non test campaigns by default
         response = self.client.get("/api/polio/campaigns/")
         result = self.assertJSONResponse(response, HTTP_200_OK)
 
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), initial_visible_count + 1)
         self.assertFalse(result[0]["is_test"])
 
         # return non test campaigns  (explicit exclusion)
         response = self.client.get("/api/polio/campaigns?is_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
 
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), initial_visible_count + 1)
         self.assertFalse(result[0]["is_test"])
 
     def test_filter_by_deletion_status(self):
-        self._create_multiple_campaigns(10)
+        self.client.force_authenticate(self.user)
+        # Count existing campaigns from setUpTestData
+        initial_total_count = Campaign.objects.count()
 
-        campaigns = Campaign.objects.all()
+        new_ids = self._create_multiple_campaigns(10)
 
-        for c in campaigns[:8]:
-            self.client.delete(f"/api/polio/campaigns/{c.id}/")
+        total_campaigns = initial_total_count + 10
+
+        # Delete first 8 campaigns
+        deleted_count = 0
+        for c_id in new_ids[:8]:
+            self.client.delete(f"/api/polio/campaigns/{c_id}/")
+            deleted_count += 1
 
         response = self.client.get("/api/polio/campaigns/?deletion_status=deleted", format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 8)
+        self.assertEqual(len(response.json()), deleted_count)
 
-        # test that it return all
+        # test that it return all (including deleted)
         response = self.client.get("/api/polio/campaigns/?deletion_status=all", format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 10)
+        self.assertEqual(len(response.json()), total_campaigns)
 
-        # per defaut it return undeleted, i.e "active"
+        # per defaut it return undeleted, i.e "active" (with default filters: show_test=false, on_hold=false)
+        # Calculate remaining visible campaigns after deletion
+        remaining_visible = Campaign.objects.filter(deleted_at__isnull=True, is_test=False, on_hold=False).count()
+
         response = self.client.get("/api/polio/campaigns/", format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json()), remaining_visible)
 
         # filter on active
         response = self.client.get("/api/polio/campaigns/?deletion_status=active", format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json()), remaining_visible)
 
     def test_filter_campaign_category_empty_param(self):
         """Campaign category can be one of 'preventive', 'on_hold', 'is_planned', or 'regular'.

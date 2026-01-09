@@ -386,6 +386,7 @@ export const planningDetailsPath = {
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <PlanningDetails />,
 };
+
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     routerUrl: `${baseUrls.assignments}/*`,

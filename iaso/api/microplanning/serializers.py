@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -417,3 +419,29 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
             # TODO: investigate type error on next line
             r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
         return r
+
+
+class MinimalOrgUnitSerializer(serializers.ModelSerializer):
+    geo_json = serializers.SerializerMethodField()
+    has_geo_json = serializers.SerializerMethodField()
+    latitude = serializers.FloatField(source="location.y", read_only=True)
+    longitude = serializers.FloatField(source="location.x", read_only=True)
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
+        read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
+
+    def get_geo_json(self, org_unit: OrgUnit):
+        if not org_unit.simplified_geom:
+            return None
+
+        geometry = json.loads(org_unit.simplified_geom.geojson)
+        return {
+            "type": "FeatureCollection",
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            "features": [{"type": "Feature", "id": org_unit.id, "geometry": geometry, "properties": {}}],
+        }
+
+    def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
+        return bool(org_unit.simplified_geom)

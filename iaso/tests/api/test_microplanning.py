@@ -92,7 +92,7 @@ class PlanningTestCase(APITestCase):
                 "pipeline_uuids": [],
                 "target_org_unit_type": None,
                 "target_org_unit_type_details": None,
-                "selected_sampling_results": None,
+                "selected_sampling_result": None,
             },
             r,
         )
@@ -636,7 +636,7 @@ class PlanningTestCase(APITestCase):
         response = self.client.post("/api/microplanning/samplings/", data=payload, format="json")
         self.assertJSONResponse(response, 403)
 
-    def test_planning_patch_sets_selected_sampling_results(self):
+    def test_planning_patch_sets_selected_sampling_result(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
@@ -652,17 +652,17 @@ class PlanningTestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/microplanning/plannings/{self.planning.id}/",
-            data={"selected_sampling_results_id": sampling.id},
+            data={"selected_sampling_result_id": sampling.id},
             format="json",
         )
         r = self.assertJSONResponse(response, 200)
         self.planning.refresh_from_db()
 
-        self.assertEqual(self.planning.selected_sampling_results, sampling)
-        self.assertEqual(r["selected_sampling_results"]["id"], sampling.id)
-        self.assertEqual(r["selected_sampling_results"]["pipeline_id"], "pipeline-detail")
+        self.assertEqual(self.planning.selected_sampling_result, sampling)
+        self.assertEqual(r["selected_sampling_result"]["id"], sampling.id)
+        self.assertEqual(r["selected_sampling_result"]["pipeline_id"], "pipeline-detail")
 
-    def test_planning_patch_keeps_selected_sampling_results_when_field_absent(self):
+    def test_planning_patch_keeps_selected_sampling_result_when_field_absent(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
@@ -675,7 +675,7 @@ class PlanningTestCase(APITestCase):
             parameters={"limit": 1},
             created_by=user_with_perms,
         )
-        self.planning.selected_sampling_results = sampling
+        self.planning.selected_sampling_result = sampling
         self.planning.save()
 
         response = self.client.patch(
@@ -686,10 +686,10 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.planning.refresh_from_db()
 
-        self.assertEqual(self.planning.selected_sampling_results, sampling)
-        self.assertEqual(r["selected_sampling_results"]["id"], sampling.id)
+        self.assertEqual(self.planning.selected_sampling_result, sampling)
+        self.assertEqual(r["selected_sampling_result"]["id"], sampling.id)
 
-    def test_planning_patch_unsets_selected_sampling_results_with_null(self):
+    def test_planning_patch_unsets_selected_sampling_result_with_null(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
@@ -702,21 +702,21 @@ class PlanningTestCase(APITestCase):
             parameters={"limit": 2},
             created_by=user_with_perms,
         )
-        self.planning.selected_sampling_results = sampling
+        self.planning.selected_sampling_result = sampling
         self.planning.save()
 
         response = self.client.patch(
             f"/api/microplanning/plannings/{self.planning.id}/",
-            data={"selected_sampling_results_id": None},
+            data={"selected_sampling_result_id": None},
             format="json",
         )
         r = self.assertJSONResponse(response, 200)
         self.planning.refresh_from_db()
 
-        self.assertIsNone(self.planning.selected_sampling_results)
-        self.assertIsNone(r["selected_sampling_results"])
+        self.assertIsNone(self.planning.selected_sampling_result)
+        self.assertIsNone(r["selected_sampling_result"])
 
-    def test_planning_patch_selected_sampling_results_wrong_planning(self):
+    def test_planning_patch_selected_sampling_result_wrong_planning(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
@@ -735,14 +735,14 @@ class PlanningTestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/microplanning/plannings/{self.planning.id}/",
-            data={"selected_sampling_results_id": sampling.id},
+            data={"selected_sampling_result_id": sampling.id},
             format="json",
         )
         r = self.assertJSONResponse(response, 400)
-        self.assertIn("selected_sampling_results_id", r)
-        self.assertEqual(r["selected_sampling_results_id"][0], "samplingNotForPlanning")
+        self.assertIn("selected_sampling_result_id", r)
+        self.assertEqual(r["selected_sampling_result_id"][0], "samplingNotForPlanning")
 
-    def test_planning_detail_includes_selected_sampling_results(self):
+    def test_planning_detail_includes_selected_sampling_result(self):
         self.client.force_authenticate(self.user)
         group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
         group.org_units.add(self.org_unit)
@@ -757,12 +757,12 @@ class PlanningTestCase(APITestCase):
             parameters={"limit": 5},
             created_by=self.user,
         )
-        self.planning.selected_sampling_results = sampling
+        self.planning.selected_sampling_result = sampling
         self.planning.save()
 
         response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
-        selected = r["selected_sampling_results"]
+        selected = r["selected_sampling_result"]
         self.assertEqual(selected["id"], sampling.id)
         self.assertEqual(selected["pipeline_id"], "pipeline-detail")
         self.assertEqual(selected["pipeline_version"], "v1")

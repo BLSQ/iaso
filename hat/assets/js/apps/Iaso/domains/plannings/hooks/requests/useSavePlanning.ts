@@ -22,7 +22,7 @@ export type SavePlanningQuery = {
     publishingStatus: 'published' | 'draft';
     pipelineUuids: string[];
     targetOrgUnitType: number;
-    selected_sampling_results_id?: number | null;
+    selected_sampling_result_id?: number | null;
 };
 
 const convertToApi = data => {
@@ -59,6 +59,11 @@ const convertToApi = data => {
     }
     if (targetOrgUnitType !== undefined) {
         converted.target_org_unit_type = targetOrgUnitType;
+    }
+
+    if (converted.selected_sampling_result_id !== undefined) {
+        converted.selected_sampling_result_id =
+            converted.selected_sampling_result_id;
     }
 
     return converted;

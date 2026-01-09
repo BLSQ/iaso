@@ -61,9 +61,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Team',
         id: 'iaso.label.team',
     },
-    viewPlanning: {
-        defaultMessage: 'View planning',
-        id: 'iaso.label.viewPlanning',
+    assignments: {
+        defaultMessage: 'Assignments',
+        id: 'iaso.label.assignments',
     },
     cancel: {
         id: 'iaso.label.cancel',
@@ -128,6 +128,10 @@ const MESSAGES = defineMessages({
     deleteWarning: {
         id: 'iaso.label.deleteWarning',
         defaultMessage: 'Are you sure you want to delete {name}?',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
     },
     planningAndOrgUnit: {
         id: 'iaso.error.label.planningAndOrgUnit',
@@ -214,6 +218,10 @@ const MESSAGES = defineMessages({
     samplingName: {
         id: 'iaso.plannings.label.samplingName',
         defaultMessage: 'Sampling name',
+    },
+    selectSamplingResult: {
+        id: 'iaso.plannings.label.selectSamplingResult',
+        defaultMessage: 'Select sampling result',
     },
 });
 

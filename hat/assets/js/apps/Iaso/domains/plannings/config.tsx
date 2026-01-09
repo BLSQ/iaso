@@ -1,4 +1,5 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Checkbox } from '@mui/material';
 import {
     Column,
     formatThousand,
@@ -7,6 +8,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from 'Iaso/constants/urls';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
@@ -16,9 +18,9 @@ import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
+import { SavePlanningQuery } from './hooks/requests/useSavePlanning';
 import MESSAGES from './messages';
 import { Planning, SamplingResult } from './types';
-import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 
 type Props = {
     samplingResult: SamplingResult;
@@ -143,8 +145,24 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
     );
 };
 
-export const useSamplingResultsColumns = (planning: Planning): Column[] => {
+export const useSamplingResultsColumns = (
+    planning: Planning,
+    savePlanning: (data: Partial<SavePlanningQuery>) => void,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
+
+    const handleSelectSamplingResult = useCallback(
+        (samplingResultId: number) => {
+            savePlanning({
+                id: planning.id,
+                selected_sampling_result_id:
+                    samplingResultId === planning.selected_sampling_result?.id
+                        ? null
+                        : samplingResultId,
+            });
+        },
+        [savePlanning, planning.id, planning.selected_sampling_result?.id],
+    );
     return useMemo<Column[]>(
         () => [
             {
@@ -188,7 +206,23 @@ export const useSamplingResultsColumns = (planning: Planning): Column[] => {
                     />
                 ),
             },
+            {
+                Header: formatMessage(MESSAGES.selectSamplingResult),
+                accessor: 'selected_sampling_result',
+                Cell: settings => (
+                    <Checkbox
+                        checked={
+                            planning.selected_sampling_result &&
+                            settings.row.original.id ===
+                                planning.selected_sampling_result?.id
+                        }
+                        onChange={() =>
+                            handleSelectSamplingResult(settings.row.original.id)
+                        }
+                    />
+                ),
+            },
         ],
-        [formatMessage, planning],
+        [formatMessage, handleSelectSamplingResult, planning],
     );
 };

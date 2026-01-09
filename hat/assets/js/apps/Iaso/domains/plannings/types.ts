@@ -38,19 +38,16 @@ export type Planning = {
     id: number;
     name: string;
     team_details?: PlanningTeamDetails;
-    team: number;
-    org_unit: number;
     org_unit_details?: PlanningOrgUnitDetails;
     forms: number[];
-    project: number;
     project_details?: PlanningProjectDetails;
     description?: string;
     published_at?: string;
     started_at?: string;
     ended_at?: string;
     pipeline_uuids: string[];
-    target_org_unit_type?: number;
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
+    selected_sampling_result?: SamplingResult;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 
@@ -71,6 +68,14 @@ export type UserDetails = {
     username: string;
 };
 
+export type SelectedSamplingResult = {
+    id: number;
+    task_id: number;
+    pipeline_id: string;
+    pipeline_version: string;
+    pipeline_name: string;
+    group_id?: number;
+};
 export type SamplingResult = {
     id: number;
     planning: number;

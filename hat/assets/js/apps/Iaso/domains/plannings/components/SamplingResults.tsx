@@ -17,6 +17,7 @@ import {
     tableDefaults,
     useGetPlanningSamplingResults,
 } from '../hooks/requests/useGetPlanningSamplingResults';
+import { useSavePlanning } from '../hooks/requests/useSavePlanning';
 import MESSAGES from '../messages';
 
 type Props = {
@@ -30,6 +31,9 @@ const styles: SxStyles = {
             // @ts-ignore
             `1px solid ${theme.palette.border.main}`,
         borderRadius: 1,
+        '& .MuiSpeedDial-root': {
+            display: 'none',
+        },
     },
 };
 
@@ -40,8 +44,6 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
     const { data: samplingResults, isFetching: isFetchingSamplingResults } =
         useGetPlanningSamplingResults(`${planning.id}`, params);
 
-    const columns = useSamplingResultsColumns(planning);
-
     const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypesHierarchy(
             planning?.org_unit_details?.org_unit_type || 0,
@@ -50,7 +52,10 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
         () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
         [orgUnitTypeHierarchy],
     );
+    const { mutateAsync: savePlanning, isLoading: isSavingPlanningResults } =
+        useSavePlanning({ type: 'edit', showSuccessSnackBar: false });
 
+    const columns = useSamplingResultsColumns(planning, savePlanning);
     return (
         <Paper sx={styles.paper}>
             <Grid container spacing={2}>
@@ -96,8 +101,10 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
                 elevation={0}
                 countOnTop={false}
                 extraProps={{
-                    loading: isFetchingSamplingResults,
+                    loading:
+                        isFetchingSamplingResults || isSavingPlanningResults,
                     defaultPageSize: tableDefaults.limit,
+                    planning,
                 }}
             />
         </Paper>

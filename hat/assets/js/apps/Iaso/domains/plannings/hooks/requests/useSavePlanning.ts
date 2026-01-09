@@ -22,6 +22,7 @@ export type SavePlanningQuery = {
     publishingStatus: 'published' | 'draft';
     pipelineUuids: string[];
     targetOrgUnitType: number;
+    selected_sampling_result_id?: number | null;
 };
 
 const convertToApi = data => {
@@ -58,6 +59,11 @@ const convertToApi = data => {
     }
     if (targetOrgUnitType !== undefined) {
         converted.target_org_unit_type = targetOrgUnitType;
+    }
+
+    if (converted.selected_sampling_result_id !== undefined) {
+        converted.selected_sampling_result =
+            converted.selected_sampling_result_id;
     }
 
     return converted;
@@ -115,16 +121,23 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
     return postPlanning(duplicate);
 };
 
-export const useSavePlanning = (
-    type: 'create' | 'edit' | 'copy',
-    onSuccess?: (data: Planning) => void,
-): UseMutationResult => {
+type UseSavePlanningArgs = {
+    type: 'create' | 'edit' | 'copy';
+    onSuccess?: (data: Planning) => void;
+    showSuccessSnackBar?: boolean;
+};
+export const useSavePlanning = ({
+    type,
+    onSuccess,
+    showSuccessSnackBar,
+}: UseSavePlanningArgs): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
         invalidateQueryKey: ['planningsList', 'planningDetails'],
         ignoreErrorCodes,
         options: { onSuccess },
+        showSuccessSnackBar,
     });
     const createPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => {

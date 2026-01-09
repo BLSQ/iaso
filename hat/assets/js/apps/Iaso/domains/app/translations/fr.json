@@ -971,6 +971,8 @@
     "iaso.mappings.neverMapAlert": "cette question est considéré comme n'ayant aucune correspondance{breakLine}mais vous pouvez changer d'avis",
     "iaso.mappings.proposedNewOne": "Proposition :",
     "iaso.mappings.removeMapping": "Retirer correspondance",
+    "iaso.mappings.startTypingDataset": "Commencez à taper pour chercher via le nom du dataset dans dhis2",        
+    "iaso.mappings.startTypingFormVersion": "Commencez à taper le nom ou la version du formulaire pour lancer la recherche",
     "iaso.mappings.total_questions": "Nombre de questions",
     "iaso.mappings.trackerEntityIdentifier": "Identifiant de l'entité trackée",
     "iaso.mappings.useInstanceProperty": "Utiliser la propriété d'une instance pour remplir cette question",

@@ -1,4 +1,4 @@
-from django.db.models import BooleanField, Count, TextField, Value
+from django.db.models import BooleanField, CharField, Count, F, TextField, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import Concat
 from rest_framework import exceptions, parsers
@@ -54,7 +54,15 @@ class FormVersionsViewSet(ModelViewSet):
         queryset = queryset.filter(form__deleted_at=None)
         search_name = self.request.query_params.get("search_name", None)
         if search_name:
-            queryset = queryset.filter(form__name__icontains=search_name)
+            queryset = queryset.annotate(
+                full_name=Concat(
+                    F("form__name"),
+                    Value(" - "),
+                    F("version_id"),
+                    output_field=CharField(),
+                )
+            ).filter(full_name__icontains=search_name)
+
         form_id = self.request.query_params.get("form_id", None)
         if form_id:
             queryset = queryset.filter(form__id=form_id)

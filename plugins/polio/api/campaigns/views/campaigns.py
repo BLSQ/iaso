@@ -20,7 +20,6 @@ from hat.api.export_utils import Echo, iter_items
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_XLSX,
-    CustomFilterBackend,
     DeletionFilterBackend,
     ModelViewSet,
 )
@@ -29,6 +28,7 @@ from plugins.polio.api.campaigns.campaigns_log import (
     log_campaign_modification,
     serialize_campaign,
 )
+from plugins.polio.api.campaigns.filters.search import SearchFilterBackend
 from plugins.polio.api.campaigns.serializers.anonymous import AnonymousCampaignSerializer
 from plugins.polio.api.campaigns.serializers.calendar import CalendarCampaignSerializer
 from plugins.polio.api.campaigns.serializers.campaigns import CampaignSerializer
@@ -52,6 +52,12 @@ from plugins.polio.preparedness.spreadsheet_manager import (
 )
 
 
+REGULAR = "regular"
+PREVENTIVE = "is_preventive"
+PLANNED = "is_planned"
+ON_HOLD = "on_hold"
+
+
 class CampaignViewSet(ModelViewSet):
     """Main endpoint for campaign.
 
@@ -66,7 +72,7 @@ class CampaignViewSet(ModelViewSet):
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,
-        CustomFilterBackend,
+        SearchFilterBackend,
         DeletionFilterBackend,
     ]
 
@@ -118,6 +124,7 @@ class CampaignViewSet(ModelViewSet):
         campaign_category = self.request.query_params.get("campaign_category")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
+        # FIXME we exclude on hold by default but it means that selecting campaign_category=on_hold without passing on_hold=true will exclude campaigns on_hold
         on_hold = self.request.query_params.get("on_hold", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
@@ -152,6 +159,7 @@ class CampaignViewSet(ModelViewSet):
                 campaigns = campaigns.filter(campaign_types__id__in=campaign_types_list)
             else:
                 campaigns = campaigns.filter(campaign_types__slug__in=campaign_types_list)
+
         org_units_id_only_qs = OrgUnit.objects.only("id", "name")
         country_prefetch = Prefetch("country", queryset=org_units_id_only_qs)
         scopes_group_org_units_prefetch = Prefetch("scopes__group__org_units", queryset=org_units_id_only_qs)

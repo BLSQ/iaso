@@ -62,7 +62,7 @@ const convertToApi = data => {
     }
 
     if (converted.selected_sampling_result_id !== undefined) {
-        converted.selected_sampling_result_id =
+        converted.selected_sampling_result =
             converted.selected_sampling_result_id;
     }
 

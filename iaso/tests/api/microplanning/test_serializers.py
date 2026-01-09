@@ -73,7 +73,7 @@ class PlanningSerializersTestCase(APITestCase):
         )
         self.team_3 = Team.objects.create(project=self.project_3, name="team_3", manager=self.user_2)
 
-    def test_read_serialize(self):
+    def test_read_serializer(self):
         serializer = PlanningReadSerializer(self.planning)
 
         self.assertEqual(

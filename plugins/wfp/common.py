@@ -511,7 +511,7 @@ class ETL:
             quantity = step.get("quantity", 0)
             ration_type = ""
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
-                quantity = step.get("_total_number_of_sachets", 0)
+                quantity = step.get("_total_number_of_sachets")
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
 
@@ -570,9 +570,21 @@ class ETL:
             ):
                 quantity = 0
                 ration_size = step.get("ration_size", step.get("ration_limit"))
-            else:
-                if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
+            elif step.get("ration_type") in ["rusf", "rutf"]:
+                if (
+                    step.get("_total_number_of_sachets") == ""
+                    or step.get("_total_number_of_sachets") == "."
+                    or (
+                        step.get("_total_number_of_sachets_rutf") is not None
+                        and (
+                            step.get("_total_number_of_sachets_rutf") == ""
+                            or step.get("_total_number_of_sachets_rutf") == "."
+                        )
+                    )
+                ):
                     quantity = 0
+                else:
+                    quantity = step.get("_total_number_of_sachets", step.get("_total_number_of_sachets_rutf", quantity))
             assistance = {
                 "type": step.get("ration_type", step.get("ration")),
                 "quantity": quantity,

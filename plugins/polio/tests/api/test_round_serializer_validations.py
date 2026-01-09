@@ -1,5 +1,5 @@
 from iaso.test import APITestCase
-from plugins.polio.api.rounds.round import RoundSerializer
+from plugins.polio.api.rounds.serializers import RoundSerializer
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 

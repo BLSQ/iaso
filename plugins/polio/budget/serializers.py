@@ -5,9 +5,8 @@ from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from iaso.api.common import DynamicFieldsModelSerializer, UserSerializer
 from iaso.models.team import Team
-from plugins.polio.api.shared_serializers import UserSerializer
 
 from ..models import Campaign, Round
 from .models import (

@@ -77,15 +77,19 @@ export const PlanningForm: FunctionComponent<Props> = ({
         name,
         started_at,
         ended_at,
-        org_unit: selectedOrgUnit,
-        team: selectedTeam,
+        org_unit_details,
+        team_details,
         forms,
-        project,
+        project_details,
         description,
         published_at,
         pipeline_uuids: pipelineUuids,
-        target_org_unit_type: targetOrgUnitType,
+        target_org_unit_type_details,
     } = useMemo(() => planning ?? {}, [planning]) as Planning;
+    const selectedOrgUnit = org_unit_details?.id;
+    const selectedTeam = team_details?.id;
+    const project = project_details?.id;
+    const targetOrgUnitType = target_org_unit_type_details?.id;
     const assignmentUrl = `/${baseUrls.assignments}/planningId/${id}/team/${selectedTeam}`;
     const startDate = started_at ? moment(started_at).format('L') : undefined;
     const endDate = ended_at ? moment(ended_at).format('L') : undefined;

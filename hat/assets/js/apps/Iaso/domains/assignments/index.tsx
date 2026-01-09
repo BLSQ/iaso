@@ -68,10 +68,14 @@ export const Assignments: FunctionComponent = () => {
     const { data: mapOrgUnits, isLoading: isLoadingMapOrgUnits } =
         useGetPlanningOrgUnits(planningId);
     const rootMapOrgUnit = useMemo(() => {
-        return mapOrgUnits?.find(ou => ou.id === planning?.org_unit);
+        return mapOrgUnits?.find(
+            ou => ou.id === planning?.org_unit_details?.id,
+        );
     }, [mapOrgUnits, planning]);
     const otherMapOrgUnits = useMemo(() => {
-        return mapOrgUnits?.filter(ou => ou.id !== planning?.org_unit);
+        return mapOrgUnits?.filter(
+            ou => ou.id !== planning?.org_unit_details?.id,
+        );
     }, [mapOrgUnits, planning]);
     const bounds: Bounds | undefined = useMemo(
         () => mapOrgUnits && getOrgUnitsBounds(mapOrgUnits),
@@ -81,7 +85,7 @@ export const Assignments: FunctionComponent = () => {
     // Map stuff
     // Team stuff
     const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
-        planning?.team,
+        planning?.team_details?.id,
     );
     const { mutate: updateTeam } = useSaveTeam('edit', false);
     const { mutate: updateUser } = useSaveProfile();
@@ -155,7 +159,9 @@ export const Assignments: FunctionComponent = () => {
                                         ?.filter(
                                             ou =>
                                                 ou.has_geo_json &&
-                                                ou.id !== planning?.org_unit,
+                                                ou.id !==
+                                                    planning?.org_unit_details
+                                                        ?.id,
                                         )
                                         .map(ou => (
                                             <GeoJSON
@@ -249,7 +255,8 @@ export const Assignments: FunctionComponent = () => {
                                                                 onChangeColor={color => {
                                                                     // @ts-ignore
                                                                     updateUser({
-                                                                        id: user.id,
+                                                                        ...user,
+                                                                        id: user.iaso_profile,
                                                                         user_name:
                                                                             user.username,
                                                                         color,

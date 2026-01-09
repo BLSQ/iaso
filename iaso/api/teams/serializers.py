@@ -24,7 +24,7 @@ class NestedUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "color"]
+        fields = ["id", "username", "first_name", "last_name", "color", "iaso_profile"]
 
     def get_color(self, obj):
         profile = getattr(obj, "iaso_profile", None)

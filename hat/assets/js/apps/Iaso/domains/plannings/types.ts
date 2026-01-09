@@ -39,18 +39,14 @@ export type Planning = {
     id: number;
     name: string;
     team_details?: PlanningTeamDetails;
-    team: number;
-    org_unit: number;
     org_unit_details?: PlanningOrgUnitDetails;
     forms: number[];
-    project: number;
     project_details?: PlanningProjectDetails;
     description?: string;
     published_at?: string;
     started_at?: string;
     ended_at?: string;
     pipeline_uuids: string[];
-    target_org_unit_type?: number;
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
     selected_sampling_result?: SamplingResult;
 };

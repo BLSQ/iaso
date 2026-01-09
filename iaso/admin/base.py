@@ -721,7 +721,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "started_at",
                     "ended_at",
                     "pipeline_uuids",
-                    "selected_sampling_results",
+                    "selected_sampling_result",
                 ),
             },
         ),

@@ -6,7 +6,7 @@ export const canAssignPlanning = (planning?: Planning): boolean => {
     const hasPipelines =
         Array.isArray(planning.pipeline_uuids) &&
         planning.pipeline_uuids.length > 0;
-    const hasSampling = Boolean(planning.selected_sampling_results);
+    const hasSampling = Boolean(planning.selected_sampling_result);
     const isPublished = Boolean(planning.published_at);
 
     if (!isPublished) return false;

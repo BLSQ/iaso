@@ -155,13 +155,13 @@ export const useSamplingResultsColumns = (
         (samplingResultId: number) => {
             savePlanning({
                 id: planning.id,
-                selected_sampling_results_id:
-                    samplingResultId === planning.selected_sampling_results?.id
+                selected_sampling_result_id:
+                    samplingResultId === planning.selected_sampling_result?.id
                         ? null
                         : samplingResultId,
             });
         },
-        [savePlanning, planning.id, planning.selected_sampling_results?.id],
+        [savePlanning, planning.id, planning.selected_sampling_result?.id],
     );
     return useMemo<Column[]>(
         () => [
@@ -208,13 +208,13 @@ export const useSamplingResultsColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.selectSamplingResult),
-                accessor: 'selected_sampling_results',
+                accessor: 'selected_sampling_result',
                 Cell: settings => (
                     <Checkbox
                         checked={
-                            planning.selected_sampling_results &&
+                            planning.selected_sampling_result &&
                             settings.row.original.id ===
-                                planning.selected_sampling_results?.id
+                                planning.selected_sampling_result?.id
                         }
                         onChange={() =>
                             handleSelectSamplingResult(settings.row.original.id)

@@ -13,12 +13,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="planning",
-            name="selected_sampling_results",
-            field=models.ForeignKey(
+            name="selected_sampling_result",
+            field=models.OneToOneField(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.PROTECT,
-                related_name="selected_by_plannings",
+                related_name="selected_by_planning",
                 to="iaso.planningsamplingresult",
             ),
         ),

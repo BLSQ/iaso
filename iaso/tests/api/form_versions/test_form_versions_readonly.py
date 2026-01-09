@@ -177,6 +177,36 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response_2, 200)
         self.assertValidFormVersionData(response_2.json())
 
+    def test_form_versions_search_by_version_id_with_search_name(self):
+        """GET /api/formversions/: search by version_id using search_name param"""
+        self.client.force_authenticate(self.blue_with_perms)
+        # Add a form with a unique version_id
+        form = create_add_form("Form for version_id search", self.blue_council, self.blue_project_no_need_auth)
+        version_id = "2025-0109"
+        # Add a new version with a unique version_id
+        form_1_file_mock = mock.MagicMock(spec=File)
+        form_1_file_mock.name = "test2.xml"
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
+            form.form_versions.create(file=form_1_file_mock, xls_file=UploadedFile(xls_file), version_id=version_id)
+        form.save()
+        # Add a new version with a different version_id
+        form_2_file_mock = mock.MagicMock(spec=File)
+        form_2_file_mock.name = "test2.xml"
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
+            form.form_versions.create(
+                file=form_2_file_mock, xls_file=UploadedFile(xls_file), version_id="other_version_id"
+            )
+        form.save()
+
+        # Search for the form version by version_id using search_name
+        response = self.client.get(f"{BASE_URL}?search_name={version_id}")
+        self.assertJSONResponse(response, 200)
+        form_versions_data = response.json()["form_versions"]
+        # Should only return the form version with the unique version_id and not the other_version_id
+        assert any(fv["version_id"] == version_id for fv in form_versions_data)
+        for form_version_data in form_versions_data:
+            self.assertValidFormVersionData(form_version_data)
+
     def assertValidFormVersionData(
         self, form_version_data: typing.Mapping, *, check_annotated_fields: bool = True
     ):  # TODO: check for other fields

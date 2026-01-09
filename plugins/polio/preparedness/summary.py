@@ -95,7 +95,7 @@ def find_snapshot_for_date(ssi_for_campaign, ref_date: date, n_day: int, obr_nam
         elif previous_ssi:
             ssi = previous_ssi
         else:
-            logger.error(f"No spreadsheet snapshot found for {obr_name} round {round_number} {ref_date}")
+            logger.warning(f"No spreadsheet snapshot found for {obr_name} round {round_number} {ref_date}")
     return ssi
 
 

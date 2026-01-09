@@ -1,8 +1,7 @@
-import React, { FunctionComponent, useContext, useMemo } from 'react';
+import React, { FunctionComponent, useContext } from 'react';
 import { Box, Theme } from '@mui/material';
 
 import { ThemeConfigContext } from '../contexts/ThemeConfigContext';
-import { LogoSvg } from './LogoSvg';
 import { Logo } from './Logo';
 
 const styles = {

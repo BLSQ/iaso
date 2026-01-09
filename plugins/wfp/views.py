@@ -1,6 +1,7 @@
 import io
 
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import PermissionDenied
 from django.core.management import call_command
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -17,6 +18,10 @@ def debug(request, id):
     entity = get_object_or_404(Entity, id=id)
     beneficiary = Beneficiary.objects.filter(entity_id=entity.id).first()
     beneficiary_info = entity.attributes.json
+
+    user_account = request.user.iaso_profile.account
+    if entity.account_id != user_account.id:
+        raise PermissionDenied("Beneficiary not in your assigned country/account.")
 
     template = loader.get_template("debug.html")
     context = {"entity": entity, "beneficiary": beneficiary, "info": beneficiary_info}

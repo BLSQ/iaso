@@ -27,11 +27,11 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningReadSerializer,
     PlanningSamplingResult,
     PlanningSamplingResultListSerializer,
     PlanningSamplingResultReadSerializer,
     PlanningSamplingResultWriteSerializer,
-    PlanningSerializer,
     PlanningWriteSerializer,
 )
 
@@ -39,7 +39,6 @@ from .serializers import (
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
     permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
-    serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
         filters.OrderingFilter,
@@ -59,16 +58,18 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return PlanningWriteSerializer
-        return PlanningSerializer
+        return PlanningReadSerializer
 
     def get_queryset(self):
         user = self.request.user
         return (
-            self.queryset.filter_for_user(user).select_related("project", "org_unit", "team").prefetch_related("forms")
+            self.queryset.filter_for_user(user)
+            .select_related("project", "org_unit", "team", "selected_sampling_result")
+            .prefetch_related("forms")
         )
 
     def _read_response(self, instance, status_code=status.HTTP_200_OK):
-        read_serializer = PlanningSerializer(instance, context=self.get_serializer_context())
+        read_serializer = PlanningReadSerializer(instance, context=self.get_serializer_context())
         return Response(read_serializer.data, status=status_code)
 
     def create(self, request, *args, **kwargs):

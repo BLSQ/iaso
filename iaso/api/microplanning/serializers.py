@@ -44,7 +44,17 @@ class NestedPlanningSamplingResultSerializer(serializers.ModelSerializer):
         fields = ["id", "pipeline_id", "pipeline_version", "pipeline_name", "group_id", "task_id"]
 
 
-class BasePlanningSerializer(serializers.ModelSerializer):
+class PlanningWriteSerializer(serializers.ModelSerializer):
+    selected_sampling_result = serializers.PrimaryKeyRelatedField(
+        queryset=PlanningSamplingResult.objects.all(), required=False, allow_null=True
+    )
+    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
+
+    class Meta:
+        model = Planning
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at", "deleted_at"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
@@ -103,16 +113,10 @@ class BasePlanningSerializer(serializers.ModelSerializer):
                 if not descendant_org_units.exists():
                     validation_errors["target_org_unit_type"] = "noOrgUnitsOfTypeInHierarchy"
 
-        selected_field = None
-        if "selected_sampling_result_id" in validated_data:
-            selected_field = "selected_sampling_result_id"
-        elif "selected_sampling_result" in validated_data:
-            selected_field = "selected_sampling_result"
-
-        if selected_field is not None:
-            selected_sampling_result = validated_data.pop(selected_field)
+        selected_sampling_result = validated_data.get("selected_sampling_result")
+        if selected_sampling_result:
             if selected_sampling_result and self.instance and selected_sampling_result.planning_id != self.instance.id:
-                validation_errors[selected_field] = "samplingNotForPlanning"
+                validation_errors["selected_sampling_result"] = "samplingNotForPlanning"
             validated_data["selected_sampling_result"] = selected_sampling_result
 
         if validation_errors:
@@ -121,52 +125,31 @@ class BasePlanningSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-class PlanningSerializer(BasePlanningSerializer):
+class PlanningReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Planning
         fields = [
             "id",
             "name",
-            "team_details",
-            "team",
-            "org_unit",
-            "org_unit_details",
             "forms",
-            "project",
-            "project_details",
             "description",
             "published_at",
             "started_at",
             "ended_at",
             "pipeline_uuids",
-            "target_org_unit_type",
-            "target_org_unit_type_details",
-            "selected_sampling_result_id",
             "selected_sampling_result",
+            "team_details",
+            "org_unit_details",
+            "project_details",
+            "target_org_unit_type_details",
         ]
-        read_only_fields = ["created_at", "parent"]
+        read_only_fields = fields
 
+    selected_sampling_result = NestedPlanningSamplingResultSerializer(read_only=True)
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
     target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
-    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
-    selected_sampling_result_id = serializers.PrimaryKeyRelatedField(
-        queryset=PlanningSamplingResult.objects.all(), required=False, allow_null=True, write_only=True
-    )
-    selected_sampling_result = NestedPlanningSamplingResultSerializer(read_only=True)
-
-
-class PlanningWriteSerializer(PlanningSerializer):
-    class Meta:
-        model = Planning
-        fields = "__all__"
-        read_only_fields = ["id", "created_at", "updated_at", "deleted_at"]
-
-    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
-    selected_sampling_result = serializers.PrimaryKeyRelatedField(
-        queryset=PlanningSamplingResult.objects.all(), required=False, allow_null=True
-    )
 
 
 class SamplingGroupSerializer(serializers.ModelSerializer):

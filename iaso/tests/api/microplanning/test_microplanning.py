@@ -16,6 +16,7 @@ from iaso.test import APITestCase
 
 
 class PlanningTestCase(APITestCase):
+    # TODO: refactor this test case and move the serializer tests to the test_serializers.py file
     fixtures = ["user.yaml"]
 
     @classmethod
@@ -49,7 +50,7 @@ class PlanningTestCase(APITestCase):
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             response = self.client.get("/api/microplanning/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
@@ -65,20 +66,17 @@ class PlanningTestCase(APITestCase):
             {
                 "id": self.planning.id,
                 "name": "planning1",
-                "team": self.planning.team_id,
                 "team_details": {
                     "id": self.team1.id,
                     "name": self.team1.name,
                     "deleted_at": self.team1.deleted_at,
                     "color": self.team1.color,
                 },
-                "project": self.planning.project.id,
                 "project_details": {
                     "id": self.planning.project.id,
                     "name": self.planning.project.name,
                     "color": self.planning.project.color,
                 },
-                "org_unit": self.planning.org_unit_id,
                 "org_unit_details": {
                     "id": self.org_unit.id,
                     "name": self.org_unit.name,
@@ -90,7 +88,6 @@ class PlanningTestCase(APITestCase):
                 "started_at": "2025-01-01",
                 "ended_at": "2025-01-10",
                 "pipeline_uuids": [],
-                "target_org_unit_type": None,
                 "target_org_unit_type_details": None,
                 "selected_sampling_result": None,
             },
@@ -414,7 +411,6 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
         r = response.json()
 
-        self.assertEqual(r["target_org_unit_type"], org_unit_type.id)
         self.assertIsNotNone(r["target_org_unit_type_details"])
         self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
@@ -425,7 +421,6 @@ class PlanningTestCase(APITestCase):
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/", format="json")
         self.assertEqual(response.status_code, 200)
         r = response.json()
-        self.assertEqual(r["target_org_unit_type"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
 
@@ -492,7 +487,6 @@ class PlanningTestCase(APITestCase):
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         r = response.json()
-        self.assertEqual(r["target_org_unit_type"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["name"], "Clinic")
 
@@ -652,7 +646,7 @@ class PlanningTestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/microplanning/plannings/{self.planning.id}/",
-            data={"selected_sampling_result_id": sampling.id},
+            data={"selected_sampling_result": sampling.id},
             format="json",
         )
         r = self.assertJSONResponse(response, 200)
@@ -707,7 +701,7 @@ class PlanningTestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/microplanning/plannings/{self.planning.id}/",
-            data={"selected_sampling_result_id": None},
+            data={"selected_sampling_result": None},
             format="json",
         )
         r = self.assertJSONResponse(response, 200)
@@ -735,12 +729,12 @@ class PlanningTestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/microplanning/plannings/{self.planning.id}/",
-            data={"selected_sampling_result_id": sampling.id},
+            data={"selected_sampling_result": sampling.id},
             format="json",
         )
         r = self.assertJSONResponse(response, 400)
-        self.assertIn("selected_sampling_result_id", r)
-        self.assertEqual(r["selected_sampling_result_id"][0], "samplingNotForPlanning")
+        self.assertIn("selected_sampling_result", r)
+        self.assertEqual(r["selected_sampling_result"][0], "samplingNotForPlanning")
 
     def test_planning_detail_includes_selected_sampling_result(self):
         self.client.force_authenticate(self.user)
@@ -873,7 +867,7 @@ class PlanningTestCase(APITestCase):
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         r = response.json()
-        self.assertEqual(r["target_org_unit_type"], target_type.id)
+        self.assertEqual(r["target_org_unit_type_details"]["id"], target_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
 
 

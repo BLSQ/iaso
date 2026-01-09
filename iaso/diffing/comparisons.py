@@ -26,12 +26,22 @@ class NameFieldType(FieldType):
             return None
         return org_unit.name
 
+    def is_same(self, value, other_value):
+        normalized_value = None if (value is None or value == "") else value
+        normalized_other = None if (other_value is None or other_value == "") else other_value
+        return normalized_value == normalized_other
+
 
 class CodeFieldType(FieldType):
     def access(self, org_unit):
         if org_unit is None:
             return None  # code is not nullable, but we return None to differentiate a blank code from a missing orgunit
         return org_unit.code
+
+    def is_same(self, value, other_value):
+        normalized_value = None if (value is None or value == "") else value
+        normalized_other = None if (other_value is None or other_value == "") else other_value
+        return normalized_value == normalized_other
 
 
 class GeometryFieldType(FieldType):

@@ -246,7 +246,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         resetTrigger={resetTrigger}
                         disabled={disabled}
                     />
-                </FormControlComponent>
+                </FormControlComponent> 
                 <DatesRange
                     keyDateFrom="opening_date"
                     keyDateTo="closed_date"

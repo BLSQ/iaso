@@ -13,6 +13,7 @@ import {
 } from '../../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
 import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
+import { PlanningOrgUnits } from '../../domains/plannings/types';
 
 export const defaultCenter = [5, 20];
 export const defaultZoom = 4;
@@ -249,7 +250,7 @@ export const getOrgUnitBounds = (
 };
 
 export const getOrgUnitsBounds = (
-    orgUnits: OrgUnit[] | CompletenessMapStats[],
+    orgUnits: OrgUnit[] | CompletenessMapStats[] | PlanningOrgUnits[],
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
     orgUnits.forEach((childOrgUnit: OrgUnit | CompletenessMapStats) => {

@@ -15,13 +15,14 @@ export const useGetPlanningSamplingResults = (
     params: Record<string, string>,
 ): UseQueryResult<PaginatedResponse<SamplingResult>, Error> => {
     const safeParams = useApiParams(params, tableDefaults);
+    safeParams.planning_id = planningId;
+    delete safeParams.planningId;
+    delete safeParams.mode;
     const queryString = new URLSearchParams(safeParams).toString();
     return useSnackQuery({
         queryKey: ['planningSamplingResults', safeParams, planningId],
         queryFn: () =>
-            getRequest(
-                `/api/microplanning/samplings/?planning_id=${planningId}&${queryString}`,
-            ),
+            getRequest(`/api/microplanning/samplings/?${queryString}`),
 
         options: {
             enabled: Boolean(planningId),

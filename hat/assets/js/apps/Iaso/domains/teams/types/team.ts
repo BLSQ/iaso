@@ -11,6 +11,9 @@ export type SubTeam = {
 export type User = {
     id: number;
     username: string;
+    first_name: string;
+    last_name: string;
+    color: string;
 };
 
 export type Team = {

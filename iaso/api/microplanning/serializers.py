@@ -429,7 +429,7 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
         return r
 
 
-class MinimalOrgUnitSerializer(serializers.ModelSerializer):
+class PlanningOrgUnitSerializer(serializers.ModelSerializer):
     geo_json = serializers.SerializerMethodField()
     has_geo_json = serializers.SerializerMethodField()
     latitude = serializers.FloatField(source="location.y", read_only=True)

@@ -450,6 +450,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
         self.assertTrue(results_for_first_country is not None)
         self.assertEqual(results_for_first_country["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(results_for_first_country["data"]["campaign_id"], str(self.campaign_1.id))
         self.assertEqual(len(results_for_first_country["data"]["rounds"]), self.campaign_1.rounds.count())
         self.assertEqual(
             results_for_first_country["data"]["rounds"][0]["data"],
@@ -647,6 +648,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
         self.assertTrue(results_for_first_district is not None)
         self.assertEqual(results_for_first_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(results_for_first_district["data"]["campaign_id"], str(self.campaign_1.id))
         self.assertEqual(
             results_for_first_district["data"]["district_name"],
             self.district_org_unit_1.name,

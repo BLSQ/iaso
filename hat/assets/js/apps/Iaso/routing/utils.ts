@@ -20,6 +20,11 @@ export const getOrgUnitsUrl = (
             searches: `[{"validation_status":"all", "color":"${getColor(
                 0,
                 colors,
+                [],
+                // It's possible colors is empty when we arrive here.
+                // If that's the case `getColor` will return 'transparent' by default which will crash later when React tries to
+                // parse `#transparent`. Therefore, it's best to hardcode a different value here.
+                '#42a5f5',
             ).replace('#', '')}"}]`,
         },
         '',

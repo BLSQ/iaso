@@ -224,7 +224,7 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
 
         if fields_search:
-            q = entities_jsonlogic_to_q(json.loads(fields_search))
+            q, _ = entities_jsonlogic_to_q(json.loads(fields_search))
             queryset = queryset.filter(q)
 
         # location

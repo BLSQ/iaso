@@ -572,4 +572,40 @@ p:last-of-type {
   -webkit-filter: brightness(0.9);
           filter: brightness(0.9);
 }
+
+.auth__security_tips {
+  margin-top: 16px;
+  padding: 24px;
+  background: #E2F0FA;
+}
+
+.auth__security_tips ul {
+  margin-top: 16px;
+  margin-left: 16px;
+  color: #00000099;
+}
+
+.auth__security_checks {
+  margin-top: 16px;
+  font-family: fontFamily;
+  font-weight: fontWeightRegular;
+  font-style: Regular;
+  font-size: 14px;
+}
+.auth__security_checks span {
+  height: 26px;
+  background-repeat: no-repeat;
+  padding-left: 30px;  /* width of the image plus a little extra padding */
+  display: block;  /* may not need this, but I've found I do */
+  line-height: 26px;
+}
+.auth__security_checks .off {
+    color: #00000099;
+    background-image: url('../images/info.png');
+}
+
+.auth__security_checks .on {
+    color: #2E7D32;
+    background-image: url('../images/valid.png');
+}
 /*# sourceMappingURL=index.css.map */

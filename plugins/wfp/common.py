@@ -990,7 +990,7 @@ class ETL:
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
             .values()
             .filter(account=account)
-            .filter(org_unit_id__in=[758, 622, 43])
+            .filter(org_unit__source_ref__isnull=False)
         )
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []

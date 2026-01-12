@@ -137,7 +137,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
 
 
 @admin.register(Dhis2SyncResults)
-class Dhis2SyncResults(admin.ModelAdmin):
+class Dhis2SyncResultsAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit_dhis2_id",
@@ -156,7 +156,7 @@ class Dhis2SyncResults(admin.ModelAdmin):
     search_fields = (
         "account__name",
         "org_unit_dhis2_id",
-        "org_unit__id",
+        "org_unit_id",
         "data_set_id",
         "period",
         "year__icontains",

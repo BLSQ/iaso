@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-20 16:32+0000\n"
+"POT-Creation-Date: 2026-01-12 14:50+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -27,6 +27,19 @@ msgid "English"
 msgstr "Anglais"
 
 #: hat/templates/iaso/forgot_password.html
+msgid "Forgot password?"
+msgstr "Mot de passe oublié ?"
+
+#: hat/templates/iaso/forgot_password.html
+#, python-format
+msgid ""
+"Enter the email address associated with your %(app_title)s account, and "
+"we’ll send you instructions to reset your password."
+msgstr ""
+"Entrez l'adresse email associée à vous compte %(app_title)s, et "
+"nous vous enverrons les instructions pour réinitialiser votre mot de passe."
+
+#: hat/templates/iaso/forgot_password.html
 #: hat/templates/iaso/reset_password_confirmation.html
 msgid "Submit"
 msgstr "Envoyer"
@@ -35,6 +48,10 @@ msgstr "Envoyer"
 #: hat/templates/iaso/forgot_password_confirmation.html
 msgid "Go back to login"
 msgstr "Retour à la connexion"
+
+#: hat/templates/iaso/forgot_password_confirmation.html
+msgid "Email sent"
+msgstr "Email envoyé"
 
 #: hat/templates/iaso/forgot_password_confirmation.html
 msgid ""
@@ -51,6 +68,10 @@ msgid ""
 msgstr ""
 "Si vous ne recevez pas de courriel, vérifiez que vous avez bien entré votre "
 "adresse d'enregistrement et vérifiez votre dossier spam."
+
+#: hat/templates/iaso/login.html
+msgid "Sign in to"
+msgstr "Se connecter à"
 
 #: hat/templates/iaso/login.html
 msgid ""
@@ -75,12 +96,16 @@ msgid "Login"
 msgstr "Connexion"
 
 #: hat/templates/iaso/login.html
-msgid "Learn more"
-msgstr "En savoir plus"
-
-#: hat/templates/iaso/login.html
 msgid "Forgot password"
 msgstr "Mot de passe oublié ?"
+
+#: hat/templates/iaso/login.html
+msgid "New to"
+msgstr "Nouveau sur"
+
+#: hat/templates/iaso/login.html
+msgid "Learn more"
+msgstr "En savoir plus"
 
 #: hat/templates/iaso/reset_password_complete.html
 #, python-format
@@ -94,6 +119,10 @@ msgstr ""
 "        Votre mot de passe à été sauvé. Vous pouvez maintenant vous <a "
 "href=\"%(login_url)s\">connecter</a>.\n"
 "        "
+
+#: hat/templates/iaso/reset_password_confirmation.html
+msgid "Create a new password"
+msgstr "Créer un nouveau mot de passe"
 
 #: hat/templates/iaso/reset_password_confirmation.html
 msgid ""

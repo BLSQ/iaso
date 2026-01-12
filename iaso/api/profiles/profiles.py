@@ -591,8 +591,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")
-        if not username:
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
+        # Skip validation if username not provided or did not change
+        if not username or user.username == username:
+            return
 
         existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
         if existing_user:

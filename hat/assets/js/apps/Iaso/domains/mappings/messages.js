@@ -231,7 +231,7 @@ const MESSAGES = defineMessages({
     },
     startTypingFormVersion: {
         id: 'iaso.mappings.startTypingFormVersion',
-        defaultMessage: 'Start typing to search by form\'name or version id',
+        defaultMessage: "Start typing to search by form's name or version id",
     },
 });
 

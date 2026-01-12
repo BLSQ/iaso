@@ -1,5 +1,5 @@
 from django.utils import timezone
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -17,21 +17,31 @@ URL = "/api/polio/campaigns/"
 
 
 class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin):
-    data_source: m.DataSource
-    source_version_1: m.SourceVersion
-    org_unit: m.OrgUnit
-    child_org_unit: m.OrgUnit
-
     @classmethod
     def setUpTestData(cls):
         cls.now = timezone.now()
-        cls.account, cls.data_source, cls.source_version_1, project = cls.create_account_datasource_version_project(
+        cls.account, cls.data_source, cls.source_version_1, _ = cls.create_account_datasource_version_project(
             source_name="Default source", account_name="polio", project_name="polio", app_id="com.polio.app"
         )
 
         cls.other_account = m.Account.objects.create(name="Other account")
         cls.user = cls.create_user_with_profile(
             username="user", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
+        )
+        cls.org_unit = m.OrgUnit.objects.create(
+            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            version=cls.source_version_1,
+            name="Jedi Council A",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+        cls.child_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            version=cls.source_version_1,
+            name="Sub Jedi Council A",
+            parent_id=cls.org_unit.id,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
         )
         cls.user_no_permission = cls.create_user_with_profile(
             username="user_no_permission",
@@ -41,23 +51,6 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         )
         cls.country_type = m.OrgUnitType.objects.create(name="COUNTRY", short_name="country")
         cls.district_type = m.OrgUnitType.objects.create(name="DISTRICT", short_name="district")
-
-        cls.org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-            version=cls.source_version_1,
-            name="Jedi Council A",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
-
-        cls.child_org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-            version=cls.source_version_1,
-            name="Sub Jedi Council A",
-            parent_id=cls.org_unit.id,
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
 
         cls.org_units = [
             cls.org_unit,
@@ -229,8 +222,10 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
                 "obr_name": f"campaign_{n}",
                 "detection_status": "PENDING",
             }
-            result = self.client.post("/api/polio/campaigns/", payload, format="json")
+            response = self.client.post("/api/polio/campaigns/", payload, format="json")
+            result = self.assertJSONResponse(response, HTTP_201_CREATED)
             created_ids.append(result["id"])
+        return created_ids
 
     def test_filter_by_campaign_types(self):
         self.client.force_authenticate(self.user)
@@ -295,8 +290,11 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
     def test_filter_test_campaigns(self):
         self.client.force_authenticate(self.user)
-        # Count existing test campaigns from setUpTestData
-        initial_test_count = Campaign.objects.filter(is_test=True).count()
+        # Count existing campaigns from setUpTestData
+        # the show_test/is_test filter filters out test campaigns when false
+        # but returns ALL campaigns when true, i.E it doesn't exclude on test campaigns
+        # We filter out on hold in the test setup because these are excluded by default
+        initial_count = Campaign.objects.filter(on_hold=False).count()
         # Count existing visible non-test campaigns from setUpTestData (default filters: show_test=false, on_hold=false)
         initial_visible_count = Campaign.objects.filter(is_test=False, on_hold=False).count()
 
@@ -317,30 +315,34 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         self.client.post("/api/polio/campaigns/", payload2, format="json")
 
         # return only test campaigns
-        response = self.client.get("/api/polio/campaigns/?is_test=true")
+        response = self.client.get("/api/polio/campaigns/?show_test=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
 
-        self.assertEqual(len(result), initial_test_count + 1)
-        self.assertTrue(result[0]["is_test"])
+        self.assertEqual(len(result), initial_count + 2)  # +2 new campaigns created
+        obr_names = [r["obr_name"] for r in result]
+        self.assertIn(payload1["obr_name"], obr_names)
 
         # return non test campaigns by default
         response = self.client.get("/api/polio/campaigns/")
         result = self.assertJSONResponse(response, HTTP_200_OK)
 
         self.assertEqual(len(result), initial_visible_count + 1)
+        obr_names = [r["obr_name"] for r in result]
+        self.assertNotIn(payload1["obr_name"], obr_names)
         self.assertFalse(result[0]["is_test"])
 
         # return non test campaigns  (explicit exclusion)
-        response = self.client.get("/api/polio/campaigns?is_test=false")
+        response = self.client.get("/api/polio/campaigns/?show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-
+        obr_names = [r["obr_name"] for r in result]
         self.assertEqual(len(result), initial_visible_count + 1)
+        self.assertNotIn(payload1["obr_name"], obr_names)
         self.assertFalse(result[0]["is_test"])
 
     def test_filter_by_deletion_status(self):
         self.client.force_authenticate(self.user)
-        # Count existing campaigns from setUpTestData
-        initial_total_count = Campaign.objects.count()
+        # Count existing campaigns from setUpTestData, excluding test and on_hold, to account for API default filtering
+        initial_total_count = Campaign.objects.filter(is_test=False, on_hold=False).count()
 
         new_ids = self._create_multiple_campaigns(10)
 
@@ -354,14 +356,13 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
         response = self.client.get("/api/polio/campaigns/?deletion_status=deleted", format="json")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), deleted_count)
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), deleted_count)
 
-        # test that it return all (including deleted)
+        # test that it return all (including deleted, but excluding test and on_hold - beacuse of API default params)
         response = self.client.get("/api/polio/campaigns/?deletion_status=all", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), total_campaigns)
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), total_campaigns)
 
         # per defaut it return undeleted, i.e "active" (with default filters: show_test=false, on_hold=false)
         # Calculate remaining visible campaigns after deletion
@@ -386,29 +387,39 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         There is a separate 'on_hold' filter (query param: on_hold) which historically takes precedence, e.g on 'regular' filter
         """
 
-        all_obr_names = [
+        expected_obr_names = [
             self.regular_campaign.obr_name,
-            self.test_campaign,
             self.preventive_campaign.obr_name,
             self.planned_campaign.obr_name,
-            self.on_hold_campaign.obr_name,
+            self.planned_preventive_campaign.obr_name,
             self.campaign_with_on_hold_round.obr_name,
         ]  # using to obr_names to avoid having to cast UUID to string
 
         self.client.force_authenticate(self.user)
 
-        # not passing the query params returns campaigns from all categories
+        # not passing the query params returns campaigns from all categories except test and on hold
         response = self.client.get(f"{URL}")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 5)
         obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(obr_names, all_obr_names)
+        self.assertCountEqual(expected_obr_names, obr_names)
 
     def test_filter_category_regular(self):
-        # regular campaign
+        # regular campaign: default on hold param overrides category filter (legacy behaviour)
         response = self.client.get(f"{URL}?campaign_category=regular")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 3)
+        self.assertEqual(len(result), 2)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(
+            obr_names,
+            [
+                self.regular_campaign.obr_name,
+                self.campaign_with_on_hold_round.obr_name,
+            ],
+        )
+        # regular campaign, with on_hold==True
+        response = self.client.get(f"{URL}?campaign_category=regular&on_hold=true")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), 3)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -422,26 +433,24 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # regular campaign overrides is_test
         response = self.client.get(f"{URL}?campaign_category=regular&show_test=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 3)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
                 self.regular_campaign.obr_name,
-                self.on_hold_campaign.obr_name,
                 self.campaign_with_on_hold_round.obr_name,
             ],
         )
         # regular with show test explicitly false (for the sake of coverage)
         response = self.client.get(f"{URL}?campaign_category=regular&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 3)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
                 self.regular_campaign.obr_name,
-                self.on_hold_campaign.obr_name,
                 self.campaign_with_on_hold_round.obr_name,
             ],
         )
@@ -449,7 +458,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # on_hold query param taken into account when selecting regular campaigns
         response = self.client.get(f"{URL}?campaign_category=regular&on_hold=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 3)
+        self.assertEqual(len(result), 3)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -461,7 +470,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         )
         response = self.client.get(f"{URL}?campaign_category=regular&on_hold=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -475,7 +484,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # preventive
         response = self.client.get(f"{URL}?campaign_category=preventive")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 1)
+        self.assertEqual(len(result), 1)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -487,7 +496,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # preventive on hold
         response = self.client.get(f"{URL}?campaign_category=preventive&on_hold=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -499,7 +508,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # preventive on hold == false (explicit)
         response = self.client.get(f"{URL}?campaign_category=preventive&on_hold=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 1)
+        self.assertEqual(len(result), 1)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -510,7 +519,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # preventive test
         response = self.client.get(f"{URL}?campaign_category=preventive&show_test=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -522,7 +531,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # preventive test==false (explicit)
         response = self.client.get(f"{URL}?campaign_category=preventive&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 1)
+        self.assertEqual(len(result), 1)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -533,13 +542,14 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # preventive test on hold
         response = self.client.get(f"{URL}?campaign_category=preventive&show_test=true&on_hold=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 3)
+        self.assertEqual(len(result), 4)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
                 self.preventive_campaign.obr_name,  # planned campaigns are excluded
                 self.preventive_test_campaign.obr_name,
+                self.preventive_on_hold_campaign.obr_name,
                 self.preventive_test_on_hold_campaign.obr_name,
             ],
         )
@@ -548,45 +558,49 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # on_hold
         response = self.client.get(f"{URL}?campaign_category=on_hold")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 0)  # on_hold query param takes precedence and defaults to false
+        self.assertEqual(len(result), 0)  # on_hold query param takes precedence and defaults to false
 
         # on_hold query param takes precedence
         response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 0)
+        self.assertEqual(len(result), 0)
 
         response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 1)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
                 self.on_hold_campaign.obr_name,  # the filter doesn't check if rounds are on_hold
+                self.preventive_on_hold_campaign.obr_name,
             ],
         )
 
         # on hold + show_test
         response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=true&show_test=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertEqual(len(result), 4)
         self.assertCountEqual(
             obr_names,
             [
                 self.on_hold_campaign.obr_name,  # the filter doesn't check if rounds are on_hold
                 self.test_on_hold_campaign.obr_name,
+                self.preventive_on_hold_campaign.obr_name,
+                self.preventive_test_on_hold_campaign.obr_name,
             ],
         )
         # on hold + show_test=false (explicit)
         response = self.client.get(f"{URL}?campaign_category=on_hold&on_hold=true&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 1)
         obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertEqual(len(result), 2)
         self.assertCountEqual(
             obr_names,
             [
                 self.on_hold_campaign.obr_name,  # the filter doesn't check if rounds are on_hold
+                self.preventive_on_hold_campaign.obr_name,
             ],
         )
 
@@ -594,7 +608,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # planned
         response = self.client.get(f"{URL}?campaign_category=is_planned")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -603,7 +617,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # planned with show test explicitly false
         response = self.client.get(f"{URL}?campaign_category=is_planned&show_test=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -613,7 +627,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         # planned test
         response = self.client.get(f"{URL}?campaign_category=is_planned&show_test=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(response), 4)
+        self.assertEqual(len(result), 4)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -631,8 +645,8 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
     def test_search_filter(self):
         pass
 
-    def filter_by_country_group(self):
+    def test_filter_by_country_group(self):
         pass
 
-    def filter_by_grouped_campaigns(self):
+    def test_filter_by_grouped_campaigns(self):
         pass

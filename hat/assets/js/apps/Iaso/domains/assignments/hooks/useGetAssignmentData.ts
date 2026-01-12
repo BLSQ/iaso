@@ -86,9 +86,9 @@ export const useGetAssignmentData = ({
         isLoading: boolean;
     } = useGetPlanningDetails(planningId);
     const { data: teams = [], isFetched: isTeamsFetched } = useGetTeamsDropdown(
-        { ancestor: `${planning?.team}` },
+        { ancestor: `${planning?.team_details?.id}` },
         undefined,
-        planning?.team ? true : false,
+        planning?.team_details?.id ? true : false,
         true,
     );
     const [profiles, setProfiles] = useBoundState<ProfileWithColor[]>(

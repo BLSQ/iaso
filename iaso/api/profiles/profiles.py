@@ -439,6 +439,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
+            color = request.data.get("color", None)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -455,6 +456,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
+            color=color,
         )
 
         audit_logger.log_modification(
@@ -499,6 +501,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles,
         user_roles_groups,
         projects,
+        color,
         org_units,
         user_permissions,
         editable_org_unit_types,
@@ -530,6 +533,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.projects.set(projects)
         profile.org_units.set(org_units)
         profile.editable_org_unit_types.set(editable_org_unit_types)
+        profile.color = color
         profile.save()
         return profile
 

@@ -3,6 +3,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.test import APIClient
 
 from iaso import models as m
+from iaso.models.base import Group
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase, IasoTestCaseMixin
 from plugins.polio.models import (
@@ -735,7 +736,59 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         self.assertCountEqual(obr_names, [self.regular_campaign.obr_name, self.preventive_campaign.obr_name])
 
     def test_filter_by_country_group(self):
-        pass
+        # add regular campaigns
+        regular_campaign2, _, _, _, regular_country2, _ = self.create_campaign(
+            obr_name="regular campaign 2",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        regular_campaign3, _, _, _, regular_country3, _ = self.create_campaign(
+            obr_name="regular campaign 3",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        # create country groups with only some of the campaign countries
+        country_group = Group.objects.create(
+            name="Country block", block_of_countries=True, source_version=self.source_version_1
+        )
+        country_group.org_units.set([self.regular_country, regular_country2])
+        country_group2 = Group.objects.create(
+            name="Country block2", block_of_countries=True, source_version=self.source_version_1
+        )
+        country_group.org_units.set([regular_country3])
+
+        # test filtering
+        self.client.force_authenticate(self.user)
+
+        # not passing the query params returns campaigns from all categories except test and on hold
+        response = self.client.get(f"{URL}?org_unit_groups={country_group.id}")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(obr_names, [self.regular_campaign.obr_name, regular_campaign2.obr_name])
+
+        # test passing comma-separated group ids
+        response = self.client.get(f"{URL}?org_unit_groups={country_group.id},{country_group2.id}")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(
+            obr_names, [self.regular_campaign.obr_name, regular_campaign2.obr_name, regular_campaign3.obr_name]
+        )
+        # test filtering with geo-limited user
+        geo_limited_user = self.create_user_with_profile(
+            username="geo-limited guy",
+            account=self.account,
+            permissions=[CORE_FORMS_PERMISSION],
+            org_units=[regular_country2, regular_country3],
+        )
+        self.client.force_authenticate(geo_limited_user)
+        response = self.client.get(f"{URL}?org_unit_groups={country_group.id},{country_group2.id}")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(obr_names, [regular_campaign2.obr_name, regular_campaign3.obr_name])
 
     def test_filter_by_grouped_campaigns(self):
         pass

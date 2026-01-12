@@ -49,29 +49,18 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
             permissions=[CORE_FORMS_PERMISSION],
             org_units=[cls.child_org_unit],
         )
+
         cls.country_type = m.OrgUnitType.objects.create(name="COUNTRY", short_name="country")
         cls.district_type = m.OrgUnitType.objects.create(name="DISTRICT", short_name="district")
 
-        cls.org_units = [
-            cls.org_unit,
-            cls.child_org_unit,
-            m.OrgUnit.objects.create(
-                org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-                version=cls.source_version_1,
-                name="Jedi Council B",
-                validation_status=m.OrgUnit.VALIDATION_VALID,
-                source_ref="PvtAI4RUMkr",
-            ),
-        ]
-
-        cls.regular_campaign, _, _, _, _, _ = cls.create_campaign(
+        cls.regular_campaign, _, _, _, cls.regular_country, _ = cls.create_campaign(
             obr_name="regular campaign",
             account=cls.account,
             source_version=cls.source_version_1,
             country_ou_type=cls.country_type,
             district_ou_type=cls.district_type,
         )
-        cls.preventive_campaign, _, _, _, _, _ = cls.create_campaign(
+        cls.preventive_campaign, _, _, _, cls.preventive_country, _ = cls.create_campaign(
             obr_name="preventive campaign",
             account=cls.account,
             source_version=cls.source_version_1,
@@ -227,6 +216,30 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
             created_ids.append(result["id"])
         return created_ids
 
+    def test_no_filter_params(self):
+        """Campaign category can be one of 'preventive', 'on_hold', 'is_planned', or 'regular'.
+        There is also an 'implicit' category of test campaigns. They will be excluded when selecting 'regular' but otherwise returned.
+        There is a separate `is_test` query param, to explicitly include/exclude test campaigns, but campaign_category takes precedence.
+        If no option is selected, no filtering is performed. This is the option 'All' in the UI.
+        There is a separate 'on_hold' filter (query param: on_hold) which historically takes precedence, e.g on 'regular' filter
+        """
+
+        expected_obr_names = [
+            self.regular_campaign.obr_name,
+            self.preventive_campaign.obr_name,
+            self.planned_campaign.obr_name,
+            self.planned_preventive_campaign.obr_name,
+            self.campaign_with_on_hold_round.obr_name,
+        ]  # using to obr_names to avoid having to cast UUID to string
+
+        self.client.force_authenticate(self.user)
+
+        # not passing the query params returns campaigns from all categories except test and on hold
+        response = self.client.get(f"{URL}")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(expected_obr_names, obr_names)
+
     def test_filter_by_campaign_types(self):
         self.client.force_authenticate(self.user)
         campaign_type1 = CampaignType.objects.create(name="Type1")
@@ -240,14 +253,14 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         campaign3.campaign_types.add(campaign_type3)
 
         # Filter by single campaign type
-        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.id}", format="json")
+        response = self.client.get(f"{URL}?campaign_types={campaign_type1.id}", format="json")
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 1)
         self.assertEqual(response_data[0]["id"], str(campaign1.id))
 
         # Filter by single campaign type using slug
-        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.slug}", format="json")
+        response = self.client.get(f"{URL}?campaign_types={campaign_type1.slug}", format="json")
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 1)
@@ -255,7 +268,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
         # Filter by multiple campaign types
         response = self.client.get(
-            f"/api/polio/campaigns/?campaign_types={campaign_type1.id},{campaign_type2.id}",
+            f"{URL}?campaign_types={campaign_type1.id},{campaign_type2.id}",
             format="json",
         )
         self.assertEqual(response.status_code, 200, response.content)
@@ -267,7 +280,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
         # Filter by multiple campaign types
         response = self.client.get(
-            f"/api/polio/campaigns/?campaign_types={campaign_type1.slug},{campaign_type2.slug}",
+            f"{URL}?campaign_types={campaign_type1.slug},{campaign_type2.slug}",
             format="json",
         )
         self.assertEqual(response.status_code, 200, response.content)
@@ -278,13 +291,13 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         self.assertIn(str(campaign2.id), campaign_ids)
 
         # Filter by non-existing campaign type
-        response = self.client.get("/api/polio/campaigns/?campaign_types=9999", format="json")
+        response = self.client.get(f"{URL}?campaign_types=9999", format="json")
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 0)
 
         # Filter by non-existing campaign type
-        response = self.client.get("/api/polio/campaigns/?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json")
+        response = self.client.get(f"{URL}?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json")
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(len(response_data), 0)
 
@@ -378,30 +391,6 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), remaining_visible)
-
-    def test_filter_campaign_category_empty_param(self):
-        """Campaign category can be one of 'preventive', 'on_hold', 'is_planned', or 'regular'.
-        There is also an 'implicit' category of test campaigns. They will be excluded when selecting 'regular' but otherwise returned.
-        There is a separate `is_test` query param, to explicitly include/exclude test campaigns, but campaign_category takes precedence.
-        If no option is selected, no filtering is performed. This is the option 'All' in the UI.
-        There is a separate 'on_hold' filter (query param: on_hold) which historically takes precedence, e.g on 'regular' filter
-        """
-
-        expected_obr_names = [
-            self.regular_campaign.obr_name,
-            self.preventive_campaign.obr_name,
-            self.planned_campaign.obr_name,
-            self.planned_preventive_campaign.obr_name,
-            self.campaign_with_on_hold_round.obr_name,
-        ]  # using to obr_names to avoid having to cast UUID to string
-
-        self.client.force_authenticate(self.user)
-
-        # not passing the query params returns campaigns from all categories except test and on hold
-        response = self.client.get(f"{URL}")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(expected_obr_names, obr_names)
 
     def test_filter_category_regular(self):
         # regular campaign: default on hold param overrides category filter (legacy behaviour)
@@ -641,7 +630,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
 
     def test_filter_on_hold_campaigns(self):
         # not passing the param is same as passing False
-        expected_obr_names = [
+        default_obr_names = [
             self.regular_campaign.obr_name,
             self.preventive_campaign.obr_name,
             self.planned_campaign.obr_name,
@@ -649,25 +638,18 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
             self.campaign_with_on_hold_round.obr_name,
         ]  # using to obr_names to avoid having to cast UUID to string
 
-        self.client.force_authenticate(self.user)
-
-        response = self.client.get(f"{URL}")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(expected_obr_names, obr_names)
-
         # explicitly pass false
         response = self.client.get(f"{URL}?on_hold=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
-        self.assertCountEqual(expected_obr_names, obr_names)
+        self.assertCountEqual(default_obr_names, obr_names)
 
         # pass true
         response = self.client.get(f"{URL}?on_hold=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
         expected_on_hold_obr_names = [
-            *expected_obr_names,
+            *default_obr_names,
             self.preventive_on_hold_campaign.obr_name,
             self.on_hold_campaign.obr_name,
         ]
@@ -692,7 +674,65 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         )
 
     def test_search_filter(self):
-        pass
+        campaign_with_epid, _, _, _, country_epid, _ = self.create_campaign(
+            obr_name="with EPID",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        campaign_with_epid.epid = "plann"
+        campaign_with_epid.save()
+
+        geo_limited_user = self.create_user_with_profile(
+            username="geo-limited guy",
+            account=self.account,
+            permissions=[CORE_FORMS_PERMISSION],
+            org_units=[self.regular_country, self.preventive_country, country_epid],
+        )
+
+        # expect result of search to return matching obr names and epids
+        expected_obr_names = [
+            self.planned_campaign.obr_name,
+            self.planned_preventive_campaign.obr_name,
+            campaign_with_epid.obr_name,
+        ]  # using to obr_names to avoid having to cast UUID to string
+
+        self.client.force_authenticate(self.user)
+
+        # not passing the query params returns campaigns from all categories except test and on hold
+        response = self.client.get(f"{URL}?search=plann")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(expected_obr_names, obr_names)
+        # filter is case insensitive
+        response = self.client.get(f"{URL}?search=pLanN")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        obr_names = [cmp["obr_name"] for cmp in result]
+        self.assertCountEqual(expected_obr_names, obr_names)
+
+        # default filters apply (on hold, test)
+        response = self.client.get(f"{URL}?search=test")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), 0)
+        response = self.client.get(f"{URL}?search=hold")
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["obr_name"], self.campaign_with_on_hold_round.obr_name)
+
+        self.client.force_authenticate(geo_limited_user)
+        # test search geo limited
+        response = self.client.get(
+            f"{URL}?search=plann"
+        )  # would return planned campaigns, geo-limited user can't see them, only the campaign with the matching EPID
+        result = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["epid"], campaign_with_epid.epid)
+
+        response = self.client.get(f"{URL}?search=campaign")
+        result = self.assertJSONResponse(response, HTTP_200_OK)  # returns only the campaigns the user has access to
+        obr_names = [r["obr_name"] for r in result]
+        self.assertCountEqual(obr_names, [self.regular_campaign.obr_name, self.preventive_campaign.obr_name])
 
     def test_filter_by_country_group(self):
         pass

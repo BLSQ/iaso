@@ -13,7 +13,6 @@ import {
     useSkipEffectOnMount,
     useRedirectTo,
     useRedirectToReplace,
-    useGoBack,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
@@ -260,7 +259,6 @@ export const Assignments: FunctionComponent = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [planning?.id, currentTeam?.id]);
-    const goBack = useGoBack(baseUrls.planning);
     return (
         <>
             <TopBar
@@ -268,7 +266,7 @@ export const Assignments: FunctionComponent = () => {
                     planning?.name ?? ''
                 }`}
                 displayBackButton
-                goBack={goBack}
+                goBack={() => redirectToReplace(baseUrls.planning)}
             />
             <ParentDialog
                 childrenOrgunits={childrenOrgunits}

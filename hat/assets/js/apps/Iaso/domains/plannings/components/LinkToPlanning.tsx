@@ -16,7 +16,7 @@ export const LinkToPlanning: FunctionComponent<Props> = ({ planning }) => {
         [PLANNING_READ, PLANNING_WRITE],
         user,
     );
-    const url = `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
+    const url = `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team_details?.id}`;
     const { name: text } = planning;
 
     return <LinkTo condition={condition} url={url} text={text} />;

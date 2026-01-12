@@ -17,7 +17,7 @@ from plugins.polio.tests.api.test import PolioTestCaseMixin
 URL = "/api/polio/campaigns/"
 
 
-class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin):
+class CampaignFiltersAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin):
     @classmethod
     def setUpTestData(cls):
         cls.now = timezone.now()
@@ -51,7 +51,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
             org_units=[cls.child_org_unit],
         )
 
-        cls.country_type = m.OrgUnitType.objects.create(name="COUNTRY", short_name="country")
+        cls.country_type = m.OrgUnitType.objects.create(name="COUNTRY", short_name="country", category="COUNTRY")
         cls.district_type = m.OrgUnitType.objects.create(name="DISTRICT", short_name="district")
 
         cls.regular_campaign, _, _, _, cls.regular_country, _ = cls.create_campaign(
@@ -743,6 +743,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
             source_version=self.source_version_1,
             country_ou_type=self.country_type,
             district_ou_type=self.district_type,
+            country_name="country2",
         )
         regular_campaign3, _, _, _, regular_country3, _ = self.create_campaign(
             obr_name="regular campaign 3",
@@ -750,6 +751,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
             source_version=self.source_version_1,
             country_ou_type=self.country_type,
             district_ou_type=self.district_type,
+            country_name="country3",
         )
         # create country groups with only some of the campaign countries
         country_group = Group.objects.create(
@@ -759,7 +761,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         country_group2 = Group.objects.create(
             name="Country block2", block_of_countries=True, source_version=self.source_version_1
         )
-        country_group.org_units.set([regular_country3])
+        country_group2.org_units.set([regular_country3])
 
         # test filtering
         self.client.force_authenticate(self.user)
@@ -768,6 +770,7 @@ class CampaignListAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         response = self.client.get(f"{URL}?org_unit_groups={country_group.id}")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         obr_names = [cmp["obr_name"] for cmp in result]
+        print("OBR NAMES", obr_names)
         self.assertCountEqual(obr_names, [self.regular_campaign.obr_name, regular_campaign2.obr_name])
 
         # test passing comma-separated group ids

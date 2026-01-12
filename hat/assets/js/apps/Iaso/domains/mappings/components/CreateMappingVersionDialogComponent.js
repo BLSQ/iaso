@@ -92,6 +92,7 @@ const CreateMappingVersionDialogComponent = () => {
                         collectionName="form_versions"
                         label={formatMessage(MESSAGES.formVersion)}
                         fields="id,form_name,version_id,mapped"
+                        placeholder={formatMessage(MESSAGES.startTypingFormVersion)}
                         mapOptions={options =>
                             options.map(o => ({
                                 name: [
@@ -113,6 +114,8 @@ const CreateMappingVersionDialogComponent = () => {
                 </Grid>
                 <Grid>
                     <Dhis2Search
+                        disabled={!source}
+                        placeholder={formatMessage(MESSAGES.startTypingDataset)}
                         key={`${mappingType} ${source}`}
                         resourceName={
                             mappingType === 'AGGREGATE'

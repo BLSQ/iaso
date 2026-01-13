@@ -534,6 +534,9 @@ msgstr "Réinitialisation du mot de passe sur %(site_name)s"
 #~ msgid "Login via WFP CIAM"
 #~ msgstr "Connexion via WFP CIAM"
 
+#~ msgid "Id"
+#~ msgstr "Id"
+
 #, python-format
 #~ msgid ""
 #~ "\n"

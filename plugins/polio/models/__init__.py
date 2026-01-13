@@ -12,4 +12,5 @@ __all__ = [
     "OutgoingStockMovement",
     "DestructionReport",
     "IncidentReport",
+    "VaccinePreAlert",
 ]

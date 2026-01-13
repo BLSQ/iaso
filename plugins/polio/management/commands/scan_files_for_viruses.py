@@ -1,6 +1,9 @@
+import argparse
+
 from typing import Optional, Tuple
 
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 
 from iaso.utils.virus_scan.clamav import scan_disk_file_for_virus
 from iaso.utils.virus_scan.model import ModelWithFile, VirusScanStatus
@@ -9,15 +12,24 @@ from plugins.polio.models import (
     IncidentReport,
     NotificationImport,
     OutgoingStockMovement,
+    VaccinePreAlert,
     VaccineRequestForm,
 )
+
+
+SCAN_ALL_ARG = "all"
 
 
 class Command(BaseCommand):
     help = "[POLIO] Scan unscanned files for viruses"
 
-    def _scan_files(self, clazz: type[ModelWithFile], name: str) -> Tuple[int, int, int]:
-        queryset = clazz.objects.filter(file_scan_status=VirusScanStatus.PENDING)
+    def add_arguments(self, parser):
+        parser.add_argument(f"--{SCAN_ALL_ARG}", default=False, action=argparse.BooleanOptionalAction)
+
+    def _scan_files(self, clazz: type[ModelWithFile], name: str, scan_all: bool) -> Tuple[int, int, int]:
+        queryset = clazz.objects.filter(~Q(file_scan_status=VirusScanStatus.INFECTED))
+        if not scan_all:
+            queryset = queryset.filter(file_scan_status=VirusScanStatus.PENDING)
         self.stdout.write(f" - {name}: {queryset.count()}")
         clean, infected, errors = 0, 0, 0
         for model_with_file in queryset.all():
@@ -41,10 +53,12 @@ class Command(BaseCommand):
         return clean, infected, errors
 
     def handle(self, *args, **options) -> Optional[str]:
+        scan_all = options[SCAN_ALL_ARG]
         self.stdout.write("Scanning files for viruses...")
-        self._scan_files(VaccineRequestForm, "Vaccine Request Forms")
-        self._scan_files(OutgoingStockMovement, "Form As")
-        self._scan_files(DestructionReport, "Destruction Reports")
-        self._scan_files(IncidentReport, "Incident Reports")
-        self._scan_files(NotificationImport, "Notifications")
+        self._scan_files(VaccineRequestForm, "Vaccine Request Forms", scan_all)
+        self._scan_files(OutgoingStockMovement, "Form As", scan_all)
+        self._scan_files(DestructionReport, "Destruction Reports", scan_all)
+        self._scan_files(IncidentReport, "Incident Reports", scan_all)
+        self._scan_files(NotificationImport, "Notifications", scan_all)
+        self._scan_files(VaccinePreAlert, "Vaccine Pre-Alert", scan_all)
         self.stdout.write(self.style.SUCCESS("Scan done!"))

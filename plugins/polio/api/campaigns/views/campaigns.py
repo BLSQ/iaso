@@ -52,12 +52,6 @@ from plugins.polio.preparedness.spreadsheet_manager import (
 )
 
 
-REGULAR = "regular"
-PREVENTIVE = "is_preventive"
-PLANNED = "is_planned"
-ON_HOLD = "on_hold"
-
-
 class CampaignViewSet(ModelViewSet):
     """Main endpoint for campaign.
 

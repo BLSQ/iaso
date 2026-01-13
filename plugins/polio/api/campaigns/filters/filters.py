@@ -4,8 +4,7 @@ from django.db.models import Q, QuerySet
 from django.utils.translation import gettext_lazy as _
 
 from iaso.models import OrgUnit, OrgUnitType
-from plugins.polio.api.campaigns.views.campaigns import ON_HOLD, PLANNED, PREVENTIVE, REGULAR
-from plugins.polio.models.base import Campaign
+from plugins.polio.models.base import ON_HOLD, PLANNED, PREVENTIVE, REGULAR, Campaign
 
 
 # search query shared with legacy SearchFilter. Regrouped here to avoid code duplication and ensure consistent behaviour

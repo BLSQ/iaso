@@ -32,6 +32,7 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Group, OrgUnit
+from plugins.polio.api.campaigns.campaign_groups import CampaignNameSerializer
 from plugins.polio.api.campaigns.campaigns_log import (
     log_campaign_modification,
     serialize_campaign,
@@ -39,6 +40,7 @@ from plugins.polio.api.campaigns.campaigns_log import (
 from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
     missing_vaccine_authorization_for_campaign_email_alert,
 )
+from plugins.polio.api.lqas_im.lqas_im_dropdowns import CampaignDropDownSerializer
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
 from plugins.polio.api.shared_serializers import GroupSerializer, OrgUnitSerializer
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
@@ -144,13 +146,23 @@ class CampaignSerializer(serializers.ModelSerializer):
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False
     )
-    # Account is filed per default the one of the connected user that update it
+    # Account is filled per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
     has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
     campaign_types = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignType.objects.all(), required=False)
     # Vaccines with real scope
     vaccines = serializers.SerializerMethodField(read_only=True)
     single_vaccines = serializers.SerializerMethodField(read_only=True)
+    # Integrated campaigns
+    integrated_to = serializers.PrimaryKeyRelatedField(
+        required=False, allow_null=True, read_only=False, queryset=Campaign.objects.all()
+    )
+    integrated_campaigns = serializers.PrimaryKeyRelatedField(
+        many=True, allow_empty=True, required=False, read_only=False, queryset=Campaign.objects.all()
+    )
+
+    scopes = CampaignScopeSerializer(many=True, required=False)
+    obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])
 
     def get_vaccines(self, obj):
         if obj.vaccines_extended_list:
@@ -184,9 +196,42 @@ class CampaignSerializer(serializers.ModelSerializer):
     def get_has_data_in_budget_tool(self, campaign):
         return campaign.budget_steps.count() > 0
 
-    scopes = CampaignScopeSerializer(many=True, required=False)
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        campaign_types = data["campaign_types"] = data.get("campaign_types", [polio_type])
+        integrated_to = data.get("integrated_to", None)
+        is_polio = polio_type in campaign_types
 
-    obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])
+        if is_polio and (integrated_to is not None):
+            raise serializers.ValidationError("Polio campaign cannot be integrated to other campaign ")
+
+        if (not is_polio) and data.get("integrated_campaigns", None):
+            raise serializers.ValidationError("Non Polio campaign cannot have integrated campaigns")
+
+        return data
+
+    def validate_integrated_to(self, integrated_to):
+        if not integrated_to:
+            return integrated_to
+        polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        if polio_type not in integrated_to.campaign_types.all():
+            raise serializers.ValidationError(
+                f"Campaign {integrated_to} is not a polio campaign: it cannot have other campaigns integrated to it"
+            )
+        return integrated_to
+
+    def validate_integrated_campaigns(self, value):
+        """Convert None to empty list for many=True field"""
+        if value is None:
+            return []
+        polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        integrated_campaigns_with_wrong_type = [c.obr_name for c in value if polio_type in c.campaign_types.all()]
+        if integrated_campaigns_with_wrong_type:
+            raise serializers.ValidationError(
+                f"Found polio campaign(s) in integrated campaigns: {integrated_campaigns_with_wrong_type}"
+            )
+        return value
 
     @atomic
     def create(self, validated_data):
@@ -195,6 +240,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign_types = validated_data.pop("campaign_types", [])
         initial_org_unit = validated_data.get("initial_org_unit")
         obr_name = validated_data["obr_name"]
+        integrated_to = validated_data.pop("integrated_to", None)
+        integrated_campaigns = validated_data.pop("integrated_campaigns", [])
         account = self.context["request"].user.iaso_profile.account
 
         campaign_scopes = validated_data.pop("scopes", [])
@@ -210,7 +257,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine", "")
             org_units = scope.get("group", {}).get("org_units")
-            scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
+            scope, _ = campaign.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
             name = f"scope {scope.id} for campaign {campaign.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
@@ -227,11 +274,10 @@ class CampaignSerializer(serializers.ModelSerializer):
 
             scope.group.org_units.set(org_units)
 
-        if campaign_types:
+        if campaign_types != campaign.campaign_types:
             campaign.campaign_types.set(campaign_types)
-        else:  # if no campaign_types are given, we assume it's a polio campaign
-            polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
-            campaign.campaign_types.set([polio_type])
+
+        campaign.integrated_to = integrated_to
 
         for round_data in rounds:
             scopes = round_data.pop("scopes", [])
@@ -248,7 +294,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                scope, created = round.scopes.get_or_create(vaccine=vaccine)
+                scope, _ = round.scopes.get_or_create(vaccine=vaccine)
                 name = f"scope {scope.id} for round {round.number} campaign {campaign.obr_name}" + (
                     f" - {vaccine}" if vaccine else ""
                 )
@@ -260,7 +306,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     scope.group.save()
 
                 scope.group.org_units.set(org_units)
-
+        campaign.integrated_campaigns.set(integrated_campaigns)
         campaign.update_geojson_field()
         campaign.save()
         log_campaign_modification(campaign, None, self.context["request"].user)
@@ -295,6 +341,9 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign_scopes = validated_data.pop("scopes", [])
         rounds = validated_data.pop("rounds", [])
         initial_org_unit = validated_data.get("initial_org_unit")
+        integrated_to = validated_data.pop("integrated_to", None)
+        integrated_campaigns = validated_data.pop("integrated_campaigns", [])
+
         account = self.context["request"].user.iaso_profile.account
         separate_scopes_per_round = validated_data.get("separate_scopes_per_round", instance.separate_scopes_per_round)
         switch_to_scope_per_round = separate_scopes_per_round and not instance.separate_scopes_per_round
@@ -406,6 +455,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Cannot delete a round linked to a budget process.")
             rounds_to_delete.delete()
 
+        instance.integrated_to = integrated_to
         instance.rounds.set(round_instances)
 
         # We have to detect new rounds manually because of the way rounds are associated to the campaign.
@@ -415,6 +465,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 round.add_chronogram()
 
         campaign = super().update(instance, validated_data)
+        campaign.integrated_campaigns.set(integrated_campaigns)
         campaign.update_geojson_field()
         campaign.save()
 
@@ -448,6 +499,38 @@ class CampaignSerializer(serializers.ModelSerializer):
         exclude = ["geojson"]
 
         read_only_fields = ["creation_email_send_at", "group"]
+
+
+class CampaignTypeIdAndNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignType
+        fields = ["id", "name"]
+
+
+class IntegratedCampaignSerializer(serializers.ModelSerializer):
+    campaign_types = CampaignTypeIdAndNameSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Campaign
+        fields = ["id", "obr_name", "campaign_types"]
+
+
+class RetrieveCampaignSerializer(CampaignSerializer):
+    # Override Integrated campaigns fields to send obr_name to the front-end
+    integrated_to = CampaignNameSerializer(read_only=True)
+    integrated_campaigns = IntegratedCampaignSerializer(many=True, read_only=True)
+
+    def validate(self, attrs):
+        # Skip parent validation since this serializer doesn't handle write methods
+        return serializers.ModelSerializer.validate(self, attrs)
+
+    def validate_integrated_to(self, value):
+        # Skip parent validation since this serializer doesn't handle write methods
+        return value
+
+    def validate_integrated_campaigns(self, value):
+        # Skip parent validation since this serializer doesn't handle write methods
+        return value
 
 
 class ListCampaignSerializer(CampaignSerializer):
@@ -542,6 +625,16 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "separate_scopes_per_round",
         ]
         read_only_fields = fields
+
+
+class CampaignDropDownSerializer(serializers.ModelSerializer):
+    obr_name = serializers.CharField()
+    id = serializers.CharField()
+    campaign_types = CampaignTypeIdAndNameSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Campaign
+        fields = ["id", "obr_name", "campaign_types"]
 
 
 class CalendarCampaignSerializer(CampaignSerializer):
@@ -763,18 +856,19 @@ class CampaignViewSet(ModelViewSet):
     use_field_order = False
 
     def get_serializer_class(self):
+        if self.request.query_params.get("fieldset") == "calendar" and self.request.method in permissions.SAFE_METHODS:
+            return CalendarCampaignSerializer
         if self.request.user.is_authenticated:
             if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
                 return ListCampaignSerializer
             if (
-                self.request.query_params.get("fieldset") == "calendar"
+                self.request.query_params.get("fieldset") == "dropdown"
                 and self.request.method in permissions.SAFE_METHODS
             ):
-                return CalendarCampaignSerializer
-
+                return CampaignDropDownSerializer
+            if self.action == "retrieve":
+                return RetrieveCampaignSerializer
             return CampaignSerializer
-        if self.request.query_params.get("fieldset") == "calendar" and self.request.method in permissions.SAFE_METHODS:
-            return CalendarCampaignSerializer
         return AnonymousCampaignSerializer
 
     def filter_queryset(self, queryset):

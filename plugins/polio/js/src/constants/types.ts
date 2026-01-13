@@ -10,11 +10,11 @@ import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types'
 export type ObrName = string;
 
 export type GroupedCampaign = {
-    id: number;
-    created_at: string;
-    updated_at: string;
-    name: string;
     campaigns: { id: string; name: ObrName }[];
+    created_at: string;
+    id: number;
+    name: string;
+    updated_at: string;
 };
 
 export type GroupedCampaigns = Pagination & {
@@ -22,8 +22,8 @@ export type GroupedCampaigns = Pagination & {
 };
 
 export type ViewPort = {
-    zoom: number;
     center: number[];
+    zoom: number;
 };
 
 export type CampaignStatus =
@@ -35,12 +35,12 @@ export type CampaignStatus =
     | 'ROUND2DONE';
 
 export type CampaignLogDetail = {
-    id: number;
     content_type: string;
+    created_at: string;
+    id: number;
     object_id: string;
     source: string;
     user: Record<string, any>;
-    created_at: string;
 };
 
 export type CampaignLogsDetail = Pagination & {
@@ -48,8 +48,8 @@ export type CampaignLogsDetail = Pagination & {
 };
 
 export type CampaignLogData = {
-    user?: Profile;
     new_value?: Record<string, any>;
+    user?: Profile;
 };
 
 export type CampaignFieldType =
@@ -135,145 +135,177 @@ export type BudgetStatusDeprecated =
 export type PaymentMode = 'DIRECT' | 'DFC' | 'MOBILE_PAYMENT';
 
 export type Scope = {
-    vaccine?: Vaccine;
     group: { name?: string; id?: number; org_units: number[] };
+    vaccine?: Vaccine;
 };
 
 export type RoundVaccine = {
-    wastage_ratio_forecast: Nullable<string>;
     doses_per_vial: Nullable<number>;
-    name: Vaccine;
     id: number;
+    name: Vaccine;
+    wastage_ratio_forecast: Nullable<string>;
 };
 
 export type Shipment = {
+    comment: Nullable<string>;
+    date_reception: Nullable<string>;
+    estimated_arrival_date: Nullable<string>;
     id: number;
     po_numbers: Nullable<number>;
-    vials_received: Nullable<number>;
-    estimated_arrival_date: Nullable<string>;
-    vaccine_name: Vaccine;
-    date_reception: Nullable<string>;
     reception_pre_alert: Nullable<string>;
-    comment: Nullable<string>;
+    vaccine_name: Vaccine;
+    vials_received: Nullable<number>;
 };
 
 export type Destruction = {
-    id: number;
-    vials_destroyed: Nullable<number>;
+    comment: Nullable<string>;
     date_report: Nullable<string>;
     date_report_received: Nullable<string>;
-    comment: Nullable<string>;
+    id: number;
+    vials_destroyed: Nullable<number>;
 };
 
 export type RoundDateHistoryEntry = {
-    previous_started_at: string; // DATE
-    previous_ended_at: string; // DATE
-    started_at: string; // DATE
-    ended_at: string; // DATE
-    reason_for_delay: number; // an id
-    user: { first_name: string; last_name: string; username: string };
     created_at: string; // DATE
+    ended_at: string; // DATE
+    previous_ended_at: string; // DATE
+    previous_started_at: string; // DATE
+    reason_for_delay: number; // an id
+    started_at: string; // DATE
+    user: { first_name: string; last_name: string; username: string };
 };
 
 export type Round = {
-    id: number;
-    vaccine_names_extended: string;
-    started_at: string; // date
-    ended_at: string; // date
-    mop_up_started_at: Nullable<string>; // date
-    mop_up_ended_at: Nullable<string>; // date
-    im_started_at: Nullable<string>; // date
-    im_ended_at: Nullable<string>; // date
-    lqas_started_at: Nullable<string>; // date
-    lqas_ended_at: Nullable<string>; // date
-    target_population: Nullable<number>;
-    doses_requested: Nullable<number>;
-    cost: Nullable<string>;
-    vaccine_names: string;
-    im_percentage_children_missed_in_household: Nullable<string>;
-    im_percentage_children_missed_out_household: Nullable<string>;
-    im_percentage_children_missed_in_plus_out_household: Nullable<string>;
     awareness_of_campaign_plannning: Nullable<string>;
-    main_awareness_problem: Nullable<string>;
-    lqas_district_passing: Nullable<number>;
-    lqas_district_failing: Nullable<number>;
-    preparedness_spreadsheet_url: Nullable<string>;
-    preparedness_sync_status: Nullable<PreparednessSyncStatus>;
-    scopes: Scope[];
-    vaccines: RoundVaccine[];
-    shipments: Shipment[];
-    destructions: Destruction[];
-    number: number;
-    date_signed_vrf_received: Nullable<string>; // date
+    campaign: Nullable<string>; // uuid
+    cost: Nullable<string>;
+    datelogs: RoundDateHistoryEntry[];
     date_destruction: Nullable<string>;
-    vials_destroyed: Nullable<number>;
-    reporting_delays_hc_to_district: Nullable<number>;
-    reporting_delays_district_to_region: Nullable<number>;
-    reporting_delays_region_to_national: Nullable<number>;
-    forma_reception: Nullable<string>; // date
-    forma_date: Nullable<string>; // date
+    date_signed_vrf_received: Nullable<string>; // date
+    destructions: Destruction[];
+    doses_requested: Nullable<number>;
+    ended_at: string; // date
     forma_comment: Nullable<string>;
+    forma_date: Nullable<string>; // date
     forma_missing_vials: Nullable<number>;
+    forma_reception: Nullable<string>; // date
     forma_unusable_vials: Nullable<number>;
     forma_usable_vials: Nullable<number>;
-    campaign: Nullable<string>; // uuid
-    percentage_covered_target_population: Nullable<number>;
-    datelogs: RoundDateHistoryEntry[];
-    on_hold: boolean;
+    id: number;
+    im_ended_at: Nullable<string>; // date
+    im_percentage_children_missed_in_household: Nullable<string>;
+    im_percentage_children_missed_in_plus_out_household: Nullable<string>;
+    im_percentage_children_missed_out_household: Nullable<string>;
+    im_started_at: Nullable<string>; // date
     is_planned: boolean;
+    lqas_district_failing: Nullable<number>;
+    lqas_district_passing: Nullable<number>;
+    lqas_ended_at: Nullable<string>; // date
+    lqas_started_at: Nullable<string>; // date
+    main_awareness_problem: Nullable<string>;
+    mop_up_ended_at: Nullable<string>; // date
+    mop_up_started_at: Nullable<string>; // date
+    number: number;
+    on_hold: boolean;
+    percentage_covered_target_population: Nullable<number>;
+    preparedness_spreadsheet_url: Nullable<string>;
+    preparedness_sync_status: Nullable<PreparednessSyncStatus>;
+    reporting_delays_district_to_region: Nullable<number>;
+    reporting_delays_hc_to_district: Nullable<number>;
+    reporting_delays_region_to_national: Nullable<number>;
+    scopes: Scope[];
+    started_at: string; // date
+    shipments: Shipment[];
+    target_population: Nullable<number>;
+    vaccine_names: string;
+    vaccine_names_extended: string;
+    vaccines: RoundVaccine[];
+    vials_destroyed: Nullable<number>;
 };
 
 type CalendarRound = {
+    ended_at: string;
     id: number;
     number: number;
-    started_at: string;
-    ended_at: string;
-    vaccine_names: string;
-    target_population: Nullable<number>;
     scopes: Scope[];
+    started_at: string;
+    target_population: Nullable<number>;
+    vaccine_names: string;
 };
 
 export type CalendarSubActivity = {
+    end_date: string;
     id: number;
     name: string;
+    round_number: number;
     scopes: Scope[];
     start_date: string;
-    end_date: string;
     vaccine_names: string;
-    round_number: number;
 };
 
 export type CalendarCampaign = {
-    id: string;
-    epid: Nullable<string>;
-    scopes: Scope[];
-    obr_name: ObrName;
-    vaccines: string;
     account: number;
-    top_level_org_unit_name: string;
-    top_level_org_unit_id: number;
-    rounds: Array<CalendarRound>;
-    sub_activities: Array<CalendarSubActivity>;
-    is_preventive: boolean;
-    general_status: string;
-    grouped_campaigns: number[];
-    separate_scopes_per_round: boolean;
-
-    single_vaccines: string;
     campaign_types: CampaignType[];
     description: string;
-    is_test: boolean;
-    on_hold: boolean;
+    epid: Nullable<string>;
+    general_status: string;
+    grouped_campaigns: number[];
+    id: string;
     is_planned: boolean;
+    is_preventive: boolean;
+    is_test: boolean;
+    obr_name: ObrName;
+    on_hold: boolean;
+    rounds: Array<CalendarRound>;
+    scopes: Scope[];
+    separate_scopes_per_round: boolean;
+    single_vaccines: string;
+    sub_activities: Array<CalendarSubActivity>;
+    top_level_org_unit_id: number;
+    top_level_org_unit_name: string;
+    vaccines: string;
 };
 
 export type Campaign = {
-    id: string;
+    account: number;
+    ag_nopv_group_met_at: Nullable<string>; // date
+    budget_current_state_key: string;
+    budget_current_state_label: Nullable<string>;
+    budget_rrt_oprrt_approval_at: Nullable<string>; // date
+    budget_status: Nullable<BudgetStatusDeprecated>;
+    campaign_types: CampaignType[];
+    country: Nullable<number>;
     created_at: string;
-    updated_at: string;
+    creation_email_sent_at: Nullable<string>; // date time
+    cvdpv2_notified_at: Nullable<string>; // date
     deleted_at: Nullable<string>;
-    single_vaccines?: string;
-    rounds: Round[];
+    description: Nullable<string>;
+    detection_first_draft_submitted_at: Nullable<string>; // date
+    detection_responsible: Nullable<DetectionResponsible>;
+    detection_rrt_oprrt_approval_at: Nullable<string>; // date
+    detection_status: DetectionStatus;
+    dg_authorized_at: Nullable<string>; // date
+    district_count: Nullable<number>;
+    enable_send_weekly_emails: boolean;
+    epid: Nullable<string>;
+    general_status: string;
+    gpei_coordinator: Nullable<string>;
+    gpei_email: Nullable<string>;
+    grouped_campaigns: number[];
+    group: Nullable<number>; // Doesn't appear nullbale in swagger but had anull value in payload
+    id: string;
+    initial_org_unit: Nullable<number>;
+    integrated_campaigns: {
+        id: string;
+        obr_name: string;
+        campaign_types: { name: string; id: number };
+    }[];
+    investigation_at: Nullable<string>; // date
+    is_preventive: boolean;
+    is_test: boolean;
+    no_regret_fund_amount: Nullable<number>; // decimal
+    obr_name: ObrName;
+    on_hold: boolean;
     org_unit: {
         id: number;
         name: string;
@@ -286,88 +318,58 @@ export type Campaign = {
             name: string;
         };
     };
-    top_level_org_unit_name: string;
-    top_level_org_unit_id: number;
-    general_status: string;
-    grouped_campaigns: number[];
-    account: number;
-    // Maybe vaccine name can be typed more strictly
-    scopes: Scope[];
-    obr_name: ObrName;
-    vaccines: string;
-    epid: Nullable<string>;
-    gpei_coordinator: Nullable<string>;
-    gpei_email: Nullable<string>;
-    description: Nullable<string>;
-    separate_scopes_per_round: boolean;
-    creation_email_sent_at: Nullable<string>; // date time
     onset_at: Nullable<string>; // date
     outbreak_declaration_date: Nullable<string>; // date
-    cvdpv2_notified_at: Nullable<string>; // date
-    pv_notified_at: Nullable<string>; // date
-    pv2_notified_at: Nullable<string>; // date
-    virus: Nullable<Virus>;
-    detection_status: DetectionStatus;
-    detection_responsible: Nullable<DetectionResponsible>;
-    detection_first_draft_submitted_at: Nullable<string>; // date
-    detection_rrt_oprrt_approval_at: Nullable<string>; // date
-    risk_assessment_status: Nullable<RiskAssessmentStatus>; // could be more strict
-    risk_assessment_responsible: Nullable<ResponsibleLevel>;
-    risk_assessment_first_draft_submitted_at: Nullable<string>; // date
-    risk_assessment_rrt_oprrt_approval_at: Nullable<string>; // date
-    investigation_at: Nullable<string>; // date
-    ag_nopv_group_met_at: Nullable<string>; // date
-    dg_authorized_at: Nullable<string>; // date
-    verification_score: Nullable<number>;
+    payment_mode: Nullable<PaymentMode>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: PreparednessSyncStatus;
-    budget_status: Nullable<BudgetStatusDeprecated>;
-    is_test: boolean;
-    on_hold: boolean;
-    budget_current_state_key: string;
-    budget_current_state_label: Nullable<string>;
-    who_disbursed_to_co_at: Nullable<string>; // date
-    who_disbursed_to_moh_at: Nullable<string>; // date
+    pv2_notified_at: Nullable<string>; // date
+    pv_notified_at: Nullable<string>; // date
+    risk_assessment_first_draft_submitted_at: Nullable<string>; // date
+    risk_assessment_responsible: Nullable<ResponsibleLevel>;
+    risk_assessment_rrt_oprrt_approval_at: Nullable<string>; // date
+    risk_assessment_status: Nullable<RiskAssessmentStatus>; // could be more strict
+    rounds: Round[];
+    scopes: Scope[];
+    separate_scopes_per_round: boolean;
+    single_vaccines?: string;
+    top_level_org_unit_id: number;
+    top_level_org_unit_name: string;
     unicef_disbursed_to_co_at: Nullable<string>; // date
     unicef_disbursed_to_moh_at: Nullable<string>; // date
-    no_regret_fund_amount: Nullable<number>; // decimal
-    payment_mode: Nullable<PaymentMode>;
-    district_count: Nullable<number>;
-    budget_rrt_oprrt_approval_at: Nullable<string>; // date
-    is_preventive: boolean;
-    enable_send_weekly_emails: boolean;
-    initial_org_unit: Nullable<number>;
-    country: Nullable<number>;
-    group: Nullable<number>; // Doesn't appear nullbale in swagger but had anull value in payload
-    campaign_types: CampaignType[];
+    updated_at: string;
+    vaccines: string;
+    verification_score: Nullable<number>;
+    virus: Nullable<Virus>;
+    who_disbursed_to_co_at: Nullable<string>; // date
+    who_disbursed_to_moh_at: Nullable<string>; // date
 };
 
 export type MergedShapeProperties = {
-    obr_name: ObrName;
     id: string;
-    vaccine: string;
+    obr_name: ObrName;
+    round_number?: number;
     scope_key: string;
     top_level_org_unit_name: string;
-    round_number?: number;
+    vaccine: string;
 };
 export type MergedShape = {
-    type: string;
-    properties: MergedShapeProperties;
+    color?: string;
     geometry: {
         type: 'string';
         coordinates: number[];
     };
-    color?: string;
-};
-
-export type MergedShapes = {
+    properties: MergedShapeProperties;
     type: string;
-    features: MergedShape[];
+};
+export type MergedShapes = {
     cache_creation_date: number;
+    features: MergedShape[];
+    type: string;
 };
 
 export type GeoJson = {
-    type: 'FeatureCollection'; // Adjusted to match the specific string literal expected by React-Leaflet
+    crs: { type: string; properties: Record<string, unknown> };
     features: {
         id: number;
         type: 'Feature'; // This should also be a specific string literal
@@ -384,11 +386,12 @@ export type GeoJson = {
         };
         properties: Record<string, unknown>;
     }[];
-    crs: { type: string; properties: Record<string, unknown> };
+    type: 'FeatureCollection'; // Adjusted to match the specific string literal expected by React-Leaflet
 };
 
 export type Shape = {
     altitude: Nullable<number>;
+    data?: Record<string, any>;
     geo_json;
     has_geo_json: boolean;
     id: number;
@@ -403,21 +406,20 @@ export type Shape = {
     short_name: string;
     source_id: number;
     source_name: string;
-    data?: Record<string, any>;
 };
 
 export type MapColor = {
     color: string;
-    weight: string; // a number as string: "2"
     opacity: string; // a number as string: "2"
+    weight: string; // a number as string: "2"
     zIndex: number;
 };
 
 export type MapShapes = {
-    shapes: OrgUnit[];
     isFetchingGeoJson: boolean;
-    regionShapes: OrgUnit[];
     isFetchingRegions: boolean;
+    regionShapes: OrgUnit[];
+    shapes: OrgUnit[];
 };
 
 export type Side = 'left' | 'right';
@@ -434,98 +436,101 @@ export type CampaignType = {
 };
 
 type NestedRound = {
+    ended_at: Nullable<string>;
     id: number;
     number: number;
     started_at: Nullable<string>;
-    ended_at: Nullable<string>;
 };
 
 export type CampaignListItem = {
-    id: string;
-    epid: Nullable<string>;
-    obr_name: ObrName;
     account: number;
+    campaign_types: CampaignType[];
     cvdpv2_notified_at: Nullable<string>;
-    top_level_org_unit_name: Nullable<string>;
-    top_level_org_unit_id: number;
-    rounds: NestedRound[];
+    epid: Nullable<string>;
     general_status: string;
     grouped_campaigns: number[];
-    campaign_types: CampaignType[];
-    is_test: boolean;
-    on_hold?: boolean;
-    is_preventive: boolean;
+    id: string;
     is_planned: boolean;
+    is_preventive: boolean;
+    is_test: boolean;
+    obr_name: ObrName;
+    on_hold?: boolean;
+    rounds: NestedRound[];
+    top_level_org_unit_id: number;
+    top_level_org_unit_name: Nullable<string>;
 };
-
+export type IntegratedCampaign = {
+    id: string;
+    obr_name: string;
+    campaign_types: { name: string; id: number };
+};
 export type DefaultCampaignValues = {
+    budget_current_state_key: string;
+    campaign_types: number[];
+    description?: string;
+    detection_status: string;
+    enable_send_weekly_email: boolean;
+    group?: { name: string; org_units: number[] };
+    has_data_in_budget_tool: boolean;
     id?: string; // uuid
     initial_org_unit?: number;
-    top_level_org_unit_id?: number;
-    campaign_types: number[];
-    obr_name?: ObrName;
-    description?: string;
-    gpei_coordinator?: string;
+    integrated_to?: IntegratedCampaign;
+    is_planned: boolean;
     is_preventive: boolean;
     is_test: boolean;
+    non_field_errors?: any;
+    obr_name?: ObrName;
     on_hold: boolean;
-    is_planned: boolean;
+    org_unit?: Shape;
+    risk_assessment_status: string;
     rounds: Round[];
     scopes: Scope[];
-    org_unit?: Shape;
     separate_scopes_per_round: boolean;
-    group?: { name: string; org_units: number[] };
-    enable_send_weekly_email: boolean;
-    has_data_in_budget_tool: boolean;
-    budget_current_state_key: string;
-    detection_status: string;
-    risk_assessment_status: string;
-    non_field_errors?: any;
+    top_level_org_unit_id?: number;
 };
 export type PolioCampaignValues = DefaultCampaignValues & {
-    subactivity?: SubActivityFormValues; // The subactivity is not part of the campaign API payload, but saved in formik and posted through the subactivities API
-    virus?: string;
-    vaccines?: string;
-    epid?: string;
-    grouped_campaigns?: number[];
-    onset_at?: string | null;
-    cvdpv2_notified_at?: string | null;
-    outbreak_declaration_date?: string | null;
-    detection_first_draft_submitted_at?: string | null;
-    investigation_at?: string | null;
-    risk_assessment_first_draft_submitted_at?: string | null;
-    risk_assessment_rrt_oprtt_approval_at?: string | null;
     ag_nopv_group_met_at?: string | null;
+    approval_confirmed_at_WFEDITABLE?: string | null;
+    approved_at_WFEDITABLE?: string | null;
+    approved_by_unicef_at_WFEDITABLE?: string | null;
+    approved_by_who_at_WFEDITABLE?: string | null;
+    cvdpv2_notified_at?: string | null;
+    detection_first_draft_submitted_at?: string | null;
     dg_authorized_at?: string | null;
-    // Budget-related dates
-    who_sent_budget_at_WFEDITABLE?: string | null;
-    unicef_sent_budget_at_WFEDITABLE?: string | null;
-    gpei_consolidated_budgets_at_WFEDITABLE?: string | null;
-    submitted_to_rrt_at_WFEDITABLE?: string | null;
+    district_count?: number;
+    epid?: string;
     feedback_sent_to_gpei_at_WFEDITABLE?: string | null;
-    re_submitted_to_rrt_at_WFEDITABLE?: string | null;
-    submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE?: string | null;
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE?: string | null;
     feedback_sent_to_rrt1_at_WFEDITABLE?: string | null;
-    submitted_to_orpg_wider_at_WFEDITABLE?: string | null;
-    submission_to_orpg_operations_2_at_WFEDITABLE?: string | null;
     feedback_sent_to_rrt2_at_WFEDITABLE?: string | null;
+    gpei_consolidated_budgets_at_WFEDITABLE?: string | null;
+    grouped_campaigns?: number[];
+    integrated_campaigns: IntegratedCampaign[];
+    investigation_at?: string | null;
+    no_regret_fund_amount?: number;
+    onset_at?: string | null;
+    outbreak_declaration_date?: string | null;
     re_submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
     re_submitted_to_orpg_operations2_at_WFEDITABLE?: string | null;
-    submitted_for_approval_at_WFEDITABLE?: string | null;
-    approved_by_who_at_WFEDITABLE?: string | null;
-    feedback_sent_to_orpg_operations_who_at_WFEDITABLE?: string | null;
-    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE?: string | null;
-    approved_by_unicef_at_WFEDITABLE?: string | null;
-    approved_at_WFEDITABLE?: string | null;
-    approval_confirmed_at_WFEDITABLE?: string | null;
-    unicef_disbursed_to_moh_at?: string | null;
-    unicef_disbursed_to_co_at?: string | null;
-    who_disbursed_to_moh_at?: string | null;
-    who_disbursed_to_co_at?: string | null;
+    re_submitted_to_rrt_at_WFEDITABLE?: string | null;
+    risk_assessment_first_draft_submitted_at?: string | null;
+    risk_assessment_rrt_oprtt_approval_at?: string | null;
     spreadsheet_url?: string | null;
-    district_count?: number;
-    no_regret_fund_amount?: number;
+    subactivity?: SubActivityFormValues; // The subactivity is not part of the campaign API payload, but saved in formik and posted through the subactivities API
+    submitted_for_approval_at_WFEDITABLE?: string | null;
+    submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
+    submitted_to_orpg_wider_at_WFEDITABLE?: string | null;
+    submitted_to_rrt_at_WFEDITABLE?: string | null;
+    submission_to_orpg_operations_2_at_WFEDITABLE?: string | null;
+    unicef_disbursed_to_co_at?: string | null;
+    unicef_disbursed_to_moh_at?: string | null;
     verification_score?: number;
+    virus?: string;
+    vaccines?: string;
+    who_disbursed_to_co_at?: string | null;
+    who_disbursed_to_moh_at?: string | null;
+    who_sent_budget_at_WFEDITABLE?: string | null;
 };
 
 export type CampaignFormValues = DefaultCampaignValues | PolioCampaignValues;
@@ -551,62 +556,62 @@ export type MonthYear = string;
 export type NumberAsString = string;
 
 export type PreparednessIndicator = {
+    communication_c4d: number;
+    communication_sm_activities: number;
+    communication_sm_fund: number;
     operational_fund: number;
+    penmarkers_supply: number;
+    sia_micro_planning: number;
+    sia_training: number;
+    status_score: number;
     vaccine_and_droppers_received: number;
     vaccine_cold_chain_assessment: number;
     vaccine_monitors_training_and_deployment: number;
-    penmarkers_supply: number;
-    sia_training: number;
-    sia_micro_planning: number;
-    communication_sm_fund: number;
-    communication_sm_activities: number;
-    communication_c4d: number;
-    status_score: number;
 };
 
 export type PreparednessScores = {
-    planning_score: number;
-    training_score: number;
-    monitoring_score: number;
-    vaccine_score: number;
-    advocacy_score: number;
     adverse_score: number;
+    advocacy_score: number;
+    monitoring_score: number;
+    planning_score: number;
     security_score: number | null;
     status_score: number;
+    training_score: number;
+    vaccine_score: number;
 };
 
 export type RegionName = string;
 export type DistrictName = string;
 
 export type RefreshPreparednessResponse = {
-    national: PreparednessIndicator & { round: string };
-    regions: {
-        [key: RegionName]: PreparednessIndicator;
-    };
+    created_at: string;
+    district_score: number;
     districts: {
         [key: DistrictName]: PreparednessScores &
             PreparednessIndicator & { region: string };
     };
     format: string;
-    totals: {
-        national_score: number;
-        regional_score: number;
-        district_score: number;
-    };
-    title: string;
-    created_at: string;
-    national_score: number;
-    regional_score: number;
-    district_score: number;
-    overall_status_score: number;
     indicators: {
         [key: string]: {
-            sn: number;
+            districts: number;
             key: string;
-            title: string;
             national: number;
             regions: number;
-            districts: number;
+            sn: number;
+            title: string;
         };
+    };
+    national: PreparednessIndicator & { round: string };
+    national_score: number;
+    overall_status_score: number;
+    regions: {
+        [key: RegionName]: PreparednessIndicator;
+    };
+    regional_score: number;
+    title: string;
+    totals: {
+        district_score: number;
+        national_score: number;
+        regional_score: number;
     };
 };

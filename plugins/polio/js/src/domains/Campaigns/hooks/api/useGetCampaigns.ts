@@ -27,6 +27,7 @@ export type Options = {
     orgUnitGroups?: number[];
     show_test?: boolean;
     on_hold?: boolean;
+    is_planned?: boolean;
     is_embedded?: boolean;
     enabled?: boolean;
     fieldset?: string;
@@ -65,7 +66,7 @@ export type CampaignAPIResponse = {
     campaigns?: Campaign[];
 };
 
-const getURL = (urlParams: GetCampaignsParams, url: string): string => {
+export const getURL = (urlParams: GetCampaignsParams, url: string): string => {
     const filteredParams: [string, any][] = Object.entries(urlParams).filter(
         ([_key, value]) => value !== undefined,
     );
@@ -75,31 +76,33 @@ const getURL = (urlParams: GetCampaignsParams, url: string): string => {
     return `${url}?${queryString.toString()}`;
 };
 
+export const makeCampaignOptions = (options: Options, asCsv = false) => ({
+    limit: asCsv ? undefined : options.pageSize,
+    page: asCsv ? undefined : options.page,
+    order: options.order,
+    country__id__in: options.countries,
+    search: options.search,
+    rounds__started_at__gte: options.roundStartFrom,
+    rounds__started_at__lte: options.roundStartTo,
+    deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
+    campaign_types: options.campaignType,
+    campaign_category: options.campaignCategory ?? 'all',
+    campaign_groups: options.campaignGroups,
+    org_unit_groups: options.orgUnitGroups,
+    show_test: options.show_test ?? false,
+    on_hold: options.on_hold ?? false,
+    is_embedded: options.is_embedded ?? false,
+    // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
+    enabled: options.enabled ?? true,
+    fieldset: asCsv ? undefined : (options.fieldset ?? undefined),
+});
+
 export const useGetCampaignsOptions = (
     options: Options,
     asCsv = false,
 ): GetCampaignsParams => {
     return useMemo(
-        () => ({
-            limit: asCsv ? undefined : options.pageSize,
-            page: asCsv ? undefined : options.page,
-            order: options.order,
-            country__id__in: options.countries,
-            search: options.search,
-            rounds__started_at__gte: options.roundStartFrom,
-            rounds__started_at__lte: options.roundStartTo,
-            deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
-            campaign_types: options.campaignType,
-            campaign_category: options.campaignCategory ?? 'all',
-            campaign_groups: options.campaignGroups,
-            org_unit_groups: options.orgUnitGroups,
-            show_test: options.show_test ?? false,
-            on_hold: options.on_hold ?? false,
-            is_embedded: options.is_embedded ?? false,
-            // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
-            enabled: options.enabled ?? true,
-            fieldset: asCsv ? undefined : (options.fieldset ?? undefined),
-        }),
+        () => makeCampaignOptions(options, asCsv),
         [
             asCsv,
             options.pageSize,
@@ -123,6 +126,57 @@ export const useGetCampaignsOptions = (
     );
 };
 
+export const makeCampaignQueryKey = ({
+    queryKey,
+    options,
+    asCsv = false,
+}: {
+    queryKey?: string | unknown[];
+    options: Options;
+    asCsv?: boolean;
+}): { queryKey: QueryKey; params: GetCampaignsParams } => {
+    const params: GetCampaignsParams = makeCampaignOptions(options, asCsv);
+    const key: unknown[] = ['campaigns', params];
+    if (queryKey) {
+        key.push(queryKey);
+    }
+
+    return { queryKey: key as QueryKey, params };
+};
+
+export const useCampaignsQueryKey = ({
+    queryKey,
+    options,
+    asCsv = false,
+}: {
+    queryKey?: string | unknown[];
+    options: Options;
+    asCsv?: boolean;
+}): { queryKey: QueryKey; params: GetCampaignsParams } => {
+    return useMemo(() => {
+        return makeCampaignQueryKey({ queryKey, options, asCsv });
+    }, [
+        queryKey,
+        asCsv,
+        options.pageSize,
+        options.page,
+        options.order,
+        options.countries,
+        options.search,
+        options.roundStartFrom,
+        options.roundStartTo,
+        options.showOnlyDeleted,
+        options.campaignType,
+        options.campaignCategory,
+        options.campaignGroups,
+        options.orgUnitGroups,
+        options.show_test,
+        options.enabled,
+        options.fieldset,
+        options.on_hold,
+        options.is_embedded,
+    ]);
+};
 export const useGetCampaigns = (
     // eslint-disable-next-line default-param-last
     options: Options = {},
@@ -131,25 +185,19 @@ export const useGetCampaigns = (
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
 ): UseQueryResult<CampaignAPIResponse | Campaign[], Error> => {
-    const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
-    const effectiveQueryKey: QueryKey = useMemo(() => {
-        const key: any[] = ['campaigns', params];
-        if (queryKey) {
-            key.push(queryKey);
-        }
-        if (queryOptions) {
-            key.push(queryOptions);
-        }
-        return key;
-    }, [params, queryKey, queryOptions]);
+    const { queryKey: effectiveQueryKey, params } = useCampaignsQueryKey({
+        options,
+        queryKey,
+    });
+
     return useSnackQuery({
         queryKey: effectiveQueryKey,
         queryFn: (): Promise<Campaign[] | PaginatedResponse<Campaign>> =>
             getRequest(getURL(params, url)),
         options: {
             cacheTime: Infinity,
-            staleTime: 1000 * 60 * 15,
+            staleTime: Infinity,
             structuralSharing: false,
             refetchOnWindowFocus: false,
             enabled: !!params.enabled,

@@ -480,6 +480,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
+    ID: {
+        defaultMessage: 'ID',
+        id: 'iaso.label.id',
+    },
     detailTitle: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',

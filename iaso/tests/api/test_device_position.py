@@ -151,6 +151,14 @@ class DevicesPositionAPITestCase(APITestCase):
             exception_contains_string="device_id",
         )
 
+    def test_get_details_requires_auth(self):
+        response = self.client.get(f"/api/devicespositions/1/?app_id={self.project_1.app_id}")
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_list_requires_auth(self):
+        response = self.client.get(f"/api/devicespositions/?app_id={self.project_1.app_id}")
+        self.assertEqual(response.status_code, 401)
+
     def assertValidDevicePositionListData(
         self, list_data: typing.Mapping, expected_length: int, with_result_key=True, paginated: bool = False
     ):

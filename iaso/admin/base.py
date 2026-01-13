@@ -90,7 +90,7 @@ from ..models import (
     WorkflowVersion,
 )
 from ..models.data_store import JsonDataStore
-from ..models.microplanning import Assignment, Planning
+from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
 from ..models.team import Team
 from ..utils.gis import convert_2d_point_to_3d
 
@@ -196,7 +196,14 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
-    list_filter = ("org_unit_type", "custom", "validation_status", "sub_source")
+    list_filter = (
+        "org_unit_type",
+        "custom",
+        "validation_status",
+        "sub_source",
+        "version__data_source",
+        "version__data_source__projects__account",
+    )
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -208,12 +215,22 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "name",
         "uuid",
         "parent",
+        "version",
+        "get_account_names",
     )
+
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(
+            f"{project.account.name} ({project.account.id})" for project in obj.version.data_source.projects.all()
+        )
+        return ", ".join(sorted(accounts)) if accounts else "-"
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        queryset = queryset.prefetch_related("org_unit_type", "parent__org_unit_type")
-        return queryset
+        return queryset.select_related("org_unit_type", "parent", "version", "version__data_source").prefetch_related(
+            "version__data_source__projects__account"
+        )
 
 
 @admin.register(OrgUnitType)
@@ -242,6 +259,7 @@ class FormAdmin(admin.GeoModelAdmin):
         "periods_before_allowed",
         "periods_after_allowed",
         "derived",
+        "get_account_names",
         "created_at",
         "updated_at",
         "deleted_at",
@@ -251,8 +269,13 @@ class FormAdmin(admin.GeoModelAdmin):
 
     list_filter = ["projects__account"]
 
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(f"{project.account.name} ({project.account.id})" for project in obj.projects.all())
+        return ", ".join(sorted(accounts)) if accounts else "-"
+
     def get_queryset(self, request):
-        return Form.objects_include_deleted.all()
+        return Form.objects_include_deleted.prefetch_related("projects__account")
 
 
 @admin.register(FormVersion)
@@ -698,6 +721,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "started_at",
                     "ended_at",
                     "pipeline_uuids",
+                    "selected_sampling_result",
                 ),
             },
         ),
@@ -742,6 +766,25 @@ class AssignmentAdmin(admin.ModelAdmin):
         "planning",
     )
     list_filter = ("planning",)
+    date_hierarchy = "created_at"
+
+
+@admin.register(PlanningSamplingResult)
+@admin_attr_decorator
+class PlanningSamplingResultAdmin(admin.ModelAdmin):
+    raw_id_fields = ("planning", "group", "task", "created_by")
+    readonly_fields = ("created_at", "parameters")
+    list_display = (
+        "id",
+        "planning",
+        "pipeline_id",
+        "pipeline_version",
+        "group",
+        "task",
+        "created_at",
+    )
+    list_filter = ("planning",)
+    search_fields = ("pipeline_id", "pipeline_version")
     date_hierarchy = "created_at"
 
 

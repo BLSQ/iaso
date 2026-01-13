@@ -6,6 +6,8 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
+
 
 @swagger_auto_schema()
 class SupersetTokenViewSet(viewsets.ViewSet):
@@ -19,12 +21,19 @@ class SupersetTokenViewSet(viewsets.ViewSet):
     https://www.npmjs.com/package/@superset-ui/embedded-sdk
     """
 
-    permission_classes = [AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, AllowAny]
 
     def create(self, request):
         dashboard_id = request.data.get("dashboard_id")
 
+        if not dashboard_id:
+            return Response({"error": "dashboard_id required"}, status=status.HTTP_400_BAD_REQUEST)
+
         base_url = settings.SUPERSET_URL
+
+        if not base_url:
+            return Response({"error": "no superset configured"}, status=status.HTTP_404_NOT_FOUND)
+
         headers = {"Content-Type": "application/json"}
 
         # Log in to Superset to get access_token

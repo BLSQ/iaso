@@ -93,6 +93,10 @@ PRODUCT_FRUITS_WORKSPACE_CODE = os.environ.get("PRODUCT_FRUITS_WORKSPACE_CODE", 
 
 LEARN_MORE_URL = os.environ.get("LEARN_MORE_URL", None)
 
+# Documentation and help resources
+USER_MANUAL_PATH = os.environ.get("USER_MANUAL_PATH", "")
+FORUM_PATH = os.environ.get("FORUM_PATH", "")
+
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
 USE_CELERY = os.environ.get("USE_CELERY", "")
@@ -725,6 +729,9 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",  # ModelBackend is explicitly required in DHIS2 and token authentication.
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+# stricter mode where no public except white listed one
+AUTHENTICATION_ENFORCED = os.environ.get("AUTHENTICATION_ENFORCED", "false") == "true"
 
 SITE_ID = 1
 

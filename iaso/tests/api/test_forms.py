@@ -1,7 +1,9 @@
 import typing
 
 from django.core.files import File
+from django.db import connection
 from django.db.models import Exists, OuterRef
+from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
@@ -20,6 +22,10 @@ from iaso.models import (
 )
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
+
+
+MAX_QUERY_INSTANCE_UPDATED_AT = 'max("iaso_instance"."updated_at")'
+COUNT_QUERY_INSTANCE = 'count(distinct "iaso_instance"."id")'
 
 
 class FormsAPITestCase(APITestCase):
@@ -850,3 +856,44 @@ class FormsAPITestCase(APITestCase):
         with self.assertNumQueries(0):
             serializer = FormSerializer(annotated_form, context={"request": api_request})
             self.assertTrue(serializer.data["has_attachments"])
+
+    def test_form_details_query_optimization(self):
+        """
+        Ensure that the form details API endpoint does not perform unnecessary queries
+        when fetching a form with possible_fields. Specifically, it should not perform a "max/count on instances".
+        """
+        self.client.force_authenticate(self.yoda)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(
+                f"/api/forms/{self.form_1.id}/?fields=possible_fields", headers={"Content-Type": "application/json"}
+            )
+            self.assertJSONResponse(response, 200)
+
+        # Ensure none of the executed SQL queries contain the heavy computations
+        for q in ctx.captured_queries:
+            sql = q["sql"].lower()
+            self.assertNotIn(MAX_QUERY_INSTANCE_UPDATED_AT, sql, f"Found unexpected query: {sql}")
+            self.assertNotIn(COUNT_QUERY_INSTANCE, sql, f"Found unexpected query: {sql}")
+
+        self.assertEqual(len(ctx.captured_queries), 10)
+
+    def test_form_details_full_details(self):
+        self.client.force_authenticate(self.yoda)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(f"/api/forms/{self.form_1.id}/", headers={"Content-Type": "application/json"})
+            self.assertJSONResponse(response, 200)
+
+        at_least_one_query_with_max_and_count = False
+        for q in ctx.captured_queries:
+            sql = q["sql"].lower()
+            # induced by field instance_count
+            if MAX_QUERY_INSTANCE_UPDATED_AT in sql:
+                at_least_one_query_with_max_and_count = True
+            # induced by field last_submission_date
+            if COUNT_QUERY_INSTANCE in sql:
+                at_least_one_query_with_max_and_count = True
+
+        self.assertTrue(at_least_one_query_with_max_and_count)
+        self.assertEqual(len(ctx.captured_queries), 11)

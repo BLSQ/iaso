@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID, SHOW_DELETED
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Group, Project
@@ -36,7 +37,7 @@ class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
     `GET /api/mobile/groups/?app_id=some.app.id`
     """
 
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, permissions.AllowAny]
     serializer_class = MobileGroupSerializer
 
     app_id_param = openapi.Parameter(

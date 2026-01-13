@@ -12,11 +12,12 @@ class MetricTypeAdmin(admin.ModelAdmin):
         "name",
         "source",
         "units",
+        "is_utility",
         "created_at",
         "updated_at",
     )
     search_fields = ("name", "description", "source", "units", "comments")
-    list_filter = ("account", "source")
+    list_filter = ("account", "source", "is_utility")
     ordering = ("account", "category", "name")
     readonly_fields = ("account",)
 

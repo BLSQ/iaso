@@ -17,7 +17,7 @@ import MESSAGES from '../../../constants/messages';
 import { POLIO_ADMIN } from '../../../constants/permissions';
 import { baseUrls } from '../../../constants/urls';
 import { makeCampaignsDropDown } from '../../../utils/index';
-import { IMType, LqasImFilterParams } from '../types';
+import { IMType, LqasImFilterParams, LqasIMType } from '../types';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
 import { RefreshLqasIMData } from './RefreshLqasIMData';
 
@@ -34,7 +34,7 @@ type Props = {
     imType?: IMType;
 };
 
-const getCurrentUrl = (imType?: IMType | 'imHH'): string => {
+const getCurrentUrl = (imType?: LqasIMType | 'imHH'): string => {
     if (imType === 'imGlobal') {
         return baseUrls.imGlobal;
     }
@@ -105,6 +105,8 @@ export const Filters: FunctionComponent<Props> = ({
                         clearable
                         multi={false}
                         value={country?.toString()}
+                        // ts-error from blsq-comp
+                        // @ts-ignore
                         options={countriesOptions}
                         onChange={value => onChange('country', value)}
                     />
@@ -118,6 +120,8 @@ export const Filters: FunctionComponent<Props> = ({
                         multi={false}
                         value={campaign}
                         // Not showing campaigns before Im data has been fetched because selecting a campaign before the end of data fetching will cause bugs in the map
+                        // ts-error from blsq-comp
+                        // @ts-ignore
                         options={isFetching ? [] : dropDownOptions}
                         onChange={value => onChange('campaign', value)}
                         disabled={Boolean(!country) && isFetching}

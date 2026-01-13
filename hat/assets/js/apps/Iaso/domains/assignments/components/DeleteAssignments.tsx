@@ -8,9 +8,9 @@ import {
 } from 'bluesquare-components';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { SxStyles } from 'Iaso/types/general';
+import { Planning } from '../../plannings/types';
 import { useBulkDeleteAssignments } from '../hooks/requests/useBulkDeleteAssignments';
 import MESSAGES from '../messages';
-import { Planning } from '../types/planning';
 
 const styles: SxStyles = {
     button: {

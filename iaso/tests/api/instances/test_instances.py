@@ -747,7 +747,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "a", "age": "18", "gender": "M"},
+            json={"name": "a", "age__int__": "18", "gender": "M"},
         )
 
         b = self.create_form_instance(
@@ -755,7 +755,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "b", "age": "19", "gender": "F"},
+            json={"name": "b", "age__int__": "19", "gender": "F"},
         )
 
         self.create_form_instance(
@@ -763,11 +763,11 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "c", "age": "30", "gender": "F"},
+            json={"name": "c", "age__int__": "30", "gender": "F"},
         )
 
         self.client.force_authenticate(self.yoda)
-        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
+        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age__int__"}, 25]}]})
         with self.assertNumQueries(6):
             response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, 200)
@@ -1432,6 +1432,21 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         response = self.client.get("/api/instances/stats_sum/")
         self.assertJSONResponse(response, 200)
+
+    def test_lock_instance_anonymous_not_allowed(self):
+        instance = self.create_form_instance(
+            org_unit=self.jedi_council_corruscant,
+            period="202002",
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unlock_anonymous_not_allowed(self):
+        response = self.client.post("/api/instances/unlock_lock/", {"lock": 1}, json=True)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)

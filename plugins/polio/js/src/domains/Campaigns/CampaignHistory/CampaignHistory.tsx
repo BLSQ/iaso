@@ -16,22 +16,23 @@ import {
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { CampaignLogDetail } from './CampaignLogDetail';
-
 import WidgetPaper from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import {
-    useGetCampaignLogs,
-    useGetCampaignLogDetail,
-    CampaignLogDetailResult,
-    initialLogDetail,
-} from './hooks/useGetCampaignHistory';
+
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../../../constants/messages';
+
+import { CampaignLogDetail } from './CampaignLogDetail';
+import {
+    CampaignLogDetailResult,
+    initialLogDetail,
+    useGetCampaignLogDetail,
+    useGetCampaignLogs,
+} from './hooks/useGetCampaignHistory';
 
 type Params = {
     campaignId: string;

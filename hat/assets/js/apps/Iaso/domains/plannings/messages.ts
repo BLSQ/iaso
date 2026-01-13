@@ -61,9 +61,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Team',
         id: 'iaso.label.team',
     },
-    viewPlanning: {
-        defaultMessage: 'View planning',
-        id: 'iaso.label.viewPlanning',
+    assignments: {
+        defaultMessage: 'Assignments',
+        id: 'iaso.label.assignments',
     },
     cancel: {
         id: 'iaso.label.cancel',
@@ -88,6 +88,10 @@ const MESSAGES = defineMessages({
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
+    },
+    create: {
+        id: 'iaso.label.create',
+        defaultMessage: 'Create',
     },
     selectOrgUnit: {
         id: 'iaso.plannings.label.selectOrgUnit',
@@ -124,6 +128,10 @@ const MESSAGES = defineMessages({
     deleteWarning: {
         id: 'iaso.label.deleteWarning',
         defaultMessage: 'Are you sure you want to delete {name}?',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
     },
     planningAndOrgUnit: {
         id: 'iaso.error.label.planningAndOrgUnit',
@@ -190,6 +198,30 @@ const MESSAGES = defineMessages({
     status: {
         id: 'iaso.label.status',
         defaultMessage: 'Status',
+    },
+    samplingResults: {
+        id: 'iaso.plannings.label.samplingResults',
+        defaultMessage: 'Sampling results',
+    },
+    orgUnitsCount: {
+        id: 'iaso.plannings.label.orgUnitsCount',
+        defaultMessage: 'Org units count',
+    },
+    created_at: {
+        id: 'iaso.label.created_at',
+        defaultMessage: 'Created',
+    },
+    seeSamplingResults: {
+        id: 'iaso.plannings.label.seeSamplingResults',
+        defaultMessage: 'See sampling results',
+    },
+    samplingName: {
+        id: 'iaso.plannings.label.samplingName',
+        defaultMessage: 'Sampling name',
+    },
+    selectSamplingResult: {
+        id: 'iaso.plannings.label.selectSamplingResult',
+        defaultMessage: 'Select sampling result',
     },
 });
 

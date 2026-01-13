@@ -4,7 +4,14 @@ from logging import getLogger
 from uuid import uuid4
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse, StreamingHttpResponse
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -309,6 +316,9 @@ def enketo_form_list(request):
     Implement https://docs.getodk.org/openrosa-form-list/#the-manifest-document
 
     Require a param `formID` which is actually an Instance UUID"""
+    if not request.GET.get("formID"):
+        return HttpResponseBadRequest("formID is required")
+
     form_id_str = request.GET["formID"]
     try:
         i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
@@ -355,6 +365,9 @@ def enketo_form_download(request):
     We insert the instance Id In the form definition so the "Form" is unique per instance.
     """
     uuid = request.GET.get("uuid")
+    if not uuid:
+        return HttpResponseBadRequest("uuid is required")
+
     try:
         i = Instance.objects.get(uuid=uuid)
     except Instance.MultipleObjectsReturned:

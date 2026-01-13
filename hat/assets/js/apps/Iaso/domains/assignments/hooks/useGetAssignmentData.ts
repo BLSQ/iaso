@@ -1,12 +1,14 @@
-import { Dispatch, SetStateAction, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
     OrgUnitTypeHierarchyDropdownValues,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { useGetPlanningDetails } from 'Iaso/domains/plannings/hooks/requests/useGetPlanningDetails';
 import { useBoundState } from '../../../hooks/useBoundState';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { Planning } from '../../plannings/types';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import {
     DropdownTeamsOptions,
@@ -17,7 +19,6 @@ import {
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 import { Locations } from '../types/locations';
 import { ChildrenOrgUnits } from '../types/orgUnit';
-import { Planning } from '../types/planning';
 
 import {
     AssignmentsResult,
@@ -25,7 +26,6 @@ import {
 } from './requests/useGetAssignments';
 import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
 import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
-import { useGetPlanning } from './requests/useGetPlanning';
 import { ProfileWithColor, useGetProfiles } from './requests/useGetProfiles';
 
 import {
@@ -66,7 +66,6 @@ type Result = {
     isLoadingAssignments: boolean;
     isTeamsFetched: boolean;
     setProfiles: (profiles: ProfileWithColor[]) => void;
-    setExtraFilters: Dispatch<SetStateAction<Record<string, any>>>;
 };
 
 export const useGetAssignmentData = ({
@@ -78,9 +77,6 @@ export const useGetAssignmentData = ({
     selectedItem,
     search,
 }: Props): Result => {
-    const [extraFilters, setExtraFilters] = useState<Record<string, string>>(
-        {},
-    );
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
         data: planning,
@@ -88,11 +84,11 @@ export const useGetAssignmentData = ({
     }: {
         data?: Planning;
         isLoading: boolean;
-    } = useGetPlanning(planningId);
+    } = useGetPlanningDetails(planningId);
     const { data: teams = [], isFetched: isTeamsFetched } = useGetTeamsDropdown(
-        { ancestor: `${planning?.team}` },
+        { ancestor: `${planning?.team_details?.id}` },
         undefined,
-        planning?.team ? true : false,
+        planning?.team_details?.id ? true : false,
         true,
     );
     const [profiles, setProfiles] = useBoundState<ProfileWithColor[]>(
@@ -113,7 +109,7 @@ export const useGetAssignmentData = ({
     );
     const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypesHierarchy(
-            planning?.org_unit_details.org_unit_type || 0,
+            planning?.org_unit_details?.org_unit_type || 0,
         );
     const orgunitTypes = useMemo(
         () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
@@ -150,7 +146,6 @@ export const useGetAssignmentData = ({
             currentType: currentTeam?.type,
             order,
             search,
-            extraFilters,
         });
     const { data: orgUnitsList, isFetching: isFetchingOrgUnitsList } =
         useGetOrgUnitsList({
@@ -163,7 +158,6 @@ export const useGetAssignmentData = ({
             baseOrgunitType,
             order,
             search,
-            extraFilters,
         });
     const [orgUnits] = useBoundState<Locations | undefined>(
         undefined,
@@ -196,6 +190,5 @@ export const useGetAssignmentData = ({
         isTeamsFetched,
         saveMultiAssignments,
         setProfiles,
-        setExtraFilters,
     };
 };

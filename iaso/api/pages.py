@@ -1,9 +1,10 @@
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
 from rest_framework import permissions, serializers
 
 from iaso.api.common import ModelViewSet
-from iaso.models import Page, User
+from iaso.models import Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION, CORE_PAGES_PERMISSION
 
 
@@ -15,9 +16,10 @@ class PagesSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
         users = validated_data.pop("users")
+        user_roles = validated_data.pop("user_roles", [])
         page = Page.objects.create(**validated_data, account=request.user.iaso_profile.account)
         page.users.set(users)
-
+        page.user_roles.set(user_roles)
         return page
 
 
@@ -64,12 +66,18 @@ class PagesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
+        user_groups = user.groups.all()
 
-        users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
-        queryset = Page.objects.filter(users__in=users)
-        if user.has_perm(CORE_PAGES_PERMISSION.full_name()) and not user.has_perm(
-            CORE_PAGE_WRITE_PERMISSION.full_name()
-        ):
-            queryset = queryset.filter(users=user)
+        if user.has_perm(CORE_PAGE_WRITE_PERMISSION.full_name()):
+            # WRITE users see ALL pages
+            queryset = Page.objects.filter(account=user.iaso_profile.account)
+
+        elif user.has_perm(CORE_PAGES_PERMISSION.full_name()):
+            # READ-ONLY users see only pages they can access
+            queryset = Page.objects.filter(
+                models.Q(users=user) | models.Q(user_roles__group__in=user_groups)
+            ).distinct()
+        else:
+            queryset = Page.objects.none()
 
         return queryset.order_by(*order).distinct()

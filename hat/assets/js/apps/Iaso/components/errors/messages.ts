@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     labelError: {
         id: 'iaso.errors.label',
-        defaultMessage: 'An error occured',
+        defaultMessage: 'An error occurred',
     },
     noPermissions: {
         id: 'iaso.errors.noPermissions',

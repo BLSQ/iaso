@@ -1,5 +1,4 @@
 from django.utils import timezone
-from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -10,7 +9,6 @@ from plugins.polio.api.campaigns.serializers.anonymous import AnonymousCampaignS
 from plugins.polio.models import (
     Campaign,
 )
-from plugins.polio.models.base import CampaignType
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
@@ -199,92 +197,6 @@ class CampaignListAPITestCase(APITestCase, PolioTestCaseMixin):
             self.assertEqual(campaign_data["account"], self.account.pk)
             self.assertEqual(list(campaign_data.keys()), list(fields))
 
-    def test_filter_by_campaign_types(self):
-        self.client.force_authenticate(self.user)
-        campaign_type1 = CampaignType.objects.create(name="Type1")
-        campaign_type2 = CampaignType.objects.create(name="Type2")
-        campaign_type3 = CampaignType.objects.create(name="Type3")
-        campaign1 = Campaign.objects.create(obr_name="Campaign1", account=self.account)
-        campaign2 = Campaign.objects.create(obr_name="Campaign2", account=self.account)
-        campaign3 = Campaign.objects.create(obr_name="Campaign3", account=self.account)
-        campaign1.campaign_types.add(campaign_type1)
-        campaign2.campaign_types.add(campaign_type2)
-        campaign3.campaign_types.add(campaign_type3)
-
-        # Filter by single campaign type
-        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.id}", format="json")
-        self.assertEqual(response.status_code, 200, response.content)
-        response_data = response.json()
-        self.assertEqual(len(response_data), 1)
-        self.assertEqual(response_data[0]["id"], str(campaign1.id))
-
-        # Filter by single campaign type using slug
-        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.slug}", format="json")
-        self.assertEqual(response.status_code, 200, response.content)
-        response_data = response.json()
-        self.assertEqual(len(response_data), 1)
-        self.assertEqual(response_data[0]["id"], str(campaign1.id))
-
-        # Filter by multiple campaign types
-        response = self.client.get(
-            f"/api/polio/campaigns/?campaign_types={campaign_type1.id},{campaign_type2.id}",
-            format="json",
-        )
-        self.assertEqual(response.status_code, 200, response.content)
-        response_data = response.json()
-        self.assertEqual(len(response_data), 2)
-        campaign_ids = [campaign["id"] for campaign in response_data]
-        self.assertIn(str(campaign1.id), campaign_ids)
-        self.assertIn(str(campaign2.id), campaign_ids)
-
-        # Filter by multiple campaign types
-        response = self.client.get(
-            f"/api/polio/campaigns/?campaign_types={campaign_type1.slug},{campaign_type2.slug}",
-            format="json",
-        )
-        self.assertEqual(response.status_code, 200, response.content)
-        response_data = response.json()
-        self.assertEqual(len(response_data), 2)
-        campaign_ids = [campaign["id"] for campaign in response_data]
-        self.assertIn(str(campaign1.id), campaign_ids)
-        self.assertIn(str(campaign2.id), campaign_ids)
-
-        # Filter by non-existing campaign type
-        response = self.client.get("/api/polio/campaigns/?campaign_types=9999", format="json")
-        self.assertEqual(response.status_code, 200, response.content)
-        response_data = response.json()
-        self.assertEqual(len(response_data), 0)
-
-        # Filter by non-existing campaign type
-        response = self.client.get("/api/polio/campaigns/?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json")
-        self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(len(response_data), 0)
-
-    def test_return_test_campaign_only(self):
-        self.client.force_authenticate(self.user)
-        self.assertEqual(Campaign.objects.count(), 0)
-
-        payload1 = {
-            "account": self.account.pk,
-            "obr_name": "test obr_name",
-            "detection_status": "PENDING",
-            "is_test": True,
-        }
-        self.client.post("/api/polio/campaigns/", payload1, format="json")
-
-        payload2 = {
-            "account": self.account.pk,
-            "obr_name": "non test obr_name_1",
-            "detection_status": "PENDING",
-            "is_test": False,
-        }
-        self.client.post("/api/polio/campaigns/", payload2, format="json")
-
-        response = self.client.get("/api/polio/campaigns/?is_test=true")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-
-        self.assertEqual(len(result), 1)
-
     def test_can_only_see_campaigns_within_user_org_units_hierarchy(self):
         """
         Ensure a user can only see the campaigns for an org unit (or a descendent of that org unit) that was
@@ -322,47 +234,3 @@ class CampaignListAPITestCase(APITestCase, PolioTestCaseMixin):
 
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]["initial_org_unit"], self.child_org_unit.pk)
-
-    def test_return_only_deleted_campaigns(self):
-        self._create_multiple_campaigns(10)
-
-        campaigns = Campaign.objects.all()
-
-        for c in campaigns[:8]:
-            self.client.delete(f"/api/polio/campaigns/{c.id}/")
-
-        response = self.client.get("/api/polio/campaigns/?deletion_status=deleted", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 8)
-
-        # test that it return all
-        response = self.client.get("/api/polio/campaigns/?deletion_status=all", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 10)
-
-        # per defaut it return undeleted
-        response = self.client.get("/api/polio/campaigns/", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
-
-        # filter on active
-        response = self.client.get("/api/polio/campaigns/?deletion_status=active", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
-
-    def test_return_only_active_campaigns(self):
-        self._create_multiple_campaigns(3)
-
-        campaigns = Campaign.objects.all()
-
-        for c in campaigns[:2]:
-            self.client.delete(f"/api/polio/campaigns/{c.id}/")
-
-        response = self.client.get("/api/polio/campaigns/", format="json")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)

@@ -653,7 +653,7 @@ class Campaign(SoftDeletableModel):
     # campaign approved but implementation is on hold
     on_hold = models.BooleanField(default=False)
     # campaign planned, but not approved yet
-    is_planned = models.BooleanField(default=False)
+    is_planned = models.BooleanField(default=False)  # FIXME planned and on_hold should be mutually exclusive
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

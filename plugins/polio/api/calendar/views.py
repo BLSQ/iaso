@@ -7,8 +7,8 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import OrgUnit
+from plugins.polio.api.calendar.filter import CalendarFilter, CalendarPeriodFilterBackend
 from plugins.polio.api.calendar.serializers import CalendarCampaignSerializerV2
-from plugins.polio.api.campaigns.filters.filters import CampaignFilter
 from plugins.polio.models import (
     Campaign,
 )
@@ -30,6 +30,7 @@ class CampaignCalendarViewSet(ModelViewSet):
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,
+        CalendarPeriodFilterBackend,
         DeletionFilterBackend,
     ]
 
@@ -42,7 +43,7 @@ class CampaignCalendarViewSet(ModelViewSet):
         "country__name",
     ]
 
-    filterset_class = CampaignFilter
+    filterset_class = CalendarFilter
 
     # We allow anonymous read access for the embeddable calendar map view
     # in this case we use a restricted serializer with less field

@@ -2,7 +2,6 @@ import logging
 
 from celery import shared_task
 from django.db import connection
-from django_celery_results.models import TaskResult
 
 from iaso.management.commands import unique_indexes
 from iaso.models import *
@@ -57,6 +56,8 @@ def create_index_on_instance_uuid():
 @shared_task()
 def etl_ng(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
+    from django_celery_results.models import TaskResult
+
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ng", status="SUCCESS").first()
 
     if last_success_task:
@@ -98,6 +99,8 @@ def etl_ng(all_data=None):
 @shared_task()
 def etl_ssd(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
+    from django_celery_results.models import TaskResult
+
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ssd", status="SUCCESS").first()
 
     if last_success_task:
@@ -154,6 +157,8 @@ def etl_ssd(all_data=None):
 @shared_task()
 def etl_ethiopia(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
+    from django_celery_results.models import TaskResult
+
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ethiopia", status="SUCCESS").first()
 
     if last_success_task:

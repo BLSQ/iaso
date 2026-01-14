@@ -1,8 +1,10 @@
 import logging
 
 from celery import shared_task
+from django.db import connection
 from django_celery_results.models import TaskResult
 
+from iaso.management.commands import unique_indexes
 from iaso.models import *
 from iaso.models.base import ExternalCredentials
 from plugins.wfp.common import ETL
@@ -17,6 +19,39 @@ from .models import *
 
 
 logger = logging.getLogger(__name__)
+
+
+# how to test this task manually:
+#
+# in .env make sure to have these variables set:
+#   PLUGINS=wfp
+#   USE_CELERY=true
+#   CELERY_BROKER_URL=redis://redis:6379/0
+#   CELERY_RESULT_BACKEND=redis://redis:6379/0
+#
+# docker compose --profile celery up
+# docker compose run iaso start_celery_worker
+# then go in admin http://localhost:8081/admin/wfp/beneficiary/
+#   - select (or create a first beneficiary if it's empty)
+#   - and select action "Create indexes on UUID field (non-blocking)"
+@shared_task()
+def create_index_on_instance_uuid():
+    print("Starting task to create index on iaso_instance.uuid and others")
+
+    for index in unique_indexes.INDEXES:
+        logger.info(f"Starting task to create index: {index.name()}")
+        old_autocommit = connection.get_autocommit()
+        try:
+            connection.set_autocommit(True)
+            # We explicitly set autocommit to True for this connection.
+            with connection.cursor() as cursor:
+                index.apply(cursor)
+                logger.info(f"create index: {index.name()}) done.")
+        except Exception as e:
+            logger.error(f"Error creating index on iaso_instance(uuid): {e}", exc_info=True)
+            raise
+        finally:
+            connection.set_autocommit(old_autocommit)
 
 
 @shared_task()

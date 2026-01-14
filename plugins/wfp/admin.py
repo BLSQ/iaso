@@ -1,12 +1,28 @@
 from django.contrib import admin
+from django.http import HttpRequest
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, Step, Visit
+from .tasks import create_index_on_instance_uuid
+
+
+@admin.action(description="Create indexes on UUID field (non-blocking)")
+def create_uuid_index_action(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    create_index_on_instance_uuid.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
 
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
     list_filter = ("birth_date", "gender", "account", "guidelines")
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
+    actions = [create_uuid_index_action]
 
 
 @admin.register(Journey)

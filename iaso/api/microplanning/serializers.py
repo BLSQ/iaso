@@ -38,7 +38,23 @@ class NestedOrgUnitTypeSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
-class PlanningSerializer(serializers.ModelSerializer):
+class NestedPlanningSamplingResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlanningSamplingResult
+        fields = ["id", "pipeline_id", "pipeline_version", "pipeline_name", "group_id", "task_id"]
+
+
+class PlanningWriteSerializer(serializers.ModelSerializer):
+    selected_sampling_result = serializers.PrimaryKeyRelatedField(
+        queryset=PlanningSamplingResult.objects.all(), required=False, allow_null=True
+    )
+    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
+
+    class Meta:
+        model = Planning
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at", "deleted_at"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
@@ -48,34 +64,6 @@ class PlanningSerializer(serializers.ModelSerializer):
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
         self.fields["target_org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
-
-    class Meta:
-        model = Planning
-        fields = [
-            "id",
-            "name",
-            "team_details",
-            "team",
-            "org_unit",
-            "org_unit_details",
-            "forms",
-            "project",
-            "project_details",
-            "description",
-            "published_at",
-            "started_at",
-            "ended_at",
-            "pipeline_uuids",
-            "target_org_unit_type",
-            "target_org_unit_type_details",
-        ]
-        read_only_fields = ["created_at", "parent"]
-
-    team_details = NestedTeamSerializer(source="team", read_only=True)
-    org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
-    project_details = NestedProjectSerializer(source="project", read_only=True)
-    target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
-    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -125,10 +113,43 @@ class PlanningSerializer(serializers.ModelSerializer):
                 if not descendant_org_units.exists():
                     validation_errors["target_org_unit_type"] = "noOrgUnitsOfTypeInHierarchy"
 
+        selected_sampling_result = validated_data.get("selected_sampling_result")
+        if selected_sampling_result:
+            if selected_sampling_result and self.instance and selected_sampling_result.planning_id != self.instance.id:
+                validation_errors["selected_sampling_result"] = "samplingNotForPlanning"
+            validated_data["selected_sampling_result"] = selected_sampling_result
+
         if validation_errors:
             raise serializers.ValidationError(validation_errors)
 
         return validated_data
+
+
+class PlanningReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Planning
+        fields = [
+            "id",
+            "name",
+            "forms",
+            "description",
+            "published_at",
+            "started_at",
+            "ended_at",
+            "pipeline_uuids",
+            "selected_sampling_result",
+            "team_details",
+            "org_unit_details",
+            "project_details",
+            "target_org_unit_type_details",
+        ]
+        read_only_fields = fields
+
+    selected_sampling_result = NestedPlanningSamplingResultSerializer(read_only=True)
+    team_details = NestedTeamSerializer(source="team", read_only=True)
+    org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
+    project_details = NestedProjectSerializer(source="project", read_only=True)
+    target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
 
 
 class SamplingGroupSerializer(serializers.ModelSerializer):

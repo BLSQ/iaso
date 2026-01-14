@@ -7,10 +7,10 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { PlanningFilters } from './components/PlanningFilters';
 import { usePlanningColumns } from './config';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
-import { PlanningFilters } from './components/PlanningFilters';
 import { PlanningParams } from './types';
 
 const useStyles = makeStyles(theme => ({

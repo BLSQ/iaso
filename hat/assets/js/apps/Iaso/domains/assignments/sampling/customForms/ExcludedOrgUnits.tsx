@@ -32,7 +32,7 @@ export const ExcludedOrgUnits: FunctionComponent<Props> = ({
     const { data: orgUnits, isFetching: isFetchingOrgUnits } =
         useGetOrgUnitsByOrgUnitTypeId({
             orgUnitTypeId,
-            projectId: planning.project,
+            projectId: planning.project_details?.id,
             excludedOrgUnitParentIds: excludedOrgUnitIds || undefined,
         });
 

@@ -17,6 +17,7 @@ const IasoSearchComponent = props => {
         onChange,
         defaultValue,
         mapOptions,
+        placeholder,
     } = props;
     const [inputValue, setInputValue] = React.useState(defaultValue || '');
 
@@ -101,6 +102,7 @@ const IasoSearchComponent = props => {
                     fullWidth
                     onChange={handleChange}
                     value={inputValue}
+                    placeholder={placeholder}
                 />
             )}
             renderOption={(props, option) => (

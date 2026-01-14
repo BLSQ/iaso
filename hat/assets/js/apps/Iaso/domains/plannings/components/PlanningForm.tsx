@@ -1,13 +1,15 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Assignment } from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
-import { Grid, Box } from '@mui/material';
+import { Grid, Box, Button } from '@mui/material';
 import {
     useSafeIntl,
     InputWithInfos,
     useRedirectToReplace,
-    IconButton as IconButtonComponent,
     useRedirectTo,
+    LinkButton,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
@@ -22,6 +24,7 @@ import {
     flattenHierarchy,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import { SxStyles } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
@@ -44,9 +47,9 @@ import {
 } from '../hooks/requests/useSavePlanning';
 import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
-import { Planning } from '../types';
-import { PageMode } from '../types';
-import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
+import { Planning, PageMode } from '../types';
+import { canAssignPlanning } from '../utils';
+
 const styles: SxStyles = {
     paper: {
         px: 2,
@@ -74,15 +77,20 @@ export const PlanningForm: FunctionComponent<Props> = ({
         name,
         started_at,
         ended_at,
-        org_unit: selectedOrgUnit,
-        team: selectedTeam,
+        org_unit_details,
+        team_details,
         forms,
-        project,
+        project_details,
         description,
         published_at,
         pipeline_uuids: pipelineUuids,
-        target_org_unit_type: targetOrgUnitType,
+        target_org_unit_type_details,
     } = useMemo(() => planning ?? {}, [planning]) as Planning;
+    const selectedOrgUnit = org_unit_details?.id;
+    const selectedTeam = team_details?.id;
+    const project = project_details?.id;
+    const targetOrgUnitType = target_org_unit_type_details?.id;
+    const assignmentUrl = `/${baseUrls.assignments}/planningId/${id}/team/${selectedTeam}`;
     const startDate = started_at ? moment(started_at).format('L') : undefined;
     const endDate = ended_at ? moment(ended_at).format('L') : undefined;
     const publishingStatus = published_at ? 'published' : 'draft';
@@ -100,7 +108,10 @@ export const PlanningForm: FunctionComponent<Props> = ({
         },
         [mode, redirectToReplace],
     );
-    const { mutateAsync: savePlanning } = useSavePlanning(mode, onSaveSuccess);
+    const { mutateAsync: savePlanning } = useSavePlanning({
+        type: mode,
+        onSuccess: onSaveSuccess,
+    });
     const {
         apiErrors,
         payload,
@@ -118,8 +129,10 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
         convertError: convertAPIErrorsToState,
     });
-    const { mutateAsync: deletePlanning } = useDeletePlanning(() => {
-        redirectTo(`/${baseUrls.planning}`);
+    const { mutateAsync: deletePlanning } = useDeletePlanning({
+        onSuccessCustomAction: () => {
+            redirectTo(`/${baseUrls.planning}`);
+        },
     });
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
@@ -248,6 +261,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
     const publishingStatusOptions = useGetPublishingStatusOptions();
+    const canAssign = canAssignPlanning(planning);
     return (
         <FormikProvider value={formik}>
             <Grid container spacing={2}>
@@ -411,58 +425,87 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 />
                             </Box>
                         </Grid>
-                        <Grid
-                            xs={6}
-                            lg={7}
-                            item
-                            justifyContent="flex-end"
-                            display="flex"
-                            alignItems="flex-end"
-                        >
-                            {mode === 'edit' && (
-                                <>
-                                    <DisplayIfUserHasPerm
-                                        permissions={[PLANNING_WRITE]}
-                                    >
-                                        <DeleteDialog
-                                            iconColor="error"
-                                            titleMessage={{
-                                                ...MESSAGES.deletePlanning,
-                                                values: {
-                                                    planningName: values.name,
-                                                },
-                                            }}
-                                            message={{
-                                                ...MESSAGES.deleteWarning,
-                                                values: {
-                                                    name: values.name,
-                                                },
-                                            }}
-                                            disabled={false}
-                                            onConfirm={() =>
-                                                deletePlanning(values.id)
-                                            }
-                                            keyName="delete-planning"
-                                        />
-
-                                        <IconButtonComponent
-                                            url={`/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`}
-                                            tooltipMessage={
-                                                MESSAGES.duplicatePlanning
-                                            }
-                                            overrideIcon={FileCopyIcon}
-                                            size="small"
-                                        />
-                                    </DisplayIfUserHasPerm>
-                                </>
-                            )}
-                            <IconButtonComponent
-                                color="primary"
-                                onClick={() => handleSubmit()}
-                                disabled={!allowConfirm}
-                                overrideIcon={SaveRoundedIcon}
-                                tooltipMessage={MESSAGES.save}
-                            />
+                        <Grid item xs={6} lg={7}>
+                            <Box
+                                display="flex"
+                                gap={2}
+                                flexDirection="column"
+                                justifyContent="flex-end"
+                                alignItems="flex-end"
+                                mt={2}
+                            >
+                                <Button
+                                    disabled={!allowConfirm}
+                                    color="primary"
+                                    variant="contained"
+                                    startIcon={<SaveRoundedIcon />}
+                                    onClick={() => handleSubmit()}
+                                >
+                                    {formatMessage(MESSAGES.save)}
+                                </Button>
+                                {mode === 'edit' && (
+                                    <>
+                                        <DisplayIfUserHasPerm
+                                            permissions={[PLANNING_WRITE]}
+                                        >
+                                            <DeleteDialog
+                                                iconColor="error"
+                                                titleMessage={{
+                                                    ...MESSAGES.deletePlanning,
+                                                    values: {
+                                                        planningName:
+                                                            values.name,
+                                                    },
+                                                }}
+                                                message={{
+                                                    ...MESSAGES.deleteWarning,
+                                                    values: {
+                                                        name: values.name,
+                                                    },
+                                                }}
+                                                disabled={false}
+                                                onConfirm={() =>
+                                                    deletePlanning(values.id)
+                                                }
+                                                keyName="delete-planning"
+                                                Trigger={({ onClick }) => (
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={onClick}
+                                                        startIcon={
+                                                            <DeleteIcon />
+                                                        }
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.delete,
+                                                        )}
+                                                    </Button>
+                                                )}
+                                            />
+                                        </DisplayIfUserHasPerm>
+                                        <LinkButton
+                                            variant="outlined"
+                                            startIcon={<FileCopyIcon />}
+                                            to={`/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`}
+                                        >
+                                            {formatMessage(
+                                                MESSAGES.duplicatePlanning,
+                                            )}
+                                        </LinkButton>
+                                        <LinkButton
+                                            disabled={!canAssign}
+                                            to={assignmentUrl}
+                                            variant="outlined"
+                                            startIcon={<Assignment />}
+                                        >
+                                            {formatMessage(
+                                                MESSAGES.assignments,
+                                            )}
+                                        </LinkButton>
+                                    </>
+                                )}
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

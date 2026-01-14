@@ -225,6 +225,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.search',
         defaultMessage: 'Search',
     },
+    startTypingDataset: {
+        id: 'iaso.mappings.startTypingDataset',
+        defaultMessage: 'Start typing to search by dataset name in dhis2',
+    },
+    startTypingFormVersion: {
+        id: 'iaso.mappings.startTypingFormVersion',
+        defaultMessage: "Start typing to search by form's name or version id",
+    },
 });
 
 export default MESSAGES;

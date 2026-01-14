@@ -303,7 +303,6 @@ export const BaseInfoForm: FunctionComponent = () => {
                                     component={DateInput}
                                 />
                             </Box>
-                            <IntegratedCampaigns />
                         </Grid>
                     )}
                     {isPolio && (

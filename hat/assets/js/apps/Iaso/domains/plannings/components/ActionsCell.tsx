@@ -9,18 +9,17 @@ import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import MESSAGES from '../messages';
 import { Planning } from '../types';
-
-const getAssignmentUrl = (planning: Planning): string => {
-    return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
-};
+import { canAssignPlanning } from '../utils';
 
 interface ActionsCellProps extends ColumnCell<Planning> {
     deletePlanning: (id: number) => void;
 }
+
 export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     row: { original: planning },
     deletePlanning,
 }) => {
+    const canAssign = canAssignPlanning(planning);
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
@@ -32,11 +31,12 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
                 />
             </DisplayIfUserHasPerm>
             <IconButtonComponent
-                url={getAssignmentUrl(planning)}
-                tooltipMessage={MESSAGES.viewPlanning}
+                url={`/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team_details?.id}`}
+                tooltipMessage={MESSAGES.assignments}
                 size="small"
                 replace={false}
                 overrideIcon={Assignment}
+                disabled={!canAssign}
             />
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
                 <IconButtonComponent

@@ -67,6 +67,13 @@ class Planning(SoftDeletableModel):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    selected_sampling_result = models.OneToOneField(
+        PlanningSamplingResult,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="selected_by_planning",
+    )
 
     def __str__(self):
         return self.name

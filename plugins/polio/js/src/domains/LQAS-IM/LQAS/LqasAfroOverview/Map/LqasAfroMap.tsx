@@ -1,17 +1,17 @@
 import React, { FunctionComponent, useState, useMemo, useContext } from 'react';
 import { MapContainer } from 'react-leaflet';
 
+import { CustomTileLayer } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
+import { Tile } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import TILES from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
-import { CustomTileLayer } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
-import { Tile } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
-import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
-import { AfroMapParams } from '../types';
-import { LqasAfroMapLegend } from './LqasAfroMapLegend';
+import { Side } from '../../../../../../src/constants/types';
 import { defaultViewport } from '../../../../Calendar/campaignCalendar/map/constants';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
-import { Side } from '../../../../../../src/constants/types';
+import { AfroMapParams } from '../types';
+import { LqasAfroMapLegend } from './LqasAfroMapLegend';
+import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
 
 type Props = {
     params: AfroMapParams & { accountId: string };
@@ -57,9 +57,6 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
             zoom={defaultZoom}
             zoomControl={false}
             scrollWheelZoom={false}
-            whenCreated={mapInstance => {
-                setBounds(mapInstance.getBounds());
-            }}
         >
             <LqasAfroMapLegend displayedShape={displayedShape} />
             <CustomTileLayer

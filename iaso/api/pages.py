@@ -83,14 +83,16 @@ class PagesViewSet(ModelViewSet):
         user_groups = user.groups.all()
 
         if user.has_perm(CORE_PAGE_WRITE_PERMISSION.full_name()):
-            # WRITE users see ALL pages
+            # WRITE users see pages from their account
             queryset = Page.objects.filter(account=user.iaso_profile.account)
 
         elif user.has_perm(CORE_PAGES_PERMISSION.full_name()):
             # READ-ONLY users see only pages they can access
-            queryset = Page.objects.filter(
-                models.Q(users=user) | models.Q(user_roles__group__in=user_groups)
-            ).distinct()
+            queryset = (
+                Page.objects.filter(account=user.iaso_profile.account)
+                .filter(models.Q(users=user) | models.Q(user_roles__group__in=user_groups))
+                .distinct()
+            )
         else:
             queryset = Page.objects.none()
 

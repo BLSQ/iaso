@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.utils.timezone import now
 
 from iaso import models as m
@@ -36,16 +37,45 @@ class PagesAPITestCase(APITestCase):
             username="userNoIasoPagesPermission", account=first_account
         )
 
+        # Create user roles  for testing role-based access
+        cls.manager_group = Group.objects.create(name="first_account_managers")
+        cls.manager_role = m.UserRole.objects.create(account=first_account, group=cls.manager_group)
+
+        cls.viewer_group = Group.objects.create(name="first_account_viewers")
+        cls.viewer_role = m.UserRole.objects.create(account=first_account, group=cls.viewer_group)
+
+        cls.other_account_group = Group.objects.create(name="second_account_group")
+        cls.other_account_role = m.UserRole.objects.create(account=second_account, group=cls.other_account_group)
+
+        # Create READ users for role assignments
+        cls.read_user_manager = cls.create_user_with_profile(
+            username="read_manager", account=first_account, permissions=[CORE_PAGES_PERMISSION]
+        )
+        cls.read_user_manager.groups.add(cls.manager_group)
+
+        cls.read_user_viewer = cls.create_user_with_profile(
+            username="read_viewer", account=first_account, permissions=[CORE_PAGES_PERMISSION]
+        )
+        cls.read_user_viewer.groups.add(cls.viewer_group)
+
+        cls.read_user_multi = cls.create_user_with_profile(
+            username="read_multi", account=first_account, permissions=[CORE_PAGES_PERMISSION]
+        )
+        cls.read_user_multi.groups.add(cls.manager_group, cls.viewer_group)
+
         cls.sayen = m.OrgUnitType.objects.create(name="Sayen", short_name="Sy")
 
-    def create_page(self, name, slug, needs_authentication, users=None):
+    def create_page(self, name, slug, needs_authentication, users=None, account=None):
         """Helper method to create a Page and associate it with users."""
+        if account is None:
+            account = self.first_user.iaso_profile.account
         page = Page.objects.create(
             type="RAW",
             needs_authentication=needs_authentication,
             name=name,
             slug=slug,
             content="test",
+            account=account,
         )
         if users:
             page.users.set(users)
@@ -131,6 +161,64 @@ class PagesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.json()["results"]), 1)
         self.assertEqual(response.json()["results"][0]["id"], page2.id)
+
+    def test_pages_list_filter_by_user_roles(self):
+        """GET /pages/ - READ users see pages assigned to their user roles"""
+
+        page_manager = self.create_page(
+            name="Manager Dashboard", slug="manager_dash", needs_authentication=True, users=[]
+        )
+        page_manager.user_roles.set([self.manager_role])
+
+        page_viewer = self.create_page(name="Viewer Dashboard", slug="viewer_dash", needs_authentication=True, users=[])
+        page_viewer.user_roles.set([self.viewer_role])
+
+        page_multi = self.create_page(
+            name="Multi Role Dashboard", slug="multi_dash", needs_authentication=True, users=[]
+        )
+        page_multi.user_roles.set([self.manager_role, self.viewer_role])
+
+        # User with manager role sees manager pages
+        self.client.force_login(self.read_user_manager)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        results = response.json()["results"]
+        self.assertEqual(len(results), 2)
+        slugs = {page["slug"] for page in results}
+        self.assertIn("manager_dash", slugs)
+        self.assertIn("multi_dash", slugs)
+
+        # User with viewer role sees viewer pages
+        self.client.force_login(self.read_user_viewer)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        results = response.json()["results"]
+        self.assertEqual(len(results), 2)
+        slugs = {page["slug"] for page in results}
+        self.assertIn("viewer_dash", slugs)
+        self.assertIn("multi_dash", slugs)
+
+        # User with multiple roles sees all matching pages
+        self.client.force_login(self.read_user_multi)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        results = response.json()["results"]
+        self.assertEqual(len(results), 3)
+        slugs = {page["slug"] for page in results}
+        self.assertIn("manager_dash", slugs)
+        self.assertIn("viewer_dash", slugs)
+        self.assertIn("multi_dash", slugs)
+
+        # READ user without any matching role sees nothing
+        self.client.force_login(self.user_no_write_permission)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 0)
+
+        self.client.force_login(self.first_user)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 3)
 
     def test_create_page_with_no_write_permission(self):
         """POST /pages/ without write page permission should result in a 403"""
@@ -218,41 +306,18 @@ class PagesAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 201)
 
-    def test_access_anonymous_page_same_account(self):
-        self.client.force_login(self.second_user)
+    def test_anonymous_access_based_on_needs_authentication(self):
+        """Anonymous users can access public pages (needs_authentication=False) but not private pages"""
+        page_public = self.create_page(name="Public Page", slug="public_page", needs_authentication=False, users=[])
 
-        self.client.post(
-            "/api/pages/",
-            data={
-                "type": "RAW",
-                "needs_authentication": "false",
-                "name": "TEST16",
-                "slug": "test16",
-                "content": "test",
-                "users": [self.first_user.pk],
-            },
-            format="json",
-        )
+        page_private = self.create_page(name="Private Page", slug="private_page", needs_authentication=True, users=[])
 
-        self.client.post(
-            "/api/pages/",
-            data={
-                "type": "RAW",
-                "needs_authentication": "true",
-                "name": "TEST2",
-                "slug": "test2",
-                "content": "test",
-                "users": [self.third_user.pk],
-            },
-            format="json",
-        )
+        response = self.client.get(f"/pages/{page_public.slug}/")
+        self.assertEqual(response.status_code, 200)
 
-        response = self.client.get("/api/pages/?limit=10&page=1&order=-updated_at", format="json")
-
-        all_pages = Page.objects.all()
-
-        self.assertEqual(len(all_pages), 2)
-        self.assertEqual(response.data["count"], 1)
+        response = self.client.get(f"/pages/{page_private.slug}/")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response.url)
 
     def test_update_page(self):
         self.client.force_login(self.first_user)

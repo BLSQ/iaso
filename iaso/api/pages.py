@@ -40,6 +40,7 @@ class PageFilter(FilterSet):
         field_name="needs_authentication", label=_("Limit on authentication required or not")
     )
     userId = CharFilter(field_name="users__id", lookup_expr="exact", label=_("User ID"))
+    userRoleIds = CharFilter(method="filter_by_user_roles", label=_("User Role IDs"))
 
     class Meta:
         model = Page
@@ -47,6 +48,19 @@ class PageFilter(FilterSet):
 
     def filter_by_name_or_slug(self, queryset, _, value):
         return queryset.filter(name__icontains=value) | queryset.filter(slug__icontains=value)
+
+    def filter_by_user_roles(self, queryset, _, value):
+        """Filter pages by user role IDs (comma-separated string)."""
+        if not value:
+            return queryset
+
+        # Parse comma-separated IDs
+        role_ids = [int(id.strip()) for id in value.split(",") if id.strip().isdigit()]
+
+        if not role_ids:
+            return queryset
+
+        return queryset.filter(user_roles__id__in=role_ids)
 
 
 class PagesViewSet(ModelViewSet):

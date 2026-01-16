@@ -42,6 +42,7 @@ class BulkCreateCsvTestCase(APITestCase):
         "phone_number",
         "organization",
         "editable_org_unit_types",
+        "teams",
     ]
 
     @classmethod
@@ -111,7 +112,7 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
-        with self.assertNumQueries(83):
+        with self.assertNumQueries(85):
             with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
@@ -631,6 +632,7 @@ class BulkCreateCsvTestCase(APITestCase):
                 "phone_number": "",
                 "organization": "",
                 "editable_org_unit_types": "",
+                "teams":"",
             }
         )
         csv_bytes = csv_str.getvalue().encode()

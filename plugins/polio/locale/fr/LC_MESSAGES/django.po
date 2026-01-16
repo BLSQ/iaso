@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 14:47+0000\n"
+"POT-Creation-Date: 2026-01-16 13:52+0000\n"
 "PO-Revision-Date: 2025-02-05 14:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,15 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Round {} ended"
 msgstr "Round {} terminé"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Round {} started"
 msgstr "Round {} commencé"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Preparing"
 msgstr "Préparation"
 

@@ -4,7 +4,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: $primary-background;
+  background: #F5F5F5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -125,7 +125,7 @@ $right-icon-position: 40px;
 #display-password {
   position: absolute;
   width: 30px;
-  bottom: 152px;
+  top: 136px;
   border: 1px solid $primary;
   right: 40px;
   background-color: white;

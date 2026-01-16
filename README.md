@@ -768,8 +768,11 @@ Scss files are only used to generate the style of the DJango Templates.
 It is not longer part of the webpack app.
 While editing scss files you have to compile it manually with the command:
 
-`docker compose exec iaso ./manage.py compilescss`
+- Inside docker: `docker compose exec iaso ./manage.py compile_index_scss`
+- Outside docker (virtualenv activated): `python manage.py compile_index_scss`
 
+The custom `compile_index_scss` management command compiles `iaso/static/css/index.scss` into
+`iaso/static/css/index.css` using `libsass` (see `requirements.txt`).
 If you don't compile it, changes will not be reflected while deploying as we only use css file in production.
 
 

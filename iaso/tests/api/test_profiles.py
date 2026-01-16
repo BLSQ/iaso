@@ -352,25 +352,25 @@ class ProfileAPITestCase(APITestCase):
         response_csv = response.getvalue().decode("utf-8")
 
         expected_csv = "".join(
-        [
-            "user_profile_id,"
-            "username,"
-            "password,"
-            "email,"
-            "first_name,"
-            "last_name,"
-            "orgunit,"
-            "orgunit__source_ref,"
-            "profile_language,"
-            "dhis2_id,"
-            "organization,"
-            "permissions,"
-            "user_roles,"
-            "projects,"
-            "teams,"
-            "phone_number,"
-            "editable_org_unit_types\r\n"
-        ]
+            [
+                "user_profile_id,"
+                "username,"
+                "password,"
+                "email,"
+                "first_name,"
+                "last_name,"
+                "orgunit,"
+                "orgunit__source_ref,"
+                "profile_language,"
+                "dhis2_id,"
+                "organization,"
+                "permissions,"
+                "user_roles,"
+                "projects,"
+                "teams,"
+                "phone_number,"
+                "editable_org_unit_types\r\n"
+            ]
         )
 
         expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,team1,,\r\n"

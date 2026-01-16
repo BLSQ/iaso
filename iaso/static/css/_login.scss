@@ -125,9 +125,9 @@ $right-icon-position: 40px;
 #display-password {
   position: absolute;
   width: 30px;
-  top: 136px;
+  top: 8px;
   border: 1px solid $primary;
-  right: 40px;
+  right: 8px;
   background-color: white;
   border-radius: 100%;
   height: 30px;
@@ -235,4 +235,8 @@ $right-icon-position: 40px;
 .auth__security_checks .on {
   color: #2E7D32;
   background-image: url('../images/valid.png');
+}
+
+.form-group {
+  position: relative;
 }

@@ -351,7 +351,8 @@ class ProfileAPITestCase(APITestCase):
 
         response_csv = response.getvalue().decode("utf-8")
 
-        expected_csv = (
+        expected_csv = "".join(
+        [
             "user_profile_id,"
             "username,"
             "password,"
@@ -369,6 +370,7 @@ class ProfileAPITestCase(APITestCase):
             "teams,"
             "phone_number,"
             "editable_org_unit_types\r\n"
+        ]
         )
 
         expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,team1,,\r\n"

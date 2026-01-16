@@ -53,6 +53,7 @@
         "@date-io/moment": "1.x",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
+        "@fontsource/roboto": "^5.2.9",
         "@mui/icons-material": "^5.15.7",
         "@mui/lab": "^5.0.0-alpha.150",
         "@mui/material": "^5.15.7",

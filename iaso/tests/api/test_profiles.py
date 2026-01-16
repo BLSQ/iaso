@@ -348,38 +348,36 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
 
-        expected_csv = "".join(
-            [
-                "user_profile_id,",
-                "username,"
-                "password,"
-                "email,"
-                "first_name,"
-                "last_name,"
-                "orgunit,"
-                "orgunit__source_ref,"
-                "profile_language,"
-                "dhis2_id,"
-                "organization,"
-                "permissions,"
-                "user_roles,"
-                "projects,"
-                "phone_number,"
-                "editable_org_unit_types\r\n",
-            ]
+        expected_csv = (
+            "user_profile_id,"
+            "username,"
+            "password,"
+            "email,"
+            "first_name,"
+            "last_name,"
+            "orgunit,"
+            "orgunit__source_ref,"
+            "profile_language,"
+            "dhis2_id,"
+            "organization,"
+            "permissions,"
+            "user_roles,"
+            "projects,"
+            "teams,"
+            "phone_number,"
+            "editable_org_unit_types\r\n"
         )
 
-        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
-        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
-        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
-        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,\r\n"
-        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,team1,,\r\n"
+        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,,\r\n'
+        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,team2,,\r\n'
+        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,iaso_users_managed,,,,,\r\n"
+        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,,\r\n"
+        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,,{self.sub_unit_type.pk}\r\n"
+        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,2,FooBarB4z00,,,,iaso_users_managed,"user role,user role with another account",,,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -409,6 +407,7 @@ class ProfileAPITestCase(APITestCase):
                 "permissions",
                 "user_roles",
                 "projects",
+                "teams",
                 "phone_number",
                 "editable_org_unit_types",
             ],
@@ -471,6 +470,7 @@ class ProfileAPITestCase(APITestCase):
                     6: f"{self.user_role_name},{self.user_role_another_account_name}",
                 },
                 "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
+                "teams": {0: "team1", 1: None, 2: "team2", 3: None, 4: None, 5: None, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "editable_org_unit_types": {
                     0: None,

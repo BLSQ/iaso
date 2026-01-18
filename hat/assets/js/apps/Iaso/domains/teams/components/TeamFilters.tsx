@@ -1,17 +1,15 @@
+import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../components/FilterButton';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
-import { TeamParams } from '../types/team';
-import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-import { AsyncSelect } from '../../../components/forms/AsyncSelect';
-import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import MESSAGES from '../messages';
+import { TeamParams } from '../types/team';
 
 type Props = {
     params: TeamParams;
@@ -23,16 +21,8 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const { data: selectedManagers } = useGetProfilesDropdown(filters.managers);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const handleChangeManagers = useCallback(
-        (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
-            handleChange(keyValue, joined);
-        },
-        [handleChange],
-    );
 
     return (
         <Grid container spacing={2}>
@@ -48,14 +38,11 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
                 <Box mt={2}>
-                    <AsyncSelect
+                    <UserAsyncSelect
                         keyValue="managers"
+                        handleChange={handleChange}
+                        filterUsers={filters.managers}
                         label={MESSAGES.manager}
-                        value={selectedManagers ?? ''}
-                        onChange={handleChangeManagers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
                     />
                 </Box>
             </Grid>
@@ -93,9 +80,9 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid item xs={12} md={6} lg={6}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                    <SearchButton
                         disabled={textSearchError || !filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-16 13:27+0000\n"
+"POT-Creation-Date: 2026-01-12 14:47+0000\n"
 "PO-Revision-Date: 2025-02-05 14:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -68,6 +68,7 @@ msgid "Country ID"
 msgstr "ID du Pays"
 
 #: plugins/polio/api/dashboards/vaccine_stock_history.py
+#: plugins/polio/api/vaccines/supply_chain.py
 msgid "Round ID"
 msgstr "ID du round"
 
@@ -545,6 +546,168 @@ msgstr "Tâche de chronogramme"
 #: plugins/polio/models/chronogram.py
 msgid "Chronogram Template Task"
 msgstr "Modèle de tâche de chronogramme"
+
+#: plugins/polio/models/country_plan.py
+msgid "Draft"
+msgstr "Ébauche"
+
+#: plugins/polio/models/country_plan.py
+msgid "Commented"
+msgstr "Commenté"
+
+#: plugins/polio/models/country_plan.py
+msgid "Final"
+msgstr "Final"
+
+#: plugins/polio/models/country_plan.py
+msgid "Performance Dashboard"
+msgstr "Tableau des performances"
+
+#: plugins/polio/models/lqas_im.py
+msgid "1lqasOK"
+msgstr "1lqasOK"
+
+#: plugins/polio/models/lqas_im.py
+msgid "2lqasDisqualified"
+msgstr "2lqasDisqualified"
+
+#: plugins/polio/models/lqas_im.py
+msgid "3lqaspoor"
+msgstr "3lqaspoor"
+
+#: plugins/polio/models/lqas_im.py
+msgid "3lqasverypoor"
+msgstr "3lqasverypoor"
+
+#: plugins/polio/models/lqas_im.py
+msgid "3lqasFail"
+msgstr "3lqasFail"
+
+#: plugins/polio/models/lqas_im.py
+msgid "3lqasmoderate"
+msgstr "3lqasmoderate"
+
+#: plugins/polio/models/lqas_im.py
+msgid "3lqasundersampled"
+msgstr "3lqasundersampled"
+
+#: plugins/polio/models/lqas_im.py
+msgid "3lqasoversampled"
+msgstr "3lqasoversampled"
+
+#: plugins/polio/models/lqas_im.py
+msgid "inScope"
+msgstr "inScope"
+
+#: plugins/polio/models/lqas_im.py
+msgid "LQAS Round Data"
+msgstr "Données de round LQAS"
+
+#: plugins/polio/models/lqas_im.py
+msgid "SubActivity must belong to the same round as the LQAS Activity Stats."
+msgstr ""
+"La sous-activité doit appartenir au même round que les statistiques "
+"d'activité LQAS."
+
+#: plugins/polio/models/lqas_im.py
+msgid "LQAS Entry"
+msgstr "Entrée LQAS"
+
+#: plugins/polio/models/lqas_im.py
+msgid "LQAS Entries"
+msgstr "Entrées LQAS"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Threshold"
+msgstr "Seuil de performance"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Thresholds"
+msgstr "Seuils de performance"
+
+#: plugins/polio/permissions.py
+msgid "Polio"
+msgstr "Polio"
+
+#: plugins/polio/permissions.py
+msgid "Budget Polio"
+msgstr "Polio - budget"
+
+#: plugins/polio/permissions.py
+msgid "Budget Polio Admin"
+msgstr "Polio - administration du budget"
+
+#: plugins/polio/permissions.py
+msgid "Polio config"
+msgstr "Polio - configuration"
+
+#: plugins/polio/permissions.py
+msgid "Polio chronogram"
+msgstr "Polio - chronogrammes"
+
+#: plugins/polio/permissions.py
+msgid "Polio chronogram user (restricted write)"
+msgstr "Polio - chronogrammes (écriture restreinte)"
+
+#: plugins/polio/permissions.py
+msgid "Polio notifications"
+msgstr "Polio - notifications"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Authorizations Admin"
+msgstr "Polio - autorisations de vaccin (admin)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Authorizations Read Only"
+msgstr "Polio - autorisations de vaccin (lecture seule)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Stock Earmarks Admin"
+msgstr "Polio - stock de vaccins réservés (admin)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Stock Earmarks Non Admin"
+msgstr "Polio - stock de vaccins réservés (non admin)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Stock Earmarks Read Only"
+msgstr "Polio - stock de vaccins réservés (lecture seule)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Stock Management Read"
+msgstr "Polio - gestion des stocks de vaccins (lecture)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Stock Management Read Only"
+msgstr "Polio - gestion des stocks de vaccins (lecture seule)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Stock Management Write"
+msgstr "Polio - gestion des stocks de vaccins (écriture)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Supply Chain Read"
+msgstr "Polio - chaîne d'approvisionnement (lecture)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Supply Chain Read Only"
+msgstr "Polio - chaîne d'approvisionnement (lecture seule)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Vaccine Supply Chain Write"
+msgstr "Polio - chaîne d'approvisionnement (écriture)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Country Plan Read Only"
+msgstr "Polio - Plan pays (lecture seule)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Country Plan Non Admin"
+msgstr "Polio - Plan pays (non admin)"
+
+#: plugins/polio/permissions.py
+msgid "Polio Country Plan Admin"
+msgstr "Polio - Plan pays (admin)"
 
 #: plugins/polio/preparedness/spreadsheet_manager.py
 msgid "No country found for campaign"

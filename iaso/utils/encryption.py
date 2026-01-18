@@ -1,3 +1,4 @@
+import hashlib
 import os
 
 from Crypto.Cipher import AES
@@ -5,6 +6,24 @@ from Crypto.Hash import SHA1
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
+from django.core.files import File
+
+
+def calculate_md5(file_obj: File, chunk_size: int = 8192) -> str:
+    if not file_obj:
+        return ""
+
+    hasher = hashlib.md5()
+
+    file_original_position = file_obj.tell()
+
+    file_obj.seek(0)
+    for chunk in file_obj.chunks(chunk_size):
+        hasher.update(chunk)
+
+    file_obj.seek(file_original_position)  # Restore original position
+
+    return hasher.hexdigest()
 
 
 def encrypt_file(file_path, file_name_in, file_name_out, password):

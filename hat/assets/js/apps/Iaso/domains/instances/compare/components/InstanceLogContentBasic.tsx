@@ -43,8 +43,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
-    fileContent,
-    fileDescriptor,
+    fileContent,    
 }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -95,10 +94,9 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                     </TableCell>
                 </TableRow>
             </TableHead>
-            <InstanceLogContentBodyTable
-                fileContent={fileContent}
-                fileDescriptor={fileDescriptor}
-            />
+                <InstanceLogContentBodyTable
+                    fileContent={fileContent}
+                />
         </Table>
     );
 };

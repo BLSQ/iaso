@@ -1,8 +1,8 @@
 from django.db.models import Q
 from rest_framework import permissions, serializers, viewsets
 
-from hat.menupermissions import models as permission
 from iaso.models import MatchingAlgorithm, Project
+from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 
 
 class AlgorithmsSerializer(serializers.ModelSerializer):
@@ -15,7 +15,7 @@ class AlgorithmsSerializer(serializers.ModelSerializer):
 class AlgorithmsViewSet(viewsets.ModelViewSet):
     f"""Algorithms API
 
-    This API is restricted to authenticated users having the "{permission.LINKS}" permission
+    This API is restricted to authenticated users having the "{CORE_LINKS_PERMISSION}" permission
 
     GET /api/algorithms/
     """

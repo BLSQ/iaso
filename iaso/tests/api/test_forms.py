@@ -1,19 +1,31 @@
 import typing
 
 from django.core.files import File
+from django.db import connection
+from django.db.models import Exists, OuterRef
+from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
+from iaso.api.forms import FormSerializer
 from iaso.api.query_params import APP_ID
 from iaso.models import (
     AGGREGATE,
     Form,
+    FormAttachment,
     Instance,
     Mapping,
     OrgUnit,
 )
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
+
+
+MAX_QUERY_INSTANCE_UPDATED_AT = 'max("iaso_instance"."updated_at")'
+COUNT_QUERY_INSTANCE = 'count(distinct "iaso_instance"."id")'
 
 
 class FormsAPITestCase(APITestCase):
@@ -24,8 +36,10 @@ class FormsAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="Marvel")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION])
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=[CORE_FORMS_PERMISSION]
+        )
         cls.iron_man = cls.create_user_with_profile(username="iron_man", account=marvel)
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
@@ -50,7 +64,11 @@ class FormsAPITestCase(APITestCase):
         )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", created_at=cls.now)
-
+        form_version = cls.form_1.form_versions.create(
+            file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
+        )
+        form_version.possible_fields = {}
+        form_version.save()
         cls.project_3 = m.Project.objects.create(name="Kotor", app_id="knights.of.the.old.republic", account=star_wars)
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
@@ -69,7 +87,11 @@ class FormsAPITestCase(APITestCase):
             single_per_period=True,
             created_at=cls.now,
         )
-        cls.form_2.form_versions.create(file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401")
+        form_version = cls.form_2.form_versions.create(
+            file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
+        )
+        form_version.possible_fields = {}
+        form_version.save()
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
 
@@ -737,3 +759,141 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
         self.assertEqual(response.json()["forms"][0]["instances_count"], 2)
+
+    def test_instance_count_computation_removed_when_not_requested(self):
+        """
+        Test that instance_count computation is removed when not in requested fields.
+        This test verifies the optimization added in iaso/api/forms.py:299-311.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Test with specific fields that don't include instances_count or :all
+        response = self.client.get("/api/forms/?fields=id,name,form_id", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        # The response should not include instances_count field when not requested
+        for form_data in response.json()["forms"]:
+            self.assertNotIn("instances_count", form_data)
+
+        # Test that instances_count is included when explicitly requested
+        response = self.client.get(
+            "/api/forms/?fields=id,name,instances_count", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        for form_data in response.json()["forms"]:
+            self.assertIn("instances_count", form_data)
+
+        # Test that instances_count is included when no fields parameter is provided (default behavior)
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        for form_data in response.json()["forms"]:
+            self.assertIn("instances_count", form_data)
+
+    def test_forms_list_no_duplicates_when_linked_to_multiple_projects(self):
+        """
+        Ensure that a form linked to multiple projects appears only once in the forms list API response.
+        """
+        self.client.force_authenticate(self.yoda)
+        # Link form_1 to both project_1 and project_2
+        self.project_2.forms.add(self.form_1)
+        self.project_2.save()
+
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        form_ids = [form["id"] for form in response.json()["forms"]]
+        # Assert that each form id appears only once
+        self.assertEqual(len(form_ids), len(set(form_ids)), "Duplicate forms found in API response!")
+
+    def test_forms_list_has_attachments_only_when_requested(self):
+        """
+        Ensure has_attachments is only returned when explicitly requested and uses the
+        annotated value from the queryset.
+        """
+        FormAttachment.objects.create(
+            form=self.form_1,
+            name="media.png",
+            file=self.create_file_mock(name="media.png"),
+            md5="0" * 32,
+        )
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get("/api/forms/?fields=id,name", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        for form_data in response.json()["forms"]:
+            self.assertNotIn("has_attachments", form_data)
+
+        response = self.client.get(
+            "/api/forms/?fields=id,name,has_attachments", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertTrue(self.find_forms_data_for(response, self.form_1)["has_attachments"])
+        self.assertFalse(self.find_forms_data_for(response, self.form_2)["has_attachments"])
+
+    def test_form_serializer_uses_annotation_for_has_attachments(self):
+        """
+        The serializer should use the annotated has_attachments flag without issuing
+        extra database queries.
+        """
+        FormAttachment.objects.create(
+            form=self.form_1,
+            name="media-annotated.png",
+            file=self.create_file_mock(name="media-annotated.png"),
+            md5="f" * 32,
+        )
+
+        annotated_form = (
+            Form.objects.filter(pk=self.form_1.pk)
+            .annotate(has_attachments=Exists(FormAttachment.objects.filter(form_id=OuterRef("pk"))))
+            .get()
+        )
+
+        api_request = Request(APIRequestFactory().get("/api/forms/?fields=id,has_attachments"))
+        api_request.user = self.yoda
+
+        with self.assertNumQueries(0):
+            serializer = FormSerializer(annotated_form, context={"request": api_request})
+            self.assertTrue(serializer.data["has_attachments"])
+
+    def test_form_details_query_optimization(self):
+        """
+        Ensure that the form details API endpoint does not perform unnecessary queries
+        when fetching a form with possible_fields. Specifically, it should not perform a "max/count on instances".
+        """
+        self.client.force_authenticate(self.yoda)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(
+                f"/api/forms/{self.form_1.id}/?fields=possible_fields", headers={"Content-Type": "application/json"}
+            )
+            self.assertJSONResponse(response, 200)
+
+        # Ensure none of the executed SQL queries contain the heavy computations
+        for q in ctx.captured_queries:
+            sql = q["sql"].lower()
+            self.assertNotIn(MAX_QUERY_INSTANCE_UPDATED_AT, sql, f"Found unexpected query: {sql}")
+            self.assertNotIn(COUNT_QUERY_INSTANCE, sql, f"Found unexpected query: {sql}")
+
+        self.assertEqual(len(ctx.captured_queries), 10)
+
+    def test_form_details_full_details(self):
+        self.client.force_authenticate(self.yoda)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(f"/api/forms/{self.form_1.id}/", headers={"Content-Type": "application/json"})
+            self.assertJSONResponse(response, 200)
+
+        at_least_one_query_with_max_and_count = False
+        for q in ctx.captured_queries:
+            sql = q["sql"].lower()
+            # induced by field instance_count
+            if MAX_QUERY_INSTANCE_UPDATED_AT in sql:
+                at_least_one_query_with_max_and_count = True
+            # induced by field last_submission_date
+            if COUNT_QUERY_INSTANCE in sql:
+                at_least_one_query_with_max_and_count = True
+
+        self.assertTrue(at_least_one_query_with_max_and_count)
+        self.assertEqual(len(ctx.captured_queries), 11)

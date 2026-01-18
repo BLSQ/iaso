@@ -76,3 +76,16 @@ export type OptionsResponse = {
         >;
     };
 };
+
+export type UuidAsString = string;
+
+export type DjangoError = Error & {
+    /**
+     * Non-field-specific validation errors returned by Django REST Framework
+     */
+    non_field_errors?: string[];
+    /**
+     * Field-specific validation errors
+     */
+    [key: string]: any;
+};

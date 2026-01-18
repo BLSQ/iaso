@@ -1,6 +1,7 @@
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
+import { Team } from '../../types/team';
 
 type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
 
@@ -14,6 +15,7 @@ export type SaveTeamQuery = {
     type?: TeamType;
     users: Array<number>;
     parent?: number;
+    color?: string;
 };
 
 const convertToApi = data => {
@@ -32,7 +34,7 @@ export const convertAPIErrorsToState = data => {
     return converted;
 };
 
-const endpoint = '/api/microplanning/teams/';
+const endpoint = '/api/teams/';
 
 const patchTeam = async (body: Partial<SaveTeamQuery>) => {
     const url = `${endpoint}${body.id}/`;
@@ -43,16 +45,26 @@ const postTeam = async (body: SaveTeamQuery) => {
     return postRequest(endpoint, convertToApi(body));
 };
 
-export const useSaveTeam = (type: 'create' | 'edit'): UseMutationResult => {
+export const useSaveTeam = (
+    type: 'create' | 'edit',
+    showSuccessSnackBar = true,
+): UseMutationResult => {
     const ignoreErrorCodes = [400];
+    const queryClient = useQueryClient();
     const editTeam = useSnackMutation({
         mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
-        invalidateQueryKey: ['teamsList'],
+        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
         ignoreErrorCodes,
+        showSuccessSnackBar,
+        options: {
+            onSuccess: (data: Team) => {
+                queryClient.invalidateQueries(['team', `team-${data.id}`]);
+            },
+        },
     });
     const createTeam = useSnackMutation({
         mutationFn: (data: SaveTeamQuery) => postTeam(data),
-        invalidateQueryKey: ['teamsList'],
+        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
         ignoreErrorCodes,
     });
 

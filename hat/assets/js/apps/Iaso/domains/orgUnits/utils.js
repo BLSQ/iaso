@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
 
-import { getChipColors } from '../../constants/chipColors';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { baseUrls } from '../../constants/urls';
 import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
@@ -151,14 +151,6 @@ export const getOrgUnitGroups = orgUnit => (
     </span>
 );
 
-export const getOrgUnitProjects = orgUnit => (
-    <span>
-        {orgUnit.projects?.length > 0
-            ? orgUnit.projects.map(project => project.name).join(', ')
-            : textPlaceholder}
-    </span>
-);
-
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];
     links?.forEach(l => {
@@ -183,11 +175,11 @@ export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     return sources;
 };
 
-export const filterOrgUnitsByGroupUrl = groupId => {
-    const defaultChipColor = getChipColors(0).replace('#', '');
-    return (
+export const useFilterOrgUnitsByGroupUrl = () => {
+    const { data: colors } = useGetColors(true);
+    const defaultColor = getColor(0, colors).replace('#', '');
+    return groupId =>
         `/${baseUrls.orgUnits}/locationLimit/3000/order/id` +
         `/pageSize/50/page/1/searchTabIndex/0/searchActive/true` +
-        `/searches/[{"validation_status":"all", "color":"${defaultChipColor}", "group":"${groupId}", "source": null}]`
-    );
+        `/searches/[{"validation_status":"all", "color":"${defaultColor}", "group":"${groupId}", "source": null}]`;
 };

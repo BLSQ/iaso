@@ -76,9 +76,9 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 bounds["_northEast"]["lat"],
             ),
         )
-        # TODO see if we need to filter per user as with Campaign
         return (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+            .filter(org_unit_type__category="COUNTRY")
             .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
@@ -177,6 +177,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "id": district.id,
                         "data": {
                             "campaign": latest_active_campaign.obr_name,
+                            "campaign_id": str(latest_active_campaign.id),
                             **district_stats,
                             "district_name": district.name,
                             "round_number": round_number,
@@ -192,6 +193,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "id": district.id,
                         "data": {
                             "campaign": latest_active_campaign.obr_name,
+                            "campaign_id": str(latest_active_campaign.id),
                             "district_name": district.name,
                             "region_name": district.parent.name,
                         },
@@ -220,13 +222,14 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
                 bounds["_northEast"]["lat"],
             )
         )
-        # TODO see if we need to filter per user as with Campaign
+
         qs = (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+            .filter(org_unit_type__category="COUNTRY")
             .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
-        print("Query", qs.query)
+
         return qs
 
     def list(self, request):

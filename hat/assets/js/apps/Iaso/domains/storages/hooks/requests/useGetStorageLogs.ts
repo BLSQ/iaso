@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { makeUrlWithParams } from '../../../../libs/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { PaginatedStorage, StorageDetailsParams } from '../../types/storages';
 
 type ApiParams = {
@@ -10,8 +10,6 @@ type ApiParams = {
     page: string;
     types?: string;
     performed_at?: string;
-    type: string;
-    storageId: string;
 };
 type GetAPiParams = {
     url: string;
@@ -24,8 +22,6 @@ export const useGetApiParams = (params: StorageDetailsParams): GetAPiParams => {
         performedAt,
         order,
         page,
-        type,
-        storageId,
     }: StorageDetailsParams = params;
     const apiParams: ApiParams = {
         limit: pageSize || '20',
@@ -33,13 +29,10 @@ export const useGetApiParams = (params: StorageDetailsParams): GetAPiParams => {
         performed_at: performedAt,
         order,
         page,
-        type,
-        storageId,
     };
-    const baseUrl = `/api/storages/${type}/${storageId}/logs`;
-    const url = makeUrlWithParams(baseUrl, apiParams);
+    const baseUrl = `/api/storages/${params.type}/${params.storageId}/logs`;
     return {
-        url,
+        url: baseUrl,
         apiParams,
     };
 };
@@ -48,7 +41,7 @@ const getStorageLogs = async (
     baseUrl: string,
 ): Promise<PaginatedStorage> => {
     const url = makeUrlWithParams(baseUrl, apiParams);
-    return getRequest(url) as Promise<PaginatedStorage>;
+    return await getRequest(url);
 };
 
 export const useGetStorageLogs = (

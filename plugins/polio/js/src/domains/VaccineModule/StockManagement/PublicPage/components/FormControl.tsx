@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { Typography, Box } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import { withStyles } from '@mui/styles';
+import FormControlMui from '@mui/material/FormControl';
+import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     formControl: {
         width: '100%',
         '& fieldset': {
@@ -28,16 +27,28 @@ const styles = theme => ({
         fontSize: 14,
         padding: 0,
     },
-});
+}));
 
-function FormControlComponent({ classes, children, errors, id, hideError }) {
+type Props = {
+    children: ReactNode;
+    errors?: string[];
+    id?: string;
+    hideError?: boolean;
+};
+export const FormControl: FunctionComponent<Props> = ({
+    children,
+    errors = [],
+    id,
+    hideError = false,
+}) => {
     const extraProps: any = {};
+    const classes: Record<string, string> = useStyles();
     if (id) {
         extraProps.id = id;
     }
 
     return (
-        <FormControl
+        <FormControlMui
             className={classes.formControl}
             variant="outlined"
             {...extraProps}
@@ -63,21 +74,6 @@ function FormControlComponent({ classes, children, errors, id, hideError }) {
                         ))}
                 </Box>
             )}
-        </FormControl>
+        </FormControlMui>
     );
-}
-FormControlComponent.defaultProps = {
-    errors: [],
-    id: null,
-    hideError: false,
 };
-FormControlComponent.propTypes = {
-    classes: PropTypes.object.isRequired,
-    children: PropTypes.node.isRequired,
-    errors: PropTypes.arrayOf(PropTypes.string.isRequired),
-    id: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    hideError: PropTypes.bool,
-};
-const styledComponent = withStyles(styles)(FormControlComponent);
-
-export { styledComponent as FormControl };

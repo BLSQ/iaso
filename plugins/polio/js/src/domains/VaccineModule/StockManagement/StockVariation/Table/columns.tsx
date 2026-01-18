@@ -14,7 +14,8 @@ import {
     STOCK_EARMARKS_ADMIN,
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
-import { USED } from '../../constants';
+import { REGULAR, USED } from '../../constants';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import {
     useDeleteDestruction,
     useDeleteEarmarked,
@@ -26,6 +27,8 @@ import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditEarmarked } from '../Modals/CreateEditEarmarked';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
+import { Box, Tooltip } from '@mui/material';
+import { CampaignNameWithWarning } from './CampaignNameWithWarning';
 
 export const useFormATableColumns = (
     countryName: string,
@@ -41,16 +44,32 @@ export const useFormATableColumns = (
                 accessor: 'campaign',
                 id: 'campaign',
                 sortable: true,
+                Cell: settings => {
+                    const campaign = settings.row.original.campaign;
+                    const altCampaign =
+                        settings.row.original.alternative_campaign;
+                    const text = campaign ?? altCampaign ?? textPlaceholder;
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.round),
                 accessor: 'round_number',
                 id: 'round__number',
                 sortable: true,
-                Cell: settings =>
-                    settings.row.original.round_number
-                        ? settings.row.original.round_number
-                        : textPlaceholder,
+                Cell: settings => {
+                    const value = settings.row.original.round_number;
+                    if (Number.isSafeInteger(value)) {
+                        return value;
+                    }
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.form_a_reception_date),
@@ -78,6 +97,15 @@ export const useFormATableColumns = (
                 ),
             },
             {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
+                ),
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 id: 'account',
                 accessor: 'account',
@@ -86,7 +114,14 @@ export const useFormATableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -174,6 +209,15 @@ export const useDestructionTableColumns = (
                 ),
             },
             {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
+                ),
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 id: 'account',
@@ -182,7 +226,14 @@ export const useDestructionTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -289,6 +340,15 @@ export const useIncidentTableColumns = (
                 ),
             },
             {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
+                ),
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 id: 'account',
@@ -297,7 +357,14 @@ export const useIncidentTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
 
                             <DisplayIfUserHasPerm
@@ -380,12 +447,17 @@ export const useEarmarkedTableColumns = (
                 id: 'campaign',
                 sortable: true,
                 Cell: settings => {
-                    if (settings.row.original.campaign) {
-                        return settings.row.original.campaign;
-                    }
-                    return settings.row.original.temporary_campaign_name
-                        ? `(${settings.row.original.temporary_campaign_name})`
-                        : textPlaceholder;
+                    const text =
+                        settings.row.original.campaign ??
+                        settings.row.original.temporary_campaign_name ??
+                        textPlaceholder;
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
+                    );
                 },
             },
             {
@@ -420,6 +492,15 @@ export const useEarmarkedTableColumns = (
                 sortable: true,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.doses_earmarked} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
             {

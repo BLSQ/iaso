@@ -39,34 +39,24 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
             <Table size="small">
                 <TableBody>
                     <PaperTableRow
-                        label={formatMessage(MESSAGES.usableVials)}
-                        value={data?.total_usable_vials}
-                        isLoading={isLoading}
-                    />
-                    {!isBopv && (
-                        <PaperTableRow
-                            label={formatMessage(MESSAGES.unusableVials)}
-                            value={data?.total_unusable_vials}
-                            isLoading={isLoading}
-                        />
-                    )}
-                    <PaperTableRow
                         label={formatMessage(MESSAGES.usableDoses)}
                         value={data?.total_usable_doses}
                         isLoading={isLoading}
                     />
                     {!isBopv && (
-                        <PaperTableRow
-                            label={formatMessage(MESSAGES.unusableDoses)}
-                            value={data?.total_unusable_doses}
-                            isLoading={isLoading}
-                        />
+                        <>
+                            <PaperTableRow
+                                label={formatMessage(MESSAGES.unusableDoses)}
+                                value={data?.total_unusable_doses}
+                                isLoading={isLoading}
+                            />
+                            <PaperTableRow
+                                label={formatMessage(MESSAGES.unusableVials)}
+                                value={data?.total_unusable_vials}
+                                isLoading={isLoading}
+                            />
+                        </>
                     )}
-                    <PaperTableRow
-                        label={formatMessage(MESSAGES.earmarked_vials)}
-                        value={data?.total_earmarked_vials}
-                        isLoading={isLoading}
-                    />
                     <PaperTableRow
                         label={formatMessage(MESSAGES.earmarked_doses)}
                         value={data?.total_earmarked_doses}

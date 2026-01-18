@@ -23,7 +23,7 @@ import getDisplayName from '../../utils/usersUtils';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
 import { formatLabel } from '../instances/utils';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
-import { filterOrgUnitsByGroupUrl } from '../orgUnits/utils';
+import { useFilterOrgUnitsByGroupUrl } from '../orgUnits/utils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
 import MESSAGES from './messages';
 import { ExtraColumn } from './types/fields';
@@ -36,6 +36,7 @@ export const useStaticColumns = (): Array<Column> => {
     const getValue = useGetFieldValue();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
+    const filterOrgUnitsByGroupUrl = useFilterOrgUnitsByGroupUrl();
     return [
         {
             Header: formatMessage(MESSAGES.id),
@@ -144,19 +145,11 @@ export const useColumns = (
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
                         />
-                        {settings.row.original.duplicates.length === 1 && (
-                            <IconButtonComponent
-                                url={`/${baseUrls.entityDuplicateDetails}/entities/${settings.row.original.id},${settings.row.original.duplicates[0]}/`}
-                                overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicate}
-                            />
-                        )}
-                        {/* When there's more than one dupe for the entity */}
-                        {settings.row.original.duplicates.length > 1 && (
+                        {settings.row.original.has_duplicates && (
                             <IconButtonComponent
                                 url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
                                 overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicates}
+                                tooltipMessage={MESSAGES.seeDuplicate}
                             />
                         )}
                     </>

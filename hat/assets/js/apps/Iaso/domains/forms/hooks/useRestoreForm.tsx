@@ -7,9 +7,10 @@ const restoreForm = (id: number) => {
     return restoreRequest(`/api/forms/${id}/?only_deleted=1`);
 };
 
-export const useRestoreForm = (): UseMutationResult =>
-    useSnackMutation({
+export const useRestoreForm = (): UseMutationResult => {
+    return useSnackMutation({
         mutationFn: restoreForm,
         snackSuccessMessage: MESSAGES.formRestored,
-        invalidateQueryKey: 'forms',
+        invalidateQueryKey: ['forms'],
     });
+};

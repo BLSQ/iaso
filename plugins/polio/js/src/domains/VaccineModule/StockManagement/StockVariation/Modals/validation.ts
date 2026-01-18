@@ -37,10 +37,9 @@ yup.addMethod(
 export const useFormAValidation = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        campaign: yup
-            .string()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
+        campaign: yup.string().nullable(),
+        alternative_campaign: yup.string().nullable(),
+        round: yup.number().nullable(),
         lot_numbers: yup
             .mixed()
             .nullable()
@@ -72,7 +71,14 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        document: yup.mixed().nullable(),
+        doses_per_vial: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        file: yup.mixed().nullable(),
     });
 };
 
@@ -100,13 +106,20 @@ export const useDestructionValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_per_vial: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         lot_numbers: yup
             .mixed()
             .nullable()
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
-        document: yup.mixed().nullable(),
+        file: yup.mixed().nullable(),
     });
 };
 
@@ -141,6 +154,13 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_per_vial: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         unusable_vials: yup
             .number()
             .required(formatMessage(MESSAGES.requiredField))
@@ -148,7 +168,7 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        document: yup.mixed().nullable(),
+        file: yup.mixed().nullable(),
     });
 };
 
@@ -163,6 +183,13 @@ export const useEarmarkValidation = () => {
         temporary_campaign_name: yup.string().nullable(),
         round_number: yup.number().integer().positive().nullable(),
         vials_earmarked: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_per_vial: yup
             .number()
             .required(formatMessage(MESSAGES.requiredField))
             .nullable()

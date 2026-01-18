@@ -37,7 +37,7 @@ export const useBulkSaveOrgUnits = (
     return useSnackMutation({
         mutationFn: saveMulti,
         options: { onSuccess },
-        showSucessSnackBar: true,
+        showSuccessSnackBar: true,
         snackSuccessMessage: MESSAGES.saveMultiEditOrgUnitsLaunched,
         snackErrorMsg: MESSAGES.saveMultiEditOrgUnitsError,
     });

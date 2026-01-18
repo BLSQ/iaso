@@ -1,4 +1,5 @@
 import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
@@ -96,13 +97,13 @@ const IasoApp: React.FC<{
 };
 
 window.iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
-    ReactDOM.render(
+    const root = createRoot(element!); // createRoot(container!) if you use TypeScript
+    root.render(
         <IasoApp
             element={element}
             enabledPluginsName={enabledPluginsName}
             themeConfig={themeConfig}
             userHomePage={userHomePage}
         />,
-        element,
     );
 };

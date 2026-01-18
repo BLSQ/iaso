@@ -4,14 +4,22 @@ import logging
 import dhis2
 import requests
 
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
-from iaso.models import DataSource, ExternalCredentials, OrgUnit
+from iaso.models import DataSource, ExternalCredentials, OrgUnit, SourceVersion
+from iaso.permissions.core_permissions import (
+    CORE_LINKS_PERMISSION,
+    CORE_MAPPINGS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+    CORE_SOURCE_WRITE_PERMISSION,
+)
 
 from ..dhis2.url_helper import clean_url
 from ..tasks.dhis2_ou_importer import get_api
@@ -52,11 +60,18 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_versions(obj: DataSource):
-        return [v.as_dict_without_data_source() for v in obj.versions.all()]
+        versions = []
+        for version in obj.versions.all():
+            org_units_count = getattr(version, "annotated_org_units_count", None)
+            versions.append(version.as_dict_without_data_source(org_units_count=org_units_count))
+        return versions
 
     @staticmethod
     def get_default_version(obj: DataSource):
-        return obj.default_version.as_dict_without_data_source() if obj.default_version else None
+        if not obj.default_version:
+            return None
+        org_units_count = getattr(obj, "annotated_org_units_count", None)
+        return obj.default_version.as_dict_without_data_source(org_units_count=org_units_count)
 
     @staticmethod
     def get_projects(obj: DataSource):
@@ -127,7 +142,9 @@ class DataSourceSerializer(serializers.ModelSerializer):
             source_version = get_object_or_404(data_source.versions, id=default_version_id)
 
             new_default_version: bool = data_source.default_version_id != source_version.id
-            if new_default_version and not request.user.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION):
+            if new_default_version and not request.user.has_perm(
+                CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION.full_name()
+            ):
                 raise serializers.ValidationError(
                     "User doesn't have the permission to change the default version of a data source."
                 )
@@ -190,7 +207,7 @@ class TestCredentialSerializer(serializers.Serializer):
             if err.code == 401:
                 self.raise_exception("dhis2_password")
             self.raise_exception("dhis2_url", err.description)
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as err2:
             self.raise_exception("dhis2_url")
         except Exception as err:
             logging.exception(err)
@@ -200,9 +217,10 @@ class TestCredentialSerializer(serializers.Serializer):
         try:
             response = requests.get(dhis2_system_info_api, auth=(dhis2_login, password)).json()
             # dependending on the version the field url is not always the same
-            if "instanceBaseUrl" in response and response["instanceBaseUrl"] != dhis2_url:
-                self.raise_exception("dhis2_url")
-            if "contextPath" in response and response["contextPath"] != dhis2_url:
+            if "contextPath" in response:
+                if response["contextPath"] != dhis2_url:
+                    self.raise_exception("dhis2_url")
+            elif "instanceBaseUrl" in response and response["instanceBaseUrl"] != dhis2_url:
                 self.raise_exception("dhis2_url")
             # just in case both fields are empty, at least verify that we have a version field
             if "version" not in response:
@@ -217,23 +235,23 @@ class DataSourcePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         # see permission logic on view
         read_perms = (
-            permission.MAPPINGS,
-            permission.ORG_UNITS,
-            permission.ORG_UNITS_READ,
-            permission.LINKS,
-            permission.SOURCES,
+            CORE_MAPPINGS_PERMISSION,
+            CORE_ORG_UNITS_PERMISSION,
+            CORE_ORG_UNITS_READ_PERMISSION,
+            CORE_LINKS_PERMISSION,
+            CORE_SOURCE_PERMISSION,
         )
-        write_perms = (permission.SOURCE_WRITE,)
+        write_perms = (CORE_SOURCE_WRITE_PERMISSION,)
 
         if (
             request.method in permissions.SAFE_METHODS
             and request.user
-            and any(request.user.has_perm(perm) for perm in read_perms)
+            and any(request.user.has_perm(perm.full_name()) for perm in read_perms)
         ):
             return True
         if request.method == "DELETE":
             return False
-        return request.user and any(request.user.has_perm(perm) for perm in write_perms)
+        return request.user and any(request.user.has_perm(perm.full_name()) for perm in write_perms)
 
 
 class DataSourceDropdownSerializer(serializers.ModelSerializer):
@@ -247,9 +265,9 @@ class DataSourceViewSet(ModelViewSet):
     f"""Data source API
 
     This API is restricted to authenticated users:
-    Read permission are restricted to user with at least one of the "{permission.SOURCES}",
-        "{permission.MAPPINGS}","{permission.ORG_UNITS}","{permission.ORG_UNITS_READ}" and "{permission.LINKS}" permissions
-    Write permission are restricted to user having the "{permission.SOURCES}" permissions.
+    Read permission are restricted to user with at least one of the "{CORE_SOURCE_PERMISSION}",
+        "{CORE_MAPPINGS_PERMISSION}","{CORE_ORG_UNITS_PERMISSION}","{CORE_ORG_UNITS_READ_PERMISSION}" and "{CORE_LINKS_PERMISSION}" permissions
+    Write permission are restricted to user having the "{CORE_SOURCE_PERMISSION}" permissions.
 
     GET /api/datasources/
     GET /api/datasources/<id>
@@ -270,10 +288,18 @@ class DataSourceViewSet(ModelViewSet):
         project_ids = self.request.GET.get("project_ids")
         name = self.request.GET.get("name", None)
 
+        versions_prefetch = Prefetch(
+            "versions",
+            queryset=SourceVersion.objects.filter(data_source__projects__account=profile.account).annotate(
+                annotated_org_units_count=Count("orgunit")
+            ),
+        )
+
         sources = (
             DataSource.objects.select_related("default_version", "credentials")
-            .prefetch_related("projects", "versions")
+            .prefetch_related("projects", versions_prefetch)
             .filter(projects__account=profile.account)
+            .annotate(annotated_org_units_count=Count("default_version__orgunit"))
             .distinct()
         )
 

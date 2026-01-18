@@ -33,6 +33,38 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Feature flags',
         id: 'iaso.label.featureFlags',
     },
+    featureFlag_DCO: {
+        defaultMessage: 'Data collection options',
+        id: 'iaso.projets.featureflag.category.DCO',
+    },
+    featureFlag_REO: {
+        defaultMessage: 'Refresh options',
+        id: 'iaso.projets.featureflag.category.REO',
+    },
+    featureFlag_GEO: {
+        defaultMessage: 'Geographic options',
+        id: 'iaso.projets.featureflag.category.GEO',
+    },
+    featureFlag_DAV: {
+        defaultMessage: 'Data validation',
+        id: 'iaso.projets.featureflag.category.DAV',
+    },
+    featureFlag_ENT: {
+        defaultMessage: 'Entities',
+        id: 'iaso.projets.featureflag.category.ENT',
+    },
+    featureFlag_PLA: {
+        defaultMessage: 'Planning',
+        id: 'iaso.projets.featureflag.category.PLA',
+    },
+    featureFlag_SPO: {
+        defaultMessage: 'Specific options',
+        id: 'iaso.projets.featureflag.category.SPO',
+    },
+    featureFlag_NA: {
+        defaultMessage: 'Generics',
+        id: 'iaso.projets.featureflag.category.NA',
+    },
     updateProject: {
         defaultMessage: 'Update project',
         id: 'iaso.projects.update',
@@ -290,6 +322,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.projets.featureflag.tooltip.write_on_nfc_cards',
         defaultMessage:
             'Enables the possibility to save entities data on an NFC card',
+    },
+    mobile_change_requests_tab_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_change_requests_tab',
+        defaultMessage: 'Tab enabling display of change requests (read only)',
     },
     mobile_org_unit_registry_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_org_unit_registry',

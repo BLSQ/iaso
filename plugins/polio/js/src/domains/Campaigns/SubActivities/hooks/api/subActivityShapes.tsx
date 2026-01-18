@@ -23,10 +23,12 @@ export const useGetSubActivityShapes = (
         country?.country_parent?.id || country?.root?.id || country?.id;
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
-        useGetGeoJson(parentCountryId, 'DISTRICT');
+        useGetGeoJson({
+            topParentId: parentCountryId,
+            orgUnitCategory: 'DISTRICT',
+        });
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-        parentCountryId,
-        'REGION',
+        { topParentId: parentCountryId, orgUnitCategory: 'REGION' },
     );
 
     const districtShapesForSubActivity = districtShapes?.filter(shape =>

@@ -3,7 +3,10 @@ import requests
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 
 
 @swagger_auto_schema()
@@ -18,10 +21,19 @@ class SupersetTokenViewSet(viewsets.ViewSet):
     https://www.npmjs.com/package/@superset-ui/embedded-sdk
     """
 
+    permission_classes = [AuthenticationEnforcedPermission, AllowAny]
+
     def create(self, request):
         dashboard_id = request.data.get("dashboard_id")
 
+        if not dashboard_id:
+            return Response({"error": "dashboard_id required"}, status=status.HTTP_400_BAD_REQUEST)
+
         base_url = settings.SUPERSET_URL
+
+        if not base_url:
+            return Response({"error": "no superset configured"}, status=status.HTTP_404_NOT_FOUND)
+
         headers = {"Content-Type": "application/json"}
 
         # Log in to Superset to get access_token
@@ -42,13 +54,22 @@ class SupersetTokenViewSet(viewsets.ViewSet):
         headers["Referer"] = base_url
 
         # Fetch Guest token
-        current_user = request.user
-        payload = {
-            "user": {
+        if hasattr(request, "user") and request.user.is_authenticated:
+            current_user = request.user
+            user_data = {
                 "username": current_user.username,
                 "first_name": current_user.first_name,
                 "last_name": current_user.last_name,
-            },
+            }
+        else:
+            user_data = {
+                "username": "guest",
+                "first_name": "Guest",
+                "last_name": "",
+            }
+
+        payload = {
+            "user": user_data,
             "resources": [{"type": "dashboard", "id": dashboard_id}],
             "rls": [],
         }

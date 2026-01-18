@@ -1,5 +1,5 @@
 from iaso.gpkg.import_gpkg import import_gpkg_file
-from iaso.models import Account, Project
+from iaso.models import Account, DataSource, Project
 from iaso.test import APITestCase
 from setuper.pyramid import update_org_unit_sub_type
 
@@ -12,9 +12,12 @@ class OrgUnitImportFromGPKG(APITestCase):
         cls.project = Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
 
     def test_minimal_import_with_sub_org_unit_type(self):
+        # Ensure the DataSource is created with the project
+        source = DataSource.objects.create(name="test")
+        source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
-            project_id=self.project.id,
             source_name="test",
             version_number=1,
             validation_status="new",

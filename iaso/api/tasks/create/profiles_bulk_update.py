@@ -1,15 +1,17 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import parse_comma_separated_numeric_values
 from iaso.api.tasks.serializers import TaskSerializer
+from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.tasks.profiles_bulk_update import profiles_bulk_update
 
 
 class HasBulkUpdatePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED)
+        return request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
+            CORE_USERS_MANAGED_PERMISSION.full_name()
+        )
 
 
 class ProfilesBulkUpdate(viewsets.ViewSet):

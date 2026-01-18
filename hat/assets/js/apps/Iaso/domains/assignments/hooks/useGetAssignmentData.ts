@@ -1,11 +1,24 @@
 import { useMemo } from 'react';
 
-import { DropdownOptions } from '../../../types/utils';
+import {
+    OrgUnitTypeHierarchyDropdownValues,
+    useGetOrgUnitTypesHierarchy,
+} from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { useGetPlanningDetails } from 'Iaso/domains/plannings/hooks/requests/useGetPlanningDetails';
+import { useBoundState } from '../../../hooks/useBoundState';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { Planning } from '../../plannings/types';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import {
+    DropdownTeamsOptions,
+    SubTeam,
+    User,
+    Team,
+} from '../../teams/types/team';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 import { Locations } from '../types/locations';
 import { ChildrenOrgUnits } from '../types/orgUnit';
-import { Planning } from '../types/planning';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 import {
     AssignmentsResult,
@@ -13,18 +26,13 @@ import {
 } from './requests/useGetAssignments';
 import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
 import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
-import { useGetPlanning } from './requests/useGetPlanning';
 import { ProfileWithColor, useGetProfiles } from './requests/useGetProfiles';
-import { useGetTeams } from './requests/useGetTeams';
+
 import {
     useBulkSaveAssignments,
     useSaveAssignment,
 } from './requests/useSaveAssignment';
 import { useGetOrgUnitParentIds } from './useGetOrgUnitParentIds';
-
-import { useBoundState } from '../../../hooks/useBoundState';
-import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     planningId: string;
@@ -44,7 +52,7 @@ type Result = {
     saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     teams: DropdownTeamsOptions[] | undefined;
     profiles: ProfileWithColor[];
-    orgunitTypes: DropdownOptions<string>[] | undefined;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     childrenOrgunits: ChildrenOrgUnits | undefined;
     orgUnits: Locations | undefined;
     orgUnitsList: OrgUnit[] | undefined;
@@ -57,7 +65,7 @@ type Result = {
     isFetchingChildrenOrgunits: boolean;
     isLoadingAssignments: boolean;
     isTeamsFetched: boolean;
-    setItemColor: (color: string, itemId: number) => void;
+    setProfiles: (profiles: ProfileWithColor[]) => void;
 };
 
 export const useGetAssignmentData = ({
@@ -76,13 +84,12 @@ export const useGetAssignmentData = ({
     }: {
         data?: Planning;
         isLoading: boolean;
-    } = useGetPlanning(planningId);
-    const { data: dataTeams = [], isFetched: isTeamsFetched } = useGetTeams(
-        planning?.team,
-    );
-    const [teams, setTeams] = useBoundState<DropdownTeamsOptions[] | undefined>(
-        [],
-        dataTeams,
+    } = useGetPlanningDetails(planningId);
+    const { data: teams = [], isFetched: isTeamsFetched } = useGetTeamsDropdown(
+        { ancestor: `${planning?.team_details?.id}` },
+        undefined,
+        planning?.team_details?.id ? true : false,
+        true,
     );
     const [profiles, setProfiles] = useBoundState<ProfileWithColor[]>(
         [],
@@ -100,8 +107,14 @@ export const useGetAssignmentData = ({
         () => (data ? data.allAssignments : []),
         [data],
     );
-    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+    const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypesHierarchy(
+            planning?.org_unit_details?.org_unit_type || 0,
+        );
+    const orgunitTypes = useMemo(
+        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
+        [orgUnitTypeHierarchy],
+    );
     const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =
         useGetOrgUnitsByParent({
             orgUnitParentId: parentSelected?.id,
@@ -155,83 +168,27 @@ export const useGetAssignmentData = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    return useMemo(() => {
-        const setItemColor = (color, itemId) => {
-            // TODO: improve this
-            if (currentTeam?.type === 'TEAM_OF_USERS') {
-                const itemIndex = profiles.findIndex(
-                    profile => profile.user_id === itemId,
-                );
-                if (itemIndex !== undefined) {
-                    const newProfiles = [...profiles];
-                    newProfiles[itemIndex] = {
-                        ...newProfiles[itemIndex],
-                        color,
-                    };
-                    setProfiles(newProfiles);
-                }
-            }
-            if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-                const itemIndex = teams?.findIndex(
-                    team => team.original.id === itemId,
-                );
-                if (itemIndex !== undefined && teams) {
-                    const newTeams = [...teams];
-                    newTeams[itemIndex] = {
-                        ...newTeams[itemIndex],
-                        color,
-                    };
-                    setTeams(newTeams);
-                }
-            }
-        };
-        return {
-            planning,
-            assignments,
-            allAssignments,
-            saveAssignment,
-            teams,
-            profiles,
-            orgunitTypes,
-            childrenOrgunits,
-            orgUnits,
-            orgUnitsList,
-            sidebarData,
-            isFetchingOrgUnits,
-            isFetchingOrgUnitsList,
-            isLoadingPlanning,
-            isSaving: isBulkSaving || isSaving,
-            isFetchingOrgunitTypes,
-            isFetchingChildrenOrgunits,
-            isLoadingAssignments,
-            isTeamsFetched,
-            setItemColor,
-            saveMultiAssignments,
-        };
-    }, [
-        allAssignments,
+    return {
+        planning,
         assignments,
+        allAssignments,
+        saveAssignment,
+        teams,
+        profiles,
+        orgunitTypes,
         childrenOrgunits,
-        currentTeam?.type,
-        isBulkSaving,
-        isFetchingChildrenOrgunits,
-        isFetchingOrgUnits,
-        isFetchingOrgUnitsList,
-        isFetchingOrgunitTypes,
-        isLoadingAssignments,
-        isLoadingPlanning,
-        isSaving,
-        isTeamsFetched,
         orgUnits,
         orgUnitsList,
-        orgunitTypes,
-        planning,
-        profiles,
-        saveAssignment,
+        sidebarData,
+        isFetchingOrgUnits,
+        isFetchingOrgUnitsList,
+        isLoadingPlanning,
+        isSaving: isBulkSaving || isSaving,
+        isFetchingOrgunitTypes: !orgUnitTypeHierarchy || isFetchingOrgunitTypes,
+        isFetchingChildrenOrgunits,
+        isLoadingAssignments,
+        isTeamsFetched,
         saveMultiAssignments,
         setProfiles,
-        setTeams,
-        sidebarData,
-        teams,
-    ]);
+    };
 };

@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef, FunctionComponent } from 'react';
-import videojs from 'video.js';
-import moment from 'moment';
-import { Box, IconButton } from '@mui/material';
-import PlayIcon from '@mui/icons-material/PlayCircleFilled';
 import PauseIcon from '@mui/icons-material/PauseCircleFilled';
+import PlayIcon from '@mui/icons-material/PlayCircleFilled';
+import { Box, IconButton } from '@mui/material';
+import moment from 'moment';
+import videojs from 'video.js';
 
 import 'video.js/dist/video-js.min.css';
-import { ShortFile } from '../../domains/instances/types/instance';
 import { getFileName } from '../../utils/filesUtils';
 
 const styles = {
@@ -86,20 +85,24 @@ const styles = {
 };
 
 type Props = {
-    videoItem: ShortFile;
+    videoPath: string;
+    fileInfo?: string;
 };
 
-const VideoItemComponent: FunctionComponent<Props> = ({ videoItem }) => {
+const VideoItemComponent: FunctionComponent<Props> = ({
+    videoPath,
+    fileInfo,
+}) => {
     const [playerPaused, setPlayerPaused] = useState(true);
     const playerRef = useRef<videojs.Player | null>(null);
     const videoNodeRef = useRef<HTMLVideoElement | null>(null);
-    const fileName = getFileName(videoItem.path);
+    const fileName = getFileName(videoPath);
 
     useEffect(() => {
         if (!playerRef.current) {
             playerRef.current = videojs(videoNodeRef.current, {}, () => {
                 if (playerRef.current) {
-                    playerRef.current.src({ src: videoItem.path });
+                    playerRef.current.src({ src: videoPath });
                 }
             });
         }
@@ -109,7 +112,7 @@ const VideoItemComponent: FunctionComponent<Props> = ({ videoItem }) => {
                 playerRef.current.dispose();
             }
         };
-    }, [videoItem.path]);
+    }, [videoPath]);
 
     const togglePlayback = () => {
         if (playerRef.current) {
@@ -145,11 +148,13 @@ const VideoItemComponent: FunctionComponent<Props> = ({ videoItem }) => {
                     <PauseIcon sx={styles.icon} />
                 )}
             </IconButton>
-            <Box sx={playerPaused ? styles.fileInfo : styles.fileInfoHidden}>
-                {`${moment.unix(videoItem.createdAt).format('LTS')} - ${
-                    fileName.name
-                }.${fileName.extension}`}
-            </Box>
+            {fileInfo && (
+                <Box
+                    sx={playerPaused ? styles.fileInfo : styles.fileInfoHidden}
+                >
+                    {fileInfo}
+                </Box>
+            )}
         </Box>
     );
 };

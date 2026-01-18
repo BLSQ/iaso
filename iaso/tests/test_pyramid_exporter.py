@@ -24,7 +24,7 @@ class CommandTests(TestCase):
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate"
+            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate,code"
             "&pageSize=500&page=1&totalPages=True",
             json=self.fixture_json("orgunits"),
             status=200,
@@ -80,32 +80,29 @@ class CommandTests(TestCase):
         parent.groups.add(public_facilities_group)
 
         # add new chiefdom
-        org_unit_chief = OrgUnit()
-        org_unit_chief.name = "new Chiefdom"
-        org_unit_chief.sub_source = source_ref
-        org_unit_chief.version = version_ref
-        org_unit_chief.source_ref = None
-        org_unit_chief.validated = False
-        org_unit_chief.parent = parent
-        org_unit_chief.simplified_geom = MultiPolygon([Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])])
-        org_unit_chief.opening_date = None
-        org_unit_chief.save()
+        org_unit_chief = OrgUnit.objects.create(
+            name="new Chiefdom",
+            sub_source=source_ref,
+            version=version_ref,
+            source_ref=None,
+            parent=parent,
+            simplified_geom=MultiPolygon([Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])]),
+            opening_date=None,
+        )
 
         group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
         org_unit_chief.groups.add(group)
 
         # add new health center
 
-        org_unit = OrgUnit()
-        org_unit.name = "new children"
-        org_unit.sub_source = source_ref
-        org_unit.version = version_ref
-        org_unit.source_ref = None
-        org_unit.validated = False
-        org_unit.parent = org_unit_chief
-        org_unit.location = Point(-1.3596, 2.5317, 0)
-        org_unit.opening_date = datetime.date(2025, 1, 14)
-        org_unit.save()
+        org_unit = OrgUnit.objects.create(
+            name="new children",
+            sub_source=source_ref,
+            version=version_ref,
+            parent=org_unit_chief,
+            location=Point(-1.3596, 2.5317, 0),
+            opening_date=datetime.date(2025, 1, 14),
+        )
 
         # update existing chp coordinates
         chp = OrgUnit.objects.get(source_ref="LOpWauwwghf", version=version_ref)
@@ -172,7 +169,7 @@ class CommandTests(TestCase):
                 status=200,
             )
 
-        for uid in ["RpbiCJpIYEj", "w1Atoz18PCL", "gzcv65VyaGq"]:
+        for uid in ["RpbiCJpIYEj", "w1Atoz18PCL", "gzcv65VyaGq", "f25dqv3Y7Z0", "oRVt7g429ZO", "uYxK4wmcPqA"]:
             responses.add(
                 responses.GET,
                 "https://play.dhis2.org/2.30/api/organisationUnitGroups.json?fields=%3Aall&filter=id:eq:"

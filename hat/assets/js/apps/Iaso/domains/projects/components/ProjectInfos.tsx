@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
-import { chipColors } from 'Iaso/constants/chipColors';
+import { ProjectFeatureFlag } from 'Iaso/domains/projects/types/featureFlag';
 import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -19,7 +19,7 @@ export type ProjectForm = {
     app_id: Form;
     name: Form;
     feature_flags: {
-        value: Array<string | number> | undefined;
+        value: Array<ProjectFeatureFlag> | undefined;
         errors: Array<string>;
     };
     qr_code: Form;
@@ -72,7 +72,6 @@ const ProjectInfos: FunctionComponent<Props> = ({
                         currentProject.color.value ?? defaultProjectColor
                     }
                     onChangeColor={color => setFieldValue('color', color)}
-                    colors={[...chipColors, defaultProjectColor]}
                 />
             </Box>
             {currentProject.qr_code.value && (

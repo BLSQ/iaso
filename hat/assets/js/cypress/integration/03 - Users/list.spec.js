@@ -43,7 +43,7 @@ const goToPage = (
     cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
         fixture: 'orgunittypes/dropdown-list.json',
     });
-    cy.intercept('GET', '/api/microplanning/teams/*', {
+    cy.intercept('GET', '/api/teams/*', {
         fixture: 'teams/list.json',
     });
     cy.intercept(

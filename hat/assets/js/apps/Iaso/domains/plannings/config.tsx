@@ -1,25 +1,80 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Checkbox } from '@mui/material';
 import {
     Column,
-    IconButton as IconButtonComponent,
+    formatThousand,
+    IconButton,
+    makeRedirectionUrl,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactElement, useMemo } from 'react';
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { baseUrls } from '../../constants/urls';
-import { PLANNING_WRITE } from '../../utils/permissions';
-import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
-import { PlanningApi } from './hooks/requests/useGetPlannings';
-import MESSAGES from './messages';
 
-const getAssignmentUrl = (planning: PlanningApi): string => {
-    return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
+import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
+import { baseUrls } from 'Iaso/constants/urls';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
+import { encodeUriSearches } from '../orgUnits/utils';
+import { ProjectChip } from '../projects/components/ProjectChip';
+import { TeamChip } from '../teams/components/TeamChip';
+import { ActionsCell } from './components/ActionsCell';
+import { PlanningStatusChip } from './components/PlanningStatusChip';
+import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
+import { SavePlanningQuery } from './hooks/requests/useSavePlanning';
+import MESSAGES from './messages';
+import { Planning, SamplingResult } from './types';
+
+type Props = {
+    samplingResult: SamplingResult;
+    planning: Planning;
 };
-export const usePlanningColumns = (
-    deletePlanning: (id: number) => void,
-): Column[] => {
+
+const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
+    const { data: colors } = useGetColors(true);
+    const greenColor = getColor(31, colors).replace('#', '');
+    const purpleColor = getColor(3, colors).replace('#', '');
+    const urlParams: Record<string, any> = useMemo(
+        () => ({
+            locationLimit: 50000,
+            order: 'id',
+            pageSize: 50,
+            page: 1,
+            searchTabIndex: 0,
+            searchActive: true,
+            tab: 'map',
+            isClusterActive: false,
+            searches: encodeUriSearches([
+                {
+                    validation_status: 'VALID',
+                    color: greenColor,
+                    levels: `${planning.org_unit_details?.id}`,
+                    orgUnitTypeId: `${planning.target_org_unit_type_details?.id}`,
+                },
+                {
+                    validation_status: 'VALID',
+                    color: purpleColor,
+                    group: `${samplingResult.group_id}`,
+                    orgUnitTypeId: `${planning.target_org_unit_type_details?.id}`,
+                },
+            ]),
+        }),
+        [greenColor, purpleColor, planning, samplingResult],
+    );
+
+    return (
+        <IconButton
+            url={makeRedirectionUrl(baseUrls.orgUnits, urlParams)}
+            icon="remove-red-eye"
+            tooltipMessage={MESSAGES.seeSamplingResults}
+        />
+    );
+};
+
+export const usePlanningColumns = (params: any, count: number): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
+    const { mutateAsync: deletePlanning } = useDeletePlanning({
+        params,
+        count,
+    });
+    return useMemo<Column[]>(
         () => [
             {
                 Header: 'Id',
@@ -35,7 +90,11 @@ export const usePlanningColumns = (
                 Header: formatMessage(MESSAGES.project),
                 accessor: 'project__name',
                 id: 'project__name',
-                Cell: settings => settings.row.original.project_details.name,
+                Cell: settings => (
+                    <ProjectChip
+                        project={settings.row.original.project_details}
+                    />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnit),
@@ -57,111 +116,113 @@ export const usePlanningColumns = (
                 Header: formatMessage(MESSAGES.team),
                 accessor: 'team',
                 id: 'team',
-                Cell: settings => settings.row.original.team_details.name,
+                Cell: settings => (
+                    <TeamChip team={settings.row.original.team_details} />
+                ),
             },
             {
-                Header: formatMessage(MESSAGES.published),
+                Header: formatMessage(MESSAGES.status),
                 accessor: 'status',
                 id: 'status',
-                Cell: settings => {
-                    if (settings.row.original.status === 'published')
-                        return formatMessage(MESSAGES.yes);
-                    return formatMessage(MESSAGES.no);
-                },
+                Cell: settings => (
+                    <PlanningStatusChip status={settings.row.original.status} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: (settings): ReactElement => {
-                    return (
-                        // TODO: limit to user permissions
-                        <section>
-                            <IconButtonComponent
-                                url={getAssignmentUrl(settings.row.original)}
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.viewPlanning}
-                                size="small"
-                            />
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <CreateEditPlanning
-                                    type="edit"
-                                    id={settings.row.original.id}
-                                    name={settings.row.original?.name}
-                                    selectedTeam={settings.row.original?.team}
-                                    selectedOrgUnit={
-                                        settings.row.original?.org_unit
-                                    }
-                                    startDate={
-                                        settings.row.original?.started_at
-                                    }
-                                    endDate={settings.row.original?.ended_at}
-                                    forms={settings.row.original?.forms ?? []}
-                                    publishingStatus={
-                                        settings.row.original?.status
-                                    }
-                                    project={settings.row.original?.project}
-                                    description={
-                                        settings.row.original?.description
-                                    }
-                                />
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <CreateEditPlanning
-                                    type="copy"
-                                    name={settings.row.original?.name}
-                                    selectedTeam={settings.row.original?.team}
-                                    selectedOrgUnit={
-                                        settings.row.original?.org_unit
-                                    }
-                                    startDate={
-                                        settings.row.original?.started_at
-                                    }
-                                    endDate={settings.row.original?.ended_at}
-                                    forms={settings.row.original?.forms ?? []}
-                                    publishingStatus={
-                                        settings.row.original?.status
-                                    }
-                                    project={settings.row.original?.project}
-                                    description={
-                                        settings.row.original?.description
-                                    }
-                                />
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[PLANNING_WRITE]}
-                            >
-                                <DeleteDialog
-                                    titleMessage={{
-                                        ...MESSAGES.deletePlanning,
-                                        values: {
-                                            planningName:
-                                                settings.row.original.name,
-                                        },
-                                    }}
-                                    message={{
-                                        ...MESSAGES.deleteWarning,
-                                        values: {
-                                            name: settings.row.original.name,
-                                        },
-                                    }}
-                                    disabled={false}
-                                    onConfirm={() =>
-                                        deletePlanning(settings.row.original.id)
-                                    }
-                                    keyName="delete-planning"
-                                />
-                            </DisplayIfUserHasPerm>
-                        </section>
-                    );
-                },
+                Cell: settings => (
+                    <ActionsCell
+                        {...settings}
+                        deletePlanning={deletePlanning}
+                    />
+                ),
             },
         ],
-        [deletePlanning, formatMessage],
+        [formatMessage, deletePlanning],
+    );
+};
+
+export const useSamplingResultsColumns = (
+    planning: Planning,
+    savePlanning: (data: Partial<SavePlanningQuery>) => void,
+): Column[] => {
+    const { formatMessage } = useSafeIntl();
+
+    const handleSelectSamplingResult = useCallback(
+        (samplingResultId: number) => {
+            savePlanning({
+                id: planning.id,
+                selected_sampling_result_id:
+                    samplingResultId === planning.selected_sampling_result?.id
+                        ? null
+                        : samplingResultId,
+            });
+        },
+        [savePlanning, planning.id, planning.selected_sampling_result?.id],
+    );
+    return useMemo<Column[]>(
+        () => [
+            {
+                Header: 'Id',
+                accessor: 'id',
+                width: 80,
+            },
+            {
+                Header: formatMessage(MESSAGES.samplingName),
+                accessor: 'group_details.name',
+                Cell: BreakWordCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                accessor: 'created_at',
+                id: 'created_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: 'Pipeline',
+                accessor: 'pipeline_name',
+            },
+            {
+                Header: formatMessage(MESSAGES.orgUnitsCount),
+                accessor: 'group_details_org_unit_count',
+                id: 'group_details_org_unit_count',
+                sortable: false,
+                Cell: settings =>
+                    formatThousand(
+                        settings.row.original.group_details.org_unit_count,
+                    ),
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                sortable: false,
+                Cell: settings => (
+                    <ActionCell
+                        samplingResult={settings.row.original}
+                        planning={planning}
+                    />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.selectSamplingResult),
+                accessor: 'selected_sampling_result',
+                Cell: settings => (
+                    <Checkbox
+                        checked={
+                            planning.selected_sampling_result &&
+                            settings.row.original.id ===
+                                planning.selected_sampling_result?.id
+                        }
+                        onChange={() =>
+                            handleSelectSamplingResult(settings.row.original.id)
+                        }
+                    />
+                ),
+            },
+        ],
+        [formatMessage, handleSelectSamplingResult, planning],
     );
 };

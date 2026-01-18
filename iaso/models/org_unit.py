@@ -20,11 +20,11 @@ from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
-from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
 from iaso.models.data_source import SourceVersion
 
 from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
+from ..utils.models.soft_deletable import SoftDeletableModel
 from .project import Project
 
 
@@ -87,7 +87,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         queryset = self.prefetch_related(
             "projects",
             "projects__account",
-            "projects__feature_flags",
+            "projects__projectfeatureflags_set",
             "allow_creating_sub_unit_types",
             "reference_forms",
             "sub_unit_types",
@@ -99,11 +99,16 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         if app_id is not None:
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
-                queryset = queryset.filter(projects__in=[project])
+                queryset = self.filter_for_project(project, queryset)
             except Project.DoesNotExist:
                 return self.none()
 
         return queryset
+
+    def filter_for_project(self, project: Project, queryset=None):
+        if queryset is None:
+            queryset = self
+        return queryset.filter(projects__in=[project])
 
 
 OrgUnitTypeManager = models.Manager.from_queryset(OrgUnitTypeQuerySet)
@@ -200,46 +205,50 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
 
+    def filter_for_account(self, account):
+        queryset: OrgUnitQuerySet = self.defer("geom")
+        version_ids = (
+            SourceVersion.objects.filter(data_source__projects__account=account).values_list("id", flat=True).distinct()
+        )
+        return queryset.filter(version_id__in=version_ids)
+
     def filter_for_user(self, user):
         return self.filter_for_user_and_app_id(user, None)
 
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
     ) -> "OrgUnitQuerySet":
+        try:
+            project = Project.objects.get_for_user_and_app_id(user, app_id) if app_id is not None else None
+            return self.filter_for_user_and_project(user, project)
+        except Project.DoesNotExist:
+            return self.none()
+
+    def filter_for_user_and_project(
+        self, user: typing.Union[User, AnonymousUser, None], project: typing.Optional[Project] = None
+    ) -> "OrgUnitQuerySet":
         """Restrict to the orgunits the User can see, used mainly in the API"""
-        if user and user.is_anonymous and app_id is None:
+        if user and user.is_anonymous and project is None:
             return self.none()
 
         queryset: OrgUnitQuerySet = self.defer("geom")
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
+            queryset = self.filter_for_account(account)
 
             # Filter on version ids (linked to the account)
-            version_ids = (
-                SourceVersion.objects.filter(data_source__projects__account=account)
-                .values_list("id", flat=True)
-                .distinct()
-            )
-            queryset = queryset.filter(version_id__in=version_ids)
 
             # If applicable, filter on the org units associated to the user but only when the user is not a super user
             if user.iaso_profile.org_units.exists() and not user.is_superuser:
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
-        if app_id is not None:
-            try:
-                project = Project.objects.get_for_user_and_app_id(user, app_id)
-
-                if project.account is None:
-                    # cannot filter on default version if no project or project has no account
-                    return self.none()
-
-                queryset = queryset.filter(
-                    org_unit_type__projects__in=[project], version=project.account.default_version
-                )
-            except Project.DoesNotExist:
+        if project is not None:
+            if project.account is None:
+                # cannot filter on default version if no project or project has no account
                 return self.none()
+
+            queryset = queryset.filter(org_unit_type__projects__in=[project], version=project.account.default_version)
 
         return queryset
 
@@ -271,7 +280,6 @@ class OrgUnit(TreeModel):
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)  # TO DO : remove in a later migration
     validation_status = models.CharField(max_length=25, choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
     # The migration 0086_add_version_constraints add a constraint to ensure that the source version
     # is the same between the orgunit and the group
@@ -314,10 +322,12 @@ class OrgUnit(TreeModel):
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
-    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
     default_image = models.ForeignKey(
         "iaso.InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
     )
+    code = models.TextField(blank=True, db_index=True)  # DHIS2 code
+
+    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
         indexes = [
@@ -327,6 +337,13 @@ class OrgUnit(TreeModel):
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
             models.Index(fields=["org_unit_type", "version"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["code", "version"],
+                condition=Q(~Q(code=""), Q(validation_status="VALID")),
+                name="unique_code_per_source_version_if_not_blank_and_valid_status",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -472,6 +489,7 @@ class OrgUnit(TreeModel):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
+            "code": self.code,
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
@@ -482,12 +500,12 @@ class OrgUnit(TreeModel):
             ),
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
-            "parent_name": self.parent.name if self.parent else None,
-            "parent": (
-                self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
-                if self.parent
-                else None
+            "parent_name": (
+                self._prefetched_ancestors[self.parent_id].name
+                if hasattr(self, "_prefetched_ancestors") and self.parent_id in self._prefetched_ancestors
+                else (self.parent.name if self.parent_id else None)
             ),
+            "parent": (self._get_parent_dict(light_parents, light_parents) if self.parent_id else None),
             "org_unit_type_id": self.org_unit_type_id,
             "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
@@ -502,13 +520,16 @@ class OrgUnit(TreeModel):
             "default_image_id": self.default_image.id if self.default_image else None,
         }
         if not light:  # avoiding joins here
-            res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
+            res["groups"] = sorted(
+                [group.as_dict(with_counts=False) for group in self.groups.all()], key=lambda x: x["id"]
+            )
             res["org_unit_type_name"] = self.org_unit_type.name if self.org_unit_type else None
             res["org_unit_type"] = self.org_unit_type.as_dict() if self.org_unit_type else None
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
             res["version_id"] = self.version.id if self.version else None
+
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 
@@ -516,6 +537,13 @@ class OrgUnit(TreeModel):
             res["instances_count"] = self.instances_count
 
         return res
+
+    def _get_parent_dict(self, light=False, light_parents=True):
+        if hasattr(self, "_prefetched_ancestors") and self.parent_id in self._prefetched_ancestors:
+            parent = self._prefetched_ancestors[self.parent_id]
+            parent._prefetched_ancestors = self._prefetched_ancestors
+            return parent.as_dict_with_parents(light=light, light_parents=light_parents)
+        return self.parent.as_dict_with_parents(light=light, light_parents=light_parents)
 
     def as_small_dict(self):
         res = {
@@ -676,7 +704,7 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
 
 
-class OrgUnitChangeRequest(models.Model):
+class OrgUnitChangeRequest(SoftDeletableModel):
     """
     A request to change an OrgUnit.
 
@@ -841,6 +869,8 @@ class OrgUnitChangeRequest(models.Model):
         self.save()
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
+        from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
+
         initial_org_unit = deepcopy(self.org_unit)
 
         for field_name in approved_fields:
@@ -850,12 +880,23 @@ class OrgUnitChangeRequest(models.Model):
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":
+                current_reference_instances = list(self.org_unit.reference_instances.all())
+
                 self.org_unit.reference_instances.clear()
-                new_reference_instances = [
+
+                new_reference_instances = list(self.new_reference_instances.all())
+                new_reference_forms_ids = self.new_reference_instances.values_list("form_id", flat=True)
+
+                for instance in current_reference_instances:
+                    if instance.form_id not in new_reference_forms_ids:
+                        new_reference_instances.append(instance)
+
+                new_ou_reference_instances = [
                     OrgUnitReferenceInstance(org_unit_id=self.org_unit.pk, form_id=instance.form_id, instance=instance)
-                    for instance in self.new_reference_instances.all()
+                    for instance in new_reference_instances
                 ]
-                OrgUnitReferenceInstance.objects.bulk_create(new_reference_instances)
+
+                OrgUnitReferenceInstance.objects.bulk_create(new_ou_reference_instances)
             # Handle non m2m fields.
             else:
                 new_value = getattr(self, field_name)

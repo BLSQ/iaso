@@ -66,6 +66,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Campaigns',
         id: 'iaso.polio.label.campaigns',
     },
+    nationalLogisticsPlan: {
+        id: 'iaso.polio.nationalLogisticsPlan',
+        defaultMessage: 'National Logistics Plan',
+    },
     campaign: {
         defaultMessage: 'Campaign',
         id: 'iaso.polio.label.campaign',
@@ -1038,7 +1042,7 @@ const MESSAGES = defineMessages({
     },
     noScope: {
         id: 'iaso.polio.label.noScope',
-        defaultMessage: 'Plese select a scope for the campaign',
+        defaultMessage: 'No scope',
     },
     districtsNeedMatching: {
         id: 'iaso.polio.label.districtsNeedMatching',
@@ -1046,7 +1050,7 @@ const MESSAGES = defineMessages({
     },
     noScopeFound: {
         id: 'iaso.polio.label.noScopeFound',
-        defaultMessage: 'No scope found',
+        defaultMessage: 'No scope was encoded for the selected round',
     },
     childrenNfmAbsent: {
         id: 'iaso.polio.label.childrenNfmAbsent',
@@ -1771,7 +1775,7 @@ const MESSAGES = defineMessages({
     scopeUnlockConditions: {
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
-            'Select initial region and encode dates for at least one round to unlock Scope tab',
+            'Select initial org. unit and encode dates for at least one round, and mark campaign as active to unlock Scope tab',
     },
     campaignHistory: {
         id: 'iaso.polio.campaign.campaignHistory',
@@ -2480,6 +2484,58 @@ const MESSAGES = defineMessages({
     hideSubactivities: {
         id: 'iaso.polio.label.hideSubactivities',
         defaultMessage: 'Hide sub-activities',
+    },
+    month: {
+        id: 'iaso.polio.periods.month',
+        defaultMessage: 'Month',
+    },
+    removeOnHoldLaterRounds: {
+        id: 'iaso.polio.label.removeOnHoldLaterRounds',
+        defaultMessage: 'Remove "on hold" for later rounds?',
+    },
+    plannedCampaign: {
+        id: 'iaso.polio.label.plannedCampaign',
+        defaultMessage: 'Planned campaign',
+    },
+    planned: {
+        id: 'iaso.polio.label.planned',
+        defaultMessage: 'Planned',
+    },
+    plannedRound: {
+        id: 'iaso.polio.label.plannedRound',
+        defaultMessage: 'Planned round',
+    },
+    removeLaterPlannedRounds: {
+        id: 'iaso.polio.label.removeLaterPlannedRounds',
+        defaultMessage: 'Remove "planned" status for later rounds?',
+    },
+    fieldMandatoryForPlanned: {
+        id: 'iaso.polio.label.fieldMandatoryForPlanned',
+        defaultMessage: 'Field mandatory for planned round/campaign',
+    },
+    campaignDetail: {
+        id: 'iaso.polio.label.campaignDetail',
+        defaultMessage: 'Campaign: {obrName}',
+    },
+    performanceThresholds: {
+        id: 'iaso.polio.label.performanceThresholds',
+        defaultMessage: 'Performance Thresholds',
+    },
+    performanceDashboard: {
+        id: 'iaso.polio.title.performanceDashboard',
+        defaultMessage: 'Performance dashboard',
+    },
+    classicFilters: {
+        id: 'iaso.polio.label.classicFilters',
+        defaultMessage: 'Classic filters',
+    },
+    addIntegratedCampaigns: {
+        id: 'iaso.polio.label.addIntegratedCampaigns',
+        defaultMessage: 'Add integrated campaigns',
+    },
+    integratedToCampaign: {
+        id: 'iaso.polio.label.integratedToCampaign',
+        defaultMessage: 'Integrated to campaign',
     },
 });
 

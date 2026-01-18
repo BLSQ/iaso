@@ -1,28 +1,28 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
-import { FilterButton } from '../../../../components/FilterButton';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import DatesRange from '../../../../components/filters/DatesRange';
 import InputComponent from '../../../../components/forms/InputComponent';
+import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
 import { baseUrls } from '../../../../constants/urls';
 import {
     useCheckBoxFilter,
     useFilterState,
     useMultiTreeviewFilterState,
 } from '../../../../hooks/useFilterState';
-import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import MESSAGES from '../messages';
-import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
-import { TeamType } from '../../../teams/constants';
-import { useGetFormsOptions } from '../../../completenessStats/hooks/api/useGetFormsOptions';
-import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
-import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
-import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
 import { PaginationParams } from '../../../../types/general';
+import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
+import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { TeamType } from '../../../teams/constants';
+import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
+import { ALGORITHM_DROPDOWN } from '../../constants';
 import {
     useGetEntityTypesDropdown,
     useGetUsersDropDown,
 } from '../../hooks/requests';
-import { ALGORITHM_DROPDOWN } from '../../constants';
+import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
+import MESSAGES from '../messages';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -81,7 +81,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         useGetEntityTypesDropdown();
 
     const { data: formsDropdown, isFetching: isFetchingForms } =
-        useGetFormsOptions(['possible_fields']);
+        useGetFormsDropdownOptions({
+            extraFields: ['possible_fields'],
+        });
 
     const selectedForm = useMemo(() => {
         return (formsDropdown as any[])
@@ -262,9 +264,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             {/* line 4 */}
             <Grid container item xs={12} justifyContent="flex-end" spacing={2}>
                 <Box mb={2} mt={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

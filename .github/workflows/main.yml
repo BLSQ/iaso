@@ -4,10 +4,10 @@ on:
     pull_request:
         types: [opened, synchronize, ready_for_review]
     push:
-        # Run On push (or merge) on main.  This populates the cache and avoid the issue where we have undetected migrations
+        # Run On push (or merge) on develop.  This populates the cache and avoid the issue where we have undetected migrations
         # conflict following subsequent merge
         branches:
-            - main
+            - develop
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
@@ -20,14 +20,14 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@v4
-            - name: Use node.js 20
+            - name: Use node.js 22.18.0
               uses: actions/setup-node@v4
               with:
-                  node-version: '20.13.1'
+                  node-version: '22.18.0'
                   cache: npm
             - name: upgrade npm
               run: |
-                  npm install --global npm@10.5.2
+                  npm install --global npm@10.9.3
             - name: Environment info
               run: |
                   node --version
@@ -144,7 +144,7 @@ jobs:
                   RDS_USERNAME: postgres
                   CACHE: false
                   DEV_SERVER: true
-                  PLUGINS: polio,wfp
+                  PLUGINS: polio,wfp,wfp_auth
             - name: Django tests
               run: |
                   . ./venv/bin/activate &&  python manage.py migrate
@@ -153,22 +153,22 @@ jobs:
                   # check we don't have missing migration
                   . ./venv/bin/activate &&  python manage.py makemigrations --check
               env:
-                  IASO_ENVIRONMENT: development
-                  RDS_DB_NAME: github_actions
-                  SECRET_KEY: secret
-                  DEBUG: true
-                  DJANGO_SETTINGS_MODULE: hat.settings
-                  RDS_PASSWORD: postgres
-                  RDS_HOSTNAME: localhost
-                  RDS_PORT: 5432
-                  RDS_USERNAME: postgres
-                  CACHE: false
-                  DEV_SERVER: true
-                  PLUGINS: polio,wfp
-                  AWS_STORAGE_BUCKET_NAME: iaso-dev
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_STORAGE_BUCKET_NAME: iaso-dev
+                  CACHE: false
+                  DEBUG: true
                   DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
+                  DEV_SERVER: true
+                  DJANGO_SETTINGS_MODULE: hat.settings
+                  IASO_ENVIRONMENT: development
+                  PLUGINS: polio,wfp,wfp_auth
+                  RDS_DB_NAME: github_actions
+                  RDS_HOSTNAME: localhost
+                  RDS_PASSWORD: postgres
+                  RDS_PORT: 5432
+                  RDS_USERNAME: postgres
+                  SECRET_KEY: secret
             - name: Slack notification
               uses: rtCamp/action-slack-notify@v2
               env:

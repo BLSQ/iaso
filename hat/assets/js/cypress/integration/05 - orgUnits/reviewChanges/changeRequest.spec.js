@@ -244,7 +244,7 @@ describe('Organisations changes', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 12,
+            columns: 13,
             withVisit: false,
             apiKey: 'orgunits/changes',
         });

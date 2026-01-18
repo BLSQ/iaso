@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
+import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
-import { useApiParams } from '../../../hooks/useApiParams';
 
 type Args = {
     params: any;

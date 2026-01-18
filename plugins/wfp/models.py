@@ -13,7 +13,9 @@ EXIT_TYPES = [
     ("dismissed_due_to_cheating", _("Dismissal")),
     ("voluntary_withdrawal", _("Voluntary Withdrawal")),
     ("transfer_to_otp", _("Transfer To OTP")),
+    ("transfer_from_other_otp", _("Transfer in from other OTP")),
     ("transfer_to_tsfp", _("Transfer To TSFP")),
+    ("transfer_from_other_tsfp", _("Transfer in from other TSFP")),
     ("non_respondent", _("Non respondent")),
     ("transferred_out", _("Transferred out")),
     ("defaulter", _("Defaulter")),
@@ -23,6 +25,8 @@ EXIT_TYPES = [
 NUTRITION_PROGRAMMES = [
     ("TSFP", _("TSFP")),
     ("OTP", _("OTP")),
+    ("OTP - Under 6", _("OTP - Under 6")),
+    ("BSFP", _("BSFP")),
     ("breastfeeding", _("Breastfeeding")),
     ("pregnant", _("Pregnant")),
 ]
@@ -42,60 +46,89 @@ ADMISSION_TYPES = [
     ("referred_from_otp_sam", _("Referred from OTP (SAM)")),
     ("referred_from_sc", _("Referred from SC")),
     ("referred_from_tsfp_mam", _("Referred from TSFP (MAM)")),
+    ("referred_from_BSFP", _("Referred from BSFP")),
     ("relapse", _("Relapse")),
     ("returned_defaulter", _("Returned defaulter")),
     ("returned_referral", _("Returned referral")),
     ("transfer_from_other_tsfp", _("Transfer from other TSFP")),
 ]
 
+RATION_SIZE = [
+    ("full", _("Full")),
+    ("partial", _("Partial")),
+    ("none", _("None")),
+    ("More", _("More")),
+]
 
 # WFP Models
 
 
 class Beneficiary(models.Model):
     birth_date = models.DateField()
-    gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
-    entity_id = models.IntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True, db_index=True)
+    entity_id = models.IntegerField(null=True, blank=True, db_index=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    guidelines = models.CharField(max_length=8, null=True, blank=True)
 
 
 class Journey(models.Model):
     beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, null=True, blank=True)
-    admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
-    admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
-    nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
-    programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
+    admission_criteria = models.CharField(
+        max_length=255,
+        choices=ADMISSION_CRITERIAS,
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+    muac_size = models.CharField(max_length=10, null=True, db_index=True)
+    whz_score = models.CharField(max_length=10, null=True, db_index=True)
+    admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True, db_index=True)
+    nutrition_programme = models.CharField(
+        max_length=255,
+        choices=NUTRITION_PROGRAMMES,
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+    programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True, db_index=True)
     initial_weight = models.FloatField(default=0)
     discharge_weight = models.FloatField(null=True, blank=True)
     weight_gain = models.FloatField(default=0)
     weight_loss = models.FloatField(default=0)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True, db_index=True)
+    end_date = models.DateField(null=True, blank=True, db_index=True)
     duration = models.FloatField(null=True, blank=True)
-    exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True)
+    exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True, db_index=True)
     instance_id = models.IntegerField(null=True, blank=True)
 
 
 class Visit(models.Model):
-    date = models.DateTimeField(null=True, blank=True)
+    date = models.DateTimeField(null=True, blank=True, db_index=True)
     number = models.IntegerField(default=1)
-    org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True, db_index=True)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
-    instance_id = models.IntegerField(null=True, blank=True)
+    muac_size = models.CharField(max_length=10, null=True, db_index=True)
+    whz_color = models.CharField(max_length=10, null=True, db_index=True)
+    oedema = models.FloatField(null=True)
+    entry_point = models.TextField(null=True)
+    instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 
 class Step(models.Model):
-    assistance_type = models.CharField(max_length=255)
+    assistance_type = models.CharField(max_length=255, db_index=True)
     quantity_given = models.FloatField()
+    ration_size = models.CharField(max_length=50, choices=RATION_SIZE, null=True, blank=True)
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, null=True, blank=True)
-    instance_id = models.IntegerField(null=True, blank=True)
+    instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 
 class MonthlyStatistics(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
+    dhis2_id = models.TextField(null=True)
     month = models.CharField(max_length=8, null=True, blank=True)
     year = models.CharField(max_length=6, null=True, blank=True)
+    period = models.CharField(max_length=8, null=True, blank=True)
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
     admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
@@ -106,3 +139,31 @@ class MonthlyStatistics(models.Model):
     given_sachet_rusf = models.FloatField(null=True, blank=True)
     given_sachet_rutf = models.FloatField(null=True, blank=True)
     given_quantity_csb = models.FloatField(null=True, blank=True)
+    given_ration_cbt = models.CharField(max_length=255, choices=RATION_SIZE, null=True, blank=True)
+    oedema = models.FloatField(null=True)
+    muac_under_11_5 = models.FloatField(null=True)  # MUAC < 11.5cm
+    muac_11_5_12_4 = models.FloatField(null=True)  # MUAC between 11.5 and 12.4 cm
+    muac_above_12_5 = models.FloatField(null=True)  # MUAC > 12.5 cm
+    muac_under_23 = models.FloatField(null=True)  # MUAC < 23 cm for PBWG
+    muac_above_23 = models.FloatField(null=True)  # MUAC > 23 cm for PBWG
+    whz_score_2 = models.CharField(max_length=10, null=True)  # WHZ greater than -2 (green)
+    whz_score_3 = models.CharField(max_length=10, null=True)  # WHZ less than -3 (red)
+    whz_score_3_2 = models.CharField(max_length=10, null=True)  # WHZ between -2 and -3 (yellow)
+    beneficiary_with_admission_type = models.FloatField(null=True)
+    beneficiary_with_nutrition_programme = models.FloatField(null=True)
+    beneficiary_with_exit_type = models.FloatField(null=True)
+
+
+class Dhis2SyncResults(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    org_unit_id = models.IntegerField(null=True, blank=True, db_index=True)
+    org_unit_dhis2_id = models.TextField(null=True)
+    data_set_id = models.TextField(null=True)
+    programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
+    status = models.TextField(null=True)
+    period = models.CharField(max_length=8, null=True, blank=True)
+    month = models.CharField(max_length=8, null=True, blank=True)
+    year = models.CharField(max_length=6, null=True, blank=True)
+    response = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

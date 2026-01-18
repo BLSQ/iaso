@@ -1,11 +1,11 @@
-import { makeFullModal } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { makeFullModal } from 'bluesquare-components';
+import { DeleteIconButton } from '../Buttons/DeleteIconButton';
 import { DeleteButton } from './DeleteButton';
 import {
     DeleteRestoreModal,
     DeleteRestoreModalProps,
 } from './DeleteRestoreModal';
-import { DeleteIconButton } from '../Buttons/DeleteIconButton';
 
 const DeleteModalWithButton = makeFullModal(DeleteRestoreModal, DeleteButton);
 const DeleteModalWithIconButton = makeFullModal(
@@ -15,7 +15,7 @@ const DeleteModalWithIconButton = makeFullModal(
 
 type Props = Omit<DeleteRestoreModalProps, 'isOpen' | 'closeDialog'> & {
     type: 'button' | 'icon';
-    iconProps: any;
+    iconProps?: any;
 };
 
 export const DeleteModal: FunctionComponent<Props> = ({

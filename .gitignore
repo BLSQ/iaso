@@ -190,12 +190,21 @@ originals
 /site/**/*/
 
 *.code-workspace
+
+# Other IASO parts to ignore (plugins, setuper info...)
 /setuper/credentials.py
 /setuper/generated/
 plugins/trypelim
 plugins/snt_malaria
-
 plugins/snt-malaria
+plugins/saas
+plugins/ginger
+
+# some local env config to be ignored
 .direnv
 CACHEDIR.TAG
 iaso_3_9_18
+.cursor
+/temp
+iaso-enketo/
+

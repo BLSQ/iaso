@@ -19,7 +19,15 @@ from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
 from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
-from iaso.models.microplanning import Planning, Team
+from iaso.models.microplanning import Planning
+from iaso.models.team import Team
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+    CORE_SUBMISSIONS_UPDATE_PERMISSION,
+)
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -44,11 +52,13 @@ class InstancesAPITestCase(TaskAPITestCase):
             last_name="Da",
             first_name="Yo",
             account=star_wars,
-            permissions=["iaso_submissions", "iaso_org_units"],
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
-        cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
+        cls.guest = cls.create_user_with_profile(
+            username="guest", account=star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
+        )
         cls.supervisor = cls.create_user_with_profile(
-            username="supervisor", account=star_wars, permissions=["iaso_submissions", "iaso_forms"]
+            username="supervisor", account=star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_FORMS_PERMISSION]
         )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -509,7 +519,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         super_yoda = self.create_user_with_profile(
             account=self.star_wars,
             username="super yoda",
-            permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"],
+            permissions=[CORE_SOURCE_PERMISSION, CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
 
         # Then, let's copy the existing source version through an API call (couldn't call task directly)
@@ -612,6 +622,25 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 3)
 
+    def test_instance_details_retrieve(self):
+        """
+        GET /instances/{instanceid}/ shouldn't have N+1 queries with deep org unit hierarchy.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        parent = m.OrgUnit.objects.create(name="Country", version=self.sw_version, validation_status="VALID")
+        for i in range(6):
+            child = m.OrgUnit.objects.create(
+                name=f"Level {i + 1}", version=self.sw_version, validation_status="VALID", parent=parent
+            )
+            parent = child
+
+        instance = self.create_form_instance(form=self.form_1, org_unit=parent, project=self.project)
+
+        with self.assertNumQueries(18):
+            response = self.client.get(f"/api/instances/{instance.id}/")
+        self.assertEqual(response.status_code, 200)
+
     def test_instance_details_by_id_ok_soft_deleted(self):
         """GET /instances/{instanceid}/"""
 
@@ -626,21 +655,30 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_soft_delete_an_instance(self):
         """DELETE /instances/{instanceid}/"""
-
+        # setting up some fields first
+        updated_at_before = timezone.now()
         soft_deleted_instance = self.form_1.instances.first()
+        soft_deleted_instance.updated_at = updated_at_before
+        soft_deleted_instance.last_modified_by = self.guest
+        soft_deleted_instance.save()
 
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertFalse(response.json()["deleted"])
 
         response = self.client.delete(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
-        self.assertTrue(response.json()["deleted"])
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertTrue(result["deleted"])
+
+        soft_deleted_instance.refresh_from_db()
+        self.assertGreater(soft_deleted_instance.updated_at, updated_at_before)
+        self.assertNotEqual(soft_deleted_instance.last_modified_by_id, self.guest.id)
+        self.assertEqual(soft_deleted_instance.last_modified_by_id, self.yoda.id)
 
         self.assertEqual(1, Modification.objects.count())
         modification = Modification.objects.first()
@@ -709,7 +747,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "a", "age": "18", "gender": "M"},
+            json={"name": "a", "age__int__": "18", "gender": "M"},
         )
 
         b = self.create_form_instance(
@@ -717,7 +755,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "b", "age": "19", "gender": "F"},
+            json={"name": "b", "age__int__": "19", "gender": "F"},
         )
 
         self.create_form_instance(
@@ -725,12 +763,13 @@ class InstancesAPITestCase(TaskAPITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "c", "age": "30", "gender": "F"},
+            json={"name": "c", "age__int__": "30", "gender": "F"},
         )
 
         self.client.force_authenticate(self.yoda)
-        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
-        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age__int__"}, 25]}]})
+        with self.assertNumQueries(6):
+            response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, 200)
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=1)
@@ -1032,7 +1071,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
             )
@@ -1136,7 +1175,9 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_user_restriction(self):
-        full = self.create_user_with_profile(username="full", account=self.star_wars, permissions=["iaso_submissions"])
+        full = self.create_user_with_profile(
+            username="full", account=self.star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
+        )
         self.client.force_authenticate(full)
         self.create_form_instance(
             form=self.form_1, period="202001", org_unit=self.jedi_council_endor, project=self.project
@@ -1155,7 +1196,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertValidInstanceListData(response.json(), 10)
         # restrict user to endor region, can only see one instance. Not instance without org unit
         restricted = self.create_user_with_profile(
-            username="restricted", account=self.star_wars, permissions=["iaso_submissions"]
+            username="restricted", account=self.star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
         )
         restricted.iaso_profile.org_units.set([self.jedi_council_endor_region])
         restricted.iaso_profile.save()
@@ -1392,6 +1433,21 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/instances/stats_sum/")
         self.assertJSONResponse(response, 200)
 
+    def test_lock_instance_anonymous_not_allowed(self):
+        instance = self.create_form_instance(
+            org_unit=self.jedi_council_corruscant,
+            period="202002",
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unlock_anonymous_not_allowed(self):
+        response = self.client.post("/api/instances/unlock_lock/", {"lock": 1}, json=True)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)
 
@@ -1429,15 +1485,21 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.ou_top_3, project=self.project, form=self.form_1, period="202001"
         )
         alice = self.create_user_with_profile(
-            username="alice", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+            username="alice",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
         )
         alice.iaso_profile.org_units.set([self.ou_top_1])
         bob = self.create_user_with_profile(
-            username="bob", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+            username="bob",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
         )
         bob.iaso_profile.org_units.set([self.ou_top_2, self.ou_top_3])
         chris = self.create_user_with_profile(
-            username="chris", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+            username="chris",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
         )
         chris.iaso_profile.org_units.set([self.ou_top_3])
         # Check that all user can modify, there is no lock
@@ -1951,6 +2013,123 @@ class InstancesAPITestCase(TaskAPITestCase):
             response, [self.instance_3, self.instance_4, self.instance_8, another_instance]
         )
 
+    def test_attachments_list_question_name(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = m.FormVersion.objects.create(
+            form=self.form_1,
+            form_descriptor=json.loads("""{
+  "name": "data",
+  "type": "survey",
+  "title": "Test image",
+  "_xpath": {
+    "Form": "/data/Form",
+    "data": "/data",
+    "meta": "/data/meta",
+    "jpg": "/data/Form/jpg",
+    "webp": "/data/Form/webp",
+    "jpg2": "/data/Form/Repeat/jpg2",
+    "file": "/data/Form/Repeat/file",
+    "instanceID": "/data/meta/instanceID"
+  },
+  "version": "2024080601",
+  "children": [
+    {
+      "name": "Form",
+      "type": "group",
+      "control": {
+        "appearance": "field-list"
+      },
+      "children": [
+        {
+          "name": "jpg",
+          "type": "photo",
+          "label": "Take a JPG picture"
+        },
+        {
+          "name": "webp",
+          "type": "file",
+          "label": "Take a WEBP picture"
+        },
+        {
+          "name": "Repeat",
+          "type": "repeat",
+          "children": [
+            {
+              "name": "jpg2",
+              "type": "photo",
+              "label": "Take another JPG picture"
+            },
+            {
+              "name": "file",
+              "type": "file",
+              "label": "Upload a file"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {
+        "bodyless": true
+      },
+      "children": [
+        {
+          "bind": {
+            "readonly": "true()",
+            "jr:preload": "uid"
+          },
+          "name": "instanceID",
+          "type": "calculate"
+        }
+      ]
+    }
+  ],
+  "id_string": "test_image",
+  "sms_keyword": "test_image",
+  "default_language": "default"
+}"""),
+        )
+        instance = self.create_form_instance(
+            form=self.form_1,
+            form_version=form_version,
+            project=self.project,
+            org_unit=self.ou_top_1,
+            json={
+                "jpg": "test1.jpg",
+                "webp": "test2.webp",
+                "repeat": [
+                    {
+                        "jpg2": "test3.jpg",
+                        "file": "test4.pdf",
+                    },
+                ],
+            },
+        )
+        attachment1 = m.InstanceFile.objects.create(instance=instance, file="test1.jpg", name="test1.jpg")
+        attachment2 = m.InstanceFile.objects.create(instance=instance, file="test2.webp", name="test2.webp")
+        attachment3 = m.InstanceFile.objects.create(instance=instance, file="test3.webp", name="test3.webp")
+        attachment4 = m.InstanceFile.objects.create(instance=instance, file="test4.pdf", name="test4.pdf")
+
+        response = self.client.get("/api/instances/attachments/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 4)
+        self.assertEqual(data[0]["id"], attachment1.id)
+        self.assertEqual(data[0]["question_id"], "jpg")
+        self.assertEqual(data[0]["question_name"], "Take a JPG picture")
+        self.assertEqual(data[1]["id"], attachment2.id)
+        self.assertEqual(data[1]["question_id"], "webp")
+        self.assertEqual(data[1]["question_name"], "Take a WEBP picture")
+        self.assertEqual(data[2]["id"], attachment3.id)
+        self.assertEqual(data[2]["question_id"], "jpg2")
+        self.assertEqual(data[2]["question_name"], "Take another JPG picture")
+        self.assertEqual(data[3]["id"], attachment4.id)
+        self.assertEqual(data[3]["question_id"], "file")
+        self.assertEqual(data[3]["question_name"], "Upload a file")
+
     def test_attachments_list(self):
         self.client.force_authenticate(self.yoda)
         instance = self.create_form_instance(form=self.form_1, project=self.project)
@@ -1978,6 +2157,75 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(len(data), 1)
         self.assertTrue(data[0]["file"].endswith(".jpg"))
 
+    def test_attachments_filter_video_only(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test2.mov")
+        m.InstanceFile.objects.create(instance=instance, file="test3.jpg")
+
+        response = self.client.get("/api/instances/attachments/?video_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".mp4", ".mov")) for file in data))
+
+    def test_attachments_filter_document_only(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.pdf")
+        m.InstanceFile.objects.create(instance=instance, file="test2.doc")
+        m.InstanceFile.objects.create(instance=instance, file="test3.xlsx")
+        m.InstanceFile.objects.create(instance=instance, file="test4.jpg")
+
+        response = self.client.get("/api/instances/attachments/?document_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 3)
+        self.assertTrue(all(file["file"].endswith((".pdf", ".doc", ".xlsx")) for file in data))
+
+    def test_attachments_filter_other_only(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.unknown")
+        m.InstanceFile.objects.create(instance=instance, file="test2.xyz")
+        m.InstanceFile.objects.create(instance=instance, file="test3.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test4.pdf")
+
+        response = self.client.get("/api/instances/attachments/?other_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".unknown", ".xyz")) for file in data))
+
+    def test_attachments_filter_combined_filters(self):
+        """Test that multiple filters work together correctly"""
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test3.pdf")
+        m.InstanceFile.objects.create(instance=instance, file="test4.unknown")
+
+        # Test image and video filters together
+        response = self.client.get("/api/instances/attachments/?image_only=true&video_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".jpg", ".mp4")) for file in data))
+
+        # Test document and other filters together
+        response = self.client.get("/api/instances/attachments/?document_only=true&other_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".pdf", ".unknown")) for file in data))
+
     def test_attachments_pagination(self):
         self.client.force_authenticate(self.yoda)
         instance = self.create_form_instance(form=self.form_1, project=self.project)
@@ -1991,6 +2239,63 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(len(data["results"]), 30)
         self.assertFalse(data["has_next"])
         self.assertFalse(data["has_previous"])
+
+    def test_attachments_count(self):
+        """Test the attachments_count endpoint returns correct counts per file type"""
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+
+        # Create files of different types
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.png")
+        m.InstanceFile.objects.create(instance=instance, file="test3.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test4.pdf")
+        m.InstanceFile.objects.create(instance=instance, file="test5.doc")
+        m.InstanceFile.objects.create(instance=instance, file="test6.txt")
+        m.InstanceFile.objects.create(instance=instance, file="test7.unknown")
+
+        response = self.client.get("/api/instances/attachments_count/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(data["images"], 2)  # jpg, png
+        self.assertEqual(data["videos"], 1)  # mp4
+        self.assertEqual(data["docs"], 3)  # pdf, doc, txt
+        self.assertEqual(data["others"], 1)  # unknown
+        self.assertEqual(data["total"], 7)
+
+    def test_attachments_count_with_filters(self):
+        """Test the attachments_count endpoint with file type filters"""
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+
+        # Create files of different types
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.png")
+        m.InstanceFile.objects.create(instance=instance, file="test3.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test4.pdf")
+
+        # Test with image_only filter
+        response = self.client.get("/api/instances/attachments_count/?image_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(data["images"], 2)  # jpg, png
+        self.assertEqual(data["videos"], 0)
+        self.assertEqual(data["docs"], 0)
+        self.assertEqual(data["others"], 0)
+        self.assertEqual(data["total"], 2)
+
+        # Test with video_only filter
+        response = self.client.get("/api/instances/attachments_count/?video_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(data["images"], 0)
+        self.assertEqual(data["videos"], 1)  # mp4
+        self.assertEqual(data["docs"], 0)
+        self.assertEqual(data["others"], 0)
+        self.assertEqual(data["total"], 1)
 
     def test_instance_retrieve_with_related_change_requests(self):
         self.client.force_authenticate(self.yoda)
@@ -2257,7 +2562,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         new_account, new_data_source, _, new_project = self.create_account_datasource_version_project(
             "new source", "new account", "new project"
         )
-        new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
+        new_user, _, _ = self.create_base_users(new_account, [CORE_SUBMISSIONS_PERMISSION])
         new_org_unit = m.OrgUnit.objects.create(
             name="New Org Unit", source_ref="new org unit", validation_status="VALID"
         )
@@ -2419,7 +2724,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         new_account, new_data_source, _, new_project = self.create_account_datasource_version_project(
             "new source", "new account", "new project"
         )
-        new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
+        new_user, _, _ = self.create_base_users(new_account, [CORE_SUBMISSIONS_PERMISSION])
         new_org_unit = m.OrgUnit.objects.create(
             name="New Org Unit", source_ref="new org unit", validation_status="VALID"
         )

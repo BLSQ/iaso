@@ -56,6 +56,7 @@ class DhisOrgunit(TypedDict):
     level: int  # e.g 4
     openingDate: str
     closedDate: str
+    code: Optional[str]
 
 
 def get_api(options_or_url, login=None, password=None):
@@ -72,7 +73,7 @@ def fetch_orgunits(api: Api) -> List[DhisOrgunit]:
         "organisationUnits",
         page_size=500,
         params={
-            "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate"
+            "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate,code"
         },
     ):
         orgunits.extend(page["organisationUnits"])
@@ -135,6 +136,8 @@ def orgunit_from_row(
         org_unit.opening_date = datetime.strptime(row["openingDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
     if "closedDate" in row_keys:
         org_unit.closed_date = datetime.strptime(row["closedDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
+    if "code" in row_keys:
+        org_unit.code = row["code"].strip()
 
     if not org_unit.org_unit_type:
         org_unit.org_unit_type = unknown_unit_type

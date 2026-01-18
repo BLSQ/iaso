@@ -78,11 +78,14 @@ const testRowContent = (index, p = listFixture.projects[index]) => {
 };
 
 const testDialogContent = p => {
-    cy.get('#input-text-name').clear().type(p.name);
-    cy.testInputValue('#input-text-name', p.name);
-    cy.get('#input-text-app_id').clear().type(p.app_id);
-    cy.testInputValue('#input-text-name', p.name);
+    cy.get('#input-text-name').clear();
+    cy.get('#input-text-name').type(p.name);
+    cy.get('#input-text-app_id').clear();
+    cy.get('#input-text-app_id').type(p.app_id);
     cy.selectTab(1, '#project-dialog');
+    cy.get('[data-test="featureFlag-toggle"]').each($toggle => {
+        cy.wrap($toggle).click();
+    });
     cy.get('[data-test="featureFlag-checkbox"] input').each($el => {
         cy.wrap($el).then(el => {
             const { name } = el[0];
@@ -220,13 +223,14 @@ describe('Projects', () => {
                 openDialogForIndex(theIndex);
                 const newProject = {
                     id: listFixture.projects[theIndex].app_id,
-                    name: 'superman',
-                    app_id: 'pacman',
                     feature_flags: [
                         listfeatureFlags.featureflags[2],
                         listfeatureFlags.featureflags[3],
                     ],
+                    app_id: 'pacman',
+                    name: 'superman',
                     old_app_id: listFixture.projects[theIndex].app_id,
+                    color: '#1976D2',
                 };
                 const newProjects = [...listFixture.projects];
                 newProjects[theIndex] = {
@@ -242,14 +246,14 @@ describe('Projects', () => {
                 listFixture.projects[theIndex].feature_flags.forEach(
                     featureFlag => {
                         cy.get(
-                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                         ).uncheck();
                     },
                 );
 
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 
@@ -286,6 +290,7 @@ describe('Projects', () => {
                         listfeatureFlags.featureflags[0],
                         listfeatureFlags.featureflags[1],
                     ],
+                    color: '#1976D2',
                 };
                 const newList = {
                     ...listFixture,
@@ -295,7 +300,7 @@ describe('Projects', () => {
                 testDialogContent(newProject);
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 

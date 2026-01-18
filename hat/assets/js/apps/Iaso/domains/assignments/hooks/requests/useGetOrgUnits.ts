@@ -7,12 +7,12 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 import { makeUrlWithParams } from '../../../../libs/utils';
 
+import { Profile } from '../../../../utils/usersUtils';
 import { OrgUnit, PaginatedOrgUnits } from '../../../orgUnits/types/orgUnit';
 
-import { Profile } from '../../../../utils/usersUtils';
+import { DropdownTeamsOptions } from '../../../teams/types/team';
 import { AssignmentsApi } from '../../types/assigment';
 import { BaseLocation, Locations } from '../../types/locations';
-import { DropdownTeamsOptions } from '../../types/team';
 
 import { getOrgUnitAssignation } from '../../utils';
 
@@ -146,15 +146,48 @@ const mapLocation = ({
 };
 
 type Props = {
-    orgUnitParentIds: number[] | undefined;
-    baseOrgunitType: string | undefined;
+    orgUnitParentIds?: number[];
+    baseOrgunitType?: string;
     assignments: AssignmentsApi;
     allAssignments: AssignmentsApi;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
-    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+    currentType?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
     order?: string;
     search?: string;
+    extraFilters?: Record<string, any>;
+};
+
+export const useGetOrgUnitsByOrgUnitTypeId = ({
+    orgUnitTypeId,
+    projectId,
+    excludedOrgUnitParentIds,
+    extraFilters = {},
+}: PropsByOrgUnitTypeId): UseQueryResult<OrgUnit[], Error> => {
+    return useSnackQuery({
+        queryKey: [
+            'orgUnitsByType',
+            orgUnitTypeId,
+            projectId,
+            excludedOrgUnitParentIds,
+        ],
+        queryFn: () =>
+            getRequest(
+                makeUrlWithParams('/api/orgunits/', {
+                    orgUnitTypeId,
+                    project: projectId,
+                    defaultVersion: 'true',
+                    excludedOrgUnitParentIds,
+                }),
+            ),
+        options: {
+            enabled: Boolean(orgUnitTypeId) && Boolean(projectId),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
+            select: data => data?.orgUnits || [],
+        },
+    });
 };
 
 export const useGetOrgUnits = ({
@@ -176,7 +209,6 @@ export const useGetOrgUnits = ({
             geography: 'any',
             onlyDirectChildren: false,
             page: 1,
-            withParents: true,
             order,
             orgUnitParentIds: orgUnitParentIds?.join(','),
             orgUnitTypeId: baseOrgunitType,
@@ -230,6 +262,7 @@ type ListProps = {
     baseOrgunitType: string | undefined;
     order?: string;
     search?: string;
+    extraFilters?: Record<string, any>;
 };
 
 export const useGetOrgUnitsList = ({

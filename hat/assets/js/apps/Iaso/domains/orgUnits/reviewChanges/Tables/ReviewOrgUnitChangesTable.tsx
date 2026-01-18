@@ -4,11 +4,14 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import EditIcon from '@mui/icons-material/Settings';
 import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import Color from 'color';
+import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { UserCell } from '../../../../components/Cells/UserCell';
@@ -18,6 +21,7 @@ import { ColumnCell } from '../../../../types/general';
 import { useTableSelection } from '../../../../utils/table';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
+import { BulkDeleteDialog } from '../Components/BulkDeleteDialog';
 import { MultiActionsDialog } from '../Components/MultiActionsDialog';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
 import { PAYMENTS_MODULE } from '../constants';
@@ -29,9 +33,6 @@ import {
     OrgUnitChangeRequest,
     OrgUnitChangeRequestsPaginated,
 } from '../types';
-
-const getIsSelectionDisabled = (ou: OrgUnitChangeRequest) =>
-    ou.status !== 'new';
 
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -51,13 +52,12 @@ const useColumns = (): Column[] => {
                 id: 'projects',
                 accessor: 'projects',
                 sortable: false,
+                width: 300,
                 Cell: ({
                     row: { original: changeRequest },
                 }: ColumnCell<OrgUnitChangeRequest>): ReactElement | string => {
                     const { projects } = changeRequest;
-                    return projects.length > 0
-                        ? projects.map(project => project.name).join(', ')
-                        : textPlaceholder;
+                    return <ProjectChips projects={projects} />;
                 },
             },
             {
@@ -215,12 +215,18 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const columns = useColumns();
+    const { formatMessage } = useSafeIntl();
+
+    const isRestoreAction = params.is_soft_deleted === 'true';
+
     const { selection, handleTableSelection, handleUnselectAll } =
-        useTableSelection<OrgUnitChangeRequest>(data?.select_all_count ?? 0);
+        useTableSelection<OrgUnitChangeRequest>(data?.count ?? 0);
 
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
-    const { formatMessage } = useSafeIntl();
+
+    const [bulkDeletePopupOpen, setBulkDeletePopupIsOpen] =
+        useState<boolean>(false);
 
     const selectionActions = useMemo(
         () => [
@@ -230,22 +236,48 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 onClick: () => setMultiActionPopupOpen(true),
                 disabled:
                     multiActionPopupOpen ||
-                    (selection.selectedItems.length === 0 &&
-                        !selection.selectAll),
+                    (!selection.selectAll &&
+                        selection.selectedItems.length === 0),
+            },
+            {
+                icon: isRestoreAction ? (
+                    <RestoreFromTrashIcon />
+                ) : (
+                    <DeleteIcon />
+                ),
+                label: formatMessage(
+                    isRestoreAction
+                        ? MESSAGES.bulkRestoreAction
+                        : MESSAGES.bulkDeleteAction,
+                ),
+                onClick: () => setBulkDeletePopupIsOpen(true),
+                disabled:
+                    bulkDeletePopupOpen ||
+                    (!selection.selectAll &&
+                        selection.selectedItems.length === 0),
             },
         ],
         [
             formatMessage,
+            selection,
+            isRestoreAction,
+            bulkDeletePopupOpen,
             multiActionPopupOpen,
-            selection.selectAll,
-            selection.selectedItems.length,
         ],
     );
+
     return (
         <>
             <MultiActionsDialog
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
+                selection={selection}
+                resetSelection={handleUnselectAll}
+                params={params}
+            />
+            <BulkDeleteDialog
+                isOpen={bulkDeletePopupOpen}
+                closeDialog={() => setBulkDeletePopupIsOpen(false)}
                 selection={selection}
                 resetSelection={handleUnselectAll}
                 params={params}
@@ -262,19 +294,11 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 params={params}
                 rowProps={getRowProps}
                 extraProps={{ loading: isFetching }}
-                multiSelect={Boolean(
-                    data?.select_all_count && data?.select_all_count > 0,
-                )}
+                multiSelect
                 selection={selection}
                 selectionActions={selectionActions}
-                selectAllCount={data?.select_all_count ?? 0}
-                getIsSelectionDisabled={getIsSelectionDisabled}
                 setTableSelection={(selectionType, items) =>
-                    handleTableSelection(
-                        selectionType,
-                        items,
-                        data?.select_all_count,
-                    )
+                    handleTableSelection(selectionType, items, data?.count)
                 }
             />
         </>

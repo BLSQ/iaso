@@ -1,6 +1,6 @@
+import React, { ReactElement, useMemo } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import React, { ReactElement, useMemo } from 'react';
 import {
     DateCell,
     MultiDateCell,
@@ -8,7 +8,8 @@ import {
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { SubTable } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/SubTable';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import { userHasOneOfPermissions } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { ColumnCell } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import {
     POLIO_SUPPLY_CHAIN_WRITE,
@@ -20,7 +21,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { useDeleteVrf } from '../hooks/api/vrf';
 import MESSAGES from '../messages';
 import { SupplyChainList } from '../types';
-import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import { CampaignNameWithWarning } from '../../StockManagement/StockVariation/Table/CampaignNameWithWarning';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -44,6 +45,16 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.obrName),
                 accessor: 'obr_name',
                 sortable: true,
+                Cell: settings => {
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={settings.row.original.obr_name}
+                            category={category}
+                            isVrf
+                        />
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.roundNumbers),
@@ -141,9 +152,30 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                                 ]}
                             >
                                 <IconButton
-                                    icon="edit"
-                                    overrideIcon={EditIcon}
-                                    tooltipMessage={MESSAGES.edit}
+                                    icon={
+                                        userHasOneOfPermissions(
+                                            [POLIO_SUPPLY_CHAIN_READ_ONLY],
+                                            currentUser,
+                                        )
+                                            ? 'remove-red-eye'
+                                            : 'edit'
+                                    }
+                                    overrideIcon={
+                                        !userHasOneOfPermissions(
+                                            [POLIO_SUPPLY_CHAIN_READ_ONLY],
+                                            currentUser,
+                                        )
+                                            ? EditIcon
+                                            : undefined
+                                    }
+                                    tooltipMessage={
+                                        userHasOneOfPermissions(
+                                            [POLIO_SUPPLY_CHAIN_READ_ONLY],
+                                            currentUser,
+                                        )
+                                            ? MESSAGES.see
+                                            : MESSAGES.edit
+                                    }
                                     url={`/${baseUrls.vaccineSupplyChainDetails}/id/${original.id}`}
                                 />
                             </DisplayIfUserHasPerm>

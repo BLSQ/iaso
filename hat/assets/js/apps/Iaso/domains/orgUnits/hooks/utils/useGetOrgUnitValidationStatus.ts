@@ -1,9 +1,9 @@
-import { UseQueryResult } from 'react-query';
-import { defineMessages } from 'react-intl';
-
 import { useSafeIntl } from 'bluesquare-components';
-import { useSnackQuery } from '../../../../libs/apiHooks';
+import { defineMessages } from 'react-intl';
+import { UseQueryResult } from 'react-query';
+
 import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from '../../../../libs/apiHooks';
 import { DropdownOptions } from '../../../../types/utils';
 import { OrgUnitStatus } from '../../types/orgUnit';
 

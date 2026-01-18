@@ -6,7 +6,7 @@ export const MESSAGES = defineMessages({
         id: 'iaso.setup.welcome',
     },
     accountSetup: {
-        defaultMessage: 'Account setup',
+        defaultMessage: 'Setup a new account',
         id: 'iaso.setup.accountSetup',
     },
     account_name: {
@@ -50,6 +50,18 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Last name',
         id: 'iaso.label.lastName',
     },
+    user_email: {
+        defaultMessage: 'Email',
+        id: 'iaso.label.email',
+    },
+    email_invitation: {
+        defaultMessage: 'Send email invitation to set password',
+        id: 'iaso.label.emailInvitation',
+    },
+    language: {
+        defaultMessage: 'Language',
+        id: 'iaso.users.dialog.locale',
+    },
     password: {
         defaultMessage: 'Password',
         id: 'iaso.users.password',
@@ -81,5 +93,13 @@ export const MESSAGES = defineMessages({
     modulesDropDownError: {
         defaultMessage: 'An error occurred while fetching modules',
         id: 'iaso.snackBar.fetchModules',
+    },
+    createMainOrgUnit: {
+        defaultMessage: 'Create main organization unit',
+        id: 'iaso.setup.createMainOrgUnit',
+    },
+    createDemoForm: {
+        defaultMessage: 'Create demo form',
+        id: 'iaso.setup.createDemoForm',
     },
 });

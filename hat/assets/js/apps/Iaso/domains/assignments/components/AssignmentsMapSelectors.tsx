@@ -1,17 +1,17 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Paper, Box } from '@mui/material';
 import { useRedirectTo } from 'bluesquare-components';
-import { baseUrls } from '../../../constants/urls';
+import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import InputComponent from '../../../components/forms/InputComponent';
-import { DropdownOptions } from '../../../types/utils';
-import { AssignmentParams } from '../types/assigment';
+import { baseUrls } from '../../../constants/urls';
 import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
+import { AssignmentParams } from '../types/assigment';
 
 type Props = {
     params: AssignmentParams;
-    orgunitTypes: Array<DropdownOptions<string>>;
-    isFetchingOrgUnitTypes: boolean;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    isFetchingOrgunitTypes: boolean;
 };
 
 const styles: SxStyles = {
@@ -53,7 +53,7 @@ const baseUrl = baseUrls.assignments;
 export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
     params,
     orgunitTypes,
-    isFetchingOrgUnitTypes,
+    isFetchingOrgunitTypes,
 }) => {
     const redirectTo = useRedirectTo();
 
@@ -72,17 +72,17 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
             <Box sx={styles.dropdown}>
                 <InputComponent
                     type="select"
-                    disabled={isFetchingOrgUnitTypes}
+                    disabled={isFetchingOrgunitTypes}
                     keyValue="parentOrgunitType"
                     onChange={handleChange}
                     value={
-                        isFetchingOrgUnitTypes
+                        isFetchingOrgunitTypes
                             ? undefined
                             : params.parentOrgunitType
                     }
                     label={MESSAGES.parentOrgunitType}
                     options={orgunitTypes}
-                    loading={isFetchingOrgUnitTypes}
+                    loading={isFetchingOrgunitTypes}
                     clearable
                     withMarginTop={false}
                 />

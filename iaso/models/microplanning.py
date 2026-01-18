@@ -1,122 +1,38 @@
-import operator
-import typing
-
-from functools import reduce
-
 from django.contrib.auth.models import User
-from django.db import models, transaction
-from django_ltree.fields import PathField  # type: ignore
+from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from django.db.models import Q
 
-from iaso.models import Form, OrgUnit, Project
-from iaso.utils.expressions import ArraySubquery
+from iaso.models.forms import Form
+from iaso.models.org_unit import OrgUnit, OrgUnitType
+from iaso.models.project import Project
+from iaso.models.team import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
-class TeamQuerySet(models.QuerySet):
-    def filter_for_user(self, user: User):
-        return self.filter(project__account=user.iaso_profile.account)
+class PlanningSamplingResult(models.Model):
+    """Stores the results of sampling runs."""
 
-    def hierarchy(self, teams: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
-        """The Team and all their descendants"""
-        if isinstance(teams, Team):
-            query = models.Q(path__descendants=teams.path)
-        elif isinstance(teams, models.QuerySet):
-            team_qs = teams
-            query = models.Q(path__descendants=ArraySubquery(team_qs.values("path")))
-        elif isinstance(teams, (list,)):
-            query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in teams])
-        else:
-            raise NotImplementedError
-
-        return self.filter(query)
-
-
-class TeamType(models.TextChoices):
-    TEAM_OF_TEAMS = "TEAM_OF_TEAMS", "Team of teams"
-    TEAM_OF_USERS = "TEAM_OF_USERS", "Team of users"
-
-    @classmethod
-    def is_valid_team_type(cls, value):
-        return value in cls.values
-
-
-TeamManager = models.Manager.from_queryset(TeamQuerySet)
-
-
-class Team(SoftDeletableModel):
-    objects = TeamManager()
+    planning = models.ForeignKey("Planning", on_delete=models.CASCADE, related_name="sampling_results")
+    task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="sampling_results")
+    pipeline_id = models.CharField(max_length=36, blank=True, help_text="OpenHexa pipeline UUID")
+    pipeline_version = models.CharField(max_length=100, blank=True, help_text="Pipeline version identifier")
+    pipeline_name = models.CharField(max_length=100, blank=True, help_text="Pipeline name")
+    group = models.ForeignKey(
+        "Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Created org unit group containing sampled units",
+    )
+    parameters = models.JSONField(help_text="Sampling parameters used for this run")
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        ordering = ("name",)
-
-    name = models.CharField(max_length=100, null=False, blank=False)
-    description = models.TextField(blank=True)
-    project = models.ForeignKey(Project, on_delete=models.PROTECT)
-    users = models.ManyToManyField(User, related_name="teams", blank=True)
-    manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="managed_teams")
-    parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="sub_teams")
-    path = PathField(unique=True)
-    # scope = models.ManyToManyField("OrgUnit", related_name="teams")
-    type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
-
-    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    # Path management logic, taken from org_unit.
-    def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
-        """Override default save() to make sure that the path property is calculated and saved,
-        for this org unit and its children.
-
-        :param skip_calculate_path: use with caution - can be useful in scripts where the extra transactions
-                                    would be a burden, but the path needs to be set afterwards
-        :param force_recalculate: use with caution - used to force recalculation of paths
-        """
-        # correct type for parent type
-        if self.parent and self.parent.type is None:
-            self.parent.type = TeamType.TEAM_OF_TEAMS
-            self.parent.save(skip_calculate_path=True)
-
-        if skip_calculate_path:
-            super().save(*args, **kwargs)
-        else:
-            with transaction.atomic():
-                super().save(*args, **kwargs)
-                Team.objects.bulk_update(self.calculate_paths(force_recalculate=force_recalculate), ["path"])
-
-    def calculate_paths(self, force_recalculate: bool = False) -> typing.List["Team"]:
-        """Calculate the path for this Team and all its children recursively.
-
-        This method will check if this instance path should change. If it is the case (or if force_recalculate is
-        True), it will update the path property for the instance and its children, and return all the modified
-        records.
-
-        Please note that this method does not save the modified records. Instead, they are updated in bulk in the
-        save() method.
-
-        :param force_recalculate: calculate path for all descendants, even if this instance path does not change
-        """
-
-        # keep track of updated records
-        updated_records = []
-
-        # noinspection PyUnresolvedReferences
-        base_path = [] if self.parent is None else list(self.parent.path)
-        new_path = [*base_path, str(self.pk)]
-        path_has_changed = new_path != self.path
-
-        if path_has_changed:
-            self.path = new_path
-            updated_records += [self]
-
-        if path_has_changed or force_recalculate:
-            for child in self.sub_teams.all():
-                updated_records += child.calculate_paths(force_recalculate)
-
-        return updated_records
-
-    def __str__(self):
-        return self.name
+        ordering = ["-created_at"]
+        verbose_name = "Sampling Result"
+        verbose_name_plural = "Sampling Results"
 
 
 class PlanningQuerySet(models.QuerySet):
@@ -138,13 +54,49 @@ class Planning(SoftDeletableModel):
     forms = models.ManyToManyField(Form, related_name="plannings")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
+    target_org_unit_type = models.ForeignKey(
+        OrgUnitType, on_delete=models.PROTECT, related_name="target_plannings", null=True, blank=True
+    )
     published_at = models.DateTimeField(null=True, blank=True)
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text="List of OpenHexa pipeline UUIDs available for this planning",
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    selected_sampling_result = models.OneToOneField(
+        PlanningSamplingResult,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="selected_by_planning",
+    )
 
     def __str__(self):
         return self.name
+
+    def add_pipeline_uuid(self, pipeline_uuid: str):
+        """Add a pipeline UUID to the planning if not already present."""
+        if pipeline_uuid not in self.pipeline_uuids:
+            self.pipeline_uuids.append(pipeline_uuid)
+            self.save(update_fields=["pipeline_uuids"])
+
+    def remove_pipeline_uuid(self, pipeline_uuid: str):
+        """Remove a pipeline UUID from the planning."""
+        if pipeline_uuid in self.pipeline_uuids:
+            self.pipeline_uuids.remove(pipeline_uuid)
+            self.save(update_fields=["pipeline_uuids"])
+
+    def has_pipeline_uuid(self, pipeline_uuid: str) -> bool:
+        """Check if the planning has a specific pipeline UUID."""
+        return pipeline_uuid in self.pipeline_uuids
+
+    def get_pipeline_uuids(self) -> list:
+        """Get the list of pipeline UUIDs for this planning."""
+        return self.pipeline_uuids or []
 
 
 class AssignmentQuerySet(models.QuerySet):
@@ -156,7 +108,13 @@ class Assignment(SoftDeletableModel):
     objects = AssignmentQuerySet.as_manager()
 
     class Meta:
-        unique_together = [["planning", "org_unit"]]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["planning", "org_unit"],
+                condition=Q(deleted_at__isnull=True),
+                name="unique_planning_org_unit_when_not_deleted",
+            ),
+        ]
         ordering = ("planning", "created_at")
 
     planning = models.ForeignKey("Planning", on_delete=models.CASCADE, null=True, blank=True)

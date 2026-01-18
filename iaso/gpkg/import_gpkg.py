@@ -10,9 +10,10 @@ import fiona  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
+from django.db.models import Q
 
 from hat.audit import models as audit_models
-from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, SourceVersion, Task
 from iaso.models.org_unit import get_or_create_org_unit_type
 from iaso.utils.gis import simplify_geom
 
@@ -23,11 +24,17 @@ except ImportError:
     TypedDict = type
 
 
-def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
-    """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
+def get_or_create_org_unit_type_and_assign_project(name: str, projects: list, depth: int) -> OrgUnitType:
+    """Get or create the OUT '(in the scope of the project's account) then assign it to all projects"""
     # TODO: check what happens if the project has no account?
-    out = get_or_create_org_unit_type(name=name, depth=depth, account=project.account, preferred_project=project)  # type: ignore
-    out.projects.add(project)
+    # Use the first project for account and preferred_project
+    first_project = projects[0]
+    out = get_or_create_org_unit_type(
+        name=name, depth=depth, account=first_project.account, preferred_project=first_project
+    )  # type: ignore
+    # Assign to all projects in the source
+    for project in projects:
+        out.projects.add(project)
     return out
 
 
@@ -140,7 +147,8 @@ def create_or_update_orgunit(
     name = validate_required_property(props, "name")
     orgunit.name = name
     orgunit.org_unit_type = data["type"]
-    if orgunit.validation_status is None:
+
+    if validation_status is not None:
         orgunit.validation_status = validation_status
     # Validate required ref
     ref = validate_required_property(props, "ref")
@@ -148,6 +156,10 @@ def create_or_update_orgunit(
         ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
     orgunit.source_ref = ref
     orgunit.version = source_version
+
+    # Import code if it exists in properties
+    code = props.get("code", "")
+    orgunit.code = code.strip() if code else ""  # code could be null in gpkg
 
     # Import dates if they exist in properties
 
@@ -249,55 +261,68 @@ def validate_property(props: Dict[str, str], property_name: str, orgunit_name: s
 
 
 @transaction.atomic
-def import_gpkg_file(filename, project_id, source_name, version_number, validation_status, description):
+def import_gpkg_file(filename, source_name, version_number, validation_status, description):
     source, created = DataSource.objects.get_or_create(name=source_name)
     if source.read_only:
         raise Exception("Source is marked read only")
-    # this will cause issue if another tenant use the same source name as we will attach an existing source
-    # to our project via the tenant.
-    source.projects.add(project_id)
-    project = Project.objects.get(id=project_id)
     import_gpkg_file2(
-        filename, project, source, version_number, validation_status, user=None, description=description, task=None
+        filename, source, version_number, validation_status, user=None, description=description, task=None
     )
 
 
 @transaction.atomic
 def import_gpkg_file2(
     filename,
-    project: Project,
     source: DataSource,
     version_number: Optional[int],
     validation_status,
     user: Optional[User],
     description,
-    task,
+    task: Optional[Task],
 ):
     if version_number is None:
         last_version = source.versions.all().order_by("number").last()
         version_number = last_version.number + 1 if last_version else 0
+        if task:
+            task.report_progress_and_stop_if_killed(progress_message=f"Creating source version {version_number}")
     version, created = SourceVersion.objects.get_or_create(
         number=version_number, data_source=source, defaults={"description": description}
     )
     if not source.default_version:
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message=f"Setting source's default version to {version_number}"
+            )
         source.default_version = version
         source.save()
 
     if not created:
         version.save()
 
-    # TODO: check: what if the source has no projects? Or the project has no account?
-    account = source.projects.first().account  # type: ignore
+    # Get all projects from the source
+    source_projects = source.projects.all()
+    if not source_projects.exists():
+        raise ValueError("DataSource must have at least one project assigned")
+
+    # Use the first project for account access
+    first_project = source_projects.first()
+    account = first_project.account  # type: ignore
     if not account.default_version:  # type: ignore
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message=f"Setting account's default version to {version_number}"
+            )
         account.default_version = version  # type: ignore
         account.save()  # type: ignore
 
     # Create and update all the groups and put them in a dict indexed by ref
     # Do it in sqlite because Fiona is not great with Attributes table (without geom)
-    ref_group: Dict[str, Group] = {get_ref(group): group for group in Group.all_objects.filter(source_version=version)}
+    if task:
+        task.report_progress_and_stop_if_killed(progress_value=0, end_value=100, progress_message="Reading groups...")
+    ref_group: Dict[str, Group] = {get_ref(group): group for group in Group.objects.filter(source_version=version)}
     with sqlite3.connect(filename) as conn:
         cur = conn.cursor()
-        rows = cur.execute("select ref, name from groups")
+        rows = cur.execute("SELECT ref, name FROM groups")
         for ref, name in rows:
             if ref and ref.startswith(OLD_INTERNAL_REF):
                 ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
@@ -307,13 +332,21 @@ def import_gpkg_file2(
             group = create_or_update_group(ref_group.get(ref), ref, name, version)  # type: ignore
             ref_group[get_ref(group)] = group
             audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT, user=user)
+    if task:
+        task.report_progress_and_stop_if_killed(progress_value=20, progress_message=f"Found {len(ref_group)} groups.")
 
     # index all existing OrgUnit per ref
+    if task:
+        task.report_progress_and_stop_if_killed(progress_message="Retrieving existing OUs' references...")
     existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
     ref_ou: Dict[str, OrgUnit] = {}
     for ou in existing_orgunits:
         ref = get_ref(ou)
         ref_ou[ref] = ou
+    if task:
+        task.report_progress_and_stop_if_killed(
+            progress_value=40, progress_message=f"Retrieved {len(existing_orgunits)} references."
+        )
 
     # The child may be created before the parent, so we keep a list to update after creating them all
     to_update_with_parent: List[Tuple[str, str]] = []
@@ -334,7 +367,9 @@ def import_gpkg_file2(
         colx = fiona.open(filename, mode="r", layer=layer_name)
 
         _, depth, name = layer_name.split("-", maxsplit=2)
-        org_unit_type = get_or_create_org_unit_type_and_assign_project(name, project, int(depth))
+
+        # Create org unit type for all projects in the source (org units are shared across projects in the source)
+        org_unit_type = get_or_create_org_unit_type_and_assign_project(name, list(source_projects), int(depth))
 
         # collect all the OrgUnit to create from this layer
         row: OrgUnitData
@@ -373,7 +408,8 @@ def import_gpkg_file2(
             total_org_unit += 1
     if task:
         task.report_progress_and_stop_if_killed(
-            progress_message=f"processing parents : total_org_unit : {total_org_unit} to_update_with_parent : {len(to_update_with_parent)}"
+            progress_value=80,
+            progress_message=f"processing parents : total_org_unit : {total_org_unit} to_update_with_parent : {len(to_update_with_parent)}",
         )
     parent_count = 0
     for ref, parent_ref in to_update_with_parent:
@@ -390,6 +426,9 @@ def import_gpkg_file2(
         ou.parent = parent_ou
         ou.source_ref = ou.source_ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
         ou.save()
+
+    recalculate_missing_paths_if_necessary(version, task)
+
     if task:
         task.report_progress_and_stop_if_killed(
             progress_message=f"storing log_modifications total_org_unit : {total_org_unit}"
@@ -398,3 +437,28 @@ def import_gpkg_file2(
         # Possible optimisation, crate a bulk update
         audit_models.log_modification(old_ou, new_ou, source=audit_models.GPKG_IMPORT, user=user)
     return total_org_unit
+
+
+def recalculate_missing_paths_if_necessary(version, task):
+    empty_paths_before = OrgUnit.objects.filter(version=version).filter(Q(path__isnull=True) | Q(path=[])).count()
+
+    if empty_paths_before == 0:
+        return
+
+    # this case might happen if the layers per type didn't specify the correct level-x
+    # and so processing children before parents, leading to path "null"
+
+    top_parents = OrgUnit.objects.filter(version=version).filter(parent_id__isnull=True)
+
+    if task:
+        task.report_progress_and_stop_if_killed(progress_message=f"updating path from {top_parents.count()} parents")
+
+    for top_parent in top_parents:
+        # normally this will trigger the children too, so probably a bit excessive at least the whole pyramid will be consistent
+        top_parent.save(force_recalculate=True)
+
+    empty_paths_after = OrgUnit.objects.filter(version=version).filter(Q(path__isnull=True) | Q(path=[])).count()
+    if task:
+        task.report_progress_and_stop_if_killed(
+            progress_message=f"update path complete : empty_paths_before {empty_paths_before} empty_paths_after {empty_paths_after}"
+        )

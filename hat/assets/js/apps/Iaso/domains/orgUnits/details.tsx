@@ -31,6 +31,7 @@ import {
     useCurrentUser,
 } from '../../utils/usersUtils';
 import { FormsTable } from '../forms/components/FormsTable';
+import { FormsParams } from '../forms/types/forms';
 import { userHasPermission } from '../users/utils';
 import { OrgUnitBreadcrumbs } from './components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnitForm } from './components/OrgUnitForm';
@@ -143,7 +144,10 @@ const OrgUnitDetail: FunctionComponent = () => {
         useCheckUserHasWritePermissionOnOrgunit(
             currentOrgUnit?.org_unit_type_id,
         ) && hasOrgUnitsHistoryPermission;
-    const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
+    const formParams = useOrgUnitTabParams(
+        params,
+        FORMS_PREFIX,
+    ) as unknown as FormsParams;
     const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
     const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);
 
@@ -257,6 +261,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             const mappedRevision = {
                 ...currentOrgUnit,
                 ...revision,
+                org_unit_type_id: revision.org_unit_type?.id,
                 location,
                 geo_json: null, // this line to prevent overwriting the geo_json with a simplified shape/ Disables restoring a previous version of a single shape
                 aliases,
@@ -314,6 +319,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             redirectToReplace,
             refreshOrgUnitQueryCache,
             saveOu,
+            queryClient,
         ],
     );
 
@@ -368,7 +374,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             for (let i = 0; i < selectedSources.length; i += 1) {
                 const ss = selectedSources[i];
                 setLoadingSelectedSources(true);
-                // eslint-disable-next-line no-await-in-loop
+
                 const fetch = async () => {
                     const ous = await fetchAssociatedOrgUnits(
                         ss,
@@ -529,6 +535,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                                             limit: 10,
                                             page: 1,
                                         }}
+                                        displayColumnsSelectDrawer={false}
                                     />
                                 </Box>
                             )}

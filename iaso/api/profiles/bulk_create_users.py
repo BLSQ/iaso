@@ -19,10 +19,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from hat.audit.models import PROFILE_API_BULK
-from hat.menupermissions import models as permission
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, UserRole
-from iaso.utils.module_permissions import account_module_permissions
+from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 
 
 BULK_CREATE_USER_COLUMNS_LIST = [
@@ -53,7 +52,9 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
 class HasUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED):
+        if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
+            CORE_USERS_MANAGED_PERMISSION.full_name()
+        ):
             return True
         return False
 
@@ -114,7 +115,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @staticmethod
     def has_only_user_managed_permission(request):
-        if not request.user.has_perm(permission.USERS_ADMIN) and request.user.has_perm(permission.USERS_MANAGED):
+        if not request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()) and request.user.has_perm(
+            CORE_USERS_MANAGED_PERMISSION.full_name()
+        ):
             return True
         return False
 
@@ -213,7 +216,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     if has_geo_limit and len(list(filter(None, org_units))) == 0:
                         raise serializers.ValidationError(
                             {
-                                "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                "error": f"Operation aborted. A User with {CORE_USERS_MANAGED_PERMISSION} permission "
                                 "has to create users with OrgUnits in the file"
                             }
                         )
@@ -362,7 +365,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             perm.strip() for perm in row[csv_indexes.index("permissions")].split(value_splitter) if perm
                         ]
                         current_account = request.user.iaso_profile.account
-                        module_permissions = self.module_permissions(current_account)
+                        module_permissions = [perm.codename for perm in current_account.permissions_from_active_modules]
                         for perm in user_permissions:
                             if perm in module_permissions:
                                 try:
@@ -429,13 +432,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_indexes = row
         response = {"Accounts created": user_created_count}
         return Response(response)
-
-    @staticmethod
-    def module_permissions(current_account):
-        # Get all modules linked to the current account
-        account_modules = current_account.modules if current_account.modules else []
-        # Get and return all permissions linked to the modules
-        return account_module_permissions(account_modules)
 
     @staticmethod
     def validate_phone_number(phone_number):

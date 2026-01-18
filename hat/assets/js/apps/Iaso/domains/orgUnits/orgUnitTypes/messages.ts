@@ -45,6 +45,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validatedOrgUnitCount',
         defaultMessage: 'Validated org units',
     },
+    orgUnitCount: {
+        id: 'iaso.label.orgUnitCount',
+        defaultMessage: 'Org units count',
+    },
     actions: {
         id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',

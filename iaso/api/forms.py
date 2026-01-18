@@ -4,7 +4,7 @@ from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from django.db.models import BooleanField, Case, Count, Max, Q, When
+from django.db.models import BooleanField, Case, Count, Exists, Max, OuterRef, Prefetch, Q, When
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import permissions, serializers, status
@@ -14,14 +14,31 @@ from rest_framework.request import Request
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
-from hat.menupermissions import models as permission
-from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
+from iaso.api.permission_checks import (
+    AuthenticationEnforcedPermission,
+    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+    ReadOnly,
+)
+from iaso.models import (
+    EntityDuplicateAnalyzis,
+    Form,
+    FormAttachment,
+    FormVersion,
+    OrgUnit,
+    OrgUnitType,
+    Project,
+    ProjectFeatureFlags,
+)
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
-from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+from ..enketo import enketo_settings
+from ..enketo.enketo_url import verify_signed_url
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
+from .form_predefined_filters.serializers import FormPredefinedFilterSerializer
 from .projects import ProjectSerializer
+from .serializers import AppIdSerializer
 
 
 class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
@@ -29,7 +46,7 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         if request.method in permissions.SAFE_METHODS:
             return super().has_permission(request, view)
 
-        return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
+        return request.user.is_authenticated and request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
 
     def has_object_permission(self, request, view, obj):
         if not self.has_permission(request, view):
@@ -41,13 +58,13 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         )
 
 
-class FormPredefinedFilterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FormPredefinedFilter
-        fields = ["id", "name", "short_name", "json_logic", "created_at", "updated_at"]
-
+class FormVersionNestedSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    class Meta:
+        model = FormVersion
+        fields = ["id", "version_id", "file", "xls_file", "created_at", "updated_at"]
 
 
 class FormSerializer(DynamicFieldsModelSerializer):
@@ -136,7 +153,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     project_ids = serializers.PrimaryKeyRelatedField(
         source="projects", many=True, allow_empty=False, queryset=Project.objects.all()
     )
-    latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
+    latest_form_version = FormVersionNestedSerializer(source="latest_version", required=False)
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     predefined_filters = FormPredefinedFilterSerializer(many=True)
@@ -149,10 +166,6 @@ class FormSerializer(DynamicFieldsModelSerializer):
     possible_fields_with_latest_version = serializers.SerializerMethodField()
 
     @staticmethod
-    def get_latest_form_version(obj: Form):
-        return obj.latest_version.as_dict() if obj.latest_version else None
-
-    @staticmethod
     def get_org_unit_types(obj: Form):
         return [t.as_dict() for t in obj.org_unit_types.all()]
 
@@ -162,19 +175,25 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def get_has_attachments(obj: Form):
-        return len(obj.attachments.all()) > 0
+        if hasattr(obj, "has_attachments"):
+            return obj.has_attachments
+        return obj.attachments.exists()
 
     @staticmethod
     def get_possible_fields_with_latest_version(obj: Form):
+        possible_fields = [
+            field for field in obj.possible_fields if field["type"] in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES
+        ]
+
         latest_version = obj.latest_version
         if not latest_version:
-            return obj.possible_fields
+            return possible_fields
 
         # Get the field names from the latest version
         latest_version_fields = set(question["name"] for question in latest_version.questions_by_name().values())
 
         # Add a flag to each possible field indicating if it's part of the latest version
-        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in obj.possible_fields]
+        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in possible_fields]
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
@@ -219,11 +238,28 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return form
 
 
+# empty fields then do return true assume it's give me all the fields like the forms page list
+# if specified fields contains :all or field_name then do return True
+# else False
+def is_field_referenced(field_name, requested_fields, order):
+    result = False
+
+    if (
+        not requested_fields
+        or ":all" in requested_fields.split(",")
+        or field_name in requested_fields.split(",")
+        or field_name in order
+    ):
+        result = True
+
+    return result
+
+
 class FormsViewSet(ModelViewSet):
     f"""Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "{permission.FORMS}"  permission.
+    having the "{CORE_FORMS_PERMISSION}" permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -233,7 +269,7 @@ class FormsViewSet(ModelViewSet):
     DELETE /api/forms/<id>
     """
 
-    permission_classes = [HasFormPermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasFormPermission]
     serializer_class = FormSerializer
     results_key = "forms"
 
@@ -247,8 +283,9 @@ class FormsViewSet(ModelViewSet):
     )
     EXPORT_FILE_NAME = "forms"
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
+    FORM_PK = "form_pk"
 
-    def get_queryset(self):
+    def get_queryset(self, mobile=False):
         form_objects = Form.objects
         if self.request.query_params.get("only_deleted", None):
             form_objects = Form.objects_only_deleted
@@ -276,46 +313,64 @@ class FormsViewSet(ModelViewSet):
         if projects_ids:
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
-        queryset = queryset.annotate(
-            mapping_count=Count("mapping"),
-            has_mappings=Case(
-                When(mapping_count__gt=0, then=True),
-                default=False,
-                output_field=BooleanField(),
-            ),
-        )
+        requested_fields = self.request.query_params.get("fields")
 
-        queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+        is_request_from_manifest = self.request.path.endswith("/manifest/")
+        default_order = "id" if is_request_from_manifest or self.action == "retrieve" else "instance_updated_at"
+
+        order = self.request.query_params.get("order", default_order).split(",")
+
+        if is_field_referenced("has_mappings", requested_fields, order):
+            queryset = queryset.annotate(
+                mapping_count=Count("mapping"),
+                has_mappings=Case(
+                    When(mapping_count__gt=0, then=True),
+                    default=False,
+                    output_field=BooleanField(),
+                ),
+            )
+
+        if is_field_referenced("has_attachments", requested_fields, order) and not is_request_from_manifest:
+            attachment_exists = FormAttachment.objects.filter(form_id=OuterRef("pk"))
+            queryset = queryset.annotate(has_attachments=Exists(attachment_exists))
 
         if not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile
         else:
             profile = False
 
-        if profile and profile.org_units.exists():
-            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-            queryset = queryset.annotate(
-                instances_count=Count(
-                    "instances",
-                    filter=(
-                        ~Q(instances__file="")
-                        & ~Q(instances__device__test_device=True)
-                        & ~Q(instances__deleted=True)
-                        & Q(instances__org_unit__in=orgunits)
-                    ),
-                    distinct=True,
+        if is_field_referenced("instance_updated_at", requested_fields, order) and not is_request_from_manifest:
+            queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+
+        enable_count = is_field_referenced("instances_count", requested_fields, order) and not is_request_from_manifest
+
+        if not mobile and enable_count:
+            if profile and profile.org_units.exists():
+                orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+                queryset = queryset.annotate(
+                    instances_count=Count(
+                        "instances",
+                        filter=(
+                            ~Q(instances__file="")
+                            & ~Q(instances__device__test_device=True)
+                            & ~Q(instances__deleted=True)
+                            & Q(instances__org_unit__in=orgunits)
+                        ),
+                        distinct=True,
+                    )
                 )
-            )
-        else:
-            queryset = queryset.annotate(
-                instances_count=Count(
-                    "instances",
-                    filter=(
-                        ~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)
-                    ),
-                    distinct=True,
+            else:
+                queryset = queryset.annotate(
+                    instances_count=Count(
+                        "instances",
+                        filter=(
+                            ~Q(instances__file="")
+                            & ~Q(instances__device__test_device=True)
+                            & ~Q(instances__deleted=True)
+                        ),
+                        distinct=True,
+                    )
                 )
-            )
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:
@@ -339,24 +394,41 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
-        queryset = queryset.prefetch_related(
-            "form_versions",
-            "projects",
-            "projects__feature_flags",
-            "reference_of_org_unit_types",
-            "org_unit_types",
-            "org_unit_types__reference_forms",
-            "org_unit_types__sub_unit_types",
-            "org_unit_types__allow_creating_sub_unit_types",
-        )
+        # spare 8 or more sql when not needed
+        if not is_request_from_manifest:
+            # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
+            # TODO
+            #  - be smarter cfr is_field_referenced
+            #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
+
+            prefetch_relations = [
+                "form_versions",
+                "projects",
+                "projects__feature_flags",
+                "reference_of_org_unit_types",
+                "org_unit_types",
+                "org_unit_types__reference_forms",
+                "org_unit_types__sub_unit_types",
+                "org_unit_types__allow_creating_sub_unit_types",
+            ]
+            if not mobile:
+                prefetch_relations.append(
+                    Prefetch(
+                        "projects__projectfeatureflags_set",
+                        queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
+                    )
+                )
+            queryset = queryset.prefetch_related(*prefetch_relations)
 
         # optimize latest version loading to not trigger a select n+1 on form_version
         queryset = queryset.with_latest_version()
 
         # TODO: allow this only from a predefined list for security purposes
-        order = self.request.query_params.get("order", "instance_updated_at").split(",")
+
         queryset = queryset.order_by(*order)
+
+        # Ensure duplicates are removed after all joins and annotations
+        queryset = queryset.distinct()
 
         return queryset
 
@@ -417,47 +489,87 @@ class FormsViewSet(ModelViewSet):
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response
 
-    FORM_PK = "form_pk"
-
     @action(detail=True, methods=["get"])
     def manifest(self, request, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
 
-        This is used for the mobile app and Enketo to fetch the list of file attached to the Form
+        This is used for the mobile app to fetch the list of files attached to the Form
         see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
         """
         form = self.get_object()
-        attachments = form.attachments.all()
-        media_files = []
-        for attachment in attachments:
-            attachment_file_url: str = attachment.file.url
-            if not attachment_file_url.startswith("http"):
-                # Needed for local dev
-                attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        return generate_manifest_for_form(form, request)
 
-            media_files.append(
-                f"""<mediaFile>
-    <filename>{escape(attachment.name)}</filename>
-    <hash>md5:{attachment.md5}</hash>
-    <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
-</mediaFile>"""
-            )
+    @action(detail=True, methods=["get"], permission_classes=[ReadOnly])
+    def manifest_enketo(self, request, pk, *args, **kwargs):
+        """Returns a xml manifest file in the openrosa format for the Form
 
-        nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+        This is used by enketo to fetch the list of files attached to the Form
+        see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
+        """
+        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        if verify_signed_url(request, enketo_secret):
+            app_id = AppIdSerializer(data=request.query_params).get_app_id(raise_exception=True)
+            queryset = Form.objects.filter(
+                projects__app_id=app_id
+            )  # Not using the default queryset because there's no auth
+            form = get_object_or_404(queryset, pk=pk)
+            return generate_manifest_for_form(form, request)
+
         return HttpResponse(
-            status=status.HTTP_200_OK,
+            status=status.HTTP_400_BAD_REQUEST,
             content_type="text/xml",
             headers={
                 "X-OpenRosa-Version": "1.0",
             },
-            content=f"""<?xml version="1.0" encoding="UTF-8"?>
-<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
-{nl.join(media_files)}
-</manifest>""",
+            content="<error>Invalid URL signature</error>",
         )
+
+
+def generate_manifest_for_form(form: Form, request: Request) -> HttpResponse:
+    attachments = form.attachments.all()
+    media_files = []
+    for attachment in attachments:
+        attachment_file_url: str = attachment.file.url
+        if not attachment_file_url.startswith("http"):
+            # Needed for local dev
+            attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        media_files.append(generate_manifest_media_file(attachment, attachment_file_url))
+
+    manifest = generate_manifest_structure(media_files)
+    return HttpResponse(
+        status=status.HTTP_200_OK,
+        content_type="text/xml",
+        headers={
+            "X-OpenRosa-Version": "1.0",
+        },
+        content=manifest,
+    )
+
+
+def generate_manifest_media_file(attachment: FormAttachment, url: str) -> str:
+    return f"""<mediaFile>
+        <filename>{escape(attachment.name)}</filename>
+        <hash>md5:{attachment.md5}</hash>
+        <downloadUrl>{escape(url)}</downloadUrl>
+    </mediaFile>"""
+
+
+def generate_manifest_structure(content: list[str]) -> str:
+    nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+    return (
+        f"""<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+    {nl.join(content)}
+</manifest>""",
+    )
 
 
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
-        return super().get_queryset().exclude(form_versions=None)
+        return (
+            super()
+            .get_queryset(mobile=True)
+            .exclude(form_versions=None)
+            .prefetch_related("predefined_filters", "attachments", "reference_of_org_unit_types__sub_unit_types")
+        )

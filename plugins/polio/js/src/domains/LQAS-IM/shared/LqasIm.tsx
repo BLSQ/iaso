@@ -155,7 +155,7 @@ export const sortGraphKeys = (
     b: { absValue: number },
 ): number => b.absValue - a.absValue;
 
-const childrenNotMarked = ({
+export const childrenNotMarked = ({
     data,
     campaign,
     round,

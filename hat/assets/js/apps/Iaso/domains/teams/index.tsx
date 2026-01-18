@@ -4,16 +4,15 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { CreateEditTeam } from './components/CreateEditTeam';
-import { TeamParams } from './types/team';
-import { TeamFilters } from './components/TeamFilters';
-import { useGetTeams } from './hooks/requests/useGetTeams';
-import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { baseUrls } from '../../constants/urls';
-import { teamColumns } from './config';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import MESSAGES from './messages';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { AddTeamModal } from './components/CreateEditTeam';
+import { TeamFilters } from './components/TeamFilters';
+import { useTeamColumns } from './config';
+import { useGetTeams } from './hooks/requests/useGetTeams';
+import MESSAGES from './messages';
+import { TeamParams } from './types/team';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -26,8 +25,8 @@ export const Teams: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetTeams(apiParams);
-    const { mutate: deleteTeam } = useDeleteTeam();
     const defaultSorted = [{ id: 'id', desc: true }];
+    const columns = useTeamColumns({params: apiParams, data});
 
     return (
         <>
@@ -38,17 +37,19 @@ export const Teams: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <TeamFilters params={apiParams} />
                 <Box display="flex" justifyContent="flex-end">
-                    <CreateEditTeam dialogType="create" />
+                    <AddTeamModal dialogType="create" iconProps={{}} />
                 </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={defaultSorted}
-                    columns={teamColumns(formatMessage, deleteTeam)}
+                    columns={columns}
                     count={data?.count ?? 0}
                     params={apiParams}
                     extraProps={{ loading: isFetching }}
+                    expanded={{}}
+                    getObjectId={() => ''}
                 />
             </Box>
         </>

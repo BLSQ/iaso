@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-02 08:35+0000\n"
+"POT-Creation-Date: 2025-12-10 15:51+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -47,8 +47,16 @@ msgid "Transfer To OTP"
 msgstr "Transfert vers OTP"
 
 #: plugins/wfp/models.py
+msgid "Transfer in from other OTP"
+msgstr "Transfert depuis autre OTP"
+
+#: plugins/wfp/models.py
 msgid "Transfer To TSFP"
 msgstr "Transfert vers TSFP"
+
+#: plugins/wfp/models.py
+msgid "Transfer in from other TSFP"
+msgstr "Transfert depuis autre TSFP"
 
 #: plugins/wfp/models.py
 msgid "Non respondent"
@@ -73,6 +81,14 @@ msgstr "TSFP"
 #: plugins/wfp/models.py
 msgid "OTP"
 msgstr "OTP"
+
+#: plugins/wfp/models.py
+msgid "OTP - Under 6"
+msgstr "OTP - Under 6"
+
+#: plugins/wfp/models.py
+msgid "BSFP"
+msgstr "BSFP"
 
 #: plugins/wfp/models.py
 msgid "Breastfeeding"
@@ -127,6 +143,10 @@ msgid "Referred from TSFP (MAM)"
 msgstr "Référé du TSFP (MAM)"
 
 #: plugins/wfp/models.py
+msgid "Referred from BSFP"
+msgstr "Référé du BSFP"
+
+#: plugins/wfp/models.py
 msgid "Relapse"
 msgstr "Rechute"
 
@@ -141,3 +161,19 @@ msgstr "Référence retournée"
 #: plugins/wfp/models.py
 msgid "Transfer from other TSFP"
 msgstr "Transfert d'un autre TSFP"
+
+#: plugins/wfp/models.py
+msgid "Full"
+msgstr "Complet"
+
+#: plugins/wfp/models.py
+msgid "Partial"
+msgstr "Partiel"
+
+#: plugins/wfp/models.py
+msgid "None"
+msgstr "Aucun"
+
+#: plugins/wfp/models.py
+msgid "More"
+msgstr "Plus"

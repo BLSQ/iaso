@@ -1,11 +1,8 @@
-import traceback
-
 from functools import wraps
 from logging import getLogger
 
 import sentry_sdk
 
-from django.utils import timezone
 from lazy_services import LazyService  # type: ignore
 
 
@@ -21,7 +18,8 @@ def task_decorator(task_name=""):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            from iaso.models.base import ERRORED, RUNNING, KilledException, Project, Task
+            from iaso.models.base import RUNNING, KilledException, Project
+            from iaso.models.task import Task
 
             immediate = kwargs.pop("_immediate", False)  # if true, we need to run the task now, we are a worker
             if immediate:
@@ -39,19 +37,7 @@ def task_decorator(task_name=""):
                     # If it was interrupted in the middle of a transaction the new status was not saved so save it again
                     the_task.save()
                 except Exception as e:
-                    the_task.status = ERRORED
-                    the_task.ended_at = timezone.now()
-                    the_task.result = {
-                        "result": ERRORED,
-                        "message": str(e),
-                        "stack_trace": traceback.format_exc(),
-                        "last_progress_message": the_task.progress_message,
-                    }
-                    the_task.progress_message = e.message if hasattr(e, "message") else str(e)
-                    # Extra debug info
-                    if hasattr(e, "extra"):
-                        the_task.result["extra"] = e.extra
-                    the_task.save()
+                    the_task.report_failure(e)
                     logger.exception(f"Error when running task {the_task.id}: {the_task}")
                     sentry_sdk.capture_exception(e)
                 return the_task

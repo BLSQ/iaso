@@ -67,19 +67,19 @@ export const useGetInstanceLogDetail = (
 };
 
 const getVersion = (
-    formId: string | undefined,
+    formVersionId: string | undefined,
 ): Promise<Record<string, any>> => {
-    return getRequest(`/api/formversions/?form_id=${formId}&fields=descriptor`);
+    return getRequest(`/api/formversions/${formVersionId}/?fields=id,name,descriptor`);
 };
 export const useGetFormDescriptor = (
-    formId?: string,
+    formVersionId?: string,
 ): UseQueryResult<Record<string, any> | undefined, Error> => {
     const queryKey: any[] = ['instanceDescriptor'];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getVersion(formId),
+        queryFn: () => getVersion(formVersionId),
         options: {
-            enabled: Boolean(formId),
+            enabled: Boolean(formVersionId),
             select: (data: FormDescriptor | undefined) => {
                 if (!data) return data;
                 return data.form_versions[0]?.descriptor;

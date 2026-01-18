@@ -220,3 +220,55 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
     new_xml = etree.tostring(root, encoding="UTF-8", pretty_print=False)
 
     return instance_uuid, new_xml
+
+
+def parse_to_structured_dict(instance_xml):
+    lxml_parser = XMLParser(huge_tree=True, recover=True)
+    xml_str = instance_xml.decode("utf-8")
+    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)
+
+    def strip_ns(tag):
+        return tag.split("}", 1)[-1] if "}" in tag else tag
+
+    def elem_to_dict(elem):
+        node = {}
+
+        # merge attributes
+        for k, v in elem.attrib.items():
+            node["_" + strip_ns(k)] = v
+
+        # handle children
+        children = list(elem)
+        if children:
+            grouped = {}
+            for child in children:
+                tag = strip_ns(child.tag)
+                grouped.setdefault(tag, []).append(elem_to_dict(child))
+            for k, v in grouped.items():
+                node[k] = v if len(v) > 1 else v[0]
+        else:
+            text = (elem.text or "").strip()
+            if text:
+                return text  # leaf node with text only
+
+        return node
+
+    return {strip_ns(root.tag): elem_to_dict(root)}
+
+
+def collect_values(data):
+    result = []
+
+    def recurse(obj):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if not k.startswith("_"):
+                    recurse(v)
+        elif isinstance(obj, list):
+            for v in obj:
+                recurse(v)
+        elif isinstance(obj, str):
+            result.append(obj)
+
+    recurse(data)
+    return result

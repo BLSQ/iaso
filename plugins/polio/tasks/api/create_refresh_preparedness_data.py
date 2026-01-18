@@ -1,10 +1,10 @@
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from plugins.polio.models import Campaign
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 from plugins.polio.tasks.refresh_preparedness_data import refresh_data
 
 
@@ -24,7 +24,10 @@ class RefreshPreparednessLaucherSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class RefreshPreparednessLaucherViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION),
+    ]  # type: ignore
     serializer_class = RefreshPreparednessLaucherSerializer
 
     def create(self, request):

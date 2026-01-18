@@ -32,6 +32,6 @@ export const useCreateDataSourceVersionsSync = () => {
                 toUpdateSourceVersionId,
                 toCompareWithSourceVersionId,
             }),
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });
 };

@@ -1,11 +1,11 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
-import { FilterButton } from '../../../components/FilterButton';
+import { Box, Grid } from '@mui/material';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
-import { UserRoleParams } from '../types/userRoles';
-import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
+import { useFilterState } from '../../../hooks/useFilterState';
+import MESSAGES from '../messages';
+import { UserRoleParams } from '../types/userRoles';
 
 type Props = {
     params: UserRoleParams;
@@ -41,9 +41,9 @@ export const UserRolesFilters: FunctionComponent<Props> = ({ params }) => {
                 spacing={0}
             >
                 <Box mt={2} mb={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={textSearchError || !filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

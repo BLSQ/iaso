@@ -61,6 +61,7 @@ const WORKFLOWS = 'iaso_workflows';
 const MODULES = 'iaso_modules';
 const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 const PAYMENTS = 'iaso_payments';
+const STOCK_MANAGEMENT = 'iaso_stock_management';
 
 export {
     COMPLETENESS,
@@ -109,6 +110,7 @@ export {
     SOURCES,
     SOURCES_CAN_CHANGE_DEFAULT_VERSION,
     SOURCE_WRITE,
+    STOCK_MANAGEMENT,
     STORAGES,
     SUBMISSIONS,
     SUBMISSIONS_UPDATE,

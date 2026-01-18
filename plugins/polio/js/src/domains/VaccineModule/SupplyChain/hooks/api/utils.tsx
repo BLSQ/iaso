@@ -73,7 +73,7 @@ export const saveTab = (
 
         data.forEach((item: any, index: number) => {
             Object.keys(item).forEach(keyy => {
-                if (keyy === 'document' && item[keyy]) {
+                if (keyy === 'file' && item[keyy]) {
                     if (Array.isArray(item[keyy])) {
                         formData.append(
                             `${key}[${index}].${keyy}`,

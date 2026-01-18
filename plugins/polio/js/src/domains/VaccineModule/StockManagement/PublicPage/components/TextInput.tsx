@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { FocusEventHandler, FunctionComponent, ReactNode } from 'react';
 import { CircularProgress } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import PropTypes from 'prop-types';
-
 import { FormControl } from './FormControl';
 import { useStyles } from './SingleSelect';
+import { textPlaceholder } from 'bluesquare-components';
 
-const TextInput = ({
+type Props = {
+    params: Record<string, any>;
+    disabled: boolean;
+    required: boolean;
+    onBlur: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+    errors: string[];
+    loading: boolean;
+    renderOption?: (arg: { label: string }) => ReactNode;
+    label?: string;
+    helperText?: ReactNode;
+    autoComplete?: string;
+    placeholder?: string;
+    dataTestId?: string;
+};
+
+export const TextInput: FunctionComponent<Props> = ({
     params,
     renderOption,
     disabled,
@@ -16,9 +30,9 @@ const TextInput = ({
     errors,
     helperText,
     loading,
-    autoComplete,
-    placeholder,
-    dataTestId,
+    placeholder = textPlaceholder,
+    dataTestId = '',
+    autoComplete = 'off',
 }) => {
     const classes = useStyles();
     const paramsCopy = {
@@ -73,28 +87,3 @@ const TextInput = ({
         </FormControl>
     );
 };
-
-TextInput.defaultProps = {
-    helperText: null,
-    renderOption: null,
-    autoComplete: 'off',
-    label: undefined,
-    dataTestId: undefined,
-    placeholder: '',
-};
-
-TextInput.propTypes = {
-    renderOption: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
-    params: PropTypes.object.isRequired,
-    disabled: PropTypes.bool.isRequired,
-    label: PropTypes.string,
-    required: PropTypes.bool.isRequired,
-    onBlur: PropTypes.func.isRequired,
-    errors: PropTypes.array.isRequired,
-    helperText: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-    loading: PropTypes.bool.isRequired,
-    autoComplete: PropTypes.string,
-    placeholder: PropTypes.string,
-    dataTestId: PropTypes.string,
-};
-export { TextInput };

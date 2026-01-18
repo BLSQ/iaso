@@ -111,25 +111,10 @@ GRANT SELECT(
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("iaso", "0101_page_needs_authentication"),
-        ("iaso", "0102_page_type"),
-        ("iaso", "0103_auto_20210825_0945"),
-        ("iaso", "0104_seed_form_possible_fields_20210825_0949"),
-        ("iaso", "0105_auto_20210825_1015"),
-        ("iaso", "0102_auto_20210802_1612"),
-        ("iaso", "0103_merge_20210827_1341"),
-        ("iaso", "0106_merge_20210906_1310"),
-        ("iaso", "0107_auto_20211001_1845"),
-        ("iaso", "0108_add_page_feature_flag_20211005_1346"),
-        ("iaso", "0109_auto_20211024_2118"),
-        ("iaso", "0110_make_readonlyrole"),
-    ]
-
     dependencies = [
         ("django_comments", "0004_add_object_pk_is_removed_index"),
         ("audit", "0001_squashed_0002_auto_20210611_0951"),
-        ("iaso", "0100_auto_20210702_0835"),
+        ("iaso", "0002_auto_20191001_1142_squashed_0100_auto_20210702_0835"),
     ]
 
     operations = [

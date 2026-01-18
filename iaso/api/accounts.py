@@ -7,8 +7,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.models import Account, SourceVersion
+from iaso.permissions.core_permissions import CORE_SOURCE_PERMISSION
 
 from .common import HasPermission, ModelViewSet
 
@@ -51,7 +51,7 @@ class HasAccountPermission(permissions.BasePermission):
 class AccountViewSet(ModelViewSet):
     f"""Account API
 
-    This API is restricted to authenticated users having the "{permission.SOURCES}" permission
+    This API is restricted to authenticated users having the "{CORE_SOURCE_PERMISSION}" permission
     Only allow to update default source / version for an account
     PUT /api/account/<id>
     """
@@ -68,7 +68,7 @@ class AccountViewSet(ModelViewSet):
         else:
             permission_classes = [
                 permissions.IsAuthenticated,
-                HasPermission(permission.SOURCES),  # type: ignore
+                HasPermission(CORE_SOURCE_PERMISSION),
                 HasAccountPermission,
             ]
 
@@ -88,7 +88,7 @@ class AccountViewSet(ModelViewSet):
         )
 
         if user_to_login:
-            user_to_login.backend = "django.contrib.auth.backends.ModelBackend"
+            user_to_login.backend = "iaso.auth.backends.MultiTenantAuthBackend"
             login(request, user_to_login)
             # Return an empty response since no data is needed by the frontend
             return Response({}, status=status.HTTP_200_OK)

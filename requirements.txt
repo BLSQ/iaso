@@ -11,6 +11,7 @@ django-storages==1.14.2  # https://github.com/jschneier/django-storages/tags
 django-translated-fields==0.12.0  # https://github.com/matthiask/django-translated-fields/tags
 django-phonenumber-field[phonenumberslite]==7.3.0 # https://django-phonenumber-field.readthedocs.io/en/latest/
 django-qr-code==4.0.1 # https://django-qr-code.readthedocs.io/en/latest/
+django-stubs-ext==4.2.7  # https://github.com/typeddjango/django-stubs/tags
 
 # Django REST Framework.
 # ------------------------------------------------------------------------------
@@ -34,9 +35,11 @@ geopandas==0.14.2  # https://github.com/geopandas/geopandas/tags
 numpy==1.26.2  # https://github.com/numpy/numpy/tags
 Shapely==2.0.2  # https://github.com/shapely/shapely/tags
 
+duckdb==1.3.2 # https://duckdb.org/docs/stable/clients/python/overview
+
 # Geo.
 # ------------------------------------------------------------------------------
-Fiona==1.9.5  # https://github.com/Toblerity/Fiona/tags
+Fiona==1.10.1  # https://github.com/Toblerity/Fiona/tags
 geopy==2.4.1  # https://github.com/geopy/geopy/tags
 
 # PostgreSQL and SQL.
@@ -52,6 +55,7 @@ clamav-client==0.6.3  # https://github.com/artefactual-labs/clamav-client/tags
 # ------------------------------------------------------------------------------
 Pillow==10.1.0  # https://github.com/python-pillow/Pillow/tags
 boto3==1.34.7  # https://github.com/boto/boto3/tags
+cryptography==45.0.7  # https://github.com/pyca/cryptography
 pycryptodome==3.20.0  # https://github.com/Legrandin/pycryptodome/
 dateparser==1.2.0  # https://github.com/scrapinghub/dateparser/tags
 requests==2.31.0  # https://github.com/psf/requests/tags
@@ -79,6 +83,10 @@ oauth2client==4.1.3  # https://github.com/googleapis/oauth2client/tags
 # DHIS2 API wrapper.
 # ------------------------------------------------------------------------------
 dhis2.py==2.3.0  # https://github.com/davidhuser/dhis2.py/tags
+
+# OpenHEXA toolbox. Used for interaction with the OpenHEXA API.
+# ------------------------------------------------------------------------------
+openhexa.toolbox==2.7.0
 
 # Monitoring.
 # ------------------------------------------------------------------------------
@@ -145,5 +153,18 @@ gpxpy==1.4.0
 snaql==0.4.2
 tsp-solver2==0.4.1
 
+
 # active_list plugin
 openhexa.sdk==0.3.1
+=======
+# Azure blob storage.
+azure-storage-blob==12.19.0
+
+# SNT Malaria plugin.
+# ------------------------------------------------------------------------------
+snt-malaria-budgeting==0.5.1
+
+# Sass compiler for template styles.
+# ------------------------------------------------------------------------------
+libsass==0.23.0  # provides the 'sass' module used by compile_index_scss
+>>>>>>> develop

@@ -9,6 +9,21 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
+ADMISSION_ANTHROPOMETRIC_FORMS = [
+    "Anthropometric visit child",
+    "Anthropometric visit child_2",
+    "Anthropometric visit child_U6",
+    "Anthropometric_BSFP_child_2",
+]
+ANTHROPOMETRIC_FOLLOWUP_FORMS = [
+    "child_antropometric_followUp_tsfp",
+    "child_antropometric_followUp_otp",
+    "child_antropometric_followUp_tsfp_2",
+    "child_antropometric_followUp_otp_2",
+    "antropometric_followUp_otp_u6",
+    "Anthropometric_BSFP_child_2",
+]
+
 
 class Under5:
     def group_visit_by_entity(self, entities):
@@ -26,6 +41,8 @@ class Under5:
                 current_record = visit.get("json", None)
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
+                    if current_record.get("guidelines"):
+                        instances[i]["guidelines"] = current_record.get("guidelines")
                     if (
                         current_record.get("actual_birthday__date__") is not None
                         and current_record.get("actual_birthday__date__", None) != ""
@@ -54,22 +71,29 @@ class Under5:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    if current_record.get("weight_kgs", None) is not None:
+                    if current_record.get("weight_kgs", None) is not None and current_record.get("weight_kgs") != "":
                         current_weight = current_record.get("weight_kgs", None)
+                    elif current_record.get("weight_kgs") == "":
+                        current_weight = 0
                     elif current_record.get("previous_weight_kgs__decimal__", None) is not None:
                         current_weight = current_record.get("previous_weight_kgs__decimal__", None)
                     current_date = visit.get(
                         "source_created_at",
                         visit.get(
-                            "_visit_date", visit.get("visit_date", visit.get("_new_discharged_today", current_date))
+                            "_visit_date",
+                            visit.get(
+                                "visit_date",
+                                visit.get("_new_discharged_today", current_date),
+                            ),
                         ),
                     )
 
-                    if form_id == "Anthropometric visit child":
+                    if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get(
-                            "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                            "source_created_at",
+                            visit.get("_visit_date", visit.get("visit_date", current_date)),
                         )
                         initial_date = visit_date
 
@@ -85,12 +109,18 @@ class Under5:
                     current_record["discharge_weight"] = weight["discharge_weight"]
                     current_record["weight_difference"] = weight["weight_difference"]
                     current_record["duration"] = duration
+                    current_record["muac_size"] = visit.get("muac")
 
                     visit_date = visit.get(
-                        "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                        "source_created_at",
+                        visit.get("_visit_date", visit.get("visit_date", current_date)),
                     )
                     if visit_date:
                         current_record["date"] = visit_date.strftime("%Y-%m-%d")
+                        current_record["muac_size"] = current_record.get("muac")
+                        current_record["whz_color"] = current_record.get(
+                            "_Xwhz_color", current_record.get("_Xfinal_color_result")
+                        )
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id
@@ -100,11 +130,11 @@ class Under5:
             filter(
                 lambda instance: (
                     instance.get("visits")
-                    and len(instance.get("visits")) > 1
                     and instance.get("gender") is not None
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
+                    and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
                 instances,
             )
@@ -112,14 +142,10 @@ class Under5:
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
-        anthropometric_visit_forms = [
-            "child_antropometric_followUp_tsfp",
-            "child_antropometric_followUp_otp",
-        ]
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
-        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
+        journey = ETL().entity_journey_mapper(visits, ANTHROPOMETRIC_FOLLOWUP_FORMS, admission_form, current_journey)
         return journey
 
     def save_journey(self, beneficiary, record):
@@ -138,53 +164,71 @@ class Under5:
 
         return ETL().save_entity_journey(journey, beneficiary, record, "U5")
 
-    def run(self, type):
+    def run(self, type, updated_beneficiaries):
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
-        beneficiaries = entity_type.retrieve_entities()
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")
-        entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
-        existing_beneficiaries = ETL().existing_beneficiaries()
-        instances = self.group_visit_by_entity(entities)
+        beneficiaries = entity_type.retrieve_entities(updated_beneficiaries)
+        pages = beneficiaries.page_range
 
-        # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.all().filter(account=account, programme_type="U5").delete()
+        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")
 
-        for index, instance in enumerate(instances):
-            logger.info(
-                f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
+        for page in pages:
+            entities = sorted(
+                list(beneficiaries.page(page).object_list),
+                key=itemgetter("entity_id"),
             )
-            instance["journey"] = self.journeyMapper(instance["visits"], ["Anthropometric visit child"])
-            beneficiary = Beneficiary()
-            if (
-                instance["entity_id"] not in existing_beneficiaries
-                and len(instance["journey"][0]["visits"]) > 0
-                and instance["journey"][0].get("nutrition_programme") is not None
-            ):
-                beneficiary.gender = instance["gender"]
-                beneficiary.birth_date = instance["birth_date"]
-                beneficiary.entity_id = instance["entity_id"]
-                beneficiary.account = account
-                beneficiary.save()
-                logger.info("Created new beneficiary")
-            else:
-                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
-
-            logger.info("Retrieving journey linked to beneficiary")
-            if beneficiary is not None:
-                for journey_instance in instance["journey"]:
-                    if len(journey_instance["visits"]) > 0:
-                        journey = self.save_journey(beneficiary, journey_instance)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
-                        logger.info(f"Inserted {len(visits)} Visits")
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                        admission_step = grouped_steps[0]
-
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
-                        steps = ETL().save_steps(visits, followUpVisits)
-                        logger.info(f"Inserted {len(steps)} Steps")
-                    else:
-                        logger.info("No new journey")
+            existing_beneficiaries = ETL().existing_beneficiaries()
+            instances = self.group_visit_by_entity(entities)
+            all_steps = []
+            all_visits = []
+            all_journeys = []
+            all_beneficiaries = []
+            for index, instance in enumerate(instances):
                 logger.info(
-                    "---------------------------------------------------------------------------------------------\n\n"
+                    f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
                 )
+                instance["journey"] = self.journeyMapper(
+                    instance["visits"],
+                    ADMISSION_ANTHROPOMETRIC_FORMS,
+                )
+                beneficiary = Beneficiary()
+                if (
+                    instance["entity_id"] not in existing_beneficiaries
+                    and len(instance["journey"][0]["visits"]) > 0
+                    and instance["journey"][0].get("nutrition_programme") is not None
+                ):
+                    beneficiary.gender = instance["gender"]
+                    beneficiary.birth_date = instance["birth_date"]
+                    beneficiary.entity_id = instance["entity_id"]
+                    beneficiary.account = account
+                    beneficiary.guidelines = instance.get("guidelines", "OLD")
+                    all_beneficiaries.append(beneficiary)
+                    logger.info("Created new beneficiary")
+                else:
+                    beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
+
+                logger.info("Retrieving journey linked to beneficiary")
+                if beneficiary is not None:
+                    for journey_instance in instance["journey"]:
+                        if len(journey_instance["visits"]) > 0:
+                            journey = self.save_journey(beneficiary, journey_instance)
+                            all_journeys.append(journey)
+                            visits = ETL().save_visit(journey_instance["visits"], journey)
+                            all_visits.extend(visits)
+                            logger.info(f"Inserted {len(visits)} Visits")
+                            grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                            admission_step = grouped_steps[0]
+
+                            followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                            steps = ETL().save_steps(visits, followUpVisits)
+                            all_steps.extend(steps)
+                            logger.info(f"Inserted {len(steps)} Steps")
+                        else:
+                            logger.info("No new journey")
+                    logger.info(
+                        "---------------------------------------------------------------------------------------------\n\n"
+                    )
+            Beneficiary.objects.bulk_create(all_beneficiaries)
+            Journey.objects.bulk_create(all_journeys)
+            Visit.objects.bulk_create(all_visits)
+            Step.objects.bulk_create(all_steps)

@@ -1,6 +1,19 @@
-import React, { useState, FunctionComponent, ReactElement } from 'react';
+import React, {
+    useState,
+    FunctionComponent,
+    ReactElement,
+    ReactNode,
+} from 'react';
 
-import { Paper, Divider, Typography, Grid, Collapse, Box } from '@mui/material';
+import {
+    Paper,
+    Divider,
+    Typography,
+    Grid,
+    Collapse,
+    Box,
+    SxProps,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -56,12 +69,15 @@ type Props = {
     showHeader?: boolean;
     className?: string;
     elevation?: number;
+    children?: ReactNode;
+    sx?: SxProps<Theme>;
 };
 export const WidgetPaper: FunctionComponent<Props> = ({
     IconButton,
     iconButtonProps,
     title,
     children,
+    sx,
     id = '',
     padded = false,
     expandable = false,
@@ -79,6 +95,7 @@ export const WidgetPaper: FunctionComponent<Props> = ({
     };
     return (
         <Paper
+            sx={sx}
             elevation={elevation}
             className={`${classes.root} ${className}`}
             id={id}

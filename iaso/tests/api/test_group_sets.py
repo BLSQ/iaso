@@ -4,6 +4,7 @@ from rest_framework import status
 from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import GroupSet
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -22,11 +23,11 @@ class GroupSetsAPITestCase(APITestCase):
 
         cls.acccount_1 = star_wars
         cls.acccount_1_user_1 = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_org_units"]
+            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
         cls.acccount_1_user_2 = cls.create_user_with_profile(username="chewbacca", account=star_wars)
         cls.acccount_3_user_1 = cls.create_user_with_profile(
-            username="raccoon", account=marvel, permissions=["iaso_org_units"]
+            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
 
         cls.project_1 = m.Project.objects.create(

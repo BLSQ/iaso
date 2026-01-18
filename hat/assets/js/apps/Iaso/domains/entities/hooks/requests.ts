@@ -3,7 +3,7 @@ import { Pagination, UrlParams } from 'bluesquare-components';
 import moment from 'moment';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { ParamsWithAccountId } from 'Iaso/routing/hooks/useParamsObject';
-import { apiDateFormat } from 'Iaso/utils/dates.ts';
+import { apiDateFormat } from 'Iaso/utils/dates';
 import {
     deleteRequest,
     getRequest,
@@ -17,7 +17,7 @@ import { makeUrlWithParams } from '../../../libs/utils';
 import { DropdownOptions } from '../../../types/utils';
 import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { PaginatedInstances } from '../../instances/types/instance';
-import { DropdownTeamsOptions, Team } from '../../teams/types/team';
+import { Team } from '../../teams/types/team';
 import { Location } from '../components/ListMap';
 import MESSAGES from '../messages';
 import { Entity } from '../types/entity';
@@ -88,13 +88,14 @@ export const useGetEntitiesApiParams = (
 
 export const useGetEntitiesPaginated = (
     params: Params,
+    isEnabled: boolean,
 ): UseQueryResult<PaginatedEntities, Error> => {
     const { url, apiParams } = useGetEntitiesApiParams(params);
     return useSnackQuery({
         queryKey: ['entities', apiParams],
         queryFn: () => getRequest(url),
         options: {
-            enabled: apiParams.tab === 'list',
+            enabled: apiParams.tab === 'list' && isEnabled,
             staleTime: 60000,
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
@@ -140,7 +141,7 @@ export const useGetEntityTypesDropdown = (): UseQueryResult<
         queryKey: ['entityTypesOptions'],
         queryFn: () => getRequest('/api/entitytypes/?order=name'),
         options: {
-            staleTime: 1000 * 60 * 15, // in MS
+            staleTime: Infinity,
             cacheTime: 1000 * 60 * 5,
             select: data =>
                 data?.map(type => ({
@@ -210,6 +211,9 @@ export const useGetSubmissions = (
     params: Partial<UrlParams> & ParamsWithAccountId,
     entityId: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
+    if (!params.order) {
+        params.order = 'source_created_at';
+    }
     return useSnackQuery({
         queryKey: ['submissionsForEntity', entityId, params],
         queryFn: () => getSubmissions(params, entityId),
@@ -260,34 +264,4 @@ export const useGetUsersDropDown = (
             },
         },
     );
-};
-
-const getTeams = async (): Promise<Team[]> => {
-    return getRequest('/api/microplanning/teams/') as Promise<Team[]>;
-};
-
-export const useGetTeamsDropdown = (): UseQueryResult<
-    DropdownTeamsOptions[],
-    Error
-> => {
-    const queryKey: any[] = ['teamsList'];
-    // @ts-ignore
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getTeams(),
-        options: {
-            select: teams => {
-                if (!teams) return [];
-                return teams
-                    .filter(team => team.type === 'TEAM_OF_USERS')
-                    .map(team => {
-                        return {
-                            value: team.id,
-                            label: team.name,
-                            original: team,
-                        };
-                    });
-            },
-        },
-    });
 };

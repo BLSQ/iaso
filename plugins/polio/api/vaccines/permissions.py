@@ -4,27 +4,28 @@ from django.utils import timezone
 from rest_framework import permissions
 
 from plugins.polio.models import VaccineStock
+from plugins.polio.permissions import PolioPermission
 
 
 def can_edit_helper(
     user,
     the_date,
-    admin_perm,
-    non_admin_perm,
-    read_only_perm,
+    admin_perm: PolioPermission,
+    non_admin_perm: PolioPermission,
+    read_only_perm: PolioPermission,
     days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
 ):
     if the_date is None:
         return False
 
-    if user.has_perm(admin_perm):
+    if user.has_perm(admin_perm.full_name()):
         return True
 
-    if user.has_perm(non_admin_perm):
+    if user.has_perm(non_admin_perm.full_name()):
         end_of_open_time = timezone.now() - datetime.timedelta(days=days_open)
         return the_date >= end_of_open_time
 
-    if user.has_perm(read_only_perm):
+    if user.has_perm(read_only_perm.full_name()):
         return False
 
     return False
@@ -33,9 +34,9 @@ def can_edit_helper(
 class VaccineStockPermission(permissions.BasePermission):
     def __init__(
         self,
-        admin_perm,
-        non_admin_perm,
-        read_only_perm,
+        admin_perm: PolioPermission,
+        non_admin_perm: PolioPermission,
+        read_only_perm: PolioPermission,
         days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
         datetime_now_today=timezone.now,
@@ -54,27 +55,27 @@ class VaccineStockPermission(permissions.BasePermission):
         # For read operations, allow access to anyone with any of the permissions
         if request.method in ["GET", "HEAD", "OPTIONS"]:
             return (
-                request.user.has_perm(self.admin_perm)
-                or request.user.has_perm(self.non_admin_perm)
-                or request.user.has_perm(self.read_only_perm)
+                request.user.has_perm(self.admin_perm.full_name())
+                or request.user.has_perm(self.non_admin_perm.full_name())
+                or request.user.has_perm(self.read_only_perm.full_name())
             )
 
         # For write operations, require appropriate permissions
-        if request.user.has_perm(self.admin_perm) or request.user.has_perm(self.non_admin_perm):
+        if request.user.has_perm(self.admin_perm.full_name()) or request.user.has_perm(self.non_admin_perm.full_name()):
             return True
 
         return False
 
     def has_object_permission(self, request, view, obj):
         # Users with write permission can do anything
-        if request.user.has_perm(self.admin_perm):
+        if request.user.has_perm(self.admin_perm.full_name()):
             return True
 
         # Users with read-only permission can only read
-        if request.user.has_perm(self.read_only_perm):
+        if request.user.has_perm(self.read_only_perm.full_name()):
             return request.method in ["GET", "HEAD", "OPTIONS"]
 
-        if request.user.has_perm(self.non_admin_perm):
+        if request.user.has_perm(self.non_admin_perm.full_name()):
             # Users with non-admin permission can add entries
             if request.method in ["GET", "HEAD", "OPTIONS", "POST"]:
                 return True
@@ -99,9 +100,9 @@ class VaccineStockPermission(permissions.BasePermission):
 class VaccineStockEarmarkPermission(permissions.BasePermission):
     def __init__(
         self,
-        admin_perm,
-        non_admin_perm,
-        read_only_perm,
+        admin_perm: PolioPermission,
+        non_admin_perm: PolioPermission,
+        read_only_perm: PolioPermission,
         days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
         datetime_now_today=timezone.now,
@@ -120,24 +121,24 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         # For read operations, allow access to anyone with any of the permissions
         if request.method in ["GET", "HEAD", "OPTIONS"]:
             return (
-                request.user.has_perm(self.admin_perm)
-                or request.user.has_perm(self.non_admin_perm)
-                or request.user.has_perm(self.read_only_perm)
+                request.user.has_perm(self.admin_perm.full_name())
+                or request.user.has_perm(self.non_admin_perm.full_name())
+                or request.user.has_perm(self.read_only_perm.full_name())
             )
 
         # For write operations, require appropriate permissions
-        if request.user.has_perm(self.admin_perm) or request.user.has_perm(self.non_admin_perm):
+        if request.user.has_perm(self.admin_perm.full_name()) or request.user.has_perm(self.non_admin_perm.full_name()):
             return True
 
         return False
 
     def has_object_permission(self, request, view, obj):
         # Users with write permission can do anything
-        if request.user.has_perm(self.admin_perm):
+        if request.user.has_perm(self.admin_perm.full_name()):
             return True
 
         # Users with read-only permission can only read
-        if request.user.has_perm(self.read_only_perm):
+        if request.user.has_perm(self.read_only_perm.full_name()):
             return request.method in ["GET", "HEAD", "OPTIONS"]
 
         # Users without any permission can read anything
@@ -145,11 +146,11 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
             return True
 
         # Users with non-admin permission can add entries
-        if request.method in ["POST"] and request.user.has_perm(self.non_admin_perm):
+        if request.method in ["POST"] and request.user.has_perm(self.non_admin_perm.full_name()):
             return True
 
         # For edit/delete, check if object is less than a week old and the use has at least the non-admin permission
-        if request.method in ["PUT", "PATCH", "DELETE"] and request.user.has_perm(self.non_admin_perm):
+        if request.method in ["PUT", "PATCH", "DELETE"] and request.user.has_perm(self.non_admin_perm.full_name()):
             if view.action in [
                 "add_pre_alerts",
                 "update_pre_alerts",

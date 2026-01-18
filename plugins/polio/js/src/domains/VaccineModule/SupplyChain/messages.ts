@@ -358,6 +358,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vrfCreatedAt',
         defaultMessage: 'VRF created',
     },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
 });
 
 export default MESSAGES;

@@ -157,6 +157,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.gpkg.title',
         defaultMessage: 'Import from GeoPackage',
     },
+    gpkgValidByDefault: {
+        id: 'iaso.datasources.gpkg.validByDefault',
+        defaultMessage: 'Make org units status as "Valid"',
+    },
+    gpkgValidByDefaultTooltip: {
+        id: 'iaso.datasources.gpkg.validByDefaultTooltip',
+        defaultMessage:
+            'Org units status will be set to "Valid" instead of "New". Untick this box should you prefer keeping the status as "New".',
+    },
     gpkgTooltip: {
         id: 'iaso.datasources.gpkg.tooltip',
         defaultMessage: 'Import from a GeoPackage file',
@@ -172,6 +181,10 @@ const MESSAGES = defineMessages({
     name: {
         id: 'iaso.datasources.options.label.name',
         defaultMessage: 'Name',
+    },
+    code: {
+        id: 'iaso.datasources.options.label.code',
+        defaultMessage: 'Code',
     },
     parent: {
         id: 'iaso.datasources.options.label.parent',
@@ -204,7 +217,7 @@ const MESSAGES = defineMessages({
     syncMessage: {
         id: 'iaso.datasources.title.syncMessage',
         defaultMessage:
-            'This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done. Geometry will not be synchronized.',
+            'This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done. Geometry and code will not be synchronized.',
     },
     default: {
         id: 'iaso.datasources.options.label.default',
@@ -233,6 +246,10 @@ const MESSAGES = defineMessages({
     status: {
         id: 'iaso.datasources.label.status',
         defaultMessage: 'Status',
+    },
+    group: {
+        id: 'iaso.datasources.label.groups',
+        defaultMessage: 'Group',
     },
     fieldsToExport: {
         id: 'iaso.datasources.label.fieldsToExport',
@@ -472,6 +489,10 @@ const MESSAGES = defineMessages({
     pleaseSelectVersionFirst: {
         id: 'iaso.datasources.pleaseSelectVersionFirst',
         defaultMessage: 'Please select a data source version first',
+    },
+    downloadGpkg: {
+        id: 'iaso.datasources.downloadGpkg',
+        defaultMessage: 'Download GeoPackage',
     },
 });
 

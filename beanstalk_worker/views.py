@@ -1,15 +1,17 @@
 import http
+import json
 
 from datetime import timedelta
 from logging import getLogger
 
 from django.apps import apps
 from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from iaso.models.base import QUEUED, RUNNING, Task
+from iaso.models.base import QUEUED, RUNNING
+from iaso.models.task import Task
 
 from . import task_service
 
@@ -25,6 +27,9 @@ def task(request):
 
 @csrf_exempt
 def cron(request):
+    if request.headers.get("x-aws-sqsd-taskname") is None:
+        return HttpResponseBadRequest("missing x-aws-sqsd-taskname header")
+
     module, method = request.headers["x-aws-sqsd-taskname"].rsplit(".", 1)
     task_service.run(module, method, [], {})
     return HttpResponse()
@@ -107,11 +112,16 @@ def task_launcher(request, task_name: str, user_name: str):
 
     call_args = {"user": the_user}
     try:
-        if len(request.POST) > 0:
-            call_args = {**call_args, **request.POST}
+        if request.content_type == "application/json" and request.body:
+            # https://docs.djangoproject.com/en/dev/releases/1.5/#non-form-data-in-http-requests
+            call_args = {**call_args, **json.loads(request.body)}
 
-        if len(request.GET) > 0:
-            call_args = {**call_args, **request.GET}
+        else:
+            if len(request.POST) > 0:
+                call_args = {**call_args, **request.POST}
+
+            if len(request.GET) > 0:
+                call_args = {**call_args, **request.GET}
 
         the_task = the_task_fn(**call_args)
         return JsonResponse({"status": "success", "task": the_task.as_dict()}, status=http.HTTPStatus.OK)

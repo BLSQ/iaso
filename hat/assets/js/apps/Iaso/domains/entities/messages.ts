@@ -139,7 +139,7 @@ const MESSAGES = defineMessages({
     },
     orgUnit: {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     title: {
         defaultMessage: 'Entities',
@@ -207,11 +207,11 @@ const MESSAGES = defineMessages({
     },
     'org_unit.name': {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     OrgUnitName: {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     form: {
         id: 'iaso.instance.form',
@@ -256,6 +256,30 @@ const MESSAGES = defineMessages({
     queryBuilder: {
         id: 'iaso.instance.queryBuilder',
         defaultMessage: 'Search in submitted fields',
+    },
+    confirm: {
+        id: 'blsq.queryBuilder.confirm',
+        defaultMessage: 'Confirm',
+    },
+    queryTab: {
+        id: 'blsq.queryBuilder.queryTab',
+        defaultMessage: 'Query',
+    },
+    jsonTab: {
+        id: 'blsq.queryBuilder.jsonTab',
+        defaultMessage: 'Json',
+    },
+    selectForm: {
+        id: 'iaso.entities.selectForm',
+        defaultMessage: 'Select a form',
+    },
+    addForm: {
+        id: 'iaso.entities.addForm',
+        defaultMessage: 'Add a form',
+    },
+    searchToSeeEntities: {
+        id: 'iaso.entities.searchToSeeEntities',
+        defaultMessage: 'Click "Search" button to see entities',
     },
 });
 

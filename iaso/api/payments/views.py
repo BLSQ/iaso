@@ -6,7 +6,8 @@ from django.db import models, transaction
 from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
-from django.utils.translation import gettext as _
+from django.utils import translation
+from django.utils.translation import get_language_from_request, gettext as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
@@ -17,16 +18,17 @@ from rest_framework.response import Response
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
-from hat.menupermissions import models as permission
 from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
 from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
     potential_payments as potential_payments_filters,
 )
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.org_unit import OrgUnit
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import CORE_PAYMENTS_PERMISSION
 from iaso.tasks.create_payment_lot import create_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
@@ -78,7 +80,7 @@ class PaymentLotsViewSet(ModelViewSet):
        - else, only the `PaymentLot` is logged, in the `update` method
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -227,16 +229,19 @@ class PaymentLotsViewSet(ModelViewSet):
         responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
     )
     def create(self, request):
-        # with transaction.atomic():
-        # Extract user, name, comment, and potential_payments IDs from request data
         user = self.request.user
         name = request.data.get("name")
         comment = request.data.get("comment")
         potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
-        potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
-        # TODO move this in valdate method
+
+        try:
+            potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
+        except ValueError:
+            raise ValidationError("Expecting `potential_payments` to be a list of IDs.")
+
         if not potential_payment_ids:
-            raise ValidationError("At least one potential payment required")
+            raise ValidationError("At least one potential payment required.")
+
         potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
         task = create_payment_lot(user=user, name=name, potential_payment_ids=potential_payment_ids, comment=comment)
         # Assign task to potential payments to avoid racing condition when calling potential payments API
@@ -277,6 +282,13 @@ class PaymentLotsViewSet(ModelViewSet):
             )
 
             forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
+
+            # The frontend is using `ExternalLinkIconButton` which creates a direct browser link,
+            # thus bypassing the default API client that adds the `Accept-Language` header.
+            # So the Django backend defaults to the default "en" setting.
+            # We pass the language in the querystring as a quick solution.
+            language = self.request.GET.get("lang") or get_language_from_request(self.request)
+            translation.activate(language)
 
             if csv_format:
                 return self.retrieve_to_csv(payment_lot, payments, forms, forms_count_by_payment)
@@ -425,7 +437,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -578,7 +590,7 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -628,7 +640,7 @@ class PaymentsViewSet(ModelViewSet):
 
 
 class PaymentOptionsViewSet(DropdownOptionsListViewSet):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnly]
     http_method_names = ["get"]
     serializer = DropdownOptionsSerializer
     choices = PaymentStatuses

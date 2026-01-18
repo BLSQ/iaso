@@ -16,4 +16,5 @@ export type Params = Filters & {
     page: string;
     pageSize: string;
     tab: string;
+    isSearchActive: string;
 };

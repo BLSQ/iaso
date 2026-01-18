@@ -1,4 +1,3 @@
-/* eslint-disable react/function-component-definition */
 import React, {
     FunctionComponent,
     useCallback,
@@ -31,11 +30,12 @@ const initialFormState = (
         : undefined,
     groups: orgUnit?.groups?.map(g => g.id) ?? [],
     sub_source: orgUnit?.sub_source,
-    validation_status: orgUnit?.validation_status,
+    validation_status: orgUnit?.id ? orgUnit?.validation_status : 'VALID',
     aliases: orgUnit?.aliases ?? ([] as string[]),
     source_id: orgUnit?.source_id,
     parent: orgUnit?.parent,
     source_ref: orgUnit?.source_ref,
+    code: orgUnit?.code,
     reference_instance_id: orgUnit?.reference_instance_id,
     opening_date: orgUnit?.opening_date ? orgUnit.opening_date : undefined,
     closed_date: orgUnit?.closed_date ? orgUnit.closed_date : undefined,
@@ -87,7 +87,10 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
         const newOrgUnit = mapValues(formState, v =>
             Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
         );
-        newOrgUnit.parent_id = newOrgUnit.parent?.id;
+        newOrgUnit.parent_id =
+            isNewOrgunit && params.parentOrgUnitId && !newOrgUnit.parent?.id
+                ? params.parentOrgUnitId
+                : newOrgUnit.parent?.id;
         saveOrgUnit(
             newOrgUnit as OrgUnit,
             savedOrgUnit => {

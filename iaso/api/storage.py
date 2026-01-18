@@ -4,9 +4,9 @@ import datetime
 from typing import Any, List, Tuple, Union
 
 from django.core.paginator import Paginator
-from django.db.models import Prefetch, Q, QuerySet
+from django.db.models import Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
-from rest_framework import permissions, serializers, status, viewsets
+from rest_framework import exceptions, permissions, serializers, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
@@ -14,10 +14,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from hat.menupermissions import models as permission
 from iaso.api.entity import EntitySerializer
-from iaso.api.serializers import OrgUnitSerializer
-from iaso.models import Entity, Instance, OrgUnit, StorageDevice, StorageLogEntry
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
+from iaso.api.serializers import AppIdSerializer, OrgUnitSerializer
+from iaso.models import Entity, Instance, OrgUnit, Project, StorageDevice, StorageLogEntry
+from iaso.permissions.core_permissions import CORE_STORAGE_PERMISSION
 
 from .common import (
     CONTENT_TYPE_CSV,
@@ -28,7 +29,7 @@ from .common import (
     UserSerializer,
     safe_api_import,
 )
-from .instances.instances import FileFormatEnum
+from .instances.instances import FileFormatEnum, find_entity
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -123,6 +124,7 @@ class StorageSerializer(serializers.ModelSerializer):
         fields: Tuple[str, ...] = (
             "updated_at",
             "created_at",
+            "id",
             "storage_id",
             "storage_type",
             "storage_status",
@@ -219,7 +221,7 @@ def device_generate_export(
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.STORAGE)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_STORAGE_PERMISSION)]
     serializer_class = StorageSerializer
 
     def get_queryset(self):
@@ -392,12 +394,11 @@ def import_storage_logs(data, user):
             if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
                 concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
 
+            account = user.iaso_profile.account
             concerned_entity = None
             entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
             if entity_id:
-                concerned_entity = Entity.objects.get(uuid=entity_id)
-
-            account = user.iaso_profile.account
+                concerned_entity = find_entity(account, entity_id)
 
             # 1. Create the storage device, if needed
             device, _ = StorageDevice.objects.get_or_create(
@@ -479,8 +480,8 @@ def logs_for_device_generate_export(
 
 
 @api_view()
-@permission_classes([IsAuthenticated, HasPermission(permission.STORAGE)])  # type: ignore
-def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
+@permission_classes([IsAuthenticated, HasPermission(CORE_STORAGE_PERMISSION)])
+def logs_per_device(request, storage_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
 
     # 1. Retrieve data from request
@@ -509,15 +510,14 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
 
     performed_at_str = request.GET.get("performed_at", None)
 
-    device_identity_fields = {
-        "customer_chosen_id": storage_customer_chosen_id,
-        "type": storage_type,
-        "account": user_account,
-    }
-
     # We need to filter the log entries early or the paginator (count, ...) will have inconsistent values with the
     # prefetched log entries later
-    device = StorageDevice.objects.get(**device_identity_fields)
+    device = (
+        StorageDevice.objects.filter(Q(id=storage_id) | Q(customer_chosen_id=storage_id))
+        .filter(type=storage_type)
+        .filter(account=user_account)
+        .get()
+    )
     log_entries_queryset = StorageLogEntry.objects.filter(device=device).order_by(*order)
 
     if org_unit_id is not None:
@@ -534,15 +534,9 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
             performed_at__date=datetime.datetime.strptime(performed_at_str, "%Y-%m-%d").date()
         )
 
-    if not file_export:
-        device_with_logs = StorageDevice.objects.prefetch_related(
-            Prefetch(
-                "log_entries",
-                log_entries_queryset,
-                to_attr="filtered_log_entries",
-            )
-        ).get(**device_identity_fields)
+    device.filtered_log_entries = log_entries_queryset
 
+    if not file_export:
         if limit_str:
             # Pagination as requested: each page contains the device metadata + a subset of log entries
             limit = int(limit_str)
@@ -553,7 +547,7 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
             res["results"] = StorageSerializerWithPaginatedLogs(  # type: ignore
-                device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
+                device, context={"limit": limit, "offset": max(page.start_index() - 1, 0)}
             ).data
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
@@ -561,7 +555,7 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        return Response(StorageSerializerWithLogs(device_with_logs).data)
+        return Response(StorageSerializerWithLogs(device).data)
     # File export requested
     return logs_for_device_generate_export(queryset=log_entries_queryset, file_format=file_format_export)
 
@@ -585,7 +579,7 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
     serializer_class = StorageSerializerForBlacklisted
 
-    permission_classes = [AllowAny]
+    permission_classes = [AuthenticationEnforcedPermission, AllowAny]
 
     def list(self, request):
         """
@@ -595,5 +589,15 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
         Returns a list of blacklisted devices
         """
         queryset = self.get_queryset()
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user=self.request.user, app_id=app_id)
+                queryset = queryset.filter(account=project.account)
+            except Project.DoesNotExist:
+                if self.request.user.is_anonymous:
+                    raise exceptions.NotAuthenticated
+                raise exceptions.NotFound(f"Project not found for {app_id}")
+
         serializer = self.get_serializer(queryset, many=True)
         return Response({"storages": serializer.data})

@@ -7,10 +7,11 @@ from timeit import default_timer as timer
 from dhis2 import Api, RequestException
 from django.core.paginator import Paginator
 from django.utils import timezone
+from packaging.version import InvalidVersion, Version
 
 import iaso.models as models
 
-from iaso.models import ERRORED, EXPORTED, RUNNING, ExportLog, MappingVersion, OrgUnit
+from iaso.models import ERRORED, EXPORTED, RUNNING, ExportLog, ExportRequest, MappingVersion, OrgUnit, Task
 
 from ..periods import Period
 from .api_logger import ApiLogger  # type: ignore
@@ -18,6 +19,34 @@ from .value_formatter import format_value
 
 
 logger = logging.getLogger(__name__)
+
+
+def is_version_gte(v, ref="2.42"):
+    try:
+        return Version(v) >= Version(ref)
+    except InvalidVersion:
+        return False
+
+
+def parse_description(dhis2_exception):
+    try:
+        resp = json.loads(dhis2_exception.description)
+    except:
+        resp = {
+            "status": "ERROR",
+            "description": "non json response return by server: " + dhis2_exception.description,
+            "response": {
+                "status": "ERROR",
+                "response": {
+                    "importSummaries": [
+                        {
+                            "description": "non json response return by server: " + dhis2_exception.description,
+                        }
+                    ]
+                },
+            },
+        }
+    return resp
 
 
 class InstanceExportError(BaseException):
@@ -225,10 +254,8 @@ class AggregateHandler(BaseHandler):
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
-            try:
-                resp = json.loads(dhis2_exception.description)
-            except:
-                resp = {"status": "ERROR", "description": "non json response return by server"}
+
+            resp = parse_description(dhis2_exception)
 
             exception = self.handle_exception({"response": resp}, message)
 
@@ -241,7 +268,7 @@ class AggregateHandler(BaseHandler):
             for export_status in export_statuses:
                 self.export_log_on(ERRORED, export_status, [export_log])
 
-            raise exception
+            raise exception or dhis2_exception
 
 
 class EventHandler(BaseHandler):
@@ -336,31 +363,52 @@ class EventHandler(BaseHandler):
             stats["batched_time"] = 0
             return []
 
-        try:
-            payload = {"events": data}
-            self.logger.debug(json.dumps(payload, indent=2))
-            resp = api.post("events", payload).json()
-            self.logger.debug(str(resp))
+        export_logs = []
+        exception = None
+        # from real life posting lots of "batch" of large events
+        # can be really problematic, switching to one by one export
 
-            exception = self.handle_exception({"response": resp}, "transient")
-            if exception:
-                # fake it to behave like a bad request
-                raise RequestException(409, api.base_url + "/dataValueSets", json.dumps(resp))
+        # 2.42 and upper are removing deprecated endpoints and change a few things
+        #   async is the default (since we post 1 event, we force the import to be synchronous)
+        #   eventDate is now occuredAt
+        #
+        actual_version = api.get("system/info").json()["version"]
+        new_version = is_version_gte(actual_version, ref="2.42")
+        path = "tracker" if new_version else "events"
+        extra_params = "?async=false" if new_version else ""
+        for event in data:
+            if new_version:
+                event["occurredAt"] = event["eventDate"]
 
-            export_log = ExportLog()
-            export_log.sent = payload
-            export_log.received = resp
-            export_log.url = api.base_url + "/events"
-            export_log.http_status = 200
-            export_log.save()
+            try:
+                payload = {"events": [event]}
+                self.logger.debug(json.dumps(payload, indent=2))
+                resp = api.post(f"{path}{extra_params}", payload).json()
+                self.logger.debug(str(resp))
 
-            return [export_log]
-        except RequestException as dhis2_exception:
-            message = "ERROR while processing " + prefix
-            resp = json.loads(dhis2_exception.description)
-            exception = self.handle_exception(resp, message)
+                exception = self.handle_exception({"response": resp}, "transient")
+                if exception:
+                    # fake it to behave like a bad request
+                    raise RequestException(409, api.base_url + f"/{path}", json.dumps(resp))
 
+                export_log = ExportLog()
+                export_log.sent = payload
+                export_log.received = resp
+                export_log.url = api.base_url + f"/{path}"
+                export_log.http_status = 200
+                export_log.save()
+
+            except RequestException as dhis2_exception:
+                message = "ERROR while processing " + prefix
+
+                resp = parse_description(dhis2_exception)
+
+                exception = self.handle_exception(resp, message)
+
+        if exception:
             raise exception
+
+        return export_logs
 
     def handle_exception(self, resp, message):
         response = resp["response"]
@@ -615,7 +663,7 @@ class EventTrackerHandler(BaseHandler):
 
                 message = "ERROR while processing " + prefix
 
-                resp = json.loads(dhis2_exception.description)
+                resp = parse_description(dhis2_exception)
 
                 exception = self.handle_exception(resp, message)
                 self.flag_as_errored(export_status, exception.message, stats)
@@ -771,7 +819,7 @@ class DataValueExporter:
             data[form_mapping.mapping.mapping_type].append(values)
         return data
 
-    def flag_as_errored(self, export_request, export_statuses, message, stats):
+    def flag_as_errored(self, export_request, export_statuses, message, stats, task):
         for export_status in export_statuses:
             stats["errored_count"] += len(export_statuses)
             export_status.status = ERRORED
@@ -786,6 +834,9 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.last_error_message = message
         export_request.save()
+
+        task.refresh_from_db()
+        task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
 
     def flag_as_exported(self, export_request, export_statuses, stats, export_logs):
         stats["exported_count"] += len(export_statuses)
@@ -802,11 +853,31 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def export_instances(self, export_request, page_size=25, continue_on_error=False):
+    def export_instances(self, export_request: ExportRequest, task: Task, page_size=25, continue_on_error=True):
+        try:
+            logger.info("export_instances %s", export_request.params)
+            self._export_instances(export_request, task, page_size=page_size, continue_on_error=continue_on_error)
+        except BaseException as exception:
+            message = repr(exception) + " : " + type(exception).__name__
+            logger.error("%s %s", message, exception)
+            task.refresh_from_db()
+            task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
+            task.terminate_with_error(message=message + "\n" + task.progress_message, exception=exception)
+
+    def _export_instances(
+        self,
+        export_request: ExportRequest,
+        task: Task,
+        page_size=25,
+        continue_on_error=True,
+    ):
+        message = ""
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
         export_request.continue_on_error = continue_on_error
         export_request.save()
+
+        fatal_errors = 0
 
         paginator = Paginator(
             export_request.exportstatus_set.prefetch_related("mapping_version")
@@ -819,6 +890,10 @@ class DataValueExporter:
         )
         if paginator.count == 0:
             logger.warning(f"Not linked error status for {export_request}")
+
+        task.report_progress_and_stop_if_killed(
+            progress_message=f"Instances to export : {paginator.count}, via export request #{export_request.id}"
+        )
 
         skipped = []
         stats = {"exported_count": 0, "errored_count": 0}
@@ -853,21 +928,32 @@ class DataValueExporter:
 
                 page_end = timer()
                 page_time = page_end - page_start
-                logger.debug(
-                    prefix
-                    + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped"
-                    % (page_time, stats["batched_time"], len(skipped))
+                message = prefix + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped, %d error count" % (
+                    page_time,
+                    stats["batched_time"],
+                    len(skipped),
+                    stats["errored_count"],
                 )
+                logger.debug(message)
+
+                task.refresh_from_db()
+                task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
 
             except InstanceExportError as exception:
-                self.flag_as_errored(export_request, export_statuses, exception.message, stats)
+                self.flag_as_errored(export_request, export_statuses, exception.message, stats, task=task)
+                stats["errored_count"] += 1
                 if not export_request.continue_on_error:
                     raise exception
 
             # it's ok to catch BaseException, we want to be able to mark it as errored if cancelled or worst
             except BaseException as exception:
+                stats["errored_count"] += 1
                 self.flag_as_errored(
-                    export_request, export_statuses, repr(exception) + " : " + type(exception).__name__, stats
+                    export_request,
+                    export_statuses,
+                    repr(exception) + " : " + type(exception).__name__,
+                    stats,
+                    task=task,
                 )
                 raise exception
 
@@ -877,3 +963,9 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.ended_at = timezone.now()
         export_request.save()
+
+        if stats["errored_count"] == 0:
+            task.report_success_with_result(message + "\n" + task.progress_message)
+        else:
+            task.terminate_with_error(message + "\n" + task.progress_message)
+        return message

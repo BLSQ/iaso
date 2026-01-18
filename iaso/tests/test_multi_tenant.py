@@ -5,6 +5,12 @@ from rest_framework.test import APIClient
 from iaso.test import APITestCase
 
 from ..models import Account, DataSource, Form, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
+from ..permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_MAPPINGS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_USERS_ADMIN_PERMISSION,
+)
 
 
 class MultiTenantTestCase(APITestCase):
@@ -37,14 +43,18 @@ class MultiTenantTestCase(APITestCase):
         self.project.forms.add(self.form)
 
         self.yoda = self.create_user_with_profile(
-            username="yoda", account=account, permissions=["iaso_org_units", "iaso_forms", "iaso_users"]
+            username="yoda",
+            account=account,
+            permissions=[CORE_ORG_UNITS_PERMISSION, CORE_FORMS_PERMISSION, CORE_USERS_ADMIN_PERMISSION],
         )
         self.yoda_client = APIClient()
         self.yoda_client.force_authenticate(user=self.yoda)
 
         account = Account.objects.create(name="Marvel")
         self.raccoon = self.create_user_with_profile(
-            username="raccoon", account=account, permissions=["iaso_mappings", "iaso_users", "iaso_forms"]
+            username="raccoon",
+            account=account,
+            permissions=[CORE_MAPPINGS_PERMISSION, CORE_USERS_ADMIN_PERMISSION, CORE_FORMS_PERMISSION],
         )
         self.raccoon_client = APIClient()
         self.raccoon_client.force_authenticate(user=self.raccoon)
@@ -153,7 +163,11 @@ class MultiTenantTestCase(APITestCase):
 
         # now uploading the file content, so that it will appear in /instances/ for the Star Wars account
         with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as fp:
-            c.post("/sync/form_upload/", {"name": "hydroponics_test_upload.xml", "xml_submission_file": fp})
+            c.post(
+                "/sync/form_upload/",
+                {"name": "hydroponics_test_upload.xml", "xml_submission_file": fp},
+                format="multipart",
+            )
 
         response = yoda_client.get("/api/instances/", accept="application/json")
         self.assertEqual(response.status_code, 200)  # yoda authorized to see Star Wars data

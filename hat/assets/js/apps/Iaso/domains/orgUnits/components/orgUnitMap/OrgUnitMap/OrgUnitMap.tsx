@@ -13,6 +13,7 @@ import { pink } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import 'leaflet-draw';
+import { Map as LeafletMap } from 'leaflet';
 
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
@@ -35,7 +36,7 @@ import {
 } from '../../../../../utils/map/mapUtils';
 import * as Permission from '../../../../../utils/permissions';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
-import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
+import { FormsFilterComponent } from '../../../../forms/components/FormsFilterComponent';
 import { userHasPermission } from '../../../../users/utils';
 import MESSAGES from '../../../messages';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
@@ -47,11 +48,11 @@ import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
 import { buttonsInitialState } from './constants';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { FormsMarkers } from './FormsMarkers';
+import { getBounds } from './getBounds';
 import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
 import { SelectedMarkers } from './SelectedMarkers';
 import { SourcesSelectedShapes } from './SourcesSelectedShapes';
 import { MappedOrgUnit } from './types';
-import { useGetBounds } from './useGetBounds';
 import { getAncestorWithGeojson, initialState } from './utils';
 
 export const zoom = 5;
@@ -99,7 +100,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const currentUser = useCurrentUser();
-    const map: any = useRef();
+    const map = useRef<LeafletMap | null>(null);
     // These 2 refs are needed because we need to initialize the EditableGroups only once, but we need the map to be ready
     // and we can't predict exactly how many renders that will require
     const didLocationInitialize = useRef(false);
@@ -139,12 +140,21 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
         state.catchmentGroup.value,
     ]);
-    const bounds = useGetBounds({
-        orgUnit: currentOrgUnit,
-        locationGroup: state.locationGroup.value,
-        catchmentGroup: state.catchmentGroup.value,
-        ancestorWithGeoJson: state.ancestorWithGeoJson.value,
-    });
+    const bounds = useMemo(
+        () =>
+            getBounds({
+                orgUnit: currentOrgUnit,
+                locationGroup: state.locationGroup.value,
+                catchmentGroup: state.catchmentGroup.value,
+                ancestorWithGeoJson: state.ancestorWithGeoJson.value,
+            }),
+        [
+            currentOrgUnit,
+            state.locationGroup.value,
+            state.catchmentGroup.value,
+            state.ancestorWithGeoJson.value,
+        ],
+    );
 
     const toggleEditShape = useCallback(
         keyName => {
@@ -422,6 +432,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             orgUnitTypesSelected={
                                 state.orgUnitTypesSelected.value
                             }
+                            map={map}
                             setOrgUnitTypesSelected={outypes => {
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}
@@ -436,6 +447,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}
                                 setFormsSelected={handleFormFilter}
+                                map={map}
                             />
                         </DisplayIfUserHasPerm>
                     </>
@@ -508,9 +520,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     zoom={zoom}
                     zoomControl={false}
                     keyboard={false}
-                    whenCreated={mapInstance => {
-                        map.current = mapInstance;
-                    }}
+                    ref={map}
                 >
                     <CustomZoomControl
                         bounds={bounds}
@@ -567,21 +577,21 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         </>
                     )}
                     {/* Markers section  */}
-                    <>
-                        <SelectedMarkers
-                            data={mappedOrgUnitTypesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                        <SelectedMarkers
-                            data={mappedSourcesSelected}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
 
-                        <FormsMarkers
-                            forms={state.formsSelected.value}
-                            updateOrgUnitLocation={updateOrgUnitLocation}
-                        />
-                    </>
+                    <SelectedMarkers
+                        data={mappedOrgUnitTypesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+                    <SelectedMarkers
+                        data={mappedSourcesSelected}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
+                    <FormsMarkers
+                        forms={state.formsSelected.value}
+                        updateOrgUnitLocation={updateOrgUnitLocation}
+                    />
+
                     {hasMarker && (
                         <CurrentOrgUnitMarker
                             isEdit={state.currentOption.value === 'edit'}

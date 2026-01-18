@@ -29,7 +29,7 @@ const mockPage = (
     cy.intercept('GET', '/api/entitytypes/?order=name', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
-    cy.intercept('GET', '/api/microplanning/teams/*', {
+    cy.intercept('GET', '/api/teams/*', {
         fixture: 'teams/list.json',
     });
     cy.intercept('GET', '/api/profiles', {
@@ -132,7 +132,7 @@ describe('Entities', () => {
             cy.wait('@getEntities').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/accountId/1/order/last_saved_instance/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/last_saved_instance/pageSize/20/page/1/isSearchActive/true`,
                 );
             });
         });

@@ -5,13 +5,17 @@ from urllib.parse import parse_qs
 
 import responses
 
+from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
+from django.utils import timezone
 
 from hat.audit.models import Modification
 from iaso import models as m
 from iaso.enketo.enketo_xml import build_substitutions
-from iaso.models import Instance
+from iaso.models import Instance, InstanceFile
+from iaso.odk import parsing
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -21,6 +25,21 @@ enketo_test_settings = {
     "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }
+
+
+def load_dhis2_fixture(mapping_file):
+    with open("./iaso/tests/fixtures/dhis2/" + mapping_file) as json_file:
+        return json.load(json_file)
+
+
+def build_form_mapping():
+    return {
+        "data_set_id": "DATASET_DHIS2_ID",
+        "question_mappings": {
+            "Ident_nom_responsable": {"id": "DE_DHIS2_ID", "valueType": "TEXT"},
+            "_version": {"id": "DE_DHIS2_ID", "valueType": "TEXT"},
+        },
+    }
 
 
 class EnketoAPITestCase(APITestCase):
@@ -36,16 +55,22 @@ class EnketoAPITestCase(APITestCase):
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
 
-        sw_source = m.DataSource.objects.create(name="Evil Empire")
+        credentials, creds_created = m.ExternalCredentials.objects.get_or_create(
+            name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=star_wars
+        )
+
+        sw_source = m.DataSource.objects.create(name="Evil Empire", credentials=credentials)
         cls.sw_source = sw_source
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_forms", "iaso_update_submission"]
+            username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION]
         )
-        cls.gunther = cls.create_user_with_profile(username="gunther", account=star_wars, permissions=["iaso_forms"])
+        cls.gunther = cls.create_user_with_profile(
+            username="gunther", account=star_wars, permissions=[CORE_FORMS_PERMISSION]
+        )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
@@ -133,6 +158,64 @@ class EnketoAPITestCase(APITestCase):
             parsed_expected,
         )
 
+        self.assertEqual(
+            enketo_contents[0],
+            expected,
+        )
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_when_authenticated_edit_url_should_return_an_enketo_url_with_existing_attachments(self):
+        """GET /api/enketo/edit/{uuid}/"""
+        instance = self.form_1.instances.first()
+        uploaded_file = SimpleUploadedFile(
+            name="test.txt",
+            content=b"hello world",
+            content_type="text/plain",
+        )
+        instance_file = InstanceFile.objects.create(
+            instance=instance,
+            name="test.txt",
+            file=uploaded_file,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        enketo_contents = []
+
+        def request_callback(request):
+            enketo_contents.append(urllib.parse.unquote(request.body))
+            return (200, {}, json.dumps({"edit_url": "https://enketo_url.host.test/something"}))
+
+        responses.add_callback(
+            responses.POST,
+            "https://enketo_url.host.test/api_v2/instance",
+            callback=request_callback,
+            content_type="application/json",
+        )
+
+        year_month = timezone.now().strftime("%Y_%m")
+
+        response = self.client.get(f"/api/enketo/edit/{instance.uuid}/")
+        resp = response.json()
+
+        self.assertEqual(resp, {"edit_url": "https://enketo_url.host.test/something"})
+        expected = "".join(
+            [
+                f"form_id={instance.uuid}&server_url=http://testserver/api/enketo",
+                f'&instance=<PLAN_INT_CAR_FOSA+xmlns:h="http://www.w3.org/1999/xhtml"+xmlns:jr="http://openrosa.org/javarosa"+xmlns:xsd="http://www.w3.org/2001/XMLSchema"+xmlns:ev="http://www.w3.org/2001/xml-events"+xmlns:orx="http://openrosa.org/xforms"+xmlns:odk="http://www.opendatakit.org/xforms"+id="PLAN_CAR_FOSA"+version="1"+iasoInstance="{instance.id}"><formhub><uuid>385689b3b55f4739b80dcba5540c5f87</uuid></formhub><start>2019-12-02T14:07:52.465+01:00</start><end>2019-12-02T14:10:11.380+01:00</end><today>2019-12-02</today><deviceid>358544083104930</deviceid><subscriberid>206300001285696</subscriberid><imei>358544083104930</imei><simserial>8932030000106638166</simserial><phonenumber/><user_name>Tttt</user_name><region>UnCrC8p12UN</region><prefecture>IJoQdfGfYsC</prefecture><district>tSs16aZvMD4</district><sous-prefecture>drMs7e3pDFZ</sous-prefecture><fosa>FeNjVewpswJ</fosa><year>2019</year><quarter>1</quarter><Ident_type_structure>ce</Ident_type_structure><Ident_type_services>serv_prot</Ident_type_services><Ident_type_serv_medical>0</Ident_type_serv_medical><Ident_type_serv_protect>1</Ident_type_serv_protect><Ident_type_serv_jurid>0</Ident_type_serv_jurid><Ident_type_serv_psycho>0</Ident_type_serv_psycho><Ident_type_serv_educ>0</Ident_type_serv_educ><Ident_type_serv_recope>0</Ident_type_serv_recope><Ident_type_serv_club>0</Ident_type_serv_club><Ident_statut>ong</Ident_statut><Ident_eau_courante>1</Ident_eau_courante><Ident_electricite>0</Ident_electricite><Ident_nom_responsable>Chggh</Ident_nom_responsable><Ident_telephone>256</Ident_telephone><fermeture_structure>sam</fermeture_structure><Ident_ferm_lundi>0</Ident_ferm_lundi><Ident_ferm_mardi>0</Ident_ferm_mardi><Ident_ferm_mercredi>0</Ident_ferm_mercredi><Ident_ferm_jeudi>0</Ident_ferm_jeudi><Ident_ferm_vendredi>0</Ident_ferm_vendredi><Ident_ferm_samedi>1</Ident_ferm_samedi><Ident_ferm_dim>0</Ident_ferm_dim><Ident_ferm_aucun>0</Ident_ferm_aucun><Ident_serv_cout>0</Ident_serv_cout><Ident_type_batiment>sem_dur</Ident_type_batiment><imgUrl>1575292156137.jpg</imgUrl><gps>50.8367386+4.40093901+123.56201171875+49.312</gps><meta><instanceID>uuid:7ff9b3b4-9404-4702-bbe4-efe2407aef02</instanceID><editUserID>{self.yoda.id}</editUserID></meta></PLAN_INT_CAR_FOSA>',
+                "&instance_id=7ff9b3b4-9404-4702-bbe4-efe2407aef02",
+                "&return_url=http://testserver/api/enketo/edit/uuid-1/",
+                f"&instance_attachments[test.txt]=http://testserver/api/enketo/instance_files/{instance_file.id}/test.txt",
+            ]
+        )
+
+        parsed_actual = parse_qs(enketo_contents[0])["instance"][0]
+        parsed_expected = parse_qs(expected)["instance"][0]
+
+        self.assertEqual(
+            parsed_actual,
+            parsed_expected,
+        )
         self.assertEqual(
             enketo_contents[0],
             expected,
@@ -250,9 +333,17 @@ class EnketoAPITestCase(APITestCase):
         self.assertXmlResponse(response, 204)
         self.assertEqual("100000000", response.get("x-openrosa-accept-content-length"))
 
+    def test_when_anonymous_get_formList_should_validate_formId_is_present(self):
+        instance = self.form_1.instances.first()
+        response = self.client.get("/api/enketo/formList")
+
+        self.assertEqual(response.content.decode(), "formID is required")
+        self.assertEqual(response.status_code, 400)
+
     def test_when_anonymous_get_formList_should_work_1(self):
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/enketo/formList?formID={instance.uuid}")
+
         self.assertXmlResponse(response, 200)
 
         expected_list = "".join(
@@ -281,7 +372,9 @@ class EnketoAPITestCase(APITestCase):
                 .replace("REPLACEuserID", str(self.yoda.id))
                 .encode(),
             )
-            self.client.post("/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f})
+            self.client.post(
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
+            )
 
             instance = self.form_1.instances.first()
 
@@ -310,13 +403,146 @@ class EnketoAPITestCase(APITestCase):
                 .encode(),
             )
             response = self.client.post(
-                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
             )
 
             instance = self.form_1.instances.first()
 
             self.assertEqual(response.status_code, 201)
             self.assertEqual(self.yoda, instance.last_modified_by)
+
+    @responses.activate
+    def test_save_last_user_modified_submission_auto_export(self):
+        self.form_version_1.delete()
+        with open("iaso/tests/fixtures/hydro.xlsx", "rb") as form_version_file:
+            survey = parsing.parse_xls_form(form_version_file)
+            form_version = m.FormVersion.objects.create_for_form_and_survey(
+                form=self.form_1,
+                survey=survey,
+                xls_file=File(form_version_file),
+            )
+            form_version.version_id = "1"
+            form_version.save()
+            self.form_version_1 = form_version
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            instance.to_export = True
+            instance.save()
+
+            mapping = m.Mapping(form=self.form_1, data_source=self.sw_source, mapping_type=m.AGGREGATE)
+            mapping.save()
+
+            # align version_id with xml of the submission
+            self.form_version_1.version_id = "201911280919"
+            self.form_version_1.save()
+
+            mapping_version = m.MappingVersion(
+                name="aggregate", json=build_form_mapping(), form_version=self.form_version_1, mapping=mapping
+            )
+            mapping_version.save()
+
+            new_xml = (
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode()
+            )
+
+            f = SimpleUploadedFile("xml_submission_file.xml", new_xml)
+
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                json=load_dhis2_fixture("datavalues-ok.json"),
+                status=200,
+            )
+
+            responses.add(responses.POST, "https://dhis2.com/api/completeDataSetRegistrations", json={}, status=200)
+
+            response = self.client.post(
+                "/api/enketo/submission?to_export=true",
+                {"name": "xml_submission_file", "xml_submission_file": f},
+                format="multipart",
+            )
+
+            call = responses.calls[0]  # first captured call
+            posted_body = call.request.body
+
+            # ommit comment equal
+            self.assertPartial(
+                {
+                    "dataValues": [
+                        {
+                            "dataElement": "DE_DHIS2_ID",
+                            "value": "201911280919",
+                            "orgUnit": "dw234q",
+                            "period": "202001",
+                        }
+                    ]
+                },
+                json.loads(posted_body.decode()),
+            )
+
+            instance.refresh_from_db()
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(self.yoda, instance.last_modified_by)
+
+    @responses.activate
+    def test_save_last_user_modified_submission_auto_export_return_409_when_export_fails(self):
+        self.form_version_1.delete()
+        with open("iaso/tests/fixtures/hydro.xlsx", "rb") as form_version_file:
+            survey = parsing.parse_xls_form(form_version_file)
+            form_version = m.FormVersion.objects.create_for_form_and_survey(
+                form=self.form_1,
+                survey=survey,
+                xls_file=File(form_version_file),
+            )
+            form_version.version_id = "1"
+            form_version.save()
+            self.form_version_1 = form_version
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            instance.to_export = True
+            instance.save()
+
+            mapping = m.Mapping(form=self.form_1, data_source=self.sw_source, mapping_type=m.AGGREGATE)
+            mapping.save()
+
+            # align version_id with xml of the submission
+            self.form_version_1.version_id = "201911280919"
+            self.form_version_1.save()
+
+            mapping_version = m.MappingVersion(
+                name="aggregate", json=build_form_mapping(), form_version=self.form_version_1, mapping=mapping
+            )
+            mapping_version.save()
+
+            new_xml = (
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode()
+            )
+
+            f = SimpleUploadedFile("xml_submission_file.xml", new_xml)
+
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                json=load_dhis2_fixture("datavalues-ok.json"),
+                status=409,
+            )
+
+            response = self.client.post(
+                "/api/enketo/submission?to_export=true",
+                {"name": "xml_submission_file", "xml_submission_file": f},
+                format="multipart",
+            )
+
+            self.assertEqual(response.status_code, 409)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -776,3 +1002,32 @@ class EnketoAPITestCase(APITestCase):
         response = self.client.get(f"/api/fill/{form_with_injectables.uuid}/{self.jedi_council_corruscant.id}/202301")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "https://enketo_url.host.test/something")
+
+    def test_enketo_instance_files(self):
+        """GET /api/enketo/instance_files/<instance_file_id>/<file_name>"""
+        instance = self.form_1.instances.first()
+        file_content = b"hello world"
+        uploaded_file = SimpleUploadedFile(
+            name="test.txt",
+            content=file_content,
+            content_type="text/plain",
+        )
+        instance_file = InstanceFile.objects.create(
+            instance=instance,
+            name="test.txt",
+            file=uploaded_file,
+        )
+
+        # Test correct file download
+        response = self.client.get(f"/api/enketo/instance_files/{instance_file.id}/test.txt")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(b"".join(response.streaming_content), file_content)
+        self.assertEqual(response["Content-Disposition"], 'attachment; filename="test.txt"')
+
+        # Test wrong file name
+        response = self.client.get(f"/api/enketo/instance_files/{instance_file.id}/wrong_name.txt")
+        self.assertEqual(response.status_code, 404)
+
+        # Test non-existent instance file
+        response = self.client.get("/api/enketo/instance_files/9999/test.txt")
+        self.assertEqual(response.status_code, 404)

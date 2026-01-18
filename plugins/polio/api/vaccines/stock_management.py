@@ -1,5 +1,7 @@
 from datetime import date
+from enum import Enum
 from tempfile import NamedTemporaryFile
+from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpResponse
@@ -13,9 +15,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
+from iaso.models.json_config import Config
+from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from plugins.polio.api.vaccines.permissions import (
@@ -24,7 +27,6 @@ from plugins.polio.api.vaccines.permissions import (
     can_edit_helper,
 )
 from plugins.polio.models import (
-    DOSES_PER_VIAL,
     Campaign,
     DestructionReport,
     EarmarkedStock,
@@ -32,7 +34,23 @@ from plugins.polio.models import (
     OutgoingStockMovement,
     VaccineStock,
 )
-from plugins.polio.models.base import VaccineStockCalculator
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG, Round, VaccineStockCalculator
+from plugins.polio.permissions import (
+    POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+)
+
+
+class CampaignCategory(str, Enum):
+    TEST_CAMPAIGN = "TEST_CAMPAIGN"
+    CAMPAIGN_ON_HOLD = "CAMPAIGN_ON_HOLD"
+    ALL_ROUNDS_ON_HOLD = "ALL_ROUNDS_ON_HOLD"
+    ROUND_ON_HOLD = "ROUND_ON_HOLD"
+    REGULAR = "REGULAR"
 
 
 vaccine_stock_id_param = openapi.Parameter(
@@ -69,6 +87,12 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     stock_of_unusable_vials = serializers.SerializerMethodField()
     vials_destroyed = serializers.SerializerMethodField()
     stock_of_earmarked_vials = serializers.SerializerMethodField()
+    doses_received = serializers.SerializerMethodField()
+    doses_used = serializers.SerializerMethodField()
+    stock_of_usable_doses = serializers.SerializerMethodField()
+    stock_of_unusable_doses = serializers.SerializerMethodField()
+    doses_destroyed = serializers.SerializerMethodField()
+    stock_of_earmarked_doses = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineStock
@@ -83,14 +107,20 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "stock_of_unusable_vials",
             "stock_of_earmarked_vials",
             "vials_destroyed",
+            "doses_received",
+            "doses_used",
+            "stock_of_usable_doses",
+            "stock_of_unusable_doses",
+            "stock_of_earmarked_doses",
+            "doses_destroyed",
         ]
         list_serializer_class = VaccineStockListSerializer
 
     def get_vials_received(self, obj):
-        return obj.calculator.get_vials_received()
+        return obj.calculator.get_vials_received()[0]
 
     def get_vials_used(self, obj):
-        return obj.calculator.get_vials_used()
+        return obj.calculator.get_vials_used()[0]
 
     def get_stock_of_usable_vials(self, obj):
         return obj.calculator.get_total_of_usable_vials()[0]
@@ -99,10 +129,28 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return obj.calculator.get_total_of_unusable_vials()[0]
 
     def get_vials_destroyed(self, obj):
-        return obj.calculator.get_vials_destroyed()
+        return obj.calculator.get_vials_destroyed()[0]
 
     def get_stock_of_earmarked_vials(self, obj):
         return obj.calculator.get_total_of_earmarked()[0]
+
+    def get_doses_received(self, obj):
+        return obj.calculator.get_vials_received()[1]
+
+    def get_doses_used(self, obj):
+        return obj.calculator.get_vials_used()[1]
+
+    def get_stock_of_usable_doses(self, obj):
+        return obj.calculator.get_total_of_usable_vials()[1]
+
+    def get_stock_of_unusable_doses(self, obj):
+        return obj.calculator.get_total_of_unusable_vials()[1]
+
+    def get_doses_destroyed(self, obj):
+        return obj.calculator.get_vials_destroyed()[1]
+
+    def get_stock_of_earmarked_doses(self, obj):
+        return obj.calculator.get_total_of_earmarked()[1]
 
 
 class VaccineStockCreateSerializer(serializers.ModelSerializer):
@@ -230,11 +278,27 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
         return Response(serializer.data)
 
 
-class OutgoingStockMovementSerializer(serializers.ModelSerializer):
-    campaign = serializers.CharField(source="campaign.obr_name")
-    document = serializers.FileField(required=False)
+def compute_category_from_campaign(campaign: Optional[Campaign], round: Optional[Round]) -> str:
+    if campaign is None:
+        return CampaignCategory.REGULAR
+    if campaign.is_test:
+        return CampaignCategory.TEST_CAMPAIGN
+    if campaign.on_hold:
+        return CampaignCategory.CAMPAIGN_ON_HOLD
+    if not campaign.rounds.exclude(on_hold=True).exists():
+        return CampaignCategory.ALL_ROUNDS_ON_HOLD
+    if round is not None and round.on_hold:
+        return CampaignCategory.ROUND_ON_HOLD
+    return CampaignCategory.REGULAR
+
+
+class OutgoingStockMovementSerializer(ModelWithFileSerializer):
+    campaign = serializers.CharField(source="campaign.obr_name", required=False)
+    # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
+    alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = OutgoingStockMovement
@@ -246,12 +310,25 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "form_a_reception_date",
             "usable_vials_used",
             "lot_numbers",
-            "document",
+            "scan_result",
+            "scan_timestamp",
+            "file",
             "comment",
             "round",
             "round_number",
             "can_edit",
+            "alternative_campaign",
+            "campaign_category",
+            "doses_per_vial",
         ]
+
+    def validate(self, data):
+        # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
+        if data.get("campaign", None) and data.get("non_obr_name", None):
+            raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
+
+        validated_data = super().validate(data)
+        return validated_data
 
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
@@ -260,10 +337,13 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
+
+    def get_campaign_category(self, obj):
+        return compute_category_from_campaign(obj.campaign, obj.round)
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -280,39 +360,56 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             validated_data["campaign"] = campaign
-        return OutgoingStockMovement.objects.create(**validated_data)
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             instance.campaign = campaign
+        self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 
 
+class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
+    def validate(self, data):
+        # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
+        if data.get("campaign", None) is None and data.get("non_obr_name", None) is None:
+            raise serializers.ValidationError(
+                {"error": "At least one of 'campaign' or 'alternative campaign' must be provided"}
+            )
+        validated_data = super().validate(data)
+        return validated_data
+
+
+class OutgoingStockMovementPatchSerializer(OutgoingStockMovementSerializer):
+    campaign = serializers.CharField(source="campaign.obr_name", required=False, allow_null=True)
+    alternative_campaign = serializers.CharField(source="non_obr_name", required=False, allow_blank=True)
+
+
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
-    serializer_class = OutgoingStockMovementSerializer
     model_class = OutgoingStockMovement
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
     filter_backends = [
         filters.OrderingFilter,
     ]
-    ordering_fields = [
-        "report_date",
-        "form_a_reception_date",
-    ]
+    ordering_fields = ["report_date", "form_a_reception_date", "doses_per_vial"]
+
+    def get_serializer_class(self):
+        if self.action == "partial_update":
+            return OutgoingStockMovementPatchSerializer
+        return OutgoingStockMovementStrictSerializer
 
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
 
-        base_queryset = OutgoingStockMovement.objects.filter(
-            Q(round__isnull=True) | Q(round__isnull=False, round__on_hold=False)
-        )
+        base_queryset = OutgoingStockMovement.objects.all()
 
         if vaccine_stock_id is None:
             return base_queryset.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
@@ -327,12 +424,14 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         # When Form A is created, find if there is a matching earmarked stock
         # and create a new earmarked stock of type USED with the same values
         if response.status_code == 201:
-            movement = OutgoingStockMovement.objects.get(id=response.data["id"])
+            movement = OutgoingStockMovement.objects.filter(id=response.data["id"]).first()
             if movement and movement.round and movement.vaccine_stock:
-                total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
+                total_vials_usable = EarmarkedStock.get_available_vials_count(
+                    movement.vaccine_stock, movement.round, movement.doses_per_vial
+                )
 
                 vials_earmarked_used = min(total_vials_usable, movement.usable_vials_used)
-                doses_earmarked_used = vials_earmarked_used * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
+                doses_earmarked_used = vials_earmarked_used * movement.doses_per_vial
 
                 if vials_earmarked_used > 0:
                     EarmarkedStock.objects.create(
@@ -344,27 +443,36 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
                         doses_earmarked=doses_earmarked_used,
                         comment="Created from Form A submission",
                         form_a=movement,
+                        doses_per_vial=movement.doses_per_vial,
                     )
 
         return response
 
 
-class IncidentReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+class IncidentReportSerializer(ModelWithFileSerializer):
+    file = serializers.FileField(required=False)
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = IncidentReport
-        fields = "__all__"
+        exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
+
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
@@ -372,29 +480,38 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
     model_class = IncidentReport
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
 
-class DestructionReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+class DestructionReportSerializer(ModelWithFileSerializer):
+    file = serializers.FileField(required=False)
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = DestructionReport
-        fields = "__all__"
+        exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
+
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class DestructionReportViewSet(VaccineStockSubitemBase):
@@ -402,11 +519,12 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
     model_class = DestructionReport
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
     @action(detail=False, methods=["GET"])
     def check_duplicate(self, request):
@@ -444,6 +562,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
     campaign = serializers.SerializerMethodField()
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = EarmarkedStock
@@ -461,16 +580,21 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "can_edit",
+            "campaign_category",
+            "doses_per_vial",
         ]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
         )
+
+    def get_campaign_category(self, obj):
+        return compute_category_from_campaign(obj.campaign, obj.round)
 
     def get_campaign(self, obj):
         return obj.campaign.obr_name if obj.campaign else None
@@ -533,11 +657,12 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     filterset_class = EarmarkedStockFilter
     permission_classes = [
         lambda: VaccineStockEarmarkPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
     def get_queryset(self):
         return (
@@ -584,9 +709,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+            non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+            read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
     serializer_class = VaccineStockSerializer
@@ -621,7 +746,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["get"])
-    def summary(self, request, pk=None):
+    def summary(self, _, pk=None):
         """
         Retrieve a summary of vaccine stock for a given VaccineStock ID.
 
@@ -644,13 +769,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calculator = VaccineStockCalculator(vaccine_stock)
 
-        total_usable_vials, total_usable_doses = calculator.get_total_of_usable_vials()
+        _, total_usable_doses = calculator.get_total_of_usable_vials()
         (
             total_unusable_vials,
             total_unusable_doses,
         ) = calculator.get_total_of_unusable_vials()
         (
-            total_earmarked_vials,
+            _,
             total_earmarked_doses,
         ) = calculator.get_total_of_earmarked()
 
@@ -658,12 +783,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "country_id": vaccine_stock.country.id,
             "country_name": vaccine_stock.country.name,
             "vaccine_type": vaccine_stock.vaccine,
-            "total_usable_vials": total_usable_vials,
-            "total_unusable_vials": total_unusable_vials,
             "total_usable_doses": total_usable_doses,
-            "total_earmarked_vials": total_earmarked_vials,
             "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
+            "total_unusable_vials": total_unusable_vials,
         }
 
         return Response(summary_data, status=status.HTTP_200_OK)
@@ -758,8 +881,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             if not parsed_end_date:
                 raise ValidationError("The 'end_date' query parameter is not a valid date.")
 
-        calc = VaccineStockCalculator(vaccine_stock)
-        results = calc.get_list_of_unusable_vials(end_date)
+        calc = VaccineStockCalculator(vaccine_stock, end_date)
+        results = calc.get_list_of_unusable_vials()
         results = sort_results(request, results)
 
         export_xlsx = request.query_params.get("export_xlsx", False)
@@ -772,67 +895,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 filename,
                 results,
                 {
-                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
-                    "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
+                    "Usable": lambda: calc.get_list_of_usable_vials(),
+                    "Earmarked": lambda: calc.get_list_of_earmarked(),
                 },
                 vaccine_stock,
                 "Unusable",
             )
-            with NamedTemporaryFile() as tmp:
-                workbook.save(tmp.name)
-                tmp.seek(0)
-                stream = tmp.read()
-
-            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
-            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
-            return response
-
-        paginator = Paginator()
-        page = paginator.paginate_queryset(results, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-        return Response({"results": results})
-
-    @action(detail=True, methods=["get"])
-    def get_earmarked_stock(self, request, pk=None):
-        """
-        Retrieve a detailed list of movements for earmarked stock associated with a given VaccineStock ID.
-
-        """
-        if pk is None:
-            raise ValidationError("No VaccineStock ID provided")
-
-        try:
-            vaccine_stock = self.get_queryset().get(id=pk)
-        except VaccineStock.DoesNotExist:
-            raise ValidationError(f"VaccineStock not found for id={pk}")
-
-        end_date = request.query_params.get("end_date", None)
-        if end_date:
-            parsed_end_date = parse_date(end_date)
-            if not parsed_end_date:
-                raise ValidationError("The 'end_date' query parameter is not a valid date.")
-
-        calc = VaccineStockCalculator(vaccine_stock)
-        results = calc.get_list_of_earmarked(end_date)
-        results = sort_results(request, results)
-
-        export_xlsx = request.query_params.get("export_xlsx", False)
-
-        if export_xlsx:
-            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = download_xlsx_stock_variants(
-                request,
-                filename,
-                results,
-                {
-                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
-                    "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
-                },
-                vaccine_stock,
-                "Earmarked",
-            )
-
             with NamedTemporaryFile() as tmp:
                 workbook.save(tmp.name)
                 tmp.seek(0)
@@ -881,6 +949,44 @@ class VaccineStockManagementViewSet(ModelViewSet):
             .distinct()
             .order_by("id")
         )
+
+    @action(detail=False, methods=["get"])
+    def doses_options(self, request):
+        """_summary_
+        Uses the VaccineArrivalReports as source of truth for available dose_per_vial values and returns a list of dropdown options with available values
+        """
+        stock_id = request.GET.get("stockId", None)
+        if not stock_id:
+            return Response("stock id not provided", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            stock_id = int(stock_id)
+        except:
+            return Response("stock id must be a number", status=status.HTTP_400_BAD_REQUEST)
+
+        vaccine_stock = VaccineStock.objects.filter(id=stock_id).first()
+        if not vaccine_stock:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        vaccine = vaccine_stock.vaccine
+        try:
+            config = Config.objects.get(slug=DOSES_PER_VIAL_CONFIG_SLUG)
+        except Config.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        options = config.content[vaccine]
+        calculator = VaccineStockCalculator(vaccine_stock)
+        doses_available = calculator.get_usable_stock_by_vaccine_presentation()
+        unusable_doses = calculator.get_unusable_stock_by_vaccine_presentation()
+        results = []
+        for option in options:
+            results.append(
+                {
+                    "label": str(option),
+                    "value": option,
+                    "doses_available": doses_available[str(option)],
+                    "unusable_doses": unusable_doses[str(option)],
+                }
+            )
+        return Response({"results": results}, status=status.HTTP_200_OK)
 
 
 class EmbeddedVaccineStockManagementViewset(VaccineStockManagementViewSet):

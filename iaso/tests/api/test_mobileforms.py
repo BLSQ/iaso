@@ -4,6 +4,7 @@ from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.models import Form
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -15,8 +16,10 @@ class MobileFormsAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="Marvel")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION])
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=[CORE_FORMS_PERMISSION]
+        )
         cls.iron_man = cls.create_user_with_profile(username="iron_man", account=marvel)
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -88,6 +91,32 @@ class MobileFormsAPITestCase(APITestCase):
         response = self.client.get("/api/mobile/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 1)
+
+    def test_forms_list_ok_with_custom_fields(self):
+        """
+        Ensure we don't trigger N+1 queries when using the `fields` query param.
+        """
+        # Ensure that `form_1` has a version so that we'll have two forms in the response.
+        self.form_1.form_versions.create(file=self.create_file_mock(name="data.xml"), version_id="20250813")
+
+        self.client.force_authenticate(self.yoda)
+        custom_fields = [
+            "id",
+            "name",
+            "periods_before_allowed",
+            "periods_after_allowed",
+            "predefined_filters",
+            "has_attachments",
+            "created_at",
+            "updated_at",
+            "reference_form_of_org_unit_types",
+        ]
+        with self.assertNumQueries(14):
+            response = self.client.get(
+                f"/api/mobile/forms/?fields={','.join(custom_fields)}", headers={"Content-Type": "application/json"}
+            )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /mobile/forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
@@ -191,7 +220,6 @@ class MobileFormsAPITestCase(APITestCase):
 
         form_data = response.json()
         self.assertValidFullFormData(form_data)
-        self.assertEqual(1, form_data["instances_count"])
 
     def test_forms_create_ok(self):
         """POST /mobile/forms/ happy path"""
@@ -456,14 +484,19 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertValidFormData(form_data)
 
         self.assertHasField(form_data, "device_field", str)
-        self.assertHasField(form_data, "location_field", str)
         self.assertHasField(form_data, "form_id", str)
-        self.assertHasField(form_data, "period_type", str)
-        self.assertHasField(form_data, "single_per_period", bool)
-        self.assertHasField(form_data, "org_unit_types", list)
-        self.assertHasField(form_data, "projects", list)
-        self.assertHasField(form_data, "instances_count", int)
         self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "latest_form_version", dict)
+        self.assertHasField(form_data, "location_field", str)
+        self.assertHasField(form_data, "org_unit_types", list)
+        self.assertHasField(form_data, "period_type", str)
+        self.assertHasField(form_data, "projects", list)
+        self.assertHasField(form_data, "single_per_period", bool)
+        self.assertHasField(form_data["latest_form_version"], "created_at", float)
+        self.assertHasField(form_data["latest_form_version"], "file", str)
+        self.assertHasField(form_data["latest_form_version"], "id", int)
+        self.assertHasField(form_data["latest_form_version"], "updated_at", float)
+        self.assertHasField(form_data["latest_form_version"], "version_id", str)
 
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)
@@ -476,12 +509,3 @@ class MobileFormsAPITestCase(APITestCase):
         for project_data in form_data["projects"]:
             self.assertIsInstance(project_data, dict)
             self.assertHasField(project_data, "id", int)
-
-        self.assertHasField(form_data, "instance_updated_at", float)
-        self.assertHasField(form_data, "instances_count", int)
-        self.assertHasField(form_data, "latest_form_version", dict)
-        self.assertHasField(form_data["latest_form_version"], "id", int)
-        self.assertHasField(form_data["latest_form_version"], "version_id", str)
-        self.assertHasField(form_data["latest_form_version"], "file", str)
-        self.assertHasField(form_data["latest_form_version"], "created_at", float)
-        self.assertHasField(form_data["latest_form_version"], "updated_at", float)

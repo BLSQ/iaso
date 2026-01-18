@@ -135,11 +135,19 @@ export const useGetCountriesOptions = (
     }, [countries, isFetching]);
 };
 
-export const useCampaignDropDowns = (
-    countryId?: number,
-    campaign?: string,
-    vaccine?: string,
-): CampaignDropdowns => {
+type UseCampaignDropdownsParams = {
+    countryId?: number;
+    campaign?: string;
+    vaccine?: string;
+    rounds?: number;
+};
+
+export const useCampaignDropDowns = ({
+    countryId,
+    campaign,
+    vaccine,
+    rounds: rndsParams,
+}: UseCampaignDropdownsParams): CampaignDropdowns => {
     const options: Options = {
         enabled: Boolean(countryId),
         countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
@@ -157,6 +165,16 @@ export const useCampaignDropDowns = (
         const campaigns = list
             .filter(
                 c => c.separate_scopes_per_round || (c.scopes ?? []).length > 0,
+            )
+            // filter out on hold campaign, except selected campaign to avoid UI bug
+            .filter(
+                c => !c.on_hold || c.obr_name === selectedCampaign?.obr_name,
+            )
+            // filter out campaign with all rounds on hold, except selected campaign to avoid UI bug
+            .filter(
+                c =>
+                    !c.rounds.every(rnd => rnd.on_hold) ||
+                    c.obr_name === selectedCampaign?.obr_name,
             )
             .map(c => ({
                 label: c.obr_name,
@@ -181,6 +199,12 @@ export const useCampaignDropDowns = (
                           (!selectedCampaign?.separate_scopes_per_round &&
                               (selectedCampaign?.scopes ?? []).length > 0),
                   )
+                  // filter out rounds on_hold, except selected round to avoid UI bug
+                  .filter(
+                      round =>
+                          !round.on_hold ||
+                          (rndsParams ?? []).includes(round.number),
+                  )
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,
@@ -192,8 +216,9 @@ export const useCampaignDropDowns = (
             vaccines,
             rounds,
             isFetching,
+            rndsParams,
         };
-    }, [data, vaccine, isFetching, campaign]);
+    }, [data, vaccine, isFetching, campaign, rndsParams]);
 };
 
 const getVrfDetails = (id?: string) => {
@@ -249,7 +274,7 @@ const createFormDataRequest = (
     if (Object.keys(fileData).length > 0) {
         Object.entries(fileData).forEach(([key, value]) => {
             if (key === 'files' && Array.isArray(value) && value.length > 0) {
-                formData.append('document', value[0]); // Use 'document' key
+                formData.append('file', value[0]); // Use 'file' key
             } else if (Array.isArray(value)) {
                 value.forEach((blob, index) => {
                     formData.append(`${key}[${index}]`, blob);
@@ -278,9 +303,7 @@ export const saveVrf = (
         ? Object.fromEntries(
               Object.entries(vrf).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -298,10 +321,10 @@ export const saveVrf = (
         data: filteredParams,
     };
 
-    if (vrf?.document) {
+    if (vrf?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: vrf.document };
+        const fileData = { files: vrf.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }

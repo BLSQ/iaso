@@ -2,7 +2,7 @@ import os
 import random
 import uuid
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from dict2xml import dict2xml
 from fake import fake_person
@@ -35,16 +35,17 @@ def submission_org_unit_gps_point(org_unit):
 
 
 def picture_by_org_unit_type_name(org_unit_type_name):
+    org_unit_type = org_unit_type_name.strip()
     picture_name = ""
-    if org_unit_type_name == "Country/Pays - COUN":
+    if org_unit_type == "Country/Pays - COUN" or org_unit_type == "Main org unit type":
         picture_name = "Ministry-of-health.jpg"
-    elif org_unit_type_name == "Region/Région - REG":
+    elif org_unit_type == "Region/Région - REG":
         picture_name = "Regional-health-authority.jpg"
-    elif org_unit_type_name == "District/Zone de santé - DIST":
+    elif org_unit_type == "District/Zone de santé - DIST":
         picture_name = "health-district.jpg"
-    elif org_unit_type_name == "Health area/Aire de santé - AREA":
+    elif org_unit_type == "Health area/Aire de santé - AREA":
         picture_name = "health-area.jpg"
-    elif org_unit_type_name == "Health facility/Formation sanitaire - HF":
+    elif org_unit_type == "Health facility/Formation sanitaire - HF":
         picture_name = "health-facility.jpg"
     return picture_name
 
@@ -69,7 +70,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
     random_year = random.randint(1, 5)
     random_date = (datetime.now() - timedelta(days=(random_year * 365.25))).date()
     beneficiary_name = generate_name(style="capital")
-    registration_date = datetime.now()
+    registration_date = datetime.now(timezone(timedelta(hours=2))).isoformat()
     code = random.randint(1000000000, 9999999999)
     ticket_number = random.randint(10000, 99999)
     instance_json = None

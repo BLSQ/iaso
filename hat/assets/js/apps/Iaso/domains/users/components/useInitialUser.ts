@@ -1,18 +1,25 @@
-import get from 'lodash/get';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
+import get from 'lodash/get';
+import { emailRegex } from '../../../libs/utils';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 import { UserRole } from '../../userRoles/types/userRoles';
+import MESSAGES from '../messages';
 import { InitialUserData, UserDialogData } from '../types';
 
 export type InitialUserUtils = {
     user: UserDialogData;
     setFieldErrors: (fieldName, fieldError) => void;
     setFieldValue: (fieldName, fieldError) => void;
+    setPhoneNumber: (phoneNumber: string, countryCode: string) => void;
+    setEmail: (email: string) => void;
+    hasErrors: boolean;
 };
 
 export const useInitialUser = (
     initialData: InitialUserData,
 ): InitialUserUtils => {
+    const { formatMessage } = useSafeIntl();
     const initialUser: UserDialogData = useMemo(() => {
         return {
             id: { value: get(initialData, 'id', null), errors: [] },
@@ -122,23 +129,16 @@ export const useInitialUser = (
             const newUser = {
                 ...user,
             };
-
-            if (fieldName === 'phone_number_obj') {
-                newUser.phone_number = {
-                    value: fieldValue.phone_number,
-                    errors: [],
-                };
-                newUser.country_code = {
-                    value: fieldValue.country_code?.countryCode,
-                    errors: [],
-                };
-            } else {
-                newUser[fieldName] = {
-                    value: fieldValue,
+            newUser[fieldName] = {
+                value: fieldValue,
+                errors: [],
+            };
+            if (fieldName === 'send_email_invitation' && fieldValue) {
+                newUser.password = {
+                    value: null,
                     errors: [],
                 };
             }
-
             if (fieldName === 'user_roles') {
                 let user_roles_editable_org_unit_type_ids: any = [];
                 const userRolesPermissions: UserRole[] = (userRoles || [])
@@ -172,11 +172,54 @@ export const useInitialUser = (
         [user, userRoles],
     );
 
+    const setPhoneNumber = useCallback(
+        (phoneNumber, countryCode) => {
+            setUser({
+                ...user,
+                phone_number: { value: phoneNumber, errors: [] },
+                country_code: { value: countryCode, errors: [] },
+            });
+        },
+        [user],
+    );
+    const setEmail = useCallback(
+        email => {
+            setUser({
+                ...user,
+                email: {
+                    value: email === '' ? undefined : email,
+                    errors:
+                        emailRegex.test(email) || email === ''
+                            ? []
+                            : [formatMessage(MESSAGES.invalidEmailFormat)],
+                },
+            });
+        },
+        [user, formatMessage],
+    );
+    const hasErrors = useMemo(() => {
+        return Object.values(user).some(field => field.errors.length > 0);
+    }, [user]);
+
     useEffect(() => {
         setUser(initialUser);
     }, [initialUser]);
 
     return useMemo(() => {
-        return { user, setFieldValue, setFieldErrors };
-    }, [setFieldErrors, setFieldValue, user]);
+        return {
+            user,
+            setFieldValue,
+            setFieldErrors,
+            setPhoneNumber,
+            setEmail,
+            hasErrors,
+        };
+    }, [
+        setFieldErrors,
+        setFieldValue,
+        user,
+        setPhoneNumber,
+        setEmail,
+        hasErrors,
+    ]);
 };

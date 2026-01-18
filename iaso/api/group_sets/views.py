@@ -4,9 +4,10 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import Paginator
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import GroupSet, Project, SourceVersion
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 
 from ..common import HasPermission, ModelViewSet
 from .filters import GroupSetFilter
@@ -47,7 +48,7 @@ class GroupSetDropdownSerializer(serializers.ModelSerializer):
 class GroupSetsViewSet(ModelViewSet):
     f"""Groups API
 
-    This API is restricted to users having the "{permission.ORG_UNITS}", "{permission.ORG_UNITS_READ}" permission
+    This API is restricted to users having the "{CORE_ORG_UNITS_PERMISSION}", "{CORE_ORG_UNITS_READ_PERMISSION}" permission
 
     GET /api/group_sets/      params : version, dataSource, defaultVersion, search, order
     GET /api/group_sets/<id>
@@ -58,8 +59,9 @@ class GroupSetsViewSet(ModelViewSet):
     lookup_field = "id"
 
     permission_classes = [
+        AuthenticationEnforcedPermission,
         permissions.IsAuthenticated,
-        HasPermission(permission.ORG_UNITS, permission.ORG_UNITS_READ),  # type: ignore
+        HasPermission(CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION),  # type: ignore
         HasGroupsetPermission,
     ]
 
@@ -94,7 +96,12 @@ class GroupSetsViewSet(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(permission_classes=[], detail=False, methods=["GET"], serializer_class=GroupSetDropdownSerializer)
+    @action(
+        permission_classes=[AuthenticationEnforcedPermission],
+        detail=False,
+        methods=["GET"],
+        serializer_class=GroupSetDropdownSerializer,
+    )
     def dropdown(self, request, *args):
         """To be used in dropdowns (filters)
 

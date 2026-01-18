@@ -12,7 +12,7 @@ type ProjectApi = {
     projects: Array<Project>;
 };
 const getProjects = (
-    canBypassProjectRestrictions?: boolean,
+    canBypassProjectRestrictions = false,
 ): Promise<ProjectApi> => {
     let url = '/api/projects/';
     if (canBypassProjectRestrictions) {
@@ -44,6 +44,7 @@ export const useGetProjectsDropdownOptions = (
                     return {
                         value: asString ? project.id?.toString() : project.id,
                         label: project.name,
+                        color: project.color,
                     };
                 });
             },
@@ -96,5 +97,5 @@ export const useSave = (): UseMutationResult =>
                 : postRequest('/api/apps/', body),
         undefined,
         undefined,
-        ['projects-paginated'],
+        ['projects-paginated', 'projects-dropdown'],
     );

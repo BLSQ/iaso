@@ -32,7 +32,8 @@ export type Entity = {
     submitter: string;
     instances: Record<string, any>[];
     program?: string;
-    duplicates: number[];
+    duplicates?: number[];
+    has_duplicates?: boolean;
     latitude?: number;
     longitude?: number;
     nfc_cards?: number;

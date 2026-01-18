@@ -165,6 +165,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Entities',
         id: 'iaso.label.entities',
     },
+    stockManagement: {
+        defaultMessage: 'Stock Management',
+        id: 'iaso.label.stockManagement',
+    },
     storages: {
         defaultMessage: 'External storage',
         id: 'iaso.label.storages',
@@ -180,6 +184,10 @@ const MESSAGES = defineMessages({
     entityDuplicatesTitle: {
         defaultMessage: 'Duplicates',
         id: 'iaso.label.duplicates',
+    },
+    entityDuplicateAnalysesTitle: {
+        defaultMessage: 'Duplicate Analyses',
+        id: 'iaso.label.duplicateAnalyses',
     },
     modules: {
         defaultMessage: 'Modules',
@@ -224,6 +232,18 @@ const MESSAGES = defineMessages({
     validation: {
         defaultMessage: 'Validation',
         id: 'iaso.label.validation',
+    },
+    accountSetup: {
+        defaultMessage: 'Setup a new account',
+        id: 'iaso.setup.accountSetup',
+    },
+    skus: {
+        defaultMessage: 'Stock Keeping Units',
+        id: 'iaso.label.stockkeepingunits',
+    },
+    stockItems: {
+        defaultMessage: 'Stock entries',
+        id: 'iaso.label.stockItems',
     },
 });
 

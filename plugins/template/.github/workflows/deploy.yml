@@ -1,0 +1,164 @@
+name: Deploy IASO *** Web App
+
+on:
+    workflow_dispatch:
+        inputs:
+            # Branch is chosen by default in github manual actions
+            environment:
+                description: Env (staging/prod) or exact env name (e.g. ***)
+                required: true
+                default: ***-staging
+            iaso_ref:
+                description: The branch, tag or SHA from Iaso to use (main by default)
+                required: false
+                default: main
+            slack_channel:
+                description: Slack Channel for notification (*** by default)
+                required: false
+                default: ***
+    # On push to development deploy to staging
+    # TODO
+    # push:
+    #     branches:
+    #         - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Iaso repo
+              uses: actions/checkout@v4
+              with:
+                  repository: 'BLSQ/iaso'
+                  ref: ${{ github.event.inputs.iaso_ref }}
+                  fetch-depth: 0
+            - name: Checkout *** repo nested in the Iaso plugin folder
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.inputs.branch }}
+                  path: plugins/***
+                  fetch-depth: 0
+            - name: Check if repos correctly set up
+              run: |
+                  ls -las
+                  ls -las plugins
+                  ls -las plugins/***
+            # TODO: Copied from Iaso, adapt to reuse
+            # Merge the workflow_dispatch config with some default for deployment via the on:push
+            - name: Set configs
+              id: config
+              env: # TODO: change to development
+                  DEFAULT_GIT_REFERENCE: main
+                  DEFAULT_ENVIRONMENT: staging
+                  DEFAULT_SLACK_CHANNEL: ***
+              run: |
+                  echo "::set-output name=GIT_REFERENCE::${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}"
+                  echo "::set-output name=ENVIRONMENT::${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}"
+                  echo "::set-output name=SLACK_CHANNEL::${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}"
+            - name: Deployment of ${{ github.ref_name }} on ${{ steps.config.outputs.ENVIRONMENT }}
+              id: version
+              run: |
+                  export GITHUB_BRANCH=${GITHUB_REF##*heads/}
+                  echo $GITHUB_BRANCH
+                  git describe --tags
+                  export IASO_VERSION=$(git describe --tags --match "v[[:digit:]]*")
+                  echo $IASO_VERSION
+                  cd plugins/***
+                  export PLUGIN_VERSION=$(git rev-parse HEAD)
+                  echo $PLUGIN_VERSION
+                  echo "::set-output name=VERSION_NAME::$IASO_VERSION-$PLUGIN_VERSION"
+            - name: Slack deployment start
+              uses: rtCamp/action-slack-notify@v2.1.3
+              env:
+                  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+                  SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
+                  SLACK_COLOR: ''
+                  SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
+                  SLACK_ICON_EMOJI: ':robot_face:'
+                  SLACK_TITLE: Started deployment of  ${{ steps.version.outputs.VERSION_NAME }} on ${{ steps.config.outputs.ENVIRONMENT }} ...
+                  SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+                  MSG_MINIMAL: true
+            - name: Use node.js 20
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '20.13.1'
+            - name: upgrade npm
+              run: |
+                  npm install --global npm@10.5.2
+            - name: Set up Python 3.9
+              uses: actions/setup-python@v1
+              with:
+                  python-version: 3.9
+
+            - name: Setup beanstalk
+              # the specification of botocore is due to a deployment problem with 1.21 to remove later
+              run: |
+                  cp .elasticbeanstalk/config.github.yml .elasticbeanstalk/config.yml
+                  pip install awsebcli==3.20.5 botocore==1.29.81 boto3==1.26.81
+            - name: Environment info (IASO)
+              run: |
+                  node --version
+                  npm --version
+                  pip list
+
+            - name: npm ci
+              run: |
+                  npm ci
+
+            - name: npm build
+              run: |
+                  rm -f hat/assets/webpack/*
+                  npm run webpack-prod
+                  git add -f hat/assets/webpack/
+
+                  # add version in python
+                  scripts/set_version.sh
+                  git add -f hat/__version__.py
+              env:
+                  VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+                  CI: false
+
+            # Stage the *** plugin with git since that way it'll be picked up
+            # by `eb deploy`, which uses `git archive` to zip the application version.
+            # `git add` on a nested repo requires the setup of Git Submodules,
+            # so we first make it a regular folder by removing the git history.
+            - name: Add *** plugin
+              run: |
+                  rm -rf plugins/***/.git
+                  git add -f plugins/***
+
+            - name: Deploy to beanstalk
+              run: python scripts/eb_deploy.py ${{ steps.config.outputs.ENVIRONMENT }}
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_DEFAULT_REGION: 'eu-central-1'
+                  VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+
+            - name: Slack deployment success notification
+              uses: rtCamp/action-slack-notify@v2.1.3
+              env:
+                  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+                  SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
+                  SLACK_COLOR: ${{ job.status }}
+                  SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
+                  SLACK_ICON_EMOJI: ':robot_face:'
+                  SLACK_TITLE: *** (IASO) ${{ steps.version.outputs.VERSION_NAME }} successfully deployed on ${{ steps.config.outputs.ENVIRONMENT }}
+                  SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+                  SLACK_FOOTER: '-'
+                  MSG_MINIMAL: true
+              if: success()
+            - name: Slack deployment failure notification
+              uses: rtCamp/action-slack-notify@v2.1.3
+              env:
+                  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+                  SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
+                  SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
+                  SLACK_COLOR: ${{ job.status }}
+                  SLACK_ICON_EMOJI: ':robot_face:'
+                  SLACK_TITLE: Deployment failure *** (IASO) ${{ steps.version.outputs.VERSION_NAME }} - ${{ steps.config.outputs.ENVIRONMENT }}
+                  SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+                  SLACK_FOOTER: '-'
+                  MSG_MINIMAL: true
+              if: failure()

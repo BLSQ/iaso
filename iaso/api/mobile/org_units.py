@@ -5,7 +5,6 @@ import django_filters
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
 from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
-from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
@@ -16,13 +15,22 @@ from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
-from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.menupermissions import models as permission
-from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
+from iaso.api.common import ModelViewSet, Paginator, TimestampField, safe_api_import
+from iaso.api.instances.instances import InstanceFileSerializer
+from iaso.api.org_units import import_org_units
+from iaso.api.permission_checks import (
+    AuthenticationEnforcedPermission,
+    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+)
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
-from iaso.permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 
 
 SHAPE_RESULTS_MAX = 1000
@@ -56,6 +64,7 @@ class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
 class ReferenceInstancesSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
+    instance_files = InstanceFileSerializer(many=True, read_only=True, source="instancefile_set")
 
     class Meta:
         model = Instance
@@ -67,13 +76,17 @@ class ReferenceInstancesSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "json",
+            "instance_files",
         ]
 
 
 class MobileOrgUnitSerializer(serializers.ModelSerializer):
+    app_id = None
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Do not include the geo_json if not requested
+        self.app_id = kwargs["context"].get("app_id")
         if not kwargs["context"].get("include_geo_json"):
             self.fields.pop("geo_json")
 
@@ -112,11 +125,13 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
     def get_org_unit_type_name(org_unit: OrgUnit):
         return org_unit.org_unit_type.name if org_unit.org_unit_type else None
 
-    @staticmethod
-    def get_parent_id(org_unit: OrgUnit):
+    def get_parent_id(self, org_unit: OrgUnit):
+        parent = org_unit.parent
         return (
             org_unit.parent_id
-            if org_unit.parent is None or org_unit.parent.validation_status == OrgUnit.VALIDATION_VALID
+            if parent is None
+            or parent.validation_status == OrgUnit.VALIDATION_VALID
+            and (self.app_id is None or any(p.app_id == self.app_id for p in parent.org_unit_type.projects.all()))
             else None
         )
 
@@ -138,10 +153,10 @@ class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm(permission.FORMS)
-                or request.user.has_perm(permission.ORG_UNITS)
-                or request.user.has_perm(permission.ORG_UNITS_READ)
-                or request.user.has_perm(permission.SUBMISSIONS)
+                request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+                or request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name())
+                or request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name())
+                or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
             )
         ):
             return False
@@ -198,7 +213,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
     GET /api/mobile/orgunits/?app_id={APP_ID}&ids=id_1,id_2,id_3
     """
 
-    permission_classes = [HasOrgUnitPermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasOrgUnitPermission]
     serializer_class = MobileOrgUnitSerializer
     results_key = "orgUnits"
 
@@ -207,41 +222,50 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        app_id = self.get_app_id()
 
         limit_download_to_roots = False
 
+        try:
+            project = Project.objects.get_for_user_and_app_id(user, app_id)
+        except Project.DoesNotExist:
+            return OrgUnit.objects.none()
+
         if user and not user.is_anonymous:
-            limit_download_to_roots = Project.objects.get_for_user_and_app_id(user, app_id).has_feature(
-                FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS
-            )
+            limit_download_to_roots = project.has_feature(FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS)
 
         if limit_download_to_roots:
-            org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
+            org_units = OrgUnit.objects.filter_for_user_and_project(self.request.user, project)
         else:
-            org_units = OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
+            org_units = OrgUnit.objects.filter_for_user_and_project(None, project)
         queryset = (
             org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")
-            .prefetch_related("parent", "org_unit_type", "groups")
-            .select_related("org_unit_type")
+            .prefetch_related("parent__org_unit_type__projects", "groups")
+            .select_related("org_unit_type", "parent", "parent__org_unit_type")
         )
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
-            queryset = queryset.annotate(geo_json=RawSQL("ST_AsGeoJson(COALESCE(simplified_geom, geom))::json", []))
+            queryset = queryset.annotate(
+                geo_json=RawSQL("ST_AsGeoJson(COALESCE(iaso_orgunit.simplified_geom, iaso_orgunit.geom))::json", [])
+            )
 
         return queryset
 
     def get_serializer_context(self) -> Dict[str, Any]:
         context = super().get_serializer_context()
         context["include_geo_json"] = self.check_include_geo_json()
+        context["app_id"] = self.get_app_id()
         return context
 
     def check_include_geo_json(self):
         return self.request.query_params.get("shapes", "") == "true"
 
+    def get_app_id(self):
+        return AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+
     def list(self, request, *args, **kwargs):
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        app_id = self.get_app_id()
         if not app_id:
             return Response()
 
@@ -251,8 +275,8 @@ class MobileOrgUnitViewSet(ModelViewSet):
             queryset = (
                 OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
                 .order_by("path")
-                .prefetch_related("parent", "org_unit_type", "groups")
-                .select_related("org_unit_type")
+                .prefetch_related("parent__org_unit_type__projects", "groups")
+                .select_related("org_unit_type", "parent", "parent__org_unit_type")
                 .filter(id__in=ids)
             )
             if len(queryset) != len(ids):
@@ -285,7 +309,8 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     @safe_api_import("orgUnit")
     def create(self, _, request):
-        new_org_units = import_data(request.data, request.user, request.query_params.get(APP_ID))
+        data = sorted(request.data, key=lambda ou: float(ou["created_at"]))
+        new_org_units = import_org_units(data, request.user, self.get_app_id())
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     @action(detail=False, methods=["GET"])
@@ -323,14 +348,20 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except ValueError:
             org_unit = get_object_or_404(authorized_org_units, uuid=pk)
 
-        reference_instances = org_unit.reference_instances(manager="non_deleted_objects").all().order_by("id")
+        reference_instances = (
+            org_unit.reference_instances(manager="non_deleted_objects")
+            .prefetch_related("instancefile_set")
+            .order_by("id")
+        )
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 
         self.paginator.results_key = "instances"
         self.paginator.page_size = self.paginator.get_page_size(request) or 10
         paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
-        serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
+        serializer = ReferenceInstancesSerializer(
+            paginated_reference_instances, many=True, context=self.get_serializer_context()
+        )
         return self.get_paginated_response(serializer.data)
 
 
@@ -347,67 +378,3 @@ def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:
         min(a[2], b[2]),
         max(a[3], b[3]),
     )
-
-
-def import_data(org_units, user, app_id):
-    new_org_units = []
-    project = Project.objects.get_for_user_and_app_id(user, app_id)
-    org_units = sorted(org_units, key=get_timestamp)
-
-    for org_unit in org_units:
-        uuid = org_unit.get("id", None)
-        latitude = org_unit.get("latitude", None)
-        longitude = org_unit.get("longitude", None)
-        org_unit_location = None
-
-        if latitude and longitude:
-            altitude = org_unit.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
-
-        if created:
-            org_unit_db.custom = True
-            org_unit_db.validated = False
-            org_unit_db.name = org_unit.get("name", None)
-            org_unit_db.accuracy = org_unit.get("accuracy", None)
-            parent_id = org_unit.get("parentId", None)
-            if not parent_id:
-                parent_id = org_unit.get(
-                    "parent_id", None
-                )  # there exist versions of the mobile app in the wild with both parentId and parent_id
-
-            if parent_id is not None:
-                if str.isdigit(parent_id):
-                    org_unit_db.parent_id = parent_id
-                else:
-                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit_db.parent_id = parent_org_unit.id
-
-            org_unit_type_id = org_unit.get(
-                "orgUnitTypeId", None
-            )  # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
-            if not org_unit_type_id:
-                org_unit_type_id = org_unit.get("org_unit_type_id", None)
-            org_unit_db.org_unit_type_id = org_unit_type_id
-
-            t = org_unit.get("created_at", None)
-            if t:
-                org_unit_db.created_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.created_at = org_unit.get("created_at", None)
-
-            t = org_unit.get("updated_at", None)
-            if t:
-                org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.updated_at = org_unit.get("created_at", None)
-            if user and not user.is_anonymous:
-                org_unit_db.creator = user
-            org_unit_db.source = "API"
-            if org_unit_location:
-                org_unit_db.location = org_unit_location
-
-            new_org_units.append(org_unit_db)
-            org_unit_db.version = project.account.default_version
-            org_unit_db.save()
-    return new_org_units

@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 
 import { Box, Button, Grid } from '@mui/material';
 
@@ -15,12 +15,12 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { ORG_UNITS } from '../../../utils/permissions';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
 import {
     GroupDropdownOption,
     OrgUnitTypeDropdownOption,
 } from '../configuration/types';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import MESSAGES from '../messages';
 import { OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
@@ -90,7 +90,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-
+    const { parentOrgUnitId } = params;
     const isNewOrgunit = params.orgUnitId === '0';
     const isSaveDisabled =
         orgUnitState.name.value === '' ||
@@ -100,12 +100,33 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus();
+    } = useGetOrgUnitValidationStatus();
+    const parentId = isNewOrgunit
+        ? parentOrgUnitId
+        : orgUnitState.parent.value?.id;
     const { data: parentOrgunit } = useGetOrgUnit(
-        orgUnitState.parent.value
-            ? `${orgUnitState.parent.value.id}`
-            : undefined,
+        parentId ? `${parentId}` : undefined,
     );
+
+    useEffect(() => {
+        if (
+            !orgUnitState.org_unit_type_id?.value &&
+            isNewOrgunit &&
+            !orgUnitModified &&
+            parentOrgunit?.org_unit_type.sub_unit_types?.[0]?.id
+        ) {
+            onChangeInfo(
+                'org_unit_type_id',
+                parentOrgunit.org_unit_type.sub_unit_types?.[0]?.id,
+            );
+        }
+    }, [
+        parentOrgunit,
+        isNewOrgunit,
+        orgUnitState,
+        orgUnitModified,
+        onChangeInfo,
+    ]);
 
     const hasManagementPermission = useCheckUserHasWritePermissionOnOrgunit(
         orgUnit?.org_unit_type_id,
@@ -159,6 +180,15 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     type="select"
                     options={groups}
                     label={MESSAGES.groups}
+                    disabled={disabled}
+                />
+                <InputComponent
+                    keyValue="code"
+                    type="text"
+                    onChange={onChangeInfo}
+                    value={orgUnitState.code.value}
+                    errors={orgUnitState.code.errors}
+                    label={MESSAGES.code}
                     disabled={disabled}
                 />
                 <div className={classes.divAliasWrapper}>

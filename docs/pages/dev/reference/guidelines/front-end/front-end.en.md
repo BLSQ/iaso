@@ -1,5 +1,4 @@
-Front-end guidelines
-====================
+# Front-end guidelines
 
 ## Prerequisite
 
@@ -17,7 +16,7 @@ On VSC code you can format code following IAOS rules while saving in the setting
 Make sure you installed eslint extension too.  
 On each file you can have only one component.  
 Use constants, and config files to store static data.  
-Don't be afraid to split your code into smaller parts, using understandable naming convention. It will help to understand what you are doing in your code.  
+Don't be afraid to split your code into smaller parts, using understandable naming convention. It will help to understand what you are doing in your code.
 
 ## Legacy
 
@@ -29,27 +28,28 @@ We already have a lot of typing done in each domain of the application (forms, s
 
 Lots of components used in IASO has been moved to a separate [repo](https://github.com/BLSQ/bluesquare-components).  
 We tried to be the most generic has possible in this repo, people from outside IASO should be able to use it in their own project.  
-To use it locally, checkout the repo on the same level has ISO and run:  `LIVE_COMPONENTS=true pm run dev` in IASO folder.  
+To use it locally, checkout the repo on the same level has ISO and run: `LIVE_COMPONENTS=true pm run dev` in IASO folder.  
 This will use directly the code from your local repo.  
-To make it available too everybody you have to build new files with `npm run clean && npm run build` in bluesquare-component folder. 
+To make it available too everybody you have to build new files with `npm run clean && npm run build` in bluesquare-component folder.
 
 ## Architecture
 
 Main index file is located here: `hat/assets/js/apps/Iaso/index`  
-This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins,...  
+This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins,...
 
 **`components`**  
 Used to store generic components that can be used everywhere, like `inputComponent`, `buttons`, ...
 
 **`domains`**  
-For every big feature entity in IASO (forms, org units, plannings, ...) we have a domain folder allowing to display related pages.  
-- `index` is generally used to display a list of items 
+For every big feature entity in IASO (forms, org units, plannings, ...) we have a domain folder allowing to display related pages.
+
+- `index` is generally used to display a list of items
 - `details` the details of an item
 - `config` used to store constants for the domain (columns, default order, ...)
 - `hooks`: dedicated hooks to make requests or compute specitic data for the domain
 - `components`: mostly intermediate components using smaller ones to construct domain page
 - `messages`: translations messages used for this specific domain
-config: used to store constants like defaultOrder, columns, 'baseUrls' 
+  config: used to store constants like defaultOrder, columns, 'baseUrls'
 - `types`: All types related to the domain
 
 ## Styling components
@@ -62,7 +62,6 @@ Here's how to apply this approach:
 2. Apply styles to your components using the `sx` prop by referencing the `styles` object properties.
 
 Example:
-
 
     const styles: SxStyles = {
         root: {
@@ -85,7 +84,83 @@ Example:
      <Box sx={styles.root}>
      ...
 
+## Translating
 
+### Basic usage
+
+We are using [react-intl](https://www.npmjs.com/package/react-intl) to translate messages.
+To ease the use, there is a bluesquare-component wrapper named `useSafeIntl`.
+
+To make it work you will need two things, first an object to define a message id and a default translation:
+
+```typescript
+someLabel: {
+    id: 'iaso.label.some-label',
+    defaultMessage: 'Some label',
+},
+```
+
+Then translations files named as {language}.json in which you will define the actual translation for the message id.
+
+```json
+{
+    "iaso.label.some-label": "Some label translated",
+    ...
+}
+```
+
+Now in your component code you can use safe intl to translate:
+
+```tsx
+import { useSafeIntl } from 'bluesquare-components';
+
+const { formatMessage } = useSafeIntl();
+
+formatMessage(MESSAGES.someLabel);
+```
+
+### Reuse translation for a plugin
+
+To keep this clean and not have to refer iaso / faraway paths, you can have a message with the same id.
+And refer to this one, not having to duplicate the translation.
+This approach is not mandatory but will keep your plugin code as agnostic as possible.
+
+### Use rich text
+
+You can use rich text by using the values property of the formatMessage.
+
+Let's say you have a message like this:
+
+`Some <b>message</b>`
+
+If you just use formatMessage as usual, it will render the `<b>` tags as string.
+To have it rendered as bold text, you can do this:
+
+```tsx
+formatMessage(MESSAGES.someMessage, {
+    b: chunks => <b>chunks</b>,
+});
+```
+
+Note that the `<b>` tag in the message can be anything you want:
+`Some <superimportant>message</superimportant>`
+
+```tsx
+formatMessage(MESSAGES.someMessage, {
+    superimportant: chunks => <b>chuncks</b>,
+});
+```
+
+This also work with lists
+
+`Some items: <ul><li>item1</li><li>item2</li></ul>`
+
+```tsx
+formatMessage(MESSAGES.someListMessage, {
+    li: chunks => <li>chunks</li>,
+    ul: chunks => <ul>chunks</ul>,
+});
+```
 
 ## Maps
 
@@ -106,13 +181,14 @@ Styles are located in `bluesquare-components`, you have to import it on each map
 
 The main container of the Map.
 Props we use:
+
 - `bounds`: not required, bounds of markers and shapes displayed, used by fit to bound, doc [here](https://leafletjs.com/reference.html#latlngbounds).
 - `boundsOptions`: not required, options related to bounds, doc [here](https://leafletjs.com/reference.html#fitbounds-options).
 - `zoomControl`: required and set to `false`, in order to use the `CustomZoomControl`.
 - `whenCreated`: not required,to use a ref of the map in the same component as the MapContainer, you get it by doing
-    whenCreated={mapInstance => {
-        map.current = mapInstance;
-    }}
+  whenCreated={mapInstance => {
+  map.current = mapInstance;
+  }}
 
 default props:
 
@@ -131,32 +207,35 @@ default props:
 Used to display a scale on the bottom left of the map.
 
 Props we use:
+
 - `imperial`: always set to `false`
 
 We use other component from react-leaflet not listed here as they are optionnal and used like describe in their [docs](https://react-leaflet.js.org/docs/v3/api-components/).
 
-
 ### Custom components
 
-**CustomZoomControl**  
+**CustomZoomControl**
 
 This will display an extended zoom control on the top left of the map.
-You can zoom in and out, select an area to zoom in and fit the map to the bounds of the map.  
+You can zoom in and out, select an area to zoom in and fit the map to the bounds of the map.
 
 Props:
+
 - `bounds`: not required, computed bounds displayed on the map, doc [here](https://leafletjs.com/reference.html#latlngbounds).
 - `boundsOptions`: not required, options related to bounds, doc [here](https://leafletjs.com/reference.html#fitbounds-options).
 - `bound`: not required, a boolean to fit to bounds on load, not working if bounds stays undefined.
 
-**CustomTileLayer + TilesSwitchDialog**  
+**CustomTileLayer + TilesSwitchDialog**
 
 Control to display a dialog allowing to change the tile layer of the map, on the top right of the map
 Those twot components are going together, maybe we should refactor it to a single component.
 
 CustomTileLayer Props:
+
 - `currentTile`: required, active tile of the map, usually setted in the map itself with a `useState`.
 
 TilesSwitchDialog Props:
+
 - `currentTile`: required, active tile of the map, usually setted in the map itself with a `useState`.
 - `setCurrentTile`: required, method to update current tile on the map.
 
@@ -169,7 +248,7 @@ Props:
 - `showTooltip`: required, usually setted in the map itself with a `useState`.
 - `setShowTooltip`: required, method to showTooltip or not.
 
-**MapToggleFullscreen**  
+**MapToggleFullscreen**
 
 A switch to set the map fullscreen or not.
 
@@ -181,7 +260,7 @@ Props:
 **MapToggleCluster**
 
 A switch to allow clustering or not of marker on the map.
-You should use `MarkerClusterGroup` from `react-leaflet-markercluster` 
+You should use `MarkerClusterGroup` from `react-leaflet-markercluster`
 
 Props:
 
@@ -191,16 +270,17 @@ Props:
 **MarkerComponent / CircleMarkerComponent**  
 Components used to display a marker on the map.
 Props:
+
 - see js file for not required props, mainly the same props as `Marker` from react-leaflet.
 - `PopupComponent`: not required, Popup used while clicking on the marker
 - `TooltipComponent`: not required, Tooltip used while hovering the marker
 - `item`: required, an object with `latitude` an `longitude` arguments, those are numbers
 
-
 **MarkersListComponent**  
 Used to display a list of markers
 
 Props:
+
 - `markerProps`: not required, props spreaded to the marker
 - `items`: required, array of items use by previous component
 - `PopupComponent`: not required, Popup used while clicking on the marker
@@ -209,23 +289,23 @@ Props:
 - `isCircle`: not required, display marker as a circle or not
 - `onContextmenu`: not required, method applied while right clicking on the marker on the map
 
-
 ### Tables
 
 Most tables we use need to support filters and deep linking. We have a `TableWithDeepLinking` component for that purpose, which is a wrapper on the `Table` from Bluesuare-components.
 
 The typical props to pass are:
+
 - `data`: the table data. Usually originate s from a `react-query` hook
 - `page`: the current page. Usually returned by the API
 - `pageSize`: the amount of rows to display on each page. Also comes from the API
 - `count`: the total amount of items in the page. From the API
 - `pages: total number of pages. From the API
-- `baseUrl`: the baseUrl the table will redirect to 
+- `baseUrl`: the baseUrl the table will redirect to
 - `params`: the params of the current location. `TableWithDeepLink` will combine them with `baseUrl`to redirect to the correct location
 - `extraProps`: an object. The `loading` key will be used to manage the table's loading state. Other values will force a table re-render when they change (similar to `useEffect` deps array), which can be useful in some situations
 - `columns`: an array of objects of type `Column` (imported from bluesquare-components). It's usually defined in a custom hook in order to easily handle translations.
 
-**Note: `useDeleteTableRow`** 
+**Note: `useDeleteTableRow`**
 When performing `DELETE` operations from the table that will reduce the amount of table rows, we can run into a pagination bug. To avoid it, use `useDeleteTableRow` in the `useDelete<whatever>` hook that will return the delete function:
 
 ```javascript
@@ -264,81 +344,91 @@ We have a few ready-made components for filters:
 - `OrgUnitTreeviewModal`: handles searches on org units
 - `DatePicker` and `DateRange`: handle dates
 
-`InputComponent` takes a `keyValue` prop, which is a string that corresponds to the url parameter that stores the filter value, and an `onChange` prop which is a function with the signature (keyValue,value) => void. `DateRange` takes a `keyDateFrom` and a `keyDateTo` that play the same role for the start and end date respectively. 
+`InputComponent` takes a `keyValue` prop, which is a string that corresponds to the url parameter that stores the filter value, and an `onChange` prop which is a function with the signature (keyValue,value) => void. `DateRange` takes a `keyDateFrom` and a `keyDateTo` that play the same role for the start and end date respectively.
 
 We also have a `useFilterState` hook that handles the state and update methods for filters of a given page:
 
 ```typescript
- const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({
-            baseUrl,
-            params,
-            withPagination: false,
-            saveSearchInHistory: false,
-        });
+const { filters, handleSearch, handleChange, filtersUpdated } = useFilterState({
+    baseUrl,
+    params,
+    withPagination: false,
+    saveSearchInHistory: false,
+});
 ```
 
 - `baseUrl`: is the url of the page
-- `params`: the parameters passed to the url. `useFilterState`  will generate the state for the filters based on those. 
--  withPagination: if `false`  the hook will remove parameters related to table pagination (`page`, `pageSize` and so on)
-- `saveSearchInHistory`: if `true`, the redirection will use `redirect`  i.o `redirectToReplace` and the searchg will be saved in the router's history, meaning that using the back arrow will bring the user to the previous search and not the previous page. 
+- `params`: the parameters passed to the url. `useFilterState` will generate the state for the filters based on those.
+- withPagination: if `false` the hook will remove parameters related to table pagination (`page`, `pageSize` and so on)
+- `saveSearchInHistory`: if `true`, the redirection will use `redirect` i.o `redirectToReplace` and the searchg will be saved in the router's history, meaning that using the back arrow will bring the user to the previous search and not the previous page.
+
+## Convenience hooks:
+
+`useAsyncInitialState`: used when `useState`'s initial value is fetched, to avoid having it set to `undefined``
+
+`useSkipEffectUntilValue`: same idea but with `useEffect`
+
+`useObjectState`: when we have an object-like state, allows to update a state value using the old class-component syntax: `setState(key,value)` instead of `setState({...prevState,key:value}). Does not support nested objects
+
+`useArrayState`: convenience hook for when the state is an array and we want to update elements based on index
 
 ## Code style
 
 - Prefer `type?:string` to `type: string | undefined`
 - Prefer `const` to `let`:
 
-
- ```javascript
- // BAD
-let myVar = "placeholder" 
+```javascript
+// BAD
+let myVar = "placeholder"
 if(otherVAlue) {
-    myVar = otherValue
+   myVar = otherValue
 }
 
 // GOOD
-const myVar = otherValue ?? "placeholder 
- 
- ```
+const myVar = otherValue ?? "placeholder
+
+```
 
 - Function names should include a verb:
+
 ```javascript
 // BAD
-const username = user => user.firstname + user.lastname
+const username = user => user.firstname + user.lastname;
 
 // GOOD
-const makeUsername = user => user.firstname + user.lastname
+const makeUsername = user => user.firstname + user.lastname;
 ```
+
 - Not all functions are hooks. Hooks should either have some sort of internal state or trigger a side-effect:
 
 ```typescript
 // BAD, we're just returning a value
-const useMyValue = (value :string) => {
-    return parseInt(value,10)
-}
+const useMyValue = (value: string) => {
+    return parseInt(value, 10);
+};
 
 // GOOD, because of useSafeIntl, the return value will change with user locale
-const useMyValue = (value :IntlMessage) => {
-    const { formatMessage } = useSafeIntl()
-    return formatMessage(value)
-}
+const useMyValue = (value: IntlMessage) => {
+    const { formatMessage } = useSafeIntl();
+    return formatMessage(value);
+};
 
 //GOOD, the returned object is memoized
 const useMyValue = (value: string) => {
     return useMemo(() => {
         const result = {
-            isNumber:false, 
-            value
-            }
-        if (parseFloat(value)){
-            result.isNumber = true
+            isNumber: false,
+            value,
+        };
+        if (parseFloat(value)) {
+            result.isNumber = true;
         }
-        return result
-    },[value])
-}
+        return result;
+    }, [value]);
+};
 
 // GOOD, as side effect will be triggered after the first render
-export const useSkipEffectOnMount = (func:Function, deps:Array<unknown>) => {
+export const useSkipEffectOnMount = (func: Function, deps: Array<unknown>) => {
     const didMount = useRef(false);
 
     useEffect(() => {
@@ -349,9 +439,130 @@ export const useSkipEffectOnMount = (func:Function, deps:Array<unknown>) => {
         }
     }, deps);
 };
-
 ```
 
+## React Query Best Practices
+
+### Query Key Structure
+
+Query keys in React Query use hierarchical matching for cache invalidation. Following a consistent structure is critical for maintainability and performance.
+
+#### Recommended Pattern
+
+```typescript
+// List queries - plural noun
+['forms']['orgUnits']['users'][
+    // Individual item - [resource, id]
+    ('forms', formId)
+][('orgUnits', orgUnitId)][ // formId as number, not string
+    // Nested data - [resource, id, property]
+    ('forms', formId, 'possible_fields')
+][('forms', formId, 'versions')][('orgUnits', orgUnitId, 'children')];
+```
+
+**Key Principles:**
+
+1. **Use raw values, not prefixed strings**: Use `['forms', 123]` not `['forms', 'form-123']`
+2. **Use numbers directly**: Use `formId` (number) not `` `form-${formId}` `` (string)
+3. **Consistent hierarchy**: Always follow `[resource, id, property]` pattern
+4. **Plural for lists, singular for instances**: `['forms']` for list, but nested keys can be singular
+
+#### Invalidation Scopes
+
+```typescript
+// Invalidate ALL forms-related queries (list, details, dropdowns, all IDs)
+queryClient.invalidateQueries(['forms']);
+
+// Invalidate only form #123 and its nested data
+queryClient.invalidateQueries(['forms', 123]);
+// Matches: ['forms', 123], ['forms', 123, 'possible_fields'], ['forms', 123, 'versions']
+// Does NOT match: ['forms'], ['forms', 456]
+
+// Invalidate specific nested property only
+queryClient.invalidateQueries(['forms', 123, 'possible_fields']);
+// Matches only: ['forms', 123, 'possible_fields']
+```
+
+#### Query Keys for Filtered Lists
+
+When building queries with multiple parameters (pagination, filters, sorting), use the params object directly in the query key:
+
+```typescript
+// ✅ GOOD - params object in query key
+const apiParams = useApiParams(tableParams, tableDefaults);
+const queryString = new URLSearchParams(apiParams).toString();
+
+useSnackQuery({
+    queryKey: ['forms', apiParams], // Object handles order automatically
+    queryFn: () => getRequest(`/api/forms/?${queryString}`),
+});
+
+// ❌ BAD - query string in key (parameter order creates duplicate cache entries)
+useSnackQuery({
+    queryKey: ['forms', queryString], // 'page=1&limit=10' vs 'limit=10&page=1' = different keys!
+    queryFn: () => getRequest(`/api/forms/?${queryString}`),
+});
+```
+
+**Benefits:**
+
+- React Query normalizes object keys, preventing duplicate cache entries due to parameter order
+- Easier to invalidate selectively (e.g., all pages for a specific filter)
+- More readable and maintainable
+
+#### Common Patterns
+
+**After mutation, invalidate related queries:**
+
+```typescript
+// Creating a new form
+useMutation({
+    mutationFn: createForm,
+    onSuccess: () => {
+        queryClient.invalidateQueries(['forms']); // Refresh the list
+    },
+});
+
+// Updating an existing form
+useMutation({
+    mutationFn: updateForm,
+    onSuccess: (data, variables) => {
+        // Option 1: Invalidate everything (list + all details)
+        queryClient.invalidateQueries(['forms']);
+
+        // Option 2: Only invalidate this specific form (if list doesn't show form details)
+        // queryClient.invalidateQueries(['forms', variables.id]);
+    },
+});
+
+// Deleting a form
+useMutation({
+    mutationFn: deleteForm,
+    onSuccess: () => {
+        queryClient.invalidateQueries(['forms']); // Only refresh list
+    },
+});
+```
+
+**Using nested query keys:**
+
+```typescript
+// In your hook
+export const useGetPossibleFields = (formId: number) => {
+    return useSnackQuery({
+        queryKey: ['forms', formId, 'possible_fields'],
+        queryFn: () =>
+            getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+        options: {
+            enabled: Boolean(formId),
+        },
+    });
+};
+
+// When form is updated, invalidate all its data
+queryClient.invalidateQueries(['forms', formId]);
+// This invalidates 'possible_fields', 'versions', etc.
+```
 
 ## Remarks
 

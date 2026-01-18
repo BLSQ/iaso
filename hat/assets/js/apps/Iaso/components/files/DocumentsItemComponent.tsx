@@ -1,19 +1,17 @@
 import React, { FunctionComponent } from 'react';
 
+import AttachFile from '@mui/icons-material/AttachFile';
 import { Paper, Box } from '@mui/material';
 
-import AttachFile from '@mui/icons-material/AttachFile';
-
 import {
-    displayDateFromTimestamp,
     PdfSvg,
     TextSvg,
     WordSvg,
     ExcellSvg,
     CsvSvg,
 } from 'bluesquare-components';
-import { getFileName } from '../../utils/filesUtils';
-import { ShortFile } from '../../domains/instances/types/instance';
+import { getFileName } from 'Iaso/utils/filesUtils';
+import { PdfPreview } from './pdf/PdfPreview';
 
 const styles = {
     paper: {
@@ -48,8 +46,9 @@ const styles = {
         textOverflow: 'ellipsis',
         overflow: 'hidden',
         width: '100%',
-        height: '20px',
+        height: '35px',
         whiteSpace: 'nowrap',
+        fontSize: 10,
     },
 };
 type IconProps = {
@@ -76,27 +75,105 @@ const ExtensionIcon: FunctionComponent<IconProps> = ({ fileExtension }) => {
 };
 
 type Props = {
-    file: ShortFile;
+    filePath: string;
+    fileInfo?: string;
+    getDisplayName?: (filePath: string) => React.ReactNode;
+    url?: string;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
+    getInfos?: (filePath: string) => React.ReactNode;
+    getExtraInfos?: (filePath: string) => React.ReactNode;
 };
 
-const DocumentsItemComponent: FunctionComponent<Props> = ({ file }) => {
-    const fileName = getFileName(file.path);
+type PdfItemProps = {
+    filePath: string;
+    getDisplayName?: (filePath: string) => React.ReactNode;
+    url?: string;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
+    getInfos?: (filePath: string) => React.ReactNode;
+    getExtraInfos?: (filePath: string) => React.ReactNode;
+};
+export const OpenButtonComponent = ({ onClick, disabled, ...buttonProps }) => (
+    <Box
+        role="button"
+        onClick={disabled ? undefined : onClick}
+        sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: disabled ? 0.5 : 1,
+            cursor: disabled ? 'not-allowed' : 'pointer',
+        }}
+    >
+        <Paper sx={styles.paper}>
+            <PdfSvg color="secondary" sx={styles.icon} />
+            <Box sx={styles.fileInfo}>{buttonProps.label}</Box>
+        </Paper>
+    </Box>
+);
+
+const PdfItem: FunctionComponent<PdfItemProps> = ({
+    filePath,
+    getDisplayName = filePath => {
+        const fileName = getFileName(filePath);
+        return `${fileName.name}.${fileName.extension}`;
+    },
+    url = undefined,
+    urlLabel = undefined,
+    getInfos = () => null,
+    getExtraInfos = () => null,
+}) => {
+    return (
+        <PdfPreview
+            pdfUrl={filePath}
+            OpenButtonComponent={OpenButtonComponent}
+            buttonProps={{
+                label: getDisplayName(filePath),
+            }}
+            url={url}
+            urlLabel={urlLabel}
+            getInfos={getInfos}
+            getExtraInfos={getExtraInfos}
+        />
+    );
+};
+
+const DocumentsItemComponent: FunctionComponent<Props> = ({
+    filePath,
+    fileInfo,
+    getDisplayName = filePath => {
+        const fileName = getFileName(filePath);
+        return `${fileName.name}.${fileName.extension}`;
+    },
+    url = undefined,
+    urlLabel = undefined,
+    getInfos = () => null,
+    getExtraInfos = () => null,
+}) => {
+    const fileName = getFileName(filePath);
+    if (fileName.extension === 'pdf') {
+        return (
+            <PdfItem
+                filePath={filePath}
+                getDisplayName={getDisplayName}
+                url={url}
+                urlLabel={urlLabel}
+                getInfos={getInfos}
+                getExtraInfos={getExtraInfos}
+            />
+        );
+    }
     return (
         <Box
             component="a"
-            href={file.path}
+            href={filePath}
             target="_blank"
             sx={styles.link}
             rel="noreferrer"
         >
             <Paper sx={styles.paper}>
                 <ExtensionIcon fileExtension={fileName.extension} />
-                <Box sx={styles.fileInfo}>
-                    {displayDateFromTimestamp(file.createdAt)}
-                </Box>
-                <Box sx={styles.fileInfo}>
-                    {`${fileName.name}.${fileName.extension}`}
-                </Box>
+                {fileInfo && <Box sx={styles.fileInfo}>{fileInfo}</Box>}
+                <Box sx={styles.fileInfo}>{getDisplayName(filePath)}</Box>
             </Paper>
         </Box>
     );

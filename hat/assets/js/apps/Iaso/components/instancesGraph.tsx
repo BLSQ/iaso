@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
+import { Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import {
     Bar,
     BarChart,
@@ -10,9 +12,7 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
-import { Typography } from '@mui/material';
-import { FormattedMessage } from 'react-intl';
-import { getChipColors } from '../constants/chipColors';
+import { useGetColors, getColor } from 'Iaso/hooks/useGetColors';
 
 type Data = {
     index: string;
@@ -43,6 +43,7 @@ export const InstancesPerFormGraph: FunctionComponent<Props> = ({
     data,
     isLoading,
 }) => {
+    const { data: colors } = useGetColors(true);
     return (
         <>
             <Typography variant="h5">
@@ -77,7 +78,7 @@ export const InstancesPerFormGraph: FunctionComponent<Props> = ({
                                     key={f.name}
                                     dataKey={f.name}
                                     stackId="a"
-                                    fill={getChipColors(i)}
+                                    fill={getColor(i, colors)}
                                 />
                             ))}
                     </BarChart>

@@ -7,9 +7,9 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { Filters } from './components/Filters';
@@ -25,10 +25,6 @@ import { DisplayedLocation } from './types/locations';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    container: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS}px)`,
-        overflow: 'auto',
-    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -49,6 +45,7 @@ type Params = {
     locationLimit?: string;
     groups?: string;
     fieldsSearch?: string;
+    isSearchActive?: string;
 };
 
 export const Entities: FunctionComponent = () => {
@@ -58,8 +55,12 @@ export const Entities: FunctionComponent = () => {
         useState<DisplayedLocation>('submissions');
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
+    const isSearchActive = params?.isSearchActive === 'true';
 
-    const { data, isFetching } = useGetEntitiesPaginated(params);
+    const { data, isFetching } = useGetEntitiesPaginated(
+        params,
+        isSearchActive,
+    );
     const [tab, setTab] = useState(params.tab ?? 'list');
 
     const isLoading = isFetching;
@@ -131,8 +132,12 @@ export const Entities: FunctionComponent = () => {
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 </Tabs>
             </TopBar>
-            <Box p={4} className={classes.container}>
-                <Filters params={params} isFetching={isFetching} />
+            <MainWrapper sx={{ padding: 4 }} navHasTabs={true}>
+                <Filters
+                    params={params}
+                    isFetching={isFetching}
+                    isSearchActive={isSearchActive}
+                />
                 <Box position="relative" width="100%" mt={2}>
                     <Box
                         width="100%"
@@ -160,11 +165,16 @@ export const Entities: FunctionComponent = () => {
                                 baseUrl={baseUrl}
                                 params={params}
                                 extraProps={{ loading: isFetching }}
+                                noDataMessage={
+                                    !isSearchActive
+                                        ? MESSAGES.searchToSeeEntities
+                                        : undefined
+                                }
                             />
                         </Box>
                     )}
                 </Box>
-            </Box>
+            </MainWrapper>
         </>
     );
 };

@@ -1,10 +1,11 @@
 import json
 import logging
 import ntpath
+import tempfile
 
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import pandas as pd
 
@@ -12,8 +13,9 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.db.models import Case, Count, F, Prefetch, Q, QuerySet, TextField, Value, When
+from django.db.models.functions import Cast, Concat, JSONObject, Replace
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -27,7 +29,6 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
-from hat.menupermissions import models as permission
 from iaso.api import common
 from iaso.api.comment import UserSerializerForComment
 from iaso.api.common import (
@@ -39,10 +40,16 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
+from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSerializer
+from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
+    Account,
     Entity,
+    Form,
     Instance,
     InstanceFile,
     InstanceLock,
@@ -52,6 +59,12 @@ from iaso.models import (
     Project,
 )
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_REGISTRY_READ_PERMISSION,
+    CORE_REGISTRY_WRITE_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
@@ -99,10 +112,10 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-            request.user.has_perm(permission.FORMS)
-            or request.user.has_perm(permission.SUBMISSIONS)
-            or request.user.has_perm(permission.REGISTRY_WRITE)
-            or request.user.has_perm(permission.REGISTRY_READ)
+            request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name())
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -123,22 +136,11 @@ class HasInstanceBulkPermission(permissions.BasePermission):
 
     def has_permission(self, request: Request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(permission.FORMS)
-            or request.user.has_perm(permission.SUBMISSIONS)
-            or request.user.has_perm(permission.REGISTRY_WRITE)
-            or request.user.has_perm(permission.REGISTRY_READ)
+            request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name())
         )
-
-
-class InstanceFileSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    instance_id = serializers.IntegerField()
-    file = serializers.FileField(use_url=True)
-    created_at = TimestampField(read_only=True)
-    file_type = serializers.SerializerMethodField()
-
-    def get_file_type(self, obj):
-        return get_file_type(obj.file)
 
 
 class OrgUnitNestedSerializer(OrgUnitSerializer):
@@ -149,6 +151,23 @@ class OrgUnitNestedSerializer(OrgUnitSerializer):
             "id",
             "name",
         ]
+
+
+class InstanceFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    instance_id = serializers.IntegerField()
+    file = serializers.FileField(use_url=True)
+    created_at = TimestampField(read_only=True)
+    file_type = serializers.SerializerMethodField()
+    name = serializers.CharField(read_only=True)
+    submitted_at = TimestampField(source="instance.created_at", read_only=True)
+    org_unit = OrgUnitNestedSerializer(source="instance.org_unit", read_only=True)
+    question_name = serializers.CharField(source="question", read_only=True)
+    question_id = serializers.CharField(source="key_name", read_only=True)
+    form_name = serializers.CharField(source="instance.form.name", read_only=True)
+
+    def get_file_type(self, obj):
+        return get_file_type(obj.file)
 
 
 # For readonly use
@@ -174,11 +193,14 @@ class LockAnnotation(TypedDict):
     count_active_lock: int
 
 
+PERMISSION_CLASSES_RW = [AuthenticationEnforcedPermission, permissions.IsAuthenticated, HasInstancePermission]
+
+
 class InstancesViewSet(viewsets.ViewSet):
     f"""Instances API
 
     Posting instances can be done anonymously (if the project allows it), all other methods are restricted
-    to authenticated users having the "{permission.FORMS}" permission.
+    to authenticated users having the "{CORE_FORMS_PERMISSION}" permission.
 
     GET /api/instances/
     GET /api/instances/<id>
@@ -187,39 +209,124 @@ class InstancesViewSet(viewsets.ViewSet):
     PATCH /api/instances/<id>
     """
 
-    permission_classes = [HasInstancePermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasInstancePermission]
 
     def get_queryset(self):
         request = self.request
-        queryset: InstanceQuerySet = Instance.objects.order_by("-id")
-        queryset = queryset.filter_for_user(request.user).filter_on_user_projects(user=request.user)
+        queryset: InstanceQuerySet = (
+            Instance.objects.order_by("-id")
+            .filter_for_user(request.user)
+            .filter_on_user_projects(user=request.user)
+            .select_related("form", "created_by", "last_modified_by")
+        )
         return queryset
+
+    def _get_filtered_attachments_queryset(self, request):
+        """Helper method to get filtered attachments queryset with common logic"""
+        filters = parse_instance_filters(request.GET)
+        instances = self.get_queryset().for_filters(**filters)
+        queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
+
+        file_type_serializer = FileTypeSerializer(data=request.query_params)
+        file_type_serializer.is_valid(raise_exception=True)
+
+        image_only = file_type_serializer.validated_data["image_only"]
+        video_only = file_type_serializer.validated_data["video_only"]
+        document_only = file_type_serializer.validated_data["document_only"]
+        other_only = file_type_serializer.validated_data["other_only"]
+
+        return queryset.filter_by_file_types(
+            image=image_only, video=video_only, document=document_only, other=other_only
+        )
 
     @action(["GET"], detail=False)
     def attachments(self, request):
-        instances = self.get_queryset()
-        filters = parse_instance_filters(request.GET)
-        instances = instances.for_filters(**filters)
-        queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
-            file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
-        )
+        queryset = self._get_filtered_attachments_queryset(request).order_by("created_at")
 
-        image_only = request.GET.get("image_only", "false").lower() == "true"
-        if image_only:
-            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
-            queryset = queryset.filter(file_extension__in=image_extensions)
+        queryset = (
+            queryset.select_related("instance", "instance__org_unit", "instance__form")
+            .annotate(
+                jpg_name=Concat(
+                    RegexpReplace(Replace(F("name"), Value('"'), Value("")), Value("\.[^.]+$"), Value("")),
+                    Value(".jpg"),
+                    output_field=TextField(),
+                )
+            )
+            # $.keyvalue() converts {"image": "x.jpg"} into [{"key": "image", "value": "x.jpg"}]
+            .annotate(
+                key_name=JsonbPathQueryFirst(
+                    "instance__json",
+                    # STEP B: Conditionally choose the JSONPath expression
+                    Cast(
+                        Case(
+                            # IF name ends with .webp -> Use Regex Search
+                            When(
+                                name__endswith=".webp",
+                                then=Value(
+                                    '$.** ? (@.type() == "object").keyvalue() ? (@.value == $name || @.value == $jpg_name).key'
+                                ),
+                            ),
+                            # ELSE -> Use Strict Equality (Faster and Safer)
+                            default=Value('$.** ? (@.type() == "object").keyvalue() ? (@.value == $name).key'),
+                        ),
+                        output_field=JsonPathField(),  # Ensure this casts to 'jsonpath' type
+                    ),
+                    # STEP C: Pass BOTH variables ($name and $pattern)
+                    # The JSONPath will simply use the one referenced in the string selected above.
+                    JSONObject(name=F("name"), jpg_name=F("jpg_name")),
+                )
+            )
+            # $.** -> Recursive descent (look everywhere)
+            # ?      -> Filter
+            # @.name -> The 'name' key of the current node
+            # .label -> If match found, return the 'label' key
+            .annotate(
+                question=JsonbPathQueryFirst(
+                    "instance__form_version__form_descriptor",
+                    Value("$.** ? (@.name == $key_name).label"),
+                    JSONObject(key_name=F("key_name")),
+                    output_field=TextField(),
+                )
+            )
+        )
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = InstanceFileSerializer(page, many=True)
+            serializer = InstanceFileSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
 
-        serializer = InstanceFileSerializer(queryset, many=True)
+        serializer = InstanceFileSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
-    @staticmethod
-    def list_file_export(filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+    @action(["GET"], detail=False)
+    def attachments_count(self, request):
+        """Return counts of attachments per file type (images, videos, docs, others)"""
+        queryset = self._get_filtered_attachments_queryset(request)
+
+        # Count images
+        images_count = queryset.filter_image().count()
+
+        # Count videos
+        videos_count = queryset.filter_video().count()
+
+        # Count documents
+        docs_count = queryset.filter_document().count()
+
+        # Count others (files not in images, videos, or documents)
+        others_count = queryset.filter_other().count()
+
+        return Response(
+            {
+                "images": images_count,
+                "videos": videos_count,
+                "docs": docs_count,
+                "others": others_count,
+                "total": images_count + videos_count + docs_count + others_count,
+            }
+        )
+
+    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
         """WIP: Helper function to divide the huge list method"""
         columns = [
             {"title": "ID du formulaire", "width": 20},
@@ -287,7 +394,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
             instance_values = [
                 instance.id,
-                str(instance.is_reference_instance),
+                str(instance.id in self.reference_instances),
                 file_content.get("_version") if file_content else None,
                 instance.export_id,
                 instance.location.y if instance.location else None,
@@ -357,6 +464,10 @@ class InstancesViewSet(viewsets.ViewSet):
             )
         )
 
+        self.reference_instances = set(
+            OrgUnit.objects.filter(reference_instances__form=form).values_list("reference_instances__id", flat=True)
+        )
+
         if file_format == FileFormatEnum.XLSX:
             filename = filename + ".xlsx"
             response = HttpResponse(
@@ -384,6 +495,7 @@ class InstancesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "updated_at").split(",")
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        parquet_format = request.GET.get("parquet", None)
         filters = parse_instance_filters(request.GET)
         org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
         with_descriptor = request.GET.get("with_descriptor", "false")
@@ -414,6 +526,9 @@ class InstancesViewSet(viewsets.ViewSet):
         #       one, both or None and get predictable results)
         if org_unit_status:
             queryset = queryset.filter(org_unit__validation_status=org_unit_status)
+
+        if parquet_format:
+            return self.anwser_with_parquet_file(request, filters, queryset)
 
         if not file_export:
             if limit:
@@ -462,10 +577,59 @@ class InstancesViewSet(viewsets.ViewSet):
                     ]
                 }
             )
+
         # This is a CSV/XLSX file export
         return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 
-    @action(detail=True, methods=["POST"])
+    def anwser_with_parquet_file(self, request, filters, queryset):
+        # validate no unsupported/extra params is passed
+        allowed_params = {
+            "order",
+            "form_ids",
+            "parquet",
+            "project_ids",  # comma seperatated project ids
+            "showDeleted",
+            "status",  # READY, ERROR, EXPORTED
+            "startPeriod",  # dhis2 iso period in correct type
+            "endPeriod",
+            "orgUnitParentId",
+            "orgUnitTypeId",  # allow comma seperated ids
+            "dateFrom",  # filter on source creation date or creation date (COALESCE(V0."source_created_at", V0."created_at"))
+            "dateTo",
+            "modificationDateFrom",  # filter on updated_at
+            "modificationDateTo",
+            "sentDateFrom",  # filter on created_at
+            "sentDateTo",
+            "withLocation",  # true => only submissions with location, false only the one without location
+            "jsonContent",  # unsure if fully supported by export_django_query_to_parquet_via_duckdb function question names with __ doesn't seem to be supported but the problem seem the jsonlogic
+            "planningIds",
+            "userIds",
+        }
+        received_params = set(request.GET.keys())
+
+        unknown = received_params - allowed_params
+        if unknown:
+            return JsonResponse(
+                {
+                    "error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}. Allowed parameters {', '.join(sorted(allowed_params))}"
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        # actually return parquet file
+        form_ids = filters["form_ids"]
+        form = Form.objects.get(pk=form_ids)
+        export_queryset, mapping = parquet.build_submissions_queryset(queryset, form.id)
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
+
+        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name, mapping)
+
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
+
+        return response
+
+    @action(detail=True, permission_classes=PERMISSION_CLASSES_RW, methods=["POST"])
     def add_lock(self, request, pk):
         # would use get_object usually, but we are not in a ModelViewSet
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -474,7 +638,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"status": "lock added", "lock_id": new_lock.id})
 
     # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
-    @action(detail=False, methods=["POST"])
+    @action(detail=False, permission_classes=PERMISSION_CLASSES_RW, methods=["POST"])
     def unlock_lock(self, request):
         serializer = UnlockSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -524,14 +688,32 @@ class InstancesViewSet(viewsets.ViewSet):
                 "instancelock_set__top_org_unit",
                 "instancelock_set__locked_by",
                 "instancelock_set__unlocked_by",
+                "org_unit__groups",
+                "org_unit__org_unit_type__sub_unit_types",
                 "org_unit__reference_instances",
-                "org_unit__org_unit_type__reference_forms",
+            )
+            .select_related(
+                "org_unit",
+                "org_unit__parent",
+                "org_unit__org_unit_type",
+                "org_unit__version__data_source__credentials",
             )
             .with_status()
         )
         instance: Instance = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
+
+        if instance.org_unit:
+            # Fetch all ancestors in a single query to avoid N+1 problems
+            # because `as_full_model()` will call `org_unit.as_dict_with_parents()`.
+            ancestors = list(
+                instance.org_unit.ancestors()
+                .select_related("version__data_source__credentials", "org_unit_type")
+                .prefetch_related("reference_instances", "org_unit_type__sub_unit_types", "groups")
+            )
+            ancestors_dict = {ancestor.id: ancestor for ancestor in ancestors}
+            instance.org_unit._prefetched_ancestors = ancestors_dict
 
         response = instance.as_full_model(with_entity=True)
 
@@ -549,8 +731,10 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk=None):
         original = get_object_or_404(self.get_queryset(), pk=pk)
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
+        user = request.user
+        instance.last_modified_by = user
         instance.soft_delete()
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
@@ -791,15 +975,7 @@ class InstancesViewSet(viewsets.ViewSet):
         """
         GET /api/instances/<pk>/instance_logs/<logId>/
         """
-        instance = get_object_or_404(
-            Instance.objects.filter(pk=pk).prefetch_related(
-                Prefetch(
-                    "instancefile_set",
-                    queryset=InstanceFile.objects.filter(deleted=False).only("file"),
-                    to_attr="filtered_files",
-                )
-            )
-        )
+        instance = get_object_or_404(Instance.objects.filter_for_user(request.user).filter(pk=pk))
         log = get_object_or_404(Modification, pk=logId)
         log_dict = log.as_dict()
         possible_fields = (
@@ -807,9 +983,50 @@ class InstancesViewSet(viewsets.ViewSet):
             if instance.form_version and instance.form_version.possible_fields
             else []
         )
-        log_dict["files"] = [f.file.url if f.file else None for f in instance.filtered_files]
+        dict_files = {}
+        # return also deleted once because here we are looking the history of the submission
+        for f in instance.instancefile_set.all():
+            dict_files[f.name] = f.file.url
+        log_dict["files"] = dict_files
         log_dict["possible_fields"] = possible_fields
+        log_dict["form_descriptor"] = instance.form_version.form_descriptor if instance.form_version else None
         return Response(log_dict)
+
+
+def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[id] = None) -> Entity:
+    # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
+    # If a non-deleted entity was found, ignore potential duplicates.
+    if entity_type_id is not None:
+        filters = {
+            "uuid": entity_uuid,
+            "entity_type_id": entity_type_id,
+            "account": account,
+        }
+    else:
+        filters = {
+            "uuid": entity_uuid,
+            "account": account,
+        }
+    existing_entities = list(Entity.objects_include_deleted.filter(**filters))
+
+    if len(existing_entities) == 0:
+        if entity_type_id is not None:
+            return Entity.objects.create(**filters)
+
+        raise Entity.DoesNotExist()
+
+    if len(existing_entities) == 1:
+        return existing_entities[0]
+
+    # In case of duplicates, try to take the "best" one. Best one would
+    # be one that's not deleted and that has valid attributes with a
+    # file attached. We first assign the first one to avoid having None.
+    # If there are multiple non-deleted entities, we send a Sentry,
+    # but don't break the upload.
+    if len([e for e in existing_entities if e.deleted_at is None]) > 1:
+        logger.exception(f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}")
+
+    return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
 def import_data(instances, user, app_id):
@@ -847,31 +1064,7 @@ def import_data(instances, user, app_id):
         entity_uuid = instance_data.get("entityUuid", None)
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:
-            # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
-            # If a non-deleted entity was found, ignore potential duplicates.
-            filters = {
-                "uuid": entity_uuid,
-                "entity_type_id": entity_type_id,
-                "account": project.account,
-            }
-            existing_entities = list(Entity.objects_include_deleted.filter(**filters))
-
-            if len(existing_entities) == 0:
-                entity = Entity.objects.create(**filters)
-            elif len(existing_entities) == 1:
-                entity = existing_entities[0]
-            else:
-                # In case of duplicates, try to take the "best" one. Best one would
-                # be one that's not deleted and that has valid attributes with a
-                # file attached. We first assign the first one to avoid having None.
-                # If there are multiple non-deleted entities, we send a Sentry,
-                # but don't break the upload.
-                if len([e for e in existing_entities if e.deleted_at is None]) > 1:
-                    logger.exception(
-                        f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}"
-                    )
-
-                entity = sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
+            entity = find_entity(project.account, entity_uuid, entity_type_id)
 
             if entity.deleted_at:
                 logger.info(
@@ -923,11 +1116,8 @@ def import_data(instances, user, app_id):
                 oucr.org_unit = instance.org_unit
                 if user and not user.is_anonymous:
                     oucr.created_by = user
-                previous_reference_instances = list(instance.org_unit.reference_instances.all())
-                new_reference_instances = list(filter(lambda i: i.form != instance.form, previous_reference_instances))
-                new_reference_instances.append(instance)
                 oucr.save()
-                oucr.new_reference_instances.set(new_reference_instances)
+                oucr.new_reference_instances.set([instance])
                 oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()
 

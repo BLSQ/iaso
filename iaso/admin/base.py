@@ -67,13 +67,21 @@ from ..models import (
     PotentialPayment,
     Profile,
     Project,
+    ProjectFeatureFlags,
     Report,
     ReportVersion,
     SourceVersion,
+    StockItem,
+    StockItemRule,
+    StockKeepingUnit,
+    StockKeepingUnitChildren,
+    StockLedgerItem,
+    StockRulesVersion,
     StorageDevice,
     StorageLogEntry,
     StoragePassword,
     Task,
+    TaskLog,
     TenantUser,
     UserRole,
     Workflow,
@@ -82,7 +90,8 @@ from ..models import (
     WorkflowVersion,
 )
 from ..models.data_store import JsonDataStore
-from ..models.microplanning import Assignment, Planning, Team
+from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
+from ..models.team import Team
 from ..utils.gis import convert_2d_point_to_3d
 
 
@@ -187,7 +196,14 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
-    list_filter = ("org_unit_type", "custom", "validated", "sub_source")
+    list_filter = (
+        "org_unit_type",
+        "custom",
+        "validation_status",
+        "sub_source",
+        "version__data_source",
+        "version__data_source__projects__account",
+    )
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -199,12 +215,22 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "name",
         "uuid",
         "parent",
+        "version",
+        "get_account_names",
     )
+
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(
+            f"{project.account.name} ({project.account.id})" for project in obj.version.data_source.projects.all()
+        )
+        return ", ".join(sorted(accounts)) if accounts else "-"
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        queryset = queryset.prefetch_related("org_unit_type", "parent__org_unit_type")
-        return queryset
+        return queryset.select_related("org_unit_type", "parent", "version", "version__data_source").prefetch_related(
+            "version__data_source__projects__account"
+        )
 
 
 @admin.register(OrgUnitType)
@@ -233,6 +259,7 @@ class FormAdmin(admin.GeoModelAdmin):
         "periods_before_allowed",
         "periods_after_allowed",
         "derived",
+        "get_account_names",
         "created_at",
         "updated_at",
         "deleted_at",
@@ -242,8 +269,13 @@ class FormAdmin(admin.GeoModelAdmin):
 
     list_filter = ["projects__account"]
 
+    @admin.display(description="Accounts")
+    def get_account_names(self, obj):
+        accounts = set(f"{project.account.name} ({project.account.id})" for project in obj.projects.all())
+        return ", ".join(sorted(accounts)) if accounts else "-"
+
     def get_queryset(self, request):
-        return Form.objects_include_deleted.all()
+        return Form.objects_include_deleted.prefetch_related("projects__account")
 
 
 @admin.register(FormVersion)
@@ -413,10 +445,19 @@ class ProjectAdmin(admin.ModelAdmin):
         return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
 
 
+@admin.register(ProjectFeatureFlags)
+@admin_attr_decorator
+class ProjectFeatureFlagsAdmin(admin.ModelAdmin):
+    list_display = ("featureflag", "project", "configuration")
+    list_filter = ("project",)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 @admin.register(FeatureFlag)
 @admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
-    list_display = ("code", "name", "requires_authentication")
+    list_display = ("code", "name", "requires_authentication", "configuration_schema")
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(Link)
@@ -443,8 +484,8 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class GroupAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_units",)
-    search_fields = ("name", "source_version", "domain")
-    list_display = ("name", "source_version", "created_at", "org_unit_count", "domain", "source_ref")
+    search_fields = ("name", "source_version")
+    list_display = ("name", "source_version", "created_at", "org_unit_count", "source_ref")
 
     def org_unit_count(self, obj):
         return obj.org_units.count()
@@ -458,7 +499,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_select_related = ("user", "account")
     list_filter = ("account",)
     list_display = ("id", "user", "account", "language")
-    autocomplete_fields = ["account"]
+    autocomplete_fields = ["account", "user"]
 
 
 @admin.register(ExportRequest)
@@ -525,9 +566,9 @@ def relaunch_task(_, request, queryset) -> None:
 @admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
+    list_display = ("name", "account", "status", "created_at", "launcher", "result_message", "result")
     list_filter = ("account", "status", "name")
-    readonly_fields = ("stacktrace", "created_at", "result")
+    readonly_fields = ("stacktrace", "created_at")
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     search_fields = ("name",)
     autocomplete_fields = ("account", "created_by", "launcher")
@@ -547,6 +588,13 @@ class TaskAdmin(admin.ModelAdmin):
         return super().get_queryset(request).prefetch_related("launcher")
 
 
+@admin.register(TaskLog)
+class TaskLogAdmin(admin.ModelAdmin):
+    list_display = ("task", "created_at", "message")
+    list_filter = ["task"]
+    readonly_fields = ["created_at"]
+
+
 @admin.register(SourceVersion)
 @admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
@@ -562,6 +610,7 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     search_fields = [
+        "id",
         "uuid",
         "account__name",
         "entity_type__name",
@@ -671,6 +720,8 @@ class PlanningAdmin(admin.ModelAdmin):
                     "team",
                     "started_at",
                     "ended_at",
+                    "pipeline_uuids",
+                    "selected_sampling_result",
                 ),
             },
         ),
@@ -718,6 +769,25 @@ class AssignmentAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
+@admin.register(PlanningSamplingResult)
+@admin_attr_decorator
+class PlanningSamplingResultAdmin(admin.ModelAdmin):
+    raw_id_fields = ("planning", "group", "task", "created_by")
+    readonly_fields = ("created_at", "parameters")
+    list_display = (
+        "id",
+        "planning",
+        "pipeline_id",
+        "pipeline_version",
+        "group",
+        "task",
+        "created_at",
+    )
+    list_filter = ("planning",)
+    search_fields = ("pipeline_id", "pipeline_version")
+    date_hierarchy = "created_at"
+
+
 @admin.register(InstanceLock)
 class InstanceLockAdmin(admin.ModelAdmin):
     raw_id_fields = ("top_org_unit",)
@@ -728,6 +798,84 @@ class InstanceLockAdmin(admin.ModelAdmin):
 class StorageLogEntryInline(admin.TabularInline):
     model = StorageLogEntry
     raw_id_fields = ("entity", "instances", "org_unit", "performed_by")
+
+
+@admin.register(StockItem)
+class StockItemAdmin(admin.ModelAdmin):
+    fields = ("org_unit", "sku", "value", "created_at", "updated_at")
+    readonly_fields = ("org_unit", "sku", "value", "created_at", "updated_at")
+    list_display = ("org_unit", "sku", "value")
+    list_filter = ["sku"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(StockItemRule)
+class StockItemRuleAdmin(admin.ModelAdmin):
+    fields = ("sku", "form", "version", "impact", "question", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("sku", "form", "question", "impact", "version", "created_at")
+    list_filter = ("sku", "form", "impact")
+
+
+@admin.register(StockKeepingUnit)
+class StockKeepingUnitAdmin(admin.ModelAdmin):
+    fields = (
+        "account",
+        "name",
+        "short_name",
+        "projects",
+        "org_unit_types",
+        "forms",
+        "display_unit",
+        "display_precision",
+        "created_at",
+        "updated_at",
+        "created_by",
+        "updated_by",
+        "deleted_at",
+    )
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("name", "short_name", "account")
+    list_filter = ("account", "name", "short_name")
+
+
+@admin.register(StockKeepingUnitChildren)
+class StockKeepingUnitChildrenAdmin(admin.ModelAdmin):
+    fields = ("parent", "child", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("parent", "child", "value")
+    list_filter = ("parent", "child")
+
+
+@admin.register(StockLedgerItem)
+class StockLedgerItemAdmin(admin.ModelAdmin):
+    fields = ("rule", "sku", "org_unit", "submission", "question", "impact", "value", "created_at", "created_by")
+    readonly_fields = (
+        "rule",
+        "sku",
+        "org_unit",
+        "submission",
+        "question",
+        "impact",
+        "value",
+        "created_at",
+        "created_by",
+    )
+    list_display = ("rule", "sku", "org_unit", "question", "impact", "value", "created_at")
+    list_filter = ("sku", "impact", "rule")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(StockRulesVersion)
+class StockRuleVersionAdmin(admin.ModelAdmin):
+    fields = ("account", "name", "status", "created_at", "updated_at", "created_by", "updated_by", "deleted_at")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("account", "name", "status")
+    list_filter = ("account", "status")
 
 
 @admin.register(StorageDevice)
@@ -820,6 +968,7 @@ class PageAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicate)
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("entity1", "entity2", "analyze")
 
     @admin_attr_decorator
     def entity1_desc(self, obj):
@@ -843,13 +992,15 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicateAnalyzis)
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("task",)
+    search_fields = ("id",)
 
 
 @admin.register(OrgUnitChangeRequest)
 class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
-    list_display = ("pk", "org_unit", "created_at", "status")
+    list_display = ("pk", "org_unit", "created_at", "status", "deleted_at")
     list_display_links = ("pk", "org_unit")
-    list_filter = ("status", "kind", "data_source_synchronization")
+    list_filter = ("status", "kind", "data_source_synchronization", "deleted_at")
     readonly_fields = (
         "uuid",
         "created_at",
@@ -978,6 +1129,7 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
+    autocomplete_fields = ("user", "created_by", "updated_by", "payment_lot")
 
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
@@ -997,6 +1149,7 @@ class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "payment_ids")
     search_fields = ("id",)
+    autocomplete_fields = ("created_by", "updated_by", "task")
 
     def payment_ids(self, obj):
         payments = obj.payments.all()
@@ -1073,34 +1226,33 @@ class TenantUserAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         return urls
 
+    @admin.display(
+        description="Account",
+        ordering="account_user__iaso_profile__account",
+    )
     def account(self, obj):
         return obj.account
 
-    account.admin_order_field = "account_user__iaso_profile__account"
-    account.short_description = "Account"
-
+    @admin.display(description="Total Accounts")
     def all_accounts_count(self, obj):
         return obj.main_user.tenant_users.count()
 
-    all_accounts_count.short_description = "Total Accounts"
-
+    @admin.display(
+        description="Self Account",
+        boolean=True,
+    )
     def is_self_account(self, obj):
         return obj.main_user == obj.account_user
 
-    is_self_account.boolean = True
-    is_self_account.short_description = "Self Account"
-
+    @admin.display(description="All Account Users")
     def all_account_users(self, obj):
         users = obj.get_all_account_users()
         return format_html("<br>".join(user.username for user in users))
 
-    all_account_users.short_description = "All Account Users"
-
+    @admin.display(description="Other Accounts")
     def other_accounts(self, obj):
         accounts = obj.get_other_accounts()
-        return format_html("<br>".join(str(account) for account in accounts))
-
-    other_accounts.short_description = "Other Accounts"
+        return format_html("<br>".join(account.name for account in accounts))
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")

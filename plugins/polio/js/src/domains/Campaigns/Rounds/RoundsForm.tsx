@@ -25,6 +25,7 @@ export const roundFormFields = (rounds: Round[]): string[] => {
                     `rounds[${i}].percentage_covered_target_population`,
                     `rounds[${i}].target_population`,
                     `rounds[${i}].on_hold`,
+                    `rounds[${i}].is_planned`,
                 ];
             })
             .flat(),
@@ -59,7 +60,7 @@ export const RoundsForm: FunctionComponent = () => {
             number: roundIndex,
             started_at: null,
             ended_at: null,
-        } as Round);
+        } as unknown as Round);
         const sortedRounds = newRounds.sort((a, b) => a.number - b.number);
         setFieldValue('rounds', sortedRounds);
         setLastRound(newRounds[sortedRounds.length - 1]);
@@ -95,7 +96,7 @@ export const RoundsForm: FunctionComponent = () => {
     }, [rounds]);
 
     return (
-        <Box minWidth="70vw">
+        <Box width="100%">
             <Box mt={rounds.length > 0 ? -4 : 0} display="flex">
                 {displayAddZeroRound && (
                     <Box mr={rounds.length === 0 ? 2 : 0} mt="14px">

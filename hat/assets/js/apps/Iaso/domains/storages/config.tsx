@@ -1,23 +1,23 @@
 import React from 'react';
 import {
+    Column,
+    IntlFormatMessage,
     useSafeIntl,
     IconButton as IconButtonComponent,
-    IntlFormatMessage,
-    Column,
+    Setting,
 } from 'bluesquare-components';
-
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
-import { StatusCell } from './components/StatusCell';
-import { LinkToEntity } from './components/LinkToEntity';
-import { LinkToInstance } from '../instances/components/LinkToInstance';
-import { baseUrls } from '../../constants/urls';
-import { StorageParams } from './types/storages';
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
+import { baseUrls } from 'Iaso/constants/urls';
 import getDisplayName from '../../utils/usersUtils';
+import { LinkToInstance } from '../instances/components/LinkToInstance';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+import { LinkToEntity } from './components/LinkToEntity';
+import { StatusCell } from './components/StatusCell';
 import { useGetOperationsTypesLabel } from './hooks/useGetOperationsTypes';
 import { useGetReasons } from './hooks/useGetReasons';
 import { useGetStatus } from './hooks/useGetStatus';
 import MESSAGES from './messages';
+import { Log, Storage, StorageParams } from './types/storages';
 
 export const defaultSorted = [{ id: 'updated_at', desc: false }];
 
@@ -38,34 +38,32 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             accessor: 'customer_chosen_id',
             id: 'customer_chosen_id',
             width: 80,
-            Cell: settings => {
-                const { storage_id } = settings.row.original;
-                return <span>{storage_id || '--'}</span>;
+            Cell: ({ row: { original: storage } }: Setting<Storage>) => {
+                return <span>{storage.storage_id || '--'}</span>;
             },
         },
         {
             Header: formatMessage(MESSAGES.status),
             accessor: 'status',
             id: 'status',
-            Cell: settings => {
-                const { storage_status } = settings.row.original;
-                return <StatusCell status={storage_status} />;
+            Cell: ({ row: { original: storage } }: Setting<Storage>) => {
+                return <StatusCell status={storage.storage_status} />;
             },
         },
         {
             Header: formatMessage(MESSAGES.location),
             accessor: 'org_unit__name',
             id: 'org_unit__name',
-            Cell: settings => (
-                <LinkToOrgUnit orgUnit={settings.row.original.org_unit} />
+            Cell: ({ row: { original: storage } }: Setting<Storage>) => (
+                <LinkToOrgUnit orgUnit={storage.org_unit} />
             ),
         },
         {
             Header: formatMessage(MESSAGES.entity),
             accessor: 'entity__name',
             id: 'entity__name',
-            Cell: settings => (
-                <LinkToEntity entity={settings.row.original.entity} />
+            Cell: ({ row: { original: storage } }: Setting<Storage>) => (
+                <LinkToEntity entity={storage.entity} />
             ),
         },
         {
@@ -73,10 +71,11 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             resizable: false,
             sortable: false,
             accessor: 'actions',
-            Cell: settings => {
+            Cell: ({ row: { original: storage } }: Setting<Storage>) => {
+                const url = `/${baseUrls.storageDetail}/type/${storage.storage_type}/storageId/${storage.id}`;
                 return (
                     <IconButtonComponent
-                        url={`/${baseUrls.storageDetail}/type/${settings.row.original.storage_type}/storageId/${settings.row.original.storage_id}`}
+                        url={url}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.see}
                     />
@@ -89,9 +88,8 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             Header: formatMessage(MESSAGES.type),
             accessor: 'type',
             id: 'type',
-            Cell: settings => {
-                const { storage_type } = settings.row.original;
-                return <span>{storage_type || '--'}</span>;
+            Cell: ({ row: { original: storage } }: Setting<Storage>) => {
+                return <span>{storage.storage_type || '--'}</span>;
             },
         });
     }
@@ -101,7 +99,7 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
 export const useGetDetailsColumns = (): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const getOparationTypeLabel = useGetOperationsTypesLabel();
+    const getOperationTypeLabel = useGetOperationsTypesLabel();
     const reasons = useGetReasons();
     const statusList = useGetStatus();
     return [
@@ -115,22 +113,21 @@ export const useGetDetailsColumns = (): Array<Column> => {
             Header: formatMessage(MESSAGES.user),
             id: 'performed_by',
             accessor: 'performed_by',
-            Cell: settings =>
-                getDisplayName(settings.row.original.performed_by),
+            Cell: ({ row: { original: log } }: Setting<Log>) =>
+                getDisplayName(log.performed_by),
         },
         {
             Header: formatMessage(MESSAGES.operationType),
             accessor: 'operation_type',
             id: 'operation_type',
-            Cell: settings =>
-                getOparationTypeLabel(settings.row.original.operation_type),
+            Cell: ({ row: { original: log } }: Setting<Log>) =>
+                getOperationTypeLabel(log.operation_type),
         },
         {
             Header: formatMessage(MESSAGES.status),
             accessor: 'status',
             id: 'status',
-            Cell: settings => {
-                const log = settings.row.original;
+            Cell: ({ row: { original: log } }: Setting<Log>) => {
                 if (log.operation_type === 'CHANGE_STATUS' && log.status) {
                     const status = statusList.find(
                         stat => stat.value === log.status,
@@ -144,8 +141,7 @@ export const useGetDetailsColumns = (): Array<Column> => {
             Header: formatMessage(MESSAGES.reason),
             accessor: 'status_reason',
             id: 'status_reason',
-            Cell: settings => {
-                const log = settings.row.original;
+            Cell: ({ row: { original: log } }: Setting<Log>) => {
                 if (
                     log.operation_type === 'CHANGE_STATUS' &&
                     log.status === 'BLACKLISTED'
@@ -162,8 +158,7 @@ export const useGetDetailsColumns = (): Array<Column> => {
             Header: formatMessage(MESSAGES.comment),
             accessor: 'status_comment',
             id: 'status_comment',
-            Cell: settings => {
-                const log = settings.row.original;
+            Cell: ({ row: { original: log } }: Setting<Log>) => {
                 if (log.operation_type === 'CHANGE_STATUS') {
                     return log.status_comment && log.status_comment !== ''
                         ? log.status_comment
@@ -176,34 +171,38 @@ export const useGetDetailsColumns = (): Array<Column> => {
             Header: formatMessage(MESSAGES.submissions),
             accessor: 'instances',
             id: 'instances',
-            Cell: settings => {
-                const { instances } = settings.row.original;
-                if (instances.length === 0) return '-';
-                return instances.map((instanceId, index) => (
-                    <span key={instanceId}>
-                        <LinkToInstance instanceId={instanceId} />
-                        {index + 1 < instances.length && ', '}
-                    </span>
-                ));
+            Cell: ({ row: { original: log } }: Setting<Log>) => {
+                const { instances } = log;
+                if (instances.length === 0) return <>-</>;
+                return (
+                    <>
+                        {instances.map((instanceId: number, index: number) => (
+                            <span key={instanceId}>
+                                <LinkToInstance
+                                    instanceId={instanceId.toString()}
+                                />
+                                {index + 1 < instances.length && ', '}
+                            </span>
+                        ))}
+                    </>
+                );
             },
         },
         {
             Header: formatMessage(MESSAGES.location),
             accessor: 'org_unit__name',
             id: 'org_unit__name',
-            Cell: settings => (
-                <LinkToOrgUnit orgUnit={settings.row.original.org_unit} />
+            Cell: ({ row: { original: log } }: Setting<Log>) => (
+                <LinkToOrgUnit orgUnit={log.org_unit} />
             ),
         },
         {
             Header: formatMessage(MESSAGES.entity),
             accessor: 'entity__name',
             id: 'entity__name',
-            Cell: settings => (
-                <LinkToEntity entity={settings.row.original.entity} />
+            Cell: ({ row: { original: log } }: Setting<Log>) => (
+                <LinkToEntity entity={log.entity} />
             ),
         },
     ];
 };
-
-useGetOperationsTypesLabel;

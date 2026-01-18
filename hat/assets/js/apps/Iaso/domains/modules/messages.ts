@@ -86,6 +86,14 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Data validation',
         id: 'iaso.modules.data_validation',
     },
+    saas: {
+        defaultMessage: 'SaaS',
+        id: 'iaso.modules.saas',
+    },
+    stock_management: {
+        defaultMessage: 'Stock management',
+        id: 'iaso.modules.stock_management',
+    },
 });
 
 export default MESSAGES;

@@ -34,12 +34,12 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     );
     cy.intercept(
         'GET',
-        '/api/microplanning/teams/?type=TEAM_OF_USERS',
+        '/api/teams/?type=TEAM_OF_USERS',
         teamsList,
     );
     cy.intercept(
         'GET',
-        // eslint-disable-next-line max-len
+
         '/api/forms/?all=true&order=name&fields=name%2Cid%2Cpossible_fields',
         formsList,
     );
@@ -130,20 +130,15 @@ describe('Duplicate entities list', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 6,
+            columns: 7,
             apiKey: 'entityduplicates',
         });
         testPagination({
             baseUrl,
-            apiPath: '/api/entityduplicates/',
+            apiPath: '/api/entityduplicates/**',
             apiKey: 'results',
             withSearch: false,
             fixture: listFixture,
-            query: {
-                order: 'id',
-                page: '1',
-                limit: '20',
-            },
         });
         it('should display buttons on action column', () => {
             cy.visit(baseUrl);
@@ -156,7 +151,7 @@ describe('Duplicate entities list', () => {
                     .find('tr')
                     .eq(rowIndex)
                     .as('row');
-                cy.get('@row').find('td').last().as('actionCol');
+                cy.get('@row').find('td').last().prev().as('actionCol');
                 cy.get('@actionCol')
                     .find('button')
                     .as('button')
@@ -178,7 +173,7 @@ describe('Duplicate entities list', () => {
                     .find('tr')
                     .eq(rowIndex)
                     .as('row');
-                cy.get('@row').find('td').last().as('actionCol');
+                cy.get('@row').find('td').last().prev().as('actionCol');
                 cy.get('@actionCol').find('button').should('have.length', 1);
                 cy.get('@actionCol')
                     .find('[data-testid="MergeIcon"]')

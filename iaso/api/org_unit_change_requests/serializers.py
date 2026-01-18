@@ -185,7 +185,10 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     def get_current_org_unit_type_projects(self, obj: OrgUnitChangeRequest):
         if obj.org_unit.org_unit_type is None:
             return []
-        return [{"id": project.id, "name": project.name} for project in obj.org_unit.org_unit_type.projects.all()]
+        return [
+            {"id": project.id, "name": project.name, "color": project.color}
+            for project in obj.org_unit.org_unit_type.projects.all()
+        ]
 
     def get_payment_status(self, obj: OrgUnitChangeRequest):
         payment = obj.payment
@@ -453,6 +456,30 @@ class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
 
         if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
             raise serializers.ValidationError("A `rejection_comment` must be provided.")
+
+        return validated_data
+
+
+class OrgUnitChangeRequestBulkDeleteSerializer(serializers.Serializer):
+    """
+    Bulk-delete or bulk-restore `OrgUnitChangeRequest`s.
+    """
+
+    select_all = serializers.BooleanField(default=False)
+    selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    restore = serializers.BooleanField(default=False)
+
+    def validate(self, validated_data):
+        select_all = validated_data["select_all"]
+        selected_ids = validated_data["selected_ids"]
+        unselected_ids = validated_data["unselected_ids"]
+
+        if select_all and selected_ids:
+            raise serializers.ValidationError("You cannot set both `select_all` and `selected_ids`.")
+
+        if unselected_ids and not select_all:
+            raise serializers.ValidationError("You cannot set `unselected_ids` without `select_all`.")
 
         return validated_data
 

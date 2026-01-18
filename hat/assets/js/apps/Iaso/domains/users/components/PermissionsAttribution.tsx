@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -6,7 +7,6 @@ import {
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { useCallback, useMemo } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -49,7 +49,7 @@ const styles = theme => ({
 const useStyles = makeStyles(styles);
 
 type Props = {
-    isSuperUser?: boolean;
+    isSuperUser: boolean;
     currentUser: any;
     handleChange: (newValue: any) => void;
     setFieldValue: (fieldName, fieldError) => void;
@@ -60,7 +60,7 @@ type PermissionResult = {
 };
 
 const PermissionsAttribution: React.FunctionComponent<Props> = ({
-    isSuperUser,
+    isSuperUser = false,
     currentUser,
     handleChange,
     setFieldValue,
@@ -176,10 +176,6 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
             )}
         </>
     );
-};
-
-PermissionsAttribution.defaultProps = {
-    isSuperUser: false,
 };
 
 export default PermissionsAttribution;

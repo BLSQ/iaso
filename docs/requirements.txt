@@ -8,7 +8,7 @@ beautifulsoup4==4.11.2
     # via mkdocs-mermaid2-plugin
 bracex==2.3.post1
     # via wcmatch
-certifi==2022.12.7
+certifi==2024.7.4
     # via requests
 charset-normalizer==3.1.0
     # via requests
@@ -46,16 +46,17 @@ markdown==3.3.7
     #   mkdocstrings
     #   pymdown-extensions
 markdown-include==0.8.1
-    # via -r ./requirements.in
+    # via -r requirements.in
 markupsafe==2.1.2
     # via
     #   jinja2
+    #   mkdocs
     #   mkdocstrings
 mergedeep==1.3.4
     # via mkdocs
 mkdocs==1.5.2
     # via
-    #   -r ./requirements.in
+    #   -r requirements.in
     #   mkdocs-autorefs
     #   mkdocs-awesome-pages-plugin
     #   mkdocs-material
@@ -65,25 +66,30 @@ mkdocs==1.5.2
 mkdocs-autorefs==0.4.1
     # via mkdocstrings
 mkdocs-awesome-pages-plugin==2.8.0
-    # via -r ./requirements.in
+    # via -r requirements.in
 mkdocs-material==9.1.1
     # via
-    #   -r ./requirements.in
+    #   -r requirements.in
     #   mkdocs-mermaid2-plugin
 mkdocs-material-extensions==1.1.1
     # via mkdocs-material
 mkdocs-mermaid2-plugin==0.6.0
-    # via -r ./requirements.in
+    # via -r requirements.in
 mkdocs-static-i18n==1.2.3
+    # via -r requirements.in
 mkdocstrings[python]==0.20.0
     # via
-    #   -r ./requirements.in
+    #   -r requirements.in
     #   mkdocstrings-python
 mkdocstrings-python==0.8.3
     # via mkdocstrings
 natsort==8.3.1
     # via mkdocs-awesome-pages-plugin
 packaging==23.0
+    # via mkdocs
+pathspec==0.12.1
+    # via mkdocs
+platformdirs==4.4.0
     # via mkdocs
 pygments==2.14.0
     # via mkdocs-material

@@ -1,12 +1,10 @@
 /// <reference types="cypress" />
 import { search, searchWithForbiddenChars } from '../../constants/search';
-import orgUnits from '../../fixtures/orgunits/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import {
     makeDataSourcesFromSeed,
     makeSourceVersionsFromSeed,
 } from '../../support/dummyData';
-import { testPagination } from '../../support/testPagination';
 import { testSearchField } from '../../support/testSearchField';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');

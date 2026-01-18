@@ -19,6 +19,7 @@ import isEqual from 'lodash/isEqual';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import { useQueryClient } from 'react-query';
+import { FormPredefinedFilters } from 'Iaso/domains/forms/components/FormPredefinedFilters';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
@@ -99,7 +100,11 @@ const FormDetail: FunctionComponent = () => {
     ) as unknown as FormParams;
     const goBack = useGoBack(baseUrls.forms);
     const queryClient = useQueryClient();
-    const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
+    const { data: form, isLoading: isFormLoading } = useGetForm(
+        params.formId,
+        Boolean(params.formId) && params.formId !== '0',
+        'id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields,legend_threshold,change_request_mode',
+    );
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [tab, setTab] = useState(params.tab || 'versions');
@@ -153,21 +158,13 @@ const FormDetail: FunctionComponent = () => {
         let savedFormData;
         try {
             savedFormData = await saveForm;
+            queryClient.invalidateQueries(['forms']);
             openSnackBar(succesfullSnackBar());
+
             if (!isUpdate) {
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,
                 });
-            } else {
-                queryClient.resetQueries([
-                    'formDetailsForInstance',
-                    `${savedFormData.id}`,
-                ]);
-                queryClient.resetQueries(['forms']);
-                queryClient.invalidateQueries([
-                    'formVersions',
-                    parseInt(params.formId, 10),
-                ]);
             }
         } catch (error) {
             if (error.status === 400) {
@@ -204,6 +201,12 @@ const FormDetail: FunctionComponent = () => {
             formatMessage,
         ],
     );
+
+    const handleCancel = useCallback(
+        () => (isNew ? goBack() : handleReset()),
+        [goBack, handleReset, isNew],
+    );
+
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
         const newParams = {
@@ -227,7 +230,6 @@ const FormDetail: FunctionComponent = () => {
         }
         return singlePerPeriodValue;
     }, [form]);
-
     return (
         <>
             <TopBar
@@ -249,9 +251,9 @@ const FormDetail: FunctionComponent = () => {
                         <Button
                             data-id="form-detail-cancel"
                             className={classes.marginLeft}
-                            disabled={!isFormModified}
+                            disabled={!isNew && !isFormModified}
                             variant="contained"
-                            onClick={() => handleReset()}
+                            onClick={handleCancel}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </Button>
@@ -290,6 +292,12 @@ const FormDetail: FunctionComponent = () => {
                                     value="attachments"
                                     label={formatMessage(MESSAGES.attachments)}
                                 />
+                                <Tab
+                                    value="filters"
+                                    label={formatMessage(
+                                        MESSAGES.predefinedFilters,
+                                    )}
+                                />
                             </Tabs>
                         </Box>
                         {tab === 'versions' && (
@@ -303,6 +311,9 @@ const FormDetail: FunctionComponent = () => {
                         )}
                         {tab === 'attachments' && (
                             <FormAttachments params={params} />
+                        )}
+                        {tab === 'filters' && (
+                            <FormPredefinedFilters params={params} />
                         )}
                     </>
                 )}

@@ -1,24 +1,24 @@
 import React, { useMemo } from 'react';
+import { ArrowUpward, AccountTree } from '@mui/icons-material';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import { ArrowUpward, AccountTree } from '@mui/icons-material';
 
-import MESSAGES from '../messages';
-import { userHasOneOfPermissions } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasOneOfPermissions } from '../../users/utils';
+import { DescendantsCell } from '../components/DescendantsCell';
+import { ItselfCell } from '../components/ItselfCell';
+import MESSAGES from '../messages';
 import {
     CompletenessApiResponse,
     CompletenessRouterParams,
     FormDesc,
 } from '../types';
-import * as Permission from '../../../utils/permissions';
 import { useGetParentPageUrl } from '../utils';
-import { DescendantsCell } from '../components/DescendantsCell';
-import { ItselfCell } from '../components/ItselfCell';
 
 export const useCompletenessStatsColumns = (
     params: CompletenessRouterParams,
@@ -155,7 +155,7 @@ export const useCompletenessStatsColumns = (
                         {hasSubmissionPermission && hasFormSubmissions && (
                             <IconButtonComponent
                                 id={`form-link-${settings.row.original.id}`}
-                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}`}
+                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}/isSearchActive/true`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewInstances}
                             />

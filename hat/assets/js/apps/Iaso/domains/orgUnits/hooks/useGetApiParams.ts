@@ -25,13 +25,14 @@ export const useGetApiParams = (
     params: OrgUnitParams,
     asLocation = false,
 ): Result => {
-    const tempSearches = [...searches];
-    searches.forEach((s, i) => {
-        tempSearches[i].orgUnitParentId = searches[i].levels;
+    const activeSearches = searches.filter(s => !s.isAdded);
+    const tempSearches = [...activeSearches];
+    activeSearches.forEach((s, i) => {
+        tempSearches[i].orgUnitParentId = activeSearches[i].levels;
         tempSearches[i].dateFrom =
-            getFromDateString(searches[i].dateFrom) || undefined;
+            getFromDateString(activeSearches[i].dateFrom) || undefined;
         tempSearches[i].dateTo =
-            getToDateString(searches[i].dateTo) || undefined;
+            getToDateString(activeSearches[i].dateTo) || undefined;
     });
 
     const apiParams: ApiParams = {

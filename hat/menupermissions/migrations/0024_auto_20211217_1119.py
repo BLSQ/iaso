@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("menupermissions", "0023_auto_20211028_1436"),
+        ("menupermissions", "0001_squashed_0023_auto_20211028_1436"),
     ]
 
     operations = [

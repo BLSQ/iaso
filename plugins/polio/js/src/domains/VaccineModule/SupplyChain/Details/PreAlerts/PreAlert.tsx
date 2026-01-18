@@ -1,45 +1,50 @@
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { Box, Grid, Paper, Typography } from '@mui/material';
+import { Box, Grid, Paper } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
-import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
-import { dosesPerVial } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
-import { grayText, usePaperStyles } from '../shared';
+import { usePaperStyles } from '../shared';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 type Props = {
     index: number;
-    vaccine?: string;
+    dosesForVaccineOptions: DropdownOptions<number>[];
 };
 
-export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
+export const PreAlert: FunctionComponent<Props> = ({
+    index,
+    dosesForVaccineOptions,
+}) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched, errors } =
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
-    const uneditableTextStyling = markedForDeletion ? grayText : undefined;
-    const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
+
+    const defaultDosesPerVial =
+        dosesForVaccineOptions.length === 1
+            ? dosesForVaccineOptions[0].value
+            : undefined;
+
     const doses_per_vial =
-        pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
-    // const [isDosesFocused, setIsDosesFocused] = useState<boolean>(false);
-    // const [isVialsFocused, setIsVialsFocused] = useState<boolean>(false);
+        pre_alerts?.[index].doses_per_vial ?? defaultDosesPerVial;
 
     // Use refs to track focused state to reduce renders and avoid sluggish UI
     const dosesRef = useRef<boolean>(false);
     const vialsRef = useRef<boolean>(false);
 
     const documentErrors = useMemo(() => {
-        return processErrorDocsBase(errors[index]?.document);
+        return processErrorDocsBase(errors[index]?.file);
     }, [errors, index]);
 
     const onDelete = useCallback(() => {
@@ -84,6 +89,21 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
         },
         [doses_per_vial, index, setFieldValue],
     );
+
+    const handleDosesPerVialUpdate = useCallback(
+        (_, value: number) => {
+            const vialsShipped = Math.ceil(
+                parseInt(
+                    (pre_alerts?.[index].doses_shipped ?? '0') as string,
+                    10,
+                ) / value,
+            );
+
+            setFieldValue(`pre_alerts[${index}].doses_per_vial`, value);
+            setFieldValue(`pre_alerts[${index}].vials_shipped`, vialsShipped);
+        },
+        [index, setFieldValue, pre_alerts],
+    );
     const onDosesFocus = () => {
         dosesRef.current = true;
     };
@@ -96,7 +116,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const onVialsBlur = () => {
         vialsRef.current = false;
     };
-
     return (
         <div className={classes.container}>
             <Paper
@@ -139,19 +158,17 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                     onFilesSelect={files => {
                                         if (files.length) {
                                             setFieldTouched(
-                                                `pre_alerts[${index}].document`,
+                                                `pre_alerts[${index}].file`,
                                                 true,
                                             );
                                             setFieldValue(
-                                                `pre_alerts[${index}].document`,
+                                                `pre_alerts[${index}].file`,
                                                 files,
                                             );
                                         }
                                     }}
                                     // @ts-ignore
-                                    document={
-                                        values?.pre_alerts?.[index]?.document
-                                    }
+                                    document={values?.pre_alerts?.[index]?.file}
                                     scanResult={
                                         values?.pre_alerts?.[index]?.scan_result
                                     }
@@ -208,17 +225,20 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 }
                                 required
                             />
-                            <Box>
-                                <Typography
-                                    variant="button"
-                                    sx={uneditableTextStyling}
-                                >
-                                    {`${formatMessage(
-                                        MESSAGES.doses_per_vial,
-                                    )}:`}{' '}
-                                    <NumberCell value={doses_per_vial} />
-                                </Typography>
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`pre_alerts[${index}].doses_per_vial`}
+                                component={SingleSelect}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit ||
+                                    dosesForVaccineOptions.length === 1
+                                }
+                                onChange={handleDosesPerVialUpdate}
+                                options={dosesForVaccineOptions}
+                                required
+                                clearable={false}
+                            />
                         </Grid>
                     </Grid>
                 </Grid>

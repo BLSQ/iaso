@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from hat.audit.models import log_modification
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -13,7 +14,7 @@ class LogsAPITestCase(APITestCase):
         cls.ead = m.Project.objects.create(name="End All Diseases", account=ghi)
         cls.esd = m.Project.objects.create(name="End Some Diseases", account=wha)
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
         cls.reference_form = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
@@ -175,7 +176,7 @@ class LogsAPITestCase(APITestCase):
         instance = self.create_form_instance(form=self.reference_form, project=self.reference_form.projects.first())
         modification = log_modification(None, instance, user=self.jane, source="myunittest")
         user_with_instance_perm = self.create_user_with_profile(
-            username="bob", account=self.ghi, permissions=["iaso_submissions"]
+            username="bob", account=self.ghi, permissions=[CORE_SUBMISSIONS_PERMISSION]
         )
         user_no_instance_perm = self.create_user_with_profile(username="bob2", account=self.ghi, permissions=[])
         user_superuser = self.create_user_with_profile(username="superuser", account=self.ghi, is_superuser=True)

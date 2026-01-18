@@ -9,8 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 if typing.TYPE_CHECKING:
-    from iaso.models import OrgUnit, OrgUnitType
-
+    from iaso.models import Group, OrgUnit, OrgUnitType
 
 logger = logging.getLogger(__name__)
 
@@ -144,14 +143,14 @@ class SourceVersion(models.Model):
             "id": self.id,
         }
 
-    def as_dict_without_data_source(self):
+    def as_dict_without_data_source(self, org_units_count=None):
         return {
             "number": self.number,
             "description": self.description,
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "org_units_count": self.orgunit_set.count(),
+            "org_units_count": org_units_count or self.orgunit_set.count(),
         }
 
     def as_report_dict(self):
@@ -279,9 +278,11 @@ class DataSourceVersionsSynchronization(models.Model):
         source_version_to_update_validation_status: str = None,
         source_version_to_update_top_org_unit: "OrgUnit" = None,
         source_version_to_update_org_unit_types: list["OrgUnitType"] = None,
+        source_version_to_update_org_unit_group: "Group" = None,
         source_version_to_compare_with_validation_status: str = None,
         source_version_to_compare_with_top_org_unit: "OrgUnit" = None,
         source_version_to_compare_with_org_unit_types: list["OrgUnitType"] = None,
+        source_version_to_compare_with_org_unit_group: "Group" = None,
         ignore_groups: bool = False,
         show_deleted_org_units: bool = False,
         field_names: list[str] = None,
@@ -298,11 +299,13 @@ class DataSourceVersionsSynchronization(models.Model):
             "validation_status": source_version_to_update_validation_status,
             "top_org_unit": source_version_to_update_top_org_unit,
             "org_unit_types": source_version_to_update_org_unit_types,
+            "org_unit_group": source_version_to_update_org_unit_group,
             # Version to compare with.
             "version_ref": self.source_version_to_compare_with,
             "validation_status_ref": source_version_to_compare_with_validation_status,
             "top_org_unit_ref": source_version_to_compare_with_top_org_unit,
             "org_unit_types_ref": source_version_to_compare_with_org_unit_types,
+            "org_unit_group_ref": source_version_to_compare_with_org_unit_group,
             # Options.
             "ignore_groups": ignore_groups,
             "show_deleted_org_units": show_deleted_org_units,
@@ -311,11 +314,11 @@ class DataSourceVersionsSynchronization(models.Model):
         diffs, _ = Differ(logger_to_use or logger).diff(**differ_params)
 
         # Reduce the size of the diff that will be stored in the DB.
-        diffs = [diff for diff in diffs if diff.status != "same"]
+        diffs = [diff for diff in diffs if diff.status != Differ.STATUS_SAME]
 
         count_status = {
-            "new": 0,
-            "modified": 0,
+            Differ.STATUS_NEW: 0,
+            Differ.STATUS_MODIFIED: 0,
         }
         for diff in diffs:
             if diff.status in count_status:
@@ -330,6 +333,9 @@ class DataSourceVersionsSynchronization(models.Model):
             "org_unit_types": [out.pk for out in source_version_to_update_org_unit_types]
             if source_version_to_update_org_unit_types
             else None,
+            "org_unit_group": source_version_to_update_org_unit_group.pk
+            if source_version_to_update_org_unit_group
+            else None,
             # Version to compare with.
             "version_ref": self.source_version_to_compare_with.pk,
             "validation_status_ref": source_version_to_compare_with_validation_status,
@@ -339,14 +345,17 @@ class DataSourceVersionsSynchronization(models.Model):
             "org_unit_types_ref": [out.pk for out in source_version_to_compare_with_org_unit_types]
             if source_version_to_compare_with_org_unit_types
             else None,
+            "org_unit_group_ref": source_version_to_compare_with_org_unit_group.pk
+            if source_version_to_compare_with_org_unit_group
+            else None,
             # Options.
             "ignore_groups": ignore_groups,
             "show_deleted_org_units": show_deleted_org_units,
             "field_names": field_names,
         }
 
-        self.count_create = count_status["new"]
-        self.count_update = count_status["modified"]
+        self.count_create = count_status[Differ.STATUS_NEW]
+        self.count_update = count_status[Differ.STATUS_MODIFIED]
         self.json_diff = diffs_to_json(diffs)
         self.diff_config = str(differ_config)
         self.save()

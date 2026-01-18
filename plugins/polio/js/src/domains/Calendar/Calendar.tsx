@@ -75,8 +75,8 @@ export const Calendar: FunctionComponent = () => {
     const [isTypeSet, setIsTypeSet] = useState(!!params.campaignType);
 
     const orders = params.order || defaultOrder;
-    const queryOptions = useMemo(
-        () => ({
+    const queryOptions = useMemo(() => {
+        const options = {
             order: orders,
             countries: params.countries,
             search: params.search,
@@ -91,17 +91,19 @@ export const Calendar: FunctionComponent = () => {
             fieldset: 'calendar',
             show_test: false,
             on_hold: true,
-        }),
-        [
-            orders,
-            params.countries,
-            params.search,
-            params.campaignCategory,
-            params.campaignGroups,
-            params.orgUnitGroups,
-            params.campaignType,
-        ],
-    );
+        };
+
+        return isEmbedded ? { ...options, is_embedded: true } : options;
+    }, [
+        orders,
+        params.countries,
+        params.search,
+        params.campaignCategory,
+        params.campaignGroups,
+        params.orgUnitGroups,
+        params.campaignType,
+        isEmbedded,
+    ]);
 
     const {
         data: campaigns = [],

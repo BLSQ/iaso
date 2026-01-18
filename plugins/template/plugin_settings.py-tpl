@@ -1,0 +1,12 @@
+INSTALLED_APPS = [
+    "plugins.{{ app_name }}",
+]
+
+# Optional variables that can be used to configure your plugin - see hat/settings.py for more details
+
+# Needed for certain settings, BASE_DIR is the root directory of the _Iaso_ project
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# CONSTANTS = {}
+# TEMPLATES_DIRS = []
+# STATICFILES_DIRS = []
+# WEBPACK_LOADER = {}

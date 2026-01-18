@@ -2,9 +2,12 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { useFormikContext } from 'formik';
 import { PreAlert } from './PreAlert';
 import MESSAGES from '../../messages';
-import { MultiFormTab } from '../shared';
+import {
+    MultiFormTab,
+    useDosesPerVialDropDownForVaccine,
+    useEmptyPreAlert,
+} from '../shared';
 import { PREALERT } from '../../constants';
-import { createEmptyPreAlert } from '../../hooks/utils';
 import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
@@ -23,13 +26,11 @@ export const PreAlerts: FunctionComponent<Props> = ({
     // TODO manage errors
     const { values, setFieldValue } = useFormikContext<any>();
     const vaccine = values.vrf?.vaccine_type;
-
+    const dosesPerVaccineOptions = useDosesPerVialDropDownForVaccine(vaccine);
+    const emptyPreAlert = useEmptyPreAlert(dosesPerVaccineOptions);
     const onClick = useCallback(() => {
-        setFieldValue(PREALERT, [
-            ...values[PREALERT],
-            createEmptyPreAlert(vaccine),
-        ]);
-    }, [setFieldValue, values, vaccine]);
+        setFieldValue(PREALERT, [...values[PREALERT], emptyPreAlert]);
+    }, [setFieldValue, values, vaccine, emptyPreAlert]);
 
     const currentUser = useCurrentUser();
 
@@ -48,7 +49,13 @@ export const PreAlerts: FunctionComponent<Props> = ({
             onClick={onClick}
         >
             {items.map((_, index) => {
-                return <PreAlert index={index} vaccine={vaccine} key={index} />;
+                return (
+                    <PreAlert
+                        index={index}
+                        key={index}
+                        dosesForVaccineOptions={dosesPerVaccineOptions}
+                    />
+                );
             })}
         </MultiFormTab>
     );

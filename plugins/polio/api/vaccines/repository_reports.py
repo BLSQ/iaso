@@ -77,7 +77,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
         data = [
             {
                 "date": ir.date_of_incident_report,
-                "file": ir.document.url if ir.document else None,
+                "file": ir.file.url if ir.file else None,
             }
             for ir in pir
         ]
@@ -88,7 +88,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
         data = [
             {
                 "date": dr.destruction_report_date,
-                "file": dr.document.url if dr.document else None,
+                "file": dr.file.url if dr.file else None,
             }
             for dr in drs
         ]

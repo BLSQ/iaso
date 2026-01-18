@@ -31,6 +31,7 @@ export type CalendarRound = {
     target_population: number;
     hasSubActivities: boolean;
     subActivities: SubActivity[];
+    is_planned: boolean;
 };
 
 export type SubActivity = {
@@ -56,6 +57,7 @@ export type MappedCampaign = {
     isPreventive: boolean;
     isTest: boolean;
     onHold: boolean;
+    isPlanned: boolean;
     subActivities: SubActivity[];
     hasSubActivities: boolean;
 };

@@ -13,13 +13,16 @@ export const testTablerender = ({
     selector = 'table',
     request,
     apiPath,
+    searchButton,
 }) =>
     describe('When table renders', () => {
         it('Displays Table with right amount of rows and columns', () => {
             if (withVisit) {
                 cy.visit(baseUrl);
             }
-
+            if (searchButton) {
+                cy.get(searchButton).click();
+            }
             if (request) {
                 cy.wait(request).then(() => {
                     cy.get(selector).as('table');
@@ -56,6 +59,9 @@ export const testTablerender = ({
                 },
             ).as('fetch');
             cy.visit(baseUrl);
+            if (searchButton) {
+                cy.get(searchButton).click();
+            }
             cy.wait('@fetch', { timeout: 10000 });
 
             cy.get(selector).as('table');

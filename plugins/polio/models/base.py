@@ -19,7 +19,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models import Exists, OuterRef, Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
@@ -32,19 +32,23 @@ from translated_fields import TranslatedField
 
 from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
-from iaso.models.base import Account, Task
+from iaso.models.base import Account
 from iaso.models.entity import UserNotAuthError
-from iaso.models.microplanning import Team
+from iaso.models.json_config import Config
 from iaso.models.project import Project
+from iaso.models.task import Task
+from iaso.models.team import Team
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     SoftDeletableModel,
 )
-from iaso.utils.models.virus_scan import VirusScanStatus
+from iaso.utils.virus_scan.model import ModelWithFile
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
+
+DOSES_PER_VIAL_CONFIG_SLUG = "vaccine_doses_per_vial"
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -294,6 +298,10 @@ class RoundQuerySet(models.QuerySet):
             )
         )
 
+    def filter_for_user(self: QuerySet, user: Union[User, AnonymousUser]):
+        campaigns_for_user = Campaign.objects.filter_for_user(user)
+        return self.filter(campaign__in=campaigns_for_user)
+
 
 def make_group_subactivity_scope():
     return Group.objects.create(name="hidden subactivityScope")
@@ -362,6 +370,15 @@ class SubActivity(models.Model):
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
+        constraints = [
+            models.CheckConstraint(
+                name="round_planned_requires_population_data",
+                check=Q(
+                    Q(is_planned=False)
+                    | (Q(target_population__isnull=False) & Q(percentage_covered_target_population__isnull=False))
+                ),
+            )
+        ]
 
     # With the current situation/UI, all rounds must have a start date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
@@ -383,15 +400,20 @@ class Round(models.Model):
     age_max = models.IntegerField(null=True, blank=True)
     age_type = models.TextField(null=True, blank=True, choices=AgeChoices.choices)
 
+    target_population = models.IntegerField(null=True, blank=True)
+    percentage_covered_target_population = models.IntegerField(null=True, blank=True)
+    doses_requested = models.IntegerField(null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
+    on_hold = models.BooleanField(default=False)
+    is_planned = models.BooleanField(default=False)
+
+    # Evaluation (LQAS/IM)
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)
     im_started_at = models.DateField(null=True, blank=True)
     im_ended_at = models.DateField(null=True, blank=True)
     lqas_started_at = models.DateField(null=True, blank=True)
     lqas_ended_at = models.DateField(null=True, blank=True)
-    target_population = models.IntegerField(null=True, blank=True)
-    doses_requested = models.IntegerField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
     im_percentage_children_missed_in_household = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -405,7 +427,6 @@ class Round(models.Model):
     main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
-    on_hold = models.BooleanField(default=False)
 
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
@@ -423,7 +444,7 @@ class Round(models.Model):
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
     forma_date = models.DateField(null=True, blank=True)
     forma_comment = models.TextField(blank=True, null=True)
-    percentage_covered_target_population = models.IntegerField(null=True, blank=True)
+
     # End of vaccine management
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
@@ -629,12 +650,18 @@ class Campaign(SoftDeletableModel):
     is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
     # campaign used for training and testing purpose
     is_test = models.BooleanField(default=False)
+    # campaign approved but implementation is on hold
     on_hold = models.BooleanField(default=False)
+    # campaign planned, but not approved yet
+    is_planned = models.BooleanField(default=False)  # FIXME planned and on_hold should be mutually exclusive
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     campaign_types = models.ManyToManyField(CampaignType, blank=True, related_name="campaigns")
 
+    integrated_to = models.ForeignKey(
+        "Campaign", on_delete=models.PROTECT, related_name="integrated_campaigns", blank=True, null=True
+    )
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -681,7 +708,6 @@ class Campaign(SoftDeletableModel):
         on_delete=models.SET_NULL,
         related_name="campaigns",
         default=None,
-        limit_choices_to={"domain": "POLIO"},
     )
 
     onset_at = models.DateField(
@@ -937,6 +963,10 @@ class Campaign(SoftDeletableModel):
         return self.find_rounds_with_date(date_type, round_number).first()
 
     def save(self, *args, **kwargs):
+        # Prevent polio campaign to be saved as integrated campaign.
+        if self.has_polio_type and self.integrated_to is not None:
+            raise IntegrityError("Value of integrated_to must be NULL for Campaigns of type POLIO")
+
         if self.initial_org_unit is not None:
             try:
                 country = self.initial_org_unit.ancestors().filter(org_unit_type__category="COUNTRY").first()
@@ -1356,7 +1386,7 @@ class VaccineRequestFormType(models.TextChoices):
     NOT_REQUIRED = "Not Required", _("Not Required")
 
 
-class VaccineRequestForm(SoftDeletableModel):
+class VaccineRequestForm(ModelWithFile, SoftDeletableModel):
     class Meta:
         indexes = [
             models.Index(fields=["campaign", "vaccine_type"]),  # Frequently filtered together
@@ -1365,6 +1395,7 @@ class VaccineRequestForm(SoftDeletableModel):
             models.Index(fields=["updated_at"]),  # Used for ordering
         ]
 
+    file = models.FileField(null=True, blank=True, storage=CustomPublicStorage(), upload_to="public_documents/vrf/")
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, db_index=True)
     vaccine_type = models.CharField(max_length=30, choices=INDIVIDUAL_VACCINES)
     rounds = models.ManyToManyField(Round, db_index=True)
@@ -1391,12 +1422,6 @@ class VaccineRequestForm(SoftDeletableModel):
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/", null=True, blank=True)
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
-
     objects = DefaultSoftDeletableManager()
 
     def get_country(self):
@@ -1422,7 +1447,10 @@ class VaccineRequestForm(SoftDeletableModel):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
-class VaccinePreAlert(models.Model):
+class VaccinePreAlert(ModelWithFile):
+    file = models.FileField(
+        null=True, blank=True, storage=CustomPublicStorage(), upload_to="public_documents/prealert/"
+    )
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
     po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
@@ -1430,34 +1458,18 @@ class VaccinePreAlert(models.Model):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
-    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField()
     vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/prealert/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
-
     def save(self, *args, **kwargs):
-        self.doses_per_vial = self.get_doses_per_vial()
-
         if self.doses_shipped is None:
             self.vials_shipped = None
         else:
             self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
 
         super().save(*args, **kwargs)
-
-    def get_doses_per_vial(self):
-        return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
     class Meta:
         indexes = [
@@ -1475,20 +1487,14 @@ class VaccineArrivalReport(models.Model):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
-    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField()
     vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     vials_received = models.PositiveIntegerField(blank=True, null=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def get_doses_per_vial(self):
-        return DOSES_PER_VIAL[self.request_form.vaccine_type]
-
     def save(self, *args, **kwargs):
-        # We overwrite these values because they are not editable by the user
-        self.doses_per_vial = self.get_doses_per_vial()
-
         if self.doses_shipped is None:
             self.vials_shipped = None
         else:
@@ -1556,13 +1562,13 @@ class VaccineStock(models.Model):
         return f"{self.country} - {self.vaccine}"
 
     def usable_vials(self, end_date=None):
-        return VaccineStockCalculator(self).get_list_of_usable_vials(end_date, expanded=True)
+        return VaccineStockCalculator(self, end_date).get_list_of_usable_vials(expanded=True)
 
     def unusable_vials(self, end_date=None):
-        return VaccineStockCalculator(self).get_list_of_unusable_vials(end_date, expanded=True)
+        return VaccineStockCalculator(self, end_date).get_list_of_unusable_vials(expanded=True)
 
     def earmarked_vials(self, end_date=None):
-        return VaccineStockCalculator(self).get_list_of_earmarked(end_date, expanded=True)
+        return VaccineStockCalculator(self, end_date).get_list_of_earmarked(expanded=True)
 
 
 class VaccineStockHistoryQuerySet(models.QuerySet):
@@ -1596,15 +1602,26 @@ class VaccineStockHistory(models.Model):
 
 
 # Form A
-class OutgoingStockMovement(models.Model):
+class OutgoingStockMovement(ModelWithFile):
     class Meta:
         indexes = [
             models.Index(fields=["vaccine_stock", "campaign"]),  # Frequently queried together
             models.Index(fields=["form_a_reception_date"]),  # Used in ordering
             models.Index(fields=["report_date"]),  # Used in filtering/ordering
         ]
+        constraints = [
+            models.CheckConstraint(
+                check=Q(campaign__isnull=False) | ~Q(non_obr_name=""),
+                name="campaign_or_pseudo_campaign_not_null",
+            ),
+            models.CheckConstraint(
+                check=~Q(Q(campaign__isnull=False) & ~Q(non_obr_name="")),
+                name="campaign_and_pseudo_campaign_cannot_both_have_value",
+            ),
+        ]
 
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    file = models.FileField(null=True, blank=True, storage=CustomPublicStorage(), upload_to="public_documents/forma/")
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, null=True, blank=True)
     round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     vaccine_stock = models.ForeignKey(
         VaccineStock, on_delete=models.CASCADE
@@ -1614,23 +1631,17 @@ class OutgoingStockMovement(models.Model):
     usable_vials_used = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     comment = models.TextField(blank=True, null=True)
-
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/forma/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
+    non_obr_name = models.CharField(blank=True)
+    doses_per_vial = models.IntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class DestructionReport(models.Model):
+class DestructionReport(ModelWithFile):
+    file = models.FileField(
+        null=True, blank=True, storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/"
+    )
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
     action = models.TextField()
     rrt_destruction_report_reception_date = models.DateField()
@@ -1638,17 +1649,7 @@ class DestructionReport(models.Model):
     unusable_vials_destroyed = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     comment = models.TextField(blank=True, null=True)
-
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/destructionreport/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
+    doses_per_vial = models.IntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1660,7 +1661,7 @@ class DestructionReport(models.Model):
         ]
 
 
-class IncidentReport(models.Model):
+class IncidentReport(ModelWithFile):
     class StockCorrectionChoices(models.TextChoices):
         VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
         VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
@@ -1672,6 +1673,9 @@ class IncidentReport(models.Model):
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
 
+    file = models.FileField(
+        null=True, blank=True, storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/"
+    )
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
 
     stock_correction = models.CharField(
@@ -1685,17 +1689,7 @@ class IncidentReport(models.Model):
     incident_report_received_by_rrt = models.DateField()  # Date reception document
     unusable_vials = models.PositiveIntegerField()
     usable_vials = models.PositiveIntegerField()
-
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/incidentreport/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
+    doses_per_vial = models.IntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1736,6 +1730,7 @@ class EarmarkedStock(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    doses_per_vial = models.IntegerField()
 
     class Meta:
         indexes = [
@@ -1752,18 +1747,20 @@ class EarmarkedStock(models.Model):
         return f"Earmarked {self.vials_earmarked} vials"
 
     @classmethod
-    def get_available_vials_count(cls, vaccine_stock: VaccineStock, _round: Round):
+    def get_available_vials_count(cls, vaccine_stock: VaccineStock, rnd: Round, doses_per_vial):
         matching_earmarks_plus = EarmarkedStock.objects.filter(
+            doses_per_vial=doses_per_vial,
             vaccine_stock=vaccine_stock,
-            campaign=_round.campaign,
-            round=_round,
+            campaign=rnd.campaign,
+            round=rnd,
             earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
         )
 
         matching_earmarks_minus = EarmarkedStock.objects.filter(
+            doses_per_vial=doses_per_vial,
             vaccine_stock=vaccine_stock,
-            campaign=_round.campaign,
-            round=_round,
+            campaign=rnd.campaign,
+            round=rnd,
             earmarked_stock_type__in=[
                 EarmarkedStock.EarmarkedStockChoices.USED,
                 EarmarkedStock.EarmarkedStockChoices.RETURNED,
@@ -1873,7 +1870,7 @@ class Notification(models.Model):
         return f"{self.epid_number}"
 
 
-class NotificationImport(models.Model):
+class NotificationImport(ModelWithFile):
     """
     Handle bulk import of polio virus outbreaks notifications via .xlsx files.
     This model stores .xlsx files and use them to populate `Notification`.
@@ -1881,30 +1878,34 @@ class NotificationImport(models.Model):
 
     XLSX_TEMPLATE_PATH = "plugins/polio/fixtures/notifications_template.xlsx"
 
-    EXPECTED_XLSX_COL_NAMES = [
-        "EPID_NUMBER",
-        "VDPV_CATEGORY",
-        "SOURCE(AFP/ENV/CONTACT/HC)",
-        "VDPV_NUCLEOTIDE_DIFF_SABIN2",
-        "COUNTRY",
-        "PROVINCE",
-        "DISTRICT",
-        "SITE_NAME/GEOCODE",
-        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)",
-        "LINEAGE",
-        "CLOSEST_MATCH_VDPV2",
-        "DATE_RESULTS_RECEIVED",
-    ]
+    # Allow the XLSX file to have variant headers.
+    # EXPECTED_NAME -> [VARIANT1, VARIANT2, …].
+    EXPECTED_XLSX_COL_NAMES = {
+        "EPID_NUMBER": [],
+        "VDPV_CATEGORY": ["VIRUS"],
+        "SOURCE(AFP/ENV/CONTACT/HC)": ["SOURCE"],
+        "VDPV_NUCLEOTIDE_DIFF_SABIN2": ["VDPV_NTD_D/CE_SABIN_1/2"],
+        "COUNTRY": [],
+        "PROVINCE": [],
+        "DISTRICT": [],
+        "SITE_NAME/GEOCODE": ["ES_SITE_NAME"],
+        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)": ["ONSET/COLLECTION"],
+        "LINEAGE": ["EMERGENCE"],
+        "CLOSEST_MATCH_VDPV2": ["CLOSEST_MATCH_VDPV1/2"],
+        "DATE_RESULTS_RECEIVED": [],
+    }
 
     class Status(models.TextChoices):
         NEW = "new", _("New")
         PENDING = "pending", _("Pending")
         DONE = "done", _("Done")
 
+    file = models.FileField(
+        null=False,
+        blank=False,
+        upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/",
+    )
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
-    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
-    file_last_scan = models.DateTimeField(blank=True, null=True)
-    file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
     errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)
@@ -1932,7 +1933,19 @@ class NotificationImport(models.Model):
 
         # Normalize xlsx header's names.
         df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
-        for name in cls.EXPECTED_XLSX_COL_NAMES:
+
+        column_mapping = {}
+        for expected_col, variants in cls.EXPECTED_XLSX_COL_NAMES.items():
+            for variant in variants:
+                if variant in df.columns:
+                    column_mapping[variant] = expected_col
+                    break  # Use the first matching variant.
+
+        if column_mapping:
+            df.rename(columns=column_mapping, inplace=True)
+
+        expected_cols = list(cls.EXPECTED_XLSX_COL_NAMES.keys())
+        for name in expected_cols:
             if name not in df.columns:
                 raise ValueError(f"Missing column {name}.")
 
@@ -1954,8 +1967,10 @@ class NotificationImport(models.Model):
         )
 
         for idx, row in df.iterrows():
-            # Remove columns not in `EXPECTED_XLSX_COL_NAMES`.
-            row_data_as_dict = {k: v for k, v in row.to_dict().items() if k in self.EXPECTED_XLSX_COL_NAMES}
+            # Remove columns not in expected column names.
+            row_data_as_dict = {
+                k: v for k, v in row.to_dict().items() if k in list(self.EXPECTED_XLSX_COL_NAMES.keys())
+            }
             try:
                 epid_number = importer.clean_str(row["EPID_NUMBER"])
                 org_unit = importer.find_org_unit_in_caches(
@@ -2114,11 +2129,12 @@ class MovementTypeEnum(enum.Enum):
 
 
 class VaccineStockCalculator:
-    def __init__(self, vaccine_stock: VaccineStock):
+    def __init__(self, vaccine_stock: VaccineStock, end_date=None):
         if not isinstance(vaccine_stock, VaccineStock):
             raise TypeError("vaccine_stock must be a VaccineStock object")
 
         self.vaccine_stock = vaccine_stock
+        self.end_date = end_date
         self.arrival_reports = VaccineArrivalReport.objects.filter(
             request_form__campaign__country=vaccine_stock.country,
             request_form__vaccine_type=vaccine_stock.vaccine,
@@ -2131,28 +2147,66 @@ class VaccineStockCalculator:
         )
         self.stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
         self.earmarked_stocks = EarmarkedStock.objects.filter(vaccine_stock=vaccine_stock).order_by("created_at")
+        self.total_vials_used = None
+        self.total_doses_used = None
+        self.total_vials_destroyed = None
+        self.total_doses_destroyed = None
+        self.total_usable_vials = None
+        self.total_usable_doses = None
+        self.total_unusable_vials = None
+        self.total_unusable_doses = None
+        self.total_vials_received = None
+        self.total_doses_received = None
+        self.total_earmarked_vials = None
+        self.total_earmarked_doses = None
+        self._list_of_vaccines_received = None
+        self._list_of_vaccines_received_expanded = None
+        self.list_of_usable_vials = None
+        self.list_of_usable_vials_expanded = None
+        self._list_of_used_vials = None
+        self._list_of_used_vials_expanded = None
+        self.list_of_unusable_vials = None
+        self.list_of_unusable_vials_expanded = None
+        self.list_of_earmarked = None
+        self.list_of_earmarked_expanded = None
 
-    def get_doses_per_vial(self):
-        return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
+    def get_vials_used(self):
+        # if totals return totals
+        if self.total_vials_used is not None and self.total_doses_used is not None:
+            return self.total_vials_used, self.total_doses_used
 
-    def get_vials_used(self, end_date=None):
-        results = self.get_list_of_used_vials(end_date)
-        total = 0
+        results = self._get_list_of_used_vials()
+        total_vials = 0
+        total_doses = 0
         for result in results:
-            total += result["vials_in"]
+            total_vials += result["vials_in"]
+            total_doses += result["doses_in"]
+        # set totals
+        self.total_vials_used = total_vials
+        self.total_doses_used = total_doses
 
-        return total
+        return total_vials, total_doses
 
-    def get_vials_destroyed(self, end_date=None):
-        if not self.destruction_reports.exists():
-            return 0
+    def get_vials_destroyed(self):
+        if self.total_vials_destroyed is not None and self.total_doses_destroyed is not None:
+            return self.total_vials_destroyed, self.total_doses_destroyed
         destruction_reports = self.destruction_reports
-        if end_date:
-            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
-        return sum(report.unusable_vials_destroyed or 0 for report in destruction_reports)
+        if self.end_date:
+            destruction_reports = destruction_reports.filter(destruction_report_date__lte=self.end_date)
+        destroyed_vials_and_doses = [
+            ((report.unusable_vials_destroyed or 0), ((report.unusable_vials_destroyed or 0) * report.doses_per_vial))
+            for report in destruction_reports
+        ]
+        total_vials_destroyed = sum(value[0] for value in destroyed_vials_and_doses)
+        total_doses_destroyed = sum(value[1] for value in destroyed_vials_and_doses)
+        self.total_vials_destroyed = total_vials_destroyed
+        self.total_doses_destroyed = total_doses_destroyed
+        return total_vials_destroyed, total_doses_destroyed
 
-    def get_total_of_usable_vials(self, end_date=None):
-        results = self.get_list_of_usable_vials(end_date)
+    def get_total_of_usable_vials(self):
+        if self.total_usable_vials is not None and self.total_usable_doses is not None:
+            return self.total_usable_vials, self.total_usable_doses
+        results = self.get_list_of_usable_vials()
         total_vials_in = 0
         total_doses_in = 0
 
@@ -2166,21 +2220,31 @@ class VaccineStockCalculator:
             if result["doses_out"]:
                 total_doses_in -= result["doses_out"]
 
+        self.total_usable_vials = total_vials_in
+        self.total_usable_doses = total_doses_in
         return total_vials_in, total_doses_in
 
-    def get_vials_received(self, end_date=None):
-        results = self.get_list_of_vaccines_received(end_date)
+    def get_vials_received(self):
+        if self.total_vials_received is not None and self.total_doses_received is not None:
+            return self.total_vials_received, self.total_doses_received
+        results = self._get_list_of_vaccines_received()
 
         total_vials_in = 0
+        total_doses_in = 0
 
         for result in results:
             if result["vials_in"]:
                 total_vials_in += result["vials_in"]
+                total_doses_in += result["doses_in"]
 
-        return total_vials_in
+        self.total_vials_received = total_vials_in
+        self.total_doses_received = total_doses_in
+        return total_vials_in, total_doses_in
 
-    def get_total_of_unusable_vials(self, end_date=None):
-        results = self.get_list_of_unusable_vials(end_date)
+    def get_total_of_unusable_vials(self):
+        if self.total_unusable_vials is not None and self.total_unusable_doses is not None:
+            return self.total_unusable_vials, self.total_unusable_doses
+        results = self.get_list_of_unusable_vials()
 
         total_vials_in = 0
         total_doses_in = 0
@@ -2195,10 +2259,15 @@ class VaccineStockCalculator:
             if result["doses_out"]:
                 total_doses_in -= result["doses_out"]
 
+        self.total_unusable_vials = total_vials_in
+        self.total_unusable_doses = total_doses_in
         return total_vials_in, total_doses_in
 
-    def get_total_of_earmarked(self, end_date=None):
-        earmarked_list = self.get_list_of_earmarked(end_date)
+    def get_total_of_earmarked(self):
+        if self.total_earmarked_vials is not None and self.total_earmarked_doses is not None:
+            return self.total_earmarked_vials, self.total_earmarked_doses
+
+        earmarked_list = self.get_list_of_earmarked()
 
         total_vials = 0
         total_doses = 0
@@ -2213,18 +2282,25 @@ class VaccineStockCalculator:
             if entry["doses_out"]:
                 total_doses -= entry["doses_out"]
 
+        self.total_earmarked_vials = total_vials
+        self.total_earmarked_doses = total_doses
+
         return total_vials, total_doses
 
-    def get_list_of_vaccines_received(self, end_date=None, expanded=False):
+    def _get_list_of_vaccines_received(self, expanded=False):
         """
         Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
         """
+        if self._list_of_vaccines_received is not None and not expanded:
+            return self._list_of_vaccines_received
+        if self._list_of_vaccines_received_expanded is not None and expanded:
+            return self._list_of_vaccines_received_expanded
         # First find the corresponding VaccineRequestForms
         vrfs = VaccineRequestForm.objects.filter(
             campaign__country=self.vaccine_stock.country,
             vaccine_type=self.vaccine_stock.vaccine,
         )
-        if end_date:
+        if self.end_date:
             eligible_rounds = (
                 Round.objects.filter(campaign=OuterRef("campaign"))
                 .filter(
@@ -2234,7 +2310,7 @@ class VaccineStockCalculator:
                     )
                     | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=self.vaccine_stock.vaccine))
                 )
-                .filter(ended_at__lte=end_date)
+                .filter(ended_at__lte=self.end_date)
                 .filter(id__in=OuterRef("rounds"))
             )
             vrfs = vrfs.filter(Exists(Subquery(eligible_rounds)))
@@ -2244,8 +2320,8 @@ class VaccineStockCalculator:
         else:
             # Then find the corresponding VaccineArrivalReports
             arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
-            if end_date:
-                arrival_reports = arrival_reports.filter(arrival_report_date__lte=end_date)
+            if self.end_date:
+                arrival_reports = arrival_reports.filter(arrival_report_date__lte=self.end_date)
             if not arrival_reports.exists():
                 arrival_reports = []
         results = []
@@ -2267,16 +2343,28 @@ class VaccineStockCalculator:
                 "vials_out": None,
                 "doses_out": None,
                 "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
+                "doses_per_vial": report.doses_per_vial,
             }
             if not expanded:
                 results.append(base_result)
             else:
                 results.append({**base_result, **additional_fields})
+
+        if expanded:
+            self._list_of_vaccines_received_expanded = results
+        else:
+            self._list_of_vaccines_received = results
+
         return results
 
-    def get_list_of_usable_vials(self, end_date=None, expanded=False):
+    def get_list_of_usable_vials(self, expanded=False):
+        if self.list_of_usable_vials is not None and not expanded:
+            return self.list_of_usable_vials
+        if self.list_of_usable_vials_expanded is not None and expanded:
+            return self.list_of_usable_vials_expanded
+
         # First get vaccines received from arrival reports
-        results = self.get_list_of_vaccines_received(end_date, expanded=expanded)
+        results = self._get_list_of_vaccines_received(expanded=expanded)
 
         # Add stock movements (used and missing vials)
         stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
@@ -2287,8 +2375,8 @@ class VaccineStockCalculator:
             "vaccine_type": self.vaccine_stock.vaccine,
             "vials_type": "usable",
         }
-        if end_date:
-            stock_movements = stock_movements.filter(report_date__lte=end_date)
+        if self.end_date:
+            stock_movements = stock_movements.filter(report_date__lte=self.end_date)
         for movement in stock_movements:
             if movement.earmarked_stocks.count() > 0:
                 earmarked_stock_vials = movement.earmarked_stocks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
@@ -2299,8 +2387,9 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": real_vials_used or 0,
-                    "doses_out": (real_vials_used or 0) * self.get_doses_per_vial(),
+                    "doses_out": (real_vials_used or 0) * movement.doses_per_vial,
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    "doses_per_vial": movement.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2314,8 +2403,9 @@ class VaccineStockCalculator:
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.usable_vials_used or 0,
-                        "doses_out": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                        "doses_out": (movement.usable_vials_used or 0) * movement.doses_per_vial,
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                        "doses_per_vial": movement.doses_per_vial,
                     }
                     if not expanded:
                         results.append(base_result)
@@ -2326,8 +2416,8 @@ class VaccineStockCalculator:
         incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
             "date_of_incident_report"
         )
-        if end_date:
-            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
+        if self.end_date:
+            incident_reports = incident_reports.filter(date_of_incident_report__lte=self.end_date)
         for report in incident_reports:
             if (
                 report.usable_vials > 0
@@ -2337,10 +2427,11 @@ class VaccineStockCalculator:
                     "date": report.date_of_incident_report,
                     "action": report.stock_correction,
                     "vials_in": report.usable_vials or 0,
-                    "doses_in": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_in": (report.usable_vials or 0) * report.doses_per_vial,
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2356,8 +2447,9 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.usable_vials or 0,
-                    "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.usable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2376,8 +2468,9 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.usable_vials or 0,
-                    "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.usable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2395,8 +2488,9 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials or 0,
-                    "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.unusable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2404,8 +2498,8 @@ class VaccineStockCalculator:
                     results.append({**base_result, **additional_fields})
 
         earmarked_stocks = self.earmarked_stocks
-        if end_date:
-            earmarked_stocks = earmarked_stocks.filter(created_at__lte=end_date)
+        if self.end_date:
+            earmarked_stocks = earmarked_stocks.filter(created_at__lte=self.end_date)
 
         for stock in earmarked_stocks:
             if stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.CREATED:
@@ -2423,6 +2517,7 @@ class VaccineStockCalculator:
                     "vials_out": stock.vials_earmarked,
                     "doses_out": stock.doses_earmarked,
                     "type": "earmarked_stock__created",
+                    "doses_per_vial": stock.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2443,6 +2538,7 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "type": "earmarked_stock__returned",
+                    "doses_per_vial": stock.doses_per_vial,
                 }
 
                 if not expanded:
@@ -2450,9 +2546,18 @@ class VaccineStockCalculator:
                 else:
                     results.append({**base_result, **additional_fields})
 
+        if expanded:
+            self.list_of_usable_vials_expanded = results
+        else:
+            self.list_of_usable_vials = results
+
         return results
 
-    def get_list_of_used_vials(self, end_date=None, expanded=False):
+    def _get_list_of_used_vials(self, expanded=False):
+        if self._list_of_used_vials is not None and not expanded:
+            return self._list_of_used_vials
+        if self._list_of_used_vials_expanded is not None and expanded:
+            return self._list_of_used_vials_expanded
         # Used vials are those related to formA outgoing movements. Vials with e.g expired date become unusable, but have not been used
         outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
         additional_fields = {
@@ -2462,8 +2567,8 @@ class VaccineStockCalculator:
             "vaccine_type": self.vaccine_stock.vaccine,
             "vials_type": "usable",
         }
-        if end_date:
-            outgoing_movements = outgoing_movements.filter(report_date__lte=end_date)
+        if self.end_date:
+            outgoing_movements = outgoing_movements.filter(report_date__lte=self.end_date)
         results = []
         for movement in outgoing_movements:
             if movement.usable_vials_used > 0:
@@ -2481,19 +2586,28 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "vials_in": movement.usable_vials_used or 0,
-                    "doses_in": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                    "doses_in": (movement.usable_vials_used or 0) * movement.doses_per_vial,
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    "doses_per_vial": movement.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
                 else:
                     results.append({**base_result, **additional_fields})
 
+        if expanded:
+            self._list_of_used_vials_expanded = results
+        else:
+            self._list_of_used_vials = results
         return results
 
-    def get_list_of_unusable_vials(self, end_date=None, expanded=False):
+    def get_list_of_unusable_vials(self, expanded=False):
+        if self.list_of_unusable_vials is not None and not expanded:
+            return self.list_of_unusable_vials
+        if self.list_of_unusable_vials_expanded is not None and expanded:
+            return self.list_of_unusable_vials_expanded
         # First get the used vials
-        results = self.get_list_of_used_vials(end_date, expanded=expanded)
+        results = self._get_list_of_used_vials(expanded=expanded)
         additional_fields = {
             "id": self.vaccine_stock.id,
             "country_name": self.vaccine_stock.country.name,
@@ -2507,9 +2621,9 @@ class VaccineStockCalculator:
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
             "destruction_report_date"
         )
-        if end_date:
-            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
-            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
+        if self.end_date:
+            incident_reports = incident_reports.filter(date_of_incident_report__lte=self.end_date)
+            destruction_reports = destruction_reports.filter(destruction_report_date__lte=self.end_date)
 
         for report in destruction_reports:
             base_result = {
@@ -2518,8 +2632,9 @@ class VaccineStockCalculator:
                 "vials_in": None,
                 "doses_in": None,
                 "vials_out": report.unusable_vials_destroyed or 0,
-                "doses_out": (report.unusable_vials_destroyed or 0) * self.get_doses_per_vial(),
+                "doses_out": (report.unusable_vials_destroyed or 0) * report.doses_per_vial,
                 "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
+                "doses_per_vial": report.doses_per_vial,
             }
             if not expanded:
                 results.append(base_result)
@@ -2539,10 +2654,11 @@ class VaccineStockCalculator:
                     "date": report.date_of_incident_report,
                     "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                     "vials_in": report.unusable_vials or 0,
-                    "doses_in": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_in": (report.unusable_vials or 0) * report.doses_per_vial,
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2558,8 +2674,9 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials or 0,
-                    "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.unusable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2571,8 +2688,8 @@ class VaccineStockCalculator:
             earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED,
         )
 
-        if end_date:
-            earmarked_stocks = earmarked_stocks.filter(created_at__date__lte=end_date)
+        if self.end_date:
+            earmarked_stocks = earmarked_stocks.filter(created_at__date__lte=self.end_date)
 
         for stock in earmarked_stocks:
             if (
@@ -2586,15 +2703,26 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "type": "earmarked_stock__used",
+                    "doses_per_vial": stock.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
                 else:
                     results.append({**base_result, **additional_fields})
 
+        if expanded:
+            self.list_of_unusable_vials_expanded = results
+        else:
+            self.list_of_unusable_vials = results
+
         return results
 
-    def get_list_of_earmarked(self, end_date=None, expanded=False):
+    def get_list_of_earmarked(self, expanded=False):
+        if self.list_of_earmarked is not None and not expanded:
+            return self.list_of_earmarked
+        if self.list_of_earmarked_expanded is not None and expanded:
+            return self.list_of_earmarked_expanded
+
         earmarked_movements = self.earmarked_stocks
         additional_fields = {
             "id": self.vaccine_stock.id,
@@ -2603,8 +2731,8 @@ class VaccineStockCalculator:
             "vaccine_type": self.vaccine_stock.vaccine,
             "vials_type": "usable",
         }
-        if end_date:
-            earmarked_movements = earmarked_movements.filter(created_at__lte=end_date)
+        if self.end_date:
+            earmarked_movements = earmarked_movements.filter(created_at__lte=self.end_date)
 
         results = []
         for movement in earmarked_movements:
@@ -2629,6 +2757,7 @@ class VaccineStockCalculator:
                     "doses_out": movement.doses_earmarked,
                     "vials_in": None,
                     "doses_in": None,
+                    "doses_per_vial": movement.doses_per_vial,
                     "type": f"earmarked_stock__{movement_type}",
                 }
                 if not expanded:
@@ -2652,6 +2781,7 @@ class VaccineStockCalculator:
                     "doses_in": movement.doses_earmarked,
                     "vials_out": None,
                     "doses_out": None,
+                    "doses_per_vial": movement.doses_per_vial,
                     "type": f"earmarked_stock__{movement_type}",
                 }
                 if not expanded:
@@ -2659,4 +2789,44 @@ class VaccineStockCalculator:
                 else:
                     results.append({**base_result, **additional_fields})
 
+        if expanded:
+            self.list_of_earmarked_expanded = results
+        else:
+            self.list_of_earmarked = results
+
         return results
+
+    def get_usable_stock_by_vaccine_presentation(self):
+        return self._get_config_and_compute_stock_for_presentation(usable=True)
+
+    def get_unusable_stock_by_vaccine_presentation(self):
+        return self._get_config_and_compute_stock_for_presentation(usable=False)
+
+    def _get_config_and_compute_stock_for_presentation(self, usable: bool):
+        presentation_config = Config.objects.filter(slug=DOSES_PER_VIAL_CONFIG_SLUG).first()
+        if not presentation_config:
+            return None
+
+        options = presentation_config.content[self.vaccine_stock.vaccine]
+        if not options:
+            return None
+        results = {}
+        for option in options:
+            results[str(option)] = self._get_stock_by_vaccine_presentation(option, usable=usable)[1]
+        return results
+
+    def _get_stock_by_vaccine_presentation(self, option: str, usable: bool):
+        vials = self.get_list_of_usable_vials() if usable else self.get_list_of_unusable_vials()
+        total_vials = 0
+        total_doses = 0
+        for vial in vials:
+            if vial["doses_per_vial"] == option:
+                if vial["vials_in"]:
+                    total_vials += vial["vials_in"]
+                if vial["doses_in"]:
+                    total_doses += vial["doses_in"]
+                if vial["vials_out"]:
+                    total_vials -= vial["vials_out"]
+                if vial["doses_out"]:
+                    total_doses -= vial["doses_out"]
+        return total_vials, total_doses

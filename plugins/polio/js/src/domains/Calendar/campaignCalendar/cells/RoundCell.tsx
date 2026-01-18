@@ -83,11 +83,16 @@ export const RoundCell: FunctionComponent<Props> = ({
         campaign.separateScopesPerRound,
         round.vaccine_names,
     ]);
+    const style = round.is_planned
+        ? classnames([
+              ...defaultCellStyles,
+              classes.round,
+              classes.plannedCampaign,
+          ])
+        : classnames([...defaultCellStyles, classes.round]);
+
     return (
-        <TableCell
-            className={classnames(defaultCellStyles, classes.round)}
-            colSpan={colSpan}
-        >
+        <TableCell className={style} colSpan={colSpan}>
             <Box
                 className={classes.coloredBox}
                 sx={{

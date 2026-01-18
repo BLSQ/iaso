@@ -1,14 +1,19 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
+import React, {
+    ChangeEvent,
+    FunctionComponent,
+    useMemo,
+    useState,
+} from 'react';
+import { Box, FormControlLabel, Switch } from '@mui/material';
 import {
     IconButton as IconButtonBlsq,
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { SxStyles } from 'Iaso/types/general';
 import TopBar from '../../../components/nav/TopBarComponent';
-import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
-import { SxStyles } from '../../../types/general';
 import { ApproveOrgUnitChangesButtons } from './Components/ReviewOrgUnitChangesButtons';
 import { ReviewOrgUnitChangesTitle } from './Components/ReviewOrgUnitChangesTitle';
 import { CHANGE_REQUEST_STATUS, ORG_UNIT_CREATION } from './constants';
@@ -20,6 +25,7 @@ import { ReviewOrgUnitChangesDetailsTable } from './Tables/details/ReviewOrgUnit
 import {
     ChangeRequestValidationStatus,
     OrgUnitChangeRequestDetailParams,
+    OrgUnitChangeRequestDetails,
 } from './types';
 
 const styles: SxStyles = {
@@ -45,9 +51,30 @@ const styles: SxStyles = {
     }),
 };
 
+const orgUnitAsChangeRequestDetailsOldValues = (
+    changeRequest?: OrgUnitChangeRequestDetails,
+): OrgUnitChangeRequestDetails | undefined => {
+    if (changeRequest == null) {
+        return undefined;
+    }
+    const orgUnit = changeRequest.org_unit
+    return {
+        ...changeRequest,
+        old_closed_date: orgUnit?.closed_date,
+        old_groups: orgUnit.groups,
+        old_location: orgUnit.location,
+        old_name: orgUnit.name,
+        old_opening_date: orgUnit?.opening_date,
+        old_org_unit_type: orgUnit.org_unit_type,
+        old_parent: orgUnit.parent,
+        old_reference_instances: orgUnit.reference_instances,
+    };
+};
+
 export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
 
+    const [useValuesAtCreation, setUseValuesAtCreation] = useState(false);
     const params = useParamsObject(
         baseUrls.orgUnitsChangeRequestDetail,
     ) as unknown as OrgUnitChangeRequestDetailParams;
@@ -60,7 +87,13 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
     const isNewOrgUnit = changeRequest
         ? changeRequest.kind === ORG_UNIT_CREATION
         : false;
-    const { newFields, setSelected } = useNewFields(changeRequest);
+    const data = useMemo(() => {
+        if (useValuesAtCreation || !isNew) {
+            return changeRequest;
+        }
+        return orgUnitAsChangeRequestDetailsOldValues(changeRequest);
+    }, [changeRequest, useValuesAtCreation, isNew]);
+    const { newFields, setSelected } = useNewFields(data);
     const goBack = useGoBack(baseUrls.orgUnitsChangeRequest);
     const titleMessage = useMemo(() => {
         if (changeRequest?.status === CHANGE_REQUEST_STATUS.REJECTED) {
@@ -95,9 +128,27 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
                     />
                 )}
                 <Box sx={styles.body}>
+                    {isNew && (
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    value={useValuesAtCreation}
+                                    onChange={(
+                                        event: ChangeEvent<HTMLInputElement>,
+                                    ) =>
+                                        setUseValuesAtCreation(
+                                            event.target.checked,
+                                        )
+                                    }
+                                />
+                            }
+                            label={formatMessage(MESSAGES.showValuesAtCreation)}
+                            labelPlacement="start"
+                        />
+                    )}
                     <ReviewOrgUnitChangesDetailsTable
                         isSaving={isSaving}
-                        changeRequest={changeRequest}
+                        changeRequest={data}
                         isFetchingChangeRequest={isFetchingChangeRequest}
                         newFields={newFields}
                         setSelected={setSelected}

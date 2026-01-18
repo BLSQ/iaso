@@ -1,5 +1,11 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+} from 'react';
+import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
@@ -20,6 +26,9 @@ import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroup
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
+import { IntegratedCampaigns } from './IntegratedCampaigns/Widget/IntegratedCampaigns';
+import { IntegratedCampaignField } from './IntegratedCampaigns/IntegratedTo/IntegratedCampaignField';
+import { AddIntegratedCampaignsModal } from './IntegratedCampaigns/Widget/AddIntegratedCampaignsModal';
 
 export const baseInfoFormFields: string[] = [
     'epid',
@@ -40,7 +49,6 @@ export const baseInfoFormFields: string[] = [
 
 export const BaseInfoForm: FunctionComponent = () => {
     const classes = useStyles();
-
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
@@ -54,8 +62,10 @@ export const BaseInfoForm: FunctionComponent = () => {
 
         [groupedCampaigns],
     );
+    const controlRef = useRef(false);
 
-    const { values, setFieldValue } = useFormikContext<CampaignFormValues>();
+    const { values, touched, setFieldValue, setTouched, setFieldTouched } =
+        useFormikContext<CampaignFormValues>();
     const { data: types, isFetching: isFetchingTypes } =
         useGetCampaignTypes(true);
     const isPolio = useIsPolioCampaign(values);
@@ -86,11 +96,40 @@ export const BaseInfoForm: FunctionComponent = () => {
         [setFieldValue],
     );
 
+    // Using useEffect because changing `touched` in the update callback will result in desynchronized state
+    // and wrong validation status for rounds
+    useEffect(() => {
+        if (values.is_planned && !controlRef.current) {
+            controlRef.current = true;
+            const touchedRounds = touched.rounds ?? [];
+            values.rounds.forEach((_rnd, index) => {
+                touchedRounds[index] = {
+                    ...(touchedRounds[index] ?? []),
+                    target_population: true,
+                    percentage_covered_target_population: true,
+                };
+            });
+            setTouched({ ...touched, rounds: touchedRounds });
+        }
+    }, [touched, values.rounds, setTouched, values.is_planned]);
+
+    const handleChangeIntegratedTo = useCallback(
+        (_, value) => {
+            setFieldTouched('integrated_to', true);
+            setFieldValue('integrated_to', {
+                id: value.value,
+                obr_name: value.label,
+                campaign_types: value.campaign_types,
+            });
+        },
+        [setFieldTouched, setFieldValue, values.integrated_to],
+    );
+
     return (
-        <Box maxWidth={isPolio ? '100%' : '400px'}>
+        <Box width={'100%'}>
             <Grid container spacing={2}>
                 <Grid container item spacing={2}>
-                    <Grid xs={12} md={isPolio ? 6 : 12} item>
+                    <Grid xs={12} md={isPolio ? 4 : 12} item>
                         <Field
                             label={formatMessage(MESSAGES.campaignType)}
                             name="campaign_types"
@@ -119,6 +158,17 @@ export const BaseInfoForm: FunctionComponent = () => {
                             required
                             disabled={!isUserAdmin}
                         />
+
+                        {!isPolio && (
+                            <Box mb={2}>
+                                <IntegratedCampaignField
+                                    label={MESSAGES.integratedToCampaign}
+                                    value={values?.integrated_to}
+                                    onChange={handleChangeIntegratedTo}
+                                />
+                            </Box>
+                        )}
+
                         <Field
                             className={classes.input}
                             label={formatMessage(MESSAGES.description)}
@@ -127,11 +177,19 @@ export const BaseInfoForm: FunctionComponent = () => {
                             shrinkLabel={false}
                         />
                         <Field
+                            label={formatMessage(MESSAGES.epid)}
+                            name="epid"
+                            component={TextInput}
+                            shrinkLabel={false}
+                            className={classes.input}
+                        />
+                        <Field
                             label={getLabelByKey('gpei_coordinator')}
                             name="gpei_coordinator"
                             component={TextInput}
                             shrinkLabel={false}
                         />
+
                         {isUserAdmin && (
                             <Field
                                 className={classes.input}
@@ -146,7 +204,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 label={formatMessage(MESSAGES.testCampaign)}
                                 name="is_test"
                                 component={BooleanInput}
-                                disabled={values.on_hold}
+                                disabled={values.on_hold || values.is_planned}
                             />
                         )}
                         {isUserAdmin && (
@@ -155,7 +213,17 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 label={formatMessage(MESSAGES.campaignOnHold)}
                                 name="on_hold"
                                 component={BooleanInput}
-                                disabled={values.is_test}
+                                disabled={values.is_test || values.is_planned}
+                            />
+                        )}
+                        {isUserAdmin && (
+                            <Field
+                                className={classes.input}
+                                label={formatMessage(MESSAGES.plannedCampaign)}
+                                name="is_planned"
+                                component={BooleanInput}
+                                disabled={values.is_test || values.on_hold}
+                                // onChange={handleChangePlannedStatus}
                             />
                         )}
                         {isUserAdmin && (
@@ -176,7 +244,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                     </Grid>
                     {/* POLIO FIELDS */}
                     {isPolio && (
-                        <Grid item xs={12} md={6}>
+                        <Grid item xs={12} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.virus)}
                                 name="virus"
@@ -200,20 +268,15 @@ export const BaseInfoForm: FunctionComponent = () => {
                             </Box>
                             <Box mt={2}>
                                 <Field
-                                    label={formatMessage(MESSAGES.epid)}
-                                    name="epid"
-                                    component={TextInput}
-                                    shrinkLabel={false}
-                                    className={classes.input}
+                                    label={formatMessage(
+                                        MESSAGES.groupedCampaigns,
+                                    )}
+                                    name="grouped_campaigns"
+                                    options={groupedCampaignsOptions}
+                                    withMarginTop={false}
+                                    component={MultiSelect}
                                 />
                             </Box>
-                            <Field
-                                label={formatMessage(MESSAGES.groupedCampaigns)}
-                                name="grouped_campaigns"
-                                options={groupedCampaignsOptions}
-                                withMarginTop={false}
-                                component={MultiSelect}
-                            />
                             <Box mt={2}>
                                 <Field
                                     label={formatMessage(
@@ -241,6 +304,18 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 />
                             </Box>
                         </Grid>
+                    )}
+                    {isPolio && (
+                        <>
+                            <Grid item xs={12} md={4}>
+                                <IntegratedCampaigns />
+                                <Box display="flex" justifyContent="flex-end">
+                                    <AddIntegratedCampaignsModal
+                                        iconProps={{}}
+                                    />
+                                </Box>
+                            </Grid>
+                        </>
                     )}
                 </Grid>
             </Grid>

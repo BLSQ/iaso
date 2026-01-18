@@ -100,6 +100,10 @@ case "$1" in
     python "${@:2}"
   ;;
   * )
-    show_help
+    if [[ $2 == /opt/.pycharm_helpers/* ]]; then
+      ${@}
+    else
+      show_help
+    fi
   ;;
 esac

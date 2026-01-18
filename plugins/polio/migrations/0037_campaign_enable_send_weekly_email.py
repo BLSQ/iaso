@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0036_auto_20211203_1025"),
+        ("polio", "0001_squashed_0036_auto_20211203_1025"),
     ]
 
     operations = [

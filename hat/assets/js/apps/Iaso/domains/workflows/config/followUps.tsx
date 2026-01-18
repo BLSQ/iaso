@@ -1,3 +1,4 @@
+import React, { ReactNode } from 'react';
 import { Box } from '@mui/material';
 import {
     Column,
@@ -5,15 +6,14 @@ import {
     QueryBuilderFields,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactNode } from 'react';
 
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { getLocaleDateFormat } from '../../../utils/dates';
 import { LinkToForm } from '../../forms/components/LinkToForm';
-import MESSAGES from '../messages';
-
 import { Field } from '../../forms/fields/constants';
 import { FollowUpActionCell } from '../components/followUps/ActionCell';
+import MESSAGES from '../messages';
+
 import { WorkflowVersionDetail } from '../types';
 
 interface FollowUpsColumns extends Column {
@@ -57,6 +57,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -72,6 +74,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -101,11 +105,19 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
                 'is_not_null',
             ],
+        },
+    },
+    {
+        type: 'boolean',
+        queryBuilder: {
+            type: 'boolean',
         },
     },
     {
@@ -115,6 +127,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -144,6 +158,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -225,6 +241,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',

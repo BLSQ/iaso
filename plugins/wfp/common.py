@@ -1,3 +1,4 @@
+import json
 import logging
 
 from datetime import date, datetime, timedelta
@@ -5,7 +6,9 @@ from itertools import groupby
 from operator import itemgetter
 
 from dateutil.relativedelta import *
-from django.db.models import CharField, Value
+from django.conf import settings
+from django.core.paginator import Paginator
+from django.db.models import Case, CharField, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *
@@ -32,21 +35,30 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.filter(code__in=self.types)
-        account = Account.objects.get(id=entity_type[0].account_id)
+        entity_type = EntityType.objects.prefetch_related("account").filter(code__in=self.types).first()
+        account = entity_type.account
         return account
 
-    def retrieve_entities(self):
+    def get_updated_entity_ids(self, updated_at=None):
+        entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+        if updated_at is not None:
+            entities = entities.filter(updated_at__gte=updated_at)
+        entities = entities.values("entity_id").distinct()
+        beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
+        return list(set(beneficiary_ids))
+
+    def retrieve_entities(self, entity_ids):
         steps_id = ETL().steps_to_exclude()
-        updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code__in=self.types)
+            .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
-            .filter(updated_at__gte=updated_at)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)
+            .select_related("entity")
+            .prefetch_related("entity", "form", "org_unit")
             .values(
                 "id",
                 "created_at",
@@ -65,7 +77,7 @@ class ETL:
                 "source_created_at",
             )
         )
-        return beneficiaries
+        return Paginator(beneficiaries, 5000)
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
@@ -169,13 +181,15 @@ class ETL:
         exit_type = None
         if visit.get("new_programme", None) is not None and visit.get("new_programme", None) == "NONE":
             exit_type = visit.get("reason_for_not_continuing", None)
-        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP") and (
-            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
-        ):
+        elif (
+            (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP")
+            and (visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1")
+        ) or (visit.get("eligible_for_TSFP") is not None and visit.get("eligible_for_TSFP") == "1"):
             exit_type = "transfer_to_tsfp"
-        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "OTP") and (
-            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
-        ):
+        elif (
+            (visit.get("new_programme") is not None and visit.get("new_programme") == "OTP")
+            and (visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1")
+        ) or (visit.get("eligible_for_OTP") is not None and visit.get("eligible_for_OTP") == "1"):
             exit_type = "transfer_to_otp"
         elif (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1") or (
             visit.get("transfer_from_otp__bool__") is not None and visit.get("transfer_from_otp__bool__") == "1"
@@ -254,8 +268,7 @@ class ETL:
         followUp_steps.insert(0, admission)
         return followUp_steps
 
-    def exit_by_defaulter(self, visits, visit, anthropometric_visit_forms):
-        exit = None
+    def exit_by_defaulter(self, visits, visit, anthropometric_visit_forms, exit):
         next_visit_date = ""
         next_visit_days = 0
         nextSecondVisitDate = ""
@@ -263,19 +276,32 @@ class ETL:
         if visit["form_id"] in [
             "child_assistance_2nd_visit_tsfp",
             "child_assistance_follow_up",
-            "child_assistance_admission",
-            "wfp_coda_pbwg_assistance",
-            "wfp_coda_pbwg_assistance_followup",
+            "child_assistance_follow_up_2",
             "assistance_admission_otp",
             "assistance_admission_2nd_visit_otp",
+            "child_assistance_admission",
+            "child_assistance_admission_2",
+            "child_assistance_admission_2_u6",
+            "assistance_u6",
+            "ethiopia_child_assistance_follow_up",
+            "wfp_coda_pbwg_assistance",
+            "wfp_coda_pbwg_assistance_followup",
+            "Anthropometric_BSFP_child_2",
+            "PBWG_BSFP",
         ]:
-            if visit.get("next_visit__date__", None) is not None and visit.get("next_visit__date__", None) != "":
+            if visit.get("next_visit__date__") is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
             elif (
                 visit.get("new_next_visit__date__", None) is not None
                 and visit.get("new_next_visit__date__", None) != ""
             ):
                 next_visit_date = visit.get("new_next_visit__date__", None)
+
+            elif (
+                visit.get("next_visit_date__date__", None) is not None
+                and visit.get("next_visit_date__date__", None) != ""
+            ):
+                next_visit_date = visit.get("next_visit_date__date__", None)
 
             if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
                 next_visit_days = visit.get("next_visit_days", None)
@@ -307,6 +333,12 @@ class ETL:
                 and visit.get("otp_next_visit") != "--"
             ):
                 next_visit_days = visit.get("otp_next_visit", None)
+            elif (
+                visit.get("number_of_days__int__") is not None
+                and visit.get("number_of_days__int__") != ""
+                and visit.get("number_of_days__int__") != "--"
+            ):
+                next_visit_days = visit.get("number_of_days__int__", None)
 
             if next_visit_date is not None and next_visit_date != "":
                 nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
@@ -337,8 +369,11 @@ class ETL:
         if visit["form_id"] in anthropometric_visit_form:
             default_admission_form = visit["form_id"]
             current_journey["instance_id"] = visit.get("instance_id", None)
-            current_journey["start_date"] = visit.get("start_date", None)
+            current_journey["start_date"] = visits[0].get("date", visit.get("start_date", None))
             current_journey["initial_weight"] = visit.get("initial_weight", None)
+            current_journey["muac_size"] = visit.get("muac", visit.get("muac_size"))
+            current_journey["whz_score"] = visit.get("whz_score", None)
+            current_journey["oedema"] = visit.get("oedema", None)
             if visit.get("registration_date", None) is not None and visit.get("registration_date", None) != "":
                 current_journey["date"] = visit.get("registration_date", None)
             elif visit.get("_visit_date", None) is not None and visit.get("_visit_date", None) != "":
@@ -349,7 +384,8 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
             current_journey["visits"].append(visit)
-        followup_forms.append(default_admission_form)
+        if default_admission_form is not None:
+            followup_forms.append(default_admission_form)
         exit = None
 
         if visit["form_id"] in followup_forms:
@@ -362,26 +398,35 @@ class ETL:
             current_journey["discharge_weight"] = visit.get("discharge_weight", None)
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
+            exit = {
+                "exit_type": current_journey.get("exit_type"),
+                "start_date": current_journey.get("start_date"),
+                "end_date": datetime.strptime(current_journey.get("end_date"), "%Y-%m-%d"),
+            }
 
         """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
         admission form(previous form) and next visit date in the antropometric followup visit form.
         When it's Anthropometric admission form, it means we still in the admission visit(visit 0).
         Otherwise, it's Anthropometric followup form which is a start of first follow up visit(visit 1) """
+
         if visit["form_id"] in default_anthropometric_followup_forms:
             index = index - 1
-            exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+            exit = self.exit_by_defaulter(visits, visits[index], followup_forms, exit)
         else:
-            exit = self.exit_by_defaulter(visits, visit, followup_forms)
-
+            exit = self.exit_by_defaulter(visits, visit, followup_forms, exit)
         if (
             exit is not None
-            and current_journey.get("exit_type", None) is None
+            and exit.get("exit_type") is not None
+            and exit.get("end_date") is not None
             and current_journey.get("start_date") is not None
         ):
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
             duration = (
-                datetime.strptime(datetime.strftime(exit["end_date"], "%Y-%m-%d"), "%Y-%m-%d")
+                datetime.strptime(
+                    datetime.strftime(exit.get("end_date"), "%Y-%m-%d"),
+                    "%Y-%m-%d",
+                )
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
             ).days
             current_journey["duration"] = duration
@@ -391,6 +436,7 @@ class ETL:
         current_step = Step()
         current_step.assistance_type = assistance.get("type", "")
         current_step.quantity_given = assistance.get("quantity", 0)
+        current_step.ration_size = assistance.get("ration_size")
         current_step.visit = visit
         current_step.instance_id = instance_id
         return current_step
@@ -404,14 +450,19 @@ class ETL:
 
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
-        if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
-            step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
+        ration_size = ""
+        if (
+            (step.get("net_given") is not None and step.get("net_given") == "yes")
+            or (step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1")
+            or (step.get("_net") is not None and step.get("_net") == "1")
         ):
             assistance = {"type": "Mosquito Net", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if (step.get("soap_given") is not None and step.get("soap_given") == "yes") or (
-            step.get("soap_given__bool__") is not None and step.get("soap_given__bool__") == "1"
+        if (
+            (step.get("soap_given") is not None and step.get("soap_given") == "yes")
+            or (step.get("soap_given__bool__") is not None and step.get("soap_given__bool__") == "1")
+            or (step.get("_soap") is not None and step.get("_soap") == "1")
         ):
             assistance = {"type": "Soap", "quantity": quantity}
             given_assistance.append(assistance)
@@ -457,7 +508,7 @@ class ETL:
             given_assistance.append(assistance)
 
         if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
-            quantity = 0
+            quantity = step.get("quantity", 0)
             ration_type = ""
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets", 0)
@@ -466,9 +517,13 @@ class ETL:
 
             if step.get("ration_to_distribute") is not None:
                 ration_type = step.get("ration_to_distribute")
-            elif step.get("ration") is not None:
+            if step.get("ration") is not None:
                 ration_type = step.get("ration")
-            assistance = {"type": ration_type, "quantity": quantity}
+            assistance = {
+                "type": ration_type,
+                "quantity": quantity,
+                "ration_size": step.get("ration_size", step.get("ration_limit")),
+            }
             given_assistance.append(assistance)
 
         if step.get("ration_type_tsfp") is not None:
@@ -478,6 +533,7 @@ class ETL:
             assistance = {
                 "type": step.get("ration_type_tsfp"),
                 "quantity": quantity,
+                "ration_size": step.get("ration_size", step.get("ration_limit")),
             }
             given_assistance.append(assistance)
         elif step.get("ration_type_otp") is not None:
@@ -489,17 +545,38 @@ class ETL:
                 "quantity": quantity,
             }
             given_assistance.append(assistance)
-        elif step.get("ration_type") is not None and step.get("ration_type") != "":
+        elif (
+            (step.get("ration_type") is not None and step.get("ration_type") != "")
+            or (step.get("ration") is not None and step.get("ration") != "")
+            or (step.get("ration_type_tsfp") is not None and step.get("ration_type_tsfp") != "")
+            or (step.get("ration_type_otp") is not None and step.get("ration_type_otp") != "")
+        ):
             if step.get("ration_type") in ["csb", "csb1", "csb2"]:
                 quantity = step.get("_csb_packets", 0)
             elif step.get("ration_type") == "lndf":
                 quantity = step.get("_lndf_kgs", 0)
+            elif (
+                step.get(
+                    "ration_type_tsfp",
+                    step.get(
+                        "ration",
+                        step.get(
+                            "ration_type",
+                            step.get("ration_type_otp"),
+                        ),
+                    ),
+                )
+                == "cbt"
+            ):
+                quantity = 0
+                ration_size = step.get("ration_size", step.get("ration_limit"))
             else:
                 if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
                     quantity = 0
             assistance = {
-                "type": step.get("ration_type"),
+                "type": step.get("ration_type", step.get("ration")),
                 "quantity": quantity,
+                "ration_size": ration_size,
             }
             given_assistance.append(assistance)
 
@@ -524,7 +601,6 @@ class ETL:
                             visit,
                             sub_step["instance_id"],
                         )
-                        current_step.save()
                         all_steps.append(current_step)
         return all_steps
 
@@ -535,12 +611,19 @@ class ETL:
             visit = Visit()
             visit.date = current_visit.get("date", None)
             visit.number = visit_number
+            visit.muac_size = current_visit.get("muac", current_visit.get("muac_size"))
+            whz_color = ""
+            if current_visit.get("whz_color", None) == "Y":
+                whz_color = "Yellow"
+            elif current_visit.get("whz_color", None) == "R":
+                whz_color = "Red"
+            elif current_visit.get("whz_color", None) == "G":
+                whz_color = "Green"
+            visit.whz_color = whz_color
             visit.journey = journey
-            orgUnit = OrgUnit.objects.get(id=current_visit["org_unit_id"])
-            visit.org_unit = orgUnit
+            visit.org_unit_id = current_visit["org_unit_id"]
             visit.instance_id = current_visit.get("instance_id", None)
             saved_visits.append(visit)
-            visit.save()
             visit_number += 1
         return saved_visits
 
@@ -607,11 +690,12 @@ class ETL:
 
     def entity_journey_mapper(self, visits, anthropometric_visit_forms, admission_form, current_journey):
         journey = []
+        new_journey_after_transfer = {}
         for index, visit in enumerate(visits):
             if visit:
                 current_journey["weight_gain"] = visit.get("weight_gain", None)
                 current_journey["weight_loss"] = visit.get("weight_loss", None)
-                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
                 current_journey = ETL().journey_Formatter(
@@ -623,7 +707,24 @@ class ETL:
                     index,
                 )
             current_journey["steps"].append(visit)
+            if current_journey.get("exit_type") == "transfer_to_tsfp":
+                new_journey_after_transfer["programme_type"] = "TSFP"
+                new_journey_after_transfer["nutrition_programme"] = "TSFP"
+                new_journey_after_transfer["admission_type"] = "referred_from_otp_sam"
+            elif current_journey.get("exit_type") == "transfer_to_otp":
+                new_journey_after_transfer["programme_type"] = "OTP"
+                new_journey_after_transfer["nutrition_programme"] = "OTP"
+                new_journey_after_transfer["admission_type"] = "referred_from_tsfp_mam"
+            new_journey_after_transfer["admission_criteria"] = current_journey.get("admission_criteria")
+            new_journey_after_transfer["steps"] = [visit]
+            new_journey_after_transfer["visits"] = [visit]
+            new_journey_after_transfer["start_date"] = current_journey.get("end_date")
+            new_journey_after_transfer["initial_weight"] = current_journey.get("discharge_weight")
         journey.append(current_journey)
+        if new_journey_after_transfer.get("programme_type") is not None:
+            if current_journey.get("nutrition_programme") == "BSFP":
+                new_journey_after_transfer["admission_type"] = "referred_from_BSFP"
+            journey.append(new_journey_after_transfer)
         return journey
 
     def compute_gained_weight(self, initial_weight, current_weight, duration):
@@ -631,7 +732,7 @@ class ETL:
         weight_loss = 0
 
         weight_difference = 0
-        if initial_weight is not None and current_weight is not None and current_weight != "":
+        if initial_weight and current_weight:
             initial_weight = float(initial_weight)
             current_weight = float(current_weight)
             weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
@@ -643,7 +744,9 @@ class ETL:
             elif weight_difference < 0:
                 weight_loss = abs(weight_difference)
         return {
-            "initial_weight": (float(initial_weight) if initial_weight is not None else initial_weight),
+            "initial_weight": (
+                float(initial_weight) if initial_weight is not None and initial_weight != "" else initial_weight
+            ),
             "discharge_weight": (
                 float(current_weight) if current_weight is not None and current_weight != "" else current_weight
             ),
@@ -656,6 +759,8 @@ class ETL:
         journey.beneficiary = beneficiary
         journey.programme_type = entity_type
         journey.admission_criteria = record.get("admission_criteria")
+        journey.muac_size = record.get("muac_size")
+        journey.whz_score = record.get("whz_score")
         journey.admission_type = record.get("admission_type", None)
         journey.nutrition_programme = record.get("nutrition_programme")
         journey.exit_type = record.get("exit_type", None)
@@ -664,19 +769,17 @@ class ETL:
         journey.end_date = record.get("end_date", None)
         journey.duration = record.get("duration", None)
 
-        journey.save()
-
         return journey
 
     def save_monthly_journey(self, monthly_journey, account):
         monthly_Statistic = MonthlyStatistics()
-        orgUnit = OrgUnit.objects.get(id=monthly_journey.get("org_unit"))
-
-        monthly_Statistic.org_unit = orgUnit
+        org_unit_id = monthly_journey.get("org_unit")
+        monthly_Statistic.org_unit_id = org_unit_id
         monthly_Statistic.gender = monthly_journey.get("gender")
         monthly_Statistic.month = monthly_journey.get("month")
         monthly_Statistic.year = monthly_journey.get("year")
-        monthly_Statistic.number_visits = monthly_journey.get("number_visits")
+        monthly_Statistic.period = self.period_converter(monthly_journey.get("year"), monthly_journey.get("month"))
+        monthly_Statistic.number_visits = monthly_journey.get("number_visits", 0)
         monthly_Statistic.programme_type = monthly_journey.get("programme_type")
         monthly_Statistic.nutrition_programme = monthly_journey.get("nutrition_programme")
         monthly_Statistic.admission_type = monthly_journey.get("admission_type")
@@ -684,15 +787,35 @@ class ETL:
         monthly_Statistic.given_sachet_rusf = monthly_journey.get("given_sachet_rusf")
         monthly_Statistic.given_sachet_rutf = monthly_journey.get("given_sachet_rutf")
         monthly_Statistic.given_quantity_csb = monthly_journey.get("given_quantity_csb")
+        monthly_Statistic.given_ration_cbt = monthly_journey.get("given_ration_cbt")
+        monthly_Statistic.muac_under_11_5 = monthly_journey.get("muac_under_11_5")
+        monthly_Statistic.muac_11_5_12_4 = monthly_journey.get("muac_11_5_12_4")
+        monthly_Statistic.muac_above_12_5 = monthly_journey.get("muac_above_12_5")
+        monthly_Statistic.muac_under_23 = monthly_journey.get("muac_under_23")
+        monthly_Statistic.muac_above_23 = monthly_journey.get("muac_above_23")
+
+        monthly_Statistic.whz_score_2 = monthly_journey.get("whz_score_2")
+        monthly_Statistic.whz_score_3 = monthly_journey.get("whz_score_3")
+        monthly_Statistic.whz_score_3_2 = monthly_journey.get("whz_score_3_2")
+        monthly_Statistic.oedema = monthly_journey.get("oedema")
+
+        monthly_Statistic.beneficiary_with_admission_type = monthly_journey.get("beneficiary_with_admission_type")
+        monthly_Statistic.beneficiary_with_exit_type = monthly_journey.get("beneficiary_with_exit_type")
+        monthly_Statistic.dhis2_id = monthly_journey.get("dhis2_id")
         monthly_Statistic.exit_type = monthly_journey.get("exit_type")
         monthly_Statistic.account = account
 
-        monthly_Statistic.save()
+        return monthly_Statistic
 
     def journey_with_visit_and_steps_per_visit(self, account, programme):
         aggregated_journeys = []
         journeys = (
-            Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id")
+            Step.objects.select_related(
+                "visit",
+                "visit__journey",
+                "visit__org_unit",
+                "visit__journey__beneficiary",
+            )
             .filter(
                 visit__journey__programme_type=programme,
                 visit__journey__beneficiary__account=account,
@@ -702,18 +825,22 @@ class ETL:
                 "assistance_type",
                 "instance_id",
                 "quantity_given",
+                "ration_size",
                 "visit",
                 "visit__id",
+                "visit__org_unit__source_ref",
                 "visit__date",
                 "visit__journey",
-                "visit__org_unit_id",
                 "visit__journey__admission_criteria",
                 "visit__journey__nutrition_programme",
                 "visit__journey__programme_type",
                 "visit__journey__end_date",
                 "visit__journey__exit_type",
+                "visit__journey__beneficiary__entity_id",
                 "visit__journey__beneficiary__gender",
                 "visit__journey__beneficiary__account",
+                "visit__muac_size",
+                "visit__whz_color",
                 year=Extract("visit__date", "year"),
                 month=Extract("visit__date", "month"),
                 period=Concat(
@@ -723,19 +850,218 @@ class ETL:
                     output_field=CharField(),
                 ),
             )
+            .annotate(org_unit=F("visit__org_unit_id"))
+            .annotate(
+                muac_under_11_5=Sum(
+                    Case(
+                        When(visit__muac_size__lt=11.5, then=Value(1)),
+                        default=Value(0),
+                        output_field=IntegerField(),
+                    )
+                )
+            )
+            .annotate(
+                muac_11_5_12_4=Sum(
+                    Case(
+                        When(visit__muac_size__range=(11.5, 12.4), then=Value(1)),
+                        default=Value(0),
+                        output_field=IntegerField(),
+                    )
+                )
+            )
+            .annotate(
+                muac_above_12_5=Sum(
+                    Case(When(visit__muac_size__gte=12.5, then=Value(1)), default=Value(0), output_field=IntegerField())
+                )
+            )
+            .annotate(
+                whz_score_2=Case(
+                    When(visit__whz_color="Green", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .annotate(
+                whz_score_3=Case(
+                    When(visit__whz_color="Red", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .annotate(
+                whz_score_3_2=Case(
+                    When(visit__whz_color="Yellow", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .annotate(
+                oedema=Case(
+                    When(visit__journey__admission_criteria="oedema", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .annotate(
+                admission_sc_itp_otp=Case(
+                    When(
+                        Q(visit__journey__admission_type="referred_from_sc")
+                        | Q(visit__journey__admission_type="referred_from_otp_sam"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .annotate(
+                transfer_sc_itp_otp=Case(
+                    When(
+                        Q(visit__journey__exit_type="transfer_to_sc_itp")
+                        | Q(visit__journey__exit_type="transferred_to_otp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .annotate(
+                transfer_from_other_tsfp=Case(
+                    When(
+                        Q(visit__journey__exit_type="transfer_from_other_tsfp")
+                        | Q(visit__journey__exit_type="transfer_to_tsfp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .annotate(
+                muac_under_23=Sum(
+                    Case(When(visit__muac_size__lt=23, then=Value(1)), default=Value(0), output_field=IntegerField())
+                )
+            )
+            .annotate(
+                muac_above_23=Sum(
+                    Case(When(visit__muac_size__gte=23, then=Value(1)), default=Value(0), output_field=IntegerField())
+                )
+            )
             .order_by("visit__id")
         )
-        data_by_journey = groupby(list(journeys), key=itemgetter("visit__org_unit_id"))
+        data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
 
         for org_unit, journeys in data_by_journey:
             visits_by_period = groupby(journeys, key=itemgetter("period"))
-            assistance = {"rutf_quantity": 0, "rusf_quantity": 0, "csb_quantity": 0}
-            aggregated_journeys = AggregatedJourney().group_by_period(
-                visits_by_period, org_unit, aggregated_journeys, assistance
+            aggregated_journeys_by_period = AggregatedJourney().group_by_period(visits_by_period, org_unit)
+            aggregated_journeys.extend(aggregated_journeys_by_period)
+        monthly_journeys = list(
+            map(
+                lambda journey: self.save_monthly_journey(journey, account),
+                aggregated_journeys,
             )
+        )
+        saved_monthlyStatistics = MonthlyStatistics.objects.bulk_create(monthly_journeys)
+        logger.info(
+            f"----------------------------------------  Aggregated {len(saved_monthlyStatistics)} Monthly Journeys for {account} {programme}  -----------------------------------"
+        )
 
-        for index, journey in enumerate(aggregated_journeys):
-            logger.info(
-                f"---------------------------------------- Journey N° {(index + 1)} -----------------------------------"
-            )
-            self.save_monthly_journey(journey, account)
+    def admission_forms(self, visits, admission_forms):
+        admission_visits = [visit for visit in visits if visit["form_id"] in admission_forms]
+        return admission_visits
+
+    def period_converter(self, year, month):
+        if int(month) < 10:
+            return f"{year}0{month}"
+        return f"{year}{month}"
+
+    def aggregating_data_to_push_to_dhis2(self, account):
+        monthlyStatistics = (
+            MonthlyStatistics.objects.prefetch_related("account", "org_unit")
+            .values()
+            .filter(account=account)
+            .filter(org_unit_id__in=[758, 622, 43])
+        )
+        journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
+        dhis2_aggregated_data = []
+        # Reading the dhis2 datalement mapper json file
+        with open("plugins/wfp/dhis2_mapper.json") as mapper:
+            data = json.load(mapper)
+
+        for org_unit, journeys in journey_by_org_units:
+            journeys = list(journeys)
+            journey_by_org_units_period = groupby(journeys, key=itemgetter("period"))
+            dataSet = {"dataSet": settings.DATASET_ID, "orgUnit": journeys[0]["dhis2_id"], "orgUnitId": org_unit}
+            dataValues = []
+            for period, journey_period in journey_by_org_units_period:
+                dataSet["period"] = period
+                journeys_by_program_type = groupby(list(journey_period), key=itemgetter("programme_type"))
+                dataValues.extend(self.map_dhis2_data(journeys_by_program_type, data))
+            dataSet["dataValues"] = sorted(dataValues, key=itemgetter("value"), reverse=True)
+
+            dhis2_aggregated_data.append(dataSet)
+        return dhis2_aggregated_data
+
+    def map_dhis2_data(self, journeys, dataElements):
+        dataValues = []
+        for program_type, journey_by_program in journeys:
+            dataElement = dataElements.get(program_type)
+            journey = None
+            categories = []
+            sub_categories = []
+            if program_type == "U5":
+                categories = ["screening_reporting", "tsfp_reporting", "otp_reporting", "bsfp_reporting"]
+                sub_categories = [
+                    "muac_under_11_5",
+                    "muac_11_5_12_4",
+                    "muac_above_12_5",
+                    "total_beneficiary",
+                    "whz_score_3",
+                    "total_with_exit_type",
+                    "transfer_sc_itp_otp",
+                ]
+                journey = groupby(list(journey_by_program), key=itemgetter("gender"))
+            elif program_type == "PLW":
+                categories = ["screening_reporting", "tsfp_reporting", "bsfp_reporting"]
+                sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23", "total_with_exit_type"]
+                journey = groupby(list(journey_by_program), key=itemgetter("nutrition_programme"))
+
+            for main_category, journey_by_category in journey:
+                journey_by_categories = list(journey_by_category)
+                admission_type = journey_by_categories[0]["admission_type"] if len(journey_by_categories) > 0 else ""
+                admission_criteria = (
+                    journey_by_categories[0]["admission_criteria"] if len(journey_by_categories) > 0 else ""
+                )
+                exit_type = journey_by_categories[0]["exit_type"] if len(journey_by_categories) > 0 else ""
+                journey_by_gender_and_nutrition_program = groupby(
+                    journey_by_categories, key=itemgetter("nutrition_programme")
+                )
+                rows = AggregatedJourney().aggregated_rows(journey_by_categories)
+
+                for nutrition_programme, journey_program in journey_by_gender_and_nutrition_program:
+                    for category in categories:
+                        dataElement_by_category = dataElement.get(category)
+                        dataElement_by_sub_category = dataElement_by_category
+                        if nutrition_programme == "TSFP":
+                            dataElement_by_sub_category = dataElement.get("tsfp_reporting")
+                        elif nutrition_programme == "OTP":
+                            dataElement_by_sub_category = dataElement.get("otp_reporting")
+                        elif nutrition_programme == "BSFP":
+                            dataElement_by_sub_category = dataElement.get("bsfp_reporting")
+                            sub_categories = ["new_case"]
+                        if dataElement_by_sub_category is not None:
+                            if dataElement_by_category is not None:
+                                dataElement_by_main_category = dataElement_by_category.get(main_category)
+                                for sub_category in sub_categories:
+                                    if dataElement_by_main_category is not None:
+                                        dataValue = dataElement_by_main_category.get(sub_category)
+                                        if sub_category == exit_type:
+                                            rows[sub_category] = rows["total_with_exit_type"]
+                                        elif sub_category == admission_type:
+                                            rows[sub_category] = rows["total_beneficiary"]
+                                    if dataValue is not None:
+                                        dataValues.append({**dataValue, "value": rows[sub_category]})
+        dataValues = list(
+            {
+                (dataValue["dataElement"], dataValue["categoryOptionCombo"]): dataValue for dataValue in dataValues
+            }.values()
+        )
+        return dataValues

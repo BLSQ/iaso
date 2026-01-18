@@ -1,8 +1,8 @@
+import React, { FunctionComponent, useState } from 'react';
 import { Download } from '@mui/icons-material';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import { Menu, MenuItem } from '@mui/material';
 import { IconButton } from 'bluesquare-components';
-import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
@@ -18,6 +18,8 @@ type Props = {
     orgUnitId: number | string;
     baseUrls: any;
     showDeleted: boolean;
+    hasDhis2Module: boolean;
+    deleteForm: (body: {id: number}) => Promise<any>;
 };
 
 export const FormActions: FunctionComponent<Props> = ({
@@ -25,6 +27,8 @@ export const FormActions: FunctionComponent<Props> = ({
     orgUnitId,
     baseUrls,
     showDeleted,
+    hasDhis2Module,
+    deleteForm,
 }) => {
     // XLS and XML download states and functions
     const [anchorEl, setAnchorEl] = useState(null);
@@ -43,7 +47,6 @@ export const FormActions: FunctionComponent<Props> = ({
     urlToInstances = `${urlToInstances}/tab/list`;
     // Restore and delete form's hooks
     const { mutateAsync: restoreForm } = useRestoreForm();
-    const { mutateAsync: deleteForm } = useDeleteForm();
 
     return (
         <section>
@@ -106,21 +109,23 @@ export const FormActions: FunctionComponent<Props> = ({
                                     tooltipMessage={MESSAGES.edit}
                                 />
                             </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[Permission.FORMS]}
-                            >
-                                <IconButton
-                                    // eslint-disable-next-line max-len
-                                    url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                                    icon="dhis"
-                                    tooltipMessage={MESSAGES.dhis2Mappings}
-                                    color={
-                                        settings.row.original.has_mappings
-                                            ? 'primary'
-                                            : undefined
-                                    }
-                                />
-                            </DisplayIfUserHasPerm>
+                            {hasDhis2Module && (
+                                <DisplayIfUserHasPerm
+                                    permissions={[Permission.FORMS]}
+                                >
+                                    <IconButton
+                                        // eslint-disable-next-line max-len
+                                        url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                                        icon="dhis"
+                                        tooltipMessage={MESSAGES.dhis2Mappings}
+                                        color={
+                                            settings.row.original.has_mappings
+                                                ? 'primary'
+                                                : undefined
+                                        }
+                                    />
+                                </DisplayIfUserHasPerm>
+                            )}
                             <DisplayIfUserHasPerm
                                 permissions={[Permission.FORMS]}
                             >
@@ -128,7 +133,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                     titleMessage={MESSAGES.deleteFormTitle}
                                     onConfirm={closeDialog =>
                                         deleteForm(
-                                            settings.row.original.id,
+                                            {id: settings.row.original.id},
                                         ).then(closeDialog)
                                     }
                                 />

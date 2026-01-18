@@ -4,43 +4,18 @@ import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 
 import { usePossibleFields } from '../../../../forms/hooks/useGetPossibleFields';
+import { useGetForm } from '../../../../forms/requests';
 import { Form, PossibleField } from '../../../../forms/types/forms';
-
-export const useGetForm = (
-    formId: number | undefined,
-    enabled: boolean,
-    fields?: string | undefined,
-    appId?: string,
-): UseQueryResult<Form, Error> => {
-    const queryKey: any[] = ['form', formId];
-    let url = `/api/forms/${formId}`;
-    if (fields) {
-        url += `/?fields=${fields}`;
-        if (appId) {
-            url += `&app_id=${appId}`;
-        }
-    } else if (appId) {
-        url += `/?app_id=${appId}`;
-    }
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getRequest(url),
-        options: {
-            retry: false,
-            enabled,
-        },
-    });
-};
 
 export const useGetForms = (
     enabled: boolean,
     fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
-    const apiUrl = '/api/forms/?fields=id,name,latest_form_version';
+    const apiUrl = '/api/forms/?fields=id,name,latest_form_version,form_id';
     const url = fields ? `${apiUrl},${fields.join(',')}` : apiUrl;
 
     return useSnackQuery({
-        queryKey: ['forms'],
+        queryKey: ['entitiesForms', 'forms'],
         queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,

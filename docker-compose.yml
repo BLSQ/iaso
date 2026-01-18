@@ -24,20 +24,25 @@ services:
             - ./babel-register.js:/opt/app/babel-register.js
             - ./mypy.ini:/opt/app/mypy.ini
             - ./pyproject.toml:/opt/app/pyproject.toml
+            - ./htmlcov:/opt/app/htmlcov
             # test data
             - ./testdata:/opt/app/testdata
             # jupyter notebooks
             - ./notebooks:/opt/notebooks
             # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
             - ../bluesquare-components:/opt/bluesquare-components
+            # Optional Used to load dev snt-malaria-budgeting Python package.
+            - ../snt-malaria-budgeting:/opt/snt-malaria-budgeting
         links: &hat_links
             - db
         environment: &hat_environment
             APP_TITLE:
+            AUTHENTICATION_ENFORCED: ${AUTHENTICATION_ENFORCED:-false}
             AWS_ACCESS_KEY_ID:
             AWS_SECRET_ACCESS_KEY:
             AWS_STORAGE_BUCKET_NAME:
             CLAMAV_ACTIVE:
+            FORUM_PATH:
             CLAMAV_FQDN:
             DB_READONLY_PASSWORD: postgres
             DB_READONLY_USERNAME: postgres
@@ -46,13 +51,18 @@ services:
             DISABLE_PASSWORD_LOGINS:
             DNS_DOMAIN:
             EMAIL_BACKEND: 'django.core.mail.backends.console.EmailBackend'
+            ENABLE_ANALYTICS:
+            ENABLE_GZIP: ${ENABLE_GZIP:-false}
+            ENCRYPTED_TEXT_FIELD_KEY: bNqPWD4KdouaH-yxfl7PPdJLbbNt31mnJDwg9IHoGDM=
             ENKETO_API_TOKEN: AZE78974654azeAZE
             ENKETO_DEV: 'true'
+            ENKETO_SIGNING_SECRET: supersecret
             ENKETO_URL: http://enketo:8005/
             FAVICON_PATH:
             GOOGLE_API_KEY_BASE64:
             LIVE_COMPONENTS:
             LOGO_PATH:
+            LOGIN_LOGO_PATH:
             LQAS_PIPELINE: #Optional: the version of the pipeline to run
             LQAS_PIPELINE_VERSION: # "prod", "staging" or "custom". Use "custom" for local testing
             MAINTENANCE_MODE:
@@ -75,6 +85,7 @@ services:
             AVAILABLE_LANGUAGES:
             SERVER_URL:
             SHOW_NAME_WITH_LOGO:
+            HIDE_BASIC_NAV_ITEMS:
             SUPERSET_ADMIN_PASSWORD:
             SUPERSET_ADMIN_USERNAME:
             SUPERSET_URL:
@@ -82,6 +93,7 @@ services:
             THEME_PRIMARY_BACKGROUND_COLOR: #OpenHexa API token
             THEME_PRIMARY_COLOR:
             THEME_SECONDARY_COLOR:
+            USER_MANUAL_PATH:
             WFP_AUTH_ACCOUNT:
             WFP_AUTH_CLIENT_ID:
             WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:

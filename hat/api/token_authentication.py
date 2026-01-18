@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from rest_framework_simplejwt import authentication  # type: ignore
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
@@ -15,6 +15,9 @@ from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 def token_auth(request):
     token = request.GET.get("token")
     link = request.GET.get("next")
+
+    if not token:
+        return HttpResponseBadRequest("missing token")
 
     jta = authentication.JWTTokenUserAuthentication()
     validated_token = jta.get_validated_token(token)

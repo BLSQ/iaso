@@ -1,0 +1,58 @@
+{
+    "status": "WARNING",
+    "message": "One more conflicts encountered, please check import summary.",
+    "response": {
+        "status": "WARNING",
+        "conflicts": [
+            {
+                "value": "Organisation unit not found or not accessible: `null`",
+                "indexes": [0, 1],
+                "objects": {},
+                "property": "orgUnit",
+                "errorCode": "E7612"
+            }
+        ],
+        "description": "Import process completed successfully",
+        "importCount": {
+            "deleted": 0,
+            "ignored": 2,
+            "updated": 0,
+            "imported": 0
+        },
+        "responseType": "ImportSummary",
+        "importOptions": {
+            "async": false,
+            "force": false,
+            "dryRun": false,
+            "sharing": false,
+            "idSchemes": {},
+            "mergeMode": "REPLACE",
+            "skipAudit": false,
+            "skipCache": false,
+            "reportMode": "FULL",
+            "strictPeriods": false,
+            "importStrategy": "CREATE_AND_UPDATE",
+            "mergeDataValues": false,
+            "skipLastUpdated": false,
+            "firstRowIsHeader": true,
+            "skipExistingCheck": false,
+            "skipNotifications": false,
+            "strictDataElements": false,
+            "datasetAllowsPeriods": false,
+            "strictDataSetLocking": false,
+            "ignoreEmptyCollection": false,
+            "skipPatternValidation": false,
+            "strictDataSetApproval": false,
+            "strictOrganisationUnits": false,
+            "strictDataSetInputPeriods": false,
+            "requireCategoryOptionCombo": false,
+            "strictCategoryOptionCombos": false,
+            "requireAttributeOptionCombo": false,
+            "strictAttributeOptionCombos": false
+        },
+        "dataSetComplete": "false",
+        "rejectedIndexes": [0, 1]
+    },
+    "httpStatus": "Conflict",
+    "httpStatusCode": 409
+}

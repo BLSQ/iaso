@@ -3,6 +3,7 @@ import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 import GpsOffIcon from '@mui/icons-material/GpsOff';
 import { Table, TableBody, TableRow, TableCell } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -58,6 +59,11 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
             <WidgetPaper showHeader={false} title="">
                 <Table size="medium">
                     <TableBody>
+                        <Row
+                            label={formatMessage(MESSAGES.ID)}
+                            value={orgUnit.id ?? textPlaceholder}
+                            dataTestId="orgunit-id"
+                        />
                         <Row
                             label={formatMessage(MESSAGES.source)}
                             value={

@@ -23,7 +23,6 @@ from rest_framework.viewsets import ModelViewSet as BaseModelViewSet, ViewSet
 from rest_framework_csv.renderers import CSVRenderer
 
 from hat.api_import.models import APIImport
-from iaso.models import OrgUnit, OrgUnitType
 from iaso.models.payments import PaymentStatuses
 
 
@@ -115,7 +114,7 @@ class HasPermission:
     def __init__(self, *perms):
         class PermissionClass(permissions.BasePermission):
             def has_permission(self, request, view):
-                return request.user and any(request.user.has_perm(perm) for perm in perms)
+                return request.user and any(request.user.has_perm(perm.full_name()) for perm in perms)
 
         self._permission_class = PermissionClass
 
@@ -142,7 +141,7 @@ class ReadOnlyOrHasPermission:
                 if request.method in permissions.SAFE_METHODS:
                     return True
 
-                return request.user and any(request.user.has_perm(perm) for perm in perms)
+                return request.user and any(request.user.has_perm(perm.full_name()) for perm in perms)
 
         self._permission_class = PermissionClass
 
@@ -390,11 +389,6 @@ class FileFormatEnum(enum.Enum):
     XLSX: str = "xlsx"
 
 
-# To sort timestamp by date, check mobile_orgunits for usage
-def get_timestamp(d):
-    return float(d["created_at"])
-
-
 class CSVExportMixin:
     @action(
         detail=False,
@@ -423,26 +417,6 @@ class CSVExportMixin:
         return response
 
 
-class CustomFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        search = request.query_params.get("search")
-        if search:
-            country_types = OrgUnitType.objects.countries().only("id")
-            org_units = OrgUnit.objects.filter(
-                name__icontains=search, org_unit_type__in=country_types, path__isnull=False
-            ).only("id")
-
-            query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
-            if len(org_units) > 0:
-                query.add(
-                    Q(initial_org_unit__path__descendants=OrgUnit.objects.query_for_related_org_units(org_units)), Q.OR
-                )
-
-            return queryset.filter(query)
-
-        return queryset
-
-
 class IsAdminOrSuperUser(permissions.BasePermission):
     """
     Allows access only to admin users.
@@ -456,7 +430,7 @@ class GenericReadWritePerm(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             can_get = (
-                request.user and request.user.is_authenticated and request.user.has_perm(self.read_perm)
+                request.user and request.user.is_authenticated and request.user.has_perm(self.read_perm.full_name())
             ) or request.user.is_superuser
             return can_get
         if (
@@ -466,7 +440,7 @@ class GenericReadWritePerm(permissions.BasePermission):
             or request.method == "DELETE"
         ):
             can_post = (
-                request.user and request.user.is_authenticated and request.user.has_perm(self.write_perm)
+                request.user and request.user.is_authenticated and request.user.has_perm(self.write_perm.full_name())
             ) or request.user.is_superuser
             return can_post
         return False

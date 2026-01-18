@@ -6,11 +6,15 @@ import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 
 import { Profile } from '../../../utils/usersUtils';
-import { colors } from '../constants/colors';
+import {
+    DropdownTeamsOptions,
+    SubTeam,
+    Team,
+    User,
+} from '../../teams/types/team';
 import MESSAGES from '../messages';
 import { AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 import { getTeamUserName } from '../utils';
 
@@ -23,7 +27,6 @@ type Props = {
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
     currentTeam: Team | undefined;
     orgUnits: Array<AssignmentUnit>;
-    isLoadingAssignments: boolean;
 };
 
 export const useColumns = ({
@@ -35,7 +38,6 @@ export const useColumns = ({
     setSelectedItem,
     currentTeam,
     orgUnits,
-    isLoadingAssignments,
 }: Props): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -126,11 +128,6 @@ export const useColumns = ({
                                 currentColor={
                                     fullItem?.color ?? theme.palette.grey[500]
                                 }
-                                colors={colors.filter(
-                                    color =>
-                                        !fullItem ||
-                                        (fullItem && color !== fullItem.color),
-                                )}
                                 displayLabel={false}
                                 onChangeColor={color =>
                                     setItemColor(

@@ -7,14 +7,14 @@ from rest_framework import serializers
 
 from iaso.diffing import Differ, Dumper
 from iaso.management.commands.command_logger import CommandLogger
-from iaso.models import OrgUnit, OrgUnitType, SourceVersion, Task
+from iaso.models import Group, OrgUnit, OrgUnitType, SourceVersion, Task
 from iaso.tasks.dhis2_ou_exporter import dhis2_ou_exporter
 
 
 logger = logging.getLogger(__name__)
 
 STATUSES = list(OrgUnit.VALIDATION_STATUS_CHOICES) + [("", "all")]
-FIELDS = ["name", "parent", "geometry", "groups", "opening_date", "closed_date"]
+FIELDS = ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"]
 
 
 class DiffSerializer(serializers.Serializer):
@@ -27,6 +27,9 @@ class DiffSerializer(serializers.Serializer):
     source_status = serializers.ChoiceField(required=False, choices=STATUSES)
     source_top_org_unit_id = serializers.PrimaryKeyRelatedField(
         required=False, default=None, queryset=OrgUnit.objects.all(), allow_null=True
+    )
+    source_org_unit_group_id = serializers.PrimaryKeyRelatedField(
+        required=False, default=None, queryset=Group.objects.all(), allow_null=True
     )
     source_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -41,6 +44,9 @@ class DiffSerializer(serializers.Serializer):
         queryset=OrgUnitType.objects.all(),
         many=True,
         style={"base_template": "select_multiple.html"},
+    )
+    ref_org_unit_group_id = serializers.PrimaryKeyRelatedField(
+        required=False, default=None, queryset=Group.objects.all(), allow_null=True
     )
     ref_top_org_unit_id = serializers.PrimaryKeyRelatedField(
         required=False, default=None, queryset=OrgUnit.objects.all(), allow_null=True
@@ -72,6 +78,18 @@ class DiffSerializer(serializers.Serializer):
         if validated_data.get("fields_to_export"):
             validated_data["fields_to_export"] = list(validated_data["fields_to_export"])
 
+        if (
+            validated_data.get("ref_org_unit_group_id")
+            and validated_data["ref_org_unit_group_id"].source_version != validated_data["ref_version_id"]
+        ):
+            raise serializers.ValidationError({"ref_org_unit_group_id": ["not in ref_version_id"]})
+
+        if (
+            validated_data.get("source_org_unit_group_id")
+            and validated_data["source_org_unit_group_id"].source_version != validated_data["source_version_id"]
+        ):
+            raise serializers.ValidationError({"source_org_unit_group_id": ["not in source_version_id"]})
+
         return validated_data
 
     def generate_csv(self):
@@ -94,6 +112,8 @@ class DiffSerializer(serializers.Serializer):
             top_org_unit_ref=data.get("ref_top_org_unit_id"),
             org_unit_types=data.get("source_org_unit_type_ids"),
             org_unit_types_ref=data.get("ref_org_unit_type_ids"),
+            org_unit_group=data.get("source_org_unit_group_id"),
+            org_unit_group_ref=data.get("ref_org_unit_group_id"),
             field_names=data.get("fields_to_export"),
         )
         buffer = StringIO()
@@ -132,6 +152,8 @@ class ExportSerializer(DiffSerializer):
             top_org_unit_ref_id=data.get("ref_top_org_unit_id"),
             org_unit_types_ids=data.get("source_org_unit_type_ids"),
             org_unit_types_ref_ids=data.get("ref_org_unit_type_ids"),
+            org_unit_group_id=data.get("source_org_unit_group_id"),
+            org_unit_group_ref_id=data.get("ref_org_unit_group_id"),
             field_names=list(data["fields_to_export"]),
             user=user,
         )

@@ -246,6 +246,7 @@ export const mapCampaigns = (
             isPreventive: c.is_preventive,
             isTest: c.is_test,
             onHold: c.on_hold,
+            isPlanned: c.is_planned,
             separateScopesPerRound: c.separate_scopes_per_round,
             scopes: c.scopes,
             subActivities: displayedSubActivities,

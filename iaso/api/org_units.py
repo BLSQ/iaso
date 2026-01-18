@@ -1,5 +1,6 @@
 import json
 import logging
+import tempfile
 
 from copy import deepcopy
 from datetime import datetime
@@ -10,26 +11,39 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Count, IntegerField, Q, Value
-from django.http import HttpResponse, StreamingHttpResponse
+from django.db import IntegrityError
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit import models as audit_models
-from hat.menupermissions import models as permission
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
+from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models.microplanning import Assignment
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_REGISTRY_READ_PERMISSION,
+    CORE_REGISTRY_WRITE_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
+from ..plugins import is_polio_plugin_active
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
+from .serializers import OrgUnitImportSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +56,7 @@ class HasCreateOrgUnitPermission(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        if not request.user.has_perm(permission.ORG_UNITS):
+        if not request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()):
             return False
 
         return True
@@ -53,21 +67,25 @@ class HasOrgUnitPermission(permissions.BasePermission):
         if obj.version.data_source.public and request.method == "GET":
             return True
 
-        if not (
-            request.user.is_authenticated
-            and (
-                request.user.has_perm(permission.FORMS)
-                or request.user.has_perm(permission.ORG_UNITS)
-                or request.user.has_perm(permission.ORG_UNITS_READ)
-                or request.user.has_perm(permission.SUBMISSIONS)
-                or request.user.has_perm(permission.REGISTRY_WRITE)
-                or request.user.has_perm(permission.REGISTRY_READ)
-                or request.user.has_perm(permission.POLIO)
-            )
-        ):
+        required_perms = [
+            request.user.has_perm(CORE_FORMS_PERMISSION.full_name()),
+            request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()),
+            request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()),
+            request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name()),
+            request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name()),
+            request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name()),
+        ]
+        if is_polio_plugin_active():
+            from plugins.polio.permissions import POLIO_PERMISSION
+
+            required_perms.append(request.user.has_perm(POLIO_PERMISSION.full_name()))
+
+        if not (request.user.is_authenticated and any(required_perms)):
             return False
 
-        read_only = request.user.has_perm(permission.ORG_UNITS_READ) and not request.user.has_perm(permission.ORG_UNITS)
+        read_only = request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()) and not request.user.has_perm(
+            CORE_ORG_UNITS_PERMISSION.full_name()
+        )
         if (read_only or obj.version.data_source.read_only) and request.method != "GET":
             return False
 
@@ -85,7 +103,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
     projects that require authentication). Actions on specific org units are restricted to authenticated users with the
-    "{permission.FORMS}", "{permission.ORG_UNITS}" or "{permission.SUBMISSIONS}" permission.
+    "{CORE_FORMS_PERMISSION}", "{CORE_ORG_UNITS_PERMISSION}" or "{CORE_SUBMISSIONS_PERMISSION}" permissions.
 
     GET /api/orgunits/
     GET /api/orgunits/<id>
@@ -94,8 +112,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
     PATCH /api/orgunits/<id>
     """
 
-    # this bypass UserAccessPermission and allow anonymous access
-    permission_classes = [HasOrgUnitPermission]
+    # this HasOrgUnitPermission bypass UserAccessPermission and allow anonymous access
+    # except if AuthenticationEnforcedPermission is enabled
+    permission_classes = [AuthenticationEnforcedPermission, HasOrgUnitPermission]
 
     def get_queryset(self):
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
@@ -126,6 +145,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         - onlyDirectChildren: Filter direct children only ("true", "false")
         - orgUnitParentId: Filter by parent ID in hierarchy
         - orgUnitParentIds: Filter by multiple parent IDs (comma-separated)
+        - excludedOrgUnitParentIds: Filter by excluded parent IDs (comma-separated)
         - linkedTo: Filter by linked org unit
         - linkValidated: Filter by link validation status
         - linkSource: Filter by link source
@@ -151,6 +171,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         Special Search Formats:
         - ids:search: Search by IDs (e.g. "ids:1,2,3")
         - refs:search: Search by references (e.g. "refs:ref1,ref2")
+        - codes:search: Search by codes (e.g. "codes:code1,code2")
 
         Example Response Formats:
         * Simple JSON (default) -> as_dict_for_mobile
@@ -173,6 +194,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         csv_format = bool(request.query_params.get("csv"))
         xlsx_format = bool(request.query_params.get("xlsx"))
         gpkg_format = bool(request.query_params.get("gpkg"))
+        parquet_format = request.GET.get("parquet", None)
         is_export = any([csv_format, xlsx_format, gpkg_format])
 
         with_shapes = request.GET.get("withShapes", None)
@@ -211,7 +233,31 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             queryset = build_org_units_queryset(queryset, request.GET, profile)
 
-        queryset = queryset.order_by(*order)
+        # Handle assignment-related ordering to avoid duplicates from soft-deleted assignments
+        processed_order = []
+        for order_field in order:
+            if order_field.startswith("assignment__") and not order_field.startswith("assignment__deleted_at"):
+                if "user__username" in order_field:
+                    # Use subquery to only consider non-deleted assignments
+                    is_desc = order_field.startswith("-")
+                    annotation_name = f"assignment_username_{'desc' if is_desc else 'asc'}"
+
+                    subquery = Subquery(
+                        Assignment.objects.filter(org_unit=OuterRef("pk"), deleted_at__isnull=True)
+                        .order_by(order_field.replace("assignment__", ""))
+                        .values("user__username")[:1]
+                    )
+                    queryset = queryset.annotate(**{annotation_name: subquery})
+                    processed_order.append(f"{'-' if is_desc else ''}{annotation_name}")
+                else:
+                    processed_order.append(order_field)
+            else:
+                processed_order.append(order_field)
+
+        queryset = queryset.order_by(*processed_order)
+
+        if parquet_format:
+            return self.anwser_with_parquet_file(request, queryset, profile)
 
         if not is_export:
             if limit and not as_location:
@@ -295,6 +341,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             {"title": "Type", "width": 15},
             {"title": "Latitude", "width": 15},
             {"title": "Longitude", "width": 15},
+            {"title": "Code", "width": 15},
             {"title": "Date d'ouverture", "width": 20},
             {"title": "Date de fermeture", "width": 20},
             {"title": "Date de création", "width": 20},
@@ -346,6 +393,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             "instances_count",
             "opening_date",
             "closed_date",
+            "code",
         )
 
         user_account_name = profile.account.name if profile else ""
@@ -368,12 +416,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 for field_name in parent_source_ref_name
             ]
 
+            code = org_unit.get("code") if org_unit.get("code") != "" else None
+
             org_unit_values = [
                 org_unit.get("id"),
                 org_unit.get("name"),
                 org_unit.get("org_unit_type__name"),
                 location.y if location else None,
                 location.x if location else None,
+                code,
                 (
                     org_unit.get("opening_date").strftime("%Y-%m-%d")
                     if org_unit.get("opening_date") is not None
@@ -412,6 +463,55 @@ class OrgUnitViewSet(viewsets.ViewSet):
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"{filename}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
+
+        return response
+
+    def anwser_with_parquet_file(self, request, queryset, profile):
+        user_account_name = profile.account.name if profile else ""
+        environment = settings.ENVIRONMENT
+        filename = "org_units"
+        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        # validate no unsupported/extra params is passed
+        allowed_params = {"parquet", "order", "searches", "extra_fields"}
+        received_params = set(request.GET.keys())
+
+        unknown = received_params - allowed_params
+        if unknown:
+            return JsonResponse(
+                {
+                    "error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}. Allowed parameters {', '.join(sorted(allowed_params))}"
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        extra_fields_raw = request.GET.get("extra_fields", "")
+        extra_fields = [x for x in extra_fields_raw.split(",") if x]
+
+        possible_extra_fields = [
+            "geom_geojson",
+            "location_geojson",
+            "simplified_geom_geojson",
+            "biggest_polygon_geojson",
+            ":all",
+        ]
+
+        unknown_extra_fields = set(extra_fields) - set(possible_extra_fields)
+
+        if unknown_extra_fields:
+            return JsonResponse(
+                {
+                    "error": f"Unknown extra_fields for parquet exports: {', '.join(unknown_extra_fields)}, only supported {', '.join(possible_extra_fields)}."
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
+
+        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
+
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename + ".parquet")
 
         return response
 
@@ -474,6 +574,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         errors = []
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
         profile = request.user.iaso_profile
+        can_edit_shape = profile.account.feature_flags.filter(code="ALLOW_SHAPE_EDITION").exists()
 
         self.check_object_permissions(request, org_unit)
 
@@ -487,11 +588,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         original_copy = deepcopy(org_unit)
 
-        if "name" in request.data:
-            org_unit.name = request.data["name"]
+        if org_unit_name := request.data.get("name"):
+            org_unit.name = org_unit_name.strip()
         if "source_ref" in request.data:
             org_unit.source_ref = request.data["source_ref"]
-
         if "short_name" in request.data:
             org_unit.short_name = request.data["short_name"]
         if "source" in request.data:
@@ -511,6 +611,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     }
                 )
 
+        if "code" in request.data:
+            # Warning: this could cause an error with the model constraint when saving below
+            org_unit.code = request.data["code"]
+
         if "geom" in request.data:
             geom = request.data["geom"]
             if geom:
@@ -527,11 +631,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
 
-        if "geo_json" in request.data and request.data["geo_json"]:
-            logger.warning(
-                "The `geo_json` field is deprecated. Use the `geom` field to modify the geometry.",
-                extra={"request_data": request.data},
-            )
+        geo_json = request.data.get("geo_json")
+        if geo_json and can_edit_shape:
+            try:
+                geometry = geo_json["features"][0]["geometry"] if geo_json else None
+                coordinates = geometry["coordinates"] if geometry else None
+                if coordinates:
+                    multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
+                    # Keep geom and simplified geom consistent.
+                    org_unit.geom = multi_polygon
+                    org_unit.simplified_geom = simplify_geom(multi_polygon)
+            except Exception:
+                errors.append({"errorKey": "geo_json", "errorMessage": _("Can't parse geo_json")})
 
         if "catchment" in request.data:
             catchment = request.data["catchment"]
@@ -638,24 +749,42 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.closed_date = self.get_date(request.data.get("closed_date"))
 
         if not errors:
-            org_unit.save()
-            if new_groups is not None:
-                org_unit.groups.set(new_groups)
+            try:
+                org_unit.save()
+                if new_groups is not None:
+                    org_unit.groups.set(new_groups)
 
-            audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
+                audit_models.log_modification(
+                    original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
+                )
 
-            res = org_unit.as_dict_with_parents()
-            res["geo_json"] = None
-            res["catchment"] = None
-            if org_unit.simplified_geom or org_unit.catchment:
-                queryset = self.get_queryset().filter(id=org_unit.id)
-                if org_unit.simplified_geom:
-                    res["geo_json"] = geojson_queryset(queryset, geometry_field="simplified_geom")
-                if org_unit.catchment:
-                    res["catchment"] = geojson_queryset(queryset, geometry_field="catchment")
+                res = org_unit.as_dict_with_parents()
+                res["geo_json"] = None
+                res["catchment"] = None
 
-            res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
-            return Response(res)
+                if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
+                    geo_queryset = self.get_queryset().filter(id=org_unit.id)
+
+                    if can_edit_shape and org_unit.geom:
+                        res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="geom")
+                    elif org_unit.simplified_geom:
+                        res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+
+                    if org_unit.catchment:
+                        res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
+
+                res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
+                return Response(res)
+            except IntegrityError:
+                errors.append(
+                    {
+                        "errorKey": "code",
+                        "errorMessage": _(
+                            "Another valid OrgUnit already exists with the code '{}' in this version"
+                        ).format(request.data["code"]),
+                    }
+                )
+
         return Response(errors, status=400)
 
     def get_date(self, date: str) -> Union[datetime.date, None]:
@@ -678,7 +807,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
         if request.user:
             org_unit.creator = request.user
-        name = request.data.get("name", None)
+
+        name = request.data.get("name")
+        if name:
+            name = name.strip()
+        else:
+            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
+
+        org_unit.name = name
+
         version_id = request.data.get("version_id", None)
         if version_id:
             authorized_ids = list(
@@ -702,21 +839,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.version = profile.account.default_version
 
-        if not name:
-            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
-
         if org_unit.version.data_source.read_only:
             errors.append(
                 {"errorKey": "name", "errorMessage": "Creation of org unit not authorized on read only data source"}
             )
-
-        org_unit.name = name
 
         source_ref = request.data.get("source_ref", None)
         org_unit.source_ref = source_ref
 
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
+        org_unit.code = request.data.get("code", "")  # This could raise an IntegrityError if not unique
 
         opening_date = request.data.get("opening_date", None)
         closed_date = request.data.get("closed_date", None)
@@ -798,7 +931,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
-        org_unit.save()
+        try:
+            org_unit.save()
+        except IntegrityError:
+            errors.append(
+                {
+                    "errorKey": "code",
+                    "errorMessage": _("Another valid OrgUnit already exists with the code '{}' in this version").format(
+                        org_unit.code
+                    ),
+                }
+            )
+            return Response(errors, status=400)
+
         org_unit.groups.set(new_groups)
 
         if reference_instance_id and org_unit_type:
@@ -813,22 +958,29 @@ class OrgUnitViewSet(viewsets.ViewSet):
     @safe_api_import("orgUnit")
     def create(self, _, request):
         """This endpoint is used by mobile app"""
-        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
+        new_org_units = import_org_units(request.data, request.user, request.query_params.get("app_id"))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
+        prefetch_args = ["reference_instances", "org_unit_type__sub_unit_types", "groups"]
+        related_args = ["parent", "org_unit_type", "version__data_source__credentials"]
+
         org_unit: OrgUnit = get_object_or_404(
-            self.get_queryset().prefetch_related("reference_instances"),
+            self.get_queryset().select_related(*related_args).prefetch_related(*prefetch_args),
             pk=pk,
         )
-        # Get instances count for the Org unit and its descendants
-        instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
-        org_unit.instances_count = instances_count
+        # Count instances for the Org unit and its descendants.
+        org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
 
         self.check_object_permissions(request, org_unit)
+
+        # Fetch all ancestors in a single query to avoid N+1 problems.
+        ancestors = list(org_unit.ancestors().select_related(*related_args).prefetch_related(*prefetch_args))
+        ancestors_dict = {ancestor.id: ancestor for ancestor in ancestors}
+        org_unit._prefetched_ancestors = ancestors_dict
+
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
-        res["geo_json"] = None
-        res["catchment"] = None
+
         # Had first geojson of parent, so we can add it to map. Caution: we stop after the first
         ancestor = org_unit.parent
         ancestor_dict = res["parent"]
@@ -837,12 +989,26 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 geo_queryset = self.get_queryset().filter(id=ancestor.id)
                 ancestor_dict["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
                 break
-            ancestor = ancestor.parent
+            ancestor = ancestors_dict.get(ancestor.parent_id) if ancestor.parent_id else None
             ancestor_dict = ancestor_dict["parent"]
-        if org_unit.simplified_geom or org_unit.catchment:
+
+        res["geo_json"] = None
+        res["catchment"] = None
+
+        if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
+            can_edit_shape = False
+            if request.user.is_authenticated:
+                can_edit_shape = request.user.iaso_profile.account.feature_flags.filter(
+                    code="ALLOW_SHAPE_EDITION"
+                ).exists()
+
             geo_queryset = self.get_queryset().filter(id=org_unit.id)
-            if org_unit.simplified_geom:
+
+            if can_edit_shape and org_unit.geom:
+                res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="geom")
+            elif org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
@@ -850,55 +1016,30 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
 
-def import_data(org_units: List[Dict], user, app_id):
+def import_org_units(org_units: List[Dict], user, app_id):
+    """Import a list of org units."""
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
-    if project.account.default_version.data_source.read_only:
-        raise Exception("Creation of org unit not authorized on default data source")
-    for org_unit in org_units:
-        uuid = org_unit.get("id", None)
-        latitude = org_unit.get("latitude", None)
-        longitude = org_unit.get("longitude", None)
-        org_unit_location = None
+    version = project.account.default_version
+    if version.data_source.read_only:
+        raise ValidationError("Creation of org unit not authorized on default data source")
 
-        if latitude and longitude:
-            altitude = org_unit.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
+    # common values to all new org units
+    extra_save_kwargs = {
+        "custom": True,
+        "validation_status": OrgUnit.VALIDATION_NEW,
+        "version": version,
+        "creator": user if (user and not user.is_anonymous) else None,
+    }
 
-        if created:
-            org_unit_db.custom = True
-            org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
-            org_unit_db.name = org_unit.get("name", None)
-            org_unit_db.accuracy = org_unit.get("accuracy", None)
-            parent_id = org_unit.get("parentId", None)
-            if not parent_id:
-                # there exist versions of the mobile app in the wild with both parentId and parent_id
-                parent_id = org_unit.get("parent_id", None)
-            if parent_id is not None:
-                if str.isdigit(parent_id):
-                    org_unit_db.parent_id = parent_id
-                else:
-                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit_db.parent_id = parent_org_unit.id
+    for org_unit_data in org_units:
+        uuid = org_unit_data.get("id")
+        if OrgUnit.objects.filter(uuid=uuid, version=version).exists():
+            continue  # skip existing org units
 
-            # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
-            org_unit_type_id = org_unit.get("orgUnitTypeId", None)
-            if not org_unit_type_id:
-                org_unit_type_id = org_unit.get("org_unit_type_id", None)
-            org_unit_db.org_unit_type_id = org_unit_type_id
+        serializer = OrgUnitImportSerializer(data=org_unit_data)
+        serializer.is_valid(raise_exception=True)
+        new_org_unit = serializer.save(**extra_save_kwargs)
+        new_org_units.append(new_org_unit)
 
-            t = org_unit.get("created_at", None)
-            if t:
-                org_unit_db.source_created_at = timestamp_to_utc_datetime(int(t))
-
-            if not user.is_anonymous:
-                org_unit_db.creator = user
-            org_unit_db.source = "API"
-            if org_unit_location:
-                org_unit_db.location = org_unit_location
-
-            new_org_units.append(org_unit_db)
-            org_unit_db.version = project.account.default_version
-            org_unit_db.save()
     return new_org_units

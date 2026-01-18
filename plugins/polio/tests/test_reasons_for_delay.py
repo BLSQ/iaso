@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.models import Campaign, ReasonForDelay, Round, RoundDateHistoryEntry
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 class PolioReasonSForDelayTestCase(APITestCase):
@@ -35,9 +36,11 @@ class PolioReasonSForDelayTestCase(APITestCase):
         )
         cls.country_org_unit_2.save()
         cls.polio_admin_user = cls.create_user_with_profile(
-            username="test admin user", account=account, permissions=["iaso_polio_config"]
+            username="test admin user", account=account, permissions=[POLIO_CONFIG_PERMISSION]
         )
-        cls.polio_user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.polio_user = cls.create_user_with_profile(
+            username="test user", account=account, permissions=[POLIO_PERMISSION]
+        )
         cls.round1_start = (datetime.now() - timedelta(days=42)).date()
         cls.round1_end = (datetime.now() - timedelta(days=39)).date()
         cls.campaign = Campaign.objects.create(
@@ -151,7 +154,7 @@ class PolioReasonSForDelayTestCase(APITestCase):
     def test_wrong_account(self):
         self.client.force_authenticate(
             self.create_user_with_profile(
-                username="test user2", account=self.other_account, permissions=["iaso_polio_config"]
+                username="test user2", account=self.other_account, permissions=[POLIO_CONFIG_PERMISSION]
             )
         )
         new_name_en = "Meow"

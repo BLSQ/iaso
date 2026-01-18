@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from itertools import islice
 from typing import Optional
 
+from iaso.diffing import Differ
 from iaso.models import DataSourceVersionsSynchronization, Group, OrgUnit, OrgUnitChangeRequest
 
 from .synchronizer_serializers import DataSourceVersionsSynchronizerDiffSerializer
@@ -77,7 +78,7 @@ class DataSourceVersionsSynchronizer:
     def has_group_changes(comparisons: list[dict]) -> bool:
         return any(
             [
-                comparison["status"] in ["new", "deleted"]
+                comparison["status"] in [Differ.STATUS_NEW, Differ.STATUS_NOT_IN_ORIGIN]
                 for comparison in comparisons
                 if comparison["field"].startswith("group:")
             ]
@@ -109,7 +110,9 @@ class DataSourceVersionsSynchronizer:
         So we sacrifice performance for the sake of simplicity by creating the missing `OrgUnit`s in a loop.
         """
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        missing_org_units_diff_generator = (diff for diff in self.sort_by_path(self.diffs) if diff["status"] == "new")
+        missing_org_units_diff_generator = (
+            diff for diff in self.sort_by_path(self.diffs) if diff["status"] == Differ.STATUS_NEW
+        )
 
         while True:
             # Get a subset of the generator.
@@ -186,7 +189,9 @@ class DataSourceVersionsSynchronizer:
 
     def _prepare_change_requests(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        change_requests_diff_generator = (diff for diff in self.diffs if diff["status"] in ["new", "modified"])
+        change_requests_diff_generator = (
+            diff for diff in self.diffs if diff["status"] in [Differ.STATUS_NEW, Differ.STATUS_MODIFIED]
+        )
 
         while True:
             # Get a subset of the generator.
@@ -196,7 +201,7 @@ class DataSourceVersionsSynchronizer:
                 break
 
             for diff in batch_diff:
-                if diff["status"] == "new":
+                if diff["status"] == Differ.STATUS_NEW:
                     change_request, group_changes = self._prepare_new_change_requests(diff)
                 else:
                     change_request, group_changes = self._prepare_modified_change_requests(diff)
@@ -211,12 +216,12 @@ class DataSourceVersionsSynchronizer:
                 for group_change in group_changes:
                     old_ids = [group["iaso_id"] for group in group_change["before"]] if group_change["before"] else []
                     new_ids = [group["iaso_id"] for group in group_change["after"]] if group_change["after"] else []
-                    if group_change["status"] == "same":
+                    if group_change["status"] == Differ.STATUS_SAME:
                         old_groups_ids.update(old_ids)
                         new_groups_ids.update(new_ids)
-                    elif group_change["status"] == "deleted":
+                    elif group_change["status"] == Differ.STATUS_NOT_IN_ORIGIN:
                         old_groups_ids.update(old_ids)
-                    elif group_change["status"] == "new":
+                    elif group_change["status"] == Differ.STATUS_NEW:
                         new_groups_ids.update(new_ids)
 
                 self.change_requests_groups_to_bulk_create[change_request.org_unit_id] = ChangeRequestGroups(
@@ -307,19 +312,28 @@ class DataSourceVersionsSynchronizer:
         changes = {
             comparison["field"]: comparison["after"]
             for comparison in diff["comparisons"]
-            if comparison["status"] == "modified"
+            if comparison["status"] == Differ.STATUS_MODIFIED
             and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
         }
 
         org_unit = diff["orgunit_dhis2"]
         requested_fields = []
-        new_parent = None
+        new_parent_id = None
         new_name = ""
         new_opening_date = None
         new_closed_date = None
 
         if changes.get("parent"):
-            new_parent = changes["parent"]
+            parent_source_ref = changes["parent"]
+            parent_org_unit = (
+                OrgUnit.objects.filter(
+                    source_ref=parent_source_ref, version=self.data_source_sync.source_version_to_update
+                )
+                .only("pk")
+                .first()
+            )
+            if parent_org_unit:
+                new_parent_id = parent_org_unit.pk
             requested_fields.append("new_parent")
 
         if changes.get("name"):
@@ -356,7 +370,7 @@ class DataSourceVersionsSynchronizer:
             old_opening_date=org_unit.get("opening_date"),
             old_closed_date=org_unit.get("closed_date"),
             # New values.
-            new_parent=new_parent,
+            new_parent_id=new_parent_id,
             new_name=new_name,
             new_opening_date=new_opening_date,
             new_closed_date=new_closed_date,

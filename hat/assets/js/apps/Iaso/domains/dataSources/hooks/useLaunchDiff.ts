@@ -16,6 +16,6 @@ const launchDiff = async ({ id }: SyncParams): Promise<SyncResponse> => {
 export const useLaunchDiff = () => {
     return useSnackMutation<SyncResponse, Error, SyncParams>({
         mutationFn: ({ id }) => launchDiff({ id }),
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });
 };

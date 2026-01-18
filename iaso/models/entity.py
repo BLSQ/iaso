@@ -23,17 +23,19 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch
+from django.db.models import Exists, OuterRef, Prefetch, Q, Subquery
 
-from hat.audit.models import log_modification
-from iaso.models import Account, Form, Instance, OrgUnit, Project
-from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.models import Account, Instance, OrgUnit, Project
+from iaso.models.deduplication import EntityDuplicate, ValidationStatus
+from iaso.utils.jsonlogic import annotate_suffixed_json_fields, jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
+
+from .forms import Form
 
 
 # TODO: Remove blank=True, null=True on FK once the models are sets and validated
@@ -79,7 +81,7 @@ class EntityType(models.Model):
             "name": self.name,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "reference_form": self.reference_form.as_dict() if self.reference_form else None,
+            "reference_form": self.reference_form.as_dict(show_version=False) if self.reference_form else None,
             "account": self.account.as_dict(),
         }
 
@@ -101,17 +103,30 @@ class ProjectNotFoundError(ValidationError):
 
 
 class EntityQuerySet(models.QuerySet):
-    def filter_for_mobile_entity(self, limit_date=None, json_content=None):
+    def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None):
+        instances = Instance.objects.all()
+
+        if org_units_qs is not None:
+            instances = instances.filter(org_unit__in=org_units_qs)
+
         if limit_date:
             try:
-                self = self.filter(instances__updated_at__gte=limit_date)
+                instances = instances.filter(updated_at__gte=limit_date)
             except ValidationError:
                 raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
 
+        return self.filter(id__in=Subquery(instances.values("entity_id").distinct()))
+
+    def filter_for_mobile_entity(self, limit_date=None, json_content=None):
+        queryset = self
+        if limit_date:
+            queryset = queryset._filter_entities_with_instances(limit_date=limit_date)
+
         if json_content:
             try:
-                q = jsonlogic_to_q(jsonlogic=json.loads(json_content), field_prefix="attributes__json__")  # type: ignore
-                self = self.filter(q)
+                json_logic = json.loads(json_content)
+                q = jsonlogic_to_q(jsonlogic=json_logic, field_prefix="attributes__json__")  # type: ignore
+                queryset = annotate_suffixed_json_fields(queryset, json_logic, "attributes__json").filter(q)
             except ValidationError:
                 raise InvalidJsonContentError(f"Invalid Json Content {json_content}")
 
@@ -122,11 +137,11 @@ class EntityQuerySet(models.QuerySet):
             ).exclude(file=""),
         )
 
-        self = self.filter(attributes_id__isnull=False)
+        queryset = queryset.filter(attributes_id__isnull=False, attributes__deleted=False)
 
-        self = self.prefetch_related(p).prefetch_related("instances__form")
+        queryset = queryset.prefetch_related(p).prefetch_related("instances__form")
 
-        return self
+        return queryset
 
     def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
@@ -138,7 +153,7 @@ class EntityQuerySet(models.QuerySet):
         # we give all entities having an instance linked to the one of the org units allowed for the current user
         if profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-            self = self.filter(instances__org_unit__in=orgunits)
+            self = self._filter_entities_with_instances(org_units_qs=orgunits)
 
         return self
 
@@ -160,6 +175,15 @@ class EntityQuerySet(models.QuerySet):
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
     ):
         return self.filter_for_user(user).filter_for_app_id(user, app_id)
+
+    def with_duplicates(self):
+        return self.annotate(
+            has_duplicates=Exists(
+                EntityDuplicate.objects.filter(
+                    Q(entity1=OuterRef("pk")) | Q(entity2=OuterRef("pk")), validation_status=ValidationStatus.PENDING
+                )
+            )
+        )
 
 
 class Entity(SoftDeletableModel):
@@ -242,13 +266,14 @@ class Entity(SoftDeletableModel):
         - soft delete its attached form instances
         - delete relevant pending EntityDuplicate pairs
         """
+        from hat.audit.models import log_modification
         from iaso.models.deduplication import ValidationStatus
 
         original = copy(self)
         self.delete()  # soft delete
         log_modification(original, self, audit_source, user=user)
 
-        for instance in set([self.attributes] + list(self.instances.all())):
+        for instance in set(filter(None, [self.attributes] + list(self.instances.all()))):
             original = copy(instance)
             instance.soft_delete()
             log_modification(original, instance, audit_source, user=user)

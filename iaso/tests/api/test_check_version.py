@@ -1,5 +1,6 @@
 from iaso import models as m
 from iaso.api.query_params import APP_ID, APP_VERSION
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -10,7 +11,7 @@ class CheckVersionAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=[CORE_FORMS_PERMISSION])
         cls.project_1 = m.Project.objects.create(
             name="Project 1", account=account, app_id="org.ghi.p1", min_version=None
         )

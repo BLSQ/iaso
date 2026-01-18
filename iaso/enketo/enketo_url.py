@@ -1,12 +1,17 @@
 import json
 import logging
 import sys
+import time
 
 from json.decoder import JSONDecodeError
+from urllib.parse import urlencode
 
 import requests
 
 from django.conf import settings as django_settings
+from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+
+from iaso.api.query_params import ENKETO_EXPIRES, ENKETO_SIGNED
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +23,9 @@ class EnketoError(Exception):
     pass
 
 
-def enketo_settings():
+def enketo_settings(specific_env: str = None):
+    if specific_env:
+        return django_settings.ENKETO.get(specific_env, None)
     return django_settings.ENKETO
 
 
@@ -30,7 +37,16 @@ def urljoin(arg1, arg2):
     return u
 
 
-def enketo_url_for_edition(form_url, form_id_string, instance_xml=None, instance_id=None, return_url=None, **kwargs):
+def enketo_url_for_edition(
+    form_url,
+    form_id_string,
+    instance_xml=None,
+    instance_id=None,
+    return_url=None,
+    instance=None,
+    generate_url_for_enketo=None,
+    **kwargs,
+):
     """Return Enketo webform URL."""
 
     settings = enketo_settings()
@@ -47,6 +63,18 @@ def enketo_url_for_edition(form_url, form_id_string, instance_xml=None, instance
                 "return_url": "%s" % return_url,
             }
         )
+
+        if instance and generate_url_for_enketo:
+            for instance_file in instance.instancefile_set(manager="objects_with_file_extensions").all():
+                # the "notation" isn't as in json
+                #    like {'instance_attachments':{ "image-10_43_8.png": 'https://...image-10_43_8.png'}}
+                # posting form data it's
+                #   'instance_attachments[image-10_43_8.png]': 'https://...image-10_43_8.png'
+                # just don't know what will happen if there's a [ or ] in the file name
+                path = f"/api/enketo/instance_files/{instance_file.id}/{instance_file.name}"
+                safe_filename = instance_file.name.replace("[", "%5B").replace("]", "%5D")
+                key = f"instance_attachments[{safe_filename}]"
+                data[key] = generate_url_for_enketo(path)
     return get_url_from_enketo(url, data)
 
 
@@ -91,3 +119,30 @@ def handle_enketo_error(response):
         if "message" in data:
             raise EnketoError(data["message"])
         raise EnketoError(response.text)
+
+
+def generate_signed_url(path: str, secret: str, expiry_seconds=300, extra_params: dict = {}) -> str:
+    signer = TimestampSigner(secret)
+    signed_path = signer.sign(path)
+    expires = int(time.time()) + expiry_seconds
+    params = urlencode({**extra_params, "expires": expires, "signed": signed_path})
+    return f"{path}?{params}"
+
+
+def verify_signed_url(request, secret: str) -> bool:
+    path = request.path
+    signed = request.query_params.get(ENKETO_SIGNED, None)
+    expires = request.query_params.get(ENKETO_EXPIRES, None)
+
+    if not signed or not expires:
+        return False
+
+    if int(expires) < int(time.time()):
+        return False
+
+    signer = TimestampSigner(secret)
+    try:
+        original = signer.unsign(signed)
+        return original == path
+    except (BadSignature, SignatureExpired):
+        return False

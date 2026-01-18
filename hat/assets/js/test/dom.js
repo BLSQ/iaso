@@ -21,12 +21,27 @@ function copyProps(src, target) {
 global.window = window;
 global.document = window.document;
 global.cookie = 'django_language=fr;';
-global.navigator = {
-    userAgent: 'node.js',
-    platform: 'Mac',
-    appName: 'Chrome',
-    language: 'en',
-};
+// Update navigator properties instead of replacing the entire object
+Object.defineProperty(global.navigator, 'userAgent', {
+    value: 'node.js',
+    writable: true,
+    configurable: true,
+});
+Object.defineProperty(global.navigator, 'platform', {
+    value: 'Mac',
+    writable: true,
+    configurable: true,
+});
+Object.defineProperty(global.navigator, 'appName', {
+    value: 'Chrome',
+    writable: true,
+    configurable: true,
+});
+Object.defineProperty(global.navigator, 'language', {
+    value: 'en',
+    writable: true,
+    configurable: true,
+});
 global.L = require('leaflet');
 
 copyProps(window, global);

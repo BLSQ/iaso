@@ -29,25 +29,32 @@ from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.instances import import_data as import_instances
-from iaso.api.mobile.org_units import import_data as import_org_units
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
+from iaso.api.org_units import import_org_units
+from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.api.storage import import_storage_logs
-from iaso.models import Instance, Project
+from iaso.models import Instance, Project, StockLedgerItem, Task
 
 
 INSTANCES_JSON = "instances.json"
 ORG_UNITS_JSON = "orgUnits.json"
 STORAGE_LOGS_JSON = "storageLogs.json"
 CHANGE_REQUESTS_JSON = "changeRequests.json"
+STOCK_LEDGER_ITEMS_JSON = "stockLedgerItems.json"
 
 logger = logging.getLogger(__name__)
+
+
+def log_progress(task: Task, progress: int, message: str) -> None:
+    logger.info(message)
+    task.report_progress_and_stop_if_killed(progress_value=progress, progress_message=message, end_value=100)
 
 
 @task_decorator(task_name="process_mobile_bulk_upload")
 def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     start_date = datetime.now()
     start_time = time.time()
-    the_task = task
+    the_task: Task = task
     the_task.report_progress_and_stop_if_killed(
         progress_value=0,
         progress_message=_("Starting"),
@@ -60,17 +67,19 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     try:
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
 
-        with transaction.atomic():
-            with zipfile.ZipFile(api_import.file, "r") as zip_ref:
+        with zipfile.ZipFile(api_import.file, "r") as zip_ref:
+            with transaction.atomic():
                 if ORG_UNITS_JSON in zip_ref.namelist():
+                    log_progress(the_task, 0, "Importing OrgUnits")
                     org_units_data = read_json_file_from_zip(zip_ref, ORG_UNITS_JSON)
                     new_org_units = import_org_units(org_units_data, user, project.app_id)
                     stats["new_org_units"] = len(new_org_units)
                 else:
-                    logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
+                    log_progress(the_task, 0, f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
 
+            with transaction.atomic():
                 if INSTANCES_JSON in zip_ref.namelist():
-                    logger.info("Processing forms and files")
+                    log_progress(the_task, 20, "Processing forms and files")
                     instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
                     import_instances(instances_data, user, project.app_id)
                     new_instance_files = []
@@ -85,15 +94,28 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     duplicated_count = duplicate_instance_files(new_instance_files)
                     stats["new_instance_files"] = len(new_instance_files) + duplicated_count
                 else:
-                    logger.info(f"The file {INSTANCES_JSON} does not exist in the zip file.")
+                    log_progress(the_task, 20, f"The file {INSTANCES_JSON} does not exist in the zip file.")
 
+            with transaction.atomic():
                 if STORAGE_LOGS_JSON in zip_ref.namelist():
-                    logger.info("Processing storage logs")
+                    log_progress(the_task, 40, "Processing storage logs")
                     storage_logs_data = read_json_file_from_zip(zip_ref, STORAGE_LOGS_JSON)
                     import_storage_logs(storage_logs_data, user)
 
+            with transaction.atomic():
+                if STOCK_LEDGER_ITEMS_JSON in zip_ref.namelist():
+                    log_progress(the_task, 60, "Processing stock ledger items")
+                    stock_ledger_items_data = read_json_file_from_zip(zip_ref, STOCK_LEDGER_ITEMS_JSON)
+                    import_stock_ledger_items(
+                        user,
+                        project.app_id,
+                        stock_ledger_items_data,
+                        StockLedgerItem.objects.filter_for_project(project),
+                    )
+
+            with transaction.atomic():
                 if CHANGE_REQUESTS_JSON in zip_ref.namelist():
-                    logger.info("Processing change requests")
+                    log_progress(the_task, 80, "Processing change requests")
                     change_requests_data = read_json_file_from_zip(zip_ref, CHANGE_REQUESTS_JSON)
                     for change_request in change_requests_data:
                         serializer = OrgUnitChangeRequestWriteSerializer(data=change_request)
@@ -106,12 +128,15 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         stats["new_change_requests"] += 1
 
     except Exception as e:
-        logger.exception("Exception! Rolling back import: " + str(e))
+        logger.exception("Exception! Rolling back import that failed: " + str(e))
         api_import.has_problem = True
         api_import.exception = format_exc()
         api_import.save()
         raise e
 
+    api_import.has_problem = False
+    api_import.exception = ""
+    api_import.save()
     the_task.report_success_with_result(
         message=result_message(user, project, start_date, start_time, stats),
     )
@@ -183,7 +208,12 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
     IF the incoming timestamp is more recent.
     """
     entity = instance.entity
-    if not (entity.deleted_at and entity.merged_to):
+
+    if entity is None:
+        return
+
+    is_soft_deleted_merged_entity = entity.deleted_at and entity.merged_to
+    if not is_soft_deleted_merged_entity:
         return
 
     active_entity = entity.merged_to

@@ -1,6 +1,7 @@
 from iaso.test import APITestCase
 from plugins.polio import models as pm
 from plugins.polio.models.base import VACCINES
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -20,10 +21,10 @@ class VaccineStockHistoryTestCase(APITestCase, PolioTestCaseMixin):
             "Other source", "Other account", "Other project"
         )
         # anonymous user and user without needed permissions
-        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, ["iaso_polio"])
+        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, [POLIO_PERMISSION])
         # user for other account
         cls.user_other_account = cls.create_user_with_profile(
-            username="user_other_account", account=cls.another_account, permissions=["iaso_polio"]
+            username="user_other_account", account=cls.another_account, permissions=[POLIO_PERMISSION]
         )
 
         # org unit types to create campaigns and scopes

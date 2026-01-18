@@ -5,13 +5,14 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
+    useDebounce,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { useDebounce } from 'use-debounce';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
     DateInput,
     NumberInput,
@@ -24,6 +25,8 @@ import {
 } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
+import { DosesPerVialDropdown } from '../../types';
+import { useAvailablePresentations } from './dropdownOptions';
 
 type Props = {
     destruction?: any;
@@ -33,6 +36,8 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
+    dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export const CreateEditDestruction: FunctionComponent<Props> = ({
@@ -42,9 +47,12 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useDestructionValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -54,14 +62,19 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 destruction?.rrt_destruction_report_reception_date,
             destruction_report_date: destruction?.destruction_report_date,
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
-            // lot_numbers: destruction?.lot_numbers,
+            doses_per_vial: destruction?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
-            document: destruction?.document,
+            file: destruction?.file,
             comment: destruction?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        destruction,
+        false,
+    );
 
     const [debouncedDate] = useDebounce(
         formik.values.destruction_report_date,
@@ -83,9 +96,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         titleMessage,
     )} ${formatMessage(MESSAGES.destructionReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
-    const documentErrors = useMemo(() => {
-        return processErrorDocsBase(formik.errors.document);
-    }, [formik.errors.document]);
+    const fileErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.file);
+    }, [formik.errors.file]);
 
     return (
         <FormikProvider value={formik}>
@@ -137,6 +150,16 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
+                        required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
                         label={formatMessage(MESSAGES.comment)}
                         name="comment"
                         multiline
@@ -154,14 +177,14 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 </Box> */}
                 <Box mb={2}>
                     <DocumentUploadWithPreview
-                        errors={documentErrors}
+                        errors={fileErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched('document', true);
-                                formik.setFieldValue('document', files);
+                                formik.setFieldTouched('file', true);
+                                formik.setFieldValue('file', files);
                             }
                         }}
-                        document={formik.values.document}
+                        document={formik.values.file}
                     />
                 </Box>
                 {hasDuplicatesData?.duplicate_exists && (

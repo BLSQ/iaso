@@ -3,40 +3,81 @@
         {
             "id": 4,
             "code": "REQUIRE_AUTHENTICATION",
+            "category": "DCO",
+            "requires_authentication": false,
+            "is_dangerous": false,
             "name": "Authentication",
             "description": "Require authentication to download & refresh data ( org. units, forms, etc ) in the mobile app",
             "created_at": 1592928849.711209,
-            "updated_at": 1608655349.945807
+            "updated_at": 1608655349.945807,
+            "configuration": {}
         },
         {
             "id": 3,
             "code": "TAKE_GPS_ON_FORM",
+            "requires_authentication": false,
+            "is_dangerous": false,
+            "category": "DCO",
             "name": "GPS on each form",
             "description": "",
             "created_at": 1590486429.44506,
-            "updated_at": 1608655380.590146
+            "updated_at": 1608655380.590146,
+            "configuration": {}
         },
         {
             "id": 6,
             "code": "TRANSPORT_TRACKING",
+            "requires_authentication": false,
+            "is_dangerous": false,
+            "category": "DCO",
             "name": "GPS of journeys",
             "description": "",
             "created_at": 1608567067.773703,
-            "updated_at": 1608655312.832828
+            "updated_at": 1608655312.832828,
+            "configuration": {}
         },
         {
             "id": 2,
             "code": "GPS_TRACKING",
+            "requires_authentication": false,
+            "is_dangerous": false,
+            "category": "DCO",
             "name": "GPS Tracking",
             "description": "",
             "created_at": 1590486410.557356,
-            "updated_at": 1590486410.557379
+            "updated_at": 1590486410.557379,
+            "configuration": {}
         },
         {
             "id": 5,
             "code": "FORMS_AUTO_UPLOAD",
+            "requires_authentication": false,
+            "is_dangerous": false,
+            "category": "DCO",
             "name": "Upload auto des f. finalisés",
             "description": "Uploader les formulaires dès qu'une connexion internet se présente. Upload immédiat des formulaires \"finalisés\"",
+            "created_at": 1593012611.488891,
+            "updated_at": 1608655329.956441,
+            "configuration": {}
+        },
+        {
+            "id": 9,
+            "category": "DCO",
+            "code": "WITH_CONFIGURATION",
+            "name": "A feature flag with configuration",
+            "description": "This feature flag has two absolutely useless configuration",
+            "configuration": {
+                "first": {
+                    "type": "int",
+                    "default": 0,
+                    "description": "This is an int"
+                },
+                "second": {
+                    "type": "text",
+                    "default": null,
+                    "description": "This is some text"
+                }
+            },
             "created_at": 1593012611.488891,
             "updated_at": 1608655329.956441
         }

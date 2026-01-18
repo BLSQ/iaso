@@ -19,6 +19,7 @@ export const useGetApprovalProposalsParams = (
     return {
         parent_id: params.parent_id,
         groups: params.groups,
+        org_unit_search: params.org_unit,
         org_unit_type_id: params.org_unit_type_id,
         status: params.status,
         order: params.order || '-updated_at',
@@ -37,8 +38,12 @@ export const useGetApprovalProposalsParams = (
         potential_payment_ids: params.potentialPaymentIds,
         data_source_synchronization_id: params.data_source_synchronization_id,
         ids: params.ids,
+        is_soft_deleted: params.is_soft_deleted || false,
+        requested_fields: params.requested_fields,
+        kind: params.kind,
     };
 };
+
 export const useGetApprovalProposals = (
     params: ApproveOrgUnitParams,
 ): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {

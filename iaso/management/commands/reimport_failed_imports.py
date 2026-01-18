@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 from hat.api_import.models import APIImport
 from iaso.api.instances.instances import import_data as import_instances
-from iaso.api.org_units import import_data as import_units
+from iaso.api.org_units import import_org_units
 
 
 class Command(BaseCommand):
@@ -13,7 +13,7 @@ class Command(BaseCommand):
         unit_count = 0
         for i in failed_org_units_imports:
             try:
-                import_units(i.json_body, i.user, i)
+                import_org_units(i.json_body, i.user, i)
                 i.has_problem = False
                 i.save()
                 unit_count = unit_count + 1

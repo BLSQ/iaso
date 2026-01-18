@@ -149,6 +149,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Name',
         id: 'iaso.orgUnits.name',
     },
+    code: {
+        defaultMessage: 'Code',
+        id: 'iaso.orgUnits.code',
+    },
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
@@ -200,6 +204,10 @@ const MESSAGES = defineMessages({
     details: {
         defaultMessage: 'Details',
         id: 'iaso.label.details',
+    },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
     },
     date: {
         defaultMessage: 'Date',
@@ -472,6 +480,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
+    ID: {
+        defaultMessage: 'ID',
+        id: 'iaso.label.id',
+    },
     detailTitle: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
@@ -559,6 +571,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.MultiReferenceInstancesLabel',
         defaultMessage: 'Reference submissions',
     },
+    openDate: {
+        id: 'iaso.orgUnits.openDate',
+        defaultMessage: 'Open on',
+    },
     openingDate: {
         id: 'iaso.orgUnits.openingDate',
         defaultMessage: 'Opening date',
@@ -571,7 +587,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.searchParams',
         defaultMessage:
             // eslint-disable-next-line max-len
-            'Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “refs: O6uvpzGd5pu, ImspTQPwCqd”',
+            'Use prefix “refs:” for external org unit ID search, “ids:” for internal org unit ID search or “codes:” for org unit code search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd” or “codes: OU420, OU69”',
     },
     textSearch: {
         id: 'iaso.forms.textSearch',
@@ -596,6 +612,18 @@ const MESSAGES = defineMessages({
     fetchLinksError: {
         id: 'iaso.snackBar.fetchLinksError',
         defaultMessage: 'An error occurred while fetching links list',
+    },
+    fitToOutBounds: {
+        id: 'iaso.orgUnits.fitToOutBounds',
+        defaultMessage: 'Fit map to children bounds',
+    },
+    searchToSeeOrgUnits: {
+        id: 'iaso.forms.searchToSeeOrgUnits',
+        defaultMessage: 'Click "Search" button to see org units',
+    },
+    addChild: {
+        id: 'iaso.orgUnits.addChild',
+        defaultMessage: 'Add child',
     },
 });
 

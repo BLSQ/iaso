@@ -117,7 +117,6 @@
     name: LaLaland
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: null
@@ -145,7 +144,6 @@
     name: Region A
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: 1
@@ -175,7 +173,6 @@
     name: Region B
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: 1
@@ -203,7 +200,6 @@
     name: District A.A
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: 2
@@ -231,7 +227,6 @@
     name: District A.B
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: 3
@@ -259,7 +254,6 @@
     name: AS A.B.A
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: 5
@@ -285,7 +279,6 @@
     name: Hopital A.A.A
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: 4
@@ -311,7 +304,6 @@
     name: Rejected country
     uuid: null
     custom: false
-    validated: true
     validation_status: REJECTED
     version: 2
     parent: null
@@ -339,7 +331,6 @@
     name: Not yet validated country
     uuid: null
     custom: false
-    validated: true
     validation_status: NEW
     version: 2
     parent: null
@@ -367,7 +358,6 @@
     name: AS A.B.B
     uuid: null
     custom: false
-    validated: true
     validation_status: VALID
     version: 2
     parent: 5
@@ -395,7 +385,6 @@
     name: AS A.B.C (new)
     uuid: null
     custom: false
-    validated: true
     validation_status: NEW
     version: 2
     parent: 5

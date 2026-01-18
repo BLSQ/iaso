@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     actions: {
         id: 'iaso.label.actions',
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
     },
     details: {
         id: 'iaso.label.details',
@@ -47,7 +47,7 @@ const MESSAGES = defineMessages({
     },
     labelId: {
         id: 'iaso.label.id',
-        defaultMessage: 'ID',
+        defaultMessage: 'Identifier',
     },
     labelCampaignObrName: {
         id: 'iaso.polio.chronogram.label.campaign_obr_name',

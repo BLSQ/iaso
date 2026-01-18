@@ -3,9 +3,9 @@ from rest_framework.response import Response
 
 import iaso.periods as periods
 
-from hat.menupermissions import models as permission
 from iaso.models import Instance, MappingVersion
 from iaso.models.org_unit import OrgUnit
+from iaso.permissions.core_permissions import CORE_COMPLETENESS_PERMISSION
 
 from .common import HasPermission
 
@@ -13,12 +13,12 @@ from .common import HasPermission
 class CompletenessViewSet(viewsets.ViewSet):
     f"""Completeness API
 
-    This API is restricted to authenticated users having the "{permission.COMPLETENESS}" permission
+    This API is restricted to authenticated users having the "{CORE_COMPLETENESS_PERMISSION}" permission
 
     GET /api/completeness/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.COMPLETENESS)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_COMPLETENESS_PERMISSION)]  # type: ignore
 
     def list(self, request):
         profile = request.user.iaso_profile

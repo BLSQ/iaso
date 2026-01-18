@@ -14,21 +14,23 @@ import {
     useRedirectTo,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
 import TopBar from '../../components/nav/TopBarComponent';
-import { AssignmentsFilters } from './components/AssignmentsFilters';
-import { AssignmentsMapTab } from './components/AssignmentsMapTab';
-import { AssignmentsListTab } from './components/AssignmentsListTab';
-import { Sidebar } from './components/AssignmentsSidebar';
-import { ParentDialog } from './components/ParentDialog';
-import { AssignmentParams, AssignmentApi } from './types/assigment';
-import { Team, SubTeam, User } from './types/team';
-import { AssignmentUnit } from './types/locations';
-import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
-import { useGetAssignmentData } from './hooks/useGetAssignmentData';
-import { getSaveParams } from './utils';
-import MESSAGES from './messages';
+import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
+import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
+import { Team, SubTeam, User } from '../teams/types/team';
+import { AssignmentsFilters } from './components/AssignmentsFilters';
+import { AssignmentsListTab } from './components/AssignmentsListTab';
+import { AssignmentsMapTab } from './components/AssignmentsMapTab';
+import { Sidebar } from './components/AssignmentsSidebar';
+import { DeleteAssignments } from './components/DeleteAssignments';
+import { ParentDialog } from './components/ParentDialog';
+import { useGetAssignmentData } from './hooks/useGetAssignmentData';
+import MESSAGES from './messages';
+import { AssignmentParams, AssignmentApi } from './types/assigment';
+import { AssignmentUnit } from './types/locations';
+import { getSaveParams } from './utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -86,13 +88,13 @@ export const Assignments: FunctionComponent = () => {
         sidebarData,
         isFetchingOrgUnits,
         isFetchingOrgUnitsList,
+        isFetchingOrgunitTypes,
         isLoadingPlanning,
         isSaving,
-        isFetchingOrgunitTypes,
         isFetchingChildrenOrgunits,
         isLoadingAssignments,
         isTeamsFetched,
-        setItemColor,
+        setProfiles,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -104,6 +106,30 @@ export const Assignments: FunctionComponent = () => {
     });
     const isLoading = isLoadingPlanning || isSaving;
 
+    const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
+
+    const setItemColor = (color, itemId) => {
+        // TODO: improve this
+        if (currentTeam?.type === 'TEAM_OF_USERS') {
+            const itemIndex = profiles.findIndex(
+                profile => profile.user_id === itemId,
+            );
+            if (itemIndex !== undefined) {
+                const newProfiles = [...profiles];
+                newProfiles[itemIndex] = {
+                    ...newProfiles[itemIndex],
+                    color,
+                };
+                setProfiles(newProfiles);
+            }
+        }
+        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+            saveTeam({
+                id: itemId,
+                color,
+            });
+        }
+    };
     const handleSaveAssignment = useCallback(
         (selectedOrgUnit: AssignmentUnit) => {
             if (planning && selectedItem) {
@@ -239,7 +265,8 @@ export const Assignments: FunctionComponent = () => {
                 title={`${formatMessage(MESSAGES.title)}: ${
                     planning?.name ?? ''
                 }`}
-                displayBackButton={false}
+                displayBackButton
+                goBack={() => redirectToReplace(baseUrls.planning)}
             />
             <ParentDialog
                 childrenOrgunits={childrenOrgunits}
@@ -255,32 +282,22 @@ export const Assignments: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
+                <Box display="flex" justifyContent="flex-end">
+                    <DeleteAssignments
+                        planning={planning}
+                        disabled={isLoading || allAssignments.length === 0}
+                        count={allAssignments.length}
+                    />
+                </Box>
                 <AssignmentsFilters
                     params={params}
                     teams={teams || []}
                     isFetchingTeams={!isTeamsFetched}
                     orgunitTypes={orgunitTypes || []}
-                    isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
+                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
                 <Box mt={2}>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} lg={5}>
-                            <Sidebar
-                                data={sidebarData || []}
-                                assignments={assignments}
-                                selectedItem={selectedItem}
-                                orgUnits={orgUnitsList || []}
-                                setSelectedItem={setSelectedItem}
-                                currentTeam={currentTeam}
-                                setItemColor={setItemColor}
-                                teams={teams || []}
-                                profiles={profiles}
-                                isLoadingAssignments={
-                                    isLoadingAssignments ||
-                                    isFetchingOrgUnitsList
-                                }
-                            />
-                        </Grid>
                         <Grid item xs={12} lg={7}>
                             <Paper>
                                 <Box ml={-4}>
@@ -320,7 +337,7 @@ export const Assignments: FunctionComponent = () => {
                                                 orgunitTypes={
                                                     orgunitTypes || []
                                                 }
-                                                isFetchingOrgUnitTypes={
+                                                isFetchingOrgunitTypes={
                                                     isFetchingOrgunitTypes
                                                 }
                                                 planning={planning}
@@ -368,6 +385,23 @@ export const Assignments: FunctionComponent = () => {
                                     )}
                                 </Box>
                             </Paper>
+                        </Grid>
+                        <Grid item xs={12} lg={5}>
+                            <Sidebar
+                                data={sidebarData || []}
+                                assignments={assignments}
+                                selectedItem={selectedItem}
+                                orgUnits={orgUnitsList || []}
+                                setSelectedItem={setSelectedItem}
+                                currentTeam={currentTeam}
+                                setItemColor={setItemColor}
+                                teams={teams || []}
+                                profiles={profiles}
+                                isLoadingAssignments={
+                                    isLoadingAssignments ||
+                                    isFetchingOrgUnitsList
+                                }
+                            />
                         </Grid>
                     </Grid>
                 </Box>

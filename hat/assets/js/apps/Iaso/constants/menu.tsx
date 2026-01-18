@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from 'react';
-
+import { InventoryOutlined } from '@mui/icons-material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -18,8 +18,10 @@ import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
 import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
 import Input from '@mui/icons-material/Input';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
@@ -32,6 +34,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import EntitySvg from '../components/svg/Entity';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -43,6 +46,7 @@ import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants
 import {
     listMenuPermission,
     userHasOneOfPermissions,
+    userHasAccessToModule,
 } from '../domains/users/utils';
 import { PluginsContext } from '../plugins/context';
 import { Plugins } from '../plugins/types';
@@ -58,7 +62,6 @@ import { useCurrentUser } from '../utils/usersUtils';
 import MESSAGES from './messages';
 import * as paths from './routes';
 import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
-
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
@@ -80,8 +83,108 @@ const menuItems = (
             isActive: pathname =>
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
-            extraPath: `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1`,
+            extraPath:
+                `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1` +
+                `/isSearchActive/true`,
         }));
+    }
+    const settingsSubMenu = [
+        {
+            label: formatMessage(MESSAGES.dataSources),
+            key: 'sources',
+            icon: props => <DnsRoundedIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.dataSourceList),
+                    permissions: paths.dataSourcesPath.permissions,
+                    key: 'list',
+                    icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.matching),
+                    key: 'links',
+                    icon: props => <Link {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.linksList),
+                            permissions: paths.linksPath.permissions,
+                            key: 'list',
+                            icon: props => <FormatListBulleted {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.algorithmsRuns),
+                            permissions: paths.algosPath.permissions,
+                            key: 'runs',
+                            icon: props => <CompareArrows {...props} />,
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.tasks),
+            key: 'tasks',
+            permissions: paths.tasksPath.permissions,
+            icon: props => <AssignmentRoundedIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.projects),
+            key: 'projects',
+            permissions: paths.projectsPath.permissions,
+            icon: props => <PhonelinkSetupIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.modules),
+            key: 'modules',
+            permissions: paths.modulesPath.permissions,
+            icon: props => <ViewModuleIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.users),
+            key: 'users',
+            permissions: paths.usersPath.permissions,
+            icon: props => <SupervisorAccount {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.management),
+                    key: 'management',
+                    permissions: paths.usersPath.permissions,
+                    icon: props => <Settings {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.history),
+                    key: 'history',
+                    permissions: paths.usersHistoryPath.permissions,
+                    icon: props => <HistoryIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.userRoles),
+                    key: 'userRoles',
+                    permissions: paths.userRolesPath.permissions,
+                    icon: props => <GroupsIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.teams),
+                    permissions: paths.teamsPath.permissions,
+                    key: 'teams',
+                    icon: props => <Diversity3Icon {...props} />,
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.monitoring),
+            key: 'devices',
+            permissions: paths.devicesPath.permissions,
+            icon: props => <ImportantDevicesRoundedIcon {...props} />,
+        },
+    ];
+    if (currentUser.is_staff || currentUser.is_superuser) {
+        settingsSubMenu.push({
+            label: formatMessage(MESSAGES.accountSetup),
+            key: 'setupAccount',
+            permissions: paths.setupAccountPath.permissions,
+            icon: props => <ManageAccountsIcon {...props} />,
+        });
     }
     return [
         {
@@ -238,100 +341,7 @@ const menuItems = (
             label: formatMessage(MESSAGES.config),
             key: 'settings',
             icon: props => <Settings {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.dataSources),
-                    key: 'sources',
-                    icon: props => <DnsRoundedIcon {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.dataSourceList),
-                            permissions: paths.dataSourcesPath.permissions,
-                            key: 'list',
-                            icon: props => <FormatListBulleted {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.matching),
-                            key: 'links',
-                            icon: props => <Link {...props} />,
-                            subMenu: [
-                                {
-                                    label: formatMessage(MESSAGES.linksList),
-                                    permissions: paths.linksPath.permissions,
-                                    key: 'list',
-                                    icon: props => (
-                                        <FormatListBulleted {...props} />
-                                    ),
-                                },
-                                {
-                                    label: formatMessage(
-                                        MESSAGES.algorithmsRuns,
-                                    ),
-                                    permissions: paths.algosPath.permissions,
-                                    key: 'runs',
-                                    icon: props => <CompareArrows {...props} />,
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    label: formatMessage(MESSAGES.tasks),
-                    key: 'tasks',
-                    permissions: paths.tasksPath.permissions,
-                    icon: props => <AssignmentRoundedIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.projects),
-                    key: 'projects',
-                    permissions: paths.projectsPath.permissions,
-                    icon: props => <PhonelinkSetupIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.modules),
-                    key: 'modules',
-                    permissions: paths.modulesPath.permissions,
-                    icon: props => <ViewModuleIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.users),
-                    key: 'users',
-                    permissions: paths.usersPath.permissions,
-                    icon: props => <SupervisorAccount {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.management),
-                            key: 'management',
-                            permissions: paths.usersPath.permissions,
-                            icon: props => <Settings {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.history),
-                            key: 'history',
-                            permissions: paths.usersHistoryPath.permissions,
-                            icon: props => <HistoryIcon {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.userRoles),
-                            key: 'userRoles',
-                            permissions: paths.userRolesPath.permissions,
-                            icon: props => <GroupsIcon {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.teams),
-                            permissions: paths.teamsPath.permissions,
-                            key: 'teams',
-                            icon: props => <Diversity3Icon {...props} />,
-                        },
-                    ],
-                },
-                {
-                    label: formatMessage(MESSAGES.monitoring),
-                    key: 'devices',
-                    permissions: paths.devicesPath.permissions,
-                    icon: props => <ImportantDevicesRoundedIcon {...props} />,
-                },
-            ],
+            subMenu: settingsSubMenu,
         },
         {
             label: formatMessage(MESSAGES.entities),
@@ -351,6 +361,12 @@ const menuItems = (
                     key: 'duplicates',
                     icon: props => <FileCopyIcon {...props} />,
                 },
+                {
+                    label: formatMessage(MESSAGES.entityDuplicateAnalysesTitle),
+                    permissions: paths.entityDuplicatesPath.permissions,
+                    key: 'duplicate-analyses',
+                    icon: props => <QueryStatsIcon {...props} />,
+                },
             ],
         },
         {
@@ -358,6 +374,25 @@ const menuItems = (
             key: 'storages',
             permissions: paths.storagesPath.permissions,
             icon: props => <StorageIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.stockManagement),
+            key: 'stock',
+            icon: props => <InventoryOutlined {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.skus),
+                    permissions: paths.stockKeepingUnitsPath.permissions,
+                    key: 'stockkeepingunits',
+                    icon: props => <CategoryIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.stockItems),
+                    permissions: paths.stockItemsPath.permissions,
+                    key: 'items',
+                    icon: props => <InventoryIcon {...props} />,
+                },
+            ],
         },
     ];
 };
@@ -383,6 +418,7 @@ export const useMenuItems = (): MenuItems => {
     const orgUnitExtraPath = useGetOrgunitsExtraPath();
     const { data: entityTypes } = useGetEntityTypesDropdown();
     const { plugins }: Plugins = useContext(PluginsContext);
+    const { HIDE_BASIC_NAV_ITEMS } = useContext(ThemeConfigContext);
     const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
     const allBasicItems = useMemo(
         () => [
@@ -397,10 +433,27 @@ export const useMenuItems = (): MenuItems => {
     );
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
-    const basicItems = allBasicItems.filter(item => item.key !== 'settings');
+    const basicItems = useMemo(
+        () =>
+            HIDE_BASIC_NAV_ITEMS === 'yes'
+                ? []
+                : allBasicItems.filter(item => item.key !== 'settings'),
+        [HIDE_BASIC_NAV_ITEMS, allBasicItems],
+    );
+
+    // Hide dhis2 mapping In the main menu, under Forms when dhis2 module is not activated
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
+    if (!hasDhis2Module && basicItems?.length > 0) {
+        basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
+            item => item.key !== 'mappings',
+        );
+    }
 
     // add feature flags
-    if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
+    if (
+        hasFeatureFlag(currentUser, SHOW_PAGES) &&
+        !basicItems.find(item => item.key === 'pages')
+    ) {
         basicItems.push({
             label: formatMessage(MESSAGES.pages),
             key: 'pages',
@@ -440,4 +493,3 @@ export const useMenuItems = (): MenuItems => {
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };
-export const DOC_URL = 'https://docs.openiaso.com';

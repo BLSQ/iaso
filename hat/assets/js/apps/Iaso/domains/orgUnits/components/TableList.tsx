@@ -53,6 +53,7 @@ export const TableList: FunctionComponent<Props> = ({
     const [selection, setSelection] = useState<Selection<OrgUnit>>(
         selectionInitialState,
     );
+    const isSearchActive = params?.searchActive === 'true';
 
     const searches: [Search] = useMemo(
         () => decodeSearch(decodeURI(params.searches)),
@@ -133,6 +134,11 @@ export const TableList: FunctionComponent<Props> = ({
                         handleTableSelection(selectionType, items, totalCount)
                     }
                     getIsSelectionDisabled={getIsSelectionDisabled}
+                    noDataMessage={
+                        isSearchActive
+                            ? MESSAGES.noResult
+                            : MESSAGES.searchToSeeOrgUnits
+                    }
                 />
             </Box>
         </>

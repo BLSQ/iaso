@@ -1,0 +1,4 @@
+from plugins.{{ app_name }}.api.urls import router
+
+
+__all__ = ["router"]

@@ -41,7 +41,7 @@ type Props = {
     setTableColumns: (newTableColumns: Column[]) => void;
     baseUrl: string;
     labelKeys: string[];
-    formDetails: Form;
+    formDetails: Partial<Form>;
     tableColumns: Column[];
     disabled: boolean;
     instanceMetasFields?: InstanceMetasField[];

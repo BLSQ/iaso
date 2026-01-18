@@ -24,5 +24,5 @@ export const useRestoreInstance = (): UseMutationResult =>
     useSnackMutation({
         mutationFn: restoreInstance,
         invalidateQueryKey: 'instance',
-        showSucessSnackBar: true,
+        showSuccessSnackBar: true,
     });

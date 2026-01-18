@@ -44,7 +44,7 @@ export const isValidCoordinate = (
 };
 
 export const getLatLngBounds = items => {
-    if (!items || (items && items.length === 0)) return null;
+    if (!items || (items && items.length === 0)) return undefined;
     const latLngs: any[] = [];
     items.forEach(i => {
         if (isValidCoordinate(i.latitude, i.longitude)) {
@@ -54,22 +54,48 @@ export const getLatLngBounds = items => {
         }
     });
     if (latLngs.length === 0) {
-        return null;
+        return undefined;
     }
-    const bounds = L.latLngBounds(latLngs);
-    return bounds;
+    try {
+        const bounds = L.latLngBounds(latLngs);
+        return bounds && bounds.isValid() ? bounds : undefined;
+    } catch (error) {
+        console.warn('Error creating lat lng bounds:', error);
+        return undefined;
+    }
 };
 
 export const getShapesBounds = (shapes, shapeKey = 'geo_json') => {
+    if (!shapes || shapes.length === 0) {
+        return undefined;
+    }
+
     const groups: any[] = [];
     shapes.forEach(s => {
-        const shapeGroup = new L.FeatureGroup();
-        const shape = L.geoJSON(s[shapeKey]);
-        shape.addTo(shapeGroup);
-        groups.push(shapeGroup);
+        if (s[shapeKey]) {
+            try {
+                const shapeGroup = new L.FeatureGroup();
+                const shape = L.geoJSON(s[shapeKey]);
+                shape.addTo(shapeGroup);
+                groups.push(shapeGroup);
+            } catch (error) {
+                console.warn('Error parsing shape geo JSON:', error);
+            }
+        }
     });
-    const group = new L.FeatureGroup(groups);
-    return group.getBounds();
+
+    if (groups.length === 0) {
+        return undefined;
+    }
+
+    try {
+        const group = new L.FeatureGroup(groups);
+        const bounds = group.getBounds();
+        return bounds && bounds.isValid() ? bounds : undefined;
+    } catch (error) {
+        console.warn('Error getting shapes bounds:', error);
+        return undefined;
+    }
 };
 
 export const clusterCustomMarker = (cluster, color = 'primary') =>
@@ -198,14 +224,27 @@ export const getOrgUnitBounds = (
     orgUnit: OrgUnit | CompletenessMapStats,
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
-    const locations: { latitude: number; longitude: number }[] = [];
+
     if (orgUnit.geo_json) {
-        bounds = L.geoJSON(orgUnit.geo_json).getBounds();
+        try {
+            bounds = L.geoJSON(orgUnit.geo_json).getBounds();
+            // Return undefined if the bounds are not valid
+            if (!bounds || !bounds.isValid()) {
+                return undefined;
+            }
+        } catch (error) {
+            console.warn('Error parsing org unit geo JSON:', error);
+            return undefined;
+        }
     } else if (isNumber(orgUnit.latitude) && isNumber(orgUnit.longitude)) {
-        locations.push(L.latLng(orgUnit.latitude, orgUnit.longitude));
-        const locationsBounds: Bounds | undefined = L.latLngBounds(locations);
-        bounds = locationsBounds;
+        const locations = [L.latLng(orgUnit.latitude, orgUnit.longitude)];
+        bounds = L.latLngBounds(locations);
+        // Return undefined if the bounds are not valid
+        if (!bounds || !bounds.isValid()) {
+            return undefined;
+        }
     }
+
     return bounds;
 };
 

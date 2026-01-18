@@ -2,6 +2,7 @@ from beanstalk_worker.services import TestTaskService
 from iaso.test import APITestCase
 
 from ...models import Account, DataSource, OrgUnit, OrgUnitType, Project, SourceVersion, Task
+from ...permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_SOURCE_PERMISSION
 
 
 class CopyVersionTestCase(APITestCase):
@@ -24,14 +25,14 @@ class CopyVersionTestCase(APITestCase):
         OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=unit_type, source_ref="nomercy")
         cls.source = source
         cls.johnny = cls.create_user_with_profile(
-            username="johnny", account=account, permissions=["iaso_sources", "iaso_data_tasks"]
+            username="johnny", account=account, permissions=[CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION]
         )
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
         cls.user_with_data_sources_perms = cls.create_user_with_profile(
-            username="user_with_data_sources_perms", account=account, permissions=["iaso_sources"]
+            username="user_with_data_sources_perms", account=account, permissions=[CORE_SOURCE_PERMISSION]
         )
         cls.user_with_data_tasks_perms = cls.create_user_with_profile(
-            username="user_with_data_tasks_perms", account=account, permissions=["iaso_data_tasks"]
+            username="user_with_data_tasks_perms", account=account, permissions=[CORE_DATA_TASKS_PERMISSION]
         )
 
     def test_copy_version(self):

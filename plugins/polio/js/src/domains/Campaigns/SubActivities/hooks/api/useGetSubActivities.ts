@@ -27,7 +27,7 @@ export const useGetSubActivities = ({
         options: {
             // Not keeping previous data as it would show wrong data when switching tabs to a round without subactivities
             staleTime: 60000,
-            cacheTime: 60000,
+            cacheTime: 45000,
             enabled: Boolean(round?.id),
         },
     });

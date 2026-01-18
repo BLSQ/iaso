@@ -19,39 +19,6 @@ export const dosesPerVial = {
     mOPV2: 20,
 };
 
-export const createEmptyArrivalReport = (vaccineType?: string) => {
-    const doses_per_vial = vaccineType ? dosesPerVial[vaccineType] : undefined;
-
-    return {
-        report_date: undefined,
-        po_number: undefined,
-        lot_numbers: undefined,
-        expiration_date: undefined,
-        doses_shipped: undefined,
-        doses_received: undefined,
-        to_delete: false,
-        doses_per_vial,
-        can_edit: true,
-    };
-};
-
-export const createEmptyPreAlert = (vaccineType?: string) => {
-    const doses_per_vial = vaccineType ? dosesPerVial[vaccineType] : undefined;
-
-    return {
-        date_pre_alert_reception: undefined,
-        po_number: undefined,
-        estimated_arrival_time: undefined,
-        expiration_date: undefined,
-        doses_shipped: undefined,
-        doses_per_vial,
-        lot_numbers: undefined,
-        to_delete: false,
-        id: undefined,
-        can_edit: true,
-    };
-};
-
 const areArrayElementsChanged = (
     newElements: Array<Partial<PreAlert>> | Array<Partial<VARType>>,
 ): boolean => {
@@ -321,21 +288,4 @@ export const useInitializeArrivalReportsOnFetch = ({
             });
         }
     }, [arrivalReports, setFieldValue, setInitialValues]);
-};
-
-// Needs to be passed a useCallback, so we can have a static deps array for the internal useEffect
-export const useSkipEffectUntilValue = (
-    value: Optional<any>,
-    callback: () => void,
-): void => {
-    const watcher = useRef(undefined);
-
-    useEffect(() => {
-        if (value && !watcher.current) {
-            watcher.current = value;
-        }
-        if (value !== watcher.current) {
-            callback();
-        }
-    }, [callback, value]);
 };

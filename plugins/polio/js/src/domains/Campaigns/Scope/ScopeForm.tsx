@@ -1,9 +1,12 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab } from '@mui/material';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    useSkipEffectOnMount,
+    useDebounce,
+} from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import { useDebounce } from 'use-debounce';
 
 import { BooleanInput } from '../../../components/Inputs';
 
@@ -51,10 +54,12 @@ export const ScopeForm: FunctionComponent = () => {
     const parentCountryId =
         country?.country_parent?.id || country?.root?.id || country?.id;
     const { data: districtShapes, isFetching: isFetchingDistrictsShapes } =
-        useGetGeoJson(parentCountryId, 'DISTRICT');
+        useGetGeoJson({
+            topParentId: parentCountryId,
+            orgUnitCategory: 'DISTRICT',
+        });
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-        parentCountryId,
-        'REGION',
+        { topParentId: parentCountryId, orgUnitCategory: 'REGION' },
     );
 
     const scopes = useMemo(() => {
@@ -87,7 +92,7 @@ export const ScopeForm: FunctionComponent = () => {
     }, [filteredDistricts]);
 
     return (
-        <Box minWidth="70vw">
+        <Box width="100%">
             <Grid container spacing={4} justifyContent="space-between">
                 <Grid xs={12} md={6} item>
                     <Field

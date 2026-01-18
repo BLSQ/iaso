@@ -1,10 +1,10 @@
 import { UseQueryResult } from 'react-query';
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { DropdownOptions } from '../../../types/utils';
-import MESSAGES from '../messages';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
+import { DropdownOptions } from '../../../types/utils';
+import getDisplayName, { Profile } from '../../../utils/usersUtils';
+import MESSAGES from '../messages';
 
 export const useGetProfilesDropdown = (
     ids: string,

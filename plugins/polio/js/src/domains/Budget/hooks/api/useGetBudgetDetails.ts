@@ -64,6 +64,6 @@ export const useDeleteRestoreBudgetStep = (
     return useSnackMutation({
         mutationFn,
         invalidateQueryKey: 'budget',
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });
 };

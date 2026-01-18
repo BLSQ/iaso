@@ -1,6 +1,7 @@
 import io
 
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -12,13 +13,15 @@ from .common import ETL
 from .models import Beneficiary
 
 
-@staff_member_required
+@login_required
 def debug(request, id):
-    entity = get_object_or_404(Entity, id=id)
+    entity = get_object_or_404(Entity.objects.filter_for_user(request.user), id=id)
+
     beneficiary = Beneficiary.objects.filter(entity_id=entity.id).first()
+    beneficiary_info = entity.attributes.json
 
     template = loader.get_template("debug.html")
-    context = {"entity": entity, "beneficiary": beneficiary}
+    context = {"entity": entity, "beneficiary": beneficiary, "info": beneficiary_info}
     return HttpResponse(template.render(context, request))
 
 

@@ -1,11 +1,11 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
-import { FilterButton } from '../../../components/FilterButton';
+import { Box, Grid } from '@mui/material';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
-import { ModuleParams } from '../types/modules';
-import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
+import { useFilterState } from '../../../hooks/useFilterState';
+import MESSAGES from '../messages';
+import { ModuleParams } from '../types/modules';
 
 type Props = {
     params: ModuleParams;
@@ -33,9 +33,9 @@ export const ModulesFilters: FunctionComponent<Props> = ({ params }) => {
 
             <Grid item xs={12} sm={6} md={9}>
                 <Box mt={2} mb={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={textSearchError || !filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

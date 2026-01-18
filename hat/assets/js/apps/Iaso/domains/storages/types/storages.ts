@@ -1,5 +1,5 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
-import { Profile } from '../../../utils/usersUtils';
+import { Profile } from 'Iaso/utils/usersUtils';
 import { ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 
 export type StorageFilterParams = {
@@ -22,10 +22,18 @@ export type StorageStatus = {
     comment?: string;
 };
 
-type Log = {
-    operation_type: 'OK' | 'BLACKLISTED';
+export type Log = {
+    operation_type:
+        | 'WRITE_PROFILE'
+        | 'RESET'
+        | 'READ'
+        | 'WRITE_RECORD'
+        | 'CHANGE_STATUS';
+    status?: 'OK' | 'BLACKLISTED';
+    status_reason?: string;
+    status_comment?: string;
     storage_status: StorageStatus;
-    forms: Array<number>; // array of instances ids
+    instances: Array<number>; // array of instances ids
     org_unit: ShortOrgUnit;
     entity: any;
     performed_at: number;
@@ -33,6 +41,7 @@ type Log = {
 };
 
 export type Storage = {
+    id: number;
     storage_id: string;
     updated_at: number;
     created_at: number;

@@ -1,7 +1,7 @@
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, ReactNode, useState } from 'react';
 import MESSAGES from '../messages';
 import { innerDrawerStyles, menuHeight } from './styles';
 

@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import uuid
 import zipfile
@@ -10,6 +11,7 @@ import pytz
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
+from django.core.files.storage import default_storage
 from django.test import TestCase
 
 from beanstalk_worker.services import TestTaskService
@@ -17,6 +19,7 @@ from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
+from iaso.models.instances import instance_file_upload_to, instance_upload_to
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
 
 
@@ -46,6 +49,11 @@ CORRECT_FILES_FOR_DISASI_ONLY_ZIP = [
 
 DEFAULT_CREATED_AT = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC)
 DEFAULT_CREATED_AT_STR = "2024-04-01"
+
+DISASI_MAKULO_INSTANCE_FILE_NAME = (
+    "a5362052-408f-44f8-8abc-2a520c01ea10/16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml"
+)
+DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME = "a5362052-408f-44f8-8abc-2a520c01ea10/1712326156339.webp"
 
 
 def zip_fixture_dir(subdir=""):
@@ -128,6 +136,9 @@ class ProcessMobileBulkUploadTest(TestCase):
             id=1, name="Participant", reference_form=self.form_registration
         )
 
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+
     def _create_zip_file(self):
         # Create the zip file: we create it on the fly to be able to clearly
         # see the contents in our repo. We then mock the file download method
@@ -163,6 +174,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         ou = m.OrgUnit.objects.get(name="New Org Unit")
         self.assertIsNotNone(ou)
         self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
+        self.assertEqual(int(ou.source_created_at.timestamp()), 1712326429)
 
         # Instances (Submissions) + Entity were created
         self.assertEqual(m.Entity.objects.count(), 2)
@@ -184,6 +196,17 @@ class ProcessMobileBulkUploadTest(TestCase):
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
 
+        # Checking if files are uploaded to the correct location
+        generated_file_name = instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
+        # as the generated file name is longer than 100 chars, Django truncates it and adds a random suffix to it
+        # it's therefore impossible to strictly check for equality
+        expected_file_name = generated_file_name[:85]
+        self.assertTrue(catt_instance.file.name.startswith(expected_file_name))
+        # same issue about name length for InstanceFile
+        generated_attachment_name = instance_file_upload_to(image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
+        expected_attachment_name = generated_attachment_name[:85]
+        self.assertTrue(image.file.name.startswith(expected_attachment_name))
+
         # Entity 2: Patrice Akambu
         reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
         self.assertEqual(reg_instance.json.get("_full_name"), "Patrice Akambu")
@@ -197,6 +220,43 @@ class ProcessMobileBulkUploadTest(TestCase):
         # image from Disasi's CATT was duplicated to this test
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+
+    def test_org_unit_already_exists(self):
+        self._create_zip_file()
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+        self.assertEqual(m.InstanceFile.objects.count(), 0)
+
+        # create the same org unit as in the fixture
+        existing_org_unit = m.OrgUnit.objects.create(
+            uuid="9dcb6991-c72c-416d-ba38-4556c62b400f",
+            name="New Org Unit",
+            org_unit_type_id=5,
+            parent_id=4,
+            version_id=2,
+        )
+        orginal_updated_at = existing_org_unit.updated_at
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # check that task ran without errors
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # The org unit wasn't modified
+        ou = m.OrgUnit.objects.get(name="New Org Unit")
+        self.assertIsNotNone(ou)
+        self.assertEqual(ou.updated_at, orginal_updated_at)
 
     def test_success_when_user_is_none(self):
         self.api_import.user = None
@@ -790,3 +850,116 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ou_change_req.new_name, "LaLaland Edited")
         self.assertEqual(ou_change_req.org_unit_id, 1)
         self.assertEqual(ou_change_req.created_by, self.user)
+
+    def test_instance_without_entity_creation(self):
+        zip_path = "/tmp/instance_without_entity.zip"
+
+        # Create instances.json without entity references
+        instance_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 10, tzinfo=pytz.UTC)
+        instances_data = [
+            {
+                "id": "standalone-instance-uuid-1234",
+                "created_at": int(instance_timestamp.timestamp() * 1000),
+                "updated_at": int(instance_timestamp.timestamp() * 1000),
+                "file": "/storage/test/standalone_instance.xml",
+                "name": "Enregistrement",
+                "formId": "1",
+                "orgUnitId": "1",
+            }
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                zipf.writestr("standalone-instance-uuid-1234/standalone_instance.xml", xml_file.read())
+
+        save_file_to_api_import(self.api_import, zip_path)
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # No entities should be created since no entityUuid/entityTypeId provided
+        self.assertEqual(m.Entity.objects.count(), 0)
+
+        # But instance should be created without entity reference
+        self.assertEqual(m.Instance.objects.count(), 1)
+        instance = m.Instance.objects.first()
+        self.assertEqual(instance.uuid, "standalone-instance-uuid-1234")
+        self.assertIsNone(instance.entity)
+
+    def test_instance_without_entity_update_scenario(self):
+        zip_path = "/tmp/instance_without_entity_update.zip"
+
+        # First create an instance without entity in the database directly
+        with open("iaso/fixtures/instance_form_1_1.xml", "rb") as form_instance_file:
+            instance = m.Instance.objects.create(
+                uuid="no-entity-instance-uuid",
+                entity=None,  # No entity reference
+                form=self.form_registration,
+                file=File(form_instance_file),
+                json={"some": "data"},
+                source_created_at=DEFAULT_CREATED_AT,
+                source_updated_at=DEFAULT_CREATED_AT,
+            )
+
+        self.assertEqual(m.Instance.objects.count(), 1)
+        self.assertIsNone(instance.entity)
+
+        # Now create a bulk upload that tries to update this instance
+        # initial_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 10, tzinfo=pytz.UTC)
+        updated_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 20, tzinfo=pytz.UTC)
+        updated_instances_data = [
+            {
+                "id": "no-entity-instance-uuid",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp() * 1000),
+                "updated_at": int(updated_timestamp.timestamp() * 1000),  # Newer timestamp to trigger update
+                "file": "/storage/test/no_entity_instance_updated.xml",
+                "name": "Enregistrement",
+                "formId": "1",
+                "orgUnitId": "1",
+            }
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(updated_instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                zipf.writestr("no-entity-instance-uuid/no_entity_instance_updated.xml", xml_file.read())
+
+        save_file_to_api_import(self.api_import, zip_path)
+
+        # This should work without AttributeError after our fix
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # Verify the task succeeded
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        # Still only one instance, but it should be updated
+        self.assertEqual(m.Instance.objects.count(), 1)
+        instance.refresh_from_db()
+        self.assertIsNone(instance.entity)  # Still no entity
+
+        # Verify the instance was actually updated with the newer timestamp
+        self.assertEqual(instance.source_updated_at, updated_timestamp)
+        self.assertEqual(instance.last_modified_by, self.user)

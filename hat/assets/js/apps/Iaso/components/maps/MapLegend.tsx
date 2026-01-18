@@ -49,12 +49,12 @@ export const MapLegend: FunctionComponent<Props> = ({
     titleMessage,
     options,
     content,
-    top,
-    right,
-    left,
-    bottom,
-    width,
-    padding,
+    top = 16,
+    right = 16,
+    left = 'auto',
+    bottom = 'auto',
+    width = 200,
+    padding = 2,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -93,13 +93,4 @@ export const MapLegend: FunctionComponent<Props> = ({
             </Box>
         </Paper>
     );
-};
-
-MapLegend.defaultProps = {
-    top: 16,
-    right: 16,
-    left: 'auto',
-    bottom: 'auto',
-    width: 200,
-    padding: 2,
 };

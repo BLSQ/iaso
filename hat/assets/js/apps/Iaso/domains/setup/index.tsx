@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import { Box, Button, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useSafeIntl } from 'bluesquare-components';
+import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import InputComponent from '../../components/forms/InputComponent';
@@ -14,6 +14,7 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../libs/validation';
+import { DropdownOptions } from '../../types/utils';
 import { commaSeparatedIdsToStringArray } from '../../utils/forms';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
 import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
@@ -23,6 +24,10 @@ import { SaveAccountQuery } from './types/account';
 import { useAccountValidation } from './validation';
 
 const useStyles = makeStyles(theme => ({
+    root: {
+        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
+        overflow: 'auto',
+    },
     paper: {
         margin: `auto`,
         width: 500,
@@ -68,12 +73,17 @@ export const SetupAccount: FunctionComponent = () => {
     const schema = useAccountValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
-            account_name: '',
-            user_username: '',
-            user_first_name: '',
-            user_last_name: '',
-            password: '',
-            modules: [],
+            account_name: undefined,
+            user_username: undefined,
+            user_first_name: undefined,
+            user_last_name: undefined,
+            user_email: undefined,
+            password: undefined,
+            email_invitation: false,
+            language: 'en',
+            modules: ['DATA_COLLECTION_FORMS'],
+            create_main_org_unit: true,
+            create_demo_form: true,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -96,7 +106,9 @@ export const SetupAccount: FunctionComponent = () => {
         if (keyValue === 'modules' && value) {
             setFieldValue(keyValue, commaSeparatedIdsToStringArray(value));
         } else {
-            setFieldValue(keyValue, value);
+            // Set empty strings to undefined to avoid backend validation issues
+            const processedValue = value === '' ? undefined : value;
+            setFieldValue(keyValue, processedValue);
         }
     };
 
@@ -106,173 +118,246 @@ export const SetupAccount: FunctionComponent = () => {
         touched,
         messages: MESSAGES,
     });
-
     const { data: modules, isFetching: isFetchingModules } =
         useGetModulesDropDown();
 
+    const filteredModules: DropdownOptions<string>[] = useMemo(
+        () =>
+            modules?.filter(
+                (module: DropdownOptions<string>) => module.value !== 'DEFAULT',
+            ) ?? [],
+        [modules],
+    );
     const allowConfirm = isValid && !isEqual(values, initialValues);
+    const hasAccount = Boolean(currentUser.account);
     return (
         <>
             <TopBar
                 displayBackButton={false}
-                displayMenuButton={false}
-                title={formatMessage(MESSAGES.welcome)}
+                displayMenuButton={hasAccount}
+                title={
+                    !hasAccount
+                        ? formatMessage(MESSAGES.welcome)
+                        : formatMessage(MESSAGES.accountSetup)
+                }
             />
-            <Paper className={classes.paper}>
-                {isAdmin && (
-                    <>
-                        {isSaved && (
-                            <>
-                                <Typography
-                                    variant="h6"
-                                    className={classes.confirmMessage}
-                                >
-                                    <CheckCircleOutlineIcon
-                                        className={classes.confirmMessageIcon}
-                                    />
-                                    {formatMessage(MESSAGES.confirmMessage)}
-                                </Typography>
-                                <Box
-                                    mt={2}
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                >
-                                    <Button
-                                        size="small"
-                                        color="primary"
-                                        href="/logout-iaso"
-                                        variant="contained"
+            <Box className={classes.root}>
+                <Paper className={classes.paper}>
+                    {isAdmin && (
+                        <>
+                            {isSaved && (
+                                <>
+                                    <Typography
+                                        variant="h6"
+                                        className={classes.confirmMessage}
                                     >
-                                        <Box
-                                            mr={1}
-                                            display="flex"
-                                            alignContent="center"
-                                        >
-                                            <ExitIcon fontSize="small" />
-                                        </Box>
-                                        {formatMessage(MESSAGES.logout)}
-                                    </Button>
-                                </Box>
-                            </>
-                        )}
-                        {!isSaved && (
-                            <>
-                                <Typography variant="h5" color="primary">
-                                    {formatMessage(MESSAGES.accountSetup)}
-                                </Typography>
-                                <Box>
-                                    <InputComponent
-                                        type="text"
-                                        required
-                                        keyValue="account_name"
-                                        labelString={formatMessage(
-                                            MESSAGES.account_name,
-                                        )}
-                                        value={values.account_name}
-                                        onChange={onChange}
-                                        errors={getErrors('account_name')}
-                                    />
-                                    <InputComponent
-                                        type="text"
-                                        required
-                                        keyValue="user_username"
-                                        labelString={formatMessage(
-                                            MESSAGES.user_username,
-                                        )}
-                                        value={values.user_username}
-                                        onChange={onChange}
-                                        errors={getErrors('user_username')}
-                                    />
-                                    <InputComponent
-                                        type="text"
-                                        required
-                                        keyValue="user_first_name"
-                                        labelString={formatMessage(
-                                            MESSAGES.user_first_name,
-                                        )}
-                                        value={values.user_first_name}
-                                        onChange={onChange}
-                                    />
-                                    <InputComponent
-                                        type="text"
-                                        required
-                                        keyValue="user_last_name"
-                                        labelString={formatMessage(
-                                            MESSAGES.user_last_name,
-                                        )}
-                                        value={values.user_last_name}
-                                        onChange={onChange}
-                                    />
-                                    <InputComponent
-                                        type="password"
-                                        required
-                                        keyValue="password"
-                                        labelString={formatMessage(
-                                            MESSAGES.password,
-                                        )}
-                                        value={values.password}
-                                        onChange={onChange}
-                                        errors={getErrors('password')}
-                                    />
-                                    <InputComponent
-                                        type="select"
-                                        multi
-                                        required
-                                        keyValue="modules"
-                                        labelString={formatMessage(
-                                            MESSAGES.modules,
-                                        )}
-                                        value={values.modules}
-                                        onChange={onChange}
-                                        errors={getErrors('modules')}
-                                        loading={isFetchingModules}
-                                        options={modules ?? []}
-                                    />
+                                        <CheckCircleOutlineIcon
+                                            className={
+                                                classes.confirmMessageIcon
+                                            }
+                                        />
+                                        {formatMessage(MESSAGES.confirmMessage)}
+                                    </Typography>
                                     <Box
                                         mt={2}
                                         display="flex"
                                         justifyContent="flex-end"
                                     >
                                         <Button
-                                            data-test="confirm-button"
-                                            onClick={() => handleSubmit()}
-                                            disabled={
-                                                !allowConfirm || isLoading
-                                            }
+                                            size="small"
                                             color="primary"
-                                            autoFocus
+                                            href="/logout-iaso"
                                             variant="contained"
                                         >
-                                            {formatMessage(MESSAGES.confirm)}
+                                            <Box
+                                                mr={1}
+                                                display="flex"
+                                                alignContent="center"
+                                            >
+                                                <ExitIcon fontSize="small" />
+                                            </Box>
+                                            {formatMessage(MESSAGES.logout)}
                                         </Button>
                                     </Box>
-                                </Box>
-                            </>
-                        )}
-                    </>
-                )}
-                {!isAdmin && (
-                    <Box textAlign="center">
-                        <Box
-                            pt={2}
-                            pb={2}
-                            display="flex"
-                            justifyContent="center"
-                            flexDirection="column"
-                        >
-                            <Typography variant="h6">
-                                {formatMessage(MESSAGES.notAdmin, {
-                                    displayName: getDisplayName(currentUser),
-                                })}
-                            </Typography>
-                            <Typography>
-                                {formatMessage(MESSAGES.notAdmin2)}
-                            </Typography>
+                                </>
+                            )}
+                            {!isSaved && (
+                                <>
+                                    <Typography variant="h5" color="primary">
+                                        {formatMessage(MESSAGES.accountSetup)}
+                                    </Typography>
+                                    <Box>
+                                        <InputComponent
+                                            type="text"
+                                            required
+                                            keyValue="account_name"
+                                            labelString={formatMessage(
+                                                MESSAGES.account_name,
+                                            )}
+                                            value={values.account_name}
+                                            onChange={onChange}
+                                            errors={getErrors('account_name')}
+                                        />
+                                        <InputComponent
+                                            type="text"
+                                            required
+                                            keyValue="user_username"
+                                            labelString={formatMessage(
+                                                MESSAGES.user_username,
+                                            )}
+                                            value={values.user_username}
+                                            onChange={onChange}
+                                            errors={getErrors('user_username')}
+                                        />
+                                        <InputComponent
+                                            type="text"
+                                            keyValue="user_first_name"
+                                            labelString={formatMessage(
+                                                MESSAGES.user_first_name,
+                                            )}
+                                            value={values.user_first_name}
+                                            onChange={onChange}
+                                        />
+                                        <InputComponent
+                                            type="text"
+                                            keyValue="user_last_name"
+                                            labelString={formatMessage(
+                                                MESSAGES.user_last_name,
+                                            )}
+                                            value={values.user_last_name}
+                                            onChange={onChange}
+                                        />
+                                        <InputComponent
+                                            type="select"
+                                            keyValue="language"
+                                            labelString={formatMessage(
+                                                MESSAGES.language,
+                                            )}
+                                            value={values.language}
+                                            onChange={onChange}
+                                            options={[
+                                                {
+                                                    value: 'en',
+                                                    label: 'English',
+                                                },
+                                                {
+                                                    value: 'fr',
+                                                    label: 'Français',
+                                                },
+                                            ]}
+                                        />
+                                        <InputComponent
+                                            type="email"
+                                            keyValue="user_email"
+                                            labelString={formatMessage(
+                                                MESSAGES.user_email,
+                                            )}
+                                            value={values.user_email}
+                                            onChange={onChange}
+                                            errors={getErrors('user_email')}
+                                        />
+                                        <InputComponent
+                                            type="checkbox"
+                                            keyValue="email_invitation"
+                                            labelString={formatMessage(
+                                                MESSAGES.email_invitation,
+                                            )}
+                                            value={values.email_invitation}
+                                            onChange={onChange}
+                                        />
+                                        <InputComponent
+                                            type="password"
+                                            required={!values.email_invitation}
+                                            keyValue="password"
+                                            labelString={formatMessage(
+                                                MESSAGES.password,
+                                            )}
+                                            value={values.password}
+                                            onChange={onChange}
+                                            errors={getErrors('password')}
+                                            disabled={values.email_invitation}
+                                        />
+                                        <InputComponent
+                                            type="select"
+                                            multi
+                                            required
+                                            keyValue="modules"
+                                            labelString={formatMessage(
+                                                MESSAGES.modules,
+                                            )}
+                                            value={values.modules}
+                                            onChange={onChange}
+                                            errors={getErrors('modules')}
+                                            loading={isFetchingModules}
+                                            options={filteredModules}
+                                        />
+                                        <InputComponent
+                                            type="checkbox"
+                                            keyValue="create_main_org_unit"
+                                            labelString={formatMessage(
+                                                MESSAGES.createMainOrgUnit,
+                                            )}
+                                            value={values.create_main_org_unit}
+                                            onChange={onChange}
+                                        />
+                                        <InputComponent
+                                            type="checkbox"
+                                            keyValue="create_demo_form"
+                                            labelString={formatMessage(
+                                                MESSAGES.createDemoForm,
+                                            )}
+                                            value={values.create_demo_form}
+                                            onChange={onChange}
+                                        />
+                                        <Box
+                                            mt={2}
+                                            display="flex"
+                                            justifyContent="flex-end"
+                                        >
+                                            <Button
+                                                data-test="confirm-button"
+                                                onClick={() => handleSubmit()}
+                                                disabled={
+                                                    !allowConfirm || isLoading
+                                                }
+                                                color="primary"
+                                                autoFocus
+                                                variant="contained"
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.confirm,
+                                                )}
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                </>
+                            )}
+                        </>
+                    )}
+                    {!isAdmin && (
+                        <Box textAlign="center">
+                            <Box
+                                pt={2}
+                                pb={2}
+                                display="flex"
+                                justifyContent="center"
+                                flexDirection="column"
+                            >
+                                <Typography variant="h6">
+                                    {formatMessage(MESSAGES.notAdmin, {
+                                        displayName:
+                                            getDisplayName(currentUser),
+                                    })}
+                                </Typography>
+                                <Typography>
+                                    {formatMessage(MESSAGES.notAdmin2)}
+                                </Typography>
+                            </Box>
+                            <ContactSupportIcon className={classes.icon} />
                         </Box>
-                        <ContactSupportIcon className={classes.icon} />
-                    </Box>
-                )}
-            </Paper>
+                    )}
+                </Paper>
+            </Box>
         </>
     );
 };

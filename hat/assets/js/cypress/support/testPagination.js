@@ -45,10 +45,22 @@ export const testPagination = ({
                 .find('.pagination-count')
                 .should('contain', `${formatThousand(fixture.count)}`);
 
+            cy.intercept(
+                {
+                    pathname: apiPath,
+                },
+                {
+                    ...fixture,
+                    has_next: false,
+                    has_previous: true,
+                    page: 2,
+                },
+            ).as('nextPage');
             cy.get('@selector')
                 .find('button.pagination-next')
                 .should('exist')
                 .click({ force: true });
+            cy.wait('@nextPage');
             cy.get('@selector')
                 .find('.pagination-page-select input')
                 .should('have.value', 2);
@@ -64,11 +76,22 @@ export const testPagination = ({
                 .find('.pagination-page-select input')
                 .should('have.value', 1);
 
+            cy.intercept(
+                {
+                    pathname: apiPath,
+                },
+                {
+                    ...fixture,
+                    has_next: false,
+                    has_previous: true,
+                    page: 2,
+                },
+            ).as('nextPage');
             cy.get(selector)
                 .find('button.pagination-last')
                 .should('exist')
                 .click({ force: true });
-
+            cy.wait('@nextPage');
             cy.get('@selector')
                 .find('button.pagination-last')
                 .should('be.disabled');

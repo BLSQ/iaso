@@ -113,7 +113,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "r") as f:
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as f:
             reader = list(csv.DictReader(f))
 
         for row in reader:

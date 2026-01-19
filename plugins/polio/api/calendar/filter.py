@@ -9,6 +9,7 @@ from plugins.polio.api.campaigns.filters.filters import CampaignFilter
 
 
 logger = getLogger(__name__)
+
 QUARTER_DELTA = datetime.timedelta(weeks=8)  # (3*4)/2)+2
 SEMESTER_DELTA = datetime.timedelta(weeks=14)  # ((6*4)/2)+2
 YEAR_DELTA = datetime.timedelta(weeks=26)  # ((12*4)/2)+2
@@ -42,6 +43,7 @@ class CalendarPeriodFilterBackend(filters.BaseFilterBackend):
                 if reference_date
                 else datetime.datetime.now().date()
             )
+            print(reference_date)
         except Exception:
             logger.warning("Error parsing reference date, defaulting to current date")
             reference_date = datetime.datetime.now()

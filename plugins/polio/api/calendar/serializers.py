@@ -93,6 +93,7 @@ class CalendarCampaignSerializerV2(serializers.ModelSerializer):
     top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
     top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
+    vaccines = serializers.SerializerMethodField(read_only=True)
 
     def get_sub_activities(self, campaign):
         sub_activities = SubActivity.objects.filter(round__campaign=campaign)
@@ -108,6 +109,11 @@ class CalendarCampaignSerializerV2(serializers.ModelSerializer):
             if round.started_at and now_utc >= round.started_at:
                 return _("Round {} started").format(round.number)
         return _("Preparing")
+
+    def get_vaccines(self, obj):
+        if obj.vaccines_extended_list:
+            return ",".join(obj.vaccines_extended_list)
+        return ""
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -136,5 +142,6 @@ class CalendarCampaignSerializerV2(serializers.ModelSerializer):
             "is_test",
             "on_hold",
             "is_planned",
+            "vaccines",
         ]
         read_only_fields = fields

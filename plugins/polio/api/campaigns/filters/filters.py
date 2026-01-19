@@ -43,7 +43,7 @@ class CampaignFilter(django_filters.rest_framework.FilterSet):
     campaign_groups = django_filters.CharFilter(method="filter_campaign_groups", label=_("Campaign groups"))
     campaign_types = django_filters.CharFilter(method="filter_campaign_types", label=_("Campaign types"))
     campaign_category = django_filters.CharFilter(method="filter_campaign_category", label=_("Campaign category"))
-    # on_hold = django_filters.BooleanFilter(method="filter_on_hold", label=_("On hold"))
+    on_hold = django_filters.BooleanFilter(method="filter_on_hold", label=_("On hold"))
     show_test = django_filters.BooleanFilter(method="filter_show_test", label=_("Show test"))
 
     def search_filter(self, queryset: QuerySet, _, value: str) -> QuerySet:
@@ -65,7 +65,6 @@ class CampaignFilter(django_filters.rest_framework.FilterSet):
         campaign_types_list = value.split(",")
         if all(item.isdigit() for item in campaign_types_list):
             return queryset.filter(campaign_types__id__in=campaign_types_list)
-
         return queryset.filter(campaign_types__slug__in=campaign_types_list)
 
     # TODO double check impact of possible breaking change here
@@ -89,10 +88,10 @@ class CampaignFilter(django_filters.rest_framework.FilterSet):
         return queryset
 
     # TODO confirm filter behaviour when no value is passed
-    # def filter_on_hold(self, queryset: QuerySet, _, value: bool) -> QuerySet:
-    #     if not value:
-    #         return queryset.filter(on_hold=False)
-    #     return queryset
+    def filter_on_hold(self, queryset: QuerySet, _, value: bool) -> QuerySet:
+        if not value:
+            return queryset.filter(on_hold=False)
+        return queryset
 
     # TODO confirm filter behaviour when no value is passed
     def filter_show_test(self, queryset: QuerySet, _, value: bool) -> QuerySet:

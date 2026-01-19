@@ -42,7 +42,7 @@ class BulkCreateCsvTestCase(APITestCase):
         "phone_number",
         "teams",
         "organization",
-        "editable_org_unit_types"
+        "editable_org_unit_types",
     ]
 
     @classmethod

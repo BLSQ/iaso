@@ -9,7 +9,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-// @ts-ignore
 import moment from 'moment';
 import { useLocation } from 'react-router-dom';
 import { XlsxButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/XslxButton';
@@ -20,10 +19,7 @@ import { getCampaignColor } from '../../constants/campaignsColors';
 
 import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
-import {
-    CAMPAIGNS_ENDPOINT,
-    useGetCampaigns,
-} from '../Campaigns/hooks/api/useGetCampaigns';
+
 import { CampaignsCalendar } from './campaignCalendar';
 import {
     CampaignsFilters,
@@ -42,6 +38,7 @@ import {
     mapCampaigns,
 } from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
+import { useGetCampaigns } from './hooks/useGetCampaigns';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -75,22 +72,28 @@ export const Calendar: FunctionComponent = () => {
     const [isTypeSet, setIsTypeSet] = useState(!!params.campaignType);
 
     const orders = params.order || defaultOrder;
-    const queryOptions = useMemo(() => {
+    const currentDate = params.currentDate
+    ? moment(params.currentDate, dateFormat)
+    : moment();
+
+    const currentDateString=currentDate.format('YYYY-MM-DD')
+
+    const queryParams = useMemo(() => {
         const options = {
             order: orders,
-            countries: params.countries,
+            country__id__in: params.countries,
             search: params.search,
-            campaignType: params.campaignType,
-            campaignCategory: params.campaignCategory,
-            campaignGroups: params.campaignGroups
+            campaign_types: params.campaignType,
+            campaign_category: params.campaignCategory,
+            campaign_groups: params.campaignGroups
                 ? params.campaignGroups.split(',').map(Number)
                 : undefined,
-            orgUnitGroups: params.orgUnitGroups
+            org_unit_groups: params.orgUnitGroups
                 ? params.orgUnitGroups.split(',').map(Number)
                 : undefined,
-            fieldset: 'calendar',
             show_test: false,
-            on_hold: true,
+            on_hold: false,
+            reference_date:currentDateString
         };
 
         return isEmbedded ? { ...options, is_embedded: true } : options;
@@ -102,24 +105,20 @@ export const Calendar: FunctionComponent = () => {
         params.campaignGroups,
         params.orgUnitGroups,
         params.campaignType,
-        isEmbedded,
+        isEmbedded,currentDateString
     ]);
+
 
     const {
         data: campaigns = [],
         isLoading,
         isFetching,
-    } = useGetCampaigns(
-        queryOptions,
-        CAMPAIGNS_ENDPOINT,
-        ['calendar-campaigns'],
-        { enabled: isTypeSet },
+    } = useGetCampaigns({  queryParams,
+       queryOptions: { enabled: isTypeSet },
+    }
     );
 
     const redirectToReplace = useRedirectToReplace();
-    const currentDate = params.currentDate
-        ? moment(params.currentDate, dateFormat)
-        : moment();
 
     const [isCalendarAndMapLoaded, setCalendarAndMapLoaded] = useState(false);
     const [isPdf, setPdf] = useState(false);
@@ -137,7 +136,7 @@ export const Calendar: FunctionComponent = () => {
                 calendarData.firstMonday,
                 calendarData.lastSunday,
             ),
-        [campaigns, calendarData.firstMonday, calendarData.lastSunday],
+        [campaigns, calendarData.firstMonday, calendarData.lastSunday,currentDateString],
     );
     const filteredCampaigns = useMemo(
         () =>

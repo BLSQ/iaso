@@ -27,7 +27,7 @@ const MESSAGES = defineMessages({
     },
     dataSource: {
         id: 'iaso.label.dataSources',
-        defaultMessage: 'Data source',
+        defaultMessage: 'Data Sources',
     },
     create: {
         id: 'iaso.groups.create',

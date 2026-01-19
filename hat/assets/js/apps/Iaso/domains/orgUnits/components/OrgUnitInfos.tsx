@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useMemo } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 
 import { Box, Button, Grid } from '@mui/material';
 
@@ -15,12 +15,12 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { ORG_UNITS } from '../../../utils/permissions';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
-import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { Instance } from '../../instances/types/instance';
 import {
     GroupDropdownOption,
     OrgUnitTypeDropdownOption,
 } from '../configuration/types';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import MESSAGES from '../messages';
 import { OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';

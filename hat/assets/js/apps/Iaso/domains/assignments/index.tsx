@@ -145,7 +145,7 @@ export const Assignments: FunctionComponent = () => {
                     planning?.name ?? ''
                 }`}
                 displayBackButton
-                goBack={goBack}
+                goBack={() => redirectToReplace(baseUrls.planning)}
             />
 
             <MainWrapper sx={{ p: 4 }}>

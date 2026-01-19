@@ -23,7 +23,7 @@ export const useGetOrgUnitParentIds = ({
         let orgUnitParentIds: number[] | undefined;
         if (planning && !isLoadingAssignments) {
             if (currentTeam) {
-                if (currentTeam?.id !== planning.team) {
+                if (currentTeam?.id !== planning.team_details?.id) {
                     const existingAssignmentsForTeamOrUser =
                         allAssignments.filter(
                             assignment => assignment.team === currentTeam.id,
@@ -34,7 +34,9 @@ export const useGetOrgUnitParentIds = ({
                         );
                     }
                 } else {
-                    orgUnitParentIds = [planning.org_unit];
+                    orgUnitParentIds = planning.org_unit_details
+                        ? [planning.org_unit_details.id]
+                        : [];
                 }
             }
         }

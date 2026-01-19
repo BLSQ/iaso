@@ -4,26 +4,23 @@
 {% load socialaccount %}
 {% block body %}
 <div class="auth__container iasologin">
+  {% include "./language_picker.html" %}
   <div class="auth__content">
-    {% if logo_path %}
-      <header class="auth__header">
-        <h1 class="auth__heading">
-          {% if LEARN_MORE_URL %}
-            <a href="{{ LEARN_MORE_URL }}" target="_blank">
-              <img alt="logo" src="{% static logo_path %}" />
-            </a>
-          {% else %}
-            <img alt="logo" src="{% static logo_path %}" />
-          {% endif %}
-        </h1>
-      </header>
-    {% endif %}
+    <header class="auth__header">
+      <h1 class="auth__heading">
+        {% if logo_path %}
+          <img alt="logo" src="{% static logo_path %}" />
+        {% endif %}
+        <p class="auth__title">{% trans 'Sign in to' %} {{ app_title }}</p>
+      </h1>
+    </header>
     <div>
       {% get_providers as socialaccount_providers %}
       {% for provider in socialaccount_providers %}
         {% if  provider.id == 'wfp' %}
           {% include "wfp_auth/login_subtemplate.html" %}
         {% endif %}
+        <div class="auth__separator"></div>
       {% endfor %}
       <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login' %}">
         {% if next %}
@@ -44,21 +41,25 @@
         </p>
         {% endif %}
         {% csrf_token %}
+        <div class="form-group">
         {{ form }}
+          <button id="display-password" type="button">
+            {% include "./icons/eye.html" %}
+            {% include "./icons/eye-slash.html" %}
+          </button>
+        </div>
         <input type="hidden" name="next" value="{{ next }}" />
         <button id="submit" type="submit" class="button">{% trans 'Login' %}</button>
-        <button id="display-password">
-          {% include "./icons/eye.html" %}
-          {% include "./icons/eye-slash.html" %}
-        </button>
+
         <p class="bottom-links">
-          {% if LEARN_MORE_URL %}
-            <a href="{{ LEARN_MORE_URL }}" target="_blank">{% trans 'Learn more' %}</a>
-          {% endif %}
           <a class="forgot-link" href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a>
         </p>
+        <p class="bottom-links">
+          {% if LEARN_MORE_URL %}
+            {% trans 'New to' %} {{ app_title }}? <a href="{{ LEARN_MORE_URL }}" target="_blank">{% trans 'Learn more' %}</a>
+          {% endif %}
+        </p>
       </form>
-      {% include "./language_picker.html" %}
     </div>
   </div>
 </div>

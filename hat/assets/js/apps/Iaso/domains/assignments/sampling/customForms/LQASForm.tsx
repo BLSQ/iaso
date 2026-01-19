@@ -220,8 +220,9 @@ export const LQASForm: FunctionComponent<Props> = ({
 
             setAllowConfirm(
                 Boolean(allLevelsFilled) &&
-                    (!planning.target_org_unit_type ||
-                        latestOptions?.value === planning.target_org_unit_type),
+                    (!planning.target_org_unit_type_details ||
+                        latestOptions?.value ===
+                            planning.target_org_unit_type_details?.id),
             );
         } else {
             setAllowConfirm(false);
@@ -232,7 +233,7 @@ export const LQASForm: FunctionComponent<Props> = ({
         org_unit_type_criteria,
         org_unit_type_quantities,
         canAddLevel,
-        planning.target_org_unit_type,
+        planning.target_org_unit_type_details?.id,
         latestOptions?.value,
     ]);
 

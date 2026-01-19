@@ -4,7 +4,7 @@
     document.getElementById('lang-form').submit();
   }
 </script>
-<form action="{% url 'set_language' %}" id="lang-form" method="post">{% csrf_token %}
+<form action="{% url 'set_language' %}" id="lang-form" method="post" class="auth__language">{% csrf_token %}
   <input name="next" type="hidden" value="{{ redirect_to }}">
   <select class="language-picker" name="language" onchange="handleLanguageChange(this)">
     {% get_current_language as LANGUAGE_CODE %}

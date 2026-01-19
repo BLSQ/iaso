@@ -373,13 +373,13 @@ class ProfileAPITestCase(APITestCase):
             ]
         )
 
-        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,team1,,\r\n"
+        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,{self.team1.name},,\r\n"
         expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,,\r\n'
-        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,team2,,\r\n'
-        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,iaso_users_managed,,,,,\r\n"
+        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,{self.team2.name},,\r\n'
+        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,,\r\n"
         expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,,\r\n"
         expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,2,FooBarB4z00,,,,iaso_users_managed,"user role,user role with another account",,,,\r\n'
+        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -472,7 +472,7 @@ class ProfileAPITestCase(APITestCase):
                     6: f"{self.user_role_name},{self.user_role_another_account_name}",
                 },
                 "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
-                "teams": {0: "team1", 1: None, 2: "team2", 3: None, 4: None, 5: None, 6: None},
+                "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "editable_org_unit_types": {
                     0: None,
@@ -480,7 +480,7 @@ class ProfileAPITestCase(APITestCase):
                     2: None,
                     3: None,
                     4: None,
-                    5: self.sub_unit_type.pk,
+                    5: float(self.sub_unit_type.pk),
                     6: None,
                 },
             },

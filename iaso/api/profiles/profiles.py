@@ -31,6 +31,7 @@ from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsErro
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request, search_by_ids_refs
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 PK_ME = "me"
@@ -376,6 +377,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, user.profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, user.profile)
+            color = request.data.get("color", None)
         except ProfileError as error:
             # Delete profile if error since we're creating a new user
             user.profile.delete()
@@ -394,6 +396,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
+            color=color,
         )
 
         dhis2_id = request.data.get("dhis2_id", None)
@@ -439,6 +442,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
+            color = request.data.get("color", None)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -455,6 +459,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
+            color=color,
         )
 
         audit_logger.log_modification(
@@ -499,6 +504,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles,
         user_roles_groups,
         projects,
+        color,
         org_units,
         user_permissions,
         editable_org_unit_types,
@@ -525,6 +531,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.dhis2_id = request.data.get("dhis2_id", "")
         if profile.dhis2_id == "":
             profile.dhis2_id = None
+
+        resolved_color = color if color is not None else profile.color or DEFAULT_COLOR
+        profile.color = resolved_color
 
         profile.user_roles.set(user_roles)
         profile.projects.set(projects)

@@ -653,6 +653,7 @@ class Profile(models.Model):
             "other_accounts": [account.as_dict() for account in other_accounts],
             "editable_org_unit_type_ids": editable_org_unit_type_ids,
             "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+            "color": self.color or DEFAULT_COLOR,
         }
 
         if small:
@@ -688,6 +689,7 @@ class Profile(models.Model):
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
             "editable_org_unit_type_ids": editable_org_unit_type_ids,
             "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+            "color": self.color or DEFAULT_COLOR,
         }
 
     def has_a_team(self):

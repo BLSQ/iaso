@@ -38,7 +38,9 @@ import {
     mapCampaigns,
 } from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
-import { useGetCampaigns } from './hooks/useGetCampaigns';
+// import { useGetCampaigns } from './hooks/useGetCampaigns';
+import { CAMPAIGNS_ENDPOINT, useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
+
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -113,9 +115,11 @@ export const Calendar: FunctionComponent = () => {
         data: campaigns = [],
         isLoading,
         isFetching,
-    } = useGetCampaigns({  queryParams,
-       queryOptions: { enabled: isTypeSet },
-    }
+    } = useGetCampaigns(
+        queryParams,
+        CAMPAIGNS_ENDPOINT,
+        ['calendar-campaigns'],
+        { enabled: isTypeSet },
     );
 
     const redirectToReplace = useRedirectToReplace();

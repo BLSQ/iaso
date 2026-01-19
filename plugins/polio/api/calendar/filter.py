@@ -43,7 +43,6 @@ class CalendarPeriodFilterBackend(filters.BaseFilterBackend):
                 if reference_date
                 else datetime.datetime.now().date()
             )
-            print(reference_date)
         except Exception:
             logger.warning("Error parsing reference date, defaulting to current date")
             reference_date = datetime.datetime.now()

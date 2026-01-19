@@ -146,11 +146,11 @@ class HasInstanceBulkPermission(permissions.BasePermission):
 class OrgUnitNestedSerializer(OrgUnitSerializer):
     class Meta:
         model = OrgUnit
-
         fields = [
             "id",
             "name",
         ]
+        ref_name = "OrgUnitNestedSerializerForInstances"
 
 
 class InstanceFileSerializer(serializers.Serializer):

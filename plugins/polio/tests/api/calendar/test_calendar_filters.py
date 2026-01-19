@@ -1,5 +1,7 @@
 import datetime
 
+from unittest.mock import patch
+
 import time_machine
 
 from rest_framework.request import Request
@@ -9,6 +11,7 @@ from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase, IasoTestCaseMixin
 from plugins.polio.api.calendar.filter import (
+    QUARTER,
     QUARTER_DELTA,
     SEMESTER,
     SEMESTER_DELTA,
@@ -238,10 +241,7 @@ class CalendarFiltersAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMi
         request = factory.get(url, query_params)
         return Request(request)
 
-    def test_filter_period_empty_params(self):
-        request = self._request()
-        queryset = Campaign.objects.all()
-        filtered_queryset = self.filter_backend.filter_queryset(request, queryset, view=None)
+    def _assert_empty_params(self, filtered_queryset):
         # applies default values: date = NOW, period=QUARTER, so only reference campaign is in the queryset
         self.assertTrue(filtered_queryset.filter(id=self.reference_campaign.id).exists())
 
@@ -252,6 +252,12 @@ class CalendarFiltersAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMi
         self.assertFalse(filtered_queryset.filter(id=self.year_early_campaign.id).exists())
         self.assertFalse(filtered_queryset.filter(id=self.year_late_campaign.id).exists())
         self.assertEqual(filtered_queryset.count(), 1)
+
+    def test_filter_period_empty_params(self):
+        request = self._request()
+        queryset = Campaign.objects.all()
+        filtered_queryset = self.filter_backend.filter_queryset(request, queryset, view=None)
+        self._assert_empty_params(filtered_queryset)
 
     def test_semester_period_type(self):
         request = self._request(query_params={"period_type": f"{SEMESTER}"})
@@ -283,17 +289,35 @@ class CalendarFiltersAPITestCase(APITestCase, IasoTestCaseMixin, PolioTestCaseMi
         self.assertEqual(filtered_queryset.count(), 5)
 
     def test_filter_period_wrong_params(self):
-        # logs warning errors
-        # applies default params
-        # returns correct data
-        pass
+        request = self._request(query_params={"reference_date": "Yabadabadoo"})
+        queryset = Campaign.objects.all()
 
-    def test_filter_period_reference_date_only(self):
-        # applies default period type
-        # returns correct data
-        pass
+        with patch("plugins.polio.api.calendar.filter.logger.warning") as mock_warning:
+            filtered_queryset = self.filter_backend.filter_queryset(request, queryset, view=None)
+            # applies default params
+            self._assert_empty_params(filtered_queryset)
 
-    def test_filter_period_period_type_only(self):
-        # applies default reference date
-        # returns correct data
-        pass
+        mock_warning.assert_called_once_with("Error parsing reference date, defaulting to current date")
+
+        invalid_type = "CENTURY"
+        request = self._request(query_params={"period_type": invalid_type})
+        with patch("plugins.polio.api.calendar.filter.logger.warning") as mock_warning:
+            filtered_queryset = self.filter_backend.filter_queryset(request, queryset, view=None)
+            # applies default params
+            self._assert_empty_params(filtered_queryset)
+        mock_warning.assert_called_once_with(f"Invalid period type: {invalid_type}, defaulting to {QUARTER}")
+
+    def test_filter_reference_date(self):
+        date = (NOW - QUARTER_DELTA - datetime.timedelta(days=12)).strftime("%Y-%m-%d")
+        request = self._request(query_params={"reference_date": date})
+        queryset = Campaign.objects.all()
+        filtered_queryset = self.filter_backend.filter_queryset(request, queryset, view=None)
+        self.assertTrue(filtered_queryset.filter(id=self.quarter_early_campaign.id).exists())
+        self.assertTrue(filtered_queryset.filter(id=self.semester_early_campaign.id).exists())
+
+        self.assertFalse(filtered_queryset.filter(id=self.reference_campaign.id).exists())
+        self.assertFalse(filtered_queryset.filter(id=self.quarter_late_campaign.id).exists())
+        self.assertFalse(filtered_queryset.filter(id=self.semester_late_campaign.id).exists())
+        self.assertFalse(filtered_queryset.filter(id=self.year_early_campaign.id).exists())
+        self.assertFalse(filtered_queryset.filter(id=self.year_late_campaign.id).exists())
+        self.assertEqual(filtered_queryset.count(), 2)

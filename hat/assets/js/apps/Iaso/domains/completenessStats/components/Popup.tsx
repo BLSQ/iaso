@@ -1,23 +1,23 @@
 import React, { createRef, FunctionComponent, useCallback } from 'react';
-import { Popup } from 'react-leaflet';
-import classNames from 'classnames';
-import { makeStyles } from '@mui/styles';
 import {
+    Box,
+    Button,
     Card,
     CardContent,
-    Button,
     Grid,
-    Box,
     Table,
     TableBody,
 } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
     mapPopupStyles,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
+import classNames from 'classnames';
+import { Popup } from 'react-leaflet';
+import { baseUrls } from 'Iaso/constants/urls';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 import {
     CompletenessMapStats,

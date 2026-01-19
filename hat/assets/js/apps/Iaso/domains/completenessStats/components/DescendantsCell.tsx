@@ -1,13 +1,13 @@
 import React, { ReactElement, useMemo } from 'react';
+import { Box, Theme, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Tooltip, Box, Theme } from '@mui/material';
 
-import { FormStatRow } from '../types';
+import { Legend, useGetLegend } from 'Iaso/components/LegendBuilder/Legend';
+import { SxStyles } from 'Iaso/types/general';
+import { getEffectiveThreshold } from 'Iaso/utils/map/mapUtils';
 import MESSAGES from '../messages';
+import { FormStatRow } from '../types';
 import { LinearProgressWithLabel } from './LinearProgressWithLabel';
-import { getEffectiveThreshold } from '../../../utils/map/mapUtils';
-import { Legend, useGetLegend } from '../../../components/LegendBuilder/Legend';
-import { SxStyles } from '../../../types/general';
 
 const styles: SxStyles = {
     root: {

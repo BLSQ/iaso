@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0359_planning_selected_sampling_result'),
+        ("iaso", "0359_planning_selected_sampling_result"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='metrictype',
-            name='origin',
-            field=models.CharField(choices=[('openhexa', 'OpenHexa'), ('custom', 'Custom'), ('other', 'Other')], default='openhexa', max_length=50),
+            model_name="metrictype",
+            name="origin",
+            field=models.CharField(
+                choices=[("openhexa", "OpenHexa"), ("custom", "Custom"), ("other", "Other")],
+                default="openhexa",
+                max_length=50,
+            ),
         ),
     ]

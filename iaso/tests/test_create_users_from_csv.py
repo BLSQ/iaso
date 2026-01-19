@@ -112,9 +112,24 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "r") as f:
+            reader = list(csv.DictReader(f))
+
+        for row in reader:
+            if row["username"] == "rsfg":
+                row["editable_org_unit_types"] = str(self.org_unit_type_region.id)
+
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=reader[0].keys())
+        writer.writeheader()
+        writer.writerows(reader)
+
+        test_file = SimpleUploadedFile("test.csv", output.getvalue().encode("utf-8"), content_type="text/csv")
+
         with self.assertNumQueries(85):
-            with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-                response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+            # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         users = User.objects.all()
         profiles = Profile.objects.all()

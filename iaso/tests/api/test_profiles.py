@@ -348,6 +348,7 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
 

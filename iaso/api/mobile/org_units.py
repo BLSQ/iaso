@@ -20,7 +20,7 @@ from iaso.api.instances.instances import InstanceFileSerializer
 from iaso.api.org_units import import_org_units
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
-    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+    IsAuthenticatedWhenAuthenticationRequired,
 )
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
@@ -148,7 +148,7 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
         return org_unit.location.z if org_unit.location else None
 
 
-class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
+class HasOrgUnitPermission(IsAuthenticatedWhenAuthenticationRequired):
     def has_object_permission(self, request, view, obj):
         if not (
             request.user.is_authenticated

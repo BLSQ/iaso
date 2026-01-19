@@ -2,7 +2,7 @@ import { getRequest } from "Iaso/libs/Api";
 import { useSnackQuery } from "Iaso/libs/apiHooks";
 import { getURL } from "../../Campaigns/hooks/api/useGetCampaigns";
 
-const URL = "/api/polio/calendar/"
+const URL = "/api/polio/v2/calendar/"
 
 
 const getCampaigns = (queryParams)=>getRequest(getURL(queryParams,URL))

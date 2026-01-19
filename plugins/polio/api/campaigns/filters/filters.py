@@ -25,7 +25,7 @@ def search_queryset(queryset, value):
     return queryset
 
 
-class CampaignFilter(django_filters.rest_framework.FilterSet):
+class CampaignFilterV2(django_filters.rest_framework.FilterSet):
     class Meta:
         model = Campaign
         fields = {
@@ -43,7 +43,6 @@ class CampaignFilter(django_filters.rest_framework.FilterSet):
     campaign_groups = django_filters.CharFilter(method="filter_campaign_groups", label=_("Campaign groups"))
     campaign_types = django_filters.CharFilter(method="filter_campaign_types", label=_("Campaign types"))
     campaign_category = django_filters.CharFilter(method="filter_campaign_category", label=_("Campaign category"))
-    on_hold = django_filters.BooleanFilter(method="filter_on_hold", label=_("On hold"))
     show_test = django_filters.BooleanFilter(method="filter_show_test", label=_("Show test"))
 
     def search_filter(self, queryset: QuerySet, _, value: str) -> QuerySet:
@@ -67,7 +66,6 @@ class CampaignFilter(django_filters.rest_framework.FilterSet):
             return queryset.filter(campaign_types__id__in=campaign_types_list)
         return queryset.filter(campaign_types__slug__in=campaign_types_list)
 
-    # TODO double check impact of possible breaking change here
     def filter_campaign_category(self, queryset: QuerySet, _, value: str) -> QuerySet:
         """
         PLANNED and ON_HOLD are mutually exclusive on the business side (not on the model yet)
@@ -87,13 +85,6 @@ class CampaignFilter(django_filters.rest_framework.FilterSet):
             return queryset.filter(is_planned=True)
         return queryset
 
-    # TODO confirm filter behaviour when no value is passed
-    def filter_on_hold(self, queryset: QuerySet, _, value: bool) -> QuerySet:
-        if not value:
-            return queryset.filter(on_hold=False)
-        return queryset
-
-    # TODO confirm filter behaviour when no value is passed
     def filter_show_test(self, queryset: QuerySet, _, value: bool) -> QuerySet:
         if not value:
             return queryset.filter(is_test=False)

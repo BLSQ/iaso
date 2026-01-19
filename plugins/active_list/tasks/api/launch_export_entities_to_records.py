@@ -1,8 +1,6 @@
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from plugins.active_list.tasks.export_entities_to_records import export_entities_to_records
 
@@ -12,7 +10,7 @@ class ExportEntitiesToRecordsSerializer(serializers.Serializer):
 
 
 class ExportEntitiesToRecordsViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.REGISTRY_WRITE)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated]  # type: ignore
     serializer_class = ExportEntitiesToRecordsSerializer
 
     def create(self, request):

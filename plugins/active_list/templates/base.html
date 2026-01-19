@@ -42,20 +42,22 @@
             </button>
             
             <div class="navbar-menu" id="navbar-menu">
+                {% with request.resolver_match.url_name as current_url %}
                 <div class="navbar-nav">
-                    <a href="{% url 'patient_list' %}" class="nav-link">
+                    <a href="{% url 'patient_list' %}" class="nav-link{% if current_url == 'patient_list' %} is-active{% endif %}">
                         <i class="fas fa-users"></i> Patients
                     </a>
-                    <a href="{% url 'validation' %}" class="nav-link">
-                        <i class="fas fa-check-circle"></i> Validation
+                    <a href="{% url 'validation' %}" class="nav-link{% if current_url == 'validation' %} is-active{% endif %}">
+                        <i class="fas fa-check-circle"></i>Validation
                     </a>
-                    <a href="{% url 'upload' %}" class="nav-link">
+                    <a href="{% url 'upload' %}" class="nav-link{% if current_url == 'upload' %} is-active{% endif %}">
                         <i class="fas fa-upload"></i> Charger
                     </a>
-                    <a href="{% url 'patient_search' %}" class="nav-link">
+                    <a href="{% url 'patient_search' %}" class="nav-link{% if current_url == 'patient_search' %} is-active{% endif %}">
                         <i class="fas fa-search"></i> Rechercher
                     </a>
                 </div>
+                {% endwith %}
                 
                 <div class="navbar-user">
                     <div class="user-info">

@@ -156,7 +156,7 @@ tsp-solver2==0.4.1
 
 # active_list plugin
 openhexa.sdk==0.3.1
-=======
+
 # Azure blob storage.
 azure-storage-blob==12.19.0
 
@@ -167,4 +167,4 @@ snt-malaria-budgeting==0.5.1
 # Sass compiler for template styles.
 # ------------------------------------------------------------------------------
 libsass==0.23.0  # provides the 'sass' module used by compile_index_scss
->>>>>>> develop
+

@@ -1,9 +1,9 @@
-from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
 from rest_framework import permissions, serializers
 
-from iaso.api.common import ModelViewSet
+from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION, CORE_PAGES_PERMISSION
 
@@ -15,9 +15,17 @@ class PagesSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
+        account = request.user.iaso_profile.account
         users = validated_data.pop("users")
         user_roles = validated_data.pop("user_roles", [])
-        page = Page.objects.create(**validated_data, account=request.user.iaso_profile.account)
+
+        # Validate user_roles belong to user's account
+        if user_roles:
+            invalid_roles = [role for role in user_roles if role.account != account]
+            if invalid_roles:
+                raise serializers.ValidationError({"user_roles": "User roles must belong to your account."})
+
+        page = Page.objects.create(**validated_data, account=account)
         page.users.set(users)
         page.user_roles.set(user_roles)
         return page
@@ -51,16 +59,10 @@ class PageFilter(FilterSet):
 
     def filter_by_user_roles(self, queryset, _, value):
         """Filter pages by user role IDs (comma-separated string)."""
-        if not value:
-            return queryset
-
-        # Parse comma-separated IDs
-        role_ids = [int(id.strip()) for id in value.split(",") if id.strip().isdigit()]
-
-        if not role_ids:
-            return queryset
-
-        return queryset.filter(user_roles__id__in=role_ids)
+        role_ids = parse_comma_separated_numeric_values(value, "userRoleIds")
+        if role_ids:
+            return queryset.filter(user_roles__id__in=role_ids)
+        return queryset
 
 
 class PagesViewSet(ModelViewSet):
@@ -90,7 +92,7 @@ class PagesViewSet(ModelViewSet):
             # READ-ONLY users see only pages they can access
             queryset = (
                 Page.objects.filter(account=user.iaso_profile.account)
-                .filter(models.Q(users=user) | models.Q(user_roles__group__in=user_groups))
+                .filter(Q(users=user) | Q(user_roles__group__in=user_groups))
                 .distinct()
             )
         else:

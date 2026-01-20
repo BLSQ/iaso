@@ -2,6 +2,7 @@ import React, { FC, useCallback } from 'react';
 import { Select, useSafeIntl } from 'bluesquare-components';
 import type { IntlMessage } from 'bluesquare-components';
 import { useGetUserRolesDropDown } from '../../domains/userRoles/hooks/requests/useGetUserRoles';
+import { commaSeparatedIdsToArray } from '../../utils/forms';
 import MESSAGES from './messages';
 
 type Props = {
@@ -31,9 +32,7 @@ export const UserRolesSelect: FC<Props> = ({
         [handleChange, keyValue],
     );
 
-    const value = filterUserRoles
-        ? filterUserRoles.split(',').map((id: string) => parseInt(id, 10))
-        : [];
+    const value = commaSeparatedIdsToArray(filterUserRoles);
 
     return (
         <Select

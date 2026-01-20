@@ -1,7 +1,8 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Select } from 'bluesquare-components';
 import { FieldInputProps, FormikProps } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 
 type FormValues = {
@@ -20,13 +21,12 @@ export const UserRolesSelect: FunctionComponent<Props> = ({
     label = '',
     ...props
 } = {}) => {
-    const { data: userRoles, isFetching: isFetchingRoles } = useGetUserRolesDropDown();
+    const { data: userRoles, isFetching: isFetchingRoles } =
+        useGetUserRolesDropDown();
 
     const handleChange = useCallback(
         (newValue: string): void => {
-            const fieldValue: number[] = newValue
-                ? newValue.split(',').map(val => parseInt(val, 10))
-                : [];
+            const fieldValue: number[] = commaSeparatedIdsToArray(newValue);
             if (field && form) {
                 form.setFieldValue(field.name, fieldValue);
             }

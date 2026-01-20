@@ -220,6 +220,43 @@ class PagesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.json()["results"]), 3)
 
+    def test_create_page_with_user_roles_validation(self):
+        """POST /pages/ - User roles must belong to user's account"""
+        self.client.force_login(self.first_user)
+
+        # Creating page with user roles from same account should succeed
+        response = self.client.post(
+            "/api/pages/",
+            data={
+                "type": "RAW",
+                "needs_authentication": "true",
+                "name": "Valid Page",
+                "slug": "valid_page",
+                "content": "test",
+                "users": [],
+                "user_roles": [self.manager_role.pk],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+
+        # Creating page with user roles from different account should fail
+        response = self.client.post(
+            "/api/pages/",
+            data={
+                "type": "RAW",
+                "needs_authentication": "true",
+                "name": "Invalid Page",
+                "slug": "invalid_page",
+                "content": "test",
+                "users": [],
+                "user_roles": [self.other_account_role.pk],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertIn("user_roles", response.json())
+
     def test_create_page_with_no_write_permission(self):
         """POST /pages/ without write page permission should result in a 403"""
         self.client.force_login(self.user_no_write_permission)

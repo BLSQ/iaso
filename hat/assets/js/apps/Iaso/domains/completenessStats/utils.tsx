@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useGenUrl } from '../../routing/routing';
+import { useGenUrl } from 'Iaso/routing/routing';
 
 type GetParentPageUrl = (parentOrgUnitId?: number | string) => string;
 

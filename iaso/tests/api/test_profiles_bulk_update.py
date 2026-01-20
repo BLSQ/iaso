@@ -417,6 +417,117 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(1, user_to_update.iaso_profile.projects.count())
         self.assertEqual(user_to_update.iaso_profile.projects.first(), self.project_1)
 
+    def test_profile_bulkupdate_add_projects_with_core_users_admin_permission(self):
+        """POST /api/tasks/create/profilesbulkupdate/"""
+        admin_user = self.create_user_with_profile(
+            username="admin_user_unrestricted",
+            account=self.account1,
+            permissions=[CORE_USERS_ADMIN_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            language="en",
+        )
+        saveUserProfile(admin_user)
+
+        user_to_update = self.user_admin_no_task
+        user_to_update.iaso_profile.projects.clear()
+
+        self.client.force_authenticate(admin_user)
+
+        operation_payload = {
+            "select_all": False,
+            "selected_ids": [user_to_update.iaso_profile.pk],
+            "unselected_ids": None,
+            "projects_ids_added": [
+                self.project_0.pk,
+                self.project_1.pk,
+            ],
+            "projects_ids_removed": [],
+            "roles_id_added": [],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": None,
+            "teams_id_removed": None,
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
+        }
+
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, admin_user)
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        user_to_update.refresh_from_db()
+        self.assertEqual(2, user_to_update.iaso_profile.projects.count())
+        project_ids = list(user_to_update.iaso_profile.projects.values_list("id", flat=True))
+        self.assertIn(self.project_0.pk, project_ids)
+        self.assertIn(self.project_1.pk, project_ids)
+
+    def test_profile_bulkupdate_remove_projects_with_core_users_admin_permission(self):
+        """POST /api/tasks/create/profilesbulkupdate/"""
+        admin_user = self.create_user_with_profile(
+            username="admin_user_unrestricted_2",
+            account=self.account1,
+            permissions=[CORE_USERS_ADMIN_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            language="en",
+        )
+        saveUserProfile(admin_user)
+
+        user_to_update = self.user_admin_no_task2
+        user_to_update.iaso_profile.projects.set([self.project_0, self.project_1])
+
+        self.client.force_authenticate(admin_user)
+
+        operation_payload = {
+            "select_all": False,
+            "selected_ids": [user_to_update.iaso_profile.pk],
+            "unselected_ids": None,
+            "projects_ids_added": [],
+            "projects_ids_removed": [
+                self.project_0.pk,
+                self.project_1.pk,
+            ],
+            "roles_id_added": [],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": None,
+            "teams_id_removed": None,
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
+        }
+
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, admin_user)
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        user_to_update.refresh_from_db()
+        self.assertEqual(0, user_to_update.iaso_profile.projects.count())
+
     def test_profile_bulkupdate_user_managed_cannot_add_projects(self):
         """POST /api/tasks/create/profilesbulkupdate/ cannot add projects as user manager"""
         self.client.force_authenticate(self.user_managed)

@@ -127,20 +127,14 @@ class BulkCreateCsvTestCase(APITestCase):
 
         # test_file = SimpleUploadedFile("test.csv", output.getvalue().encode("utf-8"), content_type="text/csv")
 
-        context = {
-            "org_unit_type_id": self.org_unit_type_region.id
-        }
+        context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
-            fixture_name="test_user_bulk_create_valid.csv",
-            context=context
+            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
         )
 
         test_file = SimpleUploadedFile(
-            "test_user_bulk_create_valid.csv",
-            csv_content.encode("utf-8"),
-            content_type="text/csv"
+            "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
         with self.assertNumQueries(85):
@@ -312,16 +306,12 @@ class BulkCreateCsvTestCase(APITestCase):
 
         # 2. Use the helper to render the CSV (swapping the placeholder for the ID)
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
-            fixture_name="test_user_bulk_create_valid.csv",
-            context=context
+            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
         )
 
         # 3. Wrap it in a file-like object
         test_file = SimpleUploadedFile(
-            "test_user_bulk_create_valid.csv",
-            csv_content.encode("utf-8"),
-            content_type="text/csv"
+            "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
@@ -359,23 +349,19 @@ class BulkCreateCsvTestCase(APITestCase):
         self.source.projects.set([self.project])
 
         # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-        #     
+        #
 
         # 1. Prepare the context with the dynamic ID
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         # 2. Use the helper to render the CSV (swapping the placeholder for the ID)
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
-            fixture_name="test_user_bulk_create_valid.csv",
-            context=context
+            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
         )
 
         # 3. Wrap it in a file-like object
         test_file = SimpleUploadedFile(
-            "test_user_bulk_create_valid.csv",
-            csv_content.encode("utf-8"),
-            content_type="text/csv"
+            "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
         self.assertEqual(response.status_code, 200)
@@ -412,16 +398,12 @@ class BulkCreateCsvTestCase(APITestCase):
 
         # 2. Use the helper to render the CSV (swapping the placeholder for the ID)
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
-            fixture_name="test_user_bulk_create_valid.csv",
-            context=context
+            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
         )
 
         # 3. Wrap it in a file-like object
         test_file = SimpleUploadedFile(
-            "test_user_bulk_create_valid.csv",
-            csv_content.encode("utf-8"),
-            content_type="text/csv"
+            "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 

@@ -89,6 +89,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     "id": int(country_id),
                     "data": {
                         "campaign": latest_active_campaign.obr_name,
+                        "campaign_id": str(latest_active_campaign.id),
                         **stats,
                         "country_name": org_unit.name,
                         "round_number": round_number,
@@ -103,7 +104,11 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
             else:
                 result = {
                     "id": int(country_id),
-                    "data": {"campaign": latest_active_campaign.obr_name, "country_name": org_unit.name},
+                    "data": {
+                        "campaign": latest_active_campaign.obr_name,
+                        "campaign_id": str(latest_active_campaign.id),
+                        "country_name": org_unit.name,
+                    },
                     "geo_json": shapes,
                     "status": LQASStatus.InScope,
                 }

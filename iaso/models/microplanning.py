@@ -10,6 +10,31 @@ from iaso.models.team import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
+class PlanningSamplingResult(models.Model):
+    """Stores the results of sampling runs."""
+
+    planning = models.ForeignKey("Planning", on_delete=models.CASCADE, related_name="sampling_results")
+    task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="sampling_results")
+    pipeline_id = models.CharField(max_length=36, blank=True, help_text="OpenHexa pipeline UUID")
+    pipeline_version = models.CharField(max_length=100, blank=True, help_text="Pipeline version identifier")
+    pipeline_name = models.CharField(max_length=100, blank=True, help_text="Pipeline name")
+    group = models.ForeignKey(
+        "Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Created org unit group containing sampled units",
+    )
+    parameters = models.JSONField(help_text="Sampling parameters used for this run")
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Sampling Result"
+        verbose_name_plural = "Sampling Results"
+
+
 class PlanningQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         return self.filter(project__account=user.iaso_profile.account)
@@ -42,6 +67,13 @@ class Planning(SoftDeletableModel):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    selected_sampling_result = models.OneToOneField(
+        PlanningSamplingResult,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="selected_by_planning",
+    )
 
     def __str__(self):
         return self.name

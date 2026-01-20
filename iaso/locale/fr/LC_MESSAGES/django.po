@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-03 13:39+0000\n"
+"POT-Creation-Date: 2025-12-19 10:52+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -106,6 +106,14 @@ msgid ""
 msgstr ""
 "Les paramètres objectId et contentType sont requis. contentType peut être "
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
+
+#: iaso/api/microplanning/views.py
+msgid "This query parameter is required."
+msgstr "Ce paramètre de requête est requis."
+
+#: iaso/api/microplanning/views.py
+msgid "Unknown or inaccessible planning"
+msgstr "Planification inconnue ou inaccessible"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
@@ -284,12 +292,12 @@ msgstr ""
 "cette version"
 
 #: iaso/api/org_units.py
-msgid "Unauthorized version id"
-msgstr "ID de version non autorisé"
-
-#: iaso/api/org_units.py
 msgid "Org unit name is required"
 msgstr "Le nom de l'unité organisationnelle est requis"
+
+#: iaso/api/org_units.py
+msgid "Unauthorized version id"
+msgstr "ID de version non autorisé"
 
 #: iaso/api/org_units.py
 msgid "Opening date must be anterior to closed date"

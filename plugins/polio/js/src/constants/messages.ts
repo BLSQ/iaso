@@ -2521,6 +2521,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.performanceThresholds',
         defaultMessage: 'Performance Thresholds',
     },
+    performanceDashboard: {
+        id: 'iaso.polio.title.performanceDashboard',
+        defaultMessage: 'Performance dashboard',
+    },
+    classicFilters: {
+        id: 'iaso.polio.label.classicFilters',
+        defaultMessage: 'Classic filters',
+    },
+    addIntegratedCampaigns: {
+        id: 'iaso.polio.label.addIntegratedCampaigns',
+        defaultMessage: 'Add integrated campaigns',
+    },
+    integratedToCampaign: {
+        id: 'iaso.polio.label.integratedToCampaign',
+        defaultMessage: 'Integrated to campaign',
+    },
 });
 
 export default MESSAGES;

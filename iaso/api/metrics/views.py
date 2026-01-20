@@ -16,7 +16,7 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "options"]
 
     def get_queryset(self):
-        return MetricType.objects.filter(account=self.request.user.iaso_profile.account)
+        return MetricType.objects.filter(account=self.request.user.iaso_profile.account, is_utility=False)
 
 
 class MetricValueViewSet(viewsets.ModelViewSet):

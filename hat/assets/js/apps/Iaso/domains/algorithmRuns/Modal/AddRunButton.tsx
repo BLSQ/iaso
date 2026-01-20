@@ -1,5 +1,5 @@
-import { AddButton } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { AddButton } from 'bluesquare-components';
 import { MESSAGES } from '../messages';
 
 type Props = {

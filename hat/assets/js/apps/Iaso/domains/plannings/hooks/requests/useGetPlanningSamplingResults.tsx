@@ -1,0 +1,33 @@
+import { UseQueryResult } from 'react-query';
+import { useApiParams } from 'Iaso/hooks/useApiParams';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { PaginatedResponse } from '../../../app/types';
+import { SamplingResult } from '../../types';
+
+export const tableDefaults = {
+    page: 1,
+    limit: 5,
+    order: '-created_at',
+};
+export const useGetPlanningSamplingResults = (
+    planningId: string,
+    params: Record<string, string>,
+): UseQueryResult<PaginatedResponse<SamplingResult>, Error> => {
+    const safeParams = useApiParams(params, tableDefaults);
+    const queryString = new URLSearchParams(safeParams).toString();
+    return useSnackQuery({
+        queryKey: ['planningSamplingResults', safeParams, planningId],
+        queryFn: () =>
+            getRequest(
+                `/api/microplanning/samplings/?planning_id=${planningId}&${queryString}`,
+            ),
+
+        options: {
+            enabled: Boolean(planningId),
+            retry: false,
+            staleTime: Infinity,
+            cacheTime: 60000,
+        },
+    });
+};

@@ -4,9 +4,8 @@ import React, {
     useEffect,
     useMemo,
     useRef,
-    useState,
 } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
@@ -27,6 +26,9 @@ import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroup
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
+import { IntegratedCampaigns } from './IntegratedCampaigns/Widget/IntegratedCampaigns';
+import { IntegratedCampaignField } from './IntegratedCampaigns/IntegratedTo/IntegratedCampaignField';
+import { AddIntegratedCampaignsModal } from './IntegratedCampaigns/Widget/AddIntegratedCampaignsModal';
 
 export const baseInfoFormFields: string[] = [
     'epid',
@@ -62,7 +64,7 @@ export const BaseInfoForm: FunctionComponent = () => {
     );
     const controlRef = useRef(false);
 
-    const { values, touched, setFieldValue, setTouched } =
+    const { values, touched, setFieldValue, setTouched, setFieldTouched } =
         useFormikContext<CampaignFormValues>();
     const { data: types, isFetching: isFetchingTypes } =
         useGetCampaignTypes(true);
@@ -111,11 +113,23 @@ export const BaseInfoForm: FunctionComponent = () => {
         }
     }, [touched, values.rounds, setTouched, values.is_planned]);
 
+    const handleChangeIntegratedTo = useCallback(
+        (_, value) => {
+            setFieldTouched('integrated_to', true);
+            setFieldValue('integrated_to', {
+                id: value.value,
+                obr_name: value.label,
+                campaign_types: value.campaign_types,
+            });
+        },
+        [setFieldTouched, setFieldValue, values.integrated_to],
+    );
+
     return (
         <Box width={'100%'}>
             <Grid container spacing={2}>
                 <Grid container item spacing={2}>
-                    <Grid xs={12} md={isPolio ? 6 : 12} item>
+                    <Grid xs={12} md={isPolio ? 4 : 12} item>
                         <Field
                             label={formatMessage(MESSAGES.campaignType)}
                             name="campaign_types"
@@ -144,6 +158,17 @@ export const BaseInfoForm: FunctionComponent = () => {
                             required
                             disabled={!isUserAdmin}
                         />
+
+                        {!isPolio && (
+                            <Box mb={2}>
+                                <IntegratedCampaignField
+                                    label={MESSAGES.integratedToCampaign}
+                                    value={values?.integrated_to}
+                                    onChange={handleChangeIntegratedTo}
+                                />
+                            </Box>
+                        )}
+
                         <Field
                             className={classes.input}
                             label={formatMessage(MESSAGES.description)}
@@ -152,11 +177,19 @@ export const BaseInfoForm: FunctionComponent = () => {
                             shrinkLabel={false}
                         />
                         <Field
+                            label={formatMessage(MESSAGES.epid)}
+                            name="epid"
+                            component={TextInput}
+                            shrinkLabel={false}
+                            className={classes.input}
+                        />
+                        <Field
                             label={getLabelByKey('gpei_coordinator')}
                             name="gpei_coordinator"
                             component={TextInput}
                             shrinkLabel={false}
                         />
+
                         {isUserAdmin && (
                             <Field
                                 className={classes.input}
@@ -211,7 +244,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                     </Grid>
                     {/* POLIO FIELDS */}
                     {isPolio && (
-                        <Grid item xs={12} md={6}>
+                        <Grid item xs={12} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.virus)}
                                 name="virus"
@@ -235,20 +268,15 @@ export const BaseInfoForm: FunctionComponent = () => {
                             </Box>
                             <Box mt={2}>
                                 <Field
-                                    label={formatMessage(MESSAGES.epid)}
-                                    name="epid"
-                                    component={TextInput}
-                                    shrinkLabel={false}
-                                    className={classes.input}
+                                    label={formatMessage(
+                                        MESSAGES.groupedCampaigns,
+                                    )}
+                                    name="grouped_campaigns"
+                                    options={groupedCampaignsOptions}
+                                    withMarginTop={false}
+                                    component={MultiSelect}
                                 />
                             </Box>
-                            <Field
-                                label={formatMessage(MESSAGES.groupedCampaigns)}
-                                name="grouped_campaigns"
-                                options={groupedCampaignsOptions}
-                                withMarginTop={false}
-                                component={MultiSelect}
-                            />
                             <Box mt={2}>
                                 <Field
                                     label={formatMessage(
@@ -276,6 +304,18 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 />
                             </Box>
                         </Grid>
+                    )}
+                    {isPolio && (
+                        <>
+                            <Grid item xs={12} md={4}>
+                                <IntegratedCampaigns />
+                                <Box display="flex" justifyContent="flex-end">
+                                    <AddIntegratedCampaignsModal
+                                        iconProps={{}}
+                                    />
+                                </Box>
+                            </Grid>
+                        </>
                     )}
                 </Grid>
             </Grid>

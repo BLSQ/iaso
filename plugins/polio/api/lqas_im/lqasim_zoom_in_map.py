@@ -177,6 +177,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "id": district.id,
                         "data": {
                             "campaign": latest_active_campaign.obr_name,
+                            "campaign_id": str(latest_active_campaign.id),
                             **district_stats,
                             "district_name": district.name,
                             "round_number": round_number,
@@ -192,6 +193,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "id": district.id,
                         "data": {
                             "campaign": latest_active_campaign.obr_name,
+                            "campaign_id": str(latest_active_campaign.id),
                             "district_name": district.name,
                             "region_name": district.parent.name,
                         },

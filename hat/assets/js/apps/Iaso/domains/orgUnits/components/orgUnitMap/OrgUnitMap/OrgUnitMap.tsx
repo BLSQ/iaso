@@ -13,6 +13,7 @@ import { pink } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import 'leaflet-draw';
+import { Map as LeafletMap } from 'leaflet';
 
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
@@ -99,7 +100,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const currentUser = useCurrentUser();
-    const map: any = useRef();
+    const map = useRef<LeafletMap | null>(null);
     // These 2 refs are needed because we need to initialize the EditableGroups only once, but we need the map to be ready
     // and we can't predict exactly how many renders that will require
     const didLocationInitialize = useRef(false);
@@ -519,9 +520,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     zoom={zoom}
                     zoomControl={false}
                     keyboard={false}
-                    whenCreated={mapInstance => {
-                        map.current = mapInstance;
-                    }}
+                    ref={map}
                 >
                     <CustomZoomControl
                         bounds={bounds}

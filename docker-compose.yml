@@ -42,6 +42,7 @@ services:
             AWS_SECRET_ACCESS_KEY:
             AWS_STORAGE_BUCKET_NAME:
             CLAMAV_ACTIVE:
+            FORUM_PATH:
             CLAMAV_FQDN:
             DB_READONLY_PASSWORD: postgres
             DB_READONLY_USERNAME: postgres
@@ -91,9 +92,13 @@ services:
             THEME_PRIMARY_BACKGROUND_COLOR: #OpenHexa API token
             THEME_PRIMARY_COLOR:
             THEME_SECONDARY_COLOR:
+            USER_MANUAL_PATH:
             WFP_AUTH_ACCOUNT:
             WFP_AUTH_CLIENT_ID:
             WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
+            USE_CELERY: ${USE_CELERY:-false}
+            CELERY_BROKER_URL: ${CELERY_BROKER_URL:-}
+            CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-}
         logging: &iaso_logging
             driver: 'json-file'
             options:
@@ -130,3 +135,10 @@ services:
         environment: *hat_environment
         logging: *iaso_logging
         command: start_webpack
+
+    # celery worker for wfp plugin
+    redis:
+        image: redis:7
+        ports:
+        - "6379:6379"
+        profiles: ["celery"]

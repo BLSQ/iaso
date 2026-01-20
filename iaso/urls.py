@@ -65,7 +65,7 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
-from .api.microplanning.views import AssignmentViewSet, PlanningViewSet
+from .api.microplanning.views import AssignmentViewSet, PlanningSamplingResultViewSet, PlanningViewSet
 from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
@@ -210,6 +210,7 @@ router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkc
 router.register(r"teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
+router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")

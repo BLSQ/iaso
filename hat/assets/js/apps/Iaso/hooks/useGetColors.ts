@@ -32,14 +32,15 @@ export const getColor = (
     i: number,
     colors?: string[],
     usedColors?: string[],
+    defaultColor: string = 'transparent',
 ): string => {
-    if (!colors) return 'transparent';
-    if (colors.length === 0) return 'transparent';
+    if (!colors) return defaultColor;
+    if (colors.length === 0) return defaultColor;
 
     const availableColors = colors.filter(
         color => !usedColors?.includes(color),
     );
-    if (availableColors.length === 0) return 'transparent';
+    if (availableColors.length === 0) return defaultColor;
 
     return availableColors[i % availableColors.length];
 };

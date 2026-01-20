@@ -22,6 +22,7 @@ class MetricTypeAPITestCase(APITestCase):
             code="MT001",
             name="Metric Type 1",
             description="Description for Metric Type 1",
+            category="Category A",
             origin=MetricType.MetricTypeOrigin.CUSTOM,
         )
         cls.metric_type_2 = MetricType.objects.create(
@@ -29,6 +30,7 @@ class MetricTypeAPITestCase(APITestCase):
             code="MT002",
             name="Metric Type 2",
             description="Description for Metric Type 2",
+            category="Category B",
             origin=MetricType.MetricTypeOrigin.OPENHEXA,
         )
 
@@ -77,6 +79,25 @@ class MetricTypeAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/metrics/types/{self.metric_type_1.id}/")
         self.assertEqual(response.status_code, 405)  # Method Not Allowed
+
+    def test_metric_type_grouped_per_category(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get("/api/metrics/types/grouped_per_category/")
+        self.assertEqual(response.status_code, 200)
+
+        grouped_data = {group["name"]: group["items"] for group in response.data}
+        self.assertIn("Category A", grouped_data)
+        self.assertIn("Category B", grouped_data)
+
+        category_a_items = grouped_data["Category A"]
+        category_b_items = grouped_data["Category B"]
+
+        self.assertEqual(len(category_a_items), 1)
+        self.assertEqual(category_a_items[0]["code"], "MT001")
+
+        self.assertEqual(len(category_b_items), 1)
+        self.assertEqual(category_b_items[0]["code"], "MT002")
 
 
 class OrgUnitMetricAPITestCase(APITestCase):

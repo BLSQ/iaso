@@ -58,13 +58,13 @@ class CampaignFilterV2(django_filters.rest_framework.FilterSet):
             return queryset
         return queryset.filter(grouped_campaigns__in=value.split(","))
 
-    # def filter_campaign_types(self, queryset: QuerySet, _, value: str) -> QuerySet:
-    #     if not value:
-    #         return queryset
-    #     campaign_types_list = value.split(",")
-    #     if all(item.isdigit() for item in campaign_types_list):
-    #         return queryset.filter(campaign_types__id__in=campaign_types_list)
-    #     return queryset.filter(campaign_types__slug__in=campaign_types_list)
+    def filter_campaign_types(self, queryset: QuerySet, _, value: str) -> QuerySet:
+        if not value:
+            return queryset
+        campaign_types_list = value.split(",")
+        if all(item.isdigit() for item in campaign_types_list):
+            return queryset.filter(campaign_types__id__in=campaign_types_list)
+        return queryset.filter(campaign_types__slug__in=campaign_types_list)
 
     def filter_campaign_category(self, queryset: QuerySet, _, value: str) -> QuerySet:
         """

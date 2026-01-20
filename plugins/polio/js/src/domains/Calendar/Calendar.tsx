@@ -38,9 +38,7 @@ import {
     mapCampaigns,
 } from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
-// import { useGetCampaigns } from './hooks/useGetCampaigns';
-import { CAMPAIGNS_ENDPOINT, useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
-
+import { useGetCampaigns } from './hooks/useGetCampaigns';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -75,10 +73,10 @@ export const Calendar: FunctionComponent = () => {
 
     const orders = params.order || defaultOrder;
     const currentDate = params.currentDate
-    ? moment(params.currentDate, dateFormat)
-    : moment();
+        ? moment(params.currentDate, dateFormat)
+        : moment();
 
-    const currentDateString=currentDate.format('YYYY-MM-DD')
+    const currentDateString = currentDate.format('YYYY-MM-DD');
 
     const queryParams = useMemo(() => {
         const options = {
@@ -95,7 +93,7 @@ export const Calendar: FunctionComponent = () => {
                 : undefined,
             show_test: false,
             on_hold: false,
-            reference_date:currentDateString
+            reference_date: currentDateString,
         };
 
         return isEmbedded ? { ...options, is_embedded: true } : options;
@@ -107,20 +105,18 @@ export const Calendar: FunctionComponent = () => {
         params.campaignGroups,
         params.orgUnitGroups,
         params.campaignType,
-        isEmbedded,currentDateString
+        isEmbedded,
+        currentDateString,
     ]);
-
 
     const {
         data: campaigns = [],
         isLoading,
         isFetching,
-    } = useGetCampaigns(
+    } = useGetCampaigns({
         queryParams,
-        CAMPAIGNS_ENDPOINT,
-        ['calendar-campaigns'],
-        { enabled: isTypeSet },
-    );
+        queryOptions: { enabled: isTypeSet },
+    });
 
     const redirectToReplace = useRedirectToReplace();
 
@@ -140,7 +136,7 @@ export const Calendar: FunctionComponent = () => {
                 calendarData.firstMonday,
                 calendarData.lastSunday,
             ),
-        [campaigns, calendarData.firstMonday, calendarData.lastSunday,currentDateString],
+        [campaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
     const filteredCampaigns = useMemo(
         () =>
@@ -165,6 +161,7 @@ export const Calendar: FunctionComponent = () => {
 
     const xlsx_url = getTableUrl(
         'polio/campaigns/create_calendar_xlsx_sheet',
+
         urlParams,
     );
 

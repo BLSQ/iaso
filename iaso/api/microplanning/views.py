@@ -15,6 +15,7 @@ from iaso.api.common import (
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
+from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
 from .filters import (
@@ -27,6 +28,7 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningOrgUnitSerializer,
     PlanningReadSerializer,
     PlanningSamplingResult,
     PlanningSamplingResultListSerializer,
@@ -34,6 +36,50 @@ from .serializers import (
     PlanningSamplingResultWriteSerializer,
     PlanningWriteSerializer,
 )
+
+
+class PlanningOrgunitsViewSet(AuditMixin, ModelViewSet):
+    """List orgunits for a planning."""
+
+    http_method_names = ["get", "head", "options"]
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
+    serializer_class = PlanningOrgUnitSerializer
+    queryset = Planning.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        planning_id = request.query_params.get("planning_id")
+        if not planning_id:
+            return Response({"planning_id": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        try:
+            planning = (
+                self.queryset.filter_for_user(user)
+                .select_related("org_unit", "target_org_unit_type", "selected_sampling_result__group")
+                .get(pk=planning_id)
+            )
+        except Planning.DoesNotExist:
+            return Response({"planning_id": ["Not found."]}, status=status.HTTP_404_NOT_FOUND)
+
+        org_units_qs = OrgUnit.objects.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
+        root_org_unit = planning.org_unit
+        org_units = []
+        sampling = planning.selected_sampling_result
+        if sampling and sampling.group_id:
+            org_units = list(org_units_qs.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True)))
+        elif planning.org_unit and planning.target_org_unit_type:
+            org_units = list(
+                org_units_qs.descendants(planning.org_unit).filter(org_unit_type=planning.target_org_unit_type)
+            )
+
+        # Always include the planning root org unit
+        if root_org_unit:
+            existing_ids = {ou.id for ou in org_units}
+            if root_org_unit.id not in existing_ids:
+                org_units.insert(0, root_org_unit)
+
+        serializer = self.get_serializer(org_units, many=True)
+        return Response(serializer.data)
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):

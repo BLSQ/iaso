@@ -1,6 +1,12 @@
 from unittest import mock
 
-from iaso.api.microplanning.serializers import PlanningReadSerializer, PlanningWriteSerializer
+from django.contrib.gis.geos import MultiPolygon, Polygon
+
+from iaso.api.microplanning.serializers import (
+    PlanningOrgUnitSerializer,
+    PlanningReadSerializer,
+    PlanningWriteSerializer,
+)
 from iaso.models import Form, OrgUnit, OrgUnitType, Planning, Project, Team
 from iaso.models.microplanning import PlanningSamplingResult
 from iaso.models.project import DEFAULT_PROJECT_COLOR
@@ -139,3 +145,28 @@ class PlanningSerializersTestCase(APITestCase):
 
     # TODO: add tests to cover all validation errors in PlanningWriteSerializer
     # TODO: add tests to check for missing and empty fields in PlanningWriteSerializer
+
+    def test_planning_org_unit_serializer_with_geo_json(self):
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+        self.org_unit_parent.simplified_geom = multipolygon
+        self.org_unit_parent.save()
+
+        serializer = PlanningOrgUnitSerializer(self.org_unit_parent)
+
+        geo_json = serializer.data["geo_json"]
+        self.assertEqual(geo_json["type"], "FeatureCollection")
+        self.assertEqual(len(geo_json["features"]), 1)
+        feature = geo_json["features"][0]
+        self.assertEqual(feature["id"], self.org_unit_parent.id)
+        self.assertEqual(feature["geometry"]["type"], "MultiPolygon")
+        self.assertTrue(serializer.data["has_geo_json"])
+
+    def test_planning_org_unit_serializer_without_geo_json(self):
+        self.org_unit_parent.simplified_geom = None
+        self.org_unit_parent.save()
+
+        serializer = PlanningOrgUnitSerializer(self.org_unit_parent)
+
+        self.assertIsNone(serializer.data["geo_json"])
+        self.assertFalse(serializer.data["has_geo_json"])

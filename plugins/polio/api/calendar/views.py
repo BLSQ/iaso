@@ -7,7 +7,11 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import OrgUnit
-from plugins.polio.api.calendar.filter import CalendarFilter, CalendarPeriodFilterBackend
+from plugins.polio.api.calendar.filter import (
+    CalendarFilter,
+    CalendarPeriodFilterBackend,
+    IntegratedCampaignFilterBackend,
+)
 from plugins.polio.api.calendar.serializers import CalendarCampaignSerializerV2
 from plugins.polio.models import (
     Campaign,
@@ -18,7 +22,7 @@ from plugins.polio.preparedness.spreadsheet_manager import (
 
 
 class CampaignCalendarViewSet(ModelViewSet):
-    """Main endpoint for campaign.
+    """Main endpoint for campaign calendar.
 
     GET (Anonymously too)
     See swagger for Parameters
@@ -48,8 +52,6 @@ class CampaignCalendarViewSet(ModelViewSet):
     # in this case we use a restricted serializer with less field
     # notably not the url that we want to remain private.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    export_filename = "campaigns_list_{date}.csv"
-    use_field_order = False
 
     def get_serializer_class(self):
         return CalendarCampaignSerializerV2
@@ -99,3 +101,22 @@ class CampaignCalendarViewSet(ModelViewSet):
                 )
 
         return campaigns
+
+
+class IntegratedCampaignsViewSet(CampaignCalendarViewSet):
+    """Endpoint for integrated campaigns.
+
+    GET (Anonymously too)
+
+    Same as the CampaignCalendarViewSet but with a custom filter to return campaign based on their "parent" id
+    """
+
+    # We allow anonymous read access for the embeddable calendar map view
+    # in this case we use a restricted serializer with less field
+    # notably not the url that we want to remain private.
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    http_method_names = ["get"]
+    filter_backends = [
+        IntegratedCampaignFilterBackend,
+        DeletionFilterBackend,
+    ]

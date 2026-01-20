@@ -1,6 +1,6 @@
-from django.db.models import Max, Min, Prefetch
+from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, permissions
+from rest_framework import permissions
 
 from iaso.api.common import (
     DeletionFilterBackend,
@@ -28,20 +28,19 @@ class CampaignCalendarViewSet(ModelViewSet):
     http_method_names = ["get"]
     remove_results_key_if_paginated = True
     filter_backends = [
-        filters.OrderingFilter,
         DjangoFilterBackend,
         CalendarPeriodFilterBackend,
         DeletionFilterBackend,
     ]
 
-    ordering_fields = [
-        "obr_name",
-        "cvdpv2_notified_at",
-        "detection_status",
-        "first_round_started_at",
-        "last_round_started_at",
-        "country__name",
-    ]
+    # ordering_fields = [
+    #     "obr_name",
+    #     "cvdpv2_notified_at",
+    #     "detection_status",
+    #     "first_round_started_at",
+    #     "last_round_started_at",
+    #     "country__name",
+    # ]
 
     filterset_class = CalendarFilter
 
@@ -64,13 +63,7 @@ class CampaignCalendarViewSet(ModelViewSet):
             "rounds__scopes__group__org_units", queryset=org_units_id_only_qs
         )
 
-        campaigns = Campaign.objects.all()
-
-        # used for Ordering
-        campaigns = campaigns.annotate(last_round_started_at=Max("rounds__started_at"))
-        campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
-
-        campaigns = campaigns.filter_for_user(user)
+        campaigns = Campaign.objects.filter_for_user(user)
         campaigns = (
             campaigns.prefetch_related(country_prefetch)
             .prefetch_related("grouped_campaigns")

@@ -143,5 +143,6 @@ class CalendarCampaignSerializerV2(serializers.ModelSerializer):
             "on_hold",
             "is_planned",
             "vaccines",
+            "integrated_to",
         ]
         read_only_fields = fields

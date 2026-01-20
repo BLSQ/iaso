@@ -97,6 +97,9 @@ services:
             WFP_AUTH_ACCOUNT:
             WFP_AUTH_CLIENT_ID:
             WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
+            USE_CELERY: ${USE_CELERY:-false}
+            CELERY_BROKER_URL: ${CELERY_BROKER_URL:-}
+            CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-}
         logging: &iaso_logging
             driver: 'json-file'
             options:
@@ -133,3 +136,10 @@ services:
         environment: *hat_environment
         logging: *iaso_logging
         command: start_webpack
+
+    # celery worker for wfp plugin
+    redis:
+        image: redis:7
+        ports:
+        - "6379:6379"
+        profiles: ["celery"]

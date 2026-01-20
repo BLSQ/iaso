@@ -42,7 +42,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
     },
     editable_fields: {
-        defaultMessage: 'Editable fields',
+        defaultMessage: 'Editable Fields',
         id: 'iaso.label.editableFields',
     },
     edition: {

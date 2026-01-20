@@ -41,13 +41,16 @@
         </p>
         {% endif %}
         {% csrf_token %}
+        <div class="form-group">
         {{ form }}
+          <button id="display-password" type="button">
+            {% include "./icons/eye.html" %}
+            {% include "./icons/eye-slash.html" %}
+          </button>
+        </div>
         <input type="hidden" name="next" value="{{ next }}" />
         <button id="submit" type="submit" class="button">{% trans 'Login' %}</button>
-        <button id="display-password">
-          {% include "./icons/eye.html" %}
-          {% include "./icons/eye-slash.html" %}
-        </button>
+
         <p class="bottom-links">
           <a class="forgot-link" href="{% url 'forgot_password' %}">{% trans 'Forgot password' %}</a>
         </p>

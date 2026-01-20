@@ -12,7 +12,7 @@ class MetricType(models.Model):
 
     class MetricTypeOrigin(models.TextChoices):
         OPENHEXA = "openhexa", _("OpenHexa")
-        INTERFACE = "custom", _("Custom")
+        CUSTOM = "custom", _("Custom")
         OTHER = "other", _("Other")
 
     class Meta:

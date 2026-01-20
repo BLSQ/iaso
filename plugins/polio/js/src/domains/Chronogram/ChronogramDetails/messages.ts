@@ -23,7 +23,7 @@ const MESSAGES = defineMessages({
     },
     labelId: {
         id: 'iaso.label.id',
-        defaultMessage: 'ID',
+        defaultMessage: 'Identifier',
     },
     labelComment: {
         id: 'iaso.polio.chronogram.label.comment',

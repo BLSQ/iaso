@@ -6,13 +6,15 @@ from django.contrib.admin import SimpleListFilter, widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
+from django.db import connection, models, transaction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 from lazy_services import LazyService
+
+import iaso.management.commands.unique_indexes as unique_indexes
 
 from hat.audit.models import DJANGO_ADMIN
 from iaso.models.json_config import Config  # type: ignore
@@ -1178,9 +1180,25 @@ class DataSourceAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
+@admin.action(description="Create DB indexes (CONCURRENTLY)")
+def create_indexes_action(modeladmin, request, queryset):
+    previous = transaction.get_autocommit()
+    try:
+        transaction.set_autocommit(True)
+        with connection.cursor() as cursor:
+            for index in unique_indexes.INDEXES:
+                index.apply(cursor)
+        messages.success(request, "Indexes created (or already existed).")
+    except Exception as e:
+        messages.error(request, f"Error creating indexes: {e}")
+    finally:
+        transaction.set_autocommit(previous)
+
+
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    actions = [create_indexes_action]
     search_fields = ["name", "id"]
     list_display = ["name", "created_at", "updated_at"]
     autocomplete_fields = ["default_version"]

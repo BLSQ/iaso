@@ -157,3 +157,7 @@ azure-storage-blob==12.19.0
 # SNT Malaria plugin.
 # ------------------------------------------------------------------------------
 snt-malaria-budgeting==0.5.1
+
+# Sass compiler for template styles.
+# ------------------------------------------------------------------------------
+libsass==0.23.0  # provides the 'sass' module used by compile_index_scss

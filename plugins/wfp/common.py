@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
 
-from dateutil.relativedelta import *
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Case, CharField, F, FloatField, IntegerField, Q, Sum, TextField, Value, When
@@ -41,8 +41,20 @@ class ETL:
         account = entity_type.account
         return account
 
-    def get_updated_entity_ids(self, updated_at=None):
+    def get_updated_data(self, updated_at=None):
         entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+        if updated_at is not None:
+            entities = entities.filter(updated_at__gte=updated_at)
+        return entities
+
+    def get_org_unit_ids_with_updated_data(self, updated_at=None):
+        entities = self.get_updated_data(updated_at)
+        org_units = entities.values("org_unit_id").distinct()
+        org_unit_ids = list(map(lambda org_unit: org_unit["org_unit_id"], org_units))
+        return list(set(org_unit_ids))
+
+    def get_updated_entity_ids(self, updated_at=None):
+        entities = self.get_updated_data(updated_at)
         if updated_at is not None:
             entities = entities.filter(updated_at__gte=updated_at)
         entities = entities.values("entity_id").distinct()
@@ -69,6 +81,7 @@ class ETL:
                 "deleted",
                 "form__form_id",
                 "org_unit_id",
+                "org_unit",
                 "updated_at",
                 "form",
                 "entity__deleted_at",
@@ -513,7 +526,7 @@ class ETL:
             quantity = step.get("quantity", 0)
             ration_type = ""
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
-                quantity = step.get("_total_number_of_sachets", 0)
+                quantity = step.get("_total_number_of_sachets")
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
 
@@ -572,9 +585,21 @@ class ETL:
             ):
                 quantity = 0
                 ration_size = step.get("ration_size", step.get("ration_limit"))
-            else:
-                if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
+            elif step.get("ration_type") in ["rusf", "rutf"]:
+                if (
+                    step.get("_total_number_of_sachets") == ""
+                    or step.get("_total_number_of_sachets") == "."
+                    or (
+                        step.get("_total_number_of_sachets_rutf") is not None
+                        and (
+                            step.get("_total_number_of_sachets_rutf") == ""
+                            or step.get("_total_number_of_sachets_rutf") == "."
+                        )
+                    )
+                ):
                     quantity = 0
+                else:
+                    quantity = step.get("_total_number_of_sachets", step.get("_total_number_of_sachets_rutf", quantity))
             assistance = {
                 "type": step.get("ration_type", step.get("ration")),
                 "quantity": quantity,
@@ -623,7 +648,7 @@ class ETL:
                 whz_color = "Green"
             visit.whz_color = whz_color
             visit.journey = journey
-            visit.org_unit_id = current_visit["org_unit_id"]
+            visit.org_unit_id = current_visit.get("org_unit_id", None)
             visit.instance_id = current_visit.get("instance_id", None)
             saved_visits.append(visit)
             visit_number += 1
@@ -775,8 +800,7 @@ class ETL:
 
     def save_monthly_journey(self, monthly_journey, account):
         monthly_Statistic = MonthlyStatistics()
-        org_unit_id = monthly_journey.get("org_unit")
-        monthly_Statistic.org_unit_id = org_unit_id
+        monthly_Statistic.org_unit_id = monthly_journey.get("org_unit")
         monthly_Statistic.gender = monthly_journey.get("gender")
         monthly_Statistic.month = monthly_journey.get("month")
         monthly_Statistic.year = monthly_journey.get("year")
@@ -809,20 +833,23 @@ class ETL:
 
         return monthly_Statistic
 
-    def journey_with_visit_and_steps_per_visit(self, account, programme):
+    def journey_with_visit_and_steps_per_visit(self, account, programme, org_unit_with_updated_data=None):
         aggregated_journeys = []
+        journeys = Step.objects.select_related(
+            "visit",
+            "visit__journey",
+            "visit__org_unit",
+            "visit__journey__beneficiary",
+        ).filter(
+            visit__journey__programme_type=programme,
+            visit__journey__beneficiary__account=account,
+        )
+
+        if org_unit_with_updated_data is not None and len(org_unit_with_updated_data) > 0:
+            journeys = journeys.filter(visit__org_unit__id__in=org_unit_with_updated_data)
+
         journeys = (
-            Step.objects.select_related(
-                "visit",
-                "visit__journey",
-                "visit__org_unit",
-                "visit__journey__beneficiary",
-            )
-            .filter(
-                visit__journey__programme_type=programme,
-                visit__journey__beneficiary__account=account,
-            )
-            .values(
+            journeys.values(
                 "visit__journey__admission_type",
                 "assistance_type",
                 "instance_id",
@@ -949,6 +976,7 @@ class ETL:
             )
             .order_by("visit__id")
         )
+
         data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
 
         for org_unit, journeys in data_by_journey:
@@ -975,13 +1003,15 @@ class ETL:
             return f"{year}0{month}"
         return f"{year}{month}"
 
-    def aggregating_data_to_push_to_dhis2(self, account):
+    def aggregating_data_to_push_to_dhis2(self, account, org_unit_ids=None):
         monthlyStatistics = (
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
             .values()
             .filter(account=account)
-            .filter(org_unit_id__in=[758, 622, 43])
+            .filter(org_unit__source_ref__isnull=False)
         )
+        if org_unit_ids is not None and len(org_unit_ids) > 0:
+            monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
         # Reading the dhis2 datalement mapper json file
@@ -1006,7 +1036,7 @@ class ETL:
         dataValues = []
         for program_type, journey_by_program in journeys:
             dataElement = dataElements.get(program_type)
-            journey = None
+            journey = []
             categories = []
             sub_categories = []
             if program_type == "U5":

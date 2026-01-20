@@ -176,7 +176,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.actions',
     },
     org_unit: {
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
         id: 'iaso.instance.org_unit',
     },
     selectedOrgUnit: {
@@ -681,7 +681,7 @@ const MESSAGES = defineMessages({
     },
     created_by: {
         id: 'iaso.label.created_by',
-        defaultMessage: 'Created  by',
+        defaultMessage: 'Created by',
     },
     planning: {
         id: 'iaso.label.planning',
@@ -726,7 +726,7 @@ const MESSAGES = defineMessages({
     },
     org_unit_name: {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     parent: {
         id: 'iaso.label.parent',

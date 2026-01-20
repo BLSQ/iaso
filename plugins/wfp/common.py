@@ -8,8 +8,9 @@ from operator import itemgetter
 from dateutil.relativedelta import *
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, F, IntegerField, Q, Sum, Value, When
-from django.db.models.functions import Concat, Extract
+from django.db.models import Case, CharField, F, FloatField, IntegerField, Q, Sum, TextField, Value, When
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast, Concat, Extract, Substr
 
 from iaso.models import *
 from iaso.models.base import Instance
@@ -28,6 +29,7 @@ class ETL:
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
         MonthlyStatistics.objects.all().delete()
+        ScreeningData.objects.all().delete()
 
         print("EXISTING BENEFICIARY DELETED", beneficiary[1]["wfp.Beneficiary"])
         print("EXISTING STEPS DELETED", beneficiary[1]["wfp.Step"])
@@ -1065,3 +1067,63 @@ class ETL:
             }.values()
         )
         return dataValues
+
+    def get_screening_data(self, form_ids, account, updated_at):
+        instances = Instance.objects.filter(project__account=account, json__isnull=False, form__form_id__in=form_ids)
+        if updated_at:
+            instances = instances.filter(updated_at__gte=updated_at)
+        instances = (
+            instances.exclude(deleted=True)
+            .annotate(
+                new_period=Substr("period", 1, 6),
+                month=Cast(Cast(Substr("period", 5, 2), output_field=IntegerField()), output_field=TextField()),
+                year=Substr("period", 1, 4),
+                date=Concat(
+                    Extract("created_at", "year"),
+                    Value("-"),
+                    Extract("created_at", "month"),
+                    Value("-"),
+                    Extract("created_at", "day"),
+                    output_field=CharField(),
+                ),
+                json_u5_male_green=Cast(KeyTextTransform("u5_male_green", "json"), output_field=FloatField()),
+                json_u5_female_green=Cast(KeyTextTransform("u5_female_green", "json"), output_field=FloatField()),
+                json_u5_male_yellow=Cast(KeyTextTransform("u5_male_yellow", "json"), output_field=FloatField()),
+                json_u5_female_yellow=Cast(KeyTextTransform("u5_female_yellow", "json"), output_field=FloatField()),
+                json_u5_male_red=Cast(KeyTextTransform("u5_male_red", "json"), output_field=FloatField()),
+                json_u5_female_red=Cast(KeyTextTransform("u5_female_red", "json"), output_field=FloatField()),
+                json_pregnant_w_muac_gt_23=Cast(
+                    KeyTextTransform("pregnant_w_muac_gt_23", "json"), output_field=FloatField()
+                ),
+                json_pregnant_w_muac_lte_23=Cast(
+                    KeyTextTransform("pregnant_w_muac_lte_23", "json"), output_field=FloatField()
+                ),
+                json_lactating_w_muac_gt_23=Cast(
+                    KeyTextTransform("lactating_w_muac_gt_23", "json"), output_field=FloatField()
+                ),
+                json_lactating_w_muac_lte_23=Cast(
+                    KeyTextTransform("lactating_w_muac_lte_23", "json"), output_field=FloatField()
+                ),
+            )
+            .prefetch_related("org_unit__parent")
+            .values("new_period", "org_unit__parent")
+            .annotate(
+                org_unit=F("org_unit__parent"),
+                period=F("new_period"),
+                year=F("year"),
+                month=F("month"),
+                date=F("date"),
+                u5_male_green=Sum("json_u5_male_green"),
+                u5_female_green=Sum("json_u5_female_green"),
+                u5_male_yellow=Sum("json_u5_male_yellow"),
+                u5_female_yellow=Sum("json_u5_female_yellow"),
+                u5_male_red=Sum("json_u5_male_red"),
+                u5_female_red=Sum("json_u5_female_red"),
+                pregnant_w_muac_gt_23=Sum("json_pregnant_w_muac_gt_23"),
+                pregnant_w_muac_lte_23=Sum("json_pregnant_w_muac_lte_23"),
+                lactating_w_muac_gt_23=Sum("json_lactating_w_muac_gt_23"),
+                lactating_w_muac_lte_23=Sum("json_lactating_w_muac_lte_23"),
+            )
+            .order_by("period", "org_unit")
+        )
+        return Paginator(instances, 15000)

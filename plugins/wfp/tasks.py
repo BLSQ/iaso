@@ -13,6 +13,7 @@ from .management.commands.nigeria.Under5 import NG_Under5
 from .management.commands.south_sudan.Dhis2 import Dhis2
 from .management.commands.south_sudan.Pbwg import PBWG
 from .management.commands.south_sudan.Under5 import Under5
+from .management.commands.south_sudan.Screening import Screening
 from .models import *
 
 
@@ -82,6 +83,7 @@ def etl_ssd(all_data=None):
     updated_U5_beneficiaries = ETL([entity_type_U5_code]).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
     Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
+    Screening().run(child_account, last_success_task_date)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"

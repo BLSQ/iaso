@@ -31,7 +31,7 @@ from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsErro
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request, search_by_ids_refs
-from iaso.utils.colors import DEFAULT_COLOR
+from iaso.utils.colors import DEFAULT_COLOR, validate_hex_color
 
 
 PK_ME = "me"
@@ -377,7 +377,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, user.profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, user.profile)
-            color = request.data.get("color", None)
+            color = self.validate_color(request)
         except ProfileError as error:
             # Delete profile if error since we're creating a new user
             user.profile.delete()
@@ -442,7 +442,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
-            color = request.data.get("color", None)
+            color = self.validate_color(request)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -541,6 +541,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.editable_org_unit_types.set(editable_org_unit_types)
         profile.save()
         return profile
+
+    def validate_color(self, request) -> str:
+        color = request.data.get("color", None)
+        try:
+            return validate_hex_color(color)
+        except ValueError as error:
+            raise ProfileError(field="color", detail=str(error))
 
     @staticmethod
     def list_export(

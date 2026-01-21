@@ -1,6 +1,24 @@
 DEFAULT_COLOR = "#1976D2"
 
 
+def validate_hex_color(value: str) -> str:
+    """Validate and normalize a hex RGB color code (#RRGGBB)."""
+    if not value:
+        return value
+
+    if not value.startswith("#"):
+        raise ValueError("Color must start with #")
+
+    if len(value) != 7:
+        raise ValueError("Color must be in format #RRGGBB (7 characters)")
+
+    hex_part = value[1:]
+    if not all(c in "0123456789ABCDEFabcdef" for c in hex_part):
+        raise ValueError("Color must contain only valid hexadecimal characters (0-9, A-F)")
+
+    return value.upper()
+
+
 COLOR_CHOICES = (
     ("#ef5350", "Red 400"),
     ("#b71c1c", "Red 900"),

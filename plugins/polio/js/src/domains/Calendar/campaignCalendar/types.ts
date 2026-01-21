@@ -13,6 +13,8 @@ export type Query = {
     queryFn: CallableFunction;
     select: CallableFunction;
     enabled: boolean;
+    staleTime: number;
+    cacheTime: number;
 };
 
 export type MergedShapeWithCacheDate = MergedShape & { cache: number };
@@ -51,7 +53,7 @@ export type MappedCampaign = {
     separateScopesPerRound: boolean;
     color?: string;
     country: string;
-    // eslint-disable-next-line camelcase
+
     country_id: number;
     id: string;
     isPreventive: boolean;
@@ -75,7 +77,7 @@ export type CalendarParams = {
     roundStartFrom?: string;
     roundStartTo?: string;
     showOnlyDeleted?: string;
-    // eslint-disable-next-line camelcase
+
     show_test?: string; // boolean in string form
     on_hold?: string; // boolean in string form
     filterLaunched?: string;
@@ -88,6 +90,7 @@ export type CalendarParams = {
     orgUnitGroups?: string;
     currentDate?: string;
     periodType?: PeriodType;
+    showIntegrated?: 'true' | 'false';
 };
 
 export type CalendarData = {

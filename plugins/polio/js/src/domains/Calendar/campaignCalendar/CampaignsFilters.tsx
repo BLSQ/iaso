@@ -74,6 +74,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
+    const [showIntegrated, setShowIntegrated] = useState(
+        params.showIntegrated === 'true',
+    );
     const [hideTest, setHideTest] = useState(params.show_test === 'false');
 
     const [roundStartFrom, setRoundStartFrom] = useState(
@@ -117,6 +120,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 orgUnitGroups,
                 filterLaunched: filtersFilled ? 'true' : 'false',
                 periodType: params?.periodType,
+                showIntegrated: showIntegrated ? 'true' : 'false',
             };
             redirectToReplace(redirectUrl, urlParams);
         }
@@ -136,6 +140,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         filtersFilled,
         redirectToReplace,
         redirectUrl,
+        showIntegrated,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: types, isFetching: isFetchingTypes } = useGetCampaignTypes();
@@ -172,6 +177,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignCategory,
         campaignGroups,
         orgUnitGroups,
+        showIntegrated,
     ]);
 
     useEffect(() => {
@@ -308,7 +314,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             keyValue="countries"
                             multi
                             clearable
-                            onChange={(key, value) => {
+                            onChange={(_key, value) => {
                                 setCountries(value);
                             }}
                             value={countries}
@@ -318,6 +324,15 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                                 value: c.id,
                             }))}
                             label={MESSAGES.country}
+                        />
+                        <InputComponent
+                            keyValue="showIntegrated"
+                            onChange={(_key, value) => {
+                                setShowIntegrated(value);
+                            }}
+                            value={showIntegrated}
+                            type="checkbox"
+                            label={MESSAGES.showIntegratedCampaigns}
                         />
                     </>
                 )}

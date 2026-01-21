@@ -39,6 +39,7 @@ import {
 } from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 import { useGetCampaigns } from './hooks/useGetCampaigns';
+import { useGetIntegratedCampaigns } from './hooks/useGetIntegratedCampaigns';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -117,6 +118,17 @@ export const Calendar: FunctionComponent = () => {
         queryParams,
         queryOptions: { enabled: isTypeSet },
     });
+
+    const obrNames: string[] = useMemo(() => {
+        return campaigns.map(campaign => campaign.obr_name);
+    }, [campaigns]);
+
+    const { data: integratedCampaigns, isFetching: isFetchingIntegrated } =
+        useGetIntegratedCampaigns({
+            obrNames,
+            enabled: params?.showIntegrated == 'true',
+        });
+    console.log('integrated', integratedCampaigns);
 
     const redirectToReplace = useRedirectToReplace();
 

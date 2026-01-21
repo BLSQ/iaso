@@ -35,7 +35,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         id: 'iaso.label.actions',
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
     },
     edit: {
         id: 'iaso.label.edit',

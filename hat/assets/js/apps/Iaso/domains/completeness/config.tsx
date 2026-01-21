@@ -1,12 +1,18 @@
+import React from 'react';
+import { CallMerge } from '@mui/icons-material';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
 
+import { IconButton, Tooltip } from '@mui/material';
 import {
+    Column,
     formatThousand,
+    HeaderRowIcon,
+    LinkWithLocation,
     textPlaceholder,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from 'Iaso/constants/urls';
 
 import { INSTANCE_STATUSES } from '../instances/constants';
 import {
@@ -32,7 +38,7 @@ const STATUS_COLUMN_ICONS = {
     exported: CheckCircleOutline,
 };
 
-const getBaseColumns = formatMessage => [
+const getBaseColumns = (formatMessage): Array<Column> => [
     {
         Header: formatMessage(MESSAGES.formsTitle),
         accessor: 'name',
@@ -60,7 +66,7 @@ const monthsList = [
     'april',
     'may',
     'june',
-    'jully',
+    'july',
     'august',
     'september',
     'october',
@@ -76,7 +82,7 @@ export const getColumns = (
     onSelect,
     onGenerateDerivedInstances,
     activePeriodType,
-) => {
+): Array<Column> => {
     const columns = getBaseColumns(formatMessage);
     months.forEach(month => {
         const monthColumn = {
@@ -149,15 +155,21 @@ export const getColumns = (
                 accessor: 'actions-1',
                 Cell: settings => {
                     return settings.row.original.generate_derived ? (
-                        <IconButton
-                            onClick={() =>
-                                onGenerateDerivedInstances(
-                                    settings.row.original,
-                                )
-                            }
-                            icon="call-merge"
-                            tooltipMessage={MESSAGES.generateDerivedInstances}
-                        />
+                        <Tooltip
+                            title={formatMessage(
+                                MESSAGES.generateDerivedInstances,
+                            )}
+                        >
+                            <IconButton
+                                onClick={() =>
+                                    onGenerateDerivedInstances(
+                                        settings.row.original,
+                                    )
+                                }
+                            >
+                                <CallMerge />
+                            </IconButton>
+                        </Tooltip>
                     ) : (
                         ''
                     );

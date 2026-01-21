@@ -685,6 +685,18 @@ msgstr "Linéaire"
 msgid "Ordinal"
 msgstr "Ordinal"
 
+#: iaso/models/metric.py
+msgid "OpenHexa"
+msgstr "OpenHexa"
+
+#: iaso/models/metric.py
+msgid "Custom"
+msgstr "Personnalisé"
+
+#: iaso/models/metric.py
+msgid "Other"
+msgstr "Autre"
+
 #: iaso/models/org_unit.py
 msgid "Country"
 msgstr "Pays"

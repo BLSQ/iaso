@@ -4,6 +4,7 @@ from rest_framework.fields import Field
 
 from iaso.models import Project
 from iaso.models.team import Team, TeamType
+from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -20,9 +21,15 @@ class NestedTeamSerializer(serializers.ModelSerializer):
 
 
 class NestedUserSerializer(serializers.ModelSerializer):
+    color = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username"]
+        fields = ["id", "username", "first_name", "last_name", "color"]
+
+    def get_color(self, obj):
+        profile = getattr(obj, "iaso_profile", None)
+        return getattr(profile, "color", None) if profile else None
 
 
 class AuditTeamSerializer(serializers.ModelSerializer):
@@ -80,24 +87,10 @@ class TeamSerializer(serializers.ModelSerializer):
     project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
 
     def validate_color(self, value: str) -> str:
-        """Validate that color is a valid hex RGB color code"""
-        if not value:
-            return value
-
-        # Check if it starts with #
-        if not value.startswith("#"):
-            raise serializers.ValidationError("Color must start with #")
-
-        # Check length (7 for #RRGGBB)
-        if len(value) != 7:
-            raise serializers.ValidationError("Color must be in format #RRGGBB (7 characters)")
-
-        # Check if all characters after # are valid hex digits
-        hex_part = value[1:]
-        if not all(c in "0123456789ABCDEFabcdef" for c in hex_part):
-            raise serializers.ValidationError("Color must contain only valid hexadecimal characters (0-9, A-F)")
-
-        return value.upper()  # Normalize to uppercase
+        try:
+            return validate_hex_color(value)
+        except ValueError:
+            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
     def validate_parent(self, value: Team):
         if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):

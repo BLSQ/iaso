@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 14:47+0000\n"
+"POT-Creation-Date: 2026-01-15 11:46+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -274,10 +274,12 @@ msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
 #: iaso/api/org_units.py
+#, python-brace-format
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
+#, python-brace-format
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
@@ -314,6 +316,10 @@ msgstr "Limiter selon si l'authentification est requise ou non"
 #: iaso/api/pages.py iaso/api/payments/views.py
 msgid "User ID"
 msgstr "ID utilisateur"
+
+#: iaso/api/pages.py
+msgid "User Role IDs"
+msgstr "IDs rôles"
 
 #: iaso/api/payments/views.py
 msgid "Status"

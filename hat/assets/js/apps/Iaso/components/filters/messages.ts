@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.user',
         defaultMessage: 'User',
     },
+    userRoles: {
+        id: 'iaso.label.userRoles',
+        defaultMessage: 'User Roles',
+    },
 });
 
 export default MESSAGES;

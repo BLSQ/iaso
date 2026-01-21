@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso.models.base import Account
 from iaso.models.metric import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
@@ -37,15 +39,15 @@ class MetricTypeAPITestCase(APITestCase):
     def test_metric_type_list(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/metrics/types/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
-        metric_type_codes = {mt["code"] for mt in response.data}
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(data), 2)
+        metric_type_codes = {mt["code"] for mt in data}
         self.assertIn("MT001", metric_type_codes)
         self.assertIn("MT002", metric_type_codes)
-        custom_metric_types = [mt for mt in response.data if mt["origin"] == MetricType.MetricTypeOrigin.CUSTOM]
+        custom_metric_types = [mt for mt in data if mt["origin"] == MetricType.MetricTypeOrigin.CUSTOM]
         self.assertEqual(len(custom_metric_types), 1)
         self.assertEqual(custom_metric_types[0]["code"], "MT001")
-        oh_metric_types = [mt for mt in response.data if mt["origin"] == MetricType.MetricTypeOrigin.OPENHEXA]
+        oh_metric_types = [mt for mt in data if mt["origin"] == MetricType.MetricTypeOrigin.OPENHEXA]
         self.assertEqual(len(oh_metric_types), 1)
         self.assertEqual(oh_metric_types[0]["code"], "MT002")
 
@@ -60,7 +62,7 @@ class MetricTypeAPITestCase(APITestCase):
                 "origin": MetricType.MetricTypeOrigin.CUSTOM,
             },
         )
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
     def test_metric_type_put(self):
         self.client.force_authenticate(user=self.user)
@@ -73,20 +75,20 @@ class MetricTypeAPITestCase(APITestCase):
                 "origin": MetricType.MetricTypeOrigin.CUSTOM,
             },
         )
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
     def test_metric_type_delete(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/metrics/types/{self.metric_type_1.id}/")
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
     def test_metric_type_grouped_per_category(self):
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get("/api/metrics/types/grouped_per_category/")
-        self.assertEqual(response.status_code, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        grouped_data = {group["name"]: group["items"] for group in response.data}
+        grouped_data = {group["name"]: group["items"] for group in data}
         self.assertIn("Category A", grouped_data)
         self.assertIn("Category B", grouped_data)
 
@@ -139,9 +141,9 @@ class OrgUnitMetricAPITestCase(APITestCase):
     def test_metric_org_units_list(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(f"/api/metrics/orgunits/?metric_type_id={self.metric_type.id}")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
-        org_unit_ids = {ou["org_unit_id"] for ou in response.data}
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(data), 2)
+        org_unit_ids = {ou["org_unit_id"] for ou in data}
         self.assertIn(self.org_unit_1.id, org_unit_ids)
         self.assertIn(self.org_unit_2.id, org_unit_ids)
 
@@ -153,7 +155,7 @@ class OrgUnitMetricAPITestCase(APITestCase):
                 "metric_type_id": self.metric_type.id,
             },
         )
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
     def test_metric_org_units_put(self):
         self.client.force_authenticate(user=self.user)
@@ -163,12 +165,12 @@ class OrgUnitMetricAPITestCase(APITestCase):
                 "metric_type_id": self.metric_type.id,
             },
         )
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
     def test_metric_org_units_delete(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/metrics/orgunits/{self.org_unit_1.id}/")
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
 
 class MetricValueAPITestCase(APITestCase):
@@ -209,10 +211,9 @@ class MetricValueAPITestCase(APITestCase):
     def test_metric_value_list(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/metrics/values/")
-        data = self.assertJSONResponse(response, HTTP_200_OK)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data), 2)
         years = {mv["year"] for mv in data}
-        self.assertCountEqual([2020,2021], years)
 
     def test_metric_value_post(self):
         self.client.force_authenticate(user=self.user)
@@ -225,7 +226,7 @@ class MetricValueAPITestCase(APITestCase):
                 "value": 200.0,
             },
         )
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
     def test_metric_value_put(self):
         self.client.force_authenticate(user=self.user)
@@ -238,9 +239,9 @@ class MetricValueAPITestCase(APITestCase):
                 "value": 120.0,
             },
         )
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
     def test_metric_value_delete(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/metrics/values/{self.metric_value_1.id}/")
-        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed

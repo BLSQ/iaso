@@ -1142,7 +1142,6 @@ class ETL:
                 period=F("new_period"),
                 year=F("year"),
                 month=F("month"),
-                date=F("date"),
                 u5_male_green=Sum("json_u5_male_green"),
                 u5_female_green=Sum("json_u5_female_green"),
                 u5_male_yellow=Sum("json_u5_male_yellow"),

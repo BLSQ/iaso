@@ -126,7 +126,6 @@ def etl_ssd(all_data=None):
     updated_U5_beneficiaries = ETL([entity_type_U5_code]).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
     Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
-    Screening().run(child_account, last_success_task_date)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
@@ -150,6 +149,8 @@ def etl_ssd(all_data=None):
         account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
     ).delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
+
+    Screening().run(child_account, last_success_task_date)
 
     external_credential = ExternalCredentials.objects.filter(account=pbwg_account).first()
     if external_credential is not None and (

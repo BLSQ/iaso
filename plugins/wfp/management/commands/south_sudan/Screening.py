@@ -1,7 +1,8 @@
 import logging
 
+from functools import reduce
 from itertools import groupby
-from operator import itemgetter
+from operator import itemgetter, or_
 
 from django.db.models import Q
 
@@ -22,7 +23,6 @@ class Screening:
 
         logger.info(f"Screening data for {account}")
         all_screening_data = []
-
         for page in pages:
             data = sorted(
                 list(instances.page(page).object_list),
@@ -30,8 +30,10 @@ class Screening:
             )
             submissions = self.group_submissions_by_org_unit(account, data)
             all_screening_data.extend(submissions)
-        self.clean_screening_data(all_screening_data)
-        exit()
+        instances_by_org_unit_period = list(
+            map(lambda row: Q(org_unit=row.org_unit, period=row.period), all_screening_data)
+        )
+        ScreeningData.objects.filter(reduce(or_, instances_by_org_unit_period)).delete()
         logger.info(f"Inserted {len(all_screening_data)} rows for Screening data")
         ScreeningData.objects.bulk_create(all_screening_data)
 
@@ -59,10 +61,3 @@ class Screening:
                 row.lactating_w_muac_lte_23 = item.get("lactating_w_muac_lte_23")
                 instances.append(row)
         return instances
-
-    def clean_screening_data(self, all_screening_data):
-        rows_to_delete = ScreeningData.objects
-        print("SCREENING ...:", all_screening_data)
-        for row in all_screening_data:
-            print("EACH ROW ...:", row, row.org_unit, row.period)
-            rows_to_delete = rows_to_delete.filter(Q(org_unit=row.org_unit, period=row.period))

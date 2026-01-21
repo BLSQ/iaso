@@ -4,7 +4,7 @@ from rest_framework.fields import Field
 
 from iaso.models import Project
 from iaso.models.team import Team, TeamType
-from iaso.utils.colors import validate_hex_color
+from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -87,11 +87,10 @@ class TeamSerializer(serializers.ModelSerializer):
     project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
 
     def validate_color(self, value: str) -> str:
-        """Validate that color is a valid hex RGB color code"""
         try:
             return validate_hex_color(value)
-        except ValueError as error:
-            raise serializers.ValidationError(str(error))
+        except ValueError:
+            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
     def validate_parent(self, value: Team):
         if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):

@@ -1,4 +1,8 @@
+from django.utils.translation import gettext as _
+
+
 DEFAULT_COLOR = "#1976D2"
+COLOR_FORMAT_ERROR = _("Color must be a valid hex code (#RRGGBB).")
 
 
 def validate_hex_color(value: str) -> str:

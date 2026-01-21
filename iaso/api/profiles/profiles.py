@@ -31,7 +31,7 @@ from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsErro
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request, search_by_ids_refs
-from iaso.utils.colors import DEFAULT_COLOR, validate_hex_color
+from iaso.utils.colors import COLOR_FORMAT_ERROR, DEFAULT_COLOR, validate_hex_color
 
 
 PK_ME = "me"
@@ -546,8 +546,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         color = request.data.get("color", None)
         try:
             return validate_hex_color(color)
-        except ValueError as error:
-            raise ProfileError(field="color", detail=str(error))
+        except ValueError:
+            raise ProfileError(field="color", detail=COLOR_FORMAT_ERROR)
 
     @staticmethod
     def list_export(

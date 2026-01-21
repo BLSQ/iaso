@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from iaso.api.projects import ProjectSerializer
 from iaso.models import FeatureFlag, Form, Project
 from iaso.models.project import DEFAULT_COLOR
-from iaso.utils.colors import validate_hex_color
+from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
 
 
 logger = logging.getLogger(__name__)
@@ -76,8 +76,8 @@ class AppSerializer(ProjectSerializer):
     def validate_color(self, value: str) -> str:
         try:
             return validate_hex_color(value)
-        except ValueError as error:
-            raise ValidationError(str(error))
+        except ValueError:
+            raise ValidationError(COLOR_FORMAT_ERROR)
 
     def create(self, validated_data):
         new_app = Project()

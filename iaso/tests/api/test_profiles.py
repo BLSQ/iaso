@@ -715,7 +715,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_create_profile_with_color(self):
         self.client.force_authenticate(self.jim)
-        color = "#123abc"
+        color = "#123ABC"
         data = {
             "user_name": "color_user",
             "password": "unittest_password",
@@ -1280,7 +1280,7 @@ class ProfileAPITestCase(APITestCase):
     def test_update_profile_color(self):
         self.client.force_authenticate(self.john)
         profile = Profile.objects.get(user=self.jim)
-        new_color = "#abcdef"
+        new_color = "#ABCDEF"
         data = {
             "user_name": profile.user.username,
             "first_name": profile.user.first_name,

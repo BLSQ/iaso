@@ -209,11 +209,10 @@ class MetricValueAPITestCase(APITestCase):
     def test_metric_value_list(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/metrics/values/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
-        years = {mv["year"] for mv in response.data}
-        self.assertIn(2020, years)
-        self.assertIn(2021, years)
+        data = self.assertJSONResponse(response, HTTP_200_OK)
+        self.assertEqual(len(data), 2)
+        years = {mv["year"] for mv in data}
+        self.assertCountEqual([2020,2021], years)
 
     def test_metric_value_post(self):
         self.client.force_authenticate(user=self.user)

@@ -41,7 +41,7 @@ from iaso.api.common import (
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
-from iaso.api.instances.serializers import FileTypeSerializer
+from iaso.api.instances.serializers import FileTypeSerializer, InstanceImportAccuracySerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSerializer
@@ -1048,7 +1048,19 @@ def import_data(instances, user, app_id):
         instance.project = project
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
-        instance.accuracy = instance_data.get("accuracy", None)
+        accuracy_raw = instance_data.get("accuracy", None)
+        if accuracy_raw is not None:
+            accuracy_serializer = InstanceImportAccuracySerializer(data={"accuracy": accuracy_raw})
+            if accuracy_serializer.is_valid():
+                instance.accuracy = accuracy_serializer.validated_data.get("accuracy")
+            else:
+                logger.warning(
+                    "Invalid accuracy value %s for instance %s: %s",
+                    accuracy_raw,
+                    uuid,
+                    accuracy_serializer.errors,
+                )
+                instance.accuracy = None
 
         tentative_org_unit_id = instance_data.get("orgUnitId", None)
         if str(tentative_org_unit_id).isdigit():

@@ -2098,3 +2098,70 @@ class ProfileAPITestCase(APITestCase):
         bob.refresh_from_db()
         self.assertEqual(bob.username, "bob")
         self.assertEqual(bob.first_name, "Bob")
+
+    def test_update_profile_with_case_insensitive_username_should_succeed(self):
+        """Test that updating profile without changing username succeeds even with case-insensitive matching usernames."""
+        self.client.force_authenticate(self.john)
+
+        alice_lower = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice Lower", last_name="alice lower"
+        )
+        alice_upper = self.create_user_with_profile(
+            username="Alice", account=self.account, first_name="Alice Upper", last_name="alice upper"
+        )
+
+        alice_lower_profile = Profile.objects.get(user=alice_lower)
+        data = {
+            "user_name": alice_lower.username,
+            "first_name": "Alice Lower Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_lower_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice_lower.refresh_from_db()
+        self.assertEqual(alice_lower.username, "alice")
+        self.assertEqual(alice_lower.first_name, "Alice Lower Changed")
+
+        alice_upper_profile = Profile.objects.get(user=alice_upper)
+        data = {
+            "user_name": alice_upper.username,
+            "first_name": "Alice Upper Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_upper_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice_upper.refresh_from_db()
+        self.assertEqual(alice_upper.username, "Alice")
+        self.assertEqual(alice_upper.first_name, "Alice Upper Changed")
+
+    def test_update_username_to_existing_case_variation_should_fail(self):
+        """Test that changing username to case variation of another user's username fails."""
+        self.client.force_authenticate(self.john)
+
+        alice_lower = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice Lower", last_name="Smith"
+        )
+        alice_upper = self.create_user_with_profile(
+            username="Alice", account=self.account, first_name="Alice Upper", last_name="Jones"
+        )
+
+        alice_lower_profile = Profile.objects.get(user=alice_lower)
+        data = {
+            "user_name": "Alice",
+            "first_name": "Alice Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_lower_profile.id}/", data=data, format="json")
+
+        # Should fail because another user already has "Alice"
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["errorKey"], "user_name")
+
+        # Ensure original username wasn't changed
+        alice_lower.refresh_from_db()
+        self.assertEqual(alice_lower.username, "alice")
+        self.assertEqual(alice_lower.first_name, "Alice Lower")
+
+        # Ensure other username wasn't changed
+        alice_upper.refresh_from_db()
+        self.assertEqual(alice_upper.username, "Alice")
+        self.assertEqual(alice_upper.first_name, "Alice Upper")

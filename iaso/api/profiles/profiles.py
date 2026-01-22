@@ -594,7 +594,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         username = request.data.get("user_name")
         # Skip validation if username not provided or did not change (case-insensitive)
-        if not username or user.username.lower() == username.lower():
+        if not username or user.username == username:
             return
 
         existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))

@@ -85,7 +85,7 @@ export class Period {
                 periodTypeString = `${this.year}S${this.semester}`;
                 break;
             case PERIOD_TYPE_WEEK:
-                periodTypeString = `${this.year}W${this.week}`;
+                periodTypeString = `${this.year}W${this.week || 1}`;
                 break;
             case PERIOD_TYPE_YEAR:
                 periodTypeString = `${this.year}`;

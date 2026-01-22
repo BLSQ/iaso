@@ -1051,16 +1051,8 @@ def import_data(instances, user, app_id):
         accuracy_raw = instance_data.get("accuracy", None)
         if accuracy_raw is not None:
             accuracy_serializer = InstanceImportAccuracySerializer(data={"accuracy": accuracy_raw})
-            if accuracy_serializer.is_valid():
-                instance.accuracy = accuracy_serializer.validated_data.get("accuracy")
-            else:
-                logger.warning(
-                    "Invalid accuracy value %s for instance %s: %s",
-                    accuracy_raw,
-                    uuid,
-                    accuracy_serializer.errors,
-                )
-                instance.accuracy = None
+            accuracy_serializer.is_valid(raise_exception=True)
+            instance.accuracy = accuracy_serializer.validated_data.get("accuracy")
 
         tentative_org_unit_id = instance_data.get("orgUnitId", None)
         if str(tentative_org_unit_id).isdigit():

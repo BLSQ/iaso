@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 14:47+0000\n"
+"POT-Creation-Date: 2026-01-22 10:54+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -645,6 +645,10 @@ msgstr "Année"
 #: iaso/models/forms.py
 msgid "Financial Nov"
 msgstr "Financier Nov"
+
+#: iaso/models/forms.py
+msgid "WEEK"
+msgstr "Semaine"
 
 #: iaso/models/forms.py
 msgid "No change request"

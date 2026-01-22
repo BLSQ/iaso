@@ -593,8 +593,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")
-        # Skip validation if username not provided or did not change
-        if not username or user.username == username:
+        # Skip validation if username not provided or did not change (case-insensitive)
+        if not username or user.username.lower() == username.lower():
             return
 
         existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))

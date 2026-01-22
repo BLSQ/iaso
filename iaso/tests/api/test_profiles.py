@@ -2043,35 +2043,58 @@ class ProfileAPITestCase(APITestCase):
             f"Users not sorted correctly by first role. Expected: {expected_order}, got: {actual_order}",
         )
 
-    def test_update_user_with_same_username_should_skip_validation(self):
-        """Test that profile update with same username skips validation."""
+    def test_update_profile_without_changing_username_should_succeed(self):
+        """Test that updating profile without changing username succeeds."""
         self.client.force_authenticate(self.john)
-        profile_to_edit = Profile.objects.get(user=self.jim)
-        original_username = self.jim.username
 
+        alice = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice", last_name="Smith"
+        )
+        bob = self.create_user_with_profile(username="bob", account=self.account, first_name="Bob", last_name="Smith")
+
+        alice_profile = Profile.objects.get(user=alice)
         data = {
-            "user_name": original_username,
-            "first_name": "Updated First Name",
+            "user_name": alice.username,
+            "first_name": "Alice Changed",
         }
-        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{alice_profile.id}/", data=data, format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.jim.refresh_from_db()
-        self.assertEqual(self.jim.username, original_username)
-        self.assertEqual(self.jim.first_name, "Updated First Name")
+        alice.refresh_from_db()
+        self.assertEqual(alice.username, "alice")
+        self.assertEqual(alice.first_name, "Alice Changed")
 
-    def test_update_user_without_username_should_skip_validation(self):
-        """Test that profile update without username skips validation."""
-        self.client.force_authenticate(self.john)
-        profile_to_edit = Profile.objects.get(user=self.jim)
-        original_username = self.jim.username
-
+        bob_profile = Profile.objects.get(user=bob)
         data = {
-            "first_name": "Updated First Name",
+            "first_name": "Bob Changed",
         }
-        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{bob_profile.id}/", data=data, format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.jim.refresh_from_db()
-        self.assertEqual(self.jim.username, original_username)
-        self.assertEqual(self.jim.first_name, "Updated First Name")
+        bob.refresh_from_db()
+        self.assertEqual(bob.username, "bob")
+        self.assertEqual(bob.first_name, "Bob Changed")
+
+    def test_update_profile_to_existing_username_should_fail(self):
+        """Test that changing username to an existing one (case-insensitive) fails correctly."""
+        self.client.force_authenticate(self.john)
+
+        alice = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice", last_name="Smith"
+        )
+        bob = self.create_user_with_profile(username="bob", account=self.account, first_name="Bob", last_name="Wilson")
+
+        # Try to change bob's username to "Alice"
+        bob_profile = Profile.objects.get(user=bob)
+        data = {
+            "user_name": "Alice",
+            "first_name": "Bob Updated",
+        }
+        response = self.client.patch(f"/api/profiles/{bob_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["errorKey"], "user_name")
+
+        bob.refresh_from_db()
+        self.assertEqual(bob.username, "bob")
+        self.assertEqual(bob.first_name, "Bob")

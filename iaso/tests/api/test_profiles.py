@@ -2042,3 +2042,36 @@ class ProfileAPITestCase(APITestCase):
             expected_order,
             f"Users not sorted correctly by first role. Expected: {expected_order}, got: {actual_order}",
         )
+
+    def test_update_user_with_same_username_should_skip_validation(self):
+        """Test that profile update with same username skips validation."""
+        self.client.force_authenticate(self.john)
+        profile_to_edit = Profile.objects.get(user=self.jim)
+        original_username = self.jim.username
+
+        data = {
+            "user_name": original_username,
+            "first_name": "Updated First Name",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.jim.refresh_from_db()
+        self.assertEqual(self.jim.username, original_username)
+        self.assertEqual(self.jim.first_name, "Updated First Name")
+
+    def test_update_user_without_username_should_skip_validation(self):
+        """Test that profile update without username skips validation."""
+        self.client.force_authenticate(self.john)
+        profile_to_edit = Profile.objects.get(user=self.jim)
+        original_username = self.jim.username
+
+        data = {
+            "first_name": "Updated First Name",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.jim.refresh_from_db()
+        self.assertEqual(self.jim.username, original_username)
+        self.assertEqual(self.jim.first_name, "Updated First Name")

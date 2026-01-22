@@ -509,7 +509,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         else:
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")
-            user.username = request.data.get("user_name")
+            user_name = request.data.get("user_name")
+            if user_name:
+                user.username = user_name
             user.email = request.data.get("email", "")
             self.update_password(user, request)
 

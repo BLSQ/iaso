@@ -418,17 +418,12 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(user_to_update.iaso_profile.projects.first(), self.project_1)
 
     def test_profile_bulkupdate_add_projects_with_core_users_admin_permission(self):
-        """POST /api/tasks/create/profilesbulkupdate/"""
-        admin_user = self.create_user_with_profile(
-            username="admin_user_unrestricted",
-            account=self.account1,
-            permissions=[CORE_USERS_ADMIN_PERMISSION, CORE_DATA_TASKS_PERMISSION],
-            language="en",
-        )
-        saveUserProfile(admin_user)
+        """POST /api/tasks/create/profilesbulkupdate/ can add projects with CORE_USERS_ADMIN_PERMISSION"""
+        admin_user = self.user_admin
+        admin_user.iaso_profile.projects.set([self.project_0])
 
-        user_to_update = self.user_admin_no_task
-        user_to_update.iaso_profile.projects.clear()
+        user_to_update = self.user_with_no_users_permission
+        user_to_update.iaso_profile.projects.set([])  # User has no projects (admin has project_0)
 
         self.client.force_authenticate(admin_user)
 
@@ -436,10 +431,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "select_all": False,
             "selected_ids": [user_to_update.iaso_profile.pk],
             "unselected_ids": None,
-            "projects_ids_added": [
-                self.project_0.pk,
-                self.project_1.pk,
-            ],
+            "projects_ids_added": [self.project_1.pk],  # Admin doesn't have project_1
             "projects_ids_removed": [],
             "roles_id_added": [],
             "roles_id_removed": [],
@@ -460,7 +452,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
-
         self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
@@ -469,23 +460,18 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.runAndValidateTask(task, "SUCCESS")
 
         user_to_update.refresh_from_db()
-        self.assertEqual(2, user_to_update.iaso_profile.projects.count())
-        project_ids = list(user_to_update.iaso_profile.projects.values_list("id", flat=True))
-        self.assertIn(self.project_0.pk, project_ids)
-        self.assertIn(self.project_1.pk, project_ids)
+
+        # project_1 was added even though admin only has project_0
+        self.assertEqual(1, user_to_update.iaso_profile.projects.count())
+        self.assertIn(self.project_1, user_to_update.iaso_profile.projects.all())
 
     def test_profile_bulkupdate_remove_projects_with_core_users_admin_permission(self):
-        """POST /api/tasks/create/profilesbulkupdate/"""
-        admin_user = self.create_user_with_profile(
-            username="admin_user_unrestricted_2",
-            account=self.account1,
-            permissions=[CORE_USERS_ADMIN_PERMISSION, CORE_DATA_TASKS_PERMISSION],
-            language="en",
-        )
-        saveUserProfile(admin_user)
+        """POST /api/tasks/create/profilesbulkupdate/ can remove projects with CORE_USERS_ADMIN_PERMISSION"""
+        admin_user = self.user_admin
+        admin_user.iaso_profile.projects.set([self.project_1])
 
-        user_to_update = self.user_admin_no_task2
-        user_to_update.iaso_profile.projects.set([self.project_0, self.project_1])
+        user_to_update = self.user_with_no_users_permission
+        user_to_update.iaso_profile.projects.set([self.project_0])  # User has project_0 (admin doesn't)
 
         self.client.force_authenticate(admin_user)
 
@@ -494,10 +480,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "selected_ids": [user_to_update.iaso_profile.pk],
             "unselected_ids": None,
             "projects_ids_added": [],
-            "projects_ids_removed": [
-                self.project_0.pk,
-                self.project_1.pk,
-            ],
+            "projects_ids_removed": [self.project_0.pk],  # Admin doesn't have project_0
             "roles_id_added": [],
             "roles_id_removed": [],
             "location_ids_added": [],
@@ -526,6 +509,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.runAndValidateTask(task, "SUCCESS")
 
         user_to_update.refresh_from_db()
+        # project_0 was removed even though admin only has project_1
         self.assertEqual(0, user_to_update.iaso_profile.projects.count())
 
     def test_profile_bulkupdate_user_managed_cannot_add_projects(self):

@@ -1,4 +1,4 @@
-from django.db.models import Prefetch
+from django.db.models import Min, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import permissions
 
@@ -37,15 +37,6 @@ class CampaignCalendarViewSet(ModelViewSet):
         DeletionFilterBackend,
     ]
 
-    # ordering_fields = [
-    #     "obr_name",
-    #     "cvdpv2_notified_at",
-    #     "detection_status",
-    #     "first_round_started_at",
-    #     "last_round_started_at",
-    #     "country__name",
-    # ]
-
     filterset_class = CalendarFilter
 
     # We allow anonymous read access for the embeddable calendar map view
@@ -66,6 +57,7 @@ class CampaignCalendarViewSet(ModelViewSet):
         )
 
         campaigns = Campaign.objects.filter_for_user(user)
+
         campaigns = (
             campaigns.prefetch_related(country_prefetch)
             .prefetch_related("grouped_campaigns")
@@ -79,6 +71,7 @@ class CampaignCalendarViewSet(ModelViewSet):
             .prefetch_related("rounds__scopes__group")
             .prefetch_related(rounds_scopes_group_org_units_prefetch)
         )
+        campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
         if not self.request.user.is_authenticated:
             # For this endpoint since it's available anonymously we allow all user to list the campaigns
             # and to additionally filter on the account_id

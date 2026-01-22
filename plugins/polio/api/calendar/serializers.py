@@ -94,6 +94,7 @@ class CalendarCampaignSerializerV2(serializers.ModelSerializer):
     top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
     vaccines = serializers.SerializerMethodField(read_only=True)
+    first_round_started_at = serializers.DateField(read_only=True)
 
     def get_sub_activities(self, campaign):
         sub_activities = SubActivity.objects.filter(round__campaign=campaign)
@@ -144,5 +145,6 @@ class CalendarCampaignSerializerV2(serializers.ModelSerializer):
             "is_planned",
             "vaccines",
             "integrated_to",
+            "first_round_started_at",
         ]
         read_only_fields = fields

@@ -9,6 +9,7 @@ from iaso.periods import (
     QuarterNovPeriod,
     QuarterPeriod,
     SemesterPeriod,
+    WeekPeriod,
     YearPeriod,
 )
 
@@ -53,6 +54,7 @@ class PeriodTests(TestCase):
         self.assertEqual(type(Period.from_string("2021Q2")), QuarterPeriod)
         self.assertEqual(type(Period.from_string("2021")), YearPeriod)
         self.assertEqual(type(Period.from_string("202102")), MonthPeriod)
+        self.assertEqual(type(Period.from_string("2021W2")), WeekPeriod)
         self.assertRaises(Exception, lambda: Period.from_string("11111sww1"))
 
     def test_gen_sub(self):
@@ -227,3 +229,50 @@ class PeriodTests(TestCase):
                 "202110",
             ],
         )
+
+    def test_week_period(self):
+        self.assertEqual(repr(WeekPeriod("2023W12")), "<WeekPeriod 2023W12>", repr(WeekPeriod("2023W12")))
+        self.assertTrue(WeekPeriod("2023W12"))
+        self.assertEqual(WeekPeriod("2023W12").next_period(), WeekPeriod("2023W13"))
+        self.assertNotEqual(WeekPeriod("2023W12").next_period(), WeekPeriod("2023W14"))
+        self.assertEqual(WeekPeriod("2023W52").next_period(), WeekPeriod("2024W01"))
+        self.assertEqual(WeekPeriod("2026W53").next_period(), WeekPeriod("2027W01"))
+
+        periods = WeekPeriod("2023W50").range_period_to(WeekPeriod("2024W01"))
+        self.assertEqual(periods, ["2023W50", "2023W51", "2023W52", "2024W01"], periods)
+
+    def test_week_period_start_date_regular(self):
+        self.assert_week_equal_and_monday("2022W1", datetime.date(2022, 1, 3))
+        self.assert_week_equal_and_monday("2022W2", datetime.date(2022, 1, 10))
+        self.assert_week_equal_and_monday("2022W3", datetime.date(2022, 1, 17))
+        self.assert_week_equal_and_monday("2022W4", datetime.date(2022, 1, 24))
+        self.assert_week_equal_and_monday("2022W5", datetime.date(2022, 1, 31))
+        self.assert_week_equal_and_monday("2022W6", datetime.date(2022, 2, 7))
+
+        self.assert_week_equal_and_monday("2022W50", datetime.date(2022, 12, 12))
+        self.assert_week_equal_and_monday("2022W51", datetime.date(2022, 12, 19))
+        self.assert_week_equal_and_monday("2022W52", datetime.date(2022, 12, 26))
+
+    def test_week_period_start_date_first_week_of_year(self):
+        self.assert_week_equal_and_monday("2022W1", datetime.date(2022, 1, 3))
+        self.assert_week_equal_and_monday("2023W1", datetime.date(2023, 1, 2))
+        self.assert_week_equal_and_monday("2024W1", datetime.date(2024, 1, 1))
+        self.assert_week_equal_and_monday("2025W1", datetime.date(2024, 12, 30))
+        self.assert_week_equal_and_monday("2026W1", datetime.date(2025, 12, 29))
+
+    def test_week_period_start_date_last_week_of_year(self):
+        self.assert_week_equal_and_monday("2022W52", datetime.date(2022, 12, 26))
+        self.assert_week_equal_and_monday("2023W52", datetime.date(2023, 12, 25))
+        self.assert_week_equal_and_monday("2024W52", datetime.date(2024, 12, 23))  # leap year so -2 days
+        self.assert_week_equal_and_monday("2025W52", datetime.date(2025, 12, 22))
+        self.assert_week_equal_and_monday("2026W52", datetime.date(2026, 12, 21))
+        self.assert_week_equal_and_monday("2026W53", datetime.date(2026, 12, 28))  # leap week year
+
+    def test_week_period_start_date_invalid_number_of_week(self):
+        with self.assertRaisesRegex(ValueError, "Invalid week: 53"):
+            WeekPeriod("2022W53").start_date()
+
+    def assert_week_equal_and_monday(self, week_period_str, expected_date):
+        week_period = WeekPeriod(week_period_str)
+        self.assertEqual(week_period.start_date(), expected_date)
+        self.assertEqual(week_period.start_date().weekday(), 0)  # Monday is 0

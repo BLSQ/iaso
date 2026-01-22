@@ -3,10 +3,9 @@ from unittest import mock
 from iaso.api.microplanning.serializers import PlanningReadSerializer, PlanningWriteSerializer
 from iaso.models import Form, OrgUnit, OrgUnitType, Planning, Project, Team
 from iaso.models.microplanning import PlanningSamplingResult
-from iaso.models.project import DEFAULT_PROJECT_COLOR
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase
-from iaso.utils.colors import COLOR_CHOICES
+from iaso.utils.colors import COLOR_CHOICES, DEFAULT_COLOR
 
 
 class PlanningSerializersTestCase(APITestCase):
@@ -109,7 +108,7 @@ class PlanningSerializersTestCase(APITestCase):
                 "project_details": {
                     "id": self.project_1.id,
                     "name": self.project_1.name,
-                    "color": DEFAULT_PROJECT_COLOR,
+                    "color": DEFAULT_COLOR,
                 },
                 "target_org_unit_type_details": {
                     "id": self.org_unit_type_child.id,

@@ -315,6 +315,10 @@ msgstr "Limiter selon si l'authentification est requise ou non"
 msgid "User ID"
 msgstr "ID utilisateur"
 
+#: iaso/api/pages.py
+msgid "User Role IDs"
+msgstr "IDs rôles"
+
 #: iaso/api/payments/views.py
 msgid "Status"
 msgstr "Statut"
@@ -685,6 +689,18 @@ msgstr "Linéaire"
 msgid "Ordinal"
 msgstr "Ordinal"
 
+#: iaso/models/metric.py
+msgid "OpenHexa"
+msgstr "OpenHexa"
+
+#: iaso/models/metric.py
+msgid "Custom"
+msgstr "Personnalisé"
+
+#: iaso/models/metric.py
+msgid "Other"
+msgstr "Autre"
+
 #: iaso/models/org_unit.py
 msgid "Country"
 msgstr "Pays"
@@ -969,6 +985,10 @@ msgstr "Copie des unités organisationnelles"
 #: iaso/tasks/copy_version.py
 msgid "Fixing parents"
 msgstr "Correction des parents"
+
+#: iaso/utils/colors.py
+msgid "Color must be a valid hex code (#RRGGBB)."
+msgstr "La couleur doit être un code hexadécimal valide (#RRGGBB)."
 
 #: iaso/utils/openhexa.py
 msgid "No OpenHEXA workspace configured for your account"

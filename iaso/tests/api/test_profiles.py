@@ -19,6 +19,7 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_MANAGED_PERMISSION,
 )
 from iaso.test import APITestCase
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 name_and_id_schema = {
@@ -553,6 +554,12 @@ class ProfileAPITestCase(APITestCase):
         for profile_data in list_data["profiles"]:
             self.assertValidProfileData(profile_data)
 
+    def test_profile_me_includes_color(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/me/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["color"], DEFAULT_COLOR)
+
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         data = {
@@ -706,6 +713,27 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
+    def test_create_profile_with_color(self):
+        self.client.force_authenticate(self.jim)
+        color = "#123ABC"
+        data = {
+            "user_name": "color_user",
+            "password": "unittest_password",
+            "first_name": "color_first_name",
+            "last_name": "color_last_name",
+            "email": "color@example.com",
+            "color": color,
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(response_data["color"], color)
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        self.assertEqual(profile.color, color)
+
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
         self.client.force_authenticate(self.jim)
@@ -835,6 +863,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertHasField(project_data, "first_name", str)
         self.assertHasField(project_data, "last_name", str)
         self.assertHasField(project_data, "email", str)
+        self.assertHasField(project_data, "color", str)
 
     def test_delete_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
@@ -1247,6 +1276,22 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
+
+    def test_update_profile_color(self):
+        self.client.force_authenticate(self.john)
+        profile = Profile.objects.get(user=self.jim)
+        new_color = "#ABCDEF"
+        data = {
+            "user_name": profile.user.username,
+            "first_name": profile.user.first_name,
+            "last_name": profile.user.last_name,
+            "color": new_color,
+        }
+        response = self.client.patch(f"/api/profiles/{profile.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        profile.refresh_from_db()
+        self.assertEqual(profile.color, new_color)
+        self.assertEqual(response.json()["color"], new_color)
 
     def test_update_user_with_malformed_phone_number(self):
         user = self.jam

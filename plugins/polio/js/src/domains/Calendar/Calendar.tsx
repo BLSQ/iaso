@@ -15,8 +15,6 @@ import { XlsxButton } from '../../../../../../hat/assets/js/apps/Iaso/components
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { getCampaignColor } from '../../constants/campaignsColors';
-
 import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
 
@@ -31,15 +29,11 @@ import { IsOnHoldLegend } from './campaignCalendar/IsOnHoldLegend';
 import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
-import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
-import {
-    filterCampaigns,
-    getCalendarData,
-    mapCampaigns,
-} from './campaignCalendar/utils/campaigns';
+import { CalendarParams } from './campaignCalendar/types';
+import { getCalendarData } from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
-import { useGetCampaigns } from './hooks/useGetCampaigns';
-import { useGetIntegratedCampaigns } from './hooks/useGetIntegratedCampaigns';
+import { useGetFormattedCalendarData } from './hooks/useGetFormattedCalendarData';
+import { CalendarOrdering } from './hooks/useMergedCampaigns';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -72,63 +66,9 @@ export const Calendar: FunctionComponent = () => {
     const [campaignType, setCampaignType] = useState(params.campaignType);
     const [isTypeSet, setIsTypeSet] = useState(!!params.campaignType);
 
-    const orders = params.order || defaultOrder;
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)
         : moment();
-
-    const currentDateString = currentDate.format('YYYY-MM-DD');
-
-    const queryParams = useMemo(() => {
-        const options = {
-            order: orders,
-            country__id__in: params.countries,
-            search: params.search,
-            campaign_types: params.campaignType,
-            campaign_category: params.campaignCategory,
-            campaign_groups: params.campaignGroups
-                ? params.campaignGroups.split(',').map(Number)
-                : undefined,
-            org_unit_groups: params.orgUnitGroups
-                ? params.orgUnitGroups.split(',').map(Number)
-                : undefined,
-            show_test: false,
-            on_hold: false,
-            reference_date: currentDateString,
-        };
-
-        return isEmbedded ? { ...options, is_embedded: true } : options;
-    }, [
-        orders,
-        params.countries,
-        params.search,
-        params.campaignCategory,
-        params.campaignGroups,
-        params.orgUnitGroups,
-        params.campaignType,
-        isEmbedded,
-        currentDateString,
-    ]);
-
-    const {
-        data: campaigns = [],
-        isLoading,
-        isFetching,
-    } = useGetCampaigns({
-        queryParams,
-        queryOptions: { enabled: isTypeSet },
-    });
-
-    const obrNames: string[] = useMemo(() => {
-        return campaigns.map(campaign => campaign.obr_name);
-    }, [campaigns]);
-
-    const { data: integratedCampaigns, isFetching: isFetchingIntegrated } =
-        useGetIntegratedCampaigns({
-            obrNames,
-            enabled: params?.showIntegrated == 'true',
-        });
-    console.log('integrated', integratedCampaigns);
 
     const redirectToReplace = useRedirectToReplace();
 
@@ -140,26 +80,16 @@ export const Calendar: FunctionComponent = () => {
         () => getCalendarData(currentMonday, params.periodType || 'quarter'),
         [currentMonday, params.periodType],
     );
-
-    const mappedCampaigns: MappedCampaign[] = useMemo(
-        () =>
-            mapCampaigns(
-                campaigns,
-                calendarData.firstMonday,
-                calendarData.lastSunday,
-            ),
-        [campaigns, calendarData.firstMonday, calendarData.lastSunday],
-    );
-    const filteredCampaigns = useMemo(
-        () =>
-            filterCampaigns(
-                mappedCampaigns,
-                calendarData.firstMonday,
-                calendarData.lastSunday,
-            ).map((c, index) => ({ ...c, color: getCampaignColor(index) })),
-        [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
-    );
-
+    const { filteredCampaigns, isFetching, isLoading } =
+        useGetFormattedCalendarData({
+            params,
+            isTypeSet,
+            order: params.order,
+            calendarData,
+            isEmbedded,
+            currentDate,
+            campaignType: params.campaignType,
+        });
     const urlParams = {
         currentDate: params.currentDate,
         countries: params.countries,
@@ -178,28 +108,31 @@ export const Calendar: FunctionComponent = () => {
     );
 
     useEffect(() => {
-        if (
-            filteredCampaigns.length > 0 &&
-            mappedCampaigns.length > 0 &&
-            !isLoading
-        ) {
+        if (filteredCampaigns.length > 0 && !isLoading) {
             setCalendarAndMapLoaded(true);
         } else {
             setCalendarAndMapLoaded(false);
         }
-    }, [filteredCampaigns, mappedCampaigns, isLoading]);
+    }, [filteredCampaigns, isLoading]);
 
     const redirectUrl = getRedirectUrl(true, isEmbedded);
     useEffect(() => {
-        if (!params.campaignType && !isTypeSet) {
+        const shouldSetCampaignType = !params.campaignType && !isTypeSet;
+        const shouldSetOrder = !params.order;
+        const enforcedDefaults: Record<string, string> = { ...params };
+
+        if (shouldSetCampaignType) {
             setCampaignType('polio');
             setIsTypeSet(true);
-            redirectToReplace(redirectUrl, {
-                ...params,
-                campaignType: 'polio',
-            });
+            enforcedDefaults.campaignType = 'polio';
         }
-        // only test once to force polio as type
+        if (shouldSetOrder) {
+            enforcedDefaults.order = defaultOrder;
+        }
+        if (shouldSetCampaignType || shouldSetOrder) {
+            redirectToReplace(redirectUrl, enforcedDefaults);
+        }
+        // only test once to force polio as type and default order
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -302,7 +235,7 @@ export const Calendar: FunctionComponent = () => {
                             <Box mt={!isPdf ? 1 : 0}>
                                 <CampaignsCalendar
                                     params={params}
-                                    orders={orders}
+                                    orders={params.order as CalendarOrdering}
                                     campaigns={filteredCampaigns}
                                     calendarData={calendarData}
                                     loadingCampaigns={isFetching}

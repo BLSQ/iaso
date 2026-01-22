@@ -325,6 +325,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             }))}
                             label={MESSAGES.country}
                         />
+                        {/* Should have state reset and be disabled when removing polio type */}
                         <InputComponent
                             keyValue="showIntegrated"
                             onChange={(_key, value) => {

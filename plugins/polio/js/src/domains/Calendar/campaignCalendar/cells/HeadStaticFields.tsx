@@ -11,13 +11,15 @@ import {
 import classnames from 'classnames';
 
 import MESSAGES from '../../../../constants/messages';
+import { CalendarOrdering } from '../../hooks/useMergedCampaigns';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
 import { colSpanTitle } from '../constants';
 import { useStyles } from '../Styles';
 
 type Props = {
-    orders: string;
+    params: Record<string, string>;
+    orders?: CalendarOrdering;
     isPdf: boolean;
     url: string;
     isLogged: boolean;
@@ -29,6 +31,7 @@ type Order = {
 };
 
 export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
+    params,
     orders,
     url,
     isPdf,
@@ -39,31 +42,32 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
     const redirectToReplace = useRedirectToReplace();
     const shiftKeyIsDown = useKeyPressListener('Shift');
     const ordersArray = getOrderArray(orders);
-    const handleSort = (field: Field, existingSort: Order) => {
-        let desc = true;
-        if (existingSort && existingSort.desc) {
-            desc = false;
-        }
-        const currentSort = field.sortKey && {
-            desc,
-            id: field.sortKey,
-        };
-        let newSort: Order[] = [];
-        if (shiftKeyIsDown) {
-            newSort = [
-                ...ordersArray.filter(
-                    o => o.id !== field.sortKey && shiftKeyIsDown,
-                ),
-            ];
-        }
-        if (currentSort) {
-            newSort.push(currentSort);
-        }
+    const handleSort = useCallback(
+        (field: Field, existingSort: Order) => {
+            let desc = true;
+            if (existingSort && existingSort.desc) {
+                desc = false;
+            }
+            const currentSort = field.sortKey && {
+                desc,
+                id: field.sortKey,
+            };
+            let newSort: Order[] = [];
+            if (shiftKeyIsDown) {
+                newSort = [
+                    ...ordersArray.filter(
+                        o => o.id !== field.sortKey && shiftKeyIsDown,
+                    ),
+                ];
+            }
+            if (currentSort) {
+                newSort.push(currentSort);
+            }
 
-        redirectToReplace(url, {
-            order: getSort(newSort),
-        });
-    };
+            redirectToReplace(url, { ...params, order: getSort(newSort) });
+        },
+        [ordersArray, params, redirectToReplace, shiftKeyIsDown, url],
+    );
     const fields = useStaticFields(isPdf);
     const defaultWidth = !isLogged || isPdf ? '85px' : '70px';
 

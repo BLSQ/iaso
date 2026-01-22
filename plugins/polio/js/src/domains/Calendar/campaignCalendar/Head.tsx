@@ -3,6 +3,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import classnames from 'classnames';
 
+import { CalendarOrdering } from '../hooks/useMergedCampaigns';
 import { useStaticFields } from '../hooks/useStaticFields';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 import { colSpanTitle } from './constants';
@@ -11,11 +12,12 @@ import { CalendarData } from './types';
 
 type Props = {
     headers: CalendarData['headers'];
-    orders: string;
+    orders?: CalendarOrdering;
     currentWeekIndex: number;
     isPdf: boolean;
     url: string;
     isLogged: boolean;
+    params: Record<string, string>;
 };
 
 export const Head: FunctionComponent<Props> = ({
@@ -25,6 +27,7 @@ export const Head: FunctionComponent<Props> = ({
     isPdf,
     url,
     isLogged,
+    params,
 }) => {
     const classes = useStyles();
     const fields = useStaticFields(isPdf);
@@ -103,6 +106,7 @@ export const Head: FunctionComponent<Props> = ({
                     isPdf={isPdf}
                     url={url}
                     isLogged={isLogged}
+                    params={params}
                 />
                 {headers.weeks.map((week, weekIndex) => (
                     <TableCell

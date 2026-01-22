@@ -334,6 +334,7 @@ export class Period {
             return true;
         }
         if (p1.year === p2.year) {
+
             if (p1.periodType === PERIOD_TYPE_DAY) {
                 return (
                     p1.month < p2.month ||
@@ -352,6 +353,9 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester < p2.semester;
             }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! < p2.week!;
+            }            
             return false;
         }
         return false;
@@ -364,6 +368,7 @@ export class Period {
             return true;
         }
         if (p1.year === p2.year) {
+
             if (p1.periodType === PERIOD_TYPE_DAY) {
                 return (
                     p1.month < p2.month ||
@@ -382,6 +387,9 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester <= p2.semester;
             }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! <= p2.week!;
+            }            
             if (
                 p1.periodType === PERIOD_TYPE_YEAR ||
                 p1.periodType === PERIOD_TYPE_FINANCIAL_NOV
@@ -398,7 +406,7 @@ export class Period {
         if (p1.year > p2.year) {
             return true;
         }
-        if (p1.year === p2.year) {
+        if (p1.year === p2.year) {       
             if (p1.periodType === PERIOD_TYPE_DAY) {
                 return (
                     p1.month > p2.month ||
@@ -417,6 +425,9 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester > p2.semester;
             }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! > p2.week!;
+            }                 
             return false;
         }
         return false;
@@ -447,6 +458,9 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester >= p2.semester;
             }
+            if (p1.periodType === PERIOD_TYPE_WEEK) {
+                return p1.week! >= p2.week!;
+            }              
             if (
                 p1.periodType === PERIOD_TYPE_YEAR ||
                 p1.periodType === PERIOD_TYPE_FINANCIAL_NOV

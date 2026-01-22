@@ -445,7 +445,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(Decimal("12.35"), last_instance.accuracy)
 
     def test_instance_create_with_invalid_accuracy(self):
-        """POST /api/instances/ with invalid accuracy value should result in None"""
+        """POST /api/instances/ with invalid accuracy value should fail the import"""
         instance_uuid = str(uuid4())
         body = [
             {
@@ -467,9 +467,11 @@ class InstancesAPITestCase(TaskAPITestCase):
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
+        self.assertIn("problem happened", response.json()["res"])
 
-        last_instance = m.Instance.objects.get(uuid=instance_uuid)
-        self.assertIsNone(last_instance.accuracy)
+        # Instance should not be created when accuracy validation fails
+        with self.assertRaises(m.Instance.DoesNotExist):
+            m.Instance.objects.get(uuid=instance_uuid)
 
     def test_instance_create_pre_existing(self):
         """POST /api/instances/ with pre-existing, deleted instance"""

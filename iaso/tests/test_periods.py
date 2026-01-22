@@ -235,11 +235,8 @@ class PeriodTests(TestCase):
         self.assertTrue(WeekPeriod("2023W12"))
         self.assertEqual(WeekPeriod("2023W12").next_period(), WeekPeriod("2023W13"))
         self.assertNotEqual(WeekPeriod("2023W12").next_period(), WeekPeriod("2023W14"))
-        self.assertEqual(WeekPeriod("2023W52").next_period(), WeekPeriod("2024W01"))
-        self.assertEqual(WeekPeriod("2026W53").next_period(), WeekPeriod("2027W01"))
-
-        periods = WeekPeriod("2023W50").range_period_to(WeekPeriod("2024W01"))
-        self.assertEqual(periods, ["2023W50", "2023W51", "2023W52", "2024W01"], periods)
+        self.assertEqual(WeekPeriod("2023W52").next_period(), WeekPeriod("2024W1"))
+        self.assertEqual(WeekPeriod("2026W53").next_period(), WeekPeriod("2027W1"))
 
     def test_week_period_start_date_regular(self):
         self.assert_week_equal_and_monday("2022W1", datetime.date(2022, 1, 3))
@@ -271,6 +268,16 @@ class PeriodTests(TestCase):
     def test_week_period_start_date_invalid_number_of_week(self):
         with self.assertRaisesRegex(ValueError, "Invalid week: 53"):
             WeekPeriod("2022W53").start_date()
+
+    def test_bound_rannge_week(self):
+        from_period, to_period = Period.bound_range("2025W51", "2026W2")
+        periods = Period.range_string_with_sub_periods(from_period, to_period)
+        self.assertEqual(periods, ["2025W51", "2025W52", "2026W1", "2026W2"])
+
+    def test_bound_rannge_week_leap(self):
+        from_period, to_period = Period.bound_range("2026W51", "2027W2")
+        periods = Period.range_string_with_sub_periods(from_period, to_period)
+        self.assertEqual(periods, ["2026W51", "2026W52", "2026W53", "2027W1", "2027W2"])
 
     def assert_week_equal_and_monday(self, week_period_str, expected_date):
         week_period = WeekPeriod(week_period_str)

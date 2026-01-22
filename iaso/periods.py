@@ -383,7 +383,7 @@ class WeekPeriod(Period):
 
     @staticmethod
     def from_parts(year, week):
-        return WeekPeriod(f"{year:04}W{week:02}")
+        return WeekPeriod(f"{year}W{week}")
 
     @property
     def parts(self):

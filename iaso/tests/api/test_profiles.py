@@ -487,6 +487,25 @@ class ProfileAPITestCase(APITestCase):
             },
         )
 
+    def test_profile_list_export_as_csv_multiple_teams(self):
+        self.maxDiff = None
+        multi_user = self.create_user_with_profile(username="multiteam", account=self.account)
+
+        multi_user.teams.set([self.team1, self.team2])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?csv=true")
+        self.assertEqual(response.status_code, 200)
+
+        response_csv = response.getvalue().decode("utf-8")
+
+        teams = sorted([self.team1, self.team2], key=lambda x: x.id)
+        expected_teams_value = f"{teams[0].name},{teams[1].name}"
+
+        expected_row_fragment = f'multiteam,,,,,,,,,,,,,"{expected_teams_value}",,'
+
+        self.assertIn(expected_row_fragment, response_csv)
+
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""
         self.client.force_authenticate(self.jim)

@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { makeFullModal } from 'bluesquare-components';
 import { DeleteIconButton } from '../Buttons/DeleteIconButton';
 import { DeleteButton } from './DeleteButton';
+import { DeleteMenuItem } from './DeleteMenuItem';
 import {
     DeleteRestoreModal,
     DeleteRestoreModalProps,
@@ -13,8 +14,13 @@ const DeleteModalWithIconButton = makeFullModal(
     DeleteIconButton,
 );
 
+const DeleteModalWithMenuItem = makeFullModal(
+    DeleteRestoreModal,
+    DeleteMenuItem,
+);
+
 type Props = Omit<DeleteRestoreModalProps, 'isOpen' | 'closeDialog'> & {
-    type: 'button' | 'icon';
+    type: 'button' | 'icon' | 'menuItem';
     iconProps?: any;
 };
 
@@ -44,6 +50,22 @@ export const DeleteModal: FunctionComponent<Props> = ({
             >
                 {children}
             </DeleteModalWithIconButton>
+        );
+    }
+    if (type === 'menuItem') {
+        return (
+            <DeleteModalWithMenuItem
+                titleMessage={titleMessage}
+                onConfirm={onConfirm}
+                onCancel={onCancel}
+                id={id}
+                maxWidth={maxWidth}
+                dataTestId={dataTestId}
+                iconProps={iconProps}
+                backdropClick={backdropClick}
+            >
+                {children}
+            </DeleteModalWithMenuItem>
         );
     }
     return (

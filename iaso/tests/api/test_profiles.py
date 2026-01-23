@@ -19,6 +19,7 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_MANAGED_PERMISSION,
 )
 from iaso.test import APITestCase
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 name_and_id_schema = {
@@ -553,6 +554,12 @@ class ProfileAPITestCase(APITestCase):
         for profile_data in list_data["profiles"]:
             self.assertValidProfileData(profile_data)
 
+    def test_profile_me_includes_color(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/me/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["color"], DEFAULT_COLOR)
+
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         data = {
@@ -706,6 +713,27 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
+    def test_create_profile_with_color(self):
+        self.client.force_authenticate(self.jim)
+        color = "#123ABC"
+        data = {
+            "user_name": "color_user",
+            "password": "unittest_password",
+            "first_name": "color_first_name",
+            "last_name": "color_last_name",
+            "email": "color@example.com",
+            "color": color,
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(response_data["color"], color)
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        self.assertEqual(profile.color, color)
+
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
         self.client.force_authenticate(self.jim)
@@ -835,6 +863,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertHasField(project_data, "first_name", str)
         self.assertHasField(project_data, "last_name", str)
         self.assertHasField(project_data, "email", str)
+        self.assertHasField(project_data, "color", str)
 
     def test_delete_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
@@ -1247,6 +1276,22 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
+
+    def test_update_profile_color(self):
+        self.client.force_authenticate(self.john)
+        profile = Profile.objects.get(user=self.jim)
+        new_color = "#ABCDEF"
+        data = {
+            "user_name": profile.user.username,
+            "first_name": profile.user.first_name,
+            "last_name": profile.user.last_name,
+            "color": new_color,
+        }
+        response = self.client.patch(f"/api/profiles/{profile.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        profile.refresh_from_db()
+        self.assertEqual(profile.color, new_color)
+        self.assertEqual(response.json()["color"], new_color)
 
     def test_update_user_with_malformed_phone_number(self):
         user = self.jam
@@ -2042,3 +2087,126 @@ class ProfileAPITestCase(APITestCase):
             expected_order,
             f"Users not sorted correctly by first role. Expected: {expected_order}, got: {actual_order}",
         )
+
+    def test_update_profile_without_changing_username_should_succeed(self):
+        """Test that updating profile without changing username succeeds."""
+        self.client.force_authenticate(self.john)
+
+        alice = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice", last_name="Smith"
+        )
+        bob = self.create_user_with_profile(username="bob", account=self.account, first_name="Bob", last_name="Smith")
+
+        alice_profile = Profile.objects.get(user=alice)
+        data = {
+            "user_name": alice.username,
+            "first_name": "Alice Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice.refresh_from_db()
+        self.assertEqual(alice.username, "alice")
+        self.assertEqual(alice.first_name, "Alice Changed")
+
+        bob_profile = Profile.objects.get(user=bob)
+        data = {
+            "first_name": "Bob Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{bob_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        bob.refresh_from_db()
+        self.assertEqual(bob.username, "bob")
+        self.assertEqual(bob.first_name, "Bob Changed")
+
+    def test_update_profile_to_existing_username_should_fail(self):
+        """Test that changing username to an existing one (case-insensitive) fails correctly."""
+        self.client.force_authenticate(self.john)
+
+        alice = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice", last_name="Smith"
+        )
+        bob = self.create_user_with_profile(username="bob", account=self.account, first_name="Bob", last_name="Wilson")
+
+        # Try to change bob's username to "Alice"
+        bob_profile = Profile.objects.get(user=bob)
+        data = {
+            "user_name": "Alice",
+            "first_name": "Bob Updated",
+        }
+        response = self.client.patch(f"/api/profiles/{bob_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["errorKey"], "user_name")
+
+        bob.refresh_from_db()
+        self.assertEqual(bob.username, "bob")
+        self.assertEqual(bob.first_name, "Bob")
+
+    def test_update_profile_with_case_insensitive_username_should_succeed(self):
+        """Test that updating profile without changing username succeeds even with case-insensitive matching usernames."""
+        self.client.force_authenticate(self.john)
+
+        alice_lower = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice Lower", last_name="alice lower"
+        )
+        alice_upper = self.create_user_with_profile(
+            username="Alice", account=self.account, first_name="Alice Upper", last_name="alice upper"
+        )
+
+        alice_lower_profile = Profile.objects.get(user=alice_lower)
+        data = {
+            "user_name": alice_lower.username,
+            "first_name": "Alice Lower Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_lower_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice_lower.refresh_from_db()
+        self.assertEqual(alice_lower.username, "alice")
+        self.assertEqual(alice_lower.first_name, "Alice Lower Changed")
+
+        alice_upper_profile = Profile.objects.get(user=alice_upper)
+        data = {
+            "user_name": alice_upper.username,
+            "first_name": "Alice Upper Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_upper_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice_upper.refresh_from_db()
+        self.assertEqual(alice_upper.username, "Alice")
+        self.assertEqual(alice_upper.first_name, "Alice Upper Changed")
+
+    def test_update_username_to_existing_case_variation_should_fail(self):
+        """Test that changing username to case variation of another user's username fails."""
+        self.client.force_authenticate(self.john)
+
+        alice_lower = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice Lower", last_name="Smith"
+        )
+        alice_upper = self.create_user_with_profile(
+            username="Alice", account=self.account, first_name="Alice Upper", last_name="Jones"
+        )
+
+        alice_lower_profile = Profile.objects.get(user=alice_lower)
+        data = {
+            "user_name": "Alice",
+            "first_name": "Alice Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_lower_profile.id}/", data=data, format="json")
+
+        # Should fail because another user already has "Alice"
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["errorKey"], "user_name")
+
+        # Ensure original username wasn't changed
+        alice_lower.refresh_from_db()
+        self.assertEqual(alice_lower.username, "alice")
+        self.assertEqual(alice_lower.first_name, "Alice Lower")
+
+        # Ensure other username wasn't changed
+        alice_upper.refresh_from_db()
+        self.assertEqual(alice_upper.username, "Alice")
+        self.assertEqual(alice_upper.first_name, "Alice Upper")

@@ -20,6 +20,7 @@ import TextInput from './TextInput';
 import Rte from './Rte';
 import RadioInput from './RadioInput';
 import { UsersSelect } from './UsersSelect';
+import { UserRolesSelect } from './UserRolesSelect';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useSavePage } from '../hooks/useSavePage';
 import { PAGES_TYPES, IFRAME, TEXT, RAW, SUPERSET } from '../constants';
@@ -191,6 +192,16 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                                             name="users"
                                             component={UsersSelect}
                                             isNewPage={isNewPage}
+                                            className={classes.input}
+                                        />
+                                    </Grid>
+                                    <Grid xs={6} md={6} item>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES.userRoles,
+                                            )}
+                                            name="user_roles"
+                                            component={UserRolesSelect}
                                             className={classes.input}
                                         />
                                     </Grid>

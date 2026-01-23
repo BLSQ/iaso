@@ -151,7 +151,8 @@ class PlanningSerializersTestCase(APITestCase):
         self.org_unit_parent.simplified_geom = multipolygon
         self.org_unit_parent.save()
 
-        serializer = PlanningOrgUnitSerializer(self.org_unit_parent)
+        org_unit = OrgUnit.objects.with_geo_json().get(id=self.org_unit_parent.id)
+        serializer = PlanningOrgUnitSerializer(org_unit)
 
         geo_json = serializer.data["geo_json"]
         self.assertEqual(geo_json["type"], "FeatureCollection")

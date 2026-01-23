@@ -10,7 +10,6 @@ from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project, Task
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
-from iaso.utils import geojson_queryset
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -434,11 +433,21 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
 
     def get_geo_json(self, org_unit: OrgUnit):
-        if not org_unit.simplified_geom:
+        if not hasattr(org_unit, "geo_json"):
             return None
 
-        shape_queryset = OrgUnit.objects.filter(id=org_unit.id)
-        return geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+        # Fakes the format of geojson_queryset() so that data can be passed to leaflet
+        return {
+            "type": "FeatureCollection",
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            "features": [
+                {
+                    "type": "Feature",
+                    "id": org_unit.id,
+                    "geometry": org_unit.geo_json,
+                }
+            ],
+        }
 
     def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
-        return bool(org_unit.simplified_geom)
+        return hasattr(org_unit, "geo_json")

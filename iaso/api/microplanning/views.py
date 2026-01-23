@@ -47,35 +47,42 @@ class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
     http_method_names = ["get", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
 
-    def list(self, request, *args, **kwargs):
-        query_serializer = PlanningOrgUnitListSerializer(data=request.query_params, context={"request": request})
-        query_serializer.is_valid(raise_exception=True)
-        planning = Planning.objects.select_related(
-            "org_unit", "target_org_unit_type", "selected_sampling_result__group"
-        ).get(pk=query_serializer.validated_data["planning"].id)
+    @action(detail=False, methods=["get"])
+    def children(self, request, *args, **kwargs):
+        planning = self._get_planning(request)
 
         user = request.user
-        org_units_qs = OrgUnit.objects.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
-        root_org_unit = planning.org_unit
-        org_units = []
+        base_queryset = (
+            OrgUnit.objects.with_geo_json().filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
+        )
         sampling = planning.selected_sampling_result
+        root_org_unit = planning.org_unit
+
         if sampling and sampling.group_id:
-            org_units = list(org_units_qs.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True)))
-        elif planning.org_unit and planning.target_org_unit_type:
-            org_units = list(
-                org_units_qs.descendants(planning.org_unit).filter(org_unit_type=planning.target_org_unit_type)
-            )
+            queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
+        elif root_org_unit and planning.target_org_unit_type:
+            queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type=planning.target_org_unit_type)
         else:
             raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
 
-        # Always include the planning root org unit
-        if root_org_unit:
-            existing_ids = {ou.id for ou in org_units}
-            if root_org_unit.id not in existing_ids:
-                org_units.insert(0, root_org_unit)
+        children_queryset = queryset.order_by("id")
+        serializer_children = PlanningOrgUnitSerializer(children_queryset, many=True)
 
-        serializer = PlanningOrgUnitSerializer(org_units, many=True, context={"request": request})
-        return Response(serializer.data)
+        return Response(serializer_children.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"])
+    def root(self, request, *args, **kwargs):
+        planning = self._get_planning(request)
+        root_queryset = OrgUnit.objects.with_geo_json().filter(pk=planning.org_unit_id).first()
+        root_serializer = PlanningOrgUnitSerializer(root_queryset)
+        return Response(root_serializer.data, status=status.HTTP_200_OK)
+
+    def _get_planning(self, request):
+        query_serializer = PlanningOrgUnitListSerializer(data=request.query_params, context={"request": request})
+        query_serializer.is_valid(raise_exception=True)
+        return Planning.objects.select_related(
+            "org_unit", "target_org_unit_type", "selected_sampling_result__group"
+        ).get(pk=query_serializer.validated_data["planning"].id)
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):

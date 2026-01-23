@@ -17,7 +17,6 @@ import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routi
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
-
 import { CampaignsCalendar } from './campaignCalendar';
 import {
     CampaignsFilters,
@@ -25,6 +24,7 @@ import {
 } from './campaignCalendar/CampaignsFilters';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { HasSubActivityLegend } from './campaignCalendar/HasSubActivityLegend';
+import { IntegratedCampaignsLegend } from './campaignCalendar/IntegratedCampaignsLegend';
 import { IsOnHoldLegend } from './campaignCalendar/IsOnHoldLegend';
 import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
@@ -219,6 +219,9 @@ export const Calendar: FunctionComponent = () => {
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <Box display="flex" justifyContent="flex-end">
+                                <Box mr={2}>
+                                    <IntegratedCampaignsLegend />
+                                </Box>
                                 <Box mr={2}>
                                     <IsOnHoldLegend />
                                 </Box>

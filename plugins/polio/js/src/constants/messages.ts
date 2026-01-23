@@ -2541,6 +2541,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.showIntegratedCampaigns',
         defaultMessage: 'Show integrated campaigns',
     },
+    integratedCampaign: {
+        id: 'iaso.polio.label.integratedCampaign',
+        defaultMessage: 'Integrated campaign',
+    },
 });
 
 export default MESSAGES;

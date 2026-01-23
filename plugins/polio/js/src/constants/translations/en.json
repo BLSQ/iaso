@@ -14,7 +14,7 @@
     "iaso.incident.plainMovement": "Usable vials out: {movement}, Unusable vials in: {movement}",
     "iaso.instance.last_modified_by": "Modified by",
     "iaso.label.account": "Account ID",
-    "iaso.label.action": "Action",
+    "iaso.polio.label.integratedCampaign": "Integrated campaign",
     "iaso.label.actionType": "Action type",
     "iaso.label.doses_in": "Doses IN",
     "iaso.label.doses_out": "Doses OUT",

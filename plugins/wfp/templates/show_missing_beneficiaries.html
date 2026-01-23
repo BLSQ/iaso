@@ -1,0 +1,45 @@
+<html>
+
+<head>
+    <style>
+        th,
+        td {
+            border: 1px black solid;
+            padding: 5px;
+        }
+
+        th {
+            text-align: right
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Missing {{number}} entities in analytics tables</h1>
+    <table>
+        <tr>
+            <th>UUID</th>
+            <th>Name</th>
+             <th>Link</th>
+        </tr>
+            {% for entity in entities %}
+                <tr>
+                    <td>{{ entity.uuid }}</td>
+
+                    <td>{{ entity.profile.first_name }}
+                        {{ entity.profile.middle_name }}
+                        {{ entity.profile.last_name }}
+                        {{ entity.profile.fathers_name }}
+                        {{ entity.profile.grand_fathers_name }} 
+                        {{ entity.profile.husband_father_name }}
+                        {{ entity.profile.grandfather_name }}</td>
+                    <td><a
+                            href="/dashboard/entities/details/accountId/{{beneficiary.account.id}}/entityId/{{entity.entity_id}}">/dashboard/entities/details/accountId/{{account}}/{{entity.entity_id}}</a>
+                    </td>
+                </tr>
+            {% endfor %}
+     
+    </table>
+</body>
+
+</html>

@@ -25,6 +25,14 @@ def debug(request, id):
     return HttpResponse(template.render(context, request))
 
 
+@login_required
+def show_missing_entities_in_analytics(request, account_id, entity_type):
+    entities = ETL().missing_entities_in_analytics_tables(account_id, entity_type)
+    template = loader.get_template("show_missing_beneficiaries.html")
+    context = {"entities": entities, "account": account_id, "entity_type": entity_type, "number": len(list(entities))}
+    return HttpResponse(template.render(context, request))
+
+
 @staff_member_required
 def delete_beneficiaries_analytics(request):
     if request.method == "POST":

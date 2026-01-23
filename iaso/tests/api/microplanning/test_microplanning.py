@@ -876,7 +876,7 @@ class PlanningTestCase(APITestCase):
 
         response = self.client.get("/api/microplanning/orgunits/", format="json")
         r = self.assertJSONResponse(response, 400)
-        self.assertIn("planning_id", r)
+        self.assertIn("planning", r)
 
     def test_planning_orgunits_missing_scope_raises_error(self):
         """A planning without sampling group or target org unit type should error."""
@@ -890,7 +890,7 @@ class PlanningTestCase(APITestCase):
             ended_at="2025-01-02",
         )
 
-        response = self.client.get(f"/api/microplanning/orgunits/?planning_id={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/orgunits/?planning={planning.id}", format="json")
         r = self.assertJSONResponse(response, 400)
         self.assertIn("planning", r)
         self.assertEqual(r["planning"][0], "Planning is missing sampling group or target org unit scope")
@@ -931,7 +931,7 @@ class PlanningTestCase(APITestCase):
             ended_at="2025-01-02",
         )
 
-        response = self.client.get(f"/api/microplanning/orgunits/?planning_id={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/orgunits/?planning={planning.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         ids = [ou["id"] for ou in r]
         self.assertEqual(ids, [root.id, child.id])
@@ -986,7 +986,7 @@ class PlanningTestCase(APITestCase):
         planning.selected_sampling_result = sampling
         planning.save()
 
-        response = self.client.get(f"/api/microplanning/orgunits/?planning_id={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/orgunits/?planning={planning.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         ids = [ou["id"] for ou in r]
         self.assertEqual(ids, [root.id, sampled_ou.id])

@@ -469,6 +469,11 @@ class DropdownOptionsSerializer(serializers.Serializer):
     label = serializers.CharField()
 
 
+class DropdownOptionsWithRepresentationSerializer(DropdownOptionsSerializer):
+    def to_representation(self, instance):
+        return {"value": instance[0], "label": str(instance[1])}
+
+
 class DropdownOptionsListViewSet(ViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     http_method_names = ["get"]

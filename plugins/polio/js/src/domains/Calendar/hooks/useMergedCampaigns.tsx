@@ -21,6 +21,29 @@ type Args = {
     campaignType: string;
 };
 
+// TODO update TS type for additional fields
+const addLayoutInfo = (list: any[]) => {
+    // campaign +1 integrated = min length of 2
+    if (list.length === 2) {
+        return [
+            { ...list[0], layout: 'top' },
+            { ...list[1], layout: 'bottom' },
+        ];
+    }
+    if (list.length > 2) {
+        const copy = [...list];
+        const first = copy.shift();
+        const last = copy.pop();
+        return [
+            { ...first, layout: 'top' },
+            ...copy.map(el => ({ ...el, layout: 'middle' })),
+            { ...last, layout: 'bottom' },
+        ];
+    }
+    // default fallback, to avoid errors
+    return list;
+};
+
 const consolidateCampaigns = (integratedCampaigns, regularCampaigns: any[]) => {
     if (integratedCampaigns.length === 0) {
         return [...regularCampaigns];
@@ -35,9 +58,11 @@ const consolidateCampaigns = (integratedCampaigns, regularCampaigns: any[]) => {
     });
     const result: any[] = [];
     regularCampaigns.forEach(cc => {
-        result.push(cc);
         if (idsDict[cc.id]) {
-            result.push(...idsDict[cc.id]);
+            const withIntegrated = [cc, ...idsDict[cc.id]];
+            result.push(...addLayoutInfo(withIntegrated));
+        } else {
+            result.push(cc);
         }
     });
     return result;

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import { Box, TableCell, TableSortLabel } from '@mui/material';
 import {
@@ -41,7 +41,10 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
     const shiftKeyIsDown = useKeyPressListener('Shift');
-    const ordersArray = getOrderArray(orders);
+    const ordersArray = useMemo(
+        () => (orders ? getOrderArray(orders) : []),
+        [orders],
+    );
     const handleSort = useCallback(
         (field: Field, existingSort: Order) => {
             let desc = true;

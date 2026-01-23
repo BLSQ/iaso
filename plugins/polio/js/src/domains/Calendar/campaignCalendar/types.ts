@@ -53,7 +53,7 @@ export type MappedCampaign = {
     separateScopesPerRound: boolean;
     color?: string;
     country: string;
-
+    layout?: 'top' | 'middle' | 'bottom';
     country_id: number;
     id: string;
     isPreventive: boolean;

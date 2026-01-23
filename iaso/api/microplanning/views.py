@@ -3,8 +3,10 @@ from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
@@ -28,6 +30,7 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningOrgUnitListSerializer,
     PlanningOrgUnitSerializer,
     PlanningReadSerializer,
     PlanningSamplingResult,
@@ -38,29 +41,20 @@ from .serializers import (
 )
 
 
-class PlanningOrgunitsViewSet(AuditMixin, ModelViewSet):
+class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
     """List orgunits for a planning."""
 
     http_method_names = ["get", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
-    serializer_class = PlanningOrgUnitSerializer
-    queryset = Planning.objects.all()
 
     def list(self, request, *args, **kwargs):
-        planning_id = request.query_params.get("planning_id")
-        if not planning_id:
-            return Response({"planning_id": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+        query_serializer = PlanningOrgUnitListSerializer(data=request.query_params, context={"request": request})
+        query_serializer.is_valid(raise_exception=True)
+        planning = Planning.objects.select_related(
+            "org_unit", "target_org_unit_type", "selected_sampling_result__group"
+        ).get(pk=query_serializer.validated_data["planning"].id)
 
         user = request.user
-        try:
-            planning = (
-                self.queryset.filter_for_user(user)
-                .select_related("org_unit", "target_org_unit_type", "selected_sampling_result__group")
-                .get(pk=planning_id)
-            )
-        except Planning.DoesNotExist:
-            return Response({"planning_id": ["Not found."]}, status=status.HTTP_404_NOT_FOUND)
-
         org_units_qs = OrgUnit.objects.filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
         root_org_unit = planning.org_unit
         org_units = []
@@ -71,6 +65,8 @@ class PlanningOrgunitsViewSet(AuditMixin, ModelViewSet):
             org_units = list(
                 org_units_qs.descendants(planning.org_unit).filter(org_unit_type=planning.target_org_unit_type)
             )
+        else:
+            raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
 
         # Always include the planning root org unit
         if root_org_unit:
@@ -78,7 +74,7 @@ class PlanningOrgunitsViewSet(AuditMixin, ModelViewSet):
             if root_org_unit.id not in existing_ids:
                 org_units.insert(0, root_org_unit)
 
-        serializer = self.get_serializer(org_units, many=True)
+        serializer = PlanningOrgUnitSerializer(org_units, many=True, context={"request": request})
         return Response(serializer.data)
 
 

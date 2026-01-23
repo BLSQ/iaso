@@ -878,6 +878,23 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 400)
         self.assertIn("planning_id", r)
 
+    def test_planning_orgunits_missing_scope_raises_error(self):
+        """A planning without sampling group or target org unit type should error."""
+        self.client.force_authenticate(self.user)
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-missing-scope",
+            team=self.team1,
+            org_unit=self.org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+
+        response = self.client.get(f"/api/microplanning/orgunits/?planning_id={planning.id}", format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
+        self.assertEqual(r["planning"][0], "Planning is missing sampling group or target org unit scope")
+
     def test_planning_orgunits_with_target_org_unit_type(self):
         self.client.force_authenticate(self.user)
         parent_type = OrgUnitType.objects.create(name="Parent type")

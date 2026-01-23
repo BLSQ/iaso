@@ -218,6 +218,17 @@ class PlanningSamplingResultListSerializer(serializers.Serializer):
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
 
 
+class PlanningOrgUnitListSerializer(serializers.Serializer):
+    planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+
+
 class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
     planning_id = serializers.PrimaryKeyRelatedField(
         queryset=Planning.objects.none(),

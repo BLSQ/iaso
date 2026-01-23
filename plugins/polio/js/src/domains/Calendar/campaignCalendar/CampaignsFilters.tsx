@@ -16,7 +16,6 @@ import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
-
 import { appId } from '../../../constants/app';
 import MESSAGES from '../../../constants/messages';
 import { baseUrls } from '../../../constants/urls';
@@ -24,6 +23,7 @@ import { useGetCountries } from '../../../hooks/useGetCountries';
 import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
 import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
+import { IntegratedCampaignCheckbox } from './IntegratedCampaignCheckbox';
 import { CalendarParams } from './types';
 
 type Props = {
@@ -260,7 +260,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                         keyValue="countries"
                         multi
                         clearable
-                        onChange={(key, value) => {
+                        onChange={(_key, value) => {
                             setCountries(value);
                         }}
                         value={countries}
@@ -326,14 +326,25 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             label={MESSAGES.country}
                         />
                         {/* Should have state reset and be disabled when removing polio type */}
-                        <InputComponent
-                            keyValue="showIntegrated"
-                            onChange={(_key, value) => {
-                                setShowIntegrated(value);
-                            }}
-                            value={showIntegrated}
-                            type="checkbox"
-                            label={MESSAGES.showIntegratedCampaigns}
+                        {/* {Boolean(
+                            campaignType && !campaignType.includes('polio'),
+                        ) && (
+                            <InputComponent
+                                keyValue="showIntegrated"
+                                onChange={(_key, value) => {
+                                    setShowIntegrated(value);
+                                }}
+                                value={showIntegrated}
+                                type="checkbox"
+                                label={MESSAGES.showIntegratedCampaigns}
+                            />
+                        )} */}
+                        <IntegratedCampaignCheckbox
+                            showIntegrated={showIntegrated}
+                            setShowIntegrated={setShowIntegrated}
+                            hide={Boolean(
+                                campaignType && !campaignType.includes('polio'),
+                            )}
                         />
                     </>
                 )}

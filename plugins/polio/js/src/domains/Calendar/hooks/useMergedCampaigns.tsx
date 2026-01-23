@@ -128,6 +128,7 @@ export const useMergedCampaigns = ({
     campaignType,
 }: Args) => {
     const currentDateString = currentDate.format('YYYY-MM-DD');
+    const showIntegrated = params?.showIntegrated == 'true';
     const hasPolio =
         campaignType?.includes('polio') ||
         campaignType === null ||
@@ -180,7 +181,7 @@ export const useMergedCampaigns = ({
         isLoading: isLoadingIntegrated,
     } = useGetIntegratedCampaigns({
         obrNames,
-        enabled: params?.showIntegrated == 'true',
+        enabled: showIntegrated,
     });
 
     const orderedRegularCampaigns = useMemo(() => {
@@ -194,7 +195,7 @@ export const useMergedCampaigns = ({
     // This is the mean one: we need to deduplicate when type is polio + other type
     // otherwise we need to merge with integrated campaigns if the boolean is True, return only regular if False
     const deduplicatedCampaigns = useMemo(() => {
-        if (hasPolio) {
+        if (hasPolio && showIntegrated) {
             const integratedObrNames = orderedIntegratedCampaigns.map(
                 c => c.obr_name,
             );
@@ -209,7 +210,13 @@ export const useMergedCampaigns = ({
         return orderedRegularCampaigns;
         // Add order to the deps to force re-ordrering
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orderedIntegratedCampaigns, orderedRegularCampaigns, hasPolio, order]);
+    }, [
+        orderedIntegratedCampaigns,
+        orderedRegularCampaigns,
+        hasPolio,
+        order,
+        showIntegrated,
+    ]);
 
     return useMemo(() => {
         return {

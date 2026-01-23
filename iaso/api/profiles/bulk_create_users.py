@@ -20,7 +20,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from hat.audit.models import PROFILE_API_BULK
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, UserRole
+from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, UserRole, Team
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 
 
@@ -360,6 +360,26 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             projects_instance_list = Project.objects.filter(
                                 name__in=project_names, account=importer_account
                             )
+
+                    try:
+                        teams_val = row[csv_indexes.index("teams")]
+                    except (IndexError, ValueError):
+                        teams_val = None
+
+                    if teams_val:
+                        team_names = [name.strip() for name in teams_val.split(value_splitter) if name]
+
+                        teams_to_add = Team.objects.filter(name__in=team_names, project__account=importer_account)
+
+                        found_names = list(teams_to_add.values_list("name", flat=True))
+                        for requested_name in team_names:
+                            if requested_name not in found_names:
+                                raise serializers.ValidationError(
+                                    {"error": f"Row {i + 1}: Team '{requested_name}' does not exist."}
+                                )
+
+                        for team in teams_to_add:
+                            team.users.add(user)
 
                     try:
                         user_permissions = [

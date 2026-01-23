@@ -10,7 +10,7 @@ from rest_framework import serializers
 
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
-from iaso.models import BulkCreateUserCsvFile, Profile
+from iaso.models import BulkCreateUserCsvFile, Profile, Team
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
     CORE_SUBMISSIONS_PERMISSION,
@@ -39,8 +39,8 @@ class BulkCreateCsvTestCase(APITestCase):
         "permissions",
         "user_roles",
         "projects",
-        "phone_number",
         "teams",
+        "phone_number",
         "organization",
         "editable_org_unit_types",
     ]
@@ -112,20 +112,6 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
-
-        # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as f:
-        #     reader = list(csv.DictReader(f))
-
-        # for row in reader:
-        #     if row["username"] == "rsfg":
-        #         row["editable_org_unit_types"] = str(self.org_unit_type_region.id)
-
-        # output = io.StringIO()
-        # writer = csv.DictWriter(output, fieldnames=reader[0].keys())
-        # writer.writeheader()
-        # writer.writerows(reader)
-
-        # test_file = SimpleUploadedFile("test.csv", output.getvalue().encode("utf-8"), content_type="text/csv")
 
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
@@ -299,17 +285,12 @@ class BulkCreateCsvTestCase(APITestCase):
 
         pswd_deleted = True
 
-        # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-
-        # 1. Prepare the context with the dynamic ID
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
-        # 2. Use the helper to render the CSV (swapping the placeholder for the ID)
         csv_content = self.load_fixture_with_jinja_template(
             path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
         )
 
-        # 3. Wrap it in a file-like object
         test_file = SimpleUploadedFile(
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
@@ -348,18 +329,12 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-        #
-
-        # 1. Prepare the context with the dynamic ID
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
-        # 2. Use the helper to render the CSV (swapping the placeholder for the ID)
         csv_content = self.load_fixture_with_jinja_template(
             path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
         )
 
-        # 3. Wrap it in a file-like object
         test_file = SimpleUploadedFile(
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
@@ -392,16 +367,12 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-        # 1. Prepare the context with the dynamic ID
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
-        # 2. Use the helper to render the CSV (swapping the placeholder for the ID)
         csv_content = self.load_fixture_with_jinja_template(
             path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
         )
 
-        # 3. Wrap it in a file-like object
         test_file = SimpleUploadedFile(
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
@@ -693,10 +664,10 @@ class BulkCreateCsvTestCase(APITestCase):
                 "permissions": "",
                 "user_roles": "",
                 "projects": "",
+                "teams": "",
                 "phone_number": "",
                 "organization": "",
                 "editable_org_unit_types": "",
-                "teams": "",
             }
         )
         csv_bytes = csv_str.getvalue().encode()
@@ -787,3 +758,107 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(new_value["org_units"]), 2)
         self.assertIn(self.org_unit3.id, new_value["org_units"])
         self.assertIn(self.org_unit2.id, new_value["org_units"])
+
+    def test_bulk_create_user_with_single_team(self):
+        self.client.force_authenticate(self.yoda)
+
+        self.source.projects.set([self.project])
+
+        team = Team.objects.create(name="Alpha Team", project=self.project, manager=self.yoda)
+
+        context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": "Alpha Team"}
+
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures",
+            fixture_name="test_user_bulk_create_valid_with_one_team.csv",
+            context=context,
+        )
+
+        test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+
+        self.assertEqual(response.status_code, 200)
+
+        user = User.objects.get(username="rsfg")
+        self.assertEqual(user.teams.count(), 1)
+        self.assertEqual(user.teams.first().name, team.name)
+
+    def test_bulk_create_user_with_multiple_teams(self):
+        self.client.force_authenticate(self.yoda)
+
+        self.source.projects.set([self.project])
+
+        team1 = Team.objects.create(name="Alpha Team", project=self.project, manager=self.yoda)
+        team2 = Team.objects.create(name="Beta Team", project=self.project, manager=self.yoda)
+
+        context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": f"{team1.name}, {team2.name}"}
+
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures",
+            fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
+            context=context,
+        )
+
+        test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
+
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+
+        self.assertEqual(response.status_code, 200)
+
+        user = User.objects.get(username="rsfg")
+        self.assertEqual(user.teams.count(), 2)
+
+        user_team_names = list(user.teams.values_list("name", flat=True))
+        self.assertIn("Alpha Team", user_team_names)
+        self.assertIn("Beta Team", user_team_names)
+
+    def test_bulk_create_user_fails_on_invalid_team(self):
+        self.client.force_authenticate(self.yoda)
+
+        self.source.projects.set([self.project])
+        invalid_team_name = "Not a Team"
+
+        context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": invalid_team_name}
+
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures",
+            fixture_name="test_user_bulk_create_valid_with_one_team.csv",
+            context=context,
+        )
+
+        test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
+
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+
+        self.assertEqual(response.status_code, 400)
+
+        expected_error = f"Row 2: Team '{invalid_team_name}' does not exist."
+        self.assertEqual(response.json()["error"], expected_error)
+
+    def test_bulk_create_user_cannot_assign_team_from_another_account(self):
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        account2 = m.Account.objects.get(name="Account 2")
+        han_solo = User.objects.get(username="han solo")
+
+        project_acc2 = m.Project.objects.create(name="Project Acc 2", account=account2, app_id="acc2.app")
+
+        secret_team_name = "Account 2 Team"
+        Team.objects.create(name=secret_team_name, project=project_acc2, manager=han_solo)
+
+        context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": secret_team_name}
+
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures",
+            fixture_name="test_user_bulk_create_valid_with_one_team.csv",
+            context=context,
+        )
+
+        test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
+
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+
+        self.assertEqual(response.status_code, 400)
+        expected_error = f"Row 2: Team '{secret_team_name}' does not exist."
+        self.assertEqual(response.json()["error"], expected_error)

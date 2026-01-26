@@ -564,6 +564,12 @@ queryClient.invalidateQueries(['forms', formId]);
 // This invalidates 'possible_fields', 'versions', etc.
 ```
 
+### React Query Devtools
+
+- To inspect cache, queries, and mutations in the browser, use the built-in React Query Devtools.
+- In the browser console run `window.showReactQueryDevtools?.()` to inject the panel (it opens hidden by default).
+- Run `window.hideReactQueryDevtools?.()` to remove it when done.
+
 ## Remarks
 
 - order translations by alphanumeric

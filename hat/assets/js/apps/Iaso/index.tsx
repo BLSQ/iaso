@@ -1,12 +1,14 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+
 import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from 'bluesquare-components';
 import { SnackbarProvider } from 'notistack';
 import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
 
 import './libs/polyfills';
 
@@ -19,6 +21,7 @@ import {
     ThemeConfigContext,
 } from './domains/app/contexts/ThemeConfigContext';
 import App from './domains/app/index';
+import { useReactQueryDevTools } from './hooks/useReactQueryDevTools';
 import { PluginsContext } from './plugins/context';
 import { usePlugins } from './plugins/hooks/usePlugins';
 import { getGlobalOverrides, getOverriddenTheme } from './styles';
@@ -45,6 +48,8 @@ declare global {
             themeConfig: ThemeConfig,
             userHomePage: string,
         ) => void;
+        showReactQueryDevtools?: () => void;
+        hideReactQueryDevtools?: () => void;
     }
 }
 
@@ -54,6 +59,7 @@ const IasoApp: React.FC<{
     themeConfig: ThemeConfig;
     userHomePage: string;
 }> = ({ element, enabledPluginsName, themeConfig, userHomePage }) => {
+    const showDevtools = useReactQueryDevTools();
     const { plugins, pluginHomePage, pluginTheme } =
         usePlugins(enabledPluginsName);
     const usedTheme = pluginTheme || getOverriddenTheme(theme, themeConfig);
@@ -86,6 +92,9 @@ const IasoApp: React.FC<{
                                         />
                                     </SnackbarProvider>
                                 </LocalizedAppComponent>
+                                {showDevtools && (
+                                    <ReactQueryDevtools initialIsOpen={false} />
+                                )}
                             </LocaleProvider>
                         </SidebarProvider>
                     </ThemeProvider>

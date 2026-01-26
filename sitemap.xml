@@ -241,6 +241,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_plugins/use_plugins.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html</loc>
+        <lastmod>2026-01-26</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/use_tranlations/use_translations.html</loc>
         <lastmod>2026-01-26</lastmod>
         <changefreq>daily</changefreq>
@@ -785,6 +793,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_plugins/use_plugins.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html</loc>
+        <lastmod>2026-01-26</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/how_to/use_tranlations/use_translations.html</loc>
         <lastmod>2026-01-26</lastmod>
         <changefreq>daily</changefreq>
@@ -1327,6 +1343,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_plugins/use_plugins.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_plugins/use_plugins.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_plugins/use_plugins.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html</loc>
+        <lastmod>2026-01-26</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_react_query_dev_tools/use_react_query_dev_tools_en.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/use_tranlations/use_translations.html</loc>

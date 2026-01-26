@@ -50,6 +50,10 @@ class MetricTypeAPITestCase(APITestCase):
         self.assertEqual(len(oh_metric_types), 1)
         self.assertEqual(oh_metric_types[0]["code"], "MT002")
 
+    def test_metric_type_list_unauthenticated(self):
+        response = self.client.get("/api/metrictypes/")
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
     def test_metric_type_post(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.post(
@@ -65,6 +69,21 @@ class MetricTypeAPITestCase(APITestCase):
             },
         )
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+    def test_metric_type_post_unauthenticated(self):
+        response = self.client.post(
+            "/api/metrictypes/",
+            data={
+                "code": "MT003",
+                "name": "Metric Type 3",
+                "description": "Description for Metric Type 3",
+                "category": "Category C",
+                "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
+                "scale": "[1, 2, 3]",
+                "legend_type": MetricType.LegendType.THRESHOLD.value,
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_metric_type_put(self):
         self.client.force_authenticate(user=self.user)
@@ -87,6 +106,21 @@ class MetricTypeAPITestCase(APITestCase):
         self.assertEqual(updated_metric_type.name, "Updated Metric Type 1")
         self.assertEqual(updated_metric_type.description, "Updated description for Metric Type 1")
 
+    def test_metric_type_update_unauthenticated(self):
+        response = self.client.put(
+            f"/api/metrictypes/{self.metric_type_1.id}/",
+            data={
+                "code": "MT001",
+                "name": "Updated Metric Type 1",
+                "description": "Updated description for Metric Type 1",
+                "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
+                "category": "Category A",
+                "scale": "[1, 2, 3, 4]",
+                "legend_type": MetricType.LegendType.THRESHOLD.value,
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
     def test_metric_type_delete(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/metrictypes/{self.metric_type_1.id}/")
@@ -95,6 +129,10 @@ class MetricTypeAPITestCase(APITestCase):
         # Verify deletion
         with self.assertRaises(MetricType.DoesNotExist):
             MetricType.objects.get(id=self.metric_type_1.id)
+
+    def test_metric_type_delete_unauthenticated(self):
+        response = self.client.delete(f"/api/metrictypes/{self.metric_type_1.id}/")
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_openhexa_metric_type_forbidden(self):
         self.client.force_authenticate(user=self.user)

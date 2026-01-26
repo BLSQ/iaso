@@ -79,19 +79,6 @@ class CampaignCalendarViewSet(ModelViewSet):
             account_id = self.request.query_params.get("account_id", None)
             if account_id is not None:
                 campaigns = campaigns.filter(account_id=account_id)
-                campaigns = (
-                    campaigns.prefetch_related(country_prefetch)
-                    .prefetch_related("grouped_campaigns")
-                    .prefetch_related("scopes")
-                    .prefetch_related("scopes__group")
-                    .prefetch_related(scopes_group_org_units_prefetch)
-                    .prefetch_related("rounds")
-                    .prefetch_related("rounds__datelogs")
-                    .prefetch_related("rounds__datelogs__modified_by")
-                    .prefetch_related("rounds__scopes")
-                    .prefetch_related("rounds__scopes__group")
-                    .prefetch_related(rounds_scopes_group_org_units_prefetch)
-                )
 
         return campaigns
 

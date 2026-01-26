@@ -18,76 +18,75 @@ from plugins.polio.preparedness.spreadsheet_manager import (
 )
 
 
+class GroupIdSerializer(GroupSerializer):
+    class Meta:
+        model = Group
+        fields = ["id"]
+
+
+class SubactivityScopeSerializer(serializers.ModelSerializer):
+    group = GroupIdSerializer()
+
+    class Meta:
+        model = SubActivityScope
+        fields = ["group", "vaccine"]
+
+
+class SubactivitySerializer(serializers.ModelSerializer):
+    scopes = SubactivityScopeSerializer(many=True)
+    round_number = serializers.IntegerField(source="round.number")
+
+    class Meta:
+        model = SubActivity
+        fields = ["name", "start_date", "end_date", "scopes", "id", "vaccine_names", "round_number"]
+
+
+class RoundScopeSerializer(serializers.ModelSerializer):
+    group = GroupIdSerializer()
+
+    class Meta:
+        model = RoundScope
+        fields = ["group", "vaccine"]
+
+
+class ListRoundSerializer(RoundSerializer):
+    vaccine_names = serializers.CharField(read_only=True)
+    scopes = RoundScopeSerializer(many=True, required=False)
+
+    class Meta:
+        model = Round
+        fields = [
+            "id",
+            "number",
+            "started_at",
+            "ended_at",
+            "scopes",
+            "vaccine_names",
+            "target_population",
+            "is_planned",
+        ]
+
+    def to_representation(self, instance):
+        # Skip rounds on hold
+        if instance.on_hold:
+            return None
+        return super().to_representation(instance)
+
+
+class CampaignScopeSerializer(serializers.ModelSerializer):
+    group = GroupIdSerializer()
+
+    class Meta:
+        model = CampaignScope
+        fields = ["group", "vaccine"]
+
+
 class CalendarCampaignSerializerV2(serializers.ModelSerializer):
     """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
     Used by both anonymous and non-anonymous user"""
 
-    class NestedSubactivitySerializer(serializers.ModelSerializer):
-        class NestedScopeSerializer(serializers.ModelSerializer):
-            class NestedGroupSerializer(GroupSerializer):
-                class Meta:
-                    model = Group
-                    fields = ["id"]
-
-            class Meta:
-                model = SubActivityScope
-                fields = ["group", "vaccine"]
-
-            group = NestedGroupSerializer()
-
-        scopes = NestedScopeSerializer(many=True)
-        round_number = serializers.IntegerField(source="round.number")
-
-        class Meta:
-            model = SubActivity
-            fields = ["name", "start_date", "end_date", "scopes", "id", "vaccine_names", "round_number"]
-
-    class NestedListRoundSerializer(RoundSerializer):
-        class NestedScopeSerializer(RoundScopeSerializer):
-            class NestedGroupSerializer(GroupSerializer):
-                class Meta:
-                    model = Group
-                    fields = ["id"]
-
-            class Meta:
-                model = RoundScope
-                fields = ["group", "vaccine"]
-
-            group = NestedGroupSerializer()
-
-        class Meta:
-            model = Round
-            fields = [
-                "id",
-                "number",
-                "started_at",
-                "ended_at",
-                "scopes",
-                "vaccine_names",
-                "target_population",
-                "is_planned",
-            ]
-
-        def to_representation(self, instance):
-            # Skip rounds on hold
-            if instance.on_hold:
-                return None
-            return super().to_representation(instance)
-
-    class NestedScopeSerializer(CampaignScopeSerializer):
-        class NestedGroupSerializer(GroupSerializer):
-            class Meta:
-                model = Group
-                fields = ["id"]
-
-        class Meta:
-            model = CampaignScope
-            fields = ["group", "vaccine"]
-
-        group = NestedGroupSerializer()
-
-    rounds = NestedListRoundSerializer(many=True, required=False)
-    scopes = NestedScopeSerializer(many=True, required=False)
+    rounds = ListRoundSerializer(many=True, required=False)
+    scopes = CampaignScopeSerializer(many=True, required=False)
     campaign_types = CampaignTypeSerializer(many=True, required=False)
     sub_activities = serializers.SerializerMethodField()
     top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
@@ -98,7 +97,7 @@ class CalendarCampaignSerializerV2(serializers.ModelSerializer):
 
     def get_sub_activities(self, campaign):
         sub_activities = SubActivity.objects.filter(round__campaign=campaign)
-        return self.NestedSubactivitySerializer(sub_activities, many=True, context=self.context).data
+        return SubactivitySerializer(sub_activities, many=True, context=self.context).data
 
     def get_general_status(self, campaign):
         now_utc = timezone.now().date()

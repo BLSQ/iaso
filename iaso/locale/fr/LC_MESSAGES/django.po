@@ -655,6 +655,10 @@ msgid "Financial Nov"
 msgstr "Financier Nov"
 
 #: iaso/models/forms.py
+msgid "WEEK"
+msgstr "Semaine"
+
+#: iaso/models/forms.py
 msgid "No change request"
 msgstr "Pas de demande de modification"
 

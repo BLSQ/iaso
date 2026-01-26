@@ -515,7 +515,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         else:
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")
-            user.username = request.data.get("user_name")
+            user_name = request.data.get("user_name")
+            if user_name:
+                user.username = user_name
             user.email = request.data.get("email", "")
             self.update_password(user, request)
 
@@ -607,8 +609,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")
-        if not username:
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
+        # Skip validation if username not provided or did not change (case-insensitive)
+        if not username or user.username == username:
+            return
 
         existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
         if existing_user:

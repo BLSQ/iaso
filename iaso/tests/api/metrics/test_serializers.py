@@ -1,5 +1,3 @@
-from django.contrib.auth import get_user_model
-
 from iaso.api.metrics.serializers import (
     MetricTypeSerializer,
     MetricTypeWriteSerializer,

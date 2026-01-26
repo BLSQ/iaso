@@ -1,27 +1,17 @@
-import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
+import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
 
 import Typography from '@mui/material/Typography';
-import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
+import { makeStyles } from '@mui/styles';
+import { commonStyles, DatePicker } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { getYears } from '../../../utils';
 import {
-    hasFeatureFlag,
-    HIDE_PERIOD_QUARTER_NAME,
-} from '../../../utils/featureFlags';
-import { Period, PeriodObject } from '../models';
-import { getWeekDisplayedRange, getNumberOfIsoWeeksInYear, getPeriodPickerString } from '../utils';
-
-import { useCurrentUser } from '../../../utils/usersUtils';
-import {
-    MONTHS,
     NO_PERIOD,
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -30,15 +20,13 @@ import {
     PERIOD_TYPE_QUARTER_NOV,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
-    QUARTERS,
-    QUARTERS_RANGE,
-    QUARTERS_NOV_RANGE,
-    SEMESTERS,
-    SEMESTERS_RANGE,
     PERIOD_TYPE_FINANCIAL_NOV,
     PERIOD_TYPE_WEEK,
 } from '../constants';
 import MESSAGES from '../messages';
+import { Period, PeriodObject } from '../models';
+import { usePeriodPickerOptions } from '../options';
+import { getPeriodPickerString } from '../utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -92,14 +80,12 @@ const PeriodPicker: FunctionComponent<Props> = ({
     message,
 }) => {
     const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
     const [currentPeriod, setCurrentPeriod] =
         useState<Partial<PeriodObject> | null>(
             activePeriodString && Period.getPeriodType(activePeriodString)
                 ? Period.parse(activePeriodString)[1]
                 : null,
         );
-    const currentUser = useCurrentUser();
 
     useEffect(() => {
         setCurrentPeriod(null);
@@ -136,23 +122,13 @@ const PeriodPicker: FunctionComponent<Props> = ({
         [onChange],
     );
 
-    const getQuarterOptionLabel = (value, label) => {
-        if (periodType === PERIOD_TYPE_QUARTER_NOV) {
-            return `${label} (${formatMessage(
-                QUARTERS_NOV_RANGE[value][0],
-            )}-${formatMessage(QUARTERS_NOV_RANGE[value][1])})`;
-        }
-
-        if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
-            return `${formatMessage(QUARTERS_RANGE[value][0])}-${formatMessage(
-                QUARTERS_RANGE[value][1],
-            )}`;
-        }
-        return `${label} (${formatMessage(
-            QUARTERS_RANGE[value][0],
-        )}-${formatMessage(QUARTERS_RANGE[value][1])})`;
-    };
-
+    const {
+        semesterOptions,
+        quarterOptions,
+        monthOptions,
+        yearOptions,
+        weekOptions,
+    } = usePeriodPickerOptions(periodType, currentPeriod);
     if (!periodType) {
         return null;
     }
@@ -192,150 +168,117 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         {![PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
                             periodType as string,
                         ) && (
-                                <Grid
-                                    item
-                                    sm={(periodType === PERIOD_TYPE_YEAR || periodType === PERIOD_TYPE_FINANCIAL_NOV) ? 12 : 6}
-                                >
-                                    <InputComponent
-                                        keyValue="year"
-                                        onChange={handleChange}
-                                        clearable
-                                        value={currentPeriod && currentPeriod.year}
-                                        type="select"
-                                        options={getYears(20, 10, true).map(y => ({
-                                            label: y.toString(),
-                                            value: y.toString(),
-                                        }))}
-                                        label={MESSAGES.year}
-                                    />
-                                </Grid>
-                            )}
+                            <Grid
+                                item
+                                sm={
+                                    periodType === PERIOD_TYPE_YEAR ||
+                                    periodType === PERIOD_TYPE_FINANCIAL_NOV
+                                        ? 12
+                                        : 6
+                                }
+                            >
+                                <InputComponent
+                                    keyValue="year"
+                                    onChange={handleChange}
+                                    clearable
+                                    value={currentPeriod && currentPeriod.year}
+                                    type="select"
+                                    options={yearOptions}
+                                    label={MESSAGES.year}
+                                />
+                            </Grid>
+                        )}
                         {[PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
                             periodType as string,
                         ) && (
-                                <Grid item>
-                                    <Typography className={classes.legend}>
-                                        {message}
-                                    </Typography>
-                                </Grid>
-                            )}
+                            <Grid item>
+                                <Typography className={classes.legend}>
+                                    {message}
+                                </Typography>
+                            </Grid>
+                        )}
 
                         {(periodType === PERIOD_TYPE_MONTH ||
                             periodType === PERIOD_TYPE_QUARTER ||
                             periodType === PERIOD_TYPE_QUARTER_NOV ||
                             periodType === PERIOD_TYPE_SIX_MONTH ||
-                            periodType === PERIOD_TYPE_WEEK
-                        ) && (
-                                <Grid item sm={6}>
-                                    {periodType === PERIOD_TYPE_MONTH && (
-                                        <InputComponent
-                                            keyValue="month"
-                                            disabled={
-                                                !currentPeriod ||
-                                                (currentPeriod &&
-                                                    !currentPeriod.year)
-                                            }
-                                            onChange={handleChange}
-                                            clearable
-                                            value={
-                                                currentPeriod && currentPeriod.month
-                                            }
-                                            type="select"
-                                            options={Object.entries(MONTHS).map(
-                                                ([value, month]) => ({
-                                                    label: formatMessage(month),
-                                                    value,
-                                                }),
-                                            )}
-                                            label={MESSAGES.month}
-                                        />
-                                    )}
-                                    {(periodType === PERIOD_TYPE_QUARTER ||
-                                        periodType === PERIOD_TYPE_QUARTER_NOV) && (
-                                            <InputComponent
-                                                keyValue="quarter"
-                                                onChange={handleChange}
-                                                disabled={
-                                                    !currentPeriod ||
-                                                    (currentPeriod &&
-                                                        !currentPeriod.year)
-                                                }
-                                                clearable
-                                                value={
-                                                    currentPeriod &&
-                                                    currentPeriod.quarter
-                                                }
-                                                type="select"
-                                                options={Object.entries(QUARTERS).map(
-                                                    ([value, label]) => ({
-                                                        label: getQuarterOptionLabel(
-                                                            value,
-                                                            label,
-                                                        ),
-                                                        value,
-                                                    }),
-                                                )}
-                                                label={MESSAGES.quarter}
-                                            />
-                                        )}
+                            periodType === PERIOD_TYPE_WEEK) && (
+                            <Grid item sm={6}>
+                                {periodType === PERIOD_TYPE_MONTH && (
+                                    <InputComponent
+                                        keyValue="month"
+                                        disabled={
+                                            !currentPeriod ||
+                                            (currentPeriod &&
+                                                !currentPeriod.year)
+                                        }
+                                        onChange={handleChange}
+                                        clearable
+                                        value={
+                                            currentPeriod && currentPeriod.month
+                                        }
+                                        type="select"
+                                        options={monthOptions}
+                                        label={MESSAGES.month}
+                                    />
+                                )}
+                                {(periodType === PERIOD_TYPE_QUARTER ||
+                                    periodType === PERIOD_TYPE_QUARTER_NOV) && (
+                                    <InputComponent
+                                        keyValue="quarter"
+                                        onChange={handleChange}
+                                        disabled={
+                                            !currentPeriod ||
+                                            (currentPeriod &&
+                                                !currentPeriod.year)
+                                        }
+                                        clearable
+                                        value={
+                                            currentPeriod &&
+                                            currentPeriod.quarter
+                                        }
+                                        type="select"
+                                        options={quarterOptions}
+                                        label={MESSAGES.quarter}
+                                    />
+                                )}
 
-                                    {periodType === PERIOD_TYPE_SIX_MONTH && (
-                                        <InputComponent
-                                            keyValue="semester"
-                                            onChange={handleChange}
-                                            clearable
-                                            disabled={
-                                                !currentPeriod ||
-                                                (currentPeriod &&
-                                                    !currentPeriod.year)
-                                            }
-                                            value={
-                                                currentPeriod &&
-                                                currentPeriod.semester
-                                            }
-                                            type="select"
-                                            options={Object.entries(SEMESTERS).map(
-                                                ([value, label]) => ({
-                                                    label: `${label} (${formatMessage(
-                                                        SEMESTERS_RANGE[value][0],
-                                                    )}-${formatMessage(
-                                                        SEMESTERS_RANGE[value][1],
-                                                    )})`,
-                                                    value,
-                                                }),
-                                            )}
-                                            label={MESSAGES.six_month}
-                                        />
-                                    )}
-                                    {periodType == PERIOD_TYPE_WEEK && (
-                                        <InputComponent
-                                            keyValue="week"
-                                            onChange={handleChange}
-                                            disabled={!currentPeriod?.year}
-                                            clearable                                     
-                                            value={currentPeriod?.week}
-                                            type="select"
-                                            options={
-                                                currentPeriod?.year
-                                                    ? Array.from(
-                                                        { length: getNumberOfIsoWeeksInYear(currentPeriod.year) },
-                                                        (_, i) => ({
-                                                            label: `${i + 1} (${getWeekDisplayedRange(`${currentPeriod?.year}W${i + 1}`)})`,
-                                                            value: i + 1,
-                                                        }),
-                                                    )
-                                                    : []
-                                            }
-                                            label={MESSAGES.week}
-                                        />
-
-                                    )}
-                                </Grid>
-                            )}
-                          
+                                {periodType === PERIOD_TYPE_SIX_MONTH && (
+                                    <InputComponent
+                                        keyValue="semester"
+                                        onChange={handleChange}
+                                        clearable
+                                        disabled={
+                                            !currentPeriod ||
+                                            (currentPeriod &&
+                                                !currentPeriod.year)
+                                        }
+                                        value={
+                                            currentPeriod &&
+                                            currentPeriod.semester
+                                        }
+                                        type="select"
+                                        options={semesterOptions}
+                                        label={MESSAGES.six_month}
+                                    />
+                                )}
+                                {periodType == PERIOD_TYPE_WEEK && (
+                                    <InputComponent
+                                        keyValue="week"
+                                        onChange={handleChange}
+                                        disabled={!currentPeriod?.year}
+                                        clearable
+                                        value={currentPeriod?.week}
+                                        type="select"
+                                        options={weekOptions}
+                                        label={MESSAGES.week}
+                                    />
+                                )}
+                            </Grid>
+                        )}
                     </Grid>
                 </>
-            )}              
+            )}
             <FormHelperText error={displayError}>{errors}</FormHelperText>
         </Box>
     );

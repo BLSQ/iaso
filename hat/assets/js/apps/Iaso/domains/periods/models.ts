@@ -1,4 +1,3 @@
-/* eslint-disable radix */
 import _ from 'lodash/fp';
 import {
     PERIOD_TYPE_DAY,
@@ -8,7 +7,7 @@ import {
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
     PERIOD_TYPE_FINANCIAL_NOV,
-    PERIOD_TYPE_WEEK
+    PERIOD_TYPE_WEEK,
 } from './constants';
 import { getNumberOfIsoWeeksInYear } from './utils';
 
@@ -18,7 +17,7 @@ export type PeriodObject = {
     semester: number;
     year: number;
     day: number;
-    week?: number
+    week?: number;
 };
 
 const QUARTER_NOV_MONTHS = {
@@ -53,7 +52,7 @@ export class Period {
         this.semester = periodParts.semester;
         this.year = periodParts.year;
         this.day = periodParts.day;
-        this.week = periodParts.week
+        this.week = periodParts.week;
         this.periodString = periodString;
     }
 
@@ -129,7 +128,7 @@ export class Period {
         )}${String(value?.day ?? '1').padStart(2, '0')}`;
         return result;
     }
-    
+
     toCode(): string {
         switch (this.periodType) {
             case PERIOD_TYPE_WEEK:
@@ -153,7 +152,7 @@ export class Period {
         }
     }
 
-    static parse(periodString: string): [string, PeriodObject] {       
+    static parse(periodString: string): [string, PeriodObject] {
         if (periodString.includes('NovQ')) {
             return [
                 PERIOD_TYPE_QUARTER_NOV,
@@ -172,11 +171,9 @@ export class Period {
                 Period.parseQuarterString(periodString),
             ];
         }
-        if (periodString.length <=7 && periodString.includes('W')) { //2026W53 2026W1
-            return [
-                PERIOD_TYPE_WEEK,
-                Period.parseWeekString(periodString),
-            ];
+        if (periodString.length <= 7 && periodString.includes('W')) {
+            //2026W53 2026W1
+            return [PERIOD_TYPE_WEEK, Period.parseWeekString(periodString)];
         }
         if (periodString.includes('S')) {
             return [
@@ -204,7 +201,7 @@ export class Period {
         if (periodString.includes('Nov') && periodString.length === 7) {
             return PERIOD_TYPE_FINANCIAL_NOV;
         }
-        if (periodString.length <=7 && periodString.includes('W')) {
+        if (periodString.length <= 7 && periodString.includes('W')) {
             return PERIOD_TYPE_WEEK;
         }
         if (periodString.includes('Q') && periodString.length === 6) {
@@ -255,9 +252,9 @@ export class Period {
         return {
             year,
             month: 1,
-            quarter:1,
-            semester:1,
-            day:1, 
+            quarter: 1,
+            semester: 1,
+            day: 1,
             week,
         };
     }
@@ -334,7 +331,6 @@ export class Period {
             return true;
         }
         if (p1.year === p2.year) {
-
             if (p1.periodType === PERIOD_TYPE_DAY) {
                 return (
                     p1.month < p2.month ||
@@ -355,7 +351,7 @@ export class Period {
             }
             if (p1.periodType === PERIOD_TYPE_WEEK) {
                 return p1.week! < p2.week!;
-            }            
+            }
             return false;
         }
         return false;
@@ -368,7 +364,6 @@ export class Period {
             return true;
         }
         if (p1.year === p2.year) {
-
             if (p1.periodType === PERIOD_TYPE_DAY) {
                 return (
                     p1.month < p2.month ||
@@ -389,7 +384,7 @@ export class Period {
             }
             if (p1.periodType === PERIOD_TYPE_WEEK) {
                 return p1.week! <= p2.week!;
-            }            
+            }
             if (
                 p1.periodType === PERIOD_TYPE_YEAR ||
                 p1.periodType === PERIOD_TYPE_FINANCIAL_NOV
@@ -406,7 +401,7 @@ export class Period {
         if (p1.year > p2.year) {
             return true;
         }
-        if (p1.year === p2.year) {       
+        if (p1.year === p2.year) {
             if (p1.periodType === PERIOD_TYPE_DAY) {
                 return (
                     p1.month > p2.month ||
@@ -427,7 +422,7 @@ export class Period {
             }
             if (p1.periodType === PERIOD_TYPE_WEEK) {
                 return p1.week! > p2.week!;
-            }                 
+            }
             return false;
         }
         return false;
@@ -460,7 +455,7 @@ export class Period {
             }
             if (p1.periodType === PERIOD_TYPE_WEEK) {
                 return p1.week! >= p2.week!;
-            }              
+            }
             if (
                 p1.periodType === PERIOD_TYPE_YEAR ||
                 p1.periodType === PERIOD_TYPE_FINANCIAL_NOV
@@ -637,7 +632,7 @@ export class Period {
         }
         if (period.includes('W')) {
             return this.nextWeek(period);
-        }        
+        }
         if (period.includes('S')) {
             return this.nextSixMonth(period);
         }
@@ -666,7 +661,7 @@ export class Period {
         }
         if (period.includes('W')) {
             return this.previousWeek(period);
-        }        
+        }
         if (period.includes('S')) {
             return this.previousSixMonth(period);
         }

@@ -1,5 +1,11 @@
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { Period } from './models.ts';
+import moment from 'moment';
+import { getLocaleDateFormat } from '../../utils/dates';
+import {
+    hasFeatureFlag,
+    HIDE_PERIOD_QUARTER_NAME,
+} from '../../utils/featureFlags';
+import { useCurrentUser } from '../../utils/usersUtils';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -15,13 +21,7 @@ import {
 } from './constants';
 import MESSAGES from './messages';
 
-import {
-    hasFeatureFlag,
-    HIDE_PERIOD_QUARTER_NAME,
-} from '../../utils/featureFlags';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import moment from 'moment';
-import { getLocaleDateFormat } from '../../utils/dates.ts';
+import { Period } from './models';
 
 export const getDefaultPeriodString = () => {
     const currentYear = new Date().getFullYear();
@@ -31,7 +31,10 @@ export const getDefaultPeriodString = () => {
 
 export const getDefaultPeriod = () => new Period(getDefaultPeriodString());
 
-export const isValidPeriod = (pString: any, periodType: any = PERIOD_TYPE_DAY) => {
+export const isValidPeriod = (
+    pString: any,
+    periodType: any = PERIOD_TYPE_DAY,
+) => {
     if (!pString) {
         return true;
     }
@@ -50,7 +53,11 @@ export const errorTypes = {
     },
 };
 
-export const getPeriodsErrors = (startPeriod: any, endPeriod: any, pType: any) => {
+export const getPeriodsErrors = (
+    startPeriod: any,
+    endPeriod: any,
+    pType: any,
+) => {
     let errors = {
         start: null,
         end: null,
@@ -90,7 +97,11 @@ export const getPeriodsErrors = (startPeriod: any, endPeriod: any, pType: any) =
     return errors;
 };
 
-export const getPeriodPickerString = (periodType: any, period: any, value: any) => {
+export const getPeriodPickerString = (
+    periodType: any,
+    period: any,
+    value: any,
+) => {
     if (!period) {
         return '';
     }
@@ -99,7 +110,7 @@ export const getPeriodPickerString = (periodType: any, period: any, value: any) 
             return period.year ? `${period.year}Nov` : null;
         }
         case PERIOD_TYPE_WEEK: {
-            return period.year ? `${period.year}W${period.week}` : null;;
+            return period.year ? `${period.year}W${period.week}` : null;
         }
         case PERIOD_TYPE_DAY: {
             return value;
@@ -120,7 +131,9 @@ export const getPeriodPickerString = (periodType: any, period: any, value: any) 
         }
         case PERIOD_TYPE_QUARTER_NOV: {
             const { year } = period;
-            const quarter = period.quarter ? QUARTERS_NOV[period.quarter] : null;
+            const quarter = period.quarter
+                ? QUARTERS_NOV[period.quarter]
+                : null;
             return !year && !quarter
                 ? null
                 : `${period.year || ''}${quarter || ''}`;
@@ -149,7 +162,7 @@ const getMonthRangeString = (monthRange: any, formatMessage: any) => {
 };
 
 export function getISOWeekDates(isoWeekStr: string) {
-    const [year, week] = isoWeekStr.split("W").map(Number);
+    const [year, week] = isoWeekStr.split('W').map(Number);
 
     const jan4 = new Date(Date.UTC(year, 0, 4));
     const jan4Day = jan4.getUTCDay() || 7;
@@ -164,15 +177,20 @@ export function getISOWeekDates(isoWeekStr: string) {
 }
 
 export function getWeekDisplayedRange(isoWeekStr: string) {
-    // the string can be invalid in various ways, so we check and return null in that case, 
+    // the string can be invalid in various ways, so we check and return null in that case,
     // called at various time when user is editing the week field (missing parts year without week, etc)
-    if (isoWeekStr == undefined || isoWeekStr == "" || isoWeekStr.includes("undefined") || isoWeekStr.includes("null")) {
-        return null
+    if (
+        isoWeekStr == undefined ||
+        isoWeekStr == '' ||
+        isoWeekStr.includes('undefined') ||
+        isoWeekStr.includes('null')
+    ) {
+        return null;
     }
     const weekDates = getISOWeekDates(isoWeekStr);
-    const start = formatDate(weekDates.start)
-    const end = formatDate(weekDates.end)
-    return `${start} - ${end}`
+    const start = formatDate(weekDates.start);
+    const end = formatDate(weekDates.end);
+    return `${start} - ${end}`;
 }
 
 export function getNumberOfIsoWeeksInYear(year: number): number {
@@ -184,16 +202,21 @@ function formatDate(date: Date): string {
     return moment(date).format(getLocaleDateFormat('L'));
 }
 
-
 function getISOWeek(date: Date): number {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const d = new Date(
+        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
     const day = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - day);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-export const getPrettyPeriod = (period: string, formatMessage: any, currentUser: any) => {
+export const getPrettyPeriod = (
+    period: string,
+    formatMessage: any,
+    currentUser: any,
+) => {
     if (!period) return textPlaceholder;
     const periodClass = new Period(period);
 
@@ -201,10 +224,14 @@ export const getPrettyPeriod = (period: string, formatMessage: any, currentUser:
     switch (periodClass.periodType) {
         case PERIOD_TYPE_WEEK: {
             const weekDates = getISOWeekDates(period);
-            const start = formatDate(weekDates.start)
-            const end = formatDate(weekDates.end)
+            const start = formatDate(weekDates.start);
+            const end = formatDate(weekDates.end);
             // will return something like : Semaine N° 6 (08/02/2021 - 14/02/2021)
-            return formatMessage(MESSAGES.weekDisplay, { weekNumber: periodClass.week, start, end });
+            return formatMessage(MESSAGES.weekDisplay, {
+                weekNumber: periodClass.week,
+                start,
+                end,
+            });
         }
         case PERIOD_TYPE_DAY: {
             return `${periodClass.year}-${periodClass.month}-${periodClass.day}`;

@@ -292,8 +292,8 @@ async function fetchData(url) {
 
     if (selectedValue) {
       // Add the next level select
-
-      if (selectedOrgUnitTypeId == config.targetOrgUnitTypeId) {
+      const isInSeries = config.targetOrgUnitTypeId.split(',').includes(selectedOrgUnitTypeId);
+      if (isInSeries) {
         config.callback(selectedValue);
       } else {
         addOrgUnitSelect(config,currentLevelIndex + 1, selectedValue)

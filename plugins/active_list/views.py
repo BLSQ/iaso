@@ -55,7 +55,7 @@ from .models import (
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
 FA_DISTRICT_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 4)
-FA_HF_ORG_UNIT_TYPE_ID = os.environ.get("FA_HF_ORG_UNIT_TYPE_ID", 5)
+FA_HF_ORG_UNIT_TYPE_ID = os.environ.get("FA_HF_ORG_UNIT_TYPE_ID", "1,5")
 FA_REGION_ORG_UNIT_TYPE_ID = os.environ.get("FA_REGION_ORG_UNIT_TYPE_ID", 3)
 
 ALLOWED_EXTENSIONS = {"xlsx", "xls", "ods", "csv", "xlsb", "xltm", "xltx", "xlsm"}

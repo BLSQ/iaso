@@ -266,6 +266,7 @@ export type CalendarCampaign = {
     top_level_org_unit_name: string;
     vaccines: string;
     layout?: 'top' | 'middle' | 'bottom';
+    first_round_started_at: DateAsString;
 };
 
 export type Campaign = {

@@ -1,78 +1,11 @@
 import React, { ReactElement } from 'react';
-import { Box, SxProps } from '@mui/material';
+import { Box } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';
-
 import { Field } from '../types';
 import { CountryStaticFields } from './cells/CountryStaticFields';
 import { EditCampaignCell } from './cells/EditCampaignCell';
-import { INTEGRATED_CAMPAIGN_BORDER_COLOR } from './constants';
 import { MappedCampaign } from './types';
-
-export const getCellStyle = (
-    fieldKey: string,
-    campaign: MappedCampaign,
-): SxProps => {
-    const borderStyle = `2px solid ${INTEGRATED_CAMPAIGN_BORDER_COLOR}`;
-    if (fieldKey === 'edit')
-        switch (campaign.layout) {
-            case 'top':
-                return {
-                    borderTop: borderStyle,
-                    borderLeft: borderStyle,
-                };
-            case 'middle':
-                return {
-                    borderLeft: borderStyle,
-                };
-            case 'bottom':
-                return {
-                    borderBottom: borderStyle,
-                    borderLeft: borderStyle,
-                };
-            default:
-                return {};
-        }
-    if (
-        fieldKey === 'country' ||
-        fieldKey == 'name' ||
-        fieldKey === 'campaign_types'
-    ) {
-        switch (campaign.layout) {
-            case 'top':
-                return {
-                    borderTop: borderStyle,
-                };
-            case 'middle':
-                return {};
-            case 'bottom':
-                return {
-                    borderBottom: borderStyle,
-                };
-            default:
-                return {};
-        }
-    }
-    if (fieldKey === 'r1StartDate') {
-        switch (campaign.layout) {
-            case 'top':
-                return {
-                    borderTop: borderStyle,
-                    borderRight: borderStyle,
-                };
-            case 'middle':
-                return { borderRight: borderStyle };
-            case 'bottom':
-                return {
-                    borderBottom: borderStyle,
-                    borderRight: borderStyle,
-                };
-            default:
-                return {};
-        }
-    }
-    return {};
-};
 
 export const staticFields: Field[] = [
     {

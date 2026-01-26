@@ -33,7 +33,7 @@ import { CalendarParams } from './campaignCalendar/types';
 import { getCalendarData } from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 import { useGetFormattedCalendarData } from './hooks/useGetFormattedCalendarData';
-import { CalendarOrdering } from './hooks/useMergedCampaigns';
+import { CalendarOrdering } from './hooks/useMergedCampaigns/useMergedCampaigns';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {

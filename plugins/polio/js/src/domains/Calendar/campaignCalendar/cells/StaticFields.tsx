@@ -3,9 +3,9 @@ import { Box, SxProps, TableCell } from '@mui/material';
 import classnames from 'classnames';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { colSpanTitle } from '../constants';
-import { getCellStyle } from '../staticFields';
 import { useStyles } from '../Styles';
 import { MappedCampaign } from '../types';
+import { getStaticFieldCellStyle } from '../utils';
 
 type Props = {
     campaign: MappedCampaign;
@@ -27,10 +27,8 @@ export const StaticFieldsCells: FunctionComponent<Props> = ({
     return (
         <>
             {fields.map(field => {
-                const integratedCampaignStyle: SxProps = getCellStyle(
-                    field.key,
-                    campaign,
-                );
+                const integratedCampaignStyle: SxProps =
+                    getStaticFieldCellStyle(field.key, campaign);
 
                 return (
                     <TableCell

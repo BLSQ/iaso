@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import classnames from 'classnames';
 
-import { CalendarOrdering } from '../hooks/useMergedCampaigns';
+import { CalendarOrdering } from '../hooks/useMergedCampaigns/useMergedCampaigns';
 import { useStaticFields } from '../hooks/useStaticFields';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 import { colSpanTitle } from './constants';

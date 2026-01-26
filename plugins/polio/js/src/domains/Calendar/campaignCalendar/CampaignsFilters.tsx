@@ -325,20 +325,6 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             }))}
                             label={MESSAGES.country}
                         />
-                        {/* Should have state reset and be disabled when removing polio type */}
-                        {/* {Boolean(
-                            campaignType && !campaignType.includes('polio'),
-                        ) && (
-                            <InputComponent
-                                keyValue="showIntegrated"
-                                onChange={(_key, value) => {
-                                    setShowIntegrated(value);
-                                }}
-                                value={showIntegrated}
-                                type="checkbox"
-                                label={MESSAGES.showIntegratedCampaigns}
-                            />
-                        )} */}
                         <IntegratedCampaignCheckbox
                             showIntegrated={showIntegrated}
                             setShowIntegrated={setShowIntegrated}

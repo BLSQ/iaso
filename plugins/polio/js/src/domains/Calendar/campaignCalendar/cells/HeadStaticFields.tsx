@@ -11,7 +11,7 @@ import {
 import classnames from 'classnames';
 
 import MESSAGES from '../../../../constants/messages';
-import { CalendarOrdering } from '../../hooks/useMergedCampaigns';
+import { CalendarOrdering } from '../../hooks/useMergedCampaigns/useMergedCampaigns';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
 import { colSpanTitle } from '../constants';
@@ -37,7 +37,7 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
     isPdf,
     isLogged,
 }) => {
-    const classes: Record<string, any> = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
     const shiftKeyIsDown = useKeyPressListener('Shift');

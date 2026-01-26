@@ -1,11 +1,27 @@
 import { useMemo } from 'react';
+import { Moment } from 'moment';
 import { getCampaignColor } from '../../../constants/campaignsColors';
-import { MappedCampaign } from '../campaignCalendar/types';
+import {
+    CalendarData,
+    CalendarOrdering,
+    FormattedCalendarData,
+    MappedCampaign,
+} from '../campaignCalendar/types';
 import {
     filterCampaigns,
     mapCampaigns,
 } from '../campaignCalendar/utils/campaigns';
-import { useMergedCampaigns } from './useMergedCampaigns';
+import { useMergedCampaigns } from './useMergedCampaigns/useMergedCampaigns';
+
+type Args = {
+    params: Record<string, string>;
+    isTypeSet: boolean;
+    calendarData: CalendarData;
+    isEmbedded: boolean;
+    currentDate: Moment;
+    campaignType?: string;
+    order: CalendarOrdering;
+};
 
 export const useGetFormattedCalendarData = ({
     params,
@@ -15,7 +31,7 @@ export const useGetFormattedCalendarData = ({
     currentDate,
     campaignType,
     order,
-}) => {
+}: Args): FormattedCalendarData => {
     const { campaigns, isLoading, isFetching } = useMergedCampaigns({
         params,
         isTypeSet,

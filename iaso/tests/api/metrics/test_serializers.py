@@ -1,6 +1,15 @@
-from unittest import TestCase
+from django.contrib.auth import get_user_model
 
-from iaso.api.metrics.serializers import MetricTypeSerializer, MetricValueSerializer, OrgUnitIdSerializer
+from iaso.api.metrics.serializers import (
+    MetricTypeSerializer,
+    MetricTypeWriteSerializer,
+    MetricValueSerializer,
+    OrgUnitIdSerializer,
+)
+from iaso.models.base import Account
+from iaso.models.metric import MetricType
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
+from iaso.test import TestCase
 
 
 class MetricTypeSerializerTestCase(TestCase):
@@ -8,6 +17,7 @@ class MetricTypeSerializerTestCase(TestCase):
         serializer = MetricTypeSerializer()
         expected_fields = {
             "id",
+            "code",
             "account",
             "name",
             "category",
@@ -30,6 +40,71 @@ class MetricTypeSerializerTestCase(TestCase):
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
         self.assertEqual(set(serializer.Meta.read_only_fields), readonly_fields)
+
+
+class MetricTypeWriteSerializerTestCase(TestCase):
+    def test_fields(self):
+        serializer = MetricTypeWriteSerializer()
+        expected_fields = {
+            "code",
+            "name",
+            "category",
+            "description",
+            "units",
+            "unit_symbol",
+            "legend_type",
+            "origin",
+        }
+        self.assertEqual(set(serializer.Meta.fields), expected_fields)
+
+    def test_validate_code_immutable(self):
+        metric_type = MetricType(code="original_code")
+        serializer = MetricTypeWriteSerializer(instance=metric_type, data={"code": "new_code"})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("codeImmutable", serializer.errors["code"][0])
+
+    def test_validate_code_same(self):
+        metric_type = MetricType(code="same_code")
+        account = Account.objects.create(name="Account")
+        user = self.create_user_with_profile(
+            username="jane_doe",
+            last_name="Doe",
+            first_name="Jane",
+            account=account,
+            permissions=[CORE_ORG_UNITS_PERMISSION],
+        )
+        serializer_context = {"request": type("Request", (), {"user": user})()}
+        serializer = MetricTypeWriteSerializer(
+            instance=metric_type, data={"code": "same_code_modified"}, context=serializer_context
+        )
+        is_valid = serializer.is_valid()
+        self.assertFalse(is_valid)
+
+    def test_validate_code_new(self):
+        account = Account.objects.create(name="Account")
+        user = self.create_user_with_profile(
+            username="alice_smith",
+            last_name="Smith",
+            first_name="Alice",
+            account=account,
+            permissions=[CORE_ORG_UNITS_PERMISSION],
+        )
+
+        data = {
+            "code": "new_code",
+            "name": "New Metric Type",
+            "category": "New Category",
+            "legend_type": "Threshold",
+            "units": "units",
+            "unit_symbol": "u",
+            "description": "A new metric type",
+            "origin": "CUSTOM",
+        }
+
+        serializer_context = {"request": type("Request", (), {"user": user})()}
+        serializer = MetricTypeWriteSerializer(data=data, context=serializer_context)
+        is_valid = serializer.is_valid()
+        self.assertTrue(is_valid)
 
 
 class MetricValueSerializerTestCase(TestCase):

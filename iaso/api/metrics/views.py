@@ -3,6 +3,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.api.apps import serializers
 from iaso.api.common import DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.models import MetricType, MetricValue
@@ -38,11 +39,7 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         if instance.origin == MetricType.MetricTypeOrigin.OPENHEXA.value:
-            return Response(
-                {"detail": "Metric types from OpenHexa cannot be deleted."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
+            raise serializers.ValidationError("Cannot delete OpenHexa metric types")
         return super().perform_destroy(instance)
 
     @action(detail=False, methods=["get"])
@@ -76,6 +73,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     queryset = MetricValue.objects.all()
     filter_backends = [DjangoFilterBackend, ValueFilterBackend]
     filterset_fields = ["metric_type_id", "org_unit_id"]
+    http_method_names = ["get", "options"]
 
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
@@ -91,6 +89,7 @@ class MetricOrgUnitsViewSet(viewsets.ModelViewSet):
     queryset = MetricValue.objects.all()
     filter_backends = [DjangoFilterBackend, ValueAndTypeFilterBackend]
     filterset_fields = ["metric_type_id"]
+    http_method_names = ["get", "options"]
 
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)

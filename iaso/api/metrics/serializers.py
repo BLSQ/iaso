@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from iaso.models import MetricType, MetricValue
-from iaso.utils import legend
 
 
 class MetricTypeSerializer(serializers.ModelSerializer):

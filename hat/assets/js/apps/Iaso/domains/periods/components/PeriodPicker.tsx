@@ -7,8 +7,8 @@ import React, {
 import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
 
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
-import { commonStyles, DatePicker } from 'bluesquare-components';
+import { DatePicker } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import {
@@ -28,12 +28,9 @@ import { Period, PeriodObject } from '../models';
 import { usePeriodPickerOptions } from '../options';
 import { getPeriodPickerString } from '../utils';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
+const styles: SxStyles = {
     title: {
         color: 'rgba(0, 0, 0, 0.4)', // taken from inputlabel
-        paddingLeft: 3,
-        paddingRight: 3,
         fontSize: 17,
     },
     legend: {
@@ -44,19 +41,19 @@ const useStyles = makeStyles(theme => ({
         fontSize: 13,
     },
     inputBorder: {
-        borderRadius: 5,
+        borderRadius: 2,
         // @ts-ignore
-        borderColor: theme.palette.border.main,
+        borderColor: theme => theme.palette.border.main,
         '&:hover': {
             // @ts-ignore
-            borderColor: theme.palette.border.hover,
+            borderColor: theme => theme.palette.border.hover,
         },
     },
     borderError: {
-        borderRadius: 5,
-        borderColor: theme.palette.error.main,
+        borderRadius: 2,
+        borderColor: theme => theme.palette.error.main,
     },
-}));
+};
 
 type Props = {
     periodType: string | Record<string, string>;
@@ -79,7 +76,6 @@ const PeriodPicker: FunctionComponent<Props> = ({
     errors,
     message,
 }) => {
-    const classes = useStyles();
     const [currentPeriod, setCurrentPeriod] =
         useState<Partial<PeriodObject> | null>(
             activePeriodString && Period.getPeriodType(activePeriodString)
@@ -114,7 +110,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                 const parsedValue = Period.parse(newValue)?.[1];
                 setCurrentPeriod(parsedValue);
                 onChange(newValue);
-            } catch (e) {
+            } catch {
                 setCurrentPeriod(newValue);
                 onChange(newValue);
             }
@@ -141,10 +137,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
             p={periodType === PERIOD_TYPE_DAY ? 0 : 1}
             mb={2}
             border={periodType === PERIOD_TYPE_DAY ? 0 : 1}
-            className={
-                /* @ts-ignore */
-                displayError ? classes.inputBorderError : classes.inputBorder
-            }
+            sx={displayError ? styles.borderError : styles.inputBorder}
         >
             {periodType === PERIOD_TYPE_DAY && (
                 <DatePicker
@@ -160,7 +153,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
             {periodType !== PERIOD_TYPE_DAY && (
                 <>
                     {/* @ts-ignore */}
-                    <FormLabel component="legend" className={classes.title}>
+                    <FormLabel component="legend" sx={styles.title}>
                         {title}
                     </FormLabel>
 
@@ -174,7 +167,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                     periodType === PERIOD_TYPE_YEAR ||
                                     periodType === PERIOD_TYPE_FINANCIAL_NOV
                                         ? 12
-                                        : 6
+                                        : 4
                                 }
                             >
                                 <InputComponent
@@ -192,7 +185,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             periodType as string,
                         ) && (
                             <Grid item>
-                                <Typography className={classes.legend}>
+                                <Typography sx={styles.legend}>
                                     {message}
                                 </Typography>
                             </Grid>
@@ -203,7 +196,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             periodType === PERIOD_TYPE_QUARTER_NOV ||
                             periodType === PERIOD_TYPE_SIX_MONTH ||
                             periodType === PERIOD_TYPE_WEEK) && (
-                            <Grid item sm={6}>
+                            <Grid item sm={8}>
                                 {periodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"

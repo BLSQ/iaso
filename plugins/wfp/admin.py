@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.http import HttpRequest
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, Step, Visit
@@ -18,9 +19,22 @@ def create_uuid_index_action(modeladmin, request: HttpRequest, queryset):
     )
 
 
+class ProgrammeType(SimpleListFilter):
+    title = "Programme type"
+    parameter_name = "programme_type"
+
+    def lookups(self, request, model_admin):
+        return Journey._meta.get_field("programme_type").choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(journey__programme_type=self.value()).distinct()
+        return queryset
+
+
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender", "account", "guidelines")
+    list_filter = ("birth_date", "gender", "account", "guidelines", ProgrammeType)
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
     actions = [create_uuid_index_action]
 

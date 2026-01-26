@@ -82,22 +82,14 @@ def update_single_profile_from_bulk(
             raise PermissionDenied(
                 f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot changed project attributions"
             )
-        if user_has_project_restrictions:
-            authorized_projects_ids = [id_ for id_ in projects_ids_added if id_ in user.iaso_profile.projects_ids]
-            projects_to_be_added = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
-        else:
-            projects_to_be_added = Project.objects.filter(pk__in=projects_ids_added, account_id=account_id)
+        projects_to_be_added = Project.objects.filter(pk__in=projects_ids_added, account_id=account_id)
 
     if projects_ids_removed:
         if not user_has_perm_users_admin:
             raise PermissionDenied(
                 f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot changed project attributions"
             )
-        if user_has_project_restrictions:
-            authorized_projects_ids = [id_ for id_ in projects_ids_removed if id_ in user.iaso_profile.projects_ids]
-            projects_to_be_removed = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
-        else:
-            projects_to_be_removed = Project.objects.filter(pk__in=projects_ids_removed, account_id=account_id)
+        projects_to_be_removed = Project.objects.filter(pk__in=projects_ids_removed, account_id=account_id)
 
     if location_ids_added:
         for location_id in location_ids_added:

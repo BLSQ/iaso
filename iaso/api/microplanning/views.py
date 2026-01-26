@@ -3,8 +3,10 @@ from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
@@ -15,6 +17,7 @@ from iaso.api.common import (
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
+from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
 from .filters import (
@@ -27,6 +30,8 @@ from .serializers import (
     AuditPlanningSerializer,
     BulkAssignmentSerializer,
     BulkDeleteAssignmentSerializer,
+    PlanningOrgUnitListSerializer,
+    PlanningOrgUnitSerializer,
     PlanningReadSerializer,
     PlanningSamplingResult,
     PlanningSamplingResultListSerializer,
@@ -34,6 +39,50 @@ from .serializers import (
     PlanningSamplingResultWriteSerializer,
     PlanningWriteSerializer,
 )
+
+
+class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
+    """List orgunits for a planning."""
+
+    http_method_names = ["get", "head", "options"]
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
+
+    @action(detail=False, methods=["get"])
+    def children(self, request, *args, **kwargs):
+        planning = self._get_planning(request)
+
+        user = request.user
+        base_queryset = (
+            OrgUnit.objects.with_geo_json().filter_for_user(user).filter(validation_status=OrgUnit.VALIDATION_VALID)
+        )
+        sampling = planning.selected_sampling_result
+        root_org_unit = planning.org_unit
+
+        if sampling and sampling.group_id:
+            queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
+        elif root_org_unit and planning.target_org_unit_type:
+            queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type=planning.target_org_unit_type)
+        else:
+            raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
+
+        children_queryset = queryset.order_by("id")
+        serializer_children = PlanningOrgUnitSerializer(children_queryset, many=True)
+
+        return Response(serializer_children.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"])
+    def root(self, request, *args, **kwargs):
+        planning = self._get_planning(request)
+        root_queryset = OrgUnit.objects.with_geo_json().filter(pk=planning.org_unit_id).first()
+        root_serializer = PlanningOrgUnitSerializer(root_queryset)
+        return Response(root_serializer.data, status=status.HTTP_200_OK)
+
+    def _get_planning(self, request):
+        query_serializer = PlanningOrgUnitListSerializer(data=request.query_params, context={"request": request})
+        query_serializer.is_valid(raise_exception=True)
+        return Planning.objects.select_related(
+            "org_unit", "target_org_unit_type", "selected_sampling_result__group"
+        ).get(pk=query_serializer.validated_data["planning"].id)
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):

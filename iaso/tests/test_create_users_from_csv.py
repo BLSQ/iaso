@@ -124,7 +124,6 @@ class BulkCreateCsvTestCase(APITestCase):
         )
 
         with self.assertNumQueries(85):
-            # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         users = User.objects.all()

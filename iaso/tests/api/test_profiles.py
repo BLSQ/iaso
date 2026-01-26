@@ -497,14 +497,18 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.get("/api/profiles/?csv=true")
         self.assertEqual(response.status_code, 200)
 
-        response_csv = response.getvalue().decode("utf-8")
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+
+        username_idx = header.index("username")
+        teams_idx = header.index("teams")
+        user_row = next(row for row in csv_rows if row[username_idx] == "multiteam")
 
         teams = sorted([self.team1, self.team2], key=lambda x: x.id)
         expected_teams_value = f"{teams[0].name},{teams[1].name}"
 
-        expected_row_fragment = f'multiteam,,,,,,,,,,,,,"{expected_teams_value}",,'
-
-        self.assertIn(expected_row_fragment, response_csv)
+        self.assertEqual(user_row[teams_idx], expected_teams_value)
 
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""

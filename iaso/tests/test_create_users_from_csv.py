@@ -769,13 +769,12 @@ class BulkCreateCsvTestCase(APITestCase):
 
         csv_content = self.load_fixture_with_jinja_template(
             path_to_fixtures="iaso/tests/fixtures",
-            fixture_name="test_user_bulk_create_valid_with_one_team.csv",
+            fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
 
         test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
-
         self.assertEqual(response.status_code, 200)
 
         user = User.objects.get(username="rsfg")
@@ -821,7 +820,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         csv_content = self.load_fixture_with_jinja_template(
             path_to_fixtures="iaso/tests/fixtures",
-            fixture_name="test_user_bulk_create_valid_with_one_team.csv",
+            fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
 
@@ -850,7 +849,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         csv_content = self.load_fixture_with_jinja_template(
             path_to_fixtures="iaso/tests/fixtures",
-            fixture_name="test_user_bulk_create_valid_with_one_team.csv",
+            fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
 

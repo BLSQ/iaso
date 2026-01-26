@@ -18,13 +18,6 @@ import {
 import { PeriodObject } from './models';
 import { getNumberOfIsoWeeksInYear, getWeekDisplayedRange } from './utils';
 
-const yearOptions = () => {
-    return getYears(20, 10, true).map(y => ({
-        label: y.toString(),
-        value: y.toString(),
-    }));
-};
-
 export const usePeriodPickerOptions = (
     periodType: string | Record<string, string>,
     currentPeriod: Partial<PeriodObject> | null,
@@ -86,6 +79,12 @@ export const usePeriodPickerOptions = (
             value,
         }));
     }, [formatMessage]);
+    const yearOptions = useMemo(() => {
+        return getYears(20, 10, true).map(y => ({
+            label: y.toString(),
+            value: y.toString(),
+        }));
+    }, []);
 
     return {
         semesterOptions,

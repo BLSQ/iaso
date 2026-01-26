@@ -57,6 +57,11 @@ class MetricTypeWriteSerializerTestCase(TestCase):
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
 
+    def test_validate_code_whitespace(self):
+        serializer = MetricTypeWriteSerializer()
+        with self.assertRaisesMessage(Exception, "Code must not contain whitespace."):
+            serializer.validate_code("invalid code")
+
     def test_validate_code_immutable(self):
         metric_type = MetricType(code="original_code")
         serializer = MetricTypeWriteSerializer(instance=metric_type, data={"code": "new_code"})

@@ -55,7 +55,11 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate_code(self, value):
+        if any(char.isspace() for char in value):
+            raise serializers.ValidationError("Code must not contain whitespace.", code="no_whitespace")
+
         instance = getattr(self, "instance", None)
+
         if instance is not None:
             if instance.code != value:
                 raise serializers.ValidationError("codeImmutable", code="code_immutable")

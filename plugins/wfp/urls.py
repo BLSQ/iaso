@@ -17,6 +17,8 @@ urlpatterns = [
         name="delete_all_instances_and_entities",
     ),
     path(
-        "show_missing_entities/<int:account_id>/<int:entity_type>/", show_missing_entities_in_analytics, name="show_missing_entities"
+        "show_missing_entities/<int:account_id>/<int:entity_type>/",
+        show_missing_entities_in_analytics,
+        name="show_missing_entities",
     ),
 ]

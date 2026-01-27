@@ -373,7 +373,7 @@ class DataSourceVersionsSynchronizer:
                 )
             if parent_org_unit:
                 new_parent_id = parent_org_unit.pk
-            requested_fields.append("new_parent")
+                requested_fields.append("new_parent")
 
         if "name" in changes:
             new_name = changes["name"] or ""

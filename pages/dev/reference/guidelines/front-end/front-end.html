@@ -1417,9 +1417,9 @@ queryClient.invalidateQueries(['forms', formId]);
 </code></pre>
 <h3 id="react-query-devtools">React Query Devtools<a class="headerlink" href="#react-query-devtools" title="Permanent link">#</a></h3>
 <ul>
-<li>To inspect cache, queries, and mutations in the browser, use the built-in React Query Devtools.</li>
-<li>In the browser console run <code>window.showReactQueryDevtools?.()</code> to inject the panel (it opens hidden by default).</li>
-<li>Run <code>window.hideReactQueryDevtools?.()</code> to remove it when done.</li>
+<li>To inspect cache, queries, and mutations, use the React Query Devtools browser extension (Chrome Web Store or Firefox Add-ons).</li>
+<li>The extension auto-detects IASO via <code>window.__TANSTACK_QUERY_CLIENT__</code>; open your browser DevTools to access the React Query panel.</li>
+<li>No console commands are needed; toggle the panel from the extension UI.</li>
 </ul>
 <h2 id="remarks">Remarks<a class="headerlink" href="#remarks" title="Permanent link">#</a></h2>
 <ul>

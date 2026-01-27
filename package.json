@@ -87,7 +87,6 @@
         "npm": "10.9.3",
         "pdfjs-dist": "^4.8.69",
         "polyfill-object.fromentries": "^1.0.1",
-        "prop-types": "^15.7.2",
         "quill": "^2.0.2",
         "react": "^18.2.0",
         "react-color": "^2.17.3",

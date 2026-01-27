@@ -360,29 +360,33 @@ class DataSourceVersionsSynchronizer:
         new_opening_date = None
         new_closed_date = None
 
-        if changes.get("parent"):
+        if "parent" in changes:
             parent_source_ref = changes["parent"]
-            parent_org_unit = (
-                OrgUnit.objects.filter(
-                    source_ref=parent_source_ref, version=self.data_source_sync.source_version_to_update
+            parent_org_unit = None
+            if parent_source_ref:
+                parent_org_unit = (
+                    OrgUnit.objects.filter(
+                        source_ref=parent_source_ref, version=self.data_source_sync.source_version_to_update
+                    )
+                    .only("pk")
+                    .first()
                 )
-                .only("pk")
-                .first()
-            )
             if parent_org_unit:
                 new_parent_id = parent_org_unit.pk
             requested_fields.append("new_parent")
 
-        if changes.get("name"):
-            new_name = changes["name"]
+        if "name" in changes:
+            new_name = changes["name"] or ""
             requested_fields.append("new_name")
 
-        if changes.get("opening_date"):
-            new_opening_date = self.parse_date_str(changes["opening_date"])
+        if "opening_date" in changes:
+            new_opening_date_value = changes["opening_date"]
+            new_opening_date = self.parse_date_str(new_opening_date_value) if new_opening_date_value else None
             requested_fields.append("new_opening_date")
 
-        if changes.get("closed_date"):
-            new_closed_date = self.parse_date_str(changes["closed_date"])
+        if "closed_date" in changes:
+            new_closed_date_value = changes["closed_date"]
+            new_closed_date = self.parse_date_str(new_closed_date_value) if new_closed_date_value else None
             requested_fields.append("new_closed_date")
 
         group_changes = []

@@ -15,7 +15,11 @@ class OrgUnitValuesSerializer(ValuesSerializer):
     @staticmethod
     def map_field(field: str, value: str) -> Union[str, dict]:
         if field == "org_unit_type":
-            return {"id": value, "name": OrgUnitType.objects.get(pk=value).name}
+            try:
+                name = OrgUnitType.objects.get(pk=value).name
+            except OrgUnitType.DoesNotExist:
+                name = "--"
+            return {"id": value, "name": name}
         return value
 
     def serialize(self, values: Union[JSONField, Any]) -> Union[JSONField, list[dict]]:

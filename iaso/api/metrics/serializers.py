@@ -18,6 +18,7 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "comments",
             "legend_config",
             "legend_type",
+            "origin",
             "created_at",
             "updated_at",
         ]

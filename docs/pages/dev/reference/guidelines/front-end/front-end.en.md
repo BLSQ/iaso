@@ -564,6 +564,12 @@ queryClient.invalidateQueries(['forms', formId]);
 // This invalidates 'possible_fields', 'versions', etc.
 ```
 
+### React Query Devtools
+
+- To inspect cache, queries, and mutations, use the React Query Devtools browser extension (Chrome Web Store or Firefox Add-ons).
+- The extension auto-detects IASO via `window.__TANSTACK_QUERY_CLIENT__`; open your browser DevTools to access the React Query panel.
+- No console commands are needed; toggle the panel from the extension UI.
+
 ## Remarks
 
 - order translations by alphanumeric

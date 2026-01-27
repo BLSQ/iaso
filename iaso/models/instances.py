@@ -330,8 +330,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             queryset = queryset.filter(created_by__id__in=user_ids.split(","))
 
         if json_content:
-            q = instance_jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
-            queryset = annotate_suffixed_json_fields(queryset, json_content, "json").filter(q)
+            q, _ = instance_jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
+            queryset, _ = annotate_suffixed_json_fields(queryset, json_content, "json")
+            queryset = queryset.filter(q)
 
         return queryset
 

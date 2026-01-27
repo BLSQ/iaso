@@ -1,5 +1,5 @@
 from django.db.models import Prefetch
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore  # type: ignore
 from rest_framework import permissions
 
 from iaso.api.common import (

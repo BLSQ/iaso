@@ -138,6 +138,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users',
         id: 'iaso.label.users',
     },
+    userRoles: {
+        defaultMessage: 'User Roles',
+        id: 'iaso.label.userRoles',
+    },
     search: {
         id: 'iaso.search',
         defaultMessage: 'Search',

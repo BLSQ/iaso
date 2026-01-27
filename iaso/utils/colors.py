@@ -1,4 +1,26 @@
-from iaso.models.project import DEFAULT_PROJECT_COLOR
+from django.utils.translation import gettext as _
+
+
+DEFAULT_COLOR = "#1976D2"
+COLOR_FORMAT_ERROR = _("Color must be a valid hex code (#RRGGBB).")
+
+
+def validate_hex_color(value: str) -> str:
+    """Validate and normalize a hex RGB color code (#RRGGBB)."""
+    if not value:
+        return value
+
+    if not value.startswith("#"):
+        raise ValueError("Color must start with #")
+
+    if len(value) != 7:
+        raise ValueError("Color must be in format #RRGGBB (7 characters)")
+
+    hex_part = value[1:]
+    if not all(c in "0123456789ABCDEFabcdef" for c in hex_part):
+        raise ValueError("Color must contain only valid hexadecimal characters (0-9, A-F)")
+
+    return value.upper()
 
 
 COLOR_CHOICES = (
@@ -12,7 +34,7 @@ COLOR_CHOICES = (
     ("#4527a0", "Deep Purple 800"),
     ("#5c6bc0", "Indigo 400"),
     ("#42a5f5", "Light Blue 400"),
-    (DEFAULT_PROJECT_COLOR, "Default color"),
+    (DEFAULT_COLOR, "Default color"),
     ("#78909c", "Blue grey 400"),
     ("#26c6da", "Cyan 400"),
     ("#00838f", "Cyan 800"),

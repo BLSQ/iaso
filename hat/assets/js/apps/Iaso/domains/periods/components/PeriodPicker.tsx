@@ -1,27 +1,17 @@
-import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
+import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
 
 import Typography from '@mui/material/Typography';
-import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
+import { DatePicker } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { getYears } from '../../../utils';
 import {
-    hasFeatureFlag,
-    HIDE_PERIOD_QUARTER_NAME,
-} from '../../../utils/featureFlags';
-import { Period, PeriodObject } from '../models';
-import { getPeriodPickerString } from '../utils';
-
-import { useCurrentUser } from '../../../utils/usersUtils';
-import {
-    MONTHS,
     NO_PERIOD,
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -30,21 +20,17 @@ import {
     PERIOD_TYPE_QUARTER_NOV,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
-    QUARTERS,
-    QUARTERS_RANGE,
-    QUARTERS_NOV_RANGE,
-    SEMESTERS,
-    SEMESTERS_RANGE,
     PERIOD_TYPE_FINANCIAL_NOV,
+    PERIOD_TYPE_WEEK,
 } from '../constants';
 import MESSAGES from '../messages';
+import { Period, PeriodObject } from '../models';
+import { usePeriodPickerOptions } from '../options';
+import { getPeriodPickerString } from '../utils';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
+const styles: SxStyles = {
     title: {
         color: 'rgba(0, 0, 0, 0.4)', // taken from inputlabel
-        paddingLeft: 3,
-        paddingRight: 3,
         fontSize: 17,
     },
     legend: {
@@ -55,19 +41,19 @@ const useStyles = makeStyles(theme => ({
         fontSize: 13,
     },
     inputBorder: {
-        borderRadius: 5,
+        borderRadius: 2,
         // @ts-ignore
-        borderColor: theme.palette.border.main,
+        borderColor: theme => theme.palette.border.main,
         '&:hover': {
             // @ts-ignore
-            borderColor: theme.palette.border.hover,
+            borderColor: theme => theme.palette.border.hover,
         },
     },
     borderError: {
-        borderRadius: 5,
-        borderColor: theme.palette.error.main,
+        borderRadius: 2,
+        borderColor: theme => theme.palette.error.main,
     },
-}));
+};
 
 type Props = {
     periodType: string | Record<string, string>;
@@ -90,15 +76,12 @@ const PeriodPicker: FunctionComponent<Props> = ({
     errors,
     message,
 }) => {
-    const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
     const [currentPeriod, setCurrentPeriod] =
         useState<Partial<PeriodObject> | null>(
             activePeriodString && Period.getPeriodType(activePeriodString)
                 ? Period.parse(activePeriodString)[1]
                 : null,
         );
-    const currentUser = useCurrentUser();
 
     useEffect(() => {
         setCurrentPeriod(null);
@@ -127,7 +110,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                 const parsedValue = Period.parse(newValue)?.[1];
                 setCurrentPeriod(parsedValue);
                 onChange(newValue);
-            } catch (e) {
+            } catch {
                 setCurrentPeriod(newValue);
                 onChange(newValue);
             }
@@ -135,23 +118,13 @@ const PeriodPicker: FunctionComponent<Props> = ({
         [onChange],
     );
 
-    const getQuarterOptionLabel = (value, label) => {
-        if (periodType === PERIOD_TYPE_QUARTER_NOV) {
-            return `${label} (${formatMessage(
-                QUARTERS_NOV_RANGE[value][0],
-            )}-${formatMessage(QUARTERS_NOV_RANGE[value][1])})`;
-        }
-
-        if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
-            return `${formatMessage(QUARTERS_RANGE[value][0])}-${formatMessage(
-                QUARTERS_RANGE[value][1],
-            )}`;
-        }
-        return `${label} (${formatMessage(
-            QUARTERS_RANGE[value][0],
-        )}-${formatMessage(QUARTERS_RANGE[value][1])})`;
-    };
-
+    const {
+        semesterOptions,
+        quarterOptions,
+        monthOptions,
+        yearOptions,
+        weekOptions,
+    } = usePeriodPickerOptions(periodType, currentPeriod);
     if (!periodType) {
         return null;
     }
@@ -164,10 +137,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
             p={periodType === PERIOD_TYPE_DAY ? 0 : 1}
             mb={2}
             border={periodType === PERIOD_TYPE_DAY ? 0 : 1}
-            className={
-                /* @ts-ignore */
-                displayError ? classes.inputBorderError : classes.inputBorder
-            }
+            sx={displayError ? styles.borderError : styles.inputBorder}
         >
             {periodType === PERIOD_TYPE_DAY && (
                 <DatePicker
@@ -183,7 +153,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
             {periodType !== PERIOD_TYPE_DAY && (
                 <>
                     {/* @ts-ignore */}
-                    <FormLabel component="legend" className={classes.title}>
+                    <FormLabel component="legend" sx={styles.title}>
                         {title}
                     </FormLabel>
 
@@ -193,7 +163,12 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         ) && (
                             <Grid
                                 item
-                                sm={(periodType === PERIOD_TYPE_YEAR || periodType === PERIOD_TYPE_FINANCIAL_NOV )? 12 : 6}
+                                sm={
+                                    periodType === PERIOD_TYPE_YEAR ||
+                                    periodType === PERIOD_TYPE_FINANCIAL_NOV
+                                        ? 12
+                                        : 4
+                                }
                             >
                                 <InputComponent
                                     keyValue="year"
@@ -201,10 +176,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                     clearable
                                     value={currentPeriod && currentPeriod.year}
                                     type="select"
-                                    options={getYears(20, 10, true).map(y => ({
-                                        label: y.toString(),
-                                        value: y.toString(),
-                                    }))}
+                                    options={yearOptions}
                                     label={MESSAGES.year}
                                 />
                             </Grid>
@@ -213,7 +185,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             periodType as string,
                         ) && (
                             <Grid item>
-                                <Typography className={classes.legend}>
+                                <Typography sx={styles.legend}>
                                     {message}
                                 </Typography>
                             </Grid>
@@ -222,8 +194,9 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         {(periodType === PERIOD_TYPE_MONTH ||
                             periodType === PERIOD_TYPE_QUARTER ||
                             periodType === PERIOD_TYPE_QUARTER_NOV ||
-                            periodType === PERIOD_TYPE_SIX_MONTH) && (
-                            <Grid item sm={6}>
+                            periodType === PERIOD_TYPE_SIX_MONTH ||
+                            periodType === PERIOD_TYPE_WEEK) && (
+                            <Grid item sm={8}>
                                 {periodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"
@@ -238,12 +211,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                             currentPeriod && currentPeriod.month
                                         }
                                         type="select"
-                                        options={Object.entries(MONTHS).map(
-                                            ([value, month]) => ({
-                                                label: formatMessage(month),
-                                                value,
-                                            }),
-                                        )}
+                                        options={monthOptions}
                                         label={MESSAGES.month}
                                     />
                                 )}
@@ -263,15 +231,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                             currentPeriod.quarter
                                         }
                                         type="select"
-                                        options={Object.entries(QUARTERS).map(
-                                            ([value, label]) => ({
-                                                label: getQuarterOptionLabel(
-                                                    value,
-                                                    label,
-                                                ),
-                                                value,
-                                            }),
-                                        )}
+                                        options={quarterOptions}
                                         label={MESSAGES.quarter}
                                     />
                                 )}
@@ -291,17 +251,20 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                             currentPeriod.semester
                                         }
                                         type="select"
-                                        options={Object.entries(SEMESTERS).map(
-                                            ([value, label]) => ({
-                                                label: `${label} (${formatMessage(
-                                                    SEMESTERS_RANGE[value][0],
-                                                )}-${formatMessage(
-                                                    SEMESTERS_RANGE[value][1],
-                                                )})`,
-                                                value,
-                                            }),
-                                        )}
+                                        options={semesterOptions}
                                         label={MESSAGES.six_month}
+                                    />
+                                )}
+                                {periodType == PERIOD_TYPE_WEEK && (
+                                    <InputComponent
+                                        keyValue="week"
+                                        onChange={handleChange}
+                                        disabled={!currentPeriod?.year}
+                                        clearable
+                                        value={currentPeriod?.week}
+                                        type="select"
+                                        options={weekOptions}
+                                        label={MESSAGES.week}
                                     />
                                 )}
                             </Grid>

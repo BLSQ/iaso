@@ -48,6 +48,10 @@ from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 
+REGULAR = "regular"
+PREVENTIVE = "is_preventive"
+PLANNED = "is_planned"
+ON_HOLD = "on_hold"
 DOSES_PER_VIAL_CONFIG_SLUG = "vaccine_doses_per_vial"
 
 VIRUSES = [

@@ -42,6 +42,12 @@ class DataSourceVersionsSynchronizer:
 
     def __init__(self, data_source_sync: DataSourceVersionsSynchronization):
         self.data_source_sync = data_source_sync
+        self.task = getattr(self.data_source_sync, "sync_task", None)
+        self.groups_matched_count = 0
+        self.org_units_created_count = 0
+        self.groups_created_count = 0
+        self.org_units_modified_count = 0
+        self.change_requests_count = 0
 
         # The JSON that we deserialized is assumed to have been serialized
         # by `iaso.diffing.dumper.DataSourceVersionsSynchronizationEncoder`.
@@ -58,23 +64,34 @@ class DataSourceVersionsSynchronizer:
         self.json_batch_size = 10
 
     def _report_progress(self, message: str) -> None:
-        task = getattr(self.data_source_sync, "sync_task", None)
-        if task:
-            task.report_progress_and_stop_if_killed(progress_message=message)
+        if self.task:
+            self.task.report_progress_and_stop_if_killed(progress_message=message)
 
     def synchronize(self) -> None:
         self._report_progress("Preparing groups matching…")
         self._prepare_groups_matching()
-        self._report_progress("Creating missing org units and preparing missing groups…")
+        self._report_progress(f"Groups matched: {self.groups_matched_count}")
+
         self._create_missing_org_units_and_prepare_missing_groups()
-        self._report_progress("Bulk creating missing groups…")
+        self._report_progress(f"Created {self.org_units_created_count} org units; ")
+        self._report_progress(f"Prepared {len(self.groups_to_bulk_create)} groups for creation")
+
         self._bulk_create_missing_groups()
-        self._report_progress("Preparing change requests…")
+        self._report_progress(
+            f"Bulk created {self.groups_created_count} groups; total matched: {len(self.groups_matching)}"
+        )
+
         self._prepare_change_requests()
-        self._report_progress("Bulk creating change requests…")
+        self._report_progress(
+            f"Prepared {self.change_requests_count} change requests "
+            f"(modified org units: {self.org_units_modified_count})"
+        )
+
         self._bulk_create_change_requests()
-        self._report_progress("Bulk creating change request groups…")
+        self._report_progress(f"Bulk created {self.change_requests_count} change requests")
+
         self._bulk_create_change_request_groups()
+        self._report_progress("Bulk created change request groups")
 
     @staticmethod
     def sort_by_path(diffs: list[dict]) -> list:
@@ -111,6 +128,7 @@ class DataSourceVersionsSynchronizer:
                 logger.error(message, extra={"group": group, "data_source_sync": self.data_source_sync})
                 continue
             self.groups_matching[group.source_ref] = group.pk
+        self.groups_matched_count = len(self.groups_matching)
 
     def _create_missing_org_units_and_prepare_missing_groups(self) -> None:
         """
@@ -184,6 +202,7 @@ class DataSourceVersionsSynchronizer:
                 org_unit.save(skip_calculate_path=True)
 
                 self.org_units_matching[org_unit.source_ref].corresponding_id = org_unit.pk
+                self.org_units_created_count += 1
 
     def _bulk_create_missing_groups(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
@@ -198,6 +217,8 @@ class DataSourceVersionsSynchronizer:
             new_groups = Group.objects.bulk_create(new_groups_batch, self.insert_batch_size)
             for new_group in new_groups:
                 self.groups_matching[new_group.source_ref] = new_group.pk
+            self.groups_created_count += len(new_groups)
+        self.groups_matched_count = len(self.groups_matching)
 
     def _prepare_change_requests(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
@@ -221,6 +242,9 @@ class DataSourceVersionsSynchronizer:
                     continue
 
                 self.change_requests_to_bulk_create.append(change_request)
+                self.change_requests_count += 1
+                if diff["status"] == Differ.STATUS_MODIFIED:
+                    self.org_units_modified_count += 1
 
                 old_groups_ids = set()
                 new_groups_ids = set()
@@ -322,9 +346,6 @@ class DataSourceVersionsSynchronizer:
 
     def _prepare_modified_change_requests(self, diff: dict) -> tuple[OrgUnitChangeRequest, list]:
         org_unit = diff["orgunit_dhis2"]
-
-        self._report_progress("Comparing org unit…")
-
         changes = {
             comparison["field"]: comparison["after"]
             for comparison in diff["comparisons"]

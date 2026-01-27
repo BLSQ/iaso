@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from django.test import TestCase
 
+from iaso import models as m
 from plugins.wfp.models import *
 
 
@@ -14,17 +15,32 @@ def load_fixture(mapping_file):
 
 
 class ETLTestCase(TestCase):
-    def test_create_beneficiary(self):
-        beneficiary = Beneficiary(birth_date="2022-08-08", gender="Male", entity_id=18)
-        beneficiary.save()
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="WFP")
+        cls.form = m.Form.objects.create(
+            name="Hydroponics study",
+            period_type=m.MONTH,
+            single_per_period=True,
+            form_id="form_1",
+        )
+        cls.project = m.Project.objects.create(name="Project", app_id="project", account=cls.account)
+        cls.form.projects.add(cls.project)
+        cls.entity_type = m.EntityType.objects.create(name="Type 1", reference_form=cls.form, account=cls.account)
+        cls.entities = m.Entity.objects.bulk_create(
+            m.Entity(entity_type=cls.entity_type, account=cls.account) for _ in range(7)
+        )
 
-        self.assertEqual(beneficiary.entity_id, 18)
+    def test_create_beneficiary(self):
+        beneficiary = Beneficiary(birth_date="2022-08-08", gender="Male", entity=self.entities[0])
+        beneficiary.save()
+        self.assertEqual(beneficiary.entity.id, 1)
 
     def test_create_journey(self):
         random_birth = random.randint(1, 1825)
         gender = random.choice(["Male", "Female"])
         birth_date = datetime.utcnow() - timedelta(days=random_birth)
-        beneficiary = Beneficiary(birth_date=birth_date, gender=gender, entity_id=18)
+        beneficiary = Beneficiary(birth_date=birth_date, gender=gender, entity=self.entities[6])
         beneficiary.save()
         journey = Journey(
             beneficiary=beneficiary,
@@ -73,46 +89,42 @@ class ETLTestCase(TestCase):
                 self.assertEqual(step.instance_id, visit.instance_id)
 
     def test_create_beneficiay_journey_visits_steps(self):
-        account = Account(name="WFP")
-        account.save()
-        self.assertEqual(account.name, "WFP")
-
         beneficiaries = Beneficiary.objects.bulk_create(
             [
                 Beneficiary(
                     birth_date="2025-01-27",
                     gender="Male",
-                    entity_id=22,
-                    account=account,
+                    entity=self.entities[0],
+                    account=self.account,
                     guidelines="NEW",
                 ),
                 Beneficiary(
                     birth_date="2023-12-27",
                     gender="Male",
-                    entity_id=23,
-                    account=account,
+                    entity=self.entities[1],
+                    account=self.account,
                     guidelines="OLD",
                 ),
                 Beneficiary(
                     birth_date="2025-07-10",
                     gender="Female",
-                    entity_id=24,
-                    account=account,
+                    entity=self.entities[2],
+                    account=self.account,
                     guidelines="NEW",
                 ),
                 Beneficiary(
                     birth_date="2024-10-10",
                     gender="Female",
-                    entity_id=25,
-                    account=account,
+                    entity=self.entities[3],
+                    account=self.account,
                     guidelines="OLD",
                 ),
             ]
         )
-        self.assertEqual(beneficiaries[0].entity_id, 22)
-        self.assertEqual(beneficiaries[1].entity_id, 23)
-        self.assertEqual(beneficiaries[2].entity_id, 24)
-        self.assertEqual(beneficiaries[3].entity_id, 25)
+        self.assertEqual(beneficiaries[0].entity.id, 1)
+        self.assertEqual(beneficiaries[1].entity.id, 2)
+        self.assertEqual(beneficiaries[2].entity.id, 3)
+        self.assertEqual(beneficiaries[3].entity.id, 4)
         self.assertEqual(Beneficiary.objects.count(), 4)
 
         journeys = Journey.objects.bulk_create(
@@ -167,10 +179,10 @@ class ETLTestCase(TestCase):
                 ),
             ]
         )
-        self.assertEqual(journeys[0].beneficiary.entity_id, 22)
-        self.assertEqual(journeys[1].beneficiary.entity_id, 23)
-        self.assertEqual(journeys[2].beneficiary.entity_id, 24)
-        self.assertEqual(journeys[3].beneficiary.entity_id, 25)
+        self.assertEqual(journeys[0].beneficiary.entity.id, 1)
+        self.assertEqual(journeys[1].beneficiary.entity.id, 2)
+        self.assertEqual(journeys[2].beneficiary.entity.id, 3)
+        self.assertEqual(journeys[3].beneficiary.entity.id, 4)
         self.assertEqual(Journey.objects.count(), 4)
 
         orgUnit = OrgUnit(id=9854, name="TEST Malakia PHCC", created_at=datetime.utcnow())
@@ -364,7 +376,6 @@ class ETLTestCase(TestCase):
             self.assertEqual(len(steps), 4)
 
     def test_aggregate_monthly_data(self):
-        account, account_created = Account.objects.get_or_create(name="Test WFP")
         orgUnit = OrgUnit(
             id=9810, name="TEST Gabat Static CHC-CHP", source_ref="OU_DHIS2_ID", created_at=datetime.utcnow()
         )
@@ -375,21 +386,21 @@ class ETLTestCase(TestCase):
                 Beneficiary(
                     birth_date="2025-01-27",
                     gender="Male",
-                    entity_id=22,
-                    account=account,
+                    entity=self.entities[0],
+                    account=self.account,
                     guidelines="NEW",
                 ),
                 Beneficiary(
                     birth_date="2023-12-27",
                     gender="Female",
-                    entity_id=23,
-                    account=account,
+                    entity=self.entities[1],
+                    account=self.account,
                     guidelines="OLD",
                 ),
             ]
         )
-        self.assertEqual(beneficiaries[0].entity_id, 22)
-        self.assertEqual(beneficiaries[1].entity_id, 23)
+        self.assertEqual(beneficiaries[0].entity.id, 1)
+        self.assertEqual(beneficiaries[1].entity.id, 2)
         journeys = Journey.objects.bulk_create(
             [
                 Journey(
@@ -490,7 +501,7 @@ class ETLTestCase(TestCase):
         monthly_statistics = list(
             map(
                 lambda journey: MonthlyStatistics(
-                    **journey, org_unit=orgUnit, dhis2_id=orgUnit.source_ref, account=account
+                    **journey, org_unit=orgUnit, dhis2_id=orgUnit.source_ref, account=self.account
                 ),
                 aggregate_journeys,
             )
@@ -500,6 +511,6 @@ class ETLTestCase(TestCase):
         self.assertEqual(len(created_monthlyStatistics), 3)
         self.assertEqual(created_monthlyStatistics[0].period, "202508")
         self.assertEqual(created_monthlyStatistics[0].dhis2_id, orgUnit.source_ref)
-        self.assertEqual(created_monthlyStatistics[0].account, account)
+        self.assertEqual(created_monthlyStatistics[0].account, self.account)
         self.assertEqual(created_monthlyStatistics[1].period, "202509")
         self.assertEqual(created_monthlyStatistics[2].period, "202508")

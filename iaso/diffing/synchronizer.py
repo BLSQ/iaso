@@ -326,6 +326,7 @@ class DataSourceVersionsSynchronizer:
         changes = {
             comparison["field"]: comparison["after"]
             for comparison in diff["comparisons"]
+            # if comparison["status"] == Differ.STATUS_MODIFIED
             if comparison["status"] in [Differ.STATUS_MODIFIED, Differ.STATUS_NEW, Differ.STATUS_NOT_IN_ORIGIN]
             and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
         }

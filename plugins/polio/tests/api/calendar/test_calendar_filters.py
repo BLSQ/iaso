@@ -23,7 +23,7 @@ from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
-URL = "/api/polio/calendar/"
+URL = "/api/polio/v2/calendar/"
 NOW = datetime.datetime(2026, 1, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 

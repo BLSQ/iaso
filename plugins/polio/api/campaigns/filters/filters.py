@@ -41,7 +41,7 @@ class CampaignFilterV2(django_filters.rest_framework.FilterSet):
     search = django_filters.CharFilter(method="search_filter", label=_("Search"))
     org_unit_groups = django_filters.CharFilter(method="filter_org_unit_groups", label=_("Country groups"))
     campaign_groups = django_filters.CharFilter(method="filter_campaign_groups", label=_("Campaign groups"))
-    campaign_types = django_filters.CharFilter(method="filter_campaign_types", label=_("Campaign types"))
+    # campaign_types = django_filters.CharFilter(method="filter_campaign_types", label=_("Campaign types"))
     campaign_category = django_filters.CharFilter(method="filter_campaign_category", label=_("Campaign category"))
     show_test = django_filters.BooleanFilter(method="filter_show_test", label=_("Show test"))
 

@@ -60,3 +60,13 @@ class CalendarPeriodFilterBackend(filters.BaseFilterBackend):
 
 class CalendarFilter(CampaignFilterV2):
     pass
+
+
+class IntegratedCampaignFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        obr_names = request.query_params.get("obr_names", "")
+        obr_names_list = [obr_name.strip() for obr_name in obr_names.split(",")]
+        if not obr_names_list:
+            return queryset.none()
+        # Not doing validation that the obr_names only belong to campaigns of type POLIO, because there's already a check at the model level
+        return queryset.filter(integrated_to__obr_name__in=obr_names_list)

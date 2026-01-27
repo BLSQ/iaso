@@ -1,5 +1,6 @@
 import csv
 import io
+import logging
 
 import pandas as pd
 import phonenumbers
@@ -21,6 +22,10 @@ from hat.audit.models import PROFILE_API_BULK
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
+from iaso.tasks.bulk_create_users_email import send_bulk_email_invitations
+
+
+logger = logging.getLogger(__name__)
 
 
 BULK_CREATE_USER_COLUMNS_LIST = [
@@ -139,9 +144,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             file=request.FILES["file"], created_by=importer_user, account=importer_account
         )
 
-        validation_errors, validation_context = self._pre_validate_users(
-            parsed_data, importer_user, importer_account
-        )
+        validation_errors, validation_context = self._pre_validate_users(parsed_data, importer_user, importer_account)
         if validation_errors:
             return Response({"validation_errors": validation_errors}, status=400)
 
@@ -404,7 +407,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         created_profiles = Profile.objects.bulk_create(profiles_to_create)
 
-        # Phase 3: Handle ManyToMany relationships with bulk operations (using cached validation context)
+        # Phase 3: Handle ManyToMany relationships with bulk operations
         self._bulk_set_many_to_many_relationships(
             created_profiles, user_data_map, importer_user, importer_account, validation_context
         )
@@ -532,8 +535,17 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             )
 
     def _send_bulk_email_invitations(self, users):
-        """Send email invitations to users without passwords."""
-        # TODO: Integrate with existing email invitation system
+        """Queue background task to send email invitations to users without passwords."""
+        user_ids = [
+            user.id
+            for user in users
+            if user.email and not user.has_usable_password()  # Only users with unusable passwords need invitations
+        ]
+
+        if not user_ids:
+            return
+
+        send_bulk_email_invitations(user_ids, self.request.is_secure(), user=self.request.user)
 
     def _save_csv_and_audit(self, csv_file_instance, user_data, created_profiles, audit_logger, importer_user):
         """Save CSV with password redacted and log audit trail."""
@@ -623,7 +635,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         )
 
     def _apply_configuration_to_users(self, users, bulk_configuration, importer_account):
-        """Apply bulk configuration to existing users. """
+        """Apply bulk configuration to existing users."""
         if not bulk_configuration:
             return 0
 

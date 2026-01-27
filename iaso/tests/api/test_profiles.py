@@ -9,7 +9,7 @@ from django.test import override_settings
 from rest_framework import status
 
 from iaso import models as m
-from iaso.models import Profile
+from iaso.models import Profile, UserRole
 from iaso.models.team import Team
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
@@ -322,7 +322,7 @@ class ProfileAPITestCase(APITestCase):
         """GET /profiles/ with auth (user has read only permissions)"""
 
         self.client.force_authenticate(self.jane)
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(13):
             response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
         profile_url = "/api/profiles/%s/" % self.jane.iaso_profile.id
@@ -484,6 +484,47 @@ class ProfileAPITestCase(APITestCase):
                 },
             },
         )
+
+    def test_export_permission_matrix_while_ignoring_roles(self):
+        self.jim.user_permissions.clear()
+        self.jane.user_permissions.clear()
+
+        forms_perm = Permission.objects.get(codename=CORE_FORMS_PERMISSION.codename)
+        self.jim.user_permissions.add(forms_perm)
+
+        admin_perm_obj = Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename)
+        self.jim.user_permissions.add(admin_perm_obj)
+
+        new_group = Group.objects.create(name="Role with Admin")
+        new_group.permissions.add(admin_perm_obj)
+
+        jane_role = UserRole.objects.create(group=new_group, account=self.account)
+        self.jane.iaso_profile.user_roles.add(jane_role)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+        username_idx = header.index("username")
+        forms_idx = header.index(CORE_FORMS_PERMISSION.codename)
+        admin_idx = header.index(CORE_USERS_ADMIN_PERMISSION.codename)
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+        jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
+        jom_row = next(r for r in csv_rows if r[username_idx] == "jom")
+
+        self.assertEqual(jim_row[forms_idx], "1")
+        self.assertEqual(jim_row[admin_idx], "1")
+
+        self.assertEqual(jane_row[admin_idx], "0", "Jane should have 0 for Admin because it is in a Role")
+
+        self.assertEqual(jom_row[forms_idx], "0", "Jom should have 0 for Forms because he has no permissions")
+        self.assertEqual(jom_row[admin_idx], "0", "Jom should have 0 for Admin because he has no permissions")
+
+        user_roles_idx = header.index("user_roles")
+        self.assertIn("Role with Admin", jane_row[user_roles_idx])
 
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""

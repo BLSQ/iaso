@@ -286,6 +286,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             "user",
             "user_roles",
             "user__tenant_user",
+            "user__user_permissions",
             "org_units",
             "org_units__version",
             "org_units__version__data_source",
@@ -299,9 +300,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             "editable_org_unit_types",
         )
         if request.GET.get("csv"):
-            return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)
+            return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV, request=request)
         if request.GET.get("xlsx"):
-            return self.list_export(queryset=queryset, file_format=FileFormatEnum.XLSX)
+            return self.list_export(queryset=queryset, file_format=FileFormatEnum.XLSX, request=request)
 
         if limit:
             queryset = queryset.order_by(*orders)
@@ -553,18 +554,29 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def list_export(
-        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
+        queryset: "QuerySet[Profile]", file_format: FileFormatEnum, request: HttpRequest
     ) -> Union[HttpResponse, StreamingHttpResponse]:
-        columns = [{"title": column} for column in ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST]
+        account = request.user.iaso_profile.account
+        all_permissions = sorted([perm.codename for perm in account.permissions_from_active_modules])
+        base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
+
+        try:
+            perm_idx = base_columns.index("permissions")
+            export_columns = base_columns[:perm_idx] + all_permissions + base_columns[perm_idx + 1 :]
+        except ValueError:
+            export_columns = base_columns
+        columns = [{"title": column} for column in export_columns]
 
         def get_row(profile: Profile, **_) -> List[Any]:
             org_units = profile.org_units.order_by("id").only("id", "source_ref")
             editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
+            direct_perms = {p.codename for p in profile.user.user_permissions.all()}
+            permission_matrix = [1 if perm_codename in direct_perms else 0 for perm_codename in all_permissions]
 
-            return [
+            row_start = [
                 profile.id,
                 profile.user.username,
-                "",  # Password is left empty on purpose.
+                "",  # Password empty
                 profile.user.email,
                 profile.user.first_name,
                 profile.user.last_name,
@@ -573,7 +585,9 @@ class ProfilesViewSet(viewsets.ViewSet):
                 profile.language,
                 profile.dhis2_id,
                 profile.organization,
-                ",".join(item.codename for item in profile.user.user_permissions.all()),
+            ]
+
+            row_end = [
                 ",".join(
                     item.group.name.removeprefix(f"{profile.account.pk}_")
                     for item in profile.user_roles.all().order_by("id")
@@ -582,6 +596,8 @@ class ProfilesViewSet(viewsets.ViewSet):
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
                 ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
+
+            return row_start + permission_matrix + row_end
 
         filename = "users"
         response: Union[HttpResponse, StreamingHttpResponse]

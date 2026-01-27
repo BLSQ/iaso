@@ -28,6 +28,14 @@ from hat.audit.models import PROFILE_API
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.profiles.email_templates import (
+    CREATE_PASSWORD_HTML_MESSAGE_EN,
+    CREATE_PASSWORD_HTML_MESSAGE_FR,
+    CREATE_PASSWORD_MESSAGE_EN,
+    CREATE_PASSWORD_MESSAGE_FR,
+    EMAIL_SUBJECT_EN,
+    EMAIL_SUBJECT_FR,
+)
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
@@ -845,89 +853,13 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def get_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
+        return CREATE_PASSWORD_MESSAGE_FR if language == "fr" else CREATE_PASSWORD_MESSAGE_EN
 
     @staticmethod
     def get_html_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_HTML_MESSAGE_EN
+        return CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else CREATE_PASSWORD_HTML_MESSAGE_EN
 
     @staticmethod
     def get_subject_by_language(self, language="en"):
-        return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
+        return EMAIL_SUBJECT_FR if language == "fr" else EMAIL_SUBJECT_EN
 
-    CREATE_PASSWORD_MESSAGE_EN = """Hello,
-
-You have been invited to access IASO - {protocol}://{domain}.
-
-Username: {userName} 
-
-Please click on the link below to create your password:
-
-{url}
-
-If clicking the link above doesn't work, please copy and paste the URL in a new browser
-window instead.
-
-If you did not request an account on {account_name}, you can ignore this e-mail - no password will be created.
-
-Sincerely,
-The {domain} Team.
-    """
-
-    CREATE_PASSWORD_HTML_MESSAGE_EN = """<p>Hello,<br><br>
-
-You have been invited to access IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
-
-Username: <strong>{{userName}}</strong><br><br>
-
-Please click on the link below to create your password:<br><br>
-
-<a href="{{url}}" target="_blank">{{url}}</a><br><br>
-
-If clicking the link above doesn't work, please copy and paste the URL in a new browser<br>
-window instead.<br><br>
-
-If you did not request an account on {{account_name}}, you can ignore this e-mail - no password will be created.<br><br>
-
-Sincerely,<br>
-The {{domain}} Team.</p>
-    """
-
-    CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
-
-Vous avez été invité à accéder à l'IASO - {protocol}://{domain}.
-
-Nom d'utilisateur: {userName}
-
-Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :
-
-{url}
-
-Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.
-
-Si vous n'avez pas demandé de compte sur {account_name}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
-
-Cordialement,
-L'équipe {domain}.
-    """
-
-    CREATE_PASSWORD_HTML_MESSAGE_FR = """<p>Bonjour,<br><br>
-
-Vous avez été invité à accéder à l'IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
-
-Nom d'utilisateur: <strong>{{userName}}</strong><br><br>
-
-Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :<br><br>
-
-<a href="{{url}}" target="_blank">{{url}}</a><br><br>
-
-Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.<br><br>
-
-Si vous n'avez pas demandé de compte sur {{account_name}}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.<br><br>
-
-Cordialement,<br>
-L'équipe {{domain}}.</p>
-    """
-
-    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {domain}"
-    EMAIL_SUBJECT_EN = "Set up a password for your new account on {domain}"

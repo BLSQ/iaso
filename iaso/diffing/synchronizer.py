@@ -57,12 +57,23 @@ class DataSourceVersionsSynchronizer:
         self.insert_batch_size = 100
         self.json_batch_size = 10
 
+    def _report_progress(self, message: str) -> None:
+        task = getattr(self.data_source_sync, "sync_task", None)
+        if task:
+            task.report_progress_and_stop_if_killed(progress_message=message)
+
     def synchronize(self) -> None:
+        self._report_progress("Preparing groups matching…")
         self._prepare_groups_matching()
+        self._report_progress("Creating missing org units and preparing missing groups…")
         self._create_missing_org_units_and_prepare_missing_groups()
+        self._report_progress("Bulk creating missing groups…")
         self._bulk_create_missing_groups()
+        self._report_progress("Preparing change requests…")
         self._prepare_change_requests()
+        self._report_progress("Bulk creating change requests…")
         self._bulk_create_change_requests()
+        self._report_progress("Bulk creating change request groups…")
         self._bulk_create_change_request_groups()
 
     @staticmethod
@@ -199,7 +210,6 @@ class DataSourceVersionsSynchronizer:
 
             if not batch_diff:
                 break
-
             for diff in batch_diff:
                 if diff["status"] == Differ.STATUS_NEW:
                     change_request, group_changes = self._prepare_new_change_requests(diff)
@@ -309,10 +319,14 @@ class DataSourceVersionsSynchronizer:
         return org_unit_change_request, group_changes
 
     def _prepare_modified_change_requests(self, diff: dict) -> tuple[OrgUnitChangeRequest, list]:
+        org_unit = diff["orgunit_dhis2"]
+
+        self._report_progress("Comparing org unit…")
+
         changes = {
             comparison["field"]: comparison["after"]
             for comparison in diff["comparisons"]
-            if comparison["status"] == Differ.STATUS_MODIFIED
+            if comparison["status"] in [Differ.STATUS_MODIFIED, Differ.STATUS_NEW, Differ.STATUS_NOT_IN_ORIGIN]
             and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
         }
 

@@ -10,6 +10,11 @@ class MetricType(models.Model):
         LINEAR = "linear", _("Linear")
         ORDINAL = "ordinal", _("Ordinal")
 
+    class MetricTypeOrigin(models.TextChoices):
+        OPENHEXA = "openhexa", _("OpenHexa")
+        CUSTOM = "custom", _("Custom")
+        OTHER = "other", _("Other")
+
     class Meta:
         ordering = ["id"]  # force ordering in order of creation (for demo)
         unique_together = [
@@ -33,6 +38,13 @@ class MetricType(models.Model):
     legend_config = models.JSONField(blank=True, default=dict)
     # This is meant to flag metric types that are used for system purposes (like population)
     is_utility = models.BooleanField(default=False)
+    # Define if it was from OpenHexa, create from the interface or other method
+    origin = models.CharField(
+        max_length=50,
+        choices=MetricTypeOrigin.choices,
+        default=MetricTypeOrigin.OPENHEXA,
+        blank=False,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

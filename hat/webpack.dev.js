@@ -188,38 +188,26 @@ module.exports = {
                 : newBrowsersConfig),
             {
                 test: /\.css$/,
-                use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
+                use: [
+                    { loader: 'style-loader' },
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            url: true, // Ensure css-loader processes url() statements
+                        },
+                    },
+                ],
             },
             {
                 test: /\.(png|jpg|jpeg|gif|svg)$/,
                 type: 'asset/resource',
             },
             {
-                test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+                test: /\.(woff|woff2|ttf|eot|otf)$/,
                 type: 'asset/resource',
                 generator: {
                     filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
-                },
-            },
-            {
-                test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
+                    publicPath: '/static/', // Ensure URLs in CSS point to the correct path
                 },
             },
             {

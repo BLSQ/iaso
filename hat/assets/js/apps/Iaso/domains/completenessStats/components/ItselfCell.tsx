@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { FormStatRow } from '../types';
 import MESSAGES from '../messages';
+import { FormStatRow } from '../types';
 
 export const ItselfCell = ({ value }: FormStatRow): ReactElement => {
     const { formatMessage } = useSafeIntl();

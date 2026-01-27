@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from iaso import models as m
 from iaso.models.team import Team
 from iaso.test import TestCase
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 class ProfileModelTestCase(TestCase):
@@ -95,3 +96,13 @@ class ProfileModelTestCase(TestCase):
         self.assertCountEqual(
             profile.annotated_user_roles_editable_org_unit_type_ids, [org_unit_type_country.pk, org_unit_type_region.pk]
         )
+
+    def test_profile_color_default_and_serialization(self):
+        self.assertEqual(self.profile1.color, DEFAULT_COLOR)
+
+        new_color = "#123456"
+        self.profile1.color = new_color
+        self.profile1.save()
+
+        self.assertEqual(self.profile1.as_dict()["color"], new_color)
+        self.assertEqual(self.profile1.as_short_dict()["color"], new_color)

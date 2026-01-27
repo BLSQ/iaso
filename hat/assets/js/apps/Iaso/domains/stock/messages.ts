@@ -226,7 +226,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.stockItem',
     },
     stockItems: {
-        defaultMessage: 'Stock Items',
+        defaultMessage: 'Stock entries',
         id: 'iaso.label.stockItems',
     },
     createdDateFrom: {

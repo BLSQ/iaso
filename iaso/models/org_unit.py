@@ -252,6 +252,11 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
 
         return queryset
 
+    def with_geo_json(self):
+        return self.annotate(
+            geo_json=RawSQL("ST_AsGeoJson(COALESCE(iaso_orgunit.simplified_geom, iaso_orgunit.geom))::json", [])
+        )
+
 
 class OrgUnitManager(models.Manager):
     def parents_q(self, org_units) -> Q:

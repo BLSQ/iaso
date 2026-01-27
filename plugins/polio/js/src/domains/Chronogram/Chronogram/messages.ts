@@ -47,7 +47,7 @@ const MESSAGES = defineMessages({
     },
     labelId: {
         id: 'iaso.label.id',
-        defaultMessage: 'ID',
+        defaultMessage: 'Identifier',
     },
     labelCampaignObrName: {
         id: 'iaso.polio.chronogram.label.campaign_obr_name',

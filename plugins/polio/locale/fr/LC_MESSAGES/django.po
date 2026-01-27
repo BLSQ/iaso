@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-20 08:00+0000\n"
+"POT-Creation-Date: 2026-01-22 10:54+0000\n"
 "PO-Revision-Date: 2025-02-05 14:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,15 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Round {} ended"
 msgstr "Round {} terminé"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Round {} started"
 msgstr "Round {} commencé"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Preparing"
 msgstr "Préparation"
 
@@ -547,6 +547,22 @@ msgstr "Tâche de chronogramme"
 msgid "Chronogram Template Task"
 msgstr "Modèle de tâche de chronogramme"
 
+#: plugins/polio/models/country_plan.py
+msgid "Draft"
+msgstr "Ébauche"
+
+#: plugins/polio/models/country_plan.py
+msgid "Commented"
+msgstr "Commenté"
+
+#: plugins/polio/models/country_plan.py
+msgid "Final"
+msgstr "Final"
+
+#: plugins/polio/models/country_plan.py
+msgid "Performance Dashboard"
+msgstr "Tableau des performances"
+
 #: plugins/polio/models/lqas_im.py
 msgid "1lqasOK"
 msgstr "1lqasOK"
@@ -600,6 +616,14 @@ msgstr "Entrée LQAS"
 #: plugins/polio/models/lqas_im.py
 msgid "LQAS Entries"
 msgstr "Entrées LQAS"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Threshold"
+msgstr "Seuil de performance"
+
+#: plugins/polio/models/performance_thresholds.py
+msgid "Performance Thresholds"
+msgstr "Seuils de performance"
 
 #: plugins/polio/permissions.py
 msgid "Polio"
@@ -673,26 +697,6 @@ msgstr "Polio - chaîne d'approvisionnement (lecture seule)"
 msgid "Polio Vaccine Supply Chain Write"
 msgstr "Polio - chaîne d'approvisionnement (écriture)"
 
-#: plugins/polio/preparedness/spreadsheet_manager.py
-msgid "No country found for campaign"
-msgstr "Aucun pays trouvé pour la campagne"
-
-#: plugins/polio/performance_dashboard.py
-msgid "Draft"
-msgstr "Ébauche"
-
-#: plugins/polio/performance_dashboard.py
-msgid "Commented"
-msgstr "Commenté"
-
-#: plugins/polio/performance_dashboard.py
-msgid "Final"
-msgstr "Final"
-
-#: plugins/polio/performance_dashboard.py
-msgid "Performance Dashboard"
-msgstr "Tableau des performances"
-
 #: plugins/polio/permissions.py
 msgid "Polio Country Plan Read Only"
 msgstr "Polio - Plan pays (lecture seule)"
@@ -705,10 +709,6 @@ msgstr "Polio - Plan pays (non admin)"
 msgid "Polio Country Plan Admin"
 msgstr "Polio - Plan pays (admin)"
 
-#: plugins/polio/models/performance_thresholds.py
-msgid "Performance Threshold"
-msgstr "Seuil de performance"
-
-#: plugins/polio/models/performance_thresholds.py
-msgid "Performance Thresholds"
-msgstr "Seuils de performance"
+#: plugins/polio/preparedness/spreadsheet_manager.py
+msgid "No country found for campaign"
+msgstr "Aucun pays trouvé pour la campagne"

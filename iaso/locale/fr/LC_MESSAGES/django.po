@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-19 10:52+0000\n"
+"POT-Creation-Date: 2026-01-23 12:59+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -108,12 +108,8 @@ msgstr ""
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
 
 #: iaso/api/microplanning/views.py
-msgid "This query parameter is required."
-msgstr "Ce paramètre de requête est requis."
-
-#: iaso/api/microplanning/views.py
-msgid "Unknown or inaccessible planning"
-msgstr "Planification inconnue ou inaccessible"
+msgid "Planning is missing sampling group or target org unit scope"
+msgstr "La planification manque d'un groupe d'échantillonnage ou d'une unité organisationnelle cible"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
@@ -322,6 +318,10 @@ msgstr "Limiter selon si l'authentification est requise ou non"
 #: iaso/api/pages.py iaso/api/payments/views.py
 msgid "User ID"
 msgstr "ID utilisateur"
+
+#: iaso/api/pages.py
+msgid "User Role IDs"
+msgstr "IDs rôles"
 
 #: iaso/api/payments/views.py
 msgid "Status"
@@ -655,6 +655,10 @@ msgid "Financial Nov"
 msgstr "Financier Nov"
 
 #: iaso/models/forms.py
+msgid "WEEK"
+msgstr "Semaine"
+
+#: iaso/models/forms.py
 msgid "No change request"
 msgstr "Pas de demande de modification"
 
@@ -688,6 +692,18 @@ msgstr "Linéaire"
 #: iaso/models/metric.py
 msgid "Ordinal"
 msgstr "Ordinal"
+
+#: iaso/models/metric.py
+msgid "OpenHexa"
+msgstr "OpenHexa"
+
+#: iaso/models/metric.py
+msgid "Custom"
+msgstr "Personnalisé"
+
+#: iaso/models/metric.py
+msgid "Other"
+msgstr "Autre"
 
 #: iaso/models/org_unit.py
 msgid "Country"
@@ -974,6 +990,10 @@ msgstr "Copie des unités organisationnelles"
 msgid "Fixing parents"
 msgstr "Correction des parents"
 
+#: iaso/utils/colors.py
+msgid "Color must be a valid hex code (#RRGGBB)."
+msgstr "La couleur doit être un code hexadécimal valide (#RRGGBB)."
+
 #: iaso/utils/openhexa.py
 msgid "No OpenHEXA workspace configured for your account"
 msgstr "Aucun espace de travail OpenHEXA configuré pour votre compte"
@@ -1036,6 +1056,12 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "This query parameter is required."
+#~ msgstr "Ce paramètre de requête est requis."
+
+#~ msgid "Unknown or inaccessible planning"
+#~ msgstr "Planification inconnue ou inaccessible"
 
 #~ msgid "User profile or account not found"
 #~ msgstr "Profil utilisateur ou compte introuvable"

@@ -711,9 +711,10 @@ EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
 EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"
 
 # Application customizations
-APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
+APP_TITLE = os.environ.get("APP_TITLE", "IASO")
 FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
 LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
+LOGIN_LOGO_PATH = os.environ.get("LOGIN_LOGO_PATH", None)
 THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#ff7961")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")

@@ -4,7 +4,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: $primary-background;
+  background: #ECEFF1;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -18,13 +18,16 @@
   margin-bottom: $padding-unit/4;
 
   img {
-    height: 80px;
+    height: 60px;
   }
 }
 
 .auth__content {
   width: 100%;
-  max-width: 320px;
+  max-width: 375px;
+  background: #FFF;
+  border-radius: 16px;
+  padding: 16px;
 
   .errorlist {
     margin-top: 1em;
@@ -41,9 +44,7 @@
 
 .auth__form {
   background: white;
-  padding: $padding-unit;
-  padding-top: calc(#{$padding-unit} - 1em);
-  box-shadow: inset 0 3px 0 0 $primary;
+  padding: 16px 32px;
   position: relative;
 
   * {
@@ -63,6 +64,27 @@
     width: 100%;
     display: block;
   }
+}
+
+.auth__separator {
+  height: 3px;
+  width: 100%;
+  -webkit-box-shadow: inset 0 3px 0 0 var(--primary-color);
+  box-shadow: inset 0 3px 0 0 var(--primary-color);
+  display: inline-block;
+}
+
+.auth__title {
+  margin-top: 32px;
+  line-height: 160%;
+  letter-spacing: 0.15px;
+  text-align: center;
+}
+
+.auth__language {
+  position: absolute;
+  top: 0;
+  right: 16px;
 }
 
 .iaso {
@@ -98,18 +120,19 @@
 }
 
 
-$right-icon-position : 40px;
+$right-icon-position: 40px;
 
 #display-password {
   position: absolute;
   width: 30px;
-  bottom: 132px;
+  bottom: 8px;
   border: 1px solid $primary;
-  right: 40px;
+  right: 8px;
   background-color: white;
   border-radius: 100%;
   height: 30px;
   cursor: pointer;
+
   &:hover {
     border: 1px solid;
     filter: brightness(0.90);
@@ -124,6 +147,7 @@ $right-icon-position : 40px;
     height: 15px;
     margin-bottom: -2px;
     fill: $primary;
+
     &:hover {
       filter: brightness(0.90);
     }
@@ -131,41 +155,35 @@ $right-icon-position : 40px;
 }
 
 .auth__message {
-  background: white;
-  border-radius: 4px;
-  padding: $padding-unit;
-  box-shadow: inset 0 3px 0 0 $primary, 0 0 10px 10px rgba(black, 0.15);
+  margin: 32px 16px;
 }
 
 .bottom-links {
-  margin: 10px 0;
-  text-align: right;
-  display: flex;
-  justify-content: space-between;
-  font-size: 15px;
+  margin: 24px 0;
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
 
   a {
     text-decoration: none;
+    font-weight: bold;
 
     &:hover {
       text-decoration: underline;
-    }
-
-    &:only-child {
-      margin-left: auto;
     }
   }
 }
 
 .reset-password-link {
   text-decoration: none;
+
   &:hover {
     text-decoration: underline;
   }
 }
 
 .language-picker {
-  height: 30px;
+  height: 42px;
   padding: 0 0 0 10px;
   margin-top: 10px;
   margin-left: auto;
@@ -173,4 +191,52 @@ $right-icon-position : 40px;
   border-radius: 5px;
   background-color: white;
   border: 1px solid #ccc;
+}
+
+
+.auth__security_tips {
+  margin-top: 16px;
+  padding: 24px;
+  background: #E2F0FA;
+}
+
+.auth__security_tips ul {
+  margin-top: 16px;
+  margin-left: 16px;
+  color: #00000099;
+  line-height: 22px;
+}
+
+.auth__security_tips li {
+  margin-bottom: 8px;
+}
+
+
+.auth__security_checks {
+  margin-top: 16px;
+  padding-bottom: 16px; /* margin bottom doesn't work */
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.auth__security_checks span {
+  height: 22px;
+  background-repeat: no-repeat;
+  padding-left: 30px; /* width of the image plus a little extra padding */
+  display: block; /* may not need this, but I've found I do */
+  line-height: 22px;
+}
+
+.auth__security_checks .off {
+  color: #00000099;
+  background-image: url('../images/info.png');
+}
+
+.auth__security_checks .on {
+  color: #2E7D32;
+  background-image: url('../images/valid.png');
+}
+
+.form-group {
+  position: relative;
 }

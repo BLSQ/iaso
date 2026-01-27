@@ -1,5 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.models import MetricType, MetricValue
@@ -17,6 +19,20 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return MetricType.objects.filter(account=self.request.user.iaso_profile.account, is_utility=False)
+
+    @action(detail=False, methods=["get"])
+    def grouped_per_category(self, request):
+        metric_types = self.get_queryset()
+        grouped_data = {}
+        for mt in metric_types:
+            category = mt.category or "Uncategorized"
+            if category not in grouped_data:
+                grouped_data[category] = []
+            grouped_data[category].append(MetricTypeSerializer(mt).data)
+
+        response_data = [{"name": key, "items": items} for key, items in grouped_data.items()]
+
+        return Response(response_data)
 
 
 class MetricValueViewSet(viewsets.ModelViewSet):

@@ -34,7 +34,7 @@ class ETLTestCase(TestCase):
     def test_create_beneficiary(self):
         beneficiary = Beneficiary(birth_date="2022-08-08", gender="Male", entity=self.entities[0])
         beneficiary.save()
-        self.assertEqual(beneficiary.entity.id, 1)
+        self.assertEqual(beneficiary.entity.id, self.entities[0].id)
 
     def test_create_journey(self):
         random_birth = random.randint(1, 1825)
@@ -121,10 +121,10 @@ class ETLTestCase(TestCase):
                 ),
             ]
         )
-        self.assertEqual(beneficiaries[0].entity.id, 1)
-        self.assertEqual(beneficiaries[1].entity.id, 2)
-        self.assertEqual(beneficiaries[2].entity.id, 3)
-        self.assertEqual(beneficiaries[3].entity.id, 4)
+        self.assertEqual(beneficiaries[0].entity.id, self.entities[0].id)
+        self.assertEqual(beneficiaries[1].entity.id, self.entities[1].id)
+        self.assertEqual(beneficiaries[2].entity.id, self.entities[2].id)
+        self.assertEqual(beneficiaries[3].entity.id, self.entities[3].id)
         self.assertEqual(Beneficiary.objects.count(), 4)
 
         journeys = Journey.objects.bulk_create(
@@ -179,10 +179,10 @@ class ETLTestCase(TestCase):
                 ),
             ]
         )
-        self.assertEqual(journeys[0].beneficiary.entity.id, 1)
-        self.assertEqual(journeys[1].beneficiary.entity.id, 2)
-        self.assertEqual(journeys[2].beneficiary.entity.id, 3)
-        self.assertEqual(journeys[3].beneficiary.entity.id, 4)
+        self.assertEqual(journeys[0].beneficiary.entity.id, self.entities[0].id)
+        self.assertEqual(journeys[1].beneficiary.entity.id, self.entities[1].id)
+        self.assertEqual(journeys[2].beneficiary.entity.id, self.entities[2].id)
+        self.assertEqual(journeys[3].beneficiary.entity.id, self.entities[3].id)
         self.assertEqual(Journey.objects.count(), 4)
 
         orgUnit = OrgUnit(id=9854, name="TEST Malakia PHCC", created_at=datetime.utcnow())
@@ -399,8 +399,8 @@ class ETLTestCase(TestCase):
                 ),
             ]
         )
-        self.assertEqual(beneficiaries[0].entity.id, 1)
-        self.assertEqual(beneficiaries[1].entity.id, 2)
+        self.assertEqual(beneficiaries[0].entity.id, self.entities[0].id)
+        self.assertEqual(beneficiaries[1].entity.id, self.entities[1].id)
         journeys = Journey.objects.bulk_create(
             [
                 Journey(

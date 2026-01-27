@@ -1,6 +1,8 @@
 import csv
 import io
 
+from unittest.mock import patch
+
 import jsonschema
 
 from django.contrib.auth.models import Permission, User
@@ -860,3 +862,61 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         expected_error = f"Row 2: Team '{secret_team_name}' does not exist."
         self.assertEqual(response.json()["error"], expected_error)
+
+    @patch("iaso.api.profiles.bulk_create_users.send_bulk_email_invitations")
+    def test_email_invitations_sent_for_users_without_password(self, mock_send_emails):
+        """Test that email invitations are sent only for users without passwords."""
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_email_no_password.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["users_created"], 2)
+
+        # Verify that send_bulk_email_invitations was called
+        mock_send_emails.assert_called_once()
+        call_args = mock_send_emails.call_args[0]
+        user_ids = call_args[0]
+        self.assertEqual(len(user_ids), 2)
+
+        # Verify users were created correctly
+        invite1 = User.objects.get(username="invite1")
+        invite2 = User.objects.get(username="invite2")
+        self.assertFalse(invite1.has_usable_password())
+        self.assertFalse(invite2.has_usable_password())
+        self.assertEqual(invite1.email, "invite1@test.com")
+        self.assertEqual(invite2.email, "invite2@test.com")
+
+    @patch("iaso.api.profiles.bulk_create_users.send_bulk_email_invitations")
+    def test_email_invitations_mixed_scenario_with_fixture(self, mock_send_emails):
+        """Test email invitations in mixed scenario."""
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_mixed_email.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["users_created"], 4)
+
+        # Verify that send_bulk_email_invitations was called
+        mock_send_emails.assert_called_once()
+        call_args = mock_send_emails.call_args[0]
+        user_ids = call_args[0]
+        self.assertEqual(len(user_ids), 2)
+
+        # Verify user creation and email/password states
+        with_password = User.objects.get(username="with_password")
+        no_password1 = User.objects.get(username="no_password1")
+        no_password2 = User.objects.get(username="no_password2")
+        no_email = User.objects.get(username="no_email")
+
+        # Users with passwords should have usable passwords
+        self.assertTrue(with_password.has_usable_password())
+        self.assertTrue(no_email.has_usable_password())
+
+        # Users without passwords should have unusable passwords
+        self.assertFalse(no_password1.has_usable_password())
+        self.assertFalse(no_password2.has_usable_password())

@@ -1,11 +1,12 @@
 import csv
 import io
+import json
 import logging
 
 import pandas as pd
 import phonenumbers
 
-from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.models import Permission, User
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -128,9 +129,26 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        """Create users from CSV file. All validation happens in this step.
+        """Create users from CSV file with optional bulk configuration.
 
-        After users are created successfully, use bulk_update() to apply configuration.
+        CSV field values take precedence. Bulk configuration provides defaults
+        for empty fields across all users in a single atomic transaction.
+
+        Email invitations are sent automatically to users without passwords
+        (users with email but no password in CSV).
+
+        Request body:
+        {
+            "file": <csv file>,
+            "bulk_configuration": {  # Optional
+                "permissions": ["iaso_forms", "iaso_submissions"],
+                "projects": ["Project 1"],
+                "user_roles": ["manager"],
+                "profile_language": "en",
+                "organization": "WHO",
+                "orgunit": [123, 456]
+            }
+        }
         """
         if not request.FILES.get("file"):
             raise serializers.ValidationError({"error": "No CSV file provided"})
@@ -138,13 +156,36 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         importer_user = request.user
         importer_account = importer_user.iaso_profile.account
 
+        # Handle bulk_configuration from both JSON and multipart form data
+        raw_bulk_config = request.data.get("bulk_configuration", {})
+        if isinstance(raw_bulk_config, str):
+            # Multipart form data sends it as a JSON string - parse it
+            try:
+                bulk_configuration = json.loads(raw_bulk_config) if raw_bulk_config else {}
+            except json.JSONDecodeError:
+                raise serializers.ValidationError({"error": "Invalid JSON in bulk_configuration"})
+        else:
+            bulk_configuration = raw_bulk_config
+
         csv_data = self._parse_csv_file(request.FILES["file"])
 
         csv_file_instance = BulkCreateUserCsvFile.objects.create(
             file=request.FILES["file"], created_by=importer_user, account=importer_account
         )
 
+        # Validate CSV data
         validation_errors, validation_context = self._pre_validate_users(csv_data, importer_user, importer_account)
+
+        # Validate bulk configuration
+        if bulk_configuration:
+            config_errors, config_context = self._validate_bulk_configuration(
+                bulk_configuration, importer_user, importer_account
+            )
+            if config_errors:
+                validation_errors.extend(config_errors)
+            # Merge config context into validation context
+            validation_context["bulk_config"] = config_context
+
         if validation_errors:
             return Response({"validation_errors": validation_errors}, status=400)
 
@@ -154,6 +195,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             importer_account,
             csv_file_instance,
             validation_context,
+            bulk_configuration,
         )
 
         response = {
@@ -455,10 +497,118 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         return validation_errors, validation_context
 
+    def _validate_bulk_configuration(self, bulk_configuration, importer_user, importer_account):
+        """Validate bulk_configuration fields and cache resolved objects.
+
+        Validates configurable fields (permissions, projects, user_roles, orgunit).
+        Returns validation errors and a context dict to use during profile creation.
+
+        """
+        if not bulk_configuration:
+            return [], {}
+
+        validation_errors = []
+        validation_context = {
+            "permissions_by_row": {},
+            "projects_by_row": {},
+            "user_roles_by_row": {},
+            "org_units_by_row": {},
+        }
+
+        row_errors = {}
+        row_index = 0  # Single validation record for uniform configuration
+
+        # Validate permissions
+        permission_names = bulk_configuration.get("permissions", [])
+        if permission_names:
+            module_permissions = [perm.codename for perm in importer_account.permissions_from_active_modules]
+            invalid_permissions = [pn for pn in permission_names if pn not in module_permissions]
+            if invalid_permissions:
+                row_errors["permissions"] = f"Invalid permissions: {', '.join(invalid_permissions)}"
+            else:
+                valid_permissions = Permission.objects.filter(
+                    codename__in=[pn for pn in permission_names if pn in module_permissions]
+                )
+                validation_context["permissions_by_row"][row_index] = list(valid_permissions)
+
+        # Validate user_roles
+        role_names = bulk_configuration.get("user_roles", [])
+        if role_names:
+            existing_roles = UserRole.objects.filter(
+                account=importer_account,
+                group__name__in=[f"{importer_account.id}_{role}" for role in role_names],
+            )
+            existing_role_names = set(existing_roles.values_list("group__name", flat=True))
+            invalid_roles = [role for role in role_names if f"{importer_account.id}_{role}" not in existing_role_names]
+            if invalid_roles:
+                row_errors["user_roles"] = f"Invalid user roles: {', '.join(invalid_roles)}"
+            else:
+                validation_context["user_roles_by_row"][row_index] = list(existing_roles)
+
+        # Validate projects
+        project_names = bulk_configuration.get("projects", [])
+        if project_names:
+            has_geo_limit = self.has_only_user_managed_permission(importer_user)
+            user_has_project_restrictions = hasattr(importer_user, "iaso_profile") and bool(
+                importer_user.iaso_profile.projects_ids
+            )
+
+            if user_has_project_restrictions and has_geo_limit:
+                available_projects = Project.objects.filter(
+                    name__in=project_names, account=importer_account
+                ).filter_on_user_projects(importer_user)
+                if not available_projects.exists():
+                    available_projects = Project.objects.filter(account=importer_account).filter_on_user_projects(
+                        importer_user
+                    )
+                validation_context["projects_by_row"][row_index] = list(available_projects)
+            else:
+                available_projects = Project.objects.filter(name__in=project_names, account=importer_account)
+                valid_project_names = set(available_projects.values_list("name", flat=True))
+                invalid_projects = [pn for pn in project_names if pn not in valid_project_names]
+                if invalid_projects:
+                    row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
+                else:
+                    validation_context["projects_by_row"][row_index] = list(available_projects)
+
+        # Validate org units
+        org_unit_ids = bulk_configuration.get("orgunit", [])
+        if org_unit_ids:
+            importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user).only("id")
+            valid_org_units = []
+            invalid_ids = []
+
+            for ou_id in org_unit_ids:
+                try:
+                    ou = OrgUnit.objects.filter(
+                        pk__in=importer_access_ou,
+                        id=int(ou_id),
+                    ).first()
+                    if ou:
+                        valid_org_units.append(ou)
+                    else:
+                        invalid_ids.append(str(ou_id))
+                except (ValueError, TypeError):
+                    invalid_ids.append(str(ou_id))
+
+            if invalid_ids:
+                row_errors["orgunit"] = f"Invalid or inaccessible OrgUnit IDs: {', '.join(invalid_ids)}"
+            else:
+                validation_context["org_units_by_row"][row_index] = valid_org_units
+
+        if row_errors:
+            validation_errors.append({"row": 1, "errors": row_errors})
+
+        return validation_errors, validation_context
+
     def _bulk_create_users_and_profiles(
-        self, csv_data, importer_user, importer_account, csv_file_instance, validation_context
+        self, csv_data, importer_user, importer_account, csv_file_instance, validation_context, bulk_configuration=None
     ):
-        """Create users and profiles using bulk operations and cached validation context."""
+        """Create users and profiles using bulk operations and cached validation context.
+        Merges bulk_configuration with CSV data: CSV values take precedence
+        """
+        bulk_configuration = bulk_configuration or {}
+        bulk_config_context = validation_context.get("bulk_config", {})
         audit_logger = ProfileAuditLogger()
 
         # Phase 1: Prepare User objects for bulk_create
@@ -492,17 +642,26 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         invitation_users = []
 
         for user, data in zip(created_users, csv_data):
+            # Language: CSV takes precedence, fall back to bulk_configuration, then default
+            language = (
+                data.get("profile_language", "").strip().lower()
+                or bulk_configuration.get("profile_language", "").lower()
+                or "fr"
+            )
+
+            # Organization: CSV takes precedence, fall back to bulk_configuration
+            organization = data.get("organization", "").strip() or bulk_configuration.get("organization")
+
             profile = Profile(
                 user=user,
                 account=importer_account,
-                language=data.get("profile_language", "fr").lower() or "fr",
+                language=language,
                 dhis2_id=data.get("dhis2_id", "").strip() or None,
-                organization=data.get("organization", "").strip() or None,
+                organization=organization,
                 phone_number=self._validate_and_format_phone(data.get("phone_number")),
             )
             profiles_to_create.append(profile)
 
-            # Check for email invitation while we have the data
             if not data.get("password", "").strip() and data.get("email", "").strip():
                 invitation_users.append(user)
 
@@ -510,7 +669,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         # Phase 3: Handle ManyToMany relationships with bulk operations
         self._bulk_set_many_to_many_relationships(
-            created_profiles, csv_data, importer_user, importer_account, validation_context
+            created_profiles, csv_data, importer_user, importer_account, validation_context, bulk_configuration
         )
 
         # Phase 4: Send email invitations
@@ -523,9 +682,15 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         return len(created_users)
 
     def _bulk_set_many_to_many_relationships(
-        self, profiles, user_data, importer_user, importer_account, validation_context
+        self, profiles, user_data, importer_user, importer_account, validation_context, bulk_configuration=None
     ):
-        """Set ManyToMany relationships using bulk operations and cached validated objects."""
+        """Set ManyToMany relationships using bulk operations and cached validated objects.
+
+        Merges bulk_configuration with CSV data: CSV values take precedence.
+        """
+        bulk_configuration = bulk_configuration or {}
+        bulk_config_context = validation_context.get("bulk_config", {})
+
         profile_org_units_list = []
         profile_projects_list = []
         profile_user_roles_list = []
@@ -535,20 +700,31 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         for row_index, (profile, data) in enumerate(zip(profiles, user_data)):
             org_units_to_add = validation_context["org_units_by_row"].get(row_index, [])
+            if not org_units_to_add and bulk_config_context.get("org_units_by_row"):
+                org_units_to_add = bulk_config_context["org_units_by_row"].get(0, [])
 
             for ou in org_units_to_add:
                 profile_org_units_list.append(Profile.org_units.through(profile=profile, orgunit=ou))
 
             cached_projects = validation_context["projects_by_row"].get(row_index, [])
+            if not cached_projects and bulk_config_context.get("projects_by_row"):
+                cached_projects = bulk_config_context["projects_by_row"].get(0, [])
+
             for project in cached_projects:
                 profile_projects_list.append(Profile.projects.through(profile=profile, project=project))
 
             cached_roles = validation_context["user_roles_by_row"].get(row_index, [])
+            if not cached_roles and bulk_config_context.get("user_roles_by_row"):
+                cached_roles = bulk_config_context["user_roles_by_row"].get(0, [])
+
             for role in cached_roles:
                 profile_user_roles_list.append(Profile.user_roles.through(profile=profile, userrole=role))
                 user_groups_list.append(User.groups.through(user=profile.user, group=role.group))
 
             cached_permissions = validation_context["permissions_by_row"].get(row_index, [])
+            if not cached_permissions and bulk_config_context.get("permissions_by_row"):
+                cached_permissions = bulk_config_context["permissions_by_row"].get(0, [])
+
             for permission in cached_permissions:
                 user_permissions_list.append(User.user_permissions.through(user=profile.user, permission=permission))
 
@@ -644,92 +820,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             raise serializers.ValidationError(
                 {"error": f"Operation aborted. This '{phone_number}' is not a phone number"}
             )
-
-    @swagger_auto_schema()
-    @action(detail=False, methods=["POST"], url_path="apply_configuration")
-    @transaction.atomic
-    def apply_configuration(self, request, *args, **kwargs):
-        """Apply bulk configuration to users created by a CSV file."""
-        csv_file_id = request.data.get("csv_file_id")
-        bulk_configuration = request.data.get("bulk_configuration", {})
-
-        if not csv_file_id:
-            raise serializers.ValidationError({"error": "csv_file_id is required"})
-
-        importer_account = request.user.iaso_profile.account
-
-        try:
-            csv_file = BulkCreateUserCsvFile.objects.get(id=csv_file_id, created_by=request.user)
-        except BulkCreateUserCsvFile.DoesNotExist:
-            raise serializers.ValidationError({"error": f"CSV file {csv_file_id} not found"})
-
-        # Get all users created by this CSV file
-        users = User.objects.filter(iaso_profile__bulk_create_csv_file=csv_file).prefetch_related(
-            "user_permissions", "groups", "iaso_profile__projects"
-        )
-
-        if not users.exists():
-            return Response({"message": "No users found for this CSV file", "users_updated": 0}, status=200)
-
-        # Apply bulk updates
-        users_updated = self._apply_configuration_to_users(users, bulk_configuration, importer_account)
-
-        return Response(
-            {"message": f"Successfully updated {users_updated} users", "users_updated": users_updated},
-            status=200,
-        )
-
-    def _apply_configuration_to_users(self, users, bulk_configuration, importer_account):
-        """Apply bulk configuration to existing users."""
-        if not bulk_configuration:
-            return 0
-
-        profiles_to_update = []
-        users_list = list(users)
-
-        for user in users_list:
-            profile = user.iaso_profile
-
-            if bulk_configuration.get("profile_language"):
-                profile.language = bulk_configuration["profile_language"]
-
-            if bulk_configuration.get("organization"):
-                profile.organization = bulk_configuration["organization"]
-
-            profiles_to_update.append(profile)
-
-        if profiles_to_update:
-            Profile.objects.bulk_update(
-                profiles_to_update,
-                fields=["language", "organization"],
-                batch_size=1000,
-            )
-
-        if bulk_configuration.get("permissions"):
-            permission_names = bulk_configuration["permissions"]
-            permissions_to_add = Permission.objects.filter(codename__in=permission_names)
-
-            for user in users_list:
-                user.user_permissions.set(permissions_to_add)
-
-        if bulk_configuration.get("projects"):
-            project_names = bulk_configuration["projects"]
-            projects = Project.objects.filter(name__in=project_names, account=importer_account)
-
-            for user in users_list:
-                user.iaso_profile.projects.set(projects)
-
-        if bulk_configuration.get("user_roles"):
-            role_names = bulk_configuration["user_roles"]
-            groups = Group.objects.filter(name__in=role_names)
-
-            for user in users_list:
-                user.groups.set(groups)
-
-        if bulk_configuration.get("send_email_invitation"):
-            self._send_bulk_email_invitations(users_list)
-
-        return len(users_list)
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="getsample")

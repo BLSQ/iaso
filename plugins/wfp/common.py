@@ -1158,7 +1158,9 @@ class ETL:
                 json_lactating_w_muac_lte_23=Cast(
                     KeyTextTransform("lactating_w_muac_lte_23", "json"), output_field=FloatField()
                 ),
-            ).annotate(yearMonth=Concat(
+            )
+            .annotate(
+                yearMonth=Concat(
                     Extract("week_monday", "year"),
                     Func(
                         Cast(Extract("week_monday", "month"), CharField()),
@@ -1167,9 +1169,10 @@ class ETL:
                         function="LPAD",
                     ),
                     output_field=CharField(),
-                ),)
+                ),
+            )
             .prefetch_related("org_unit__parent")
-            .values("yearMonth",  "org_unit__parent")
+            .values("yearMonth", "org_unit__parent")
             .annotate(
                 org_unit=F("org_unit__parent"),
                 year=Cast(Substr("yearMonth", 1, 4), IntegerField()),

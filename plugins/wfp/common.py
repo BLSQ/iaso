@@ -8,7 +8,19 @@ from operator import itemgetter
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, F, FloatField, IntegerField, Q, Sum, TextField, Value, When
+from django.db.models import (
+    Case,
+    CharField,
+    DateField,
+    F,
+    FloatField,
+    IntegerField,
+    Q,
+    Sum,
+    Value,
+    When,
+)
+from django.db.models.expressions import Func
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Concat, Extract, Substr
 
@@ -1105,9 +1117,21 @@ class ETL:
         instances = (
             instances.exclude(deleted=True)
             .annotate(
-                new_period=Substr("period", 1, 6),
-                month=Cast(Cast(Substr("period", 5, 2), output_field=IntegerField()), output_field=TextField()),
-                year=Substr("period", 1, 4),
+                week_monday=Cast(
+                    Func(
+                        Concat(
+                            Cast(Substr("period", 1, 4), CharField()),
+                            Value(" "),
+                            Cast(Substr("period", 6), CharField()),
+                            Value(" 1"),
+                        ),
+                        Value("IYYY IW ID"),
+                        function="TO_DATE",
+                    ),
+                    output_field=DateField(),
+                ),
+                year=Cast(Substr("period", 1, 4), IntegerField()),
+                week=Cast(Substr("period", 6), IntegerField()),
                 date=Concat(
                     Extract("created_at", "year"),
                     Value("-"),
@@ -1134,14 +1158,23 @@ class ETL:
                 json_lactating_w_muac_lte_23=Cast(
                     KeyTextTransform("lactating_w_muac_lte_23", "json"), output_field=FloatField()
                 ),
-            )
+            ).annotate(yearMonth=Concat(
+                    Extract("week_monday", "year"),
+                    Func(
+                        Cast(Extract("week_monday", "month"), CharField()),
+                        Value(2),
+                        Value("0"),
+                        function="LPAD",
+                    ),
+                    output_field=CharField(),
+                ),)
             .prefetch_related("org_unit__parent")
-            .values("new_period", "org_unit__parent")
+            .values("yearMonth",  "org_unit__parent")
             .annotate(
                 org_unit=F("org_unit__parent"),
-                period=F("new_period"),
-                year=F("year"),
-                month=F("month"),
+                year=Cast(Substr("yearMonth", 1, 4), IntegerField()),
+                month=Cast(Substr("yearMonth", 5, 2), IntegerField()),
+                new_period=F("yearMonth"),
                 u5_male_green=Sum("json_u5_male_green"),
                 u5_female_green=Sum("json_u5_female_green"),
                 u5_male_yellow=Sum("json_u5_male_yellow"),
@@ -1153,6 +1186,6 @@ class ETL:
                 lactating_w_muac_gt_23=Sum("json_lactating_w_muac_gt_23"),
                 lactating_w_muac_lte_23=Sum("json_lactating_w_muac_lte_23"),
             )
-            .order_by("period", "org_unit")
+            .order_by("new_period", "org_unit")
         )
         return Paginator(instances, 15000)

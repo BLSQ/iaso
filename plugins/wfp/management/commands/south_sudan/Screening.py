@@ -45,7 +45,7 @@ class Screening:
                 row = ScreeningData()
                 row.account = account
                 row.org_unit_id = org_unit_parent_id
-                row.period = item.get("period")
+                row.period = item.get("new_period")
                 row.date = item.get("date")
                 row.year = item.get("year")
                 row.month = item.get("month")

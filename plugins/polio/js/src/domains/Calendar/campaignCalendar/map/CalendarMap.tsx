@@ -1,6 +1,6 @@
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import 'leaflet/dist/leaflet.css';
-import React, { FunctionComponent, useMemo, useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { MappedCampaign } from '../types';
 import { CalendarMapContainer } from './CalendarMapContainer';

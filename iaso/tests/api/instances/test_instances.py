@@ -854,7 +854,15 @@ class InstancesAPITestCase(TaskAPITestCase):
         )
 
         self.client.force_authenticate(self.yoda)
-        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age__int__"}, 25]}]})
+        json_filters = json.dumps(
+            {
+                "and": [
+                    {"==": [{"var": "gender"}, "F"]},
+                    {">": [{"var": "age__int__"}, 15]},
+                    {"<": [{"var": "age__int__"}, 29]},
+                ]
+            }
+        )
         with self.assertNumQueries(6):
             response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, 200)
@@ -898,6 +906,43 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertIn(a.id, received_instances_ids)
         self.assertIn(c.id, received_instances_ids)
         self.assertNotIn(b.id, received_instances_ids)
+
+    def test_instance_list_by_json_content_all_in(self):
+        """Check the particular check in logic for multiple answers"""
+        a = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": "18", "gender": "M", "list__test__": "1 2"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": "19", "gender": "F", "list__test__": "2 3"},
+        )
+
+        c = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F", "list__test__": "3 4"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"some": [{"var": "list__test__"}, {"in": [{"var": ""}, ["2"]]}]})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+
+        response_json = response.json()
+        # We should receive the a and b, but not the c (because it doesn't contain 2)
+        received_instances_ids = [instance["id"] for instance in response_json["instances"]]
+        self.assertIn(a.id, received_instances_ids)
+        self.assertIn(b.id, received_instances_ids)
+        self.assertNotIn(c.id, received_instances_ids)
 
     def test_instance_list_by_json_content_nested(self):
         """Search using the instance content (in JSON field) with nested and/or operators"""

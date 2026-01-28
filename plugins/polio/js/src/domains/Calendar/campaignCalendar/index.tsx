@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Table, TableContainer } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Moment } from 'moment';
+import { CalendarOrdering } from '../hooks/useMergedCampaigns/useMergedCampaigns';
 import { Body } from './Body';
 import { Head } from './Head';
 import { Nav } from './Nav';
@@ -14,7 +15,7 @@ type Props = {
     currentMonday: Moment;
     loadingCampaigns: boolean;
     params: CalendarParams;
-    orders: string;
+    orders?: CalendarOrdering;
     currentDate: Moment;
     isPdf?: boolean;
     url: string;
@@ -58,6 +59,7 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
                         isPdf={isPdf}
                         isLogged={isLogged}
                         url={url}
+                        params={params}
                     />
                     <Body
                         loadingCampaigns={loadingCampaigns}

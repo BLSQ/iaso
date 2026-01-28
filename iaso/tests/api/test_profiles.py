@@ -558,6 +558,29 @@ class ProfileAPITestCase(APITestCase):
         user_roles_idx = header.index("user_roles")
         self.assertIn("Role with Admin", jane_row[user_roles_idx])
 
+    def test_profile_list_export_as_csv_multiple_teams(self):
+        self.maxDiff = None
+        multi_user = self.create_user_with_profile(username="multiteam", account=self.account)
+
+        multi_user.teams.set([self.team1, self.team2])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?csv=true")
+        self.assertEqual(response.status_code, 200)
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+
+        username_idx = header.index("username")
+        teams_idx = header.index("teams")
+        user_row = next(row for row in csv_rows if row[username_idx] == "multiteam")
+
+        teams = sorted([self.team1, self.team2], key=lambda x: x.id)
+        expected_teams_value = f"{teams[0].name},{teams[1].name}"
+
+        self.assertEqual(user_row[teams_idx], expected_teams_value)
+
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""
         self.client.force_authenticate(self.jim)

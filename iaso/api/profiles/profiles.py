@@ -31,6 +31,7 @@ from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsErro
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request, search_by_ids_refs
+from iaso.utils.colors import COLOR_FORMAT_ERROR, DEFAULT_COLOR, validate_hex_color
 
 
 PK_ME = "me"
@@ -376,6 +377,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, user.profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, user.profile)
+            color = self.validate_color(request)
         except ProfileError as error:
             # Delete profile if error since we're creating a new user
             user.profile.delete()
@@ -394,6 +396,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
+            color=color,
         )
 
         dhis2_id = request.data.get("dhis2_id", None)
@@ -439,6 +442,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
+            color = self.validate_color(request)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -455,6 +459,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
+            color=color,
         )
 
         audit_logger.log_modification(
@@ -499,6 +504,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles,
         user_roles_groups,
         projects,
+        color,
         org_units,
         user_permissions,
         editable_org_unit_types,
@@ -509,7 +515,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         else:
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")
-            user.username = request.data.get("user_name")
+            user_name = request.data.get("user_name")
+            if user_name:
+                user.username = user_name
             user.email = request.data.get("email", "")
             self.update_password(user, request)
 
@@ -526,12 +534,22 @@ class ProfilesViewSet(viewsets.ViewSet):
         if profile.dhis2_id == "":
             profile.dhis2_id = None
 
+        resolved_color = color if color is not None else profile.color or DEFAULT_COLOR
+        profile.color = resolved_color
+
         profile.user_roles.set(user_roles)
         profile.projects.set(projects)
         profile.org_units.set(org_units)
         profile.editable_org_unit_types.set(editable_org_unit_types)
         profile.save()
         return profile
+
+    def validate_color(self, request) -> str:
+        color = request.data.get("color", None)
+        try:
+            return validate_hex_color(color)
+        except ValueError:
+            raise ProfileError(field="color", detail=COLOR_FORMAT_ERROR)
 
     @staticmethod
     def list_export(
@@ -591,8 +609,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")
-        if not username:
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
+        # Skip validation if username not provided or did not change (case-insensitive)
+        if not username or user.username == username:
+            return
 
         existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
         if existing_user:

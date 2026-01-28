@@ -57,7 +57,6 @@ class CampaignCalendarViewSet(ModelViewSet):
         )
 
         campaigns = Campaign.objects.filter_for_user(user)
-
         campaigns = (
             campaigns.prefetch_related(country_prefetch)
             .prefetch_related("grouped_campaigns")

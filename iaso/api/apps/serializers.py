@@ -7,7 +7,8 @@ from rest_framework.exceptions import ValidationError
 
 from iaso.api.projects import ProjectSerializer
 from iaso.models import FeatureFlag, Form, Project
-from iaso.models.project import DEFAULT_PROJECT_COLOR
+from iaso.models.project import DEFAULT_COLOR
+from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
 
 
 logger = logging.getLogger(__name__)
@@ -72,6 +73,12 @@ class AppSerializer(ProjectSerializer):
                     validated_feature_flags.append({"featureflag": {"code": FeatureFlag.REQUIRE_AUTHENTICATION}})
         return validated_feature_flags
 
+    def validate_color(self, value: str) -> str:
+        try:
+            return validate_hex_color(value)
+        except ValueError:
+            raise ValidationError(COLOR_FORMAT_ERROR)
+
     def create(self, validated_data):
         new_app = Project()
         request = self.context["request"]
@@ -82,7 +89,7 @@ class AppSerializer(ProjectSerializer):
         name = validated_data.get(self.NAME, None)
         forms = validated_data.get(self.FORMS, None)
         feature_flags = validated_data.get(self.FEATURE_FLAGS, None)
-        color = validated_data.get(self.COLOR, DEFAULT_PROJECT_COLOR)
+        color = validated_data.get(self.COLOR, DEFAULT_COLOR)
 
         new_app.app_id = app_id
         new_app.name = name

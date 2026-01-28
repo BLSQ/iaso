@@ -29,11 +29,10 @@ import { IsOnHoldLegend } from './campaignCalendar/IsOnHoldLegend';
 import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
-import { CalendarParams } from './campaignCalendar/types';
+import { CalendarOrdering, CalendarParams } from './campaignCalendar/types';
 import { getCalendarData } from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 import { useGetFormattedCalendarData } from './hooks/useGetFormattedCalendarData';
-import { CalendarOrdering } from './hooks/useMergedCampaigns/useMergedCampaigns';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {

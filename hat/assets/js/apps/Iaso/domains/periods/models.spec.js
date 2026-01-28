@@ -6,6 +6,7 @@ import {
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_QUARTER_NOV,
     PERIOD_TYPE_SIX_MONTH,
+    PERIOD_TYPE_WEEK,
     PERIOD_TYPE_YEAR,
 } from './constants';
 
@@ -75,6 +76,7 @@ describe('Periods model', () => {
                 semester: 1,
                 year: 2020,
                 periodString,
+                week: undefined
             };
         });
         it('should create a daily period object', () => {
@@ -172,6 +174,7 @@ describe('Periods model', () => {
                 semester: 1,
                 year: 2020,
                 periodString,
+                week: undefined
             };
         });
         it('should create a monthly period object', () => {
@@ -268,6 +271,7 @@ describe('Periods model', () => {
                 semester: 1,
                 year: 2020,
                 periodString,
+                week: undefined,
             };
         });
         it('should create a quarterly period object', () => {
@@ -346,6 +350,7 @@ describe('Periods model', () => {
                 semester: 1,
                 year: 2018,
                 periodString,
+                week: undefined,
             };
         });
         it('should create a quarterly period object', () => {
@@ -414,6 +419,7 @@ describe('Periods model', () => {
                 semester: 2,
                 year: 2018,
                 periodString,
+                week: undefined,
             };
         });
         it('should create a quarterly period object', () => {
@@ -480,6 +486,7 @@ describe('Periods model', () => {
                 semester: 1,
                 year: 2020,
                 periodString,
+                week: undefined,
             };
         });
         it('should create a sixmonthly period object', () => {
@@ -560,6 +567,7 @@ describe('Periods model', () => {
                 semester: 2,
                 year: 2020,
                 periodString,
+                week: undefined,
             };
         });
         it('should create a yearly period object', () => {
@@ -631,4 +639,77 @@ describe('Periods model', () => {
             expect(Period.padMonth(m)).to.eql(m);
         });
     });
+
+
+    describe('weekly string', () => {
+        before(() => {
+            periodString = '2026W52';
+            period = new Period(periodString);
+            expectedPeriod = {
+                periodType: PERIOD_TYPE_WEEK,
+                day: 1,
+                month: 1,
+                quarter: 1,
+                semester: 1,
+                year: 2026,
+                periodString,
+                week: 52,
+            };
+        });
+        it('should create a weekly period object', () => {
+            expect(period).to.eql(expectedPeriod);
+        });
+        it('asPeriodType should create a weekly period object', () => {
+            expect(period.asPeriodType(PERIOD_TYPE_WEEK)).to.eql(
+                expectedPeriod,
+            );
+        });
+        it('toCode should return correct code', () => {
+            expect(period.toCode()).to.eql(periodString);
+        });
+        it('nextQuarter should return quarter string invalid', () => {
+            expect(period.nextQuarter(periodString)).to.eql('2026Q5');
+        });
+        it('previousQuarter should return quarter string invalid', () => {
+            expect(period.previousQuarter(periodString)).to.eql('2026Q4');
+        });
+        it('nextSixMonth should return semester string invalid', () => {
+            expect(period.nextSixMonth(periodString)).to.eql('2026S5');
+        });
+        it('previousSixMonth should return semester string invalid', () => {
+            expect(period.previousSixMonth(periodString)).to.eql('2026S4');
+        });
+        it('nextPeriods should return next 2 weeks', () => {
+            expect(period.nextPeriods(2)).to.eql(['2026W53', '2027W1']);
+        });
+        it('previousPeriods should return previous 2 weeks', () => {
+            expect(period.previousPeriods(2)).to.eql(['2026W50', '2026W51']);
+        });
+        it('getPeriodType should correct period type', () => {
+            expect(Period.getPeriodType('2020W10')).to.eql(PERIOD_TYPE_WEEK);
+        });
+        describe('isBefore', () => {
+            it('should return true', () => {
+                expect(Period.isBefore('2020W1', '2021W1')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isBefore('2022W2', '2022W1')).to.eql(false);
+            });
+            it('should return false if same year', () => {
+                expect(Period.isBefore('2021W1', '2021W1')).to.eql(false);
+            });
+        });
+        describe('isAfter', () => {
+            it('should return true', () => {
+                expect(Period.isAfter('2021W1', '2020W1')).to.eql(true);
+            });
+            it('should return false', () => {
+                expect(Period.isAfter('2020W1', '2021W1')).to.eql(false);
+            });
+            it('should return false if same year', () => {
+                expect(Period.isAfter('2021W1', '2021W1')).to.eql(false);
+            });
+        });
+    });
+
 });

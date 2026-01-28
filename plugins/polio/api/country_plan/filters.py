@@ -1,13 +1,7 @@
 import django_filters
 
+from iaso.api.utils.filters import NumberInFilter
 from plugins.polio.models.country_plan import CountryPlan
-
-
-class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
-    """
-    A filter that allows filtering by a comma-separated list of numbers.
-    e.g., ?country_blocks=1,2,3
-    """
 
 
 class CountryPlanFilter(django_filters.FilterSet):

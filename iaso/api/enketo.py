@@ -52,6 +52,7 @@ def public_url_for_enketo(request: HttpRequest, path):
     # network are not the same that in the inside.
     if enketo_settings().get("ENKETO_DEV"):
         resolved_path = resolved_path.replace("localhost:8081", "iaso:8081")
+        resolved_path = resolved_path.replace("127.0.0.1:8081", "iaso:8081")
     return resolved_path
 
 

@@ -467,6 +467,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'search',
             'needs_authentication',
             'userId',
+            'userRoleIds',
             ...paginationPathParams,
         ],
     },

@@ -217,6 +217,17 @@ class PlanningSamplingResultListSerializer(serializers.Serializer):
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
 
 
+class PlanningOrgUnitListSerializer(serializers.Serializer):
+    planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+
+
 class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
     planning_id = serializers.PrimaryKeyRelatedField(
         queryset=Planning.objects.none(),
@@ -408,3 +419,35 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
             # TODO: investigate type error on next line
             r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
         return r
+
+
+class PlanningOrgUnitSerializer(serializers.ModelSerializer):
+    geo_json = serializers.SerializerMethodField()
+    has_geo_json = serializers.SerializerMethodField()
+    latitude = serializers.FloatField(source="location.y", read_only=True)
+    longitude = serializers.FloatField(source="location.x", read_only=True)
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
+        read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
+
+    def get_geo_json(self, org_unit: OrgUnit):
+        if not hasattr(org_unit, "geo_json"):
+            return None
+
+        # Fakes the format of geojson_queryset() so that data can be passed to leaflet
+        return {
+            "type": "FeatureCollection",
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            "features": [
+                {
+                    "type": "Feature",
+                    "id": org_unit.id,
+                    "geometry": org_unit.geo_json,
+                }
+            ],
+        }
+
+    def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
+        return hasattr(org_unit, "geo_json")

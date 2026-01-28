@@ -138,22 +138,22 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         importer_user = request.user
         importer_account = importer_user.iaso_profile.account
 
-        parsed_data = self._parse_csv_file(request.FILES["file"])
+        csv_data = self._parse_csv_file(request.FILES["file"])
 
         csv_file_instance = BulkCreateUserCsvFile.objects.create(
             file=request.FILES["file"], created_by=importer_user, account=importer_account
         )
 
-        validation_errors, validation_context = self._pre_validate_users(parsed_data, importer_user, importer_account)
+        validation_errors, validation_context = self._pre_validate_users(csv_data, importer_user, importer_account)
         if validation_errors:
             return Response({"validation_errors": validation_errors}, status=400)
 
         user_created_count = self._bulk_create_users_and_profiles(
-            parsed_data,
+            csv_data,
             importer_user,
             importer_account,
             csv_file_instance,
-            validation_context=validation_context,
+            validation_context,
         )
 
         response = {
@@ -224,18 +224,67 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         return parsed_rows
 
+    def _resolve_org_units_for_user(self, org_unit_refs, importer_access_ou, importer_account):
+        """
+        Resolve org unit references to OrgUnit objects, validating accessibility.
+
+        Args:
+            org_unit_refs: List of org unit references (IDs or names)
+            importer_access_ou: QuerySet of accessible org units
+            importer_account: Account for version filtering
+
+        Returns:
+            tuple: (valid_org_units: list[OrgUnit], invalid_refs: list[str], inaccessible_refs: list[str])
+        """
+        valid_org_units = []
+        invalid_refs = []
+        inaccessible_refs = []
+
+        # Get accessible org unit IDs for efficient lookup
+        accessible_ou_ids = set(importer_access_ou.values_list("id", flat=True))
+        accessible_ou_dict = {ou.id: ou for ou in importer_access_ou}
+
+        for ou_ref in org_unit_refs:
+            if ou_ref.isdigit():
+                ou_id = int(ou_ref)
+                if ou_id not in accessible_ou_dict:
+                    if not OrgUnit.objects.filter(id=ou_id).exists():
+                        invalid_refs.append(ou_ref)
+                    else:
+                        inaccessible_refs.append(ou_ref)
+                else:
+                    valid_org_units.append(accessible_ou_dict[ou_id])
+            else:
+                # Check org unit by name within accessible org units
+                ou = (
+                    OrgUnit.objects.filter(
+                        pk__in=importer_access_ou,
+                        version_id=importer_account.default_version_id,
+                        name=ou_ref,
+                    )
+                    .order_by("-version_id")
+                    .first()
+                )
+
+                if ou:
+                    valid_org_units.append(ou)
+                else:
+                    invalid_refs.append(ou_ref)
+
+        return valid_org_units, invalid_refs, inaccessible_refs
+
     def _pre_validate_users(self, user_data, importer_user, importer_account):
         """Validate all users and cache resolved objects for creation phase."""
         validation_errors = []
 
-        # Cache for resolved objects - key: row_index, value: resolved objects
         validation_context = {
             "permissions_by_row": {},  # {row_idx: [Permission objects]}
             "projects_by_row": {},  # {row_idx: [Project objects]}
             "user_roles_by_row": {},  # {row_idx: [UserRole objects]}
+            "org_units_by_row": {},  # {row_idx: [OrgUnit objects]}
+            "editable_org_unit_types_by_row": {},  # {row_idx: [OrgUnitType objects]}
         }
 
-        # Collect all unique values for batch validation
         usernames = [data.get("username") for data in user_data if data.get("username")]
         emails = [data.get("email") for data in user_data if data.get("email")]
         dhis2_ids = [data.get("dhis2_id") for data in user_data if data.get("dhis2_id")]
@@ -246,7 +295,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         has_geo_limit = self.has_only_user_managed_permission(importer_user)
 
-        for i, data in enumerate(user_data):
+        importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user).only("id")
+
+        for row_index, data in enumerate(user_data):
             row_errors = {}
             row_num = data.get("_row_number", "unknown")
 
@@ -270,15 +321,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             if dhis2_id and dhis2_id in existing_dhis2_ids:
                 row_errors["dhis2_id"] = f"DHIS2 ID '{dhis2_id}' already exists"
 
-            # Password vs email invitation validation
-            # Auto-detect email invitation: no password + has email = send invitation
             password = data.get("password", "").strip() if data.get("password") else None
 
+            # Auto-detect email invitation: no password + has email = send invitation
             if not password and email:
                 # Email invitation mode - no validation needed
                 pass
             elif password:
-                # Password mode - validate password strength
                 try:
                     temp_user = User(username=username)
                     validate_password(password, temp_user)
@@ -288,16 +337,57 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 # Error: need either password or email
                 row_errors["password"] = "Either password or email required for user creation"
 
-            # OrgUnit validation
-            org_unit_list = data.get("orgunit", [])
+            # OrgUnit validation (by ID/name)
+            org_unit_list = data.get("orgunit") or []
             org_unit_field = org_unit_list[0] if org_unit_list else ""
-            if has_geo_limit and not org_unit_field:
+
+            # OrgUnit validation (by source_ref)
+            org_unit_source_refs = data.get("orgunit__source_ref") or []
+
+            has_any_org_unit = org_unit_field or org_unit_source_refs
+            if has_geo_limit and not has_any_org_unit:
                 row_errors["orgunit"] = (
                     f"A User with {CORE_USERS_MANAGED_PERMISSION.full_name()} permission "
                     "must create users with OrgUnits"
                 )
+            elif has_any_org_unit:
+                valid_org_units = []
 
-            # Permissions validation WITH caching
+                # Resolve org units by ID/name
+                if org_unit_list:
+                    resolved, invalid_org_units, inaccessible_org_units = self._resolve_org_units_for_user(
+                        org_unit_list, importer_access_ou, importer_account
+                    )
+                    if invalid_org_units:
+                        row_errors["orgunit"] = f"Invalid OrgUnit: {', '.join(invalid_org_units)}"
+                    elif inaccessible_org_units:
+                        row_errors["orgunit"] = f"You don't have access to OrgUnit: {', '.join(inaccessible_org_units)}"
+                    else:
+                        valid_org_units.extend(resolved)
+
+                # Resolve org units by source_ref
+                if org_unit_source_refs and "orgunit" not in row_errors:
+                    invalid_source_refs = []
+                    for ou_ref in org_unit_source_refs:
+                        ou = OrgUnit.objects.filter(
+                            pk__in=importer_access_ou,
+                            version_id=importer_account.default_version_id,
+                            source_ref=ou_ref,
+                        ).first()
+                        if ou:
+                            if ou not in valid_org_units:
+                                valid_org_units.append(ou)
+                        else:
+                            invalid_source_refs.append(ou_ref)
+
+                    if invalid_source_refs:
+                        row_errors["orgunit__source_ref"] = (
+                            f"Invalid or inaccessible OrgUnit source_ref: {', '.join(invalid_source_refs)}"
+                        )
+
+                if "orgunit" not in row_errors and "orgunit__source_ref" not in row_errors:
+                    validation_context["org_units_by_row"][row_index] = valid_org_units
+
             permission_names = data.get("permissions", [])
             if permission_names:
                 module_permissions = [perm.codename for perm in importer_account.permissions_from_active_modules]
@@ -305,13 +395,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 if invalid_permissions:
                     row_errors["permissions"] = f"Invalid permissions: {', '.join(invalid_permissions)}"
                 else:
-                    # Cache valid Permission objects for creation phase
                     valid_permissions = Permission.objects.filter(
                         codename__in=[pn for pn in permission_names if pn in module_permissions]
                     )
-                    validation_context["permissions_by_row"][i] = list(valid_permissions)
+                    validation_context["permissions_by_row"][row_index] = list(valid_permissions)
 
-            # User Roles validation WITH caching
             role_names = data.get("user_roles", [])
             if role_names:
                 existing_roles = UserRole.objects.filter(
@@ -325,31 +413,42 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 if invalid_roles:
                     row_errors["user_roles"] = f"Invalid user roles: {', '.join(invalid_roles)}"
                 else:
-                    # Cache valid UserRole objects for creation phase
-                    validation_context["user_roles_by_row"][i] = list(existing_roles)
+                    validation_context["user_roles_by_row"][row_index] = list(existing_roles)
 
-            # Projects validation WITH caching
             project_names = data.get("projects", [])
             if project_names:
-                # NOT sure if it's entirely necessary, I think user without profile have same permission as admin
                 user_has_project_restrictions = hasattr(importer_user, "iaso_profile") and bool(
                     importer_user.iaso_profile.projects_ids
                 )
 
-                if user_has_project_restrictions and self.has_only_user_managed_permission(importer_user):
+                if user_has_project_restrictions and has_geo_limit:
                     available_projects = Project.objects.filter(
                         name__in=project_names, account=importer_account
                     ).filter_on_user_projects(importer_user)
+                    # If none of the submitted projects is a subset of the user's project restrictions,
+                    # fallback to the same restrictions as the user.
+                    if not available_projects.exists():
+                        available_projects = Project.objects.filter(account=importer_account).filter_on_user_projects(
+                            importer_user
+                        )
+                    validation_context["projects_by_row"][row_index] = list(available_projects)
                 else:
                     available_projects = Project.objects.filter(name__in=project_names, account=importer_account)
+                    valid_project_names = set(available_projects.values_list("name", flat=True))
+                    invalid_projects = [pn for pn in project_names if pn not in valid_project_names]
+                    if invalid_projects:
+                        row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
+                    else:
+                        validation_context["projects_by_row"][row_index] = list(available_projects)
 
-                valid_project_names = set(available_projects.values_list("name", flat=True))
-                invalid_projects = [pn for pn in project_names if pn not in valid_project_names]
-                if invalid_projects:
-                    row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
-                else:
-                    # Cache valid Project objects for creation phase
-                    validation_context["projects_by_row"][i] = list(available_projects)
+            # Editable OrgUnitTypes - cache valid ones without validation error (matches original behavior)
+            editable_org_unit_type_ids = data.get("editable_org_unit_types", [])
+            if editable_org_unit_type_ids:
+                available_org_unit_types = OrgUnitType.objects.filter(
+                    projects__account=importer_account, id__in=editable_org_unit_type_ids
+                ).distinct()
+                # Store only valid types, silently ignore invalid ones (matches original behavior)
+                validation_context["editable_org_unit_types_by_row"][row_index] = list(available_org_unit_types)
 
             if row_errors:
                 validation_errors.append({"row": row_num, "errors": row_errors})
@@ -357,16 +456,15 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         return validation_errors, validation_context
 
     def _bulk_create_users_and_profiles(
-        self, user_data, importer_user, importer_account, csv_file_instance, validation_context
+        self, csv_data, importer_user, importer_account, csv_file_instance, validation_context
     ):
         """Create users and profiles using bulk operations and cached validation context."""
         audit_logger = ProfileAuditLogger()
 
         # Phase 1: Prepare User objects for bulk_create
         users_to_create = []
-        user_data_map = {}
 
-        for i, data in enumerate(user_data):
+        for data in csv_data:
             user = User(
                 username=data.get("username", "").strip(),
                 first_name=data.get("first_name", "").strip(),
@@ -386,15 +484,14 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 user.set_password(password)
 
             users_to_create.append(user)
-            user_data_map[i] = data
 
         created_users = User.objects.bulk_create(users_to_create)
 
         # Phase 2: Prepare Profile objects for bulk_create
         profiles_to_create = []
+        invitation_users = []
 
-        for i, user in enumerate(created_users):
-            data = user_data_map[i]
+        for user, data in zip(created_users, csv_data):
             profile = Profile(
                 user=user,
                 account=importer_account,
@@ -405,95 +502,61 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             )
             profiles_to_create.append(profile)
 
+            # Check for email invitation while we have the data
+            if not data.get("password", "").strip() and data.get("email", "").strip():
+                invitation_users.append(user)
+
         created_profiles = Profile.objects.bulk_create(profiles_to_create)
 
         # Phase 3: Handle ManyToMany relationships with bulk operations
         self._bulk_set_many_to_many_relationships(
-            created_profiles, user_data_map, importer_user, importer_account, validation_context
+            created_profiles, csv_data, importer_user, importer_account, validation_context
         )
 
-        # Phase 4: Handle editable org unit types
-        self._bulk_set_editable_org_unit_types(created_profiles, user_data_map, importer_account)
-
-        # Phase 5: Send email invitations if no password + has email
-        invitation_users = [
-            created_users[i]
-            for i, data in enumerate(user_data_map.values())
-            if not data.get("password", "").strip() and data.get("email", "").strip()
-        ]
+        # Phase 4: Send email invitations
         if invitation_users:
             self._send_bulk_email_invitations(invitation_users)
 
-        # Phase 6: Save passwords to CSV and log audit
-        self._save_csv_and_audit(csv_file_instance, user_data, created_profiles, audit_logger, importer_user)
+        # Phase 5: Save passwords to CSV and log audit
+        self._save_csv_and_audit(csv_file_instance, csv_data, created_profiles, audit_logger, importer_user)
 
         return len(created_users)
 
     def _bulk_set_many_to_many_relationships(
-        self, profiles, user_data_map, importer_user, importer_account, validation_context
+        self, profiles, user_data, importer_user, importer_account, validation_context
     ):
         """Set ManyToMany relationships using bulk operations and cached validated objects."""
-        importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user).only("id")
-
-        # Collect all bulk relationship operations
         profile_org_units_list = []
         profile_projects_list = []
         profile_user_roles_list = []
         user_groups_list = []
         user_permissions_list = []
+        profile_editable_types_list = []
 
-        for i, profile in enumerate(profiles):
-            data = user_data_map[i]
-
-            org_unit_refs = data.get("orgunit", [])
-            org_unit_source_refs = data.get("orgunit__source_ref", [])
-
-            org_units_to_add = []
-            for ou_ref in org_unit_refs:
-                if ou_ref.isdigit():
-                    try:
-                        ou = OrgUnit.objects.get(id=int(ou_ref))
-                        if ou in importer_access_ou:
-                            org_units_to_add.append(ou)
-                    except OrgUnit.DoesNotExist:
-                        pass
-                else:
-                    ou = (
-                        OrgUnit.objects.filter(
-                            pk__in=importer_access_ou,
-                            version_id=importer_account.default_version_id,
-                            name=ou_ref,
-                        )
-                        .order_by("-version_id")
-                        .first()
-                    )
-                    if ou:
-                        org_units_to_add.append(ou)
-
-            for ou_ref in org_unit_source_refs:
-                ou = OrgUnit.objects.filter(
-                    pk__in=importer_access_ou,
-                    version_id=importer_account.default_version_id,
-                    source_ref=ou_ref,
-                ).first()
-                if ou and ou not in org_units_to_add:
-                    org_units_to_add.append(ou)
+        for row_index, (profile, data) in enumerate(zip(profiles, user_data)):
+            org_units_to_add = validation_context["org_units_by_row"].get(row_index, [])
 
             for ou in org_units_to_add:
                 profile_org_units_list.append(Profile.org_units.through(profile=profile, orgunit=ou))
 
-            cached_projects = validation_context["projects_by_row"].get(i, [])
+            cached_projects = validation_context["projects_by_row"].get(row_index, [])
             for project in cached_projects:
                 profile_projects_list.append(Profile.projects.through(profile=profile, project=project))
 
-            cached_roles = validation_context["user_roles_by_row"].get(i, [])
+            cached_roles = validation_context["user_roles_by_row"].get(row_index, [])
             for role in cached_roles:
                 profile_user_roles_list.append(Profile.user_roles.through(profile=profile, userrole=role))
                 user_groups_list.append(User.groups.through(user=profile.user, group=role.group))
 
-            cached_permissions = validation_context["permissions_by_row"].get(i, [])
+            cached_permissions = validation_context["permissions_by_row"].get(row_index, [])
             for permission in cached_permissions:
                 user_permissions_list.append(User.user_permissions.through(user=profile.user, permission=permission))
+
+            cached_editable_types = validation_context["editable_org_unit_types_by_row"].get(row_index, [])
+            for org_unit_type in cached_editable_types:
+                profile_editable_types_list.append(
+                    Profile.editable_org_unit_types.through(profile=profile, orgunittype=org_unit_type)
+                )
 
         # Bulk create all relationships
         if profile_org_units_list:
@@ -511,27 +574,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         if user_permissions_list:
             User.user_permissions.through.objects.bulk_create(user_permissions_list, ignore_conflicts=True)
 
-    def _bulk_set_editable_org_unit_types(self, profiles, user_data_map, importer_account):
-        """Set editable org unit types for profiles."""
-        profile_org_unit_types_list = []
-
-        for i, profile in enumerate(profiles):
-            data = user_data_map[i]
-            ou_type_ids = data.get("editable_org_unit_types", [])
-
-            if ou_type_ids:
-                new_editable_org_unit_types = OrgUnitType.objects.filter(
-                    projects__account=importer_account, id__in=ou_type_ids
-                )
-
-                for ou_type in new_editable_org_unit_types:
-                    profile_org_unit_types_list.append(
-                        Profile.editable_org_unit_types.through(profile=profile, orgunittype=ou_type)
-                    )
-
-        if profile_org_unit_types_list:
+        if profile_editable_types_list:
             Profile.editable_org_unit_types.through.objects.bulk_create(
-                profile_org_unit_types_list, ignore_conflicts=True
+                profile_editable_types_list, ignore_conflicts=True
             )
 
     def _send_bulk_email_invitations(self, users):

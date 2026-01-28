@@ -1,7 +1,9 @@
 import React, { ReactElement } from 'react';
+import { SxProps } from '@mui/material';
 import { Moment } from 'moment';
 
 import { EmptyCell } from '../cells/Empty';
+import { INTEGRATED_CAMPAIGN_BORDER_COLOR } from '../constants';
 import { MappedCampaign } from '../types';
 
 export const isStartOfWeek = (date: Moment): boolean => date.isoWeekday() === 1; // 1 is Monday
@@ -222,4 +224,30 @@ export const addRemainingEmptyCells = ({
         currentWeekIndex,
         id,
     });
+};
+export const getStaticFieldCellStyle = (
+    fieldKey: string,
+    campaign: MappedCampaign,
+): SxProps => {
+    const borderStyle = `2px solid ${INTEGRATED_CAMPAIGN_BORDER_COLOR}`;
+    const leftFields = ['edit'];
+    const rightFields = ['r1StartDate'];
+    const topBottomFields = [
+        'edit',
+        'country',
+        'name',
+        'campaign_types',
+        'r1StartDate',
+    ];
+
+    if (!topBottomFields.includes(fieldKey)) return {};
+
+    const style: Record<string, string> = {};
+    if (leftFields.includes(fieldKey)) style.borderLeft = borderStyle;
+    if (rightFields.includes(fieldKey)) style.borderRight = borderStyle;
+
+    if (campaign.layout === 'top') style.borderTop = borderStyle;
+    if (campaign.layout === 'bottom') style.borderBottom = borderStyle;
+
+    return style;
 };

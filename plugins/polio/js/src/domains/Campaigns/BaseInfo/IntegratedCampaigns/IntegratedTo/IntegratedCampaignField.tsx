@@ -1,10 +1,10 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import { CampaignAsyncSelect } from '../../../CampaignsAsyncSelect/CampaignsAsyncSelect';
-import { LinkTo } from 'Iaso/components/nav/LinkTo';
-import { IntlMessage } from 'bluesquare-components';
-import { IntegratedCampaign } from 'plugins/polio/js/src/constants/types';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Box, Grid } from '@mui/material';
+import { IntlMessage } from 'bluesquare-components';
+import { LinkTo } from 'Iaso/components/nav/LinkTo';
+import { IntegratedCampaign } from 'plugins/polio/js/src/constants/types';
+import { CampaignAsyncSelect } from '../../../CampaignsAsyncSelect/CampaignsAsyncSelect';
 
 type Props = {
     onChange: (keyValue: string, value: unknown) => void;

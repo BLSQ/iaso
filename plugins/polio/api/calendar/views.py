@@ -1,5 +1,5 @@
-from django.db.models import Prefetch
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore  # type: ignore
+from django.db.models import Min, Prefetch
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import permissions
 
 from iaso.api.common import (
@@ -37,15 +37,6 @@ class CampaignCalendarViewSet(ModelViewSet):
         DeletionFilterBackend,
     ]
 
-    # ordering_fields = [
-    #     "obr_name",
-    #     "cvdpv2_notified_at",
-    #     "detection_status",
-    #     "first_round_started_at",
-    #     "last_round_started_at",
-    #     "country__name",
-    # ]
-
     filterset_class = CalendarFilter
 
     # We allow anonymous read access for the embeddable calendar map view
@@ -79,6 +70,7 @@ class CampaignCalendarViewSet(ModelViewSet):
             .prefetch_related("rounds__scopes__group")
             .prefetch_related(rounds_scopes_group_org_units_prefetch)
         )
+        campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
         if not self.request.user.is_authenticated:
             # For this endpoint since it's available anonymously we allow all user to list the campaigns
             # and to additionally filter on the account_id
@@ -86,19 +78,6 @@ class CampaignCalendarViewSet(ModelViewSet):
             account_id = self.request.query_params.get("account_id", None)
             if account_id is not None:
                 campaigns = campaigns.filter(account_id=account_id)
-                campaigns = (
-                    campaigns.prefetch_related(country_prefetch)
-                    .prefetch_related("grouped_campaigns")
-                    .prefetch_related("scopes")
-                    .prefetch_related("scopes__group")
-                    .prefetch_related(scopes_group_org_units_prefetch)
-                    .prefetch_related("rounds")
-                    .prefetch_related("rounds__datelogs")
-                    .prefetch_related("rounds__datelogs__modified_by")
-                    .prefetch_related("rounds__scopes")
-                    .prefetch_related("rounds__scopes__group")
-                    .prefetch_related(rounds_scopes_group_org_units_prefetch)
-                )
 
         return campaigns
 

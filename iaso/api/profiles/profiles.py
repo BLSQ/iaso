@@ -286,6 +286,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             "user",
             "user_roles",
             "user__tenant_user",
+            "user__teams",
             "org_units",
             "org_units__version",
             "org_units__version__data_source",
@@ -579,6 +580,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                     for item in profile.user_roles.all().order_by("id")
                 ),
                 ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
+                ",".join(item.name for item in profile.user.teams.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
                 ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]

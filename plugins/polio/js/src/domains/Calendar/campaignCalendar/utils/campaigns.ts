@@ -251,6 +251,7 @@ export const mapCampaigns = (
             scopes: c.scopes,
             subActivities: displayedSubActivities,
             hasSubActivities: displayedSubActivities.length > 0,
+            layout: c.layout,
         };
     });
 };

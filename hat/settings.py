@@ -312,6 +312,9 @@ DATABASES = {
         "PASSWORD": DB_PASSWORD,
         "HOST": DB_HOST,
         "PORT": DB_PORT,
+        "OPTIONS": {
+            "options": "-c jit=off",
+        },
     },
 }
 

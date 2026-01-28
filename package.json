@@ -165,6 +165,7 @@
         "webpack-dev-server": "^4.15.1"
     },
     "overrides": {
-        "canvg": "4.0.3"
+        "canvg": "4.0.3",
+        "jspdf": "4.0.0"
     }
 }

@@ -23,6 +23,7 @@ import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
 import {
     Bounds,
     circleColorMarkerOptions,
+    CloseTooltipOnMoveStart,
     getEffectiveThreshold,
     getOrgUnitsBounds,
 } from 'Iaso/utils/map/mapUtils';
@@ -220,6 +221,7 @@ export const Map: FunctionComponent<Props> = ({
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                 >
+                    <CloseTooltipOnMoveStart />
                     <ScaleControl imperial={false} />
                     <CustomTileLayer
                         currentTile={currentTile}

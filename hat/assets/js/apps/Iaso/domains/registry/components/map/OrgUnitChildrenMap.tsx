@@ -26,6 +26,7 @@ import TILES from '../../../../constants/mapTiles';
 import { baseUrls } from '../../../../constants/urls';
 import { useObjectState } from '../../../../hooks/useObjectState';
 import {
+    CloseTooltipOnMoveStart,
     getOrgUnitBounds,
     getOrgUnitsBounds,
     mergeBounds,
@@ -206,6 +207,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     trackResize
                     key={`${params.orgUnitId}-${params.fullScreen}`}
                 >
+                    <CloseTooltipOnMoveStart />
                     <MapSettings
                         settings={settings}
                         handleChangeSettings={handleChangeSettings}

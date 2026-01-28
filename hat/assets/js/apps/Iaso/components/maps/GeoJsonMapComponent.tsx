@@ -9,7 +9,7 @@ import { MapContainer, ScaleControl, GeoJSON } from 'react-leaflet';
 
 import tiles from '../../constants/mapTiles';
 
-import { Bounds } from '../../utils/map/mapUtils';
+import { Bounds, CloseTooltipOnMoveStart } from '../../utils/map/mapUtils';
 import { CustomTileLayer } from './tools/CustomTileLayer';
 import { CustomZoomControl } from './tools/CustomZoomControl';
 import { Tile } from './tools/TilesSwitchControl';
@@ -56,6 +56,7 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
                 zoomControl={false}
                 keyboard={false}
             >
+                <CloseTooltipOnMoveStart />
                 <CustomZoomControl
                     bounds={bounds}
                     boundsOptions={boundsOptions}

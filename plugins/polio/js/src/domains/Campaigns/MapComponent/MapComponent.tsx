@@ -3,6 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 import L from 'leaflet';
 import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { PaneWithPattern } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern';
 import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
 import { Shape } from '../Scope/Scopes/types';
@@ -82,6 +83,7 @@ export const MapComponent: FunctionComponent<Props> = ({
             boundsOptions={boundsOptions}
             zoomControl={false}
         >
+            <CloseTooltipOnMoveStart />
             <CustomZoomControl
                 bounds={bounds}
                 boundsOptions={boundsOptions}

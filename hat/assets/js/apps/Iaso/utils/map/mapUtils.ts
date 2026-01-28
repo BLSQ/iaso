@@ -1,9 +1,11 @@
+import { FunctionComponent, useRef } from 'react';
 import { Theme } from '@mui/material/styles';
 import Color from 'color';
 import L from 'leaflet';
 import { isEqual } from 'lodash';
 import isNumber from 'lodash/isNumber';
 import orderBy from 'lodash/orderBy';
+import { useMap, useMapEvent } from 'react-leaflet';
 import { ScaleThreshold } from '../../components/LegendBuilder/types';
 
 import { CompletenessMapStats } from '../../domains/completenessStats/types';
@@ -284,3 +286,34 @@ export const hasLocation = (orgUnit: OrgUnit): boolean =>
         orgUnit.longitude !== undefined &&
         orgUnit.latitude !== null &&
         orgUnit.longitude !== null);
+
+export const CloseTooltipOnMoveStart: FunctionComponent = () => {
+    const map = useMap();
+    const activeTooltipRef = useRef<any>(null);
+    const isMovingRef = useRef<boolean>(false);
+    const waitForMouseMoveRef = useRef<boolean>(false);
+
+    useMapEvent('tooltipopen', event => {
+        if (isMovingRef.current || waitForMouseMoveRef.current) {
+            map.closeTooltip(event.tooltip);
+            return;
+        }
+        activeTooltipRef.current = event.tooltip;
+    });
+    useMapEvent('tooltipclose', () => {
+        activeTooltipRef.current = null;
+    });
+    useMapEvent('movestart', () => {
+        isMovingRef.current = true;
+    });
+    useMapEvent('moveend', () => {
+        isMovingRef.current = false;
+        waitForMouseMoveRef.current = true;
+    });
+    useMapEvent('mousemove', () => {
+        if (waitForMouseMoveRef.current) {
+            waitForMouseMoveRef.current = false;
+        }
+    });
+    return null;
+};

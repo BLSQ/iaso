@@ -13,6 +13,7 @@ import {
     Tooltip,
 } from 'react-leaflet';
 
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import tiles from '../../constants/mapTiles';
 import { ShortOrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { useMarkerWithinBounds } from './hooks/useMarkerWithinBounds';
@@ -114,6 +115,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
                 bounds={bounds}
                 boundsOptions={boundsOptions}
             >
+                <CloseTooltipOnMoveStart />
                 <CustomZoomControl
                     bounds={bounds}
                     boundsOptions={boundsOptions}

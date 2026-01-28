@@ -36,6 +36,7 @@ import { DropdownOptions } from '../../../types/utils';
 import {
     Bounds,
     circleColorMarkerOptions,
+    CloseTooltipOnMoveStart,
     colorClusterCustomMarker,
     getLatLngBounds,
     getShapesBounds,
@@ -250,6 +251,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         boundsOptions={boundsOptions}
                         trackResize
                     >
+                        <CloseTooltipOnMoveStart />
                         <ScaleControl imperial={false} />
                         <CustomTileLayer
                             currentTile={currentTile}

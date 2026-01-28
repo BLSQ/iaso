@@ -36,6 +36,7 @@ import { OrgUnitLocation } from '../../../../../../../hat/assets/js/apps/Iaso/do
 import { useGetLegendOptions } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetLegendOptions';
 import { useObjectState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
 import {
+    CloseTooltipOnMoveStart,
     getOrgUnitBounds,
     getOrgUnitsBounds,
     mergeBounds,
@@ -210,6 +211,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     trackResize
                     key={`${params.orgUnitId}-${params.fullScreen}`}
                 >
+                    <CloseTooltipOnMoveStart />
                     <MapSettings
                         settings={settings}
                         handleChangeSettings={handleChangeSettings}

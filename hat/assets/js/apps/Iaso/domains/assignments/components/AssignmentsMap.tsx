@@ -21,6 +21,7 @@ import tiles from '../../../constants/mapTiles';
 import {
     Bounds,
     circleColorMarkerOptions,
+    CloseTooltipOnMoveStart,
     getLatLngBounds,
     getShapesBounds,
 } from '../../../utils/map/mapUtils';
@@ -219,6 +220,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     scrollWheelZoom={false}
                     zoomControl={false}
                 >
+                    <CloseTooltipOnMoveStart />
                     <ResetSelectionOnMoveStart
                         onMoveStart={() => setSelectedLocation(undefined)}
                     />

@@ -18,6 +18,7 @@ import { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
 import { MapLegend } from '../../../../../components/maps/MapLegend';
 
@@ -523,6 +524,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     keyboard={false}
                     ref={map}
                 >
+                    <CloseTooltipOnMoveStart />
                     <CustomZoomControl
                         bounds={bounds}
                         boundsOptions={{ padding }}

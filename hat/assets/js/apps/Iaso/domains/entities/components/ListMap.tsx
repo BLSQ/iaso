@@ -23,6 +23,7 @@ import {
     getLatLngBounds,
     clusterCustomMarker,
     Bounds,
+    CloseTooltipOnMoveStart,
 } from '../../../utils/map/mapUtils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import MESSAGES from '../messages';
@@ -112,6 +113,7 @@ export const ListMap: FunctionComponent<Props> = ({
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                 >
+                    <CloseTooltipOnMoveStart />
                     <ScaleControl imperial={false} />
                     <CustomTileLayer
                         currentTile={currentTile}

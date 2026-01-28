@@ -9,6 +9,7 @@ from django.test import override_settings
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import Profile, UserRole
 from iaso.models.team import Team
 from iaso.modules import MODULES
@@ -348,41 +349,78 @@ class ProfileAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "text/csv")
 
-        response_csv = response.getvalue().decode("utf-8")
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
 
-        expected_csv = "".join(
-            [
-                "user_profile_id,",
-                "username,"
-                "password,"
-                "email,"
-                "first_name,"
-                "last_name,"
-                "orgunit,"
-                "orgunit__source_ref,"
-                "profile_language,"
-                "dhis2_id,"
-                "organization,"
-                "permissions,"
-                "user_roles,"
-                "projects,"
-                "phone_number,"
-                "editable_org_unit_types\r\n",
+        all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
+
+        base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
+        perm_idx = base_columns.index("permissions")
+        expected_header = base_columns[:perm_idx] + all_permissions + base_columns[perm_idx + 1 :]
+
+        def get_expected_row_list(
+            profile,
+            direct_perms,
+            user_roles="",
+            projects="",
+            phone="",
+            orgunit="",
+            orgunit__source_ref="",
+            profile_language="",
+            dhis2_id="",
+            organization="",
+            editable_org_unit_types="",
+        ):
+            row_start = [
+                str(profile.id),
+                profile.user.username,
+                "",  # password
+                profile.user.email,
+                profile.user.first_name,
+                profile.user.last_name,
+                orgunit,
+                orgunit__source_ref,
+                profile_language,
+                dhis2_id,
+                organization,
             ]
-        )
+            matrix = [("1" if p in direct_perms else "0") for p in all_permissions]
 
-        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
-        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
-        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
-        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,\r\n"
-        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+            row_end = [user_roles, projects, phone, editable_org_unit_types]
+            return row_start + matrix + row_end
 
-        self.assertEqual(response_csv, expected_csv)
+        expected_csv = [
+            expected_header,
+            get_expected_row_list(self.jane.iaso_profile, [CORE_FORMS_PERMISSION.codename]),
+            get_expected_row_list(
+                self.john.iaso_profile,
+                [],
+                orgunit=f"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",
+                orgunit__source_ref=self.org_unit_from_parent_type.source_ref,
+            ),
+            get_expected_row_list(
+                self.jim.iaso_profile, [CORE_FORMS_PERMISSION.codename, CORE_USERS_ADMIN_PERMISSION.codename]
+            ),
+            get_expected_row_list(
+                self.jam.iaso_profile, [CORE_USERS_MANAGED_PERMISSION.codename], profile_language="en"
+            ),
+            get_expected_row_list(self.jom.iaso_profile, [], profile_language="fr"),
+            get_expected_row_list(
+                self.jum.iaso_profile,
+                [],
+                projects=self.project.name,
+                editable_org_unit_types=str(self.sub_unit_type.pk),
+            ),
+            get_expected_row_list(
+                self.user_managed_geo_limit.iaso_profile,
+                [CORE_USERS_MANAGED_PERMISSION.codename],
+                orgunit=str(self.org_unit_from_parent_type.id),
+                orgunit__source_ref=str(self.org_unit_from_parent_type.source_ref),
+                user_roles=f"{self.user_role_name},{self.user_role_another_account_name}",
+            ),
+        ]
+
+        self.assertEqual(csv_rows, expected_csv)
 
     def test_profile_list_export_as_xlsx(self):
         self.maxDiff = None
@@ -393,97 +431,91 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.get("/api/profiles/?xlsx=true")
         excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
-        self.assertEqual(
-            excel_columns,
-            [
-                "user_profile_id",
-                "username",
-                "password",
-                "email",
-                "first_name",
-                "last_name",
-                "orgunit",
-                "orgunit__source_ref",
-                "profile_language",
-                "dhis2_id",
-                "organization",
-                "permissions",
-                "user_roles",
-                "projects",
-                "phone_number",
-                "editable_org_unit_types",
-            ],
-        )
+        all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
+        base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
+        perm_idx = base_columns.index("permissions")
+        expected_columns = base_columns[:perm_idx] + all_permissions + base_columns[perm_idx + 1 :]
 
-        self.assertDictEqual(
-            excel_data,
-            {
-                "user_profile_id": {
-                    0: self.jane.iaso_profile.id,
-                    1: self.john.iaso_profile.id,
-                    2: self.jim.iaso_profile.id,
-                    3: self.jam.iaso_profile.id,
-                    4: self.jom.iaso_profile.id,
-                    5: self.jum.iaso_profile.id,
-                    6: self.user_managed_geo_limit.iaso_profile.id,
-                },
-                "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
-                "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "orgunit": {
-                    0: None,
-                    1: f"{self.org_unit_from_sub_type.id},{self.org_unit_from_parent_type.id}",
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: None,
-                    6: f"{self.org_unit_from_parent_type.id}",
-                },
-                "orgunit__source_ref": {
-                    0: None,
-                    1: self.org_unit_from_parent_type.source_ref,
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: None,
-                    6: self.org_unit_from_parent_type.source_ref,
-                },
-                "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
-                "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "permissions": {
-                    0: CORE_FORMS_PERMISSION.codename,
-                    1: None,
-                    2: f"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",
-                    3: CORE_USERS_MANAGED_PERMISSION.codename,
-                    4: None,
-                    5: None,
-                    6: CORE_USERS_MANAGED_PERMISSION.codename,
-                },
-                "user_roles": {
-                    0: None,
-                    1: None,
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: None,
-                    6: f"{self.user_role_name},{self.user_role_another_account_name}",
-                },
-                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
-                "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "editable_org_unit_types": {
-                    0: None,
-                    1: None,
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: self.sub_unit_type.pk,
-                    6: None,
-                },
+        self.assertEqual(excel_columns, expected_columns)
+
+        def get_matrix_data(user_perms_map):
+            matrix_dict = {}
+            for perm in all_permissions:
+                matrix_dict[perm] = {
+                    idx: (1 if perm in direct_list else 0) for idx, direct_list in user_perms_map.items()
+                }
+            return matrix_dict
+
+        direct_permissions_map = {
+            0: [CORE_FORMS_PERMISSION.codename],
+            1: [],
+            2: [CORE_FORMS_PERMISSION.codename, CORE_USERS_ADMIN_PERMISSION.codename],
+            3: [CORE_USERS_MANAGED_PERMISSION.codename],
+            4: [],
+            5: [],
+            6: [CORE_USERS_MANAGED_PERMISSION.codename],
+        }
+
+        expected_excel_data = {
+            "user_profile_id": {
+                0: self.jane.iaso_profile.id,
+                1: self.john.iaso_profile.id,
+                2: self.jim.iaso_profile.id,
+                3: self.jam.iaso_profile.id,
+                4: self.jom.iaso_profile.id,
+                5: self.jum.iaso_profile.id,
+                6: self.user_managed_geo_limit.iaso_profile.id,
             },
-        )
+            "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
+            "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "orgunit": {
+                0: None,
+                1: f"{self.org_unit_from_sub_type.id},{self.org_unit_from_parent_type.id}",
+                2: None,
+                3: None,
+                4: None,
+                5: None,
+                6: f"{self.org_unit_from_parent_type.id}",
+            },
+            "orgunit__source_ref": {
+                0: None,
+                1: self.org_unit_from_parent_type.source_ref,
+                2: None,
+                3: None,
+                4: None,
+                5: None,
+                6: self.org_unit_from_parent_type.source_ref,
+            },
+            "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
+            "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            **get_matrix_data(direct_permissions_map),
+            "user_roles": {
+                0: None,
+                1: None,
+                2: None,
+                3: None,
+                4: None,
+                5: None,
+                6: f"{self.user_role_name},{self.user_role_another_account_name}",
+            },
+            "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
+            "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "editable_org_unit_types": {
+                0: None,
+                1: None,
+                2: None,
+                3: None,
+                4: None,
+                5: self.sub_unit_type.pk,
+                6: None,
+            },
+        }
+
+        self.assertDictEqual(excel_data, expected_excel_data)
 
     def test_export_permission_matrix_while_ignoring_roles(self):
         self.jim.user_permissions.clear()

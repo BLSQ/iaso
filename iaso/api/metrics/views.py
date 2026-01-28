@@ -9,7 +9,13 @@ from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBacke
 from iaso.models import MetricType, MetricValue
 from iaso.utils import legend
 
-from .serializers import MetricTypeSerializer, MetricTypeWriteSerializer, MetricValueSerializer, OrgUnitIdSerializer
+from .serializers import (
+    MetricTypeCreateSerializer,
+    MetricTypeSerializer,
+    MetricTypeWriteSerializer,
+    MetricValueSerializer,
+    OrgUnitIdSerializer,
+)
 
 
 # TODO for both viewsets: permission_classes
@@ -18,16 +24,18 @@ from .serializers import MetricTypeSerializer, MetricTypeWriteSerializer, Metric
 class MetricTypeViewSet(viewsets.ModelViewSet):
     serializer_class = MetricTypeSerializer
     ordering_fields = ["id", "name"]
-    http_method_names = ["get", "options", "post", "put", "delete"]
+    http_method_names = ["get", "options", "post", "patch", "delete"]
 
     def get_queryset(self):
         return MetricType.objects.filter(account=self.request.user.iaso_profile.account, is_utility=False)
 
     def get_serializer_class(self):
         return (
-            MetricTypeSerializer
-            if self.action in ["list", "retrieve", "grouped_per_category", "legend_types"]
+            MetricTypeCreateSerializer
+            if self.action == "create"
             else MetricTypeWriteSerializer
+            if self.action in ["update", "partial_update"]
+            else MetricTypeSerializer
         )
 
     def perform_create(self, serializer):

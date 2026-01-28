@@ -70,6 +70,11 @@ class MetricTypeAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
+        created_mt = MetricType.objects.get(code="MT003")
+        self.assertEqual(created_mt.account, self.account)
+        self.assertEqual(created_mt.legend_type, MetricType.LegendType.THRESHOLD.value)
+        self.assertEqual(created_mt.origin, MetricType.MetricTypeOrigin.CUSTOM.value)
+
     def test_metric_type_post_unauthenticated(self):
         response = self.client.post(
             "/api/metrictypes/",
@@ -85,9 +90,9 @@ class MetricTypeAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-    def test_metric_type_put(self):
+    def test_metric_type_patch(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.put(
+        response = self.client.patch(
             f"/api/metrictypes/{self.metric_type_1.id}/",
             data={
                 "code": "MT001",
@@ -107,7 +112,7 @@ class MetricTypeAPITestCase(APITestCase):
         self.assertEqual(updated_metric_type.description, "Updated description for Metric Type 1")
 
     def test_metric_type_update_unauthenticated(self):
-        response = self.client.put(
+        response = self.client.patch(
             f"/api/metrictypes/{self.metric_type_1.id}/",
             data={
                 "code": "MT001",
@@ -219,9 +224,9 @@ class OrgUnitMetricAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
-    def test_metric_org_units_put(self):
+    def test_metric_org_units_patch(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.put(
+        response = self.client.patch(
             f"/api/metricorgunits/{self.org_unit_1.id}/",
             data={
                 "metric_type_id": self.metric_type.id,
@@ -289,9 +294,9 @@ class MetricValueAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
 
-    def test_metric_value_put(self):
+    def test_metric_value_patch(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.put(
+        response = self.client.patch(
             f"/api/metricvalues/{self.metric_value_1.id}/",
             data={
                 "metric_type": self.metric_type.id,

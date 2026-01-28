@@ -1,4 +1,8 @@
+from rest_framework import serializers
+from rest_framework.test import APIRequestFactory
+
 from iaso.api.metrics.serializers import (
+    MetricTypeCreateSerializer,
     MetricTypeSerializer,
     MetricTypeWriteSerializer,
     MetricValueSerializer,
@@ -6,7 +10,6 @@ from iaso.api.metrics.serializers import (
 )
 from iaso.models.base import Account
 from iaso.models.metric import MetricType
-from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import TestCase
 
 
@@ -44,6 +47,35 @@ class MetricTypeWriteSerializerTestCase(TestCase):
     def test_fields(self):
         serializer = MetricTypeWriteSerializer()
         expected_fields = {
+            "name",
+            "category",
+            "description",
+            "units",
+            "unit_symbol",
+            "legend_type",
+            "origin",
+        }
+        self.assertEqual(set(serializer.Meta.fields), expected_fields)
+
+
+class MetricTypeCreateSerializerTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="Account")
+        cls.user = cls.create_user_with_profile(
+            email="john@polio.org",
+            username="test",
+            first_name="John",
+            last_name="Doe",
+            account=cls.account,
+        )
+
+        cls.request = APIRequestFactory().get("/")
+        cls.request.user = cls.user
+
+    def test_fields(self):
+        serializer = MetricTypeCreateSerializer()
+        expected_fields = {
             "code",
             "name",
             "category",
@@ -56,58 +88,32 @@ class MetricTypeWriteSerializerTestCase(TestCase):
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
 
     def test_validate_code_whitespace(self):
-        serializer = MetricTypeWriteSerializer()
-        with self.assertRaisesMessage(Exception, "Code must not contain whitespace."):
+        serializer = MetricTypeCreateSerializer(data={"code": "invalid code"}, context={"request": self.request})
+        with self.assertRaisesMessage(serializers.ValidationError, "Code must not contain whitespace."):
             serializer.validate_code("invalid code")
-
-    def test_validate_code_immutable(self):
-        metric_type = MetricType(code="original_code")
-        serializer = MetricTypeWriteSerializer(instance=metric_type, data={"code": "new_code"})
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("codeImmutable", serializer.errors["code"][0])
 
     def test_validate_code_same(self):
         metric_type = MetricType(code="same_code")
-        account = Account.objects.create(name="Account")
-        user = self.create_user_with_profile(
-            username="jane_doe",
-            last_name="Doe",
-            first_name="Jane",
-            account=account,
-            permissions=[CORE_ORG_UNITS_PERMISSION],
+        serializer = MetricTypeCreateSerializer(
+            instance=metric_type, data={"code": "same_code_modified"}, context={"request": self.request}
         )
-        serializer_context = {"request": type("Request", (), {"user": user})()}
-        serializer = MetricTypeWriteSerializer(
-            instance=metric_type, data={"code": "same_code_modified"}, context=serializer_context
-        )
-        is_valid = serializer.is_valid()
-        self.assertFalse(is_valid)
+        self.assertFalse(serializer.is_valid())
 
     def test_validate_code_new(self):
-        account = Account.objects.create(name="Account")
-        user = self.create_user_with_profile(
-            username="alice_smith",
-            last_name="Smith",
-            first_name="Alice",
-            account=account,
-            permissions=[CORE_ORG_UNITS_PERMISSION],
-        )
-
         data = {
             "code": "new_code",
             "name": "New Metric Type",
             "category": "New Category",
-            "legend_type": "Threshold",
+            "legend_type": "threshold",
             "units": "units",
             "unit_symbol": "u",
             "description": "A new metric type",
-            "origin": "CUSTOM",
+            "origin": "custom",
         }
 
-        serializer_context = {"request": type("Request", (), {"user": user})()}
-        serializer = MetricTypeWriteSerializer(data=data, context=serializer_context)
-        is_valid = serializer.is_valid()
-        self.assertTrue(is_valid)
+        serializer_context = {"request": self.request}
+        serializer = MetricTypeCreateSerializer(data=data, context=serializer_context)
+        self.assertTrue(serializer.is_valid())
 
 
 class MetricValueSerializerTestCase(TestCase):

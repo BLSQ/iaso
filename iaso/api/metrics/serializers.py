@@ -32,19 +32,17 @@ class MetricTypeSerializer(serializers.ModelSerializer):
 
 
 class MetricTypeWriteSerializer(serializers.ModelSerializer):
-    code = serializers.CharField(required=True, allow_blank=False)
     name = serializers.CharField(required=True, allow_blank=False)
     category = serializers.CharField(required=True, allow_blank=False)
     description = serializers.CharField(required=False, allow_blank=True)
     units = serializers.CharField(required=False, allow_blank=True)
     unit_symbol = serializers.CharField(required=False, allow_blank=True)
-    origin = serializers.CharField(required=False, allow_blank=True)
-    legend_type = serializers.CharField(required=True, allow_blank=False)
+    origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
+    legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
 
     class Meta:
         model = MetricType
         fields = [
-            "code",
             "name",
             "category",
             "description",
@@ -54,15 +52,18 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
             "origin",
         ]
 
+
+class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
+    code = serializers.CharField(required=True, allow_blank=False)
+
+    class Meta(MetricTypeWriteSerializer.Meta):
+        fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
+
     def validate_code(self, value):
         if any(char.isspace() for char in value):
             raise serializers.ValidationError("Code must not contain whitespace.", code="no_whitespace")
 
         instance = getattr(self, "instance", None)
-
-        if instance is not None:
-            if instance.code != value:
-                raise serializers.ValidationError("codeImmutable", code="code_immutable")
 
         user = self.context["request"].user
         account = user.iaso_profile.account

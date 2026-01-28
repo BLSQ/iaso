@@ -83,7 +83,7 @@ ORDINAL = {
 def get_legend_config(metric_type, scale):
     print(f"Getting legend config for metric type {metric_type} with scale {scale}")
     # Temporary: use old way as fallback if legend_type was not defined
-    if metric_type.legend_type is None or metric_type.legend_type == "":
+    if not metric_type.legend_type:
         return __get_legend_config(metric_type)
 
     if metric_type.legend_type == "threshold":
@@ -97,7 +97,7 @@ def get_legend_config(metric_type, scale):
         return {"domain": numeric_scales, "range": get_range_from_count(len(scales))}
     if metric_type.legend_type == "ordinal":
         scales = get_scales_from_list_or_json_str(scale)
-        if 4 > len(scales) < 2:
+        if scales == 3:
             print(f"Metric ordinal has to many or to few scales {len(scales)}")
             return None
 
@@ -170,8 +170,8 @@ def get_scales_from_list_or_json_str(scale):
         return scale
 
     if str.startswith(scale, "[") and str.endswith(scale, "]"):
-        strScale = scale.replace("[", "").replace("]", "")
-        scales = [s.strip() for s in str.split(strScale, ",")]
+        str_scale = scale.replace("[", "").replace("]", "")
+        scales = [s.strip() for s in str.split(str_scale, ",")]
         if isinstance(scales[0], float):
             return [float(s) for s in scales]
         if isinstance(scales[0], int):

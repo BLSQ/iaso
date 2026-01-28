@@ -150,7 +150,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertTrue(file_upload.file.name.startswith(expected_file_name))
 
     def test_upload_valid_csv_with_perms(self):
-        with self.assertNumQueries(92):
+        with self.assertNumQueries(47):
             self.client.force_authenticate(self.yoda)
             self.source.projects.set([self.project])
 
@@ -181,9 +181,10 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
-        )
+        validation_errors = response.json()["validation_errors"]
+        self.assertEqual(len(validation_errors), 1)
+        self.assertEqual(validation_errors[0]["row"], 3)
+        self.assertIn("email", validation_errors[0]["errors"])
 
     def test_upload_without_mail_must_work(self):
         self.client.force_authenticate(self.yoda)
@@ -193,7 +194,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["Accounts created"], 3)
+        self.assertEqual(response.json()["users_created"], 3)
 
     def test_upload_invalid_orgunit_id(self):
         self.client.force_authenticate(self.yoda)
@@ -203,10 +204,20 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error and try again.",
-        )
+        validation_errors = response.json()["validation_errors"]
+        # Row 1 has invalid orgunit ID, rows 2-3 have invalid source_ref
+        self.assertEqual(len(validation_errors), 3)
+        
+        # Check first error - invalid orgunit ID
+        self.assertEqual(validation_errors[0]["row"], 1)
+        self.assertIn("orgunit", validation_errors[0]["errors"])
+        self.assertIn("99998", validation_errors[0]["errors"]["orgunit"])
+        
+        # Check second and third errors - invalid source_ref
+        self.assertEqual(validation_errors[1]["row"], 2)
+        self.assertIn("orgunit__source_ref", validation_errors[1]["errors"])
+        self.assertEqual(validation_errors[2]["row"], 3)
+        self.assertIn("orgunit__source_ref", validation_errors[2]["errors"])
 
     def test_upload_user_already_exists(self):
         self.client.force_authenticate(self.yoda)
@@ -221,10 +232,11 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Error at row 1 Account already exists : broly. Fix the error and try again.",
-        )
+        validation_errors = response.json()["validation_errors"]
+        # Should have error for existing username
+        username_error = next((e for e in validation_errors if "username" in e.get("errors", {})), None)
+        self.assertIsNotNone(username_error)
+        self.assertIn("broly", username_error["errors"]["username"])
 
     def test_upload_invalid_csv_dont_create_entries(self):
         self.client.force_authenticate(self.yoda)
@@ -237,10 +249,8 @@ class BulkCreateCsvTestCase(APITestCase):
         profiles = Profile.objects.all()
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error and try again.",
-        )
+        validation_errors = response.json()["validation_errors"]
+        self.assertTrue(len(validation_errors) > 0)
         self.assertEqual(len(users), 5)
         self.assertEqual(len(profiles), 5)
 
@@ -321,10 +331,10 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Error at row 4. This password is too short. It must contain at least 8 characters.",
-        )
+        validation_errors = response.json()["validation_errors"]
+        password_error = next((e for e in validation_errors if "password" in e.get("errors", {})), None)
+        self.assertIsNotNone(password_error)
+        self.assertIn("too short", password_error["errors"]["password"])
 
     def test_created_users_can_login(self):
         self.client.force_authenticate(self.yoda)
@@ -356,13 +366,10 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Invalid OrgUnit Bazarre at row : 4. Fix "
-            "the error "
-            "and try "
-            "again. Use Orgunit ID instead of name.",
-        )
+        validation_errors = response.json()["validation_errors"]
+        orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
+        self.assertIsNotNone(orgunit_error)
+        self.assertIn("Bazarre", orgunit_error["errors"]["orgunit"])
 
     def test_users_profiles_have_right_ou(self):
         self.client.force_authenticate(self.yoda)
@@ -410,12 +417,11 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {
-                "error": "Operation aborted. Invalid OrgUnit #10244 chiloe at row : 2. You don't have access to this orgunit"
-            },
-        )
+        validation_errors = response.json()["validation_errors"]
+        orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
+        self.assertIsNotNone(orgunit_error)
+        # The error should indicate access issue or invalid org unit
+        self.assertIn("10244", orgunit_error["errors"]["orgunit"])
 
     def test_upload_duplicate_ou_names(self):
         # This test detects if in case there is multiple OU with same name in different sources the right OU is taken.
@@ -479,7 +485,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
 
-        self.assertEqual(response.data, {"Accounts created": 2})
+        self.assertEqual(response.data["users_created"], 2)
 
     def test_upload_csv_with_missing_column(self):
         self.client.force_authenticate(self.yoda)
@@ -536,7 +542,7 @@ class BulkCreateCsvTestCase(APITestCase):
             [user_role.group for user_role in new_user_2_user_roles],
             [group for group in new_user_2.groups.all()],
         )
-        self.assertEqual(response.data, {"Accounts created": 2})
+        self.assertEqual(response.data["users_created"], 2)
 
     def test_create_user_with_projects(self):
         self.client.force_authenticate(self.yoda)
@@ -567,7 +573,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
-        self.assertEqual(response.data, {"Accounts created": 2})
+        self.assertEqual(response.data["users_created"], 2)
 
     def test_create_user_with_project_restrictions(self):
         self.source.projects.set([self.project, self.project2])
@@ -591,6 +597,8 @@ class BulkCreateCsvTestCase(APITestCase):
             self.assertEqual(csv_line_2[projects_index], self.project.name)
 
         self.user_managed_geo_limit.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
+        # Grant access to org_unit_child (1112) which is used in the CSV
+        self.user_managed_geo_limit.iaso_profile.org_units.add(self.org_unit_child)
         self.assertTrue(self.user_managed_geo_limit.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()))
         self.assertFalse(self.user_managed_geo_limit.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
 

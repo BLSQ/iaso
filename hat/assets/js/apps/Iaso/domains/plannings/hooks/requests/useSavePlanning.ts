@@ -134,7 +134,12 @@ export const useSavePlanning = ({
     const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
-        invalidateQueryKey: ['planningsList', 'planningDetails'],
+        invalidateQueryKey: [
+            'planningsList',
+            'planningDetails',
+            'planningOrgUnits',
+            'planningSamplingResults',
+        ],
         ignoreErrorCodes,
         options: { onSuccess },
         showSuccessSnackBar,

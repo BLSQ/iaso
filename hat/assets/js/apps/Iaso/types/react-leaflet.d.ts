@@ -1,5 +1,6 @@
 import { CSSProperties } from React;
 import 'react-leaflet';
+import 'leaflet';
 import { GeoJSON as LeafletGeoJSON } from 'leaflet';
 
 declare module 'react-leaflet' {
@@ -21,5 +22,11 @@ declare module 'react-leaflet' {
             | 'bottomleft'
             | 'bottomright'
             | 'center';
+    }
+}
+
+declare module 'leaflet' {
+    interface MapOptions {
+        contextmenu?: boolean;
     }
 }

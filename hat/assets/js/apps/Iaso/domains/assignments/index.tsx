@@ -1,264 +1,150 @@
 import React, {
+    Fragment,
     FunctionComponent,
-    useState,
-    useEffect,
     useCallback,
+    useMemo,
+    useState,
 } from 'react';
-import { Box, Tabs, Tab, Grid, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 import {
-    commonStyles,
-    useSafeIntl,
-    LoadingSpinner,
-    useSkipEffectOnMount,
-    useRedirectTo,
-    useRedirectToReplace,
-} from 'bluesquare-components';
+    Grid,
+    Table,
+    Paper,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography,
+    Checkbox,
+    useTheme,
+} from '@mui/material';
+import { useSafeIntl, useGoBack, LoadingSpinner } from 'bluesquare-components';
+import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
+import CircleMarkerComponent from 'Iaso/components/maps/markers/CircleMarkerComponent';
+import { CustomTileLayer } from 'Iaso/components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from 'Iaso/components/maps/tools/CustomZoomControl';
+import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
+import tiles from 'Iaso/constants/mapTiles';
+import {
+    Bounds,
+    circleColorMarkerOptions,
+    getOrgUnitsBounds,
+    isValidCoordinate,
+} from 'Iaso/utils/map/mapUtils';
+import getDisplayName, { User } from 'Iaso/utils/usersUtils';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
+import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
+import { useGetPlanningOrgUnits } from '../plannings/hooks/requests/useGetPlanningOrgUnits';
+import { Planning } from '../plannings/types';
+import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
-import { Team, SubTeam, User } from '../teams/types/team';
-import { AssignmentsFilters } from './components/AssignmentsFilters';
-import { AssignmentsListTab } from './components/AssignmentsListTab';
-import { AssignmentsMapTab } from './components/AssignmentsMapTab';
-import { Sidebar } from './components/AssignmentsSidebar';
-import { DeleteAssignments } from './components/DeleteAssignments';
-import { ParentDialog } from './components/ParentDialog';
-import { useGetAssignmentData } from './hooks/useGetAssignmentData';
+import { useSaveProfile } from '../users/hooks/useSaveProfile';
+import { useGetAssignments } from './hooks/requests/useGetAssignments';
+import { AssignmentsResult } from './hooks/requests/useGetAssignments';
+import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
-import { AssignmentParams, AssignmentApi } from './types/assigment';
-import { AssignmentUnit } from './types/locations';
-import { getSaveParams } from './utils';
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    hiddenOpacity: {
-        position: 'absolute',
-        top: 0,
-        left: -5000,
-        zIndex: -10,
-        opacity: 0,
-    },
-}));
-
-const baseUrl = baseUrls.assignments;
+import { AssignmentParams } from './types/assigment';
+const defaultViewport = {
+    center: [1, 20],
+    zoom: 3.25,
+};
+const boundsOptions = {
+    padding: [25, 25],
+    maxZoom: 12,
+};
+const defaultHeight = '80vh';
 
 export const Assignments: FunctionComponent = () => {
+    const [selectedUser, setSelectedUser] = useState<User | undefined>(
+        undefined,
+    );
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
     ) as unknown as AssignmentParams;
     const { formatMessage } = useSafeIntl();
-    const redirectTo = useRedirectTo();
-    const redirectToReplace = useRedirectToReplace();
-    const classes: Record<string, string> = useStyles();
-    const [tab, setTab] = useState(params.tab ?? 'map');
-    const [currentTeam, setCurrentTeam] = useState<Team>();
-    const [parentSelected, setParentSelected] = useState<
-        ParentOrgUnit | undefined
-    >();
-    const [selectedItem, setSelectedItem] = useState<
-        SubTeam | User | undefined
-    >();
 
-    const handleChangeTab = (newTab: string) => {
-        setTab(newTab);
-        const newParams = {
-            ...params,
-            tab: newTab,
-        };
-        redirectTo(baseUrl, newParams);
-    };
+    const { planningId } = params;
+    const {
+        data: planning,
+    }: {
+        data?: Planning;
+        isLoading: boolean;
+    } = useGetPlanningDetails(planningId);
 
-    const { planningId, team: currentTeamId, baseOrgunitType } = params;
+    const goBack = useGoBack(baseUrls.planning);
+    const theme = useTheme();
+    // Map stuff
+    const { data: mapOrgUnits, isLoading: isLoadingMapOrgUnits } =
+        useGetPlanningOrgUnits(planningId);
+    const rootMapOrgUnit = useMemo(() => {
+        return mapOrgUnits?.find(
+            ou => ou.id === planning?.org_unit_details?.id,
+        );
+    }, [mapOrgUnits, planning]);
+    const otherMapOrgUnits = useMemo(() => {
+        return mapOrgUnits?.filter(
+            ou => ou.id !== planning?.org_unit_details?.id,
+        );
+    }, [mapOrgUnits, planning]);
+    const bounds: Bounds | undefined = useMemo(
+        () => mapOrgUnits && getOrgUnitsBounds(mapOrgUnits),
+        [mapOrgUnits],
+    );
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    // Map stuff
+    // Team stuff
+    const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
+        planning?.team_details?.id,
+    );
+    const { mutate: updateTeam } = useSaveTeam('edit', false);
+    const { mutate: updateUser } = useSaveProfile(false);
+    const { mutateAsync: saveAssignment, isLoading: isSaving } =
+        useSaveAssignment();
 
     const {
-        planning,
-        assignments,
-        allAssignments,
-        saveAssignment,
-        saveMultiAssignments,
-        teams,
-        profiles,
-        orgunitTypes,
-        childrenOrgunits,
-        orgUnits,
-        orgUnitsList,
-        sidebarData,
-        isFetchingOrgUnits,
-        isFetchingOrgUnitsList,
-        isFetchingOrgunitTypes,
-        isLoadingPlanning,
-        isSaving,
-        isFetchingChildrenOrgunits,
-        isLoadingAssignments,
-        isTeamsFetched,
-        setProfiles,
-    } = useGetAssignmentData({
-        planningId,
-        currentTeam,
-        parentSelected,
-        baseOrgunitType,
-        order: params.order || 'name',
-        search: params.search,
-        selectedItem,
-    });
-    const isLoading = isLoadingPlanning || isSaving;
-
-    const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
-
-    const setItemColor = (color, itemId) => {
-        // TODO: improve this
-        if (currentTeam?.type === 'TEAM_OF_USERS') {
-            const itemIndex = profiles.findIndex(
-                profile => profile.user_id === itemId,
-            );
-            if (itemIndex !== undefined) {
-                const newProfiles = [...profiles];
-                newProfiles[itemIndex] = {
-                    ...newProfiles[itemIndex],
-                    color,
-                };
-                setProfiles(newProfiles);
-            }
-        }
-        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-            saveTeam({
-                id: itemId,
-                color,
-            });
-        }
-    };
+        data: assignments,
+        isLoading: isLoadingAssignments,
+    }: {
+        data?: AssignmentsResult;
+        isLoading: boolean;
+    } = useGetAssignments({ planning: planningId });
     const handleSaveAssignment = useCallback(
-        (selectedOrgUnit: AssignmentUnit) => {
-            if (planning && selectedItem) {
-                const saveParams = getSaveParams({
-                    allAssignments,
-                    selectedOrgUnit,
-                    teams: teams || [],
-                    profiles,
-                    currentType: currentTeam?.type,
-                    selectedItem,
-                    planning,
-                });
-                saveAssignment(saveParams);
-            }
+        (orgUnitId: number) => {
+            saveAssignment({
+                planning: planningId,
+                org_unit: orgUnitId,
+                user: selectedUser?.id,
+            });
+        },
+        [planningId, saveAssignment, selectedUser?.id],
+    );
+    const getAssignmentColor = useCallback(
+        (orgUnitId: number) => {
+            const assignment = assignments?.allAssignments?.find(
+                assignment => assignment.org_unit === orgUnitId,
+            );
+            const user = rootTeam?.users_details?.find(
+                user => user.id === assignment?.user,
+            );
+            return user?.color || theme.palette.error.main;
         },
         [
-            planning,
-            selectedItem,
-            allAssignments,
-            teams,
-            profiles,
-            currentTeam?.type,
-            saveAssignment,
+            assignments?.allAssignments,
+            rootTeam?.users_details,
+            theme.palette.error.main,
         ],
     );
+    // Team stuff
 
-    useEffect(() => {
-        if (!baseOrgunitType && assignments.length > 0) {
-            const newBaseOrgUnitType =
-                assignments[0].org_unit_details.org_unit_type;
-            const newParams = {
-                ...params,
-                baseOrgunitType: newBaseOrgUnitType,
-            };
-            redirectTo(baseUrl, newParams as Record<string, any>);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [assignments, redirectTo]);
-
-    useEffect(() => {
-        let newCurrentTeam;
-        if (currentTeamId) {
-            newCurrentTeam = teams?.find(
-                team => team.original?.id === parseInt(currentTeamId, 10),
-            );
-            if (newCurrentTeam && newCurrentTeam.original) {
-                setCurrentTeam(newCurrentTeam.original);
-                if (allAssignments.length > 0) {
-                    let firstAssignment: AssignmentApi | undefined;
-                    if (newCurrentTeam.original.type === 'TEAM_OF_USERS') {
-                        firstAssignment = allAssignments.find(assignment =>
-                            newCurrentTeam.original.users.some(
-                                user => user === assignment.user,
-                            ),
-                        );
-                    }
-                    if (newCurrentTeam.original.type === 'TEAM_OF_TEAMS') {
-                        firstAssignment = allAssignments.find(assignment =>
-                            newCurrentTeam.original.sub_teams.some(
-                                team => team === assignment.team,
-                            ),
-                        );
-                    }
-                    // Only write OU type if none exists otherwise the effect will always overwrite the type selected in the filter
-                    if (!params?.baseOrgunitType) {
-                        const newBaseOrgUnitType =
-                            firstAssignment?.org_unit_details?.org_unit_type;
-                        if (newBaseOrgUnitType) {
-                            const newParams = {
-                                ...params,
-                                baseOrgunitType: newBaseOrgUnitType,
-                            };
-                            redirectTo(
-                                baseUrl,
-                                newParams as Record<string, any>,
-                            );
-                        }
-                    }
-                }
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentTeamId, teams, redirectTo, params?.baseOrgunitType]);
-
-    useEffect(() => {
-        if (params.order) {
-            const redirect = (to: string): void => {
-                const tempParams = {
-                    ...params,
-                    order: `${params.order?.startsWith('-') ? '-' : ''}${to}`,
-                };
-                redirectToReplace(baseUrl, tempParams);
-            };
-            if (
-                params.order?.includes('assignment__team__name') &&
-                currentTeam?.type === 'TEAM_OF_USERS'
-            ) {
-                redirect('assignment__user__username');
-            }
-            if (
-                params.order?.includes('assignment__user__username') &&
-                currentTeam?.type === 'TEAM_OF_TEAMS'
-            ) {
-                redirect('assignment__team__name');
-            }
-        }
-    }, [params, currentTeam?.type, redirectToReplace]);
-
-    useSkipEffectOnMount(() => {
-        // Change order if baseOrgunitType or team changed and current order is on a parent column that will probably disappear
-        if (params.order?.includes('parent__name')) {
-            redirectToReplace(baseUrl, {
-                ...params,
-                order: 'name',
-            });
-        }
-    }, [params.baseOrgunitType, params.team, redirectToReplace]);
-
-    useEffect(() => {
-        if (planning && currentTeam) {
-            if (currentTeam.type === 'TEAM_OF_USERS') {
-                setSelectedItem(currentTeam.users_details[0]);
-            }
-            if (currentTeam.type === 'TEAM_OF_TEAMS') {
-                setSelectedItem(currentTeam.sub_teams_details[0]);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [planning?.id, currentTeam?.id]);
+    const isLoading =
+        isLoadingMapOrgUnits ||
+        isLoadingRootTeam ||
+        isLoadingAssignments ||
+        isSaving;
     return (
         <>
             <TopBar
@@ -266,146 +152,281 @@ export const Assignments: FunctionComponent = () => {
                     planning?.name ?? ''
                 }`}
                 displayBackButton
-                goBack={() => redirectToReplace(baseUrls.planning)}
+                goBack={goBack}
             />
-            <ParentDialog
-                childrenOrgunits={childrenOrgunits}
-                parentSelected={parentSelected}
-                setParentSelected={setParentSelected}
-                selectedItem={selectedItem}
-                currentTeam={currentTeam}
-                teams={teams || []}
-                profiles={profiles}
-                planning={planning}
-                saveMultiAssignments={saveMultiAssignments}
-                isFetchingChildrenOrgunits={isFetchingChildrenOrgunits}
-            />
-            <Box className={classes.containerFullHeightNoTabPadded}>
-                {isLoading && <LoadingSpinner />}
-                <Box display="flex" justifyContent="flex-end">
-                    <DeleteAssignments
-                        planning={planning}
-                        disabled={isLoading || allAssignments.length === 0}
-                        count={allAssignments.length}
-                    />
-                </Box>
-                <AssignmentsFilters
-                    params={params}
-                    teams={teams || []}
-                    isFetchingTeams={!isTeamsFetched}
-                    orgunitTypes={orgunitTypes || []}
-                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                />
-                <Box mt={2}>
+
+            <MainWrapper sx={{ p: 4 }}>
+                <>
+                    {planning && (
+                        <Typography
+                            variant="h6"
+                            display="flex"
+                            alignItems="center"
+                        >
+                            {planning.org_unit_details?.name}
+                            <ChevronRight sx={{ fontSize: 40, px: 1 }} />
+                            {planning.target_org_unit_type_details?.name}
+                        </Typography>
+                    )}
+
                     <Grid container spacing={2}>
-                        <Grid item xs={12} lg={7}>
-                            <Paper>
-                                <Box ml={-4}>
-                                    <Tabs
-                                        textColor="inherit"
-                                        indicatorColor="secondary"
-                                        value={tab}
-                                        classes={{
-                                            root: classes.tabs,
-                                            indicator: classes.indicator,
-                                        }}
-                                        onChange={(_, newtab) =>
-                                            handleChangeTab(newtab)
-                                        }
+                        <Grid item xs={12} md={8}>
+                            {isLoading && <LoadingSpinner />}
+                            <MapContainer
+                                key={planning?.id}
+                                bounds={bounds}
+                                maxZoom={currentTile.maxZoom}
+                                style={{ height: defaultHeight }}
+                                center={defaultViewport.center}
+                                zoom={defaultViewport.zoom}
+                                scrollWheelZoom={false}
+                                zoomControl={false}
+                                contextmenu
+                                refocusOnMap={false}
+                                boundsOptions={boundsOptions}
+                            >
+                                <CustomZoomControl
+                                    bounds={bounds}
+                                    boundsOptions={boundsOptions}
+                                    fitOnLoad
+                                />
+                                <ScaleControl imperial={false} />
+                                <CustomTileLayer
+                                    currentTile={currentTile}
+                                    setCurrentTile={setCurrentTile}
+                                />
+                                {rootMapOrgUnit?.geo_json && (
+                                    <Pane
+                                        name="root-org-unit-shape"
+                                        style={{ zIndex: 200 }}
                                     >
-                                        <Tab
-                                            value="map"
-                                            label={formatMessage(MESSAGES.map)}
+                                        <GeoJSON
+                                            key={rootMapOrgUnit?.id}
+                                            data={rootMapOrgUnit.geo_json}
                                         />
-                                        <Tab
-                                            value="list"
-                                            label={formatMessage(MESSAGES.list)}
-                                        />
-                                    </Tabs>
-                                </Box>
-                                <Box position="relative" width="100%">
-                                    <Box
-                                        width="100%"
-                                        className={
-                                            tab === 'map'
-                                                ? ''
-                                                : classes.hiddenOpacity
-                                        }
-                                    >
-                                        {!isLoadingAssignments && (
-                                            <AssignmentsMapTab
-                                                orgunitTypes={
-                                                    orgunitTypes || []
-                                                }
-                                                isFetchingOrgunitTypes={
-                                                    isFetchingOrgunitTypes
-                                                }
-                                                planning={planning}
-                                                currentTeam={currentTeam}
-                                                teams={teams || []}
-                                                profiles={profiles}
-                                                params={params}
-                                                allAssignments={allAssignments}
-                                                setParentSelected={
-                                                    setParentSelected
-                                                }
-                                                locations={orgUnits}
-                                                isFetchingLocations={
-                                                    isFetchingOrgUnits
-                                                }
-                                                handleSaveAssignment={
-                                                    handleSaveAssignment
-                                                }
-                                                isLoadingAssignments={
-                                                    isLoadingAssignments
-                                                }
+                                    </Pane>
+                                )}
+                                <Pane
+                                    name="target-org-units-shapes"
+                                    style={{ zIndex: 201 }}
+                                >
+                                    {otherMapOrgUnits
+                                        ?.filter(
+                                            ou =>
+                                                ou.has_geo_json &&
+                                                ou.id !==
+                                                    planning?.org_unit_details
+                                                        ?.id,
+                                        )
+                                        .map(ou => (
+                                            <GeoJSON
+                                                key={ou.id}
+                                                data={ou.geo_json}
                                             />
-                                        )}
-                                    </Box>
-                                    {tab === 'list' && (
-                                        <AssignmentsListTab
-                                            assignments={allAssignments}
-                                            params={params}
-                                            teams={teams || []}
-                                            profiles={profiles}
-                                            currentTeam={currentTeam}
-                                            orgUnits={orgUnitsList}
-                                            handleSaveAssignment={
-                                                handleSaveAssignment
-                                            }
-                                            isFetchingOrgUnits={
-                                                isLoadingAssignments ||
-                                                isFetchingOrgUnitsList
-                                            }
-                                            selectedItem={selectedItem}
-                                            setParentSelected={
-                                                setParentSelected
-                                            }
-                                        />
-                                    )}
-                                </Box>
+                                        ))}
+                                </Pane>
+                                <Pane
+                                    name="target-org-units-locations"
+                                    style={{ zIndex: 202 }}
+                                >
+                                    {otherMapOrgUnits
+                                        ?.filter(ou =>
+                                            isValidCoordinate(
+                                                ou.latitude,
+                                                ou.longitude,
+                                            ),
+                                        )
+                                        .map(ou => (
+                                            <CircleMarkerComponent
+                                                key={ou.id}
+                                                item={ou}
+                                                onClick={() =>
+                                                    handleSaveAssignment(ou.id)
+                                                }
+                                                markerProps={() => ({
+                                                    ...circleColorMarkerOptions(
+                                                        getAssignmentColor(
+                                                            ou.id,
+                                                        ),
+                                                    ),
+                                                    radius: 12,
+                                                })}
+                                            />
+                                        ))}
+                                </Pane>
+                            </MapContainer>
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                            {isLoadingRootTeam && <LoadingSpinner />}
+                            <Paper sx={{ height: defaultHeight }}>
+                                {rootTeam && (
+                                    <>
+                                        <Typography variant="h6">
+                                            {rootTeam?.name}
+                                        </Typography>
+                                        <Table size="small">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell
+                                                        sx={{
+                                                            width: 50,
+                                                        }}
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.selection,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell
+                                                        sx={{
+                                                            width: 50,
+                                                        }}
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.color,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {formatMessage(
+                                                            MESSAGES.name,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {formatMessage(
+                                                            MESSAGES.assignationsCount,
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {rootTeam?.sub_teams_details.map(
+                                                    subTeam => (
+                                                        <TableRow
+                                                            key={subTeam.id}
+                                                        >
+                                                            <TableCell
+                                                                sx={{
+                                                                    width: 50,
+                                                                }}
+                                                            >
+                                                                <ColorPicker
+                                                                    currentColor={
+                                                                        subTeam?.color
+                                                                    }
+                                                                    displayLabel={
+                                                                        false
+                                                                    }
+                                                                    onChangeColor={color => {
+                                                                        updateTeam(
+                                                                            {
+                                                                                id: subTeam.id,
+                                                                                color,
+                                                                            },
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {subTeam?.name}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ),
+                                                )}
+                                                {rootTeam?.users_details
+                                                    .sort((a, b) =>
+                                                        a.username.localeCompare(
+                                                            b.username,
+                                                        ),
+                                                    )
+                                                    .map(user => (
+                                                        <TableRow
+                                                            key={user.id}
+                                                            sx={{
+                                                                backgroundColor:
+                                                                    selectedUser?.id ===
+                                                                    user.id
+                                                                        ? theme
+                                                                              .palette
+                                                                              .grey[200]
+                                                                        : 'transparent',
+                                                            }}
+                                                        >
+                                                            <TableCell
+                                                                sx={{
+                                                                    width: 50,
+                                                                    textAlign:
+                                                                        'center',
+                                                                }}
+                                                            >
+                                                                <Checkbox
+                                                                    checked={
+                                                                        selectedUser?.id ===
+                                                                        user.id
+                                                                    }
+                                                                    onChange={() =>
+                                                                        setSelectedUser(
+                                                                            user,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell
+                                                                sx={{
+                                                                    width: 50,
+                                                                    textAlign:
+                                                                        'center',
+                                                                }}
+                                                            >
+                                                                <ColorPicker
+                                                                    currentColor={
+                                                                        user?.color
+                                                                    }
+                                                                    displayLabel={
+                                                                        false
+                                                                    }
+                                                                    onChangeColor={color => {
+                                                                        updateUser(
+                                                                            // @ts-ignore
+                                                                            {
+                                                                                ...user,
+                                                                                id: user.iaso_profile,
+                                                                                user_name:
+                                                                                    user.username,
+                                                                                color,
+                                                                            },
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {getDisplayName(
+                                                                    user,
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell
+                                                                sx={{
+                                                                    textAlign:
+                                                                        'center',
+                                                                }}
+                                                            >
+                                                                {
+                                                                    assignments?.allAssignments?.filter(
+                                                                        assignment =>
+                                                                            assignment.user ===
+                                                                            user.id,
+                                                                    ).length
+                                                                }
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                            </TableBody>
+                                        </Table>
+                                    </>
+                                )}
                             </Paper>
                         </Grid>
-                        <Grid item xs={12} lg={5}>
-                            <Sidebar
-                                data={sidebarData || []}
-                                assignments={assignments}
-                                selectedItem={selectedItem}
-                                orgUnits={orgUnitsList || []}
-                                setSelectedItem={setSelectedItem}
-                                currentTeam={currentTeam}
-                                setItemColor={setItemColor}
-                                teams={teams || []}
-                                profiles={profiles}
-                                isLoadingAssignments={
-                                    isLoadingAssignments ||
-                                    isFetchingOrgUnitsList
-                                }
-                            />
-                        </Grid>
                     </Grid>
-                </Box>
-            </Box>
+                </>
+            </MainWrapper>
         </>
     );
 };

@@ -1,19 +1,19 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
-import L from 'leaflet';
-import { MapContainer, ScaleControl, GeoJSON } from 'react-leaflet';
 
 import { useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { commonStyles } from 'bluesquare-components';
+import L from 'leaflet';
+import { MapContainer, ScaleControl, GeoJSON } from 'react-leaflet';
 
 import tiles from '../../constants/mapTiles';
 
-import { GeoJson } from './types';
-import { Tile } from './tools/TilesSwitchControl';
-import { CustomZoomControl } from './tools/CustomZoomControl';
-import { CustomTileLayer } from './tools/CustomTileLayer';
 import { Bounds } from '../../utils/map/mapUtils';
+import { CustomTileLayer } from './tools/CustomTileLayer';
+import { CustomZoomControl } from './tools/CustomZoomControl';
+import { Tile } from './tools/TilesSwitchControl';
+import { GeoJson } from './types';
 
 const useStyles = makeStyles(theme => ({
     mapContainer: {
@@ -30,6 +30,7 @@ type Props = {
 };
 
 export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
+    //@ts-ignore
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const bounds: Bounds | undefined = useMemo(() => {

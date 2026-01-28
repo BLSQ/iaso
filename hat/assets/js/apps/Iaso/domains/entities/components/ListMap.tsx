@@ -8,6 +8,7 @@ import React, {
 import { Box, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
+import L from 'leaflet';
 import { MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
@@ -30,9 +31,8 @@ import { ExtraColumn } from '../types/fields';
 import { DisplayedLocation } from '../types/locations';
 import { LocationOption, LocationSwitch } from './LocationSwitch';
 import { PopupComponent as Popup } from './Popup';
-
 const defaultViewport = {
-    center: [1, 20],
+    center: L.latLng(1, 20),
     zoom: 3.25,
 };
 
@@ -52,8 +52,8 @@ type Props = {
     setDisplayedLocation: Dispatch<SetStateAction<DisplayedLocation>>;
 };
 
-const boundsOptions = {
-    padding: [50, 50],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(50, 50),
     maxZoom: 12,
 };
 
@@ -66,7 +66,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const getLocationsBounds = (locations: Location[]) =>
-    locations ? getLatLngBounds(locations) : null;
+    locations ? getLatLngBounds(locations) : undefined;
 
 export const ListMap: FunctionComponent<Props> = ({
     locations,
@@ -75,6 +75,7 @@ export const ListMap: FunctionComponent<Props> = ({
     displayedLocation,
     setDisplayedLocation,
 }) => {
+    //@ts-ignore
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
 
@@ -102,15 +103,12 @@ export const ListMap: FunctionComponent<Props> = ({
                     locationOptions={locationOptions}
                 />
                 <MapContainer
-                    isLoading={isFetchingLocations}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '60vh' }}
                     center={defaultViewport.center}
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
                     zoomControl={false}
-                    contextmenu
-                    refocusOnMap={false}
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                 >

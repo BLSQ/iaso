@@ -24,7 +24,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
     side,
     currentUrl,
 }) => {
-    const { bounds, setBounds } = useContext(LqasAfroOverviewContext);
+    const { bounds } = useContext(LqasAfroOverviewContext);
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const defaultCenter = useMemo(
         () =>
@@ -52,9 +52,8 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
             style={{
                 height: '65vh',
             }}
-            // @ts-ignore
             center={defaultCenter}
-            zoom={defaultZoom}
+            zoom={Number(defaultZoom)}
             zoomControl={false}
             scrollWheelZoom={false}
         >

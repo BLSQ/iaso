@@ -1,14 +1,15 @@
 import React, { FunctionComponent, useMemo, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
+import L from 'leaflet';
 import {
     GeoJSON,
     MapContainer,
     Pane,
     ScaleControl,
     Tooltip,
+    useMapEvent,
 } from 'react-leaflet';
-
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 
@@ -37,11 +38,18 @@ import { MapLegend } from './MapLegend';
 import { OrgUnitPopup } from './OrgUnitPopup';
 
 const defaultViewport = {
-    center: [1, 20],
+    center: L.latLng(1, 20),
     zoom: 3.25,
 };
 
 type AnchorPoint = { x: number; y: number };
+
+const ResetSelectionOnMoveStart: FunctionComponent<{
+    onMoveStart: () => void;
+}> = ({ onMoveStart }) => {
+    useMapEvent('movestart', onMoveStart);
+    return null;
+};
 
 type Props = {
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
@@ -58,8 +66,8 @@ type Props = {
     params: AssignmentParams;
 };
 
-const boundsOptions = {
-    padding: [50, 50],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(50, 50),
 };
 
 const getLocationsBounds = (
@@ -202,7 +210,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 {isLoading && <LoadingSpinner absolute />}
                 <MapContainer
                     doubleClickZoom
-                    isLoading={isLoading}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '68vh' }}
                     bounds={bounds}
@@ -211,9 +218,10 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
                     zoomControl={false}
-                    contextmenu
-                    onMovestart={() => setSelectedLocation(undefined)}
                 >
+                    <ResetSelectionOnMoveStart
+                        onMoveStart={() => setSelectedLocation(undefined)}
+                    />
                     <CustomZoomControl
                         bounds={bounds}
                         boundsOptions={boundsOptions}

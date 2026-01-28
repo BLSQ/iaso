@@ -12,6 +12,7 @@ import {
     IconButton,
     LoadingSpinner,
 } from 'bluesquare-components';
+import L from 'leaflet';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { useGetLegend } from 'Iaso/components/LegendBuilder/Legend';
 import { ScaleThreshold } from 'Iaso/components/LegendBuilder/types';
@@ -47,7 +48,7 @@ import { getDirectLegend, MapLegend } from './MapLegend';
 import { PopupComponent as Popup } from './Popup';
 
 const defaultViewport = {
-    center: [1, 20],
+    center: L.latLng(1, 20),
     zoom: 3.25,
 };
 
@@ -59,8 +60,8 @@ type Props = {
     threshold?: ScaleThreshold;
 };
 
-const boundsOptions = {
-    padding: [50, 50],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(50, 50),
     maxZoom: 12,
 };
 
@@ -216,8 +217,6 @@ export const Map: FunctionComponent<Props> = ({
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
                     zoomControl={false}
-                    contextmenu
-                    refocusOnMap={false}
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                 >
@@ -232,16 +231,17 @@ export const Map: FunctionComponent<Props> = ({
                         fitOnLoad
                     />
                     <Pane name="parent">
-                        {parentLocation?.has_geo_json && (
-                            <GeoJSON
-                                data={parentLocation.geo_json}
-                                // @ts-ignore
-                                style={() => ({
-                                    color: 'grey',
-                                    fillOpacity: 0,
-                                })}
-                            />
-                        )}
+                        {parentLocation?.has_geo_json &&
+                            parentLocation.geo_json && (
+                                <GeoJSON
+                                    data={parentLocation.geo_json}
+                                    // @ts-ignore
+                                    style={() => ({
+                                        color: 'grey',
+                                        fillOpacity: 0,
+                                    })}
+                                />
+                            )}
                     </Pane>
                     <Pane name="shapes">
                         {shapes.map(shape => {
@@ -250,6 +250,9 @@ export const Map: FunctionComponent<Props> = ({
                             const color =
                                 getLegendColor(getPercent(stats), shape.id) ||
                                 theme.palette.primary.main;
+                            if (!shape.geo_json) {
+                                return null;
+                            }
                             return (
                                 <GeoJSON
                                     key={`${shape.id}-${params.showDirectCompleteness}`}

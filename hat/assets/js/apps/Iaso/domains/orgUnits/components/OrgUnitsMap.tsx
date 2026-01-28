@@ -99,7 +99,7 @@ const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
 
 const computeTriggerFitToBoundsId = (bounds: Bounds | undefined): string => {
     return bounds
-        ? `${bounds._northEast.lat},${bounds._northEast.lng},${bounds._southWest.lat},${bounds._southWest.lng}`
+        ? `${bounds.getNorthEast().lat},${bounds.getNorthEast().lng},${bounds.getSouthWest().lat},${bounds.getSouthWest().lng}`
         : '';
 };
 
@@ -262,28 +262,37 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                             triggerFitToBoundsId={triggerFitToBoundsId}
                         />
                         {orgUnits.shapes
-                            .filter(o => !o.org_unit_type_id)
-                            .map(o => (
-                                <Pane name="no-org-unit-type" key={o.id}>
-                                    <GeoJSON
-                                        key={`${o.id}-${o.search_index}`}
-                                        style={{
-                                            color: getSearchColor(
-                                                o.search_index || 0,
-                                            ),
-                                        }}
-                                        data={o.geo_json}
-                                        onClick={() => setSelectedOrgUnit(o)}
-                                    >
-                                        <OrgUnitPopupComponent
-                                            orgUnitId={o.id}
-                                        />
-                                        <Tooltip pane="popupPane">
-                                            {o.name}
-                                        </Tooltip>
-                                    </GeoJSON>
-                                </Pane>
-                            ))}
+                            .filter(o => !o.org_unit_type_id && o.geo_json)
+                            .map(
+                                o =>
+                                    o.geo_json && (
+                                        <Pane
+                                            name="no-org-unit-type"
+                                            key={o.id}
+                                        >
+                                            <GeoJSON
+                                                key={`${o.id}-${o.search_index}`}
+                                                style={{
+                                                    color: getSearchColor(
+                                                        o.search_index || 0,
+                                                    ),
+                                                }}
+                                                data={o.geo_json}
+                                                eventHandlers={{
+                                                    click: () =>
+                                                        setSelectedOrgUnit(o),
+                                                }}
+                                            >
+                                                <OrgUnitPopupComponent
+                                                    orgUnitId={o.id}
+                                                />
+                                                <Tooltip pane="popupPane">
+                                                    {o.name}
+                                                </Tooltip>
+                                            </GeoJSON>
+                                        </Pane>
+                                    ),
+                            )}
                         {(
                             orgUnitTypes || new Array<DropdownOptions<string>>()
                         ).map(ot => (
@@ -300,27 +309,33 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                             o.org_unit_type_id ===
                                             ot.original?.id,
                                     )
-                                    .map(o => (
-                                        <GeoJSON
-                                            key={`${o.id}-${o.search_index}`}
-                                            style={{
-                                                color: getSearchColor(
-                                                    o.search_index || 0,
-                                                ),
-                                            }}
-                                            data={o.geo_json}
-                                            onClick={() =>
-                                                setSelectedOrgUnit(o)
-                                            }
-                                        >
-                                            <OrgUnitPopupComponent
-                                                orgUnitId={o.id}
-                                            />
-                                            <Tooltip pane="popupPane">
-                                                {o.name}
-                                            </Tooltip>
-                                        </GeoJSON>
-                                    ))}
+                                    .map(
+                                        o =>
+                                            o.geo_json && (
+                                                <GeoJSON
+                                                    key={`${o.id}-${o.search_index}`}
+                                                    style={{
+                                                        color: getSearchColor(
+                                                            o.search_index || 0,
+                                                        ),
+                                                    }}
+                                                    data={o.geo_json}
+                                                    eventHandlers={{
+                                                        click: () =>
+                                                            setSelectedOrgUnit(
+                                                                o,
+                                                            ),
+                                                    }}
+                                                >
+                                                    <OrgUnitPopupComponent
+                                                        orgUnitId={o.id}
+                                                    />
+                                                    <Tooltip pane="popupPane">
+                                                        {o.name}
+                                                    </Tooltip>
+                                                </GeoJSON>
+                                            ),
+                                    )}
                             </Pane>
                         ))}
                         {locations}

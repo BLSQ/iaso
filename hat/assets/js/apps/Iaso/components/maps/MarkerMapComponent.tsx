@@ -1,8 +1,10 @@
+import React, { FunctionComponent, useMemo, useState } from 'react';
+
+import { Alert, Box, SxProps, Theme } from '@mui/material';
 import { pink } from '@mui/material/colors';
 import { useTheme } from '@mui/material/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import L from 'leaflet';
-import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
     GeoJSON,
     MapContainer,
@@ -11,14 +13,12 @@ import {
     Tooltip,
 } from 'react-leaflet';
 
-import { Alert, Box, SxProps, Theme } from '@mui/material';
-import { CustomTileLayer } from './tools/CustomTileLayer';
-
 import tiles from '../../constants/mapTiles';
 import { ShortOrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { useMarkerWithinBounds } from './hooks/useMarkerWithinBounds';
 import MarkerComponent from './markers/MarkerComponent';
 import MESSAGES from './messages';
+import { CustomTileLayer } from './tools/CustomTileLayer';
 import { CustomZoomControl } from './tools/CustomZoomControl';
 import { Tile } from './tools/TilesSwitchControl';
 
@@ -70,10 +70,13 @@ export const MarkerMap: FunctionComponent<Props> = ({
     };
 
     const bounds = useMemo(() => {
-        let newBounds = L.latLngBounds([L.latLng(latitude, longitude)]);
+        let newBounds =
+            latitude !== undefined && longitude !== undefined
+                ? L.latLngBounds([L.latLng(latitude, longitude)])
+                : undefined;
         if (parent?.geo_json) {
             const parentBounds = L.geoJSON(parent.geo_json).getBounds();
-            newBounds = newBounds.isValid()
+            newBounds = newBounds?.isValid()
                 ? newBounds.extend(parentBounds)
                 : parentBounds;
         }

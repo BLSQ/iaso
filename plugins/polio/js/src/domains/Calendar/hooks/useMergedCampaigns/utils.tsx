@@ -20,10 +20,12 @@ export const addLayoutInfo = (list: CalendarCampaign[]): CalendarCampaign[] => {
         const last: CalendarCampaign = copy.pop() as CalendarCampaign;
         return [
             { ...first, layout: 'top' },
-            ...copy.map((el: CalendarCampaign) => ({
-                ...el,
-                layout: 'middle' as 'top' | 'middle' | 'bottom', // the TS compiler is being weird so we need to cast the type
-            })),
+            ...copy.map(
+                (el: CalendarCampaign): CalendarCampaign => ({
+                    ...el,
+                    layout: 'middle', 
+                }),
+            ),
             { ...last, layout: 'bottom' },
         ];
     }

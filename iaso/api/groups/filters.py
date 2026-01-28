@@ -3,11 +3,8 @@ import django_filters
 from django.utils.translation import gettext_lazy as _
 from django_filters.widgets import CSVWidget
 
+from iaso.api.utils.filters import NumberInFilter
 from iaso.models import Group
-
-
-class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
-    pass
 
 
 class GroupListFilter(django_filters.rest_framework.FilterSet):

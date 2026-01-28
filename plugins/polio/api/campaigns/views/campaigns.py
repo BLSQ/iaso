@@ -92,8 +92,6 @@ class CampaignViewSet(ModelViewSet):
     # in this case we use a restricted serializer with less field
     # notably not the url that we want to remain private.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    export_filename = "campaigns_list_{date}.csv"
-    use_field_order = False
 
     def get_serializer_class(self):
         if self.request.query_params.get("fieldset") == "calendar" and self.request.method in permissions.SAFE_METHODS:

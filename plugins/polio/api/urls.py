@@ -1,6 +1,7 @@
 from rest_framework import routers
 
 from iaso.api.config import ConfigViewSet
+from plugins.polio.api.calendar.views import CampaignCalendarViewSet, IntegratedCampaignsViewSet
 from plugins.polio.api.campaign_groups.views import CampaignGroupViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from plugins.polio.api.campaigns.views.campaigns import CampaignViewSet
@@ -73,6 +74,8 @@ router = routers.SimpleRouter()
 router.register(r"polio/performance_thresholds", PerformanceThresholdsViewSet, basename="performance_thresholds")
 router.register(r"polio/country_plan", CountryPlanViewSet, basename="country_plan")
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
+router.register(r"polio/v2/calendar", CampaignCalendarViewSet, basename="Calendar")
+router.register(r"polio/v2/integratedcampaigns", IntegratedCampaignsViewSet, basename="integrated_campaigns")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaigns_subactivities", SubActivityViewSet, basename="campaigns_subactivities")
 router.register(r"polio/chronograms/tasks", ChronogramTaskViewSet, basename="chronograms_tasks")

@@ -483,13 +483,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     else:
                         validation_context["projects_by_row"][row_index] = list(available_projects)
 
-            # Editable OrgUnitTypes - cache valid ones without validation error (matches original behavior)
+
             editable_org_unit_type_ids = data.get("editable_org_unit_types", [])
             if editable_org_unit_type_ids:
                 available_org_unit_types = OrgUnitType.objects.filter(
                     projects__account=importer_account, id__in=editable_org_unit_type_ids
                 ).distinct()
-                # Store only valid types, silently ignore invalid ones (matches original behavior)
+                # Store only valid types, silently ignore invalid ones
                 validation_context["editable_org_unit_types_by_row"][row_index] = list(available_org_unit_types)
 
             if row_errors:
@@ -642,21 +642,22 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         invitation_users = []
 
         for user, data in zip(created_users, csv_data):
-            # Language: CSV takes precedence, fall back to bulk_configuration, then default
             language = (
                 data.get("profile_language", "").strip().lower()
                 or bulk_configuration.get("profile_language", "").lower()
                 or "fr"
             )
 
-            # Organization: CSV takes precedence, fall back to bulk_configuration
             organization = data.get("organization", "").strip() or bulk_configuration.get("organization")
+
+            # dhis2_id: Use only CSV value
+            dhis2_id = data.get("dhis2_id", "").strip()
 
             profile = Profile(
                 user=user,
                 account=importer_account,
                 language=language,
-                dhis2_id=data.get("dhis2_id", "").strip() or None,
+                dhis2_id=dhis2_id or None,
                 organization=organization,
                 phone_number=self._validate_and_format_phone(data.get("phone_number")),
             )

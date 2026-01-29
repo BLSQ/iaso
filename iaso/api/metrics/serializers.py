@@ -9,6 +9,7 @@ class MetricTypeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "account",
+            "code",
             "name",
             "category",
             "description",
@@ -28,6 +29,47 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class MetricTypeWriteSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True, allow_blank=False)
+    category = serializers.CharField(required=True, allow_blank=False)
+    description = serializers.CharField(required=False, allow_blank=True)
+    units = serializers.CharField(required=False, allow_blank=True)
+    unit_symbol = serializers.CharField(required=False, allow_blank=True)
+    origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
+    legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
+
+    class Meta:
+        model = MetricType
+        fields = [
+            "name",
+            "category",
+            "description",
+            "units",
+            "unit_symbol",
+            "legend_type",
+            "origin",
+        ]
+
+
+class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
+    code = serializers.CharField(required=True, allow_blank=False)
+
+    class Meta(MetricTypeWriteSerializer.Meta):
+        fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
+
+    def validate_code(self, value):
+        if any(char.isspace() for char in value):
+            raise serializers.ValidationError("Code must not contain whitespace.", code="no_whitespace")
+
+        instance = getattr(self, "instance", None)
+
+        user = self.context["request"].user
+        account = user.iaso_profile.account
+        if MetricType.objects.filter(account=account, code=value).exclude(pk=getattr(instance, "pk", None)).exists():
+            raise serializers.ValidationError("uniqueCode", code="unique_code")
+        return value
 
 
 class MetricValueSerializer(serializers.ModelSerializer):

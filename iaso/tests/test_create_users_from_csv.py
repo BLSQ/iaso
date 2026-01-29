@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 
 from unittest.mock import patch
 
@@ -194,7 +195,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["users_created"], 3)
+        self.assertEqual(response.json()["Accounts created"], 3)
 
     def test_upload_invalid_orgunit_id(self):
         self.client.force_authenticate(self.yoda)
@@ -207,12 +208,12 @@ class BulkCreateCsvTestCase(APITestCase):
         validation_errors = response.json()["validation_errors"]
         # Row 1 has invalid orgunit ID, rows 2-3 have invalid source_ref
         self.assertEqual(len(validation_errors), 3)
-        
+
         # Check first error - invalid orgunit ID
         self.assertEqual(validation_errors[0]["row"], 1)
         self.assertIn("orgunit", validation_errors[0]["errors"])
         self.assertIn("99998", validation_errors[0]["errors"]["orgunit"])
-        
+
         # Check second and third errors - invalid source_ref
         self.assertEqual(validation_errors[1]["row"], 2)
         self.assertIn("orgunit__source_ref", validation_errors[1]["errors"])
@@ -485,7 +486,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
 
-        self.assertEqual(response.data["users_created"], 2)
+        self.assertEqual(response.data["Accounts created"], 2)
 
     def test_upload_csv_with_missing_column(self):
         self.client.force_authenticate(self.yoda)
@@ -542,7 +543,7 @@ class BulkCreateCsvTestCase(APITestCase):
             [user_role.group for user_role in new_user_2_user_roles],
             [group for group in new_user_2.groups.all()],
         )
-        self.assertEqual(response.data["users_created"], 2)
+        self.assertEqual(response.data["Accounts created"], 2)
 
     def test_create_user_with_projects(self):
         self.client.force_authenticate(self.yoda)
@@ -573,7 +574,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
-        self.assertEqual(response.data["users_created"], 2)
+        self.assertEqual(response.data["Accounts created"], 2)
 
     def test_create_user_with_project_restrictions(self):
         self.source.projects.set([self.project, self.project2])
@@ -881,7 +882,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["users_created"], 2)
+        self.assertEqual(response.data["Accounts created"], 2)
 
         # Verify that send_bulk_email_invitations was called
         mock_send_emails.assert_called_once()
@@ -907,7 +908,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["users_created"], 4)
+        self.assertEqual(response.data["Accounts created"], 4)
 
         # Verify that send_bulk_email_invitations was called
         mock_send_emails.assert_called_once()
@@ -921,10 +922,89 @@ class BulkCreateCsvTestCase(APITestCase):
         no_password2 = User.objects.get(username="no_password2")
         no_email = User.objects.get(username="no_email")
 
-        # Users with passwords should have usable passwords
         self.assertTrue(with_password.has_usable_password())
         self.assertTrue(no_email.has_usable_password())
 
-        # Users without passwords should have unusable passwords
         self.assertFalse(no_password1.has_usable_password())
         self.assertFalse(no_password2.has_usable_password())
+
+    def test_bulk_configuration_three_scenarios(self):
+        """Test bulk_configuration"""
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        self.account1.modules = self.MODULES
+        self.account1.save()
+        self.account1.refresh_from_db()
+
+        self.client.post("/api/userroles/", data={"name": "manager"})
+
+        bulk_configuration = {
+            "profile_language": "fr",
+            "organization": "UNICEF",
+            "permissions": ["iaso_forms"],
+            "user_roles": ["manager"],
+            "projects": [self.project.name],
+            "orgunit": [self.org_unit1.id, self.org_unit2.id],
+        }
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_bulk_configuration.csv") as csv_file:
+            response = self.client.post(
+                f"{BASE_URL}",
+                {
+                    "file": csv_file,
+                    "bulk_configuration": json.dumps(bulk_configuration),
+                },
+                format="multipart",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["Accounts created"], 3)
+
+        # ALL bulk_configuration applied
+        all_bulk_user = User.objects.get(username="all_bulk_user")
+        all_bulk_profile = all_bulk_user.iaso_profile
+        self.assertEqual(all_bulk_profile.language, "fr")
+        self.assertEqual(all_bulk_profile.organization, "UNICEF")  # From bulk_configuration
+        self.assertIsNone(all_bulk_profile.dhis2_id)
+        self.assertTrue(all_bulk_user.user_permissions.filter(codename="iaso_forms").exists())
+        self.assertEqual(all_bulk_profile.user_roles.count(), 1)
+        self.assertEqual(all_bulk_profile.user_roles.first().group.name, f"{self.account1.id}_manager")
+        self.assertEqual(all_bulk_profile.projects.count(), 1)
+        self.assertEqual(all_bulk_profile.projects.first(), self.project)
+        self.assertEqual(all_bulk_profile.org_units.count(), 2)  # From bulk_configuration
+        self.assertIn(self.org_unit1, all_bulk_profile.org_units.all())
+        self.assertIn(self.org_unit2, all_bulk_profile.org_units.all())
+
+        # ALL bulk_configuration ignored
+        no_bulk_user = User.objects.get(username="no_bulk_user")
+        no_bulk_profile = no_bulk_user.iaso_profile
+
+        self.assertEqual(no_bulk_profile.language, "en")
+        self.assertEqual(no_bulk_profile.organization, "MSF")
+        self.assertEqual(no_bulk_profile.dhis2_id, "csv_dhis2_1")
+        self.assertTrue(no_bulk_user.user_permissions.filter(codename="iaso_submissions").exists())
+        self.assertFalse(no_bulk_user.user_permissions.filter(codename="iaso_forms").exists())
+        self.assertEqual(no_bulk_profile.user_roles.count(), 1)
+        self.assertEqual(no_bulk_profile.user_roles.first().group.name, f"{self.account1.id}_manager")
+        self.assertEqual(no_bulk_profile.projects.count(), 1)
+        self.assertEqual(no_bulk_profile.projects.first().name, "Project 2")
+        self.assertEqual(no_bulk_profile.org_units.count(), 2)
+        self.assertIn(self.org_unit1, no_bulk_profile.org_units.all())
+        self.assertIn(self.org_unit2, no_bulk_profile.org_units.all())
+
+        # PARTIAL bulk_configuration applied
+        mixed_user = User.objects.get(username="mixed_user")
+        mixed_profile = mixed_user.iaso_profile
+        self.assertEqual(mixed_profile.language, "en")
+        self.assertEqual(mixed_profile.organization, "WHO")
+        self.assertIsNone(mixed_profile.dhis2_id)
+        self.assertTrue(mixed_user.user_permissions.filter(codename="iaso_forms").exists())
+        self.assertFalse(mixed_user.user_permissions.filter(codename="iaso_submissions").exists())
+        self.assertEqual(mixed_profile.user_roles.count(), 1)
+        self.assertEqual(mixed_profile.user_roles.first().group.name, f"{self.account1.id}_manager")
+        self.assertEqual(mixed_profile.projects.count(), 1)
+        self.assertEqual(mixed_profile.projects.first(), self.project)
+        self.assertEqual(mixed_profile.org_units.count(), 2)
+        self.assertIn(self.org_unit1, mixed_profile.org_units.all())
+        self.assertIn(self.org_unit2, mixed_profile.org_units.all())

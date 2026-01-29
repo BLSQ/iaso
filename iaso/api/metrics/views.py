@@ -1,13 +1,17 @@
+import csv
+
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.apps import serializers
-from iaso.api.common import DropdownOptionsWithRepresentationSerializer
+from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.models import MetricType, MetricValue
 from iaso.utils import legend
+from plugins.snt_malaria.api.scenarios.utils import get_valid_org_units_for_account
 
 from .serializers import (
     MetricTypeCreateSerializer,
@@ -24,7 +28,7 @@ from .serializers import (
 class MetricTypeViewSet(viewsets.ModelViewSet):
     serializer_class = MetricTypeSerializer
     ordering_fields = ["id", "name"]
-    http_method_names = ["get", "options", "post", "patch", "delete"]
+    http_method_names = ["get", "options", "post", "put", "delete"]
 
     def get_queryset(self):
         return MetricType.objects.filter(account=self.request.user.iaso_profile.account, is_utility=False)
@@ -85,6 +89,31 @@ class MetricValueViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
+
+    @action(detail=False, methods=["get"])
+    def csv_template(self, request):
+        account = request.user.iaso_profile.account
+        # Get all custom metric types for the user's account
+        metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
+        # Get All org units for the user's account
+        org_units = get_valid_org_units_for_account(account).prefetch_related("parent")
+
+        # Prepare the CSV response
+        headers = ["ADM1_NAME", "ADM2_NAME", "ADM2_ID"]
+        for mt in metric_types:
+            headers.append(f"{mt.code}")
+        response = HttpResponse(content_type=CONTENT_TYPE_CSV)
+        writer = csv.writer(response)
+        writer.writerow(headers)
+        for ou in org_units:
+            row = [ou.parent.name if ou.parent else "", ou.name, ou.id]
+            for mt in metric_types:
+                row.append("")  # Empty value for the metric
+            writer.writerow(row)
+
+        filename = "metric_import_template.csv"
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+        return response
 
 
 class MetricOrgUnitsViewSet(viewsets.ModelViewSet):

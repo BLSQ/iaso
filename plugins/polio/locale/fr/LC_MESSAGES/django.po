@@ -709,6 +709,10 @@ msgstr "Polio - Plan pays (non admin)"
 msgid "Polio Country Plan Admin"
 msgstr "Polio - Plan pays (admin)"
 
+#: plugins/polio/permissions.py
+msgid "Polio Performance Thresholds Write"
+msgstr "Polio - Seuils de performance (écriture)"
+
 #: plugins/polio/preparedness/spreadsheet_manager.py
 msgid "No country found for campaign"
 msgstr "Aucun pays trouvé pour la campagne"

@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { useGetPerformanceThresholds } from '../hooks/api';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from '../../../../../src/constants/urls';
+import { useGetPerformanceThresholds } from '../hooks/api';
 import { useTableColumns } from './columns';
 
 type Props = {

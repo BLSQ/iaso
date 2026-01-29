@@ -73,6 +73,17 @@ class MetricTypeCreateSerializerTestCase(TestCase):
         cls.request = APIRequestFactory().get("/")
         cls.request.user = cls.user
 
+        cls.request_data = {
+            "code": "existing_code",
+            "name": "Existing Metric Type",
+            "category": "Existing Category",
+            "legend_type": "threshold",
+            "units": "units",
+            "unit_symbol": "u",
+            "description": "An existing metric type",
+            "origin": "custom",
+        }
+
     def test_fields(self):
         serializer = MetricTypeCreateSerializer()
         expected_fields = {
@@ -89,30 +100,24 @@ class MetricTypeCreateSerializerTestCase(TestCase):
 
     def test_validate_code_whitespace(self):
         serializer = MetricTypeCreateSerializer(data={"code": "invalid code"}, context={"request": self.request})
-        with self.assertRaisesMessage(serializers.ValidationError, "Code must not contain whitespace."):
-            serializer.validate_code("invalid code")
-
-    def test_validate_code_same(self):
-        metric_type = MetricType(code="same_code")
-        serializer = MetricTypeCreateSerializer(
-            instance=metric_type, data={"code": "same_code_modified"}, context={"request": self.request}
-        )
         self.assertFalse(serializer.is_valid())
+        self.assertIn("Code must not contain whitespace.", serializer.errors["code"])
+
+    def test_validate_code_existing(self):
+        MetricType.objects.create(
+            account=self.account,
+            code=self.request_data["code"],
+            name="Existing Metric Type",
+            category="Existing Category",
+            legend_type="threshold",
+        )
+        serializer = MetricTypeCreateSerializer(data=self.request_data, context={"request": self.request})
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual("uniqueCode", serializer.errors["code"][0])
 
     def test_validate_code_new(self):
-        data = {
-            "code": "new_code",
-            "name": "New Metric Type",
-            "category": "New Category",
-            "legend_type": "threshold",
-            "units": "units",
-            "unit_symbol": "u",
-            "description": "A new metric type",
-            "origin": "custom",
-        }
-
         serializer_context = {"request": self.request}
-        serializer = MetricTypeCreateSerializer(data=data, context=serializer_context)
+        serializer = MetricTypeCreateSerializer(data=self.request_data, context=serializer_context)
         self.assertTrue(serializer.is_valid())
 
 

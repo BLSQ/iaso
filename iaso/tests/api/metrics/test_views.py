@@ -74,6 +74,18 @@ class MetricTypeAPITestCase(APITestCase):
         self.assertEqual(created_mt.account, self.account)
         self.assertEqual(created_mt.legend_type, MetricType.LegendType.THRESHOLD.value)
         self.assertEqual(created_mt.origin, MetricType.MetricTypeOrigin.CUSTOM.value)
+        self.assertEqual(
+            created_mt.legend_config,
+            {
+                "domain": [1.0, 2.0, 3.0],
+                "range": [
+                    "#A2CAEA",
+                    "#ACDF9B",
+                    "#F2B16E",
+                    "#A93A42",
+                ],
+            },
+        )
 
     def test_metric_type_post_unauthenticated(self):
         response = self.client.post(

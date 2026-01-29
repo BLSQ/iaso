@@ -3,19 +3,19 @@ import json
 from django.db.models import Max, Min
 
 
-FOUR_SHADES = {
+FOUR_SHADES = [
     "#A2CAEA",
     "#ACDF9B",
     "#F2B16E",
     "#A93A42",
-}
-FIVE_SHADES = {
+]
+FIVE_SHADES = [
     "#A2CAEA",
     "#ACDF9B",
     "#F5F1A0",
     "#F2B16E",
     "#A93A42",
-}
+]
 SIX_SHADES = [
     "#A2CAEA",
     "#ACDF9B",
@@ -97,7 +97,7 @@ def get_legend_config(metric_type, scale):
         return {"domain": numeric_scales, "range": get_range_from_count(len(scales))}
     if metric_type.legend_type == "ordinal":
         scales = get_scales_from_list_or_json_str(scale)
-        if scales == 3:
+        if len(scales) == 3:
             print(f"Metric ordinal has to many or to few scales {len(scales)}")
             return None
 

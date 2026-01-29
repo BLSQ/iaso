@@ -400,7 +400,9 @@ class ProfileAPITestCase(APITestCase):
                 orgunit__source_ref=self.org_unit_from_parent_type.source_ref,
             ),
             get_expected_row_list(
-                self.jim.iaso_profile, [CORE_FORMS_PERMISSION.codename, CORE_USERS_ADMIN_PERMISSION.codename], teams=self.team2.name
+                self.jim.iaso_profile,
+                [CORE_FORMS_PERMISSION.codename, CORE_USERS_ADMIN_PERMISSION.codename],
+                teams=self.team2.name,
             ),
             get_expected_row_list(
                 self.jam.iaso_profile, [CORE_USERS_MANAGED_PERMISSION.codename], profile_language="en"
@@ -504,15 +506,7 @@ class ProfileAPITestCase(APITestCase):
                 6: f"{self.user_role_name},{self.user_role_another_account_name}",
             },
             "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
-            "teams": {
-                0: self.team1.name, 
-                1: None, 
-                2: self.team2.name, 
-                3: None, 
-                4: None, 
-                5: None, 
-                6: None
-            },
+            "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
             "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             "editable_org_unit_types": {
                 0: None,

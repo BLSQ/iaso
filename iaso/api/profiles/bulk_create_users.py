@@ -167,41 +167,52 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         else:
             bulk_configuration = raw_bulk_config
 
+        # Validate CSV
         csv_data = self._parse_csv_file(request.FILES["file"])
+
+        # Validate users
+        validation_errors, validation_context = self._pre_validate_users(csv_data, importer_user, importer_account)
+
+        # Validate bulk configuration
+        validated_bulk_config = {}
+        if bulk_configuration:
+            config_errors, validated_bulk_config = self._validate_bulk_configuration(
+                bulk_configuration, importer_user, importer_account
+            )
+            if config_errors:
+                validation_errors.extend(config_errors)
+
+        if validation_errors:
+            return Response({"validation_errors": validation_errors}, status=400)
+
+        created_users, created_profiles = self._bulk_create_users_and_profiles(
+            csv_data,
+            importer_user,
+            importer_account,
+            validation_context,
+            bulk_configuration,
+            validated_bulk_config,
+        )
 
         csv_file_instance = BulkCreateUserCsvFile.objects.create(
             file=request.FILES["file"], created_by=importer_user, account=importer_account
         )
 
-        # Validate CSV data
-        validation_errors, validation_context = self._pre_validate_users(csv_data, importer_user, importer_account)
+        # remove passwords from stored CSV using pandas
+        csv_file_instance.file.seek(0)
+        file_content = csv_file_instance.file.read().decode("utf-8")
+        delimiter = ";" if ";" in file_content else ","
+        csv_data = pd.read_csv(io.StringIO(file_content), delimiter=delimiter)
+        csv_data["password"] = ""
+        csv_content = csv_data.to_csv(path_or_buf=None, index=False, sep=delimiter)
+        content_file = ContentFile(csv_content.encode("utf-8"))
+        csv_file_instance.file.save(f"{csv_file_instance.id}.csv", content_file, save=False)
+        csv_file_instance.save()
 
-        # Validate bulk configuration
-        if bulk_configuration:
-            config_errors, config_context = self._validate_bulk_configuration(
-                bulk_configuration, importer_user, importer_account
-            )
-            if config_errors:
-                validation_errors.extend(config_errors)
-            # Merge config context into validation context
-            validation_context["bulk_config"] = config_context
+        audit_logger = ProfileAuditLogger()
+        self._audit(created_profiles, audit_logger, importer_user)
 
-        if validation_errors:
-            return Response({"validation_errors": validation_errors}, status=400)
-
-        user_created_count = self._bulk_create_users_and_profiles(
-            csv_data,
-            importer_user,
-            importer_account,
-            csv_file_instance,
-            validation_context,
-            bulk_configuration,
-        )
-
-        response = {
-            "users_created": user_created_count,
-            "csv_file_id": csv_file_instance.id,
-        }
+        response = {"Accounts created": len(created_users)}
         return Response(response)
 
     def _parse_csv_file(self, csv_file):
@@ -221,11 +232,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
             pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
         except UnicodeDecodeError as e:
-            raise serializers.ValidationError({"error": f"Invalid file encoding: {e}"})
+            raise serializers.ValidationError({"error": "Invalid file encoding"})
         except pd.errors.ParserError as e:
-            raise serializers.ValidationError({"error": f"Invalid CSV file: {e}"})
+            raise serializers.ValidationError({"error": "Invalid CSV file"})
         except Exception as e:
-            raise serializers.ValidationError({"error": f"Failed to parse CSV: {e}"})
+            raise serializers.ValidationError({"error": "Failed to parse CSV"})
 
         parsed_rows = []
         headers = None
@@ -483,7 +494,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     else:
                         validation_context["projects_by_row"][row_index] = list(available_projects)
 
-
             editable_org_unit_type_ids = data.get("editable_org_unit_types", [])
             if editable_org_unit_type_ids:
                 available_org_unit_types = OrgUnitType.objects.filter(
@@ -602,13 +612,19 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         return validation_errors, validation_context
 
     def _bulk_create_users_and_profiles(
-        self, csv_data, importer_user, importer_account, csv_file_instance, validation_context, bulk_configuration=None
+        self,
+        csv_data,
+        importer_user,
+        importer_account,
+        validation_context,
+        bulk_configuration=None,
+        validated_bulk_config=None,
     ):
-        """Create users and profiles using bulk operations and cached validation context.
+        """Create users and profiles using bulk operations validation context.
         Merges bulk_configuration with CSV data: CSV values take precedence
         """
         bulk_configuration = bulk_configuration or {}
-        bulk_config_context = validation_context.get("bulk_config", {})
+        validated_bulk_config = validated_bulk_config or {}
         audit_logger = ProfileAuditLogger()
 
         # Phase 1: Prepare User objects for bulk_create
@@ -650,7 +666,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
             organization = data.get("organization", "").strip() or bulk_configuration.get("organization")
 
-            # dhis2_id: Use only CSV value
             dhis2_id = data.get("dhis2_id", "").strip()
 
             profile = Profile(
@@ -670,27 +685,37 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         # Phase 3: Handle ManyToMany relationships with bulk operations
         self._bulk_set_many_to_many_relationships(
-            created_profiles, csv_data, importer_user, importer_account, validation_context, bulk_configuration
+            created_profiles,
+            csv_data,
+            importer_user,
+            importer_account,
+            validation_context,
+            bulk_configuration,
+            validated_bulk_config,
         )
 
         # Phase 4: Send email invitations
         if invitation_users:
             self._send_bulk_email_invitations(invitation_users)
 
-        # Phase 5: Save passwords to CSV and log audit
-        self._save_csv_and_audit(csv_file_instance, csv_data, created_profiles, audit_logger, importer_user)
-
-        return len(created_users)
+        return created_users, created_profiles
 
     def _bulk_set_many_to_many_relationships(
-        self, profiles, user_data, importer_user, importer_account, validation_context, bulk_configuration=None
+        self,
+        profiles,
+        user_data,
+        importer_user,
+        importer_account,
+        validation_context,
+        bulk_configuration=None,
+        validated_bulk_config=None,
     ):
         """Set ManyToMany relationships using bulk operations and cached validated objects.
 
         Merges bulk_configuration with CSV data: CSV values take precedence.
         """
         bulk_configuration = bulk_configuration or {}
-        bulk_config_context = validation_context.get("bulk_config", {})
+        validated_bulk_config = validated_bulk_config or {}
 
         profile_org_units_list = []
         profile_projects_list = []
@@ -701,30 +726,30 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         for row_index, (profile, data) in enumerate(zip(profiles, user_data)):
             org_units_to_add = validation_context["org_units_by_row"].get(row_index, [])
-            if not org_units_to_add and bulk_config_context.get("org_units_by_row"):
-                org_units_to_add = bulk_config_context["org_units_by_row"].get(0, [])
+            if not org_units_to_add and validated_bulk_config.get("org_units_by_row"):
+                org_units_to_add = validated_bulk_config["org_units_by_row"].get(0, [])
 
             for ou in org_units_to_add:
                 profile_org_units_list.append(Profile.org_units.through(profile=profile, orgunit=ou))
 
             cached_projects = validation_context["projects_by_row"].get(row_index, [])
-            if not cached_projects and bulk_config_context.get("projects_by_row"):
-                cached_projects = bulk_config_context["projects_by_row"].get(0, [])
+            if not cached_projects and validated_bulk_config.get("projects_by_row"):
+                cached_projects = validated_bulk_config["projects_by_row"].get(0, [])
 
             for project in cached_projects:
                 profile_projects_list.append(Profile.projects.through(profile=profile, project=project))
 
             cached_roles = validation_context["user_roles_by_row"].get(row_index, [])
-            if not cached_roles and bulk_config_context.get("user_roles_by_row"):
-                cached_roles = bulk_config_context["user_roles_by_row"].get(0, [])
+            if not cached_roles and validated_bulk_config.get("user_roles_by_row"):
+                cached_roles = validated_bulk_config["user_roles_by_row"].get(0, [])
 
             for role in cached_roles:
                 profile_user_roles_list.append(Profile.user_roles.through(profile=profile, userrole=role))
                 user_groups_list.append(User.groups.through(user=profile.user, group=role.group))
 
             cached_permissions = validation_context["permissions_by_row"].get(row_index, [])
-            if not cached_permissions and bulk_config_context.get("permissions_by_row"):
-                cached_permissions = bulk_config_context["permissions_by_row"].get(0, [])
+            if not cached_permissions and validated_bulk_config.get("permissions_by_row"):
+                cached_permissions = validated_bulk_config["permissions_by_row"].get(0, [])
 
             for permission in cached_permissions:
                 user_permissions_list.append(User.user_permissions.through(user=profile.user, permission=permission))
@@ -769,25 +794,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         send_bulk_email_invitations(user_ids, self.request.is_secure(), user=self.request.user)
 
-    def _save_csv_and_audit(self, csv_file_instance, user_data, created_profiles, audit_logger, importer_user):
-        """Save CSV with password redacted and log audit trail."""
-        try:
-            csv_file_instance.file.seek(0)
-            user_csv_decoded = csv_file_instance.file.read().decode("utf-8")
-            csv_str = io.StringIO(user_csv_decoded)
-            delimiter = ";" if ";" in user_csv_decoded else ","
-
-            csv_file = pd.read_csv(csv_str, delimiter=delimiter)
-
-            if "password" in csv_file.columns:
-                csv_file["password"] = None
-            csv_content = csv_file.to_csv(path_or_buf=None, index=False)
-
-            content_file = ContentFile(csv_content.encode("utf-8"))
-            csv_file_instance.file.save(f"{csv_file_instance.id}.csv", content_file)
-        except Exception:
-            pass
-
+    def _audit(self, created_profiles, audit_logger, importer_user):
+        """Log created users"""
         for profile in created_profiles:
             audit_logger.log_modification(
                 instance=profile,

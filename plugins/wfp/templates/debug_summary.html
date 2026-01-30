@@ -1,7 +1,6 @@
 <html>
 <head>
     <style>
-        /* Maintain original table styling */
         th, td {
             border: 1px black solid;
             padding: 5px;
@@ -12,11 +11,10 @@
             background-color: #f2f2f2;
         }
 
-        /* Navbar Styling */
         .navbar {
             background-color: #000000;
             padding: 15px;
-            position: -webkit-sticky; /* Support for Safari */
+            position: -webkit-sticky;
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -35,14 +33,13 @@
             text-decoration: underline;
         }
 
-        /* Prevent anchor jumps from hiding titles behind the sticky navbar */
         .section-anchor {
             scroll-margin-top: 80px;
         }
         
         body {
             margin: 0;
-            padding: 0 0 20px 0; /* Removing top padding to let navbar sit flush */
+            padding: 0 0 20px 0; 
         }
         
         .content-container {

@@ -1,10 +1,4 @@
-import React, {
-    Fragment,
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import {
     Grid,
@@ -19,48 +13,24 @@ import {
     useTheme,
 } from '@mui/material';
 import { useSafeIntl, useGoBack, LoadingSpinner } from 'bluesquare-components';
-import L from 'leaflet';
-import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
-import CircleMarkerComponent from 'Iaso/components/maps/markers/CircleMarkerComponent';
-import { CustomTileLayer } from 'Iaso/components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from 'Iaso/components/maps/tools/CustomZoomControl';
-import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
-import tiles from 'Iaso/constants/mapTiles';
-import {
-    Bounds,
-    circleColorMarkerOptions,
-    getOrgUnitsBounds,
-    isValidCoordinate,
-} from 'Iaso/utils/map/mapUtils';
 import getDisplayName, { User } from 'Iaso/utils/usersUtils';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../plannings/types';
-import {
-    useGetPlanningOrgUnitsChildren,
-    useGetPlanningOrgUnitsRoot,
-} from '../teams/hooks/requests/useGetPlanningOrgUnits';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
 import { useSaveProfile } from '../users/hooks/useSaveProfile';
+import { AssignmentsMap } from './components/AssignmentsMap';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
 import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
 import { AssignmentParams } from './types/assigment';
 
-const defaultViewport = {
-    center: L.latLng(1, 20),
-    zoom: 3.25,
-};
-const boundsOptions: L.FitBoundsOptions = {
-    padding: L.point(25, 25),
-    maxZoom: 12,
-};
 const defaultHeight = '80vh';
 
 export const Assignments: FunctionComponent = () => {
@@ -82,25 +52,12 @@ export const Assignments: FunctionComponent = () => {
 
     const goBack = useGoBack(baseUrls.planning);
     const theme = useTheme();
-    // Map stuff
-    const { data: childrenOrgUnits, isLoading: isLoadingMapOrgUnits } =
-        useGetPlanningOrgUnitsChildren(planningId);
-    const { data: rootMapOrgUnit, isLoading: isLoadingRootMapOrgUnit } =
-        useGetPlanningOrgUnitsRoot(planningId);
-    const bounds: Bounds | undefined = useMemo(
-        () => childrenOrgUnits && getOrgUnitsBounds(childrenOrgUnits),
-        [childrenOrgUnits],
-    );
-    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    // Map stuff
-    // Team stuff
+
     const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
         planning?.team_details?.id,
     );
     const { mutate: updateTeam } = useSaveTeam('edit', false);
     const { mutate: updateUser } = useSaveProfile(false);
-    const { mutateAsync: saveAssignment, isLoading: isSaving } =
-        useSaveAssignment();
 
     const {
         data: assignments,
@@ -109,39 +66,34 @@ export const Assignments: FunctionComponent = () => {
         data?: AssignmentsResult;
         isLoading: boolean;
     } = useGetAssignments({ planning: planningId });
+    const { mutateAsync: saveAssignment, isLoading: isSaving } =
+        useSaveAssignment();
     const handleSaveAssignment = useCallback(
         (orgUnitId: number) => {
-            saveAssignment({
-                planning: planningId,
-                org_unit: orgUnitId,
-                user: selectedUser?.id,
-            });
-        },
-        [planningId, saveAssignment, selectedUser?.id],
-    );
-    const getAssignmentColor = useCallback(
-        (orgUnitId: number) => {
-            const assignment = assignments?.allAssignments?.find(
+            const existingAssignment = assignments?.allAssignments?.find(
                 assignment => assignment.org_unit === orgUnitId,
             );
-            const user = rootTeam?.users_details?.find(
-                user => user.id === assignment?.user,
-            );
-            return user?.color || theme.palette.error.main;
+            const payload = {
+                planning: planningId,
+                org_unit: orgUnitId,
+                id: existingAssignment?.id,
+                user:
+                    existingAssignment &&
+                    selectedUser?.id === existingAssignment.user
+                        ? null
+                        : selectedUser?.id,
+            };
+
+            saveAssignment(payload);
         },
         [
+            planningId,
+            saveAssignment,
+            selectedUser?.id,
             assignments?.allAssignments,
-            rootTeam?.users_details,
-            theme.palette.error.main,
         ],
     );
-    // Team stuff
 
-    const isLoading =
-        isLoadingMapOrgUnits ||
-        isLoadingRootTeam ||
-        isLoadingAssignments ||
-        isSaving;
     return (
         <>
             <TopBar
@@ -168,89 +120,15 @@ export const Assignments: FunctionComponent = () => {
 
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={8}>
-                            {isLoading && <LoadingSpinner />}
-                            <MapContainer
-                                key={planning?.id}
-                                bounds={bounds}
-                                maxZoom={currentTile.maxZoom}
-                                style={{ height: defaultHeight }}
-                                center={defaultViewport.center}
-                                zoom={defaultViewport.zoom}
-                                scrollWheelZoom={false}
-                                zoomControl={false}
-                                contextmenu
-                                boundsOptions={boundsOptions}
-                            >
-                                <CustomZoomControl
-                                    bounds={bounds}
-                                    boundsOptions={boundsOptions}
-                                    fitOnLoad
-                                />
-                                <ScaleControl imperial={false} />
-                                <CustomTileLayer
-                                    currentTile={currentTile}
-                                    setCurrentTile={setCurrentTile}
-                                />
-                                {rootMapOrgUnit?.geo_json && (
-                                    <Pane
-                                        name="root-org-unit-shape"
-                                        style={{ zIndex: 200 }}
-                                    >
-                                        <GeoJSON
-                                            key={rootMapOrgUnit?.id}
-                                            data={rootMapOrgUnit.geo_json}
-                                        />
-                                    </Pane>
-                                )}
-                                <Pane
-                                    name="target-org-units-shapes"
-                                    style={{ zIndex: 201 }}
-                                >
-                                    {childrenOrgUnits
-                                        ?.filter(
-                                            ou =>
-                                                ou.has_geo_json &&
-                                                ou.id !==
-                                                    planning?.org_unit_details
-                                                        ?.id,
-                                        )
-                                        .map(ou => (
-                                            <GeoJSON
-                                                key={ou.id}
-                                                data={ou.geo_json}
-                                            />
-                                        ))}
-                                </Pane>
-                                <Pane
-                                    name="target-org-units-locations"
-                                    style={{ zIndex: 202 }}
-                                >
-                                    {childrenOrgUnits
-                                        ?.filter(ou =>
-                                            isValidCoordinate(
-                                                ou.latitude,
-                                                ou.longitude,
-                                            ),
-                                        )
-                                        .map(ou => (
-                                            <CircleMarkerComponent
-                                                key={ou.id}
-                                                item={ou}
-                                                onClick={() =>
-                                                    handleSaveAssignment(ou.id)
-                                                }
-                                                markerProps={() => ({
-                                                    ...circleColorMarkerOptions(
-                                                        getAssignmentColor(
-                                                            ou.id,
-                                                        ),
-                                                    ),
-                                                    radius: 12,
-                                                })}
-                                            />
-                                        ))}
-                                </Pane>
-                            </MapContainer>
+                            <AssignmentsMap
+                                planningId={planningId}
+                                rootTeam={rootTeam}
+                                isLoadingRootTeam={isLoadingRootTeam}
+                                assignments={assignments}
+                                isLoadingAssignments={isLoadingAssignments}
+                                handleSaveAssignment={handleSaveAssignment}
+                                isSaving={isSaving}
+                            />
                         </Grid>
                         <Grid item xs={12} md={4}>
                             {isLoadingRootTeam && <LoadingSpinner />}

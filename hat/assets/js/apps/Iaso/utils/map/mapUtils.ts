@@ -215,7 +215,6 @@ export const getOrgUnitBounds = (
     orgUnit: OrgUnit | CompletenessMapStats | PlanningOrgUnits,
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
-
     if (orgUnit.geo_json) {
         try {
             bounds = L.geoJSON(orgUnit.geo_json as any).getBounds();

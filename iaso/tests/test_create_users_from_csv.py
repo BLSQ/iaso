@@ -182,7 +182,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["validation_errors"]
+        validation_errors = response.json()["error"]
         self.assertEqual(len(validation_errors), 1)
         self.assertEqual(validation_errors[0]["row"], 3)
         self.assertIn("email", validation_errors[0]["errors"])
@@ -205,7 +205,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["validation_errors"]
+        validation_errors = response.json()["error"]
         # Row 1 has invalid orgunit ID, rows 2-3 have invalid source_ref
         self.assertEqual(len(validation_errors), 3)
 
@@ -233,7 +233,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["validation_errors"]
+        validation_errors = response.json()["error"]
         # Should have error for existing username
         username_error = next((e for e in validation_errors if "username" in e.get("errors", {})), None)
         self.assertIsNotNone(username_error)
@@ -250,7 +250,7 @@ class BulkCreateCsvTestCase(APITestCase):
         profiles = Profile.objects.all()
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["validation_errors"]
+        validation_errors = response.json()["error"]
         self.assertTrue(len(validation_errors) > 0)
         self.assertEqual(len(users), 5)
         self.assertEqual(len(profiles), 5)
@@ -332,7 +332,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["validation_errors"]
+        validation_errors = response.json()["error"]
         password_error = next((e for e in validation_errors if "password" in e.get("errors", {})), None)
         self.assertIsNotNone(password_error)
         self.assertIn("too short", password_error["errors"]["password"])
@@ -367,7 +367,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["validation_errors"]
+        validation_errors = response.json()["error"]
         orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
         self.assertIsNotNone(orgunit_error)
         self.assertIn("Bazarre", orgunit_error["errors"]["orgunit"])
@@ -404,12 +404,6 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_cant_create_user_without_access_to_ou(self):
-        # self.client.force_authenticate(self.yoda)
-
-        # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-        #     response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
-
-        # self.assertEqual(response.status_code, 400)
         self.client.force_authenticate(self.yoda)
 
         context = {"org_unit_type_id": self.org_unit_type_region.id}
@@ -433,7 +427,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["validation_errors"]
+        validation_errors = response.json()["error"]
         orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
         self.assertIsNotNone(orgunit_error)
         # The error should indicate access issue or invalid org unit
@@ -857,8 +851,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
 
         response_data = response.json()
-        self.assertIn("validation_errors", response_data)
-        validation_errors = response_data["validation_errors"]
+        self.assertIn("error", response_data)
+        validation_errors = response_data["error"]
         self.assertEqual(len(validation_errors), 1)
         self.assertIn("teams", validation_errors[0]["errors"])
         self.assertIn(invalid_team_name, validation_errors[0]["errors"]["teams"])
@@ -889,8 +883,8 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         response_data = response.json()
-        self.assertIn("validation_errors", response_data)
-        validation_errors = response_data["validation_errors"]
+        self.assertIn("error", response_data)
+        validation_errors = response_data["error"]
         self.assertEqual(len(validation_errors), 1)
         self.assertIn("teams", validation_errors[0]["errors"])
         self.assertIn(secret_team_name, validation_errors[0]["errors"]["teams"])

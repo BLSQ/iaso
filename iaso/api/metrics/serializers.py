@@ -78,6 +78,13 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
 
 
 class MetricValueSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    year = serializers.IntegerField(required=False, allow_null=True)
+    value = serializers.FloatField(required=False, allow_null=True)
+    string_value = serializers.CharField(required=False, allow_null=True)
+    metric_type = serializers.PrimaryKeyRelatedField(queryset=MetricType.objects.all())
+    org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all(), allow_null=False)
+
     class Meta:
         model = MetricValue
         fields = ["id", "metric_type", "org_unit", "year", "value", "string_value"]
@@ -141,13 +148,14 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 if pd.isna(value):
                     continue
                 metric_type_id = self.context["existing_metric_types"][code]
-                metric_values.append(
-                    MetricValue(
-                        org_unit_id=org_unit_id,
-                        metric_type_id=metric_type_id,
-                        value=value,
-                    )
-                )
+                mv = MetricValue(org_unit_id=org_unit_id, metric_type_id=metric_type_id)
+                try:
+                    # Parse the value as a float
+                    mv.value = float(value)
+                except ValueError:
+                    mv.value = None
+                    mv.string_value = value
+                metric_values.append(mv)
 
         self.context["metric_values"] = metric_values
 

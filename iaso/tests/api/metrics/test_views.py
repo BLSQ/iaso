@@ -300,11 +300,53 @@ class MetricValueAPITestCase(APITestCase):
             data={
                 "metric_type": self.metric_type.id,
                 "org_unit": self.org_unit.id,
-                "year": 2022,
                 "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
             },
         )
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_metric_value_post_unauthenticated(self):
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": self.org_unit.id,
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
+    def test_metric_value_post_invalid_metric_type(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": 9999,  # Invalid metric type ID
+                "org_unit": self.org_unit.id,
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_post_invalid_org_unit(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": 9999,  # Invalid org unit ID
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_metric_value_patch(self):
         self.client.force_authenticate(user=self.user)

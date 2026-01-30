@@ -53,6 +53,11 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         metric_type.legend_config = legend.get_legend_config(metric_type, self.request.data.get("scale"))
         metric_type.save()
 
+    def perform_update(self, serializer):
+        metric_type = serializer.save()
+        metric_type.legend_config = legend.get_legend_config(metric_type, self.request.data.get("scale"))
+        metric_type.save()
+
     def perform_destroy(self, instance):
         if instance.origin == MetricType.MetricTypeOrigin.OPENHEXA.value:
             raise serializers.ValidationError("Cannot delete OpenHexa metric types")

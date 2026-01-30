@@ -28,7 +28,7 @@ from .serializers import (
 class MetricTypeViewSet(viewsets.ModelViewSet):
     serializer_class = MetricTypeSerializer
     ordering_fields = ["id", "name"]
-    http_method_names = ["get", "options", "post", "put", "delete"]
+    http_method_names = ["get", "options", "post", "patch", "delete"]
 
     def get_queryset(self):
         return MetricType.objects.filter(account=self.request.user.iaso_profile.account, is_utility=False)

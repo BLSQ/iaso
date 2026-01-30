@@ -6,11 +6,12 @@ from django.core.management import call_command
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.template import loader
+from django.utils import timezone
 
 from iaso.models import Entity, EntityType
 
 from .common import ETL
-from .models import Beneficiary
+from .models import Beneficiary, Journey, Visit
 
 
 @login_required
@@ -22,6 +23,37 @@ def debug(request, id):
 
     template = loader.get_template("debug.html")
     context = {"entity": entity, "beneficiary": beneficiary, "info": beneficiary_info}
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def debug_summary(request):
+    now = timezone.now()
+    allowed_entities = Entity.objects.filter_for_user(request.user)
+    allowed_entity_ids = allowed_entities.values_list("id", flat=True)
+
+    negative_journeys_qs = Journey.objects.filter(
+        duration__lt=0, beneficiary__entity_id__in=allowed_entity_ids
+    ).select_related("beneficiary", "beneficiary__account")
+
+    negative_count = negative_journeys_qs.count()
+
+    recent_negatives = negative_journeys_qs.prefetch_related("visit_set__step_set").order_by("-id")
+
+    future_visits_qs = Visit.objects.filter(
+        date__gt=now, journey__beneficiary__entity_id__in=allowed_entity_ids
+    ).select_related("journey__beneficiary", "journey__beneficiary__account")
+
+    future_count = future_visits_qs.count()
+    recent_future_visits = future_visits_qs.order_by("-date")[:3]
+
+    template = loader.get_template("debug_summary.html")
+    context = {
+        "negative_count": negative_count,
+        "recent_negatives": recent_negatives,
+        "future_count": future_count,
+        "recent_future_visits": recent_future_visits,
+    }
     return HttpResponse(template.render(context, request))
 
 

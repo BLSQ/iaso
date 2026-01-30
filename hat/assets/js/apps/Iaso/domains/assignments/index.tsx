@@ -1,37 +1,22 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import {
-    Grid,
-    Table,
-    Paper,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-    Checkbox,
-    useTheme,
-} from '@mui/material';
-import { useSafeIntl, useGoBack, LoadingSpinner } from 'bluesquare-components';
-import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { Grid, Typography } from '@mui/material';
+import { useSafeIntl, useGoBack } from 'bluesquare-components';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
-import getDisplayName, { User } from 'Iaso/utils/usersUtils';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
-import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
-import { useSaveProfile } from '../users/hooks/useSaveProfile';
+import { User } from '../teams/types/team';
 import { AssignmentsMap } from './components/AssignmentsMap';
+import { AssignmentsTeams } from './components/AssignmentsTeams';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
 import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
 import { AssignmentParams } from './types/assigment';
-
-const defaultHeight = '80vh';
 
 export const Assignments: FunctionComponent = () => {
     const [selectedUser, setSelectedUser] = useState<User | undefined>(
@@ -51,13 +36,10 @@ export const Assignments: FunctionComponent = () => {
     } = useGetPlanningDetails(planningId);
 
     const goBack = useGoBack(baseUrls.planning);
-    const theme = useTheme();
 
     const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
         planning?.team_details?.id,
     );
-    const { mutate: updateTeam } = useSaveTeam('edit', false);
-    const { mutate: updateUser } = useSaveProfile(false);
 
     const {
         data: assignments,
@@ -131,172 +113,13 @@ export const Assignments: FunctionComponent = () => {
                             />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            {isLoadingRootTeam && <LoadingSpinner />}
-                            <Paper sx={{ height: defaultHeight }}>
-                                {rootTeam && (
-                                    <>
-                                        <Typography variant="h6">
-                                            {rootTeam?.name}
-                                        </Typography>
-                                        <Table size="small">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell
-                                                        sx={{
-                                                            width: 50,
-                                                        }}
-                                                    >
-                                                        {formatMessage(
-                                                            MESSAGES.selection,
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell
-                                                        sx={{
-                                                            width: 50,
-                                                        }}
-                                                    >
-                                                        {formatMessage(
-                                                            MESSAGES.color,
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {formatMessage(
-                                                            MESSAGES.name,
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {formatMessage(
-                                                            MESSAGES.assignationsCount,
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {rootTeam?.sub_teams_details.map(
-                                                    subTeam => (
-                                                        <TableRow
-                                                            key={subTeam.id}
-                                                        >
-                                                            <TableCell
-                                                                sx={{
-                                                                    width: 50,
-                                                                }}
-                                                            >
-                                                                <ColorPicker
-                                                                    currentColor={
-                                                                        subTeam?.color
-                                                                    }
-                                                                    displayLabel={
-                                                                        false
-                                                                    }
-                                                                    onChangeColor={color => {
-                                                                        updateTeam(
-                                                                            {
-                                                                                id: subTeam.id,
-                                                                                color,
-                                                                            },
-                                                                        );
-                                                                    }}
-                                                                />
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {subTeam?.name}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ),
-                                                )}
-                                                {rootTeam?.users_details
-                                                    .sort((a, b) =>
-                                                        a.username.localeCompare(
-                                                            b.username,
-                                                        ),
-                                                    )
-                                                    .map(user => (
-                                                        <TableRow
-                                                            key={user.id}
-                                                            sx={{
-                                                                backgroundColor:
-                                                                    selectedUser?.id ===
-                                                                    user.id
-                                                                        ? theme
-                                                                              .palette
-                                                                              .grey[200]
-                                                                        : 'transparent',
-                                                            }}
-                                                        >
-                                                            <TableCell
-                                                                sx={{
-                                                                    width: 50,
-                                                                    textAlign:
-                                                                        'center',
-                                                                }}
-                                                            >
-                                                                <Checkbox
-                                                                    checked={
-                                                                        selectedUser?.id ===
-                                                                        user.id
-                                                                    }
-                                                                    onChange={() =>
-                                                                        setSelectedUser(
-                                                                            user,
-                                                                        )
-                                                                    }
-                                                                />
-                                                            </TableCell>
-                                                            <TableCell
-                                                                sx={{
-                                                                    width: 50,
-                                                                    textAlign:
-                                                                        'center',
-                                                                }}
-                                                            >
-                                                                <ColorPicker
-                                                                    currentColor={
-                                                                        user?.color
-                                                                    }
-                                                                    displayLabel={
-                                                                        false
-                                                                    }
-                                                                    onChangeColor={color => {
-                                                                        updateUser(
-                                                                            // @ts-ignore
-                                                                            {
-                                                                                ...user,
-                                                                                id: user.iaso_profile,
-                                                                                user_name:
-                                                                                    user.username,
-                                                                                color,
-                                                                            },
-                                                                        );
-                                                                    }}
-                                                                />
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {getDisplayName(
-                                                                    user,
-                                                                )}
-                                                            </TableCell>
-                                                            <TableCell
-                                                                sx={{
-                                                                    textAlign:
-                                                                        'center',
-                                                                }}
-                                                            >
-                                                                {
-                                                                    assignments?.allAssignments?.filter(
-                                                                        assignment =>
-                                                                            assignment.user ===
-                                                                            user.id,
-                                                                    ).length
-                                                                }
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                            </TableBody>
-                                        </Table>
-                                    </>
-                                )}
-                            </Paper>
+                            <AssignmentsTeams
+                                rootTeam={rootTeam}
+                                isLoadingRootTeam={isLoadingRootTeam}
+                                selectedUser={selectedUser}
+                                setSelectedUser={setSelectedUser}
+                                assignments={assignments}
+                            />
                         </Grid>
                     </Grid>
                 </>

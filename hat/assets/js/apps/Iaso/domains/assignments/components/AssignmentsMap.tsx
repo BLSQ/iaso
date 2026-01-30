@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
+import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import L from 'leaflet';
 import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
@@ -82,7 +83,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         isLoadingRootOrgUnit ||
         isSaving;
     return (
-        <>
+        <Box position="relative">
             {isLoading && <LoadingSpinner />}
             <MapContainer
                 key={planning?.id}
@@ -141,6 +142,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         ))}
                 </Pane>
             </MapContainer>
-        </>
+        </Box>
     );
 };

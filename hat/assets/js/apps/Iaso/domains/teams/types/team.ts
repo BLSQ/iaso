@@ -14,7 +14,7 @@ export type User = {
     first_name: string;
     last_name: string;
     color: string;
-    iaso_profile: number;
+    iaso_profile_id: number;
 };
 
 export type Team = {

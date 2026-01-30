@@ -97,7 +97,7 @@ def get_legend_config(metric_type, scale):
         return {"domain": numeric_scales, "range": get_range_from_count(len(scales))}
     if metric_type.legend_type == "ordinal":
         scales = get_scales_from_list_or_json_str(scale)
-        if len(scales) == 3:
+        if len(scales) < 2 or len(scales) > 4:
             print(f"Metric ordinal has to many or to few scales {len(scales)}")
             return None
 

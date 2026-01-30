@@ -327,10 +327,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.deleteAssignmentsInfos',
         defaultMessage: 'Please delete all assignments first',
     },
-    bulkDeleteAssignmentsSuccess: {
-        id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
-        defaultMessage: 'Assignments deleted successfully',
-    },
     emptyAssignments: {
         id: 'iaso.assignment.emptyAssignments',
         defaultMessage: 'Delete assignments',
@@ -338,6 +334,10 @@ const MESSAGES = defineMessages({
     progress: {
         defaultMessage: 'Progress',
         id: 'iaso.tasks.progress',
+    },
+    bulkDeleteAssignmentsSuccess: {
+        id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
+        defaultMessage: 'Assignments deleted successfully',
     },
 });
 

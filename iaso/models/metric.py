@@ -57,7 +57,7 @@ class MetricValue(models.Model):
     class Meta:
         unique_together = [["metric_type", "org_unit", "year"]]
 
-    metric_type = models.ForeignKey(MetricType, on_delete=models.PROTECT)
+    metric_type = models.ForeignKey(MetricType, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, null=True, blank=True, on_delete=models.PROTECT)
     year = models.IntegerField(null=True, blank=True)
     value = models.FloatField(null=True, blank=True)

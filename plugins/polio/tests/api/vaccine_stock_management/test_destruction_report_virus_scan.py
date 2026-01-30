@@ -12,13 +12,13 @@ from hat import settings
 from iaso.test import MockClamavScanResults
 from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
-from plugins.polio.tests.test_vaccine_stock_management import VaccineStockManagementAPITestCase
+from plugins.polio.tests.vaccine_stocks_setup_data import VaccineStockManagementAPITestBase
 
 
 BASE_URL_SUB_RESOURCES = "/api/polio/vaccine/stock/"
 
 
-class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
+class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestBase):
     DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
     SAFE_FILE_PATH = "plugins/polio/tests/fixtures/virus_scan/safe_file.pdf"
     INFECTED_FILE_PATH = "plugins/polio/tests/fixtures/virus_scan/infected_file.pdf"

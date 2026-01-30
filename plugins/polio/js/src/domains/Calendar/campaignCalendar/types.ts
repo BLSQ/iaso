@@ -1,7 +1,10 @@
 import { Moment } from 'moment';
+import { UuidAsString } from 'Iaso/types/general';
 import { User } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     CalendarCampaign,
+    CampaignType,
+    DateAsString,
     MergedShape,
     Scope,
     Shape,
@@ -13,6 +16,8 @@ export type Query = {
     queryFn: CallableFunction;
     select: CallableFunction;
     enabled: boolean;
+    staleTime: number;
+    cacheTime: number;
 };
 
 export type MergedShapeWithCacheDate = MergedShape & { cache: number };
@@ -51,7 +56,7 @@ export type MappedCampaign = {
     separateScopesPerRound: boolean;
     color?: string;
     country: string;
-    // eslint-disable-next-line camelcase
+    layout?: 'top' | 'middle' | 'bottom';
     country_id: number;
     id: string;
     isPreventive: boolean;
@@ -75,7 +80,6 @@ export type CalendarParams = {
     roundStartFrom?: string;
     roundStartTo?: string;
     showOnlyDeleted?: string;
-    // eslint-disable-next-line camelcase
     show_test?: string; // boolean in string form
     on_hold?: string; // boolean in string form
     filterLaunched?: string;
@@ -88,6 +92,7 @@ export type CalendarParams = {
     orgUnitGroups?: string;
     currentDate?: string;
     periodType?: PeriodType;
+    showIntegrated?: 'true' | 'false';
 };
 
 export type CalendarData = {
@@ -127,3 +132,58 @@ export type Users = {
 };
 
 export type PeriodType = 'quarter' | 'year' | 'semester';
+
+export type FormattedCalendarData = {
+    filteredCampaigns: MappedCampaign[];
+    isLoading: boolean;
+    isFetching: boolean;
+};
+export type CalendarOrdering =
+    | '-first_round_started_at'
+    | 'first_round_started_at'
+    | 'country__name'
+    | '-country__name'
+    | 'obr_name'
+    | '-obr_name';
+
+export type MinimalScope = {
+    vaccine: string;
+    group: { id: number };
+};
+
+export type IntegratedCampaignAPIResponse = {
+    id: UuidAsString;
+    epid: string | null;
+    obr_name: string;
+    account: number;
+    top_level_org_unit_name: string;
+    top_level_org_unit_id: number;
+    rounds: Array<{
+        id: number;
+        number: number;
+        started_at: DateAsString;
+        ended_at: DateAsString;
+        vaccine_names: string;
+        target_population: number | null;
+        is_planned: boolean;
+        scopes: MinimalScope[];
+    }>;
+    sub_activities: Array<
+        Omit<SubActivity, 'scopes'> & { scopes: MinimalScope[] }
+    >;
+    is_preventive: boolean;
+    general_status: string;
+    grouped_campaigns: Array<{
+        id: number;
+    }>;
+    separate_scope_per_round: boolean;
+    scopes: MinimalScope[];
+    campaign_types: CampaignType[];
+    description: string | null;
+    is_test: boolean;
+    on_hold: boolean;
+    is_planned: boolean;
+    vaccines: string;
+    integrated_to: UuidAsString;
+    first_round_started_at: DateAsString;
+};

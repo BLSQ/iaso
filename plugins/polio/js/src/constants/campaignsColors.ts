@@ -32,7 +32,7 @@ const colors = [
     deepOrange[800],
 ];
 
-const getCampaignColor = (i, reverse = false) => {
+const getCampaignColor = (i: number, reverse = false): string => {
     const allColors = reverse ? colors.reverse() : colors;
     return allColors[i % allColors.length];
 };

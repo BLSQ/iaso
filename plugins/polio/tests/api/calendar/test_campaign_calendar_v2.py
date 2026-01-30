@@ -98,6 +98,7 @@ class CampaignCalendarV2TestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(campaign["is_test"], self.campaign.is_test)
         self.assertEqual(len(campaign["campaign_types"]), 1)
         self.assertEqual(campaign["campaign_types"][0]["name"], self.polio_type.name)
+        self.assertEqual(campaign["first_round_started_at"], self.rnd1.started_at.strftime("%Y-%m-%d"))
 
     def test_response_has_rounds(self):
         self.client.force_authenticate(self.user)

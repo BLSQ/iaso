@@ -248,6 +248,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             "orgunit__source_ref",
             "projects",
             "user_roles",
+            "teams",
             "permissions",
             "editable_org_unit_types",
         ]
@@ -334,6 +335,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             "permissions_by_row": {},  # {row_idx: [Permission objects]}
             "projects_by_row": {},  # {row_idx: [Project objects]}
             "user_roles_by_row": {},  # {row_idx: [UserRole objects]}
+            "teams_by_row": {},  # {row_idx: [Team objects]}
             "org_units_by_row": {},  # {row_idx: [OrgUnit objects]}
             "editable_org_unit_types_by_row": {},  # {row_idx: [OrgUnitType objects]}
         }
@@ -494,6 +496,16 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     else:
                         validation_context["projects_by_row"][row_index] = list(available_projects)
 
+            team_names = data.get("teams", [])
+            if team_names:
+                existing_teams = Team.objects.filter(name__in=team_names, project__account=importer_account)
+                existing_team_names = set(existing_teams.values_list("name", flat=True))
+                invalid_teams = [team for team in team_names if team not in existing_team_names]
+                if invalid_teams:
+                    row_errors["teams"] = f"Row {row_num}: Team '{invalid_teams[0]}' does not exist."
+                else:
+                    validation_context["teams_by_row"][row_index] = list(existing_teams)
+
             editable_org_unit_type_ids = data.get("editable_org_unit_types", [])
             if editable_org_unit_type_ids:
                 available_org_unit_types = OrgUnitType.objects.filter(
@@ -522,6 +534,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             "permissions_by_row": {},
             "projects_by_row": {},
             "user_roles_by_row": {},
+            "teams_by_row": {},
             "org_units_by_row": {},
         }
 
@@ -580,6 +593,17 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
                 else:
                     validation_context["projects_by_row"][row_index] = list(available_projects)
+
+        # Validate teams
+        team_names = bulk_configuration.get("teams", [])
+        if team_names:
+            existing_teams = Team.objects.filter(name__in=team_names, project__account=importer_account)
+            existing_team_names = set(existing_teams.values_list("name", flat=True))
+            invalid_teams = [team for team in team_names if team not in existing_team_names]
+            if invalid_teams:
+                row_errors["teams"] = f"Invalid teams: {', '.join(invalid_teams)}"
+            else:
+                validation_context["teams_by_row"][row_index] = list(existing_teams)
 
         # Validate org units
         org_unit_ids = bulk_configuration.get("orgunit", [])
@@ -723,6 +747,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         user_groups_list = []
         user_permissions_list = []
         profile_editable_types_list = []
+        team_users_list = []
 
         for row_index, (profile, data) in enumerate(zip(profiles, user_data)):
             org_units_to_add = validation_context["org_units_by_row"].get(row_index, [])
@@ -738,6 +763,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
             for project in cached_projects:
                 profile_projects_list.append(Profile.projects.through(profile=profile, project=project))
+
+            cached_teams = validation_context["teams_by_row"].get(row_index, [])
+            if not cached_teams and validated_bulk_config.get("teams_by_row"):
+                cached_teams = validated_bulk_config["teams_by_row"].get(0, [])
+
+            for team in cached_teams:
+                team_users_list.append(Team.users.through(team=team, user=profile.user))
 
             cached_roles = validation_context["user_roles_by_row"].get(row_index, [])
             if not cached_roles and validated_bulk_config.get("user_roles_by_row"):
@@ -775,6 +807,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         if user_permissions_list:
             User.user_permissions.through.objects.bulk_create(user_permissions_list, ignore_conflicts=True)
+
+        if team_users_list:
+            Team.users.through.objects.bulk_create(team_users_list, ignore_conflicts=True)
 
         if profile_editable_types_list:
             Profile.editable_org_unit_types.through.objects.bulk_create(

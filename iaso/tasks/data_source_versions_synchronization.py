@@ -16,8 +16,9 @@ def synchronize_source_versions_async(data_source_versions_synchronization_id: i
     )
 
     with transaction.atomic():
-        data_source_versions_synchronization.synchronize_source_versions()
+        # Attach the task early so downstream code can report progress safely.
         data_source_versions_synchronization.sync_task = task
+        data_source_versions_synchronization.synchronize_source_versions()
         data_source_versions_synchronization.save()
 
     task.report_success(message="Synchronized source versions.")

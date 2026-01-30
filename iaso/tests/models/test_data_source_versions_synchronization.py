@@ -374,7 +374,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.angola_country_to_compare_with.closed_date = datetime.date(2026, 11, 28)
         self.angola_country_to_compare_with.save()
         # Changes at the region level.
-        self.angola_region_to_compare_with.parent = None
         self.angola_region_to_compare_with.opening_date = datetime.date(2025, 11, 28)
         self.angola_region_to_compare_with.closed_date = datetime.date(2026, 11, 28)
         self.angola_region_to_compare_with.save()

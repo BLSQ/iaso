@@ -5,6 +5,7 @@ import time_machine
 
 from django.test import TestCase
 
+from iaso import models as m
 from iaso.diffing import DataSourceVersionsSynchronizer, Differ, diffs_to_json
 from iaso.tests.diffing.utils import PyramidBaseTest
 
@@ -223,6 +224,141 @@ class DiffsToJsonTestCase(PyramidBaseTest):
         ]
 
         self.assertJSONEqual(json_diffs, expected_json_diffs)
+
+
+class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
+    def _make_synchronizer(self):
+        account = m.Account.objects.create(name="Account")
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="sync",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff="[]",
+            account=account,
+        )
+        return DataSourceVersionsSynchronizer(data_source_sync=data_source_sync)
+
+    def test_prepare_modified_change_request_handles_status_new(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": None,
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "opening_date",
+                    "before": None,
+                    "after": "2024-01-01",
+                    "status": Differ.STATUS_NEW,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertIn("new_opening_date", change_request.requested_fields)
+        self.assertEqual(change_request.new_opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(group_changes, [])
+
+    def test_prepare_modified_change_request_handles_status_not_in_origin(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "opening_date",
+                    "before": "2024-01-01",
+                    "after": None,
+                    "status": Differ.STATUS_NOT_IN_ORIGIN,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertIn("new_opening_date", change_request.requested_fields)
+        self.assertIsNone(change_request.new_opening_date)
+        self.assertEqual(group_changes, [])
+
+    def test_prepare_modified_change_request_ignores_empty_name(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "name",
+                    "before": "Angola",
+                    "after": "",
+                    "status": Differ.STATUS_MODIFIED,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertNotIn("new_name", change_request.requested_fields)
+        self.assertEqual(change_request.new_name, "")
+
+    def test_prepare_modified_change_request_removes_parent(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": self.angola_region_to_update.pk,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "parent",
+                    "before": "parent-ref",
+                    "after": None,
+                    "status": Differ.STATUS_MODIFIED,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertIn("new_parent", change_request.requested_fields)
+        self.assertIsNone(change_request.new_parent_id)
 
     def test_dump_as_json_for_org_unit_creation(self):
         """

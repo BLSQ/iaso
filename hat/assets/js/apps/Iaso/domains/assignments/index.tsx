@@ -19,6 +19,7 @@ import {
     useTheme,
 } from '@mui/material';
 import { useSafeIntl, useGoBack, LoadingSpinner } from 'bluesquare-components';
+import L from 'leaflet';
 import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
@@ -38,8 +39,11 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
-import { useGetPlanningOrgUnits } from '../plannings/hooks/requests/useGetPlanningOrgUnits';
 import { Planning } from '../plannings/types';
+import {
+    useGetPlanningOrgUnitsChildren,
+    useGetPlanningOrgUnitsRoot,
+} from '../teams/hooks/requests/useGetPlanningOrgUnits';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { useSaveTeam } from '../teams/hooks/requests/useSaveTeam';
 import { useSaveProfile } from '../users/hooks/useSaveProfile';
@@ -48,12 +52,13 @@ import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
 import { AssignmentParams } from './types/assigment';
+
 const defaultViewport = {
-    center: [1, 20],
+    center: L.latLng(1, 20),
     zoom: 3.25,
 };
-const boundsOptions = {
-    padding: [25, 25],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(25, 25),
     maxZoom: 12,
 };
 const defaultHeight = '80vh';
@@ -78,21 +83,13 @@ export const Assignments: FunctionComponent = () => {
     const goBack = useGoBack(baseUrls.planning);
     const theme = useTheme();
     // Map stuff
-    const { data: mapOrgUnits, isLoading: isLoadingMapOrgUnits } =
-        useGetPlanningOrgUnits(planningId);
-    const rootMapOrgUnit = useMemo(() => {
-        return mapOrgUnits?.find(
-            ou => ou.id === planning?.org_unit_details?.id,
-        );
-    }, [mapOrgUnits, planning]);
-    const otherMapOrgUnits = useMemo(() => {
-        return mapOrgUnits?.filter(
-            ou => ou.id !== planning?.org_unit_details?.id,
-        );
-    }, [mapOrgUnits, planning]);
+    const { data: childrenOrgUnits, isLoading: isLoadingMapOrgUnits } =
+        useGetPlanningOrgUnitsChildren(planningId);
+    const { data: rootMapOrgUnit, isLoading: isLoadingRootMapOrgUnit } =
+        useGetPlanningOrgUnitsRoot(planningId);
     const bounds: Bounds | undefined = useMemo(
-        () => mapOrgUnits && getOrgUnitsBounds(mapOrgUnits),
-        [mapOrgUnits],
+        () => childrenOrgUnits && getOrgUnitsBounds(childrenOrgUnits),
+        [childrenOrgUnits],
     );
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     // Map stuff
@@ -182,7 +179,6 @@ export const Assignments: FunctionComponent = () => {
                                 scrollWheelZoom={false}
                                 zoomControl={false}
                                 contextmenu
-                                refocusOnMap={false}
                                 boundsOptions={boundsOptions}
                             >
                                 <CustomZoomControl
@@ -210,7 +206,7 @@ export const Assignments: FunctionComponent = () => {
                                     name="target-org-units-shapes"
                                     style={{ zIndex: 201 }}
                                 >
-                                    {otherMapOrgUnits
+                                    {childrenOrgUnits
                                         ?.filter(
                                             ou =>
                                                 ou.has_geo_json &&
@@ -229,7 +225,7 @@ export const Assignments: FunctionComponent = () => {
                                     name="target-org-units-locations"
                                     style={{ zIndex: 202 }}
                                 >
-                                    {otherMapOrgUnits
+                                    {childrenOrgUnits
                                         ?.filter(ou =>
                                             isValidCoordinate(
                                                 ou.latitude,

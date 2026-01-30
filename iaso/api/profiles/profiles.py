@@ -862,4 +862,3 @@ class ProfilesViewSet(viewsets.ViewSet):
     @staticmethod
     def get_subject_by_language(self, language="en"):
         return EMAIL_SUBJECT_FR if language == "fr" else EMAIL_SUBJECT_EN
-

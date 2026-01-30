@@ -1,7 +1,6 @@
 import csv
 import io
 import json
-import logging
 
 import pandas as pd
 import phonenumbers
@@ -24,9 +23,6 @@ from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.tasks.bulk_create_users_email import send_bulk_email_invitations
-
-
-logger = logging.getLogger(__name__)
 
 
 BULK_CREATE_USER_COLUMNS_LIST = [
@@ -183,7 +179,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 validation_errors.extend(config_errors)
 
         if validation_errors:
-            return Response({"validation_errors": validation_errors}, status=400)
+            return Response({"error": validation_errors}, status=400)
 
         created_users, created_profiles = self._bulk_create_users_and_profiles(
             csv_data,

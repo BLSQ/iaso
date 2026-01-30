@@ -126,7 +126,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
-        with self.assertNumQueries(85):
+        with self.assertNumQueries(39):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         users = User.objects.all()
@@ -404,11 +404,26 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_cant_create_user_without_access_to_ou(self):
+        # self.client.force_authenticate(self.yoda)
+
+        # with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+        #     response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+
+        # self.assertEqual(response.status_code, 400)
         self.client.force_authenticate(self.yoda)
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-            response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+        context = {"org_unit_type_id": self.org_unit_type_region.id}
 
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures",
+            fixture_name="test_user_bulk_create_valid.csv",
+            context=context,
+        )
+
+        test_file = SimpleUploadedFile(
+            "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
+        )
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
         self.assertEqual(response.status_code, 400)
 
     def test_cant_create_user_without_ou_profile(self):
@@ -841,8 +856,12 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
 
-        expected_error = f"Row 2: Team '{invalid_team_name}' does not exist."
-        self.assertEqual(response.json()["error"], expected_error)
+        response_data = response.json()
+        self.assertIn("validation_errors", response_data)
+        validation_errors = response_data["validation_errors"]
+        self.assertEqual(len(validation_errors), 1)
+        self.assertIn("teams", validation_errors[0]["errors"])
+        self.assertIn(invalid_team_name, validation_errors[0]["errors"]["teams"])
 
     def test_bulk_create_user_cannot_assign_team_from_another_account(self):
         self.client.force_authenticate(self.yoda)
@@ -869,8 +888,12 @@ class BulkCreateCsvTestCase(APITestCase):
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        expected_error = f"Row 2: Team '{secret_team_name}' does not exist."
-        self.assertEqual(response.json()["error"], expected_error)
+        response_data = response.json()
+        self.assertIn("validation_errors", response_data)
+        validation_errors = response_data["validation_errors"]
+        self.assertEqual(len(validation_errors), 1)
+        self.assertIn("teams", validation_errors[0]["errors"])
+        self.assertIn(secret_team_name, validation_errors[0]["errors"]["teams"])
 
     @patch("iaso.api.profiles.bulk_create_users.send_bulk_email_invitations")
     def test_email_invitations_sent_for_users_without_password(self, mock_send_emails):
@@ -937,6 +960,10 @@ class BulkCreateCsvTestCase(APITestCase):
         self.account1.save()
         self.account1.refresh_from_db()
 
+        # Create teams for testing
+        bulk_team = Team.objects.create(name="Bulk Team", project=self.project, manager=self.yoda)
+        csv_team = Team.objects.create(name="Test Team", project=self.project, manager=self.yoda)
+
         self.client.post("/api/userroles/", data={"name": "manager"})
 
         bulk_configuration = {
@@ -946,6 +973,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "user_roles": ["manager"],
             "projects": [self.project.name],
             "orgunit": [self.org_unit1.id, self.org_unit2.id],
+            "teams": ["Bulk Team"],
         }
 
         with open("iaso/tests/fixtures/test_user_bulk_create_bulk_configuration.csv") as csv_file:
@@ -975,6 +1003,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(all_bulk_profile.org_units.count(), 2)  # From bulk_configuration
         self.assertIn(self.org_unit1, all_bulk_profile.org_units.all())
         self.assertIn(self.org_unit2, all_bulk_profile.org_units.all())
+        self.assertEqual(all_bulk_user.teams.count(), 1)  # From bulk_configuration
+        self.assertEqual(all_bulk_user.teams.first().name, "Bulk Team")
 
         # ALL bulk_configuration ignored
         no_bulk_user = User.objects.get(username="no_bulk_user")
@@ -992,6 +1022,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(no_bulk_profile.org_units.count(), 2)
         self.assertIn(self.org_unit1, no_bulk_profile.org_units.all())
         self.assertIn(self.org_unit2, no_bulk_profile.org_units.all())
+        self.assertEqual(no_bulk_user.teams.count(), 1)  # From CSV, not bulk_configuration
+        self.assertEqual(no_bulk_user.teams.first().name, "Test Team")
 
         # PARTIAL bulk_configuration applied
         mixed_user = User.objects.get(username="mixed_user")
@@ -1008,3 +1040,5 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(mixed_profile.org_units.count(), 2)
         self.assertIn(self.org_unit1, mixed_profile.org_units.all())
         self.assertIn(self.org_unit2, mixed_profile.org_units.all())
+        self.assertEqual(mixed_user.teams.count(), 1)  # From bulk_configuration (CSV empty)
+        self.assertEqual(mixed_user.teams.first().name, "Bulk Team")

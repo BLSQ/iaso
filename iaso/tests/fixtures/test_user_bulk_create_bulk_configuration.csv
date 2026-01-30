@@ -1,4 +1,4 @@
-username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,phone_number,editable_org_unit_types
-all_bulk_user,testpass123!,allbulk@test.com,Bulk,User,,,,,,,,,,
-no_bulk_user,testpass123!,nobulk@test.com,CSV,User,"Coruscant Jedi Council, Tatooine",,en,csv_dhis2_1,MSF,iaso_submissions,manager,"Project 2",+987654321,
+username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,teams,phone_number,editable_org_unit_types
+all_bulk_user,testpass123!,allbulk@test.com,Bulk,User,,,,,,,,,,,
+no_bulk_user,testpass123!,nobulk@test.com,CSV,User,"Coruscant Jedi Council, Tatooine",,en,csv_dhis2_1,MSF,iaso_submissions,manager,"Project 2","Test Team",+987654321,
 mixed_user,testpass123!,mixed@test.com,Mixed,User,,,en,,WHO,iaso_forms,,,,

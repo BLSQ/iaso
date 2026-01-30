@@ -1,6 +1,11 @@
+import pandas as pd
+
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers
 from iaso.models import MetricType, MetricValue
+from iaso.models.org_unit import OrgUnit
 
 
 class MetricTypeSerializer(serializers.ModelSerializer):
@@ -77,6 +82,78 @@ class MetricValueSerializer(serializers.ModelSerializer):
         model = MetricValue
         fields = ["id", "metric_type", "org_unit", "year", "value", "string_value"]
         read_only_fields = fields
+
+
+class ImportMetricValuesSerializer(serializers.Serializer):
+    file = serializers.FileField(required=True)
+
+    def validate_file(self, value):
+        if not value.name.endswith(".csv"):
+            raise serializers.ValidationError(_("The file must be a CSV."))
+
+        df = pd.read_csv(value)
+
+        header_errors = get_missing_headers(df, REQUIRED_METRIC_VALUES_HEADERS)
+        if header_errors:
+            message = _("The CSV must contain '{missing_headers}' columns.").format(
+                missing_headers=", ".join(header_errors)
+            )
+            raise serializers.ValidationError(message, code="missing_required_headers")
+
+        # Verify that we have at least one metric type column
+        if len(df.columns) <= len(REQUIRED_METRIC_VALUES_HEADERS):
+            raise serializers.ValidationError(_("The CSV must contain at least one metric type column."))
+
+        # Verify that metric type columns correspond to existing MetricTypes
+        metric_type_codes = set(df.columns) - set(REQUIRED_METRIC_VALUES_HEADERS)
+        user = self.context.get("request").user
+        account = user.iaso_profile.account
+        existing_metric_types = MetricType.objects.filter(account=account, code__in=metric_type_codes).values_list(
+            "code", "id", "legend_config"
+        )
+        missing_metric_types = metric_type_codes - set(mt[0] for mt in existing_metric_types)
+        if missing_metric_types:
+            raise serializers.ValidationError(
+                _("The following metric types do not exist: ") + ", ".join(missing_metric_types)
+            )
+
+        self.context["existing_metric_types"] = {mt[0]: mt[1] for mt in existing_metric_types}
+
+        if df.shape[0] == 0:
+            raise serializers.ValidationError(_("The CSV must contain at least one value row."))
+
+        org_unit_ids = df["ADM2_ID"].tolist()
+        matching_org_unit_ids = OrgUnit.objects.filter(id__in=org_unit_ids).values_list("id", flat=True)
+        missing_org_unit_ids = set(org_unit_ids) - set(matching_org_unit_ids)
+        if missing_org_unit_ids:
+            raise serializers.ValidationError(
+                _("The following org unit IDs do not exist: ") + ", ".join(str(ou_id) for ou_id in missing_org_unit_ids)
+            )
+
+        self.context["dataframe"] = df
+
+        # Prepare metric values but don't save yet
+        metric_values = []
+        for index, row in df.iterrows():
+            org_unit_id = row["ADM2_ID"]
+            for code in metric_type_codes:
+                value = row.get(code)
+                if pd.isna(value):
+                    continue
+                metric_type_id = self.context["existing_metric_types"][code]
+                metric_values.append(
+                    MetricValue(
+                        org_unit_id=org_unit_id,
+                        metric_type_id=metric_type_id,
+                        value=value,
+                    )
+                )
+
+        self.context["metric_values"] = metric_values
+
+        # Do we want to validate all values already here?
+
+        return value
 
 
 class OrgUnitIdSerializer(serializers.Serializer):

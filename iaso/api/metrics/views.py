@@ -1,6 +1,8 @@
 import csv
 
+from django.db import transaction
 from django.http import HttpResponse
+from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -9,11 +11,13 @@ from rest_framework.response import Response
 from iaso.api.apps import serializers
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
+from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
 from iaso.models import MetricType, MetricValue
 from iaso.utils import legend
 from plugins.snt_malaria.api.scenarios.utils import get_valid_org_units_for_account
 
 from .serializers import (
+    ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
     MetricTypeSerializer,
     MetricTypeWriteSerializer,
@@ -85,7 +89,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     queryset = MetricValue.objects.all()
     filter_backends = [DjangoFilterBackend, ValueFilterBackend]
     filterset_fields = ["metric_type_id", "org_unit_id"]
-    http_method_names = ["get", "options"]
+    http_method_names = ["get", "options", "post"]
 
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
@@ -99,11 +103,11 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         org_units = get_valid_org_units_for_account(account).prefetch_related("parent")
 
         # Prepare the CSV response
-        headers = ["ADM1_NAME", "ADM2_NAME", "ADM2_ID"]
+        headers = REQUIRED_METRIC_VALUES_HEADERS.copy()
         for mt in metric_types:
             headers.append(f"{mt.code}")
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
-        writer = csv.writer(response)
+        writer = csv.writer(response, delimiter=",")
         writer.writerow(headers)
         for ou in org_units:
             row = [ou.parent.name if ou.parent else "", ou.name, ou.id]
@@ -114,6 +118,28 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         filename = "metric_import_template.csv"
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
+
+    @action(detail=False, methods=["post"])
+    def import_from_csv(self, request):
+        serializer = ImportMetricValuesSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+
+        metric_values = serializer.context.get("metric_values")
+        with transaction.atomic():
+            # Clear existing metric values to avoid duplicates
+            metric_type_ids = set(mv.metric_type_id for mv in metric_values)
+            org_unit_ids = set(mv.org_unit_id for mv in metric_values)
+            MetricValue.objects.filter(metric_type_id__in=metric_type_ids, org_unit_id__in=org_unit_ids).delete()
+
+            MetricValue.objects.bulk_create(metric_values)
+
+        return Response(
+            {
+                "total_imported": len(metric_values),
+                "metric_type_import_count": len(set(mv.metric_type_id for mv in metric_values)),
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class MetricOrgUnitsViewSet(viewsets.ModelViewSet):

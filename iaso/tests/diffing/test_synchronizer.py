@@ -300,6 +300,66 @@ class PrepareModifiedChangeRequestsTestCase(PyramidBaseTest):
         self.assertIsNone(change_request.new_opening_date)
         self.assertEqual(group_changes, [])
 
+    def test_prepare_modified_change_request_ignores_empty_name(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": None,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "name",
+                    "before": "Angola",
+                    "after": "",
+                    "status": Differ.STATUS_MODIFIED,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertNotIn("new_name", change_request.requested_fields)
+        self.assertEqual(change_request.new_name, "")
+
+    def test_prepare_modified_change_request_removes_parent(self):
+        synchronizer = self._make_synchronizer()
+        diff = {
+            "status": Differ.STATUS_MODIFIED,
+            "orgunit_dhis2": {
+                "id": self.angola_country_to_update.pk,
+                "name": "Angola",
+                "parent": self.angola_region_to_update.pk,
+                "opening_date": "2024-01-01",
+                "closed_date": "2025-11-28",
+                "org_unit_type": self.org_unit_type_country.pk,
+                "location": None,
+            },
+            "comparisons": [
+                {
+                    "field": "parent",
+                    "before": "parent-ref",
+                    "after": None,
+                    "status": Differ.STATUS_MODIFIED,
+                    "distance": None,
+                }
+            ],
+        }
+
+        change_request, group_changes = synchronizer._prepare_modified_change_requests(diff)
+
+        self.assertIsNotNone(change_request)
+        self.assertIn("new_parent", change_request.requested_fields)
+        self.assertIsNone(change_request.new_parent_id)
+
     def test_dump_as_json_for_org_unit_creation(self):
         """
         Test the format of `Dumper.as_json()` for a new org unit.

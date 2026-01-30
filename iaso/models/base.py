@@ -148,7 +148,6 @@ class Account(models.Model):
             "user_manual_path": self.user_manual_path or settings.USER_MANUAL_PATH,
             "forum_path": self.forum_path or settings.FORUM_PATH,
             "analytics_script": self.analytics_script,
-            "custom_translations": self.custom_translations,
         }
 
     def as_small_dict(self):
@@ -163,7 +162,6 @@ class Account(models.Model):
             "forum_path": self.forum_path or settings.FORUM_PATH,
             "analytics_script": self.analytics_script,
             "modules": self.modules,
-            "custom_translations": self.custom_translations,
         }
 
     def __str__(self):
@@ -609,9 +607,11 @@ class Profile(models.Model):
 
     def as_dict(self, small=False):
         user_roles = self.user_roles.all().order_by("group__name")
-        user_group_permissions = list(
-            map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
-        )
+        user_group_permissions = [
+            permission.split(".")[1]
+            for permission in self.user.get_group_permissions()
+            if permission.split(".")[1].startswith("iaso_")
+        ]
         user_permissions = list(
             self.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
         )

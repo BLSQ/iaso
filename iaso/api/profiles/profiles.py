@@ -436,14 +436,25 @@ class ProfilesViewSet(viewsets.ViewSet):
         old_data = audit_logger.serialize_instance(profile)
         source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
         # Validation
+        data_keys = set(request.data.keys())
         try:
             self.validate_user_name(request, user)
-            user_permissions = self.validate_user_permissions(request, current_account)
-            org_units = self.validate_org_units(request, profile)
-            user_roles_data = self.validate_user_roles(request)
-            projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
-            color = self.validate_color(request)
+            user_permissions = (
+                self.validate_user_permissions(request, current_account)
+                if "user_permissions" in data_keys
+                else None
+            )
+            org_units = self.validate_org_units(request, profile) if "org_units" in data_keys else None
+            user_roles_data = (
+                self.validate_user_roles(request) if "user_roles" in data_keys else None
+            )
+            projects = self.validate_projects(request, profile) if "projects" in data_keys else None
+            editable_org_unit_types = (
+                self.validate_editable_org_unit_types(request, profile)
+                if "editable_org_unit_type_ids" in data_keys
+                else None
+            )
+            color = self.validate_color(request) if "color" in data_keys else None
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -456,11 +467,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             user=user,
             user_permissions=user_permissions,
             org_units=org_units,
-            user_roles=user_roles_data["user_roles"],
-            user_roles_groups=user_roles_data["groups"],
+            user_roles=user_roles_data["user_roles"] if user_roles_data else None,
+            user_roles_groups=user_roles_data["groups"] if user_roles_data else None,
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
             color=color,
+            update_fields=data_keys,
         )
 
         audit_logger.log_modification(
@@ -509,39 +521,59 @@ class ProfilesViewSet(viewsets.ViewSet):
         org_units,
         user_permissions,
         editable_org_unit_types,
+        update_fields=None,
     ):
+        def should_update(field_name: str) -> bool:
+            return update_fields is None or field_name in update_fields
+
         if TenantUser.is_multi_account_user(user):
             # In multi-tenant mode, `main_user` is the user who logs in.
             self.update_password(user.tenant_user.main_user, request)
         else:
-            user.first_name = request.data.get("first_name", "")
-            user.last_name = request.data.get("last_name", "")
-            user_name = request.data.get("user_name")
-            if user_name:
-                user.username = user_name
-            user.email = request.data.get("email", "")
+            if should_update("first_name"):
+                user.first_name = request.data.get("first_name", "")
+            if should_update("last_name"):
+                user.last_name = request.data.get("last_name", "")
+            if should_update("user_name"):
+                user_name = request.data.get("user_name")
+                if user_name:
+                    user.username = user_name
+            if should_update("email"):
+                user.email = request.data.get("email", "")
             self.update_password(user, request)
 
-        user.groups.set(user_roles_groups)
+        if user_roles_groups is not None and should_update("user_roles"):
+            user.groups.set(user_roles_groups)
         user.save()
-        user.user_permissions.set(user_permissions)
+        if user_permissions is not None and should_update("user_permissions"):
+            user.user_permissions.set(user_permissions)
 
-        profile.phone_number = self.extract_phone_number(request)
+        if should_update("phone_number") or should_update("country_code"):
+            profile.phone_number = self.extract_phone_number(request)
 
-        profile.language = request.data.get("language", "")
-        profile.organization = request.data.get("organization", None)
-        profile.home_page = request.data.get("home_page", "")
-        profile.dhis2_id = request.data.get("dhis2_id", "")
-        if profile.dhis2_id == "":
-            profile.dhis2_id = None
+        if should_update("language"):
+            profile.language = request.data.get("language", "")
+        if should_update("organization"):
+            profile.organization = request.data.get("organization", None)
+        if should_update("home_page"):
+            profile.home_page = request.data.get("home_page", "")
+        if should_update("dhis2_id"):
+            profile.dhis2_id = request.data.get("dhis2_id", "")
+            if profile.dhis2_id == "":
+                profile.dhis2_id = None
 
-        resolved_color = color if color is not None else profile.color or DEFAULT_COLOR
-        profile.color = resolved_color
+        if update_fields is None or should_update("color"):
+            resolved_color = color if color is not None else profile.color or DEFAULT_COLOR
+            profile.color = resolved_color
 
-        profile.user_roles.set(user_roles)
-        profile.projects.set(projects)
-        profile.org_units.set(org_units)
-        profile.editable_org_unit_types.set(editable_org_unit_types)
+        if user_roles is not None and should_update("user_roles"):
+            profile.user_roles.set(user_roles)
+        if projects is not None and should_update("projects"):
+            profile.projects.set(projects)
+        if org_units is not None and should_update("org_units"):
+            profile.org_units.set(org_units)
+        if editable_org_unit_types is not None and should_update("editable_org_unit_type_ids"):
+            profile.editable_org_unit_types.set(editable_org_unit_types)
         profile.save()
         return profile
 

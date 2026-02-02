@@ -15,14 +15,14 @@ def split_multi_type_campaigns(apps, schema_editor):
     Group = apps.get_model("iaso", "Group")
 
     campaigns = (
-        Campaign.objects.prefetch_related(
+        Campaign.objects.select_related("account")
+        .prefetch_related(
             "campaign_types",
+            "scopes",
+            "scopes__group__org_units",
             "rounds",
             "rounds__scopes",
             "rounds__scopes__group__org_units",
-            "scopes",
-            "scopes__group__org_units",
-            "account",
             "rounds__sub_activities",
             "rounds__sub_activities__scopes",
             "rounds__sub_activities__scopes__group__org_units",

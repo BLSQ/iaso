@@ -9,17 +9,20 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
-import { User } from '../teams/types/team';
+import { SubTeam, User } from '../teams/types/team';
 import { AssignmentsMap } from './components/AssignmentsMap';
 import { AssignmentsTeams } from './components/AssignmentsTeams';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
 import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
-import { AssignmentParams } from './types/assigment';
+import { AssignmentParams, SaveAssignmentQuery } from './types/assigment';
 
 export const Assignments: FunctionComponent = () => {
     const [selectedUser, setSelectedUser] = useState<User | undefined>(
+        undefined,
+    );
+    const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
         undefined,
     );
     const params: AssignmentParams = useParamsObject(
@@ -55,24 +58,43 @@ export const Assignments: FunctionComponent = () => {
             const existingAssignment = assignments?.allAssignments?.find(
                 assignment => assignment.org_unit === orgUnitId,
             );
-            const payload = {
-                planning: planningId,
-                org_unit: orgUnitId,
-                id: existingAssignment?.id,
-                user:
-                    existingAssignment &&
-                    selectedUser?.id === existingAssignment.user
-                        ? null
-                        : selectedUser?.id,
-            };
+            let payload: SaveAssignmentQuery | undefined;
+            if (selectedUser) {
+                payload = {
+                    planning: parseInt(planningId, 10),
+                    org_unit: orgUnitId,
+                    id: existingAssignment?.id,
+                    user:
+                        existingAssignment &&
+                        selectedUser?.id === existingAssignment.user
+                            ? null
+                            : selectedUser?.id,
+                };
+            }
+            if (selectedTeam) {
+                payload = {
+                    planning: parseInt(planningId, 10),
+                    org_unit: orgUnitId,
+                    id: existingAssignment?.id,
+                    team:
+                        existingAssignment &&
+                        selectedTeam?.id === existingAssignment.team
+                            ? null
+                            : selectedTeam?.id,
+                };
+            }
+            if (!payload) {
+                return;
+            }
 
             saveAssignment(payload);
         },
         [
             planningId,
             saveAssignment,
-            selectedUser?.id,
             assignments?.allAssignments,
+            selectedUser,
+            selectedTeam,
         ],
     );
 
@@ -110,6 +132,9 @@ export const Assignments: FunctionComponent = () => {
                                 isLoadingAssignments={isLoadingAssignments}
                                 handleSaveAssignment={handleSaveAssignment}
                                 isSaving={isSaving}
+                                canAssign={Boolean(
+                                    selectedUser || selectedTeam,
+                                )}
                             />
                         </Grid>
                         <Grid item xs={12} md={4}>
@@ -118,6 +143,8 @@ export const Assignments: FunctionComponent = () => {
                                 isLoadingRootTeam={isLoadingRootTeam}
                                 selectedUser={selectedUser}
                                 setSelectedUser={setSelectedUser}
+                                selectedTeam={selectedTeam}
+                                setSelectedTeam={setSelectedTeam}
                                 assignments={assignments}
                             />
                         </Grid>

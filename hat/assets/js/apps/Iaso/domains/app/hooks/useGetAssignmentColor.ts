@@ -14,6 +14,9 @@ export const useGetAssignmentColor = (
         const user = rootTeam?.users_details?.find(
             user => user.id === assignment?.user,
         );
-        return user?.color || theme.palette.error.main;
+        const team = rootTeam?.sub_teams_details?.find(
+            team => team.id === assignment?.team,
+        );
+        return user?.color || team?.color || theme.palette.secondary.main;
     };
 };

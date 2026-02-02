@@ -14,7 +14,7 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import MESSAGES from 'Iaso/domains/assignments/messages';
 import { useSaveTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
-import { Team } from 'Iaso/domains/teams/types/team';
+import { SubTeam, Team } from 'Iaso/domains/teams/types/team';
 import { User } from 'Iaso/domains/teams/types/team';
 import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
 import getDisplayName from 'Iaso/utils/usersUtils';
@@ -27,6 +27,8 @@ type Props = {
     isLoadingRootTeam: boolean;
     selectedUser?: User;
     setSelectedUser: Dispatch<React.SetStateAction<User | undefined>>;
+    selectedTeam?: SubTeam;
+    setSelectedTeam: Dispatch<React.SetStateAction<SubTeam | undefined>>;
     assignments?: AssignmentsResult;
 };
 
@@ -35,6 +37,8 @@ export const AssignmentsTeams: FunctionComponent<Props> = ({
     isLoadingRootTeam,
     selectedUser,
     setSelectedUser,
+    selectedTeam,
+    setSelectedTeam,
     assignments,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -85,6 +89,22 @@ export const AssignmentsTeams: FunctionComponent<Props> = ({
                                         <TableCell
                                             sx={{
                                                 width: 50,
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            <Checkbox
+                                                checked={
+                                                    selectedTeam?.id ===
+                                                    subTeam.id
+                                                }
+                                                onChange={() =>
+                                                    setSelectedTeam(subTeam)
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell
+                                            sx={{
+                                                width: 50,
                                             }}
                                         >
                                             <ColorPicker
@@ -99,6 +119,20 @@ export const AssignmentsTeams: FunctionComponent<Props> = ({
                                             />
                                         </TableCell>
                                         <TableCell>{subTeam?.name}</TableCell>
+
+                                        <TableCell
+                                            sx={{
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {
+                                                assignments?.allAssignments?.filter(
+                                                    assignment =>
+                                                        assignment.team ===
+                                                        subTeam.id,
+                                                ).length
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                                 {rootTeam?.users_details

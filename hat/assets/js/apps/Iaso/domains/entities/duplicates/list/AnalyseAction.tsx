@@ -71,8 +71,13 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                         </Box>
                     </Box>
                 )}
+                {/* Trypelim-specific:
+                    - Disable the ability to manually start the analysis for now
+                      until the settings can be adjusted for splink.
+                */}
+
                 <Grid container spacing={1} justifyContent="flex-end">
-                    {latestAnalysis && (
+                    {/* {latestAnalysis && (
                         <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
@@ -91,12 +96,12 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                                 </Button>
                             </Box>
                         </Grid>
-                    )}
-                    <Grid item>
+                    )} */}
+                    {/* <Grid item>
                         <Box mb={2} mt={2}>
                             <AnalysisModal iconProps={{}} />
                         </Box>
-                    </Grid>
+                    </Grid> */}
                 </Grid>
             </>
         </Box>

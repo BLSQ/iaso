@@ -2,7 +2,6 @@ import csv
 
 from django.db import transaction
 from django.http import HttpResponse
-from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action

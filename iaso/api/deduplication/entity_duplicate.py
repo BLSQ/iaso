@@ -27,7 +27,10 @@ from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.deduplication.serializers import BulkIgnoreRequestSerializer
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
-from iaso.models.deduplication import ValidationStatus  # type: ignore
+from iaso.models.deduplication import (  # type: ignore
+    TypeOfRelation,
+    ValidationStatus,  # type: ignore
+)
 from iaso.permissions.core_permissions import (
     CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
     CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
@@ -153,6 +156,45 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
             "ignored_reason",
             "merged",
         ]
+
+
+# Trypelim-specific
+class EntityDuplicateManualSerializer(serializers.Serializer):
+    """Serializer for the manual entities duplicate endpoint."""
+
+    entity1_id = serializers.CharField(required=True, help_text="ID or UUID of the first entity")
+    entity2_id = serializers.CharField(required=True, help_text="ID or UUID of the second entity")
+
+    def validate(self, data):
+        request = self.context.get("request")
+        user_account = request.user.iaso_profile.account
+
+        def resolve_entity(value):
+            """Resolve entities by id or uuid."""
+            if str(value).isdigit():
+                return Entity.objects.filter(pk=int(value), account=user_account).first()
+            return Entity.objects.filter(uuid=value, account=user_account).first()
+
+        entity_1 = resolve_entity(data["entity1_id"])
+        entity_2 = resolve_entity(data["entity2_id"])
+
+        if not entity_1:
+            raise serializers.ValidationError(
+                {"entity1_id": f"Entity not found or not accessible: {data['entity1_id']}"}
+            )
+
+        if not entity_2:
+            raise serializers.ValidationError(
+                {"entity2_id": f"Entity not found or not accessible: {data['entity2_id']}"}
+            )
+
+        if entity_1.pk == entity_2.pk:
+            raise serializers.ValidationError("You cannot mark an entity as a duplicate of itself.")
+
+        if entity_1.entity_type != entity_2.entity_type:
+            raise serializers.ValidationError("Entities must be of the same Entity Type to be duplicates.")
+
+        return {"entity1": entity_1, "entity2": entity_2}
 
 
 class EntityDuplicatePostAnswerSerializer(serializers.Serializer):
@@ -605,3 +647,46 @@ class EntityDuplicateViewSet(ModelViewSet):
             queryset = queryset.filter(id__in=request.data.get("selected_ids"))
         queryset.update(validation_status=ValidationStatus.IGNORED)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # Trypelim-specific endpoint
+    @action(detail=False, methods=["post"])
+    def manual(self, request):
+        """Manually designate two entities as duplicates."""
+        serializer = EntityDuplicateManualSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+
+        entity1 = serializer.validated_data["entity1"]
+        entity2 = serializer.validated_data["entity2"]
+
+        existing_duplicate = EntityDuplicate.objects.filter(
+            Q(entity1=entity1, entity2=entity2) | Q(entity1=entity2, entity2=entity1)
+        ).first()
+
+        if existing_duplicate:
+            # If it exists, we just return the IDs so the frontend can redirect
+            return Response({"entity1_id": existing_duplicate.entity1.pk, "entity2_id": existing_duplicate.entity2.pk})
+
+        if entity1.pk < entity2.pk:
+            entity2, entity1 = entity1, entity2
+
+        # TODO: Fix this workaround
+        # Using the first analysis as the field cannot really be null without breaking stuff
+        analysis = EntityDuplicateAnalyzis.objects.first()
+
+        new_duplicate = EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING,
+            type_of_relation=TypeOfRelation.DUPLICATE,
+            similarity_score=90,
+            metadata={
+                "creation_reason": "manual",
+                "created_by_user_id": request.user.pk,
+            },
+            analyze=analysis,
+        )
+
+        return Response(
+            {"entity1_id": new_duplicate.entity1.pk, "entity2_id": new_duplicate.entity2.pk},
+            status=status.HTTP_201_CREATED,
+        )

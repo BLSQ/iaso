@@ -14,6 +14,7 @@ import MESSAGES from '../messages';
 import { Entity } from '../types/entity';
 import { Field } from '../types/fields';
 import { EntityBaseInfoContents } from './EntityBaseInfoContents';
+import { ManualDuplicateDialog } from './ManualEntityDuplicate';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -30,23 +31,41 @@ type Props = {
 };
 
 const EntityTitle: FunctionComponent<{
+    entityId: number;
     hasDuplicates: boolean;
     duplicateUrl?: string;
-}> = ({ hasDuplicates, duplicateUrl }) => {
+    showManualDuplicates: boolean;
+}> = ({ entityId, hasDuplicates, duplicateUrl, showManualDuplicates }) => {
     const { formatMessage } = useSafeIntl();
-    return hasDuplicates && duplicateUrl ? (
-        <Grid container>
+
+    return (
+        <Grid container alignItems="center">
             <Grid item xs={6}>
                 {formatMessage(MESSAGES.entityInfo)}
             </Grid>
-            <Grid item xs={6} justifyContent="flex-end" container>
-                <LinkButton to={duplicateUrl}>
-                    {formatMessage(MESSAGES.seeDuplicates)}
-                </LinkButton>
+            <Grid
+                item
+                xs={6}
+                justifyContent="flex-end"
+                container
+                alignItems="center"
+                spacing={1}
+            >
+                {hasDuplicates && duplicateUrl && (
+                    <Grid item>
+                        <LinkButton to={duplicateUrl} size="small">
+                            {formatMessage(MESSAGES.seeDuplicates)}
+                        </LinkButton>
+                    </Grid>
+                )}
+
+                <Grid item>
+                    {showManualDuplicates && (
+                        <ManualDuplicateDialog entityId={entityId} />
+                    )}
+                </Grid>
             </Grid>
         </Grid>
-    ) : (
-        formatMessage(MESSAGES.entityInfo)
     );
 };
 
@@ -69,8 +88,10 @@ export const EntityBaseInfo: FunctionComponent<Props> = ({
 
     const title = (
         <EntityTitle
+            entityId={entity.id}
             hasDuplicates={hasDuplicates}
             duplicateUrl={duplicateUrl}
+            showManualDuplicates={!withLinkToEntity}
         />
     );
 

@@ -559,11 +559,16 @@ class ProfilesViewSet(viewsets.ViewSet):
     ) -> Union[HttpResponse, StreamingHttpResponse]:
         account = request.user.iaso_profile.account
         all_permissions = sorted([perm.codename for perm in account.permissions_from_active_modules])
+        all_projects = sorted(list(account.project_set.values_list("name", flat=True)))
         base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
 
         try:
             perm_idx = base_columns.index("permissions")
-            export_columns = base_columns[:perm_idx] + all_permissions + base_columns[perm_idx + 1 :]
+
+            header_start = base_columns[:perm_idx]
+            header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects"]]
+
+            export_columns = header_start + all_permissions + all_projects + header_end
         except ValueError:
             export_columns = base_columns
         columns = [{"title": column} for column in export_columns]
@@ -571,8 +576,12 @@ class ProfilesViewSet(viewsets.ViewSet):
         def get_row(profile: Profile, **_) -> List[Any]:
             org_units = profile.org_units.order_by("id").only("id", "source_ref")
             editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
+
             direct_perms = {p.codename for p in profile.user.user_permissions.all()}
             permission_matrix = [1 if perm_codename in direct_perms else 0 for perm_codename in all_permissions]
+
+            projects = {project.name for project in profile.projects.all().order_by("id")}
+            project_matrix = [1 if project in projects else 0 for project in all_projects]
 
             row_start = [
                 profile.id,
@@ -593,13 +602,12 @@ class ProfilesViewSet(viewsets.ViewSet):
                     item.group.name.removeprefix(f"{profile.account.pk}_")
                     for item in profile.user_roles.all().order_by("id")
                 ),
-                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
                 ",".join(item.name for item in profile.user.teams.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
                 ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
 
-            return row_start + permission_matrix + row_end
+            return row_start + permission_matrix + project_matrix + row_end
 
         filename = "users"
         response: Union[HttpResponse, StreamingHttpResponse]

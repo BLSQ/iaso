@@ -353,10 +353,14 @@ class ProfileAPITestCase(APITestCase):
         csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
 
         all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
+        all_projects = sorted(list(self.account.project_set.values_list("name", flat=True)))
 
         base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
         perm_idx = base_columns.index("permissions")
-        expected_header = base_columns[:perm_idx] + all_permissions + base_columns[perm_idx + 1 :]
+
+        header_start = base_columns[:perm_idx]
+        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects"]]
+        expected_header = header_start + all_permissions + all_projects + header_end
 
         def get_expected_row_list(
             profile,
@@ -386,9 +390,10 @@ class ProfileAPITestCase(APITestCase):
                 organization,
             ]
             matrix = [("1" if p in direct_perms else "0") for p in all_permissions]
+            matrix_projects = [("1" if p in projects else "0") for p in all_projects]
 
-            row_end = [user_roles, projects, teams, phone, editable_org_unit_types]
-            return row_start + matrix + row_end
+            row_end = [user_roles, teams, phone, editable_org_unit_types]
+            return row_start + matrix + matrix_projects + row_end
 
         expected_csv = [
             expected_header,
@@ -435,18 +440,21 @@ class ProfileAPITestCase(APITestCase):
         excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
         all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
+        all_projects = sorted(list(self.account.project_set.values_list("name", flat=True)))
         base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
         perm_idx = base_columns.index("permissions")
-        expected_columns = base_columns[:perm_idx] + all_permissions + base_columns[perm_idx + 1 :]
+
+        header_start = base_columns[:perm_idx]
+        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects"]]
+
+        expected_columns = header_start + all_permissions + all_projects + header_end
 
         self.assertEqual(excel_columns, expected_columns)
 
-        def get_matrix_data(user_perms_map):
+        def get_matrix_data(items_list, user_items_map):
             matrix_dict = {}
-            for perm in all_permissions:
-                matrix_dict[perm] = {
-                    idx: (1 if perm in direct_list else 0) for idx, direct_list in user_perms_map.items()
-                }
+            for item in items_list:
+                matrix_dict[item] = {idx: (1 if item in (user_items_map.get(idx) or []) else 0) for idx in range(7)}
             return matrix_dict
 
         direct_permissions_map = {
@@ -457,6 +465,15 @@ class ProfileAPITestCase(APITestCase):
             4: [],
             5: [],
             6: [CORE_USERS_MANAGED_PERMISSION.codename],
+        }
+        projects_map = {
+            0: [],
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [self.project.name],
+            6: [],
         }
 
         expected_excel_data = {
@@ -495,7 +512,7 @@ class ProfileAPITestCase(APITestCase):
             "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
             "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-            **get_matrix_data(direct_permissions_map),
+            **get_matrix_data(all_permissions, direct_permissions_map),
             "user_roles": {
                 0: None,
                 1: None,
@@ -505,7 +522,7 @@ class ProfileAPITestCase(APITestCase):
                 5: None,
                 6: f"{self.user_role_name},{self.user_role_another_account_name}",
             },
-            "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
+            **get_matrix_data(all_projects, projects_map),
             "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
             "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             "editable_org_unit_types": {
@@ -561,6 +578,74 @@ class ProfileAPITestCase(APITestCase):
 
         user_roles_idx = header.index("user_roles")
         self.assertIn("Role with Admin", jane_row[user_roles_idx])
+
+    def text_export_project_matrix(self):
+        self.jim.iaso_profile.projects.clear()
+        self.jane.iaso_profile.projects.clear()
+        self.jom.iaso_profile.projects.clear()
+
+        new_project = m.Project.objects.create(
+            name="Veto",
+            app_id="Vetus",
+            account=self.account,
+        )
+
+        self.jim.iaso_profile.projects.add(self.project)
+        self.jom.iaso_profile.projects.add(*(self.project, new_project))
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+        username_idx = header.index("username")
+
+        self.assertIn(self.project.name, header)
+        self.assertIn(new_project.name, header)
+
+        project1_idx = header.index(self.project.name)
+        project2_idx = header.index(new_project.name)
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+        jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
+        jom_row = next(r for r in csv_rows if r[username_idx] == "jom")
+
+        self.assertEqual(jom_row[project1_idx], "1", "Jom should have '1' for Hydroponic gardens")
+        self.assertEqual(jom_row[project2_idx], "1", "Jom should have '1' for Veto")
+
+        self.assertEqual(jim_row[project1_idx], "1", "Jim should have '1' for Hydroponic gardens")
+        self.assertEqual(jim_row[project2_idx], "0", "Jim should have '0' for Veto")
+
+        self.assertEqual(jane_row[project1_idx], "0", "Jane should have '0' for Hydroponic gardens")
+        self.assertEqual(jane_row[project2_idx], "0", "Jane should have '0' for Veto")
+
+    def text_export_project_from_another_account(self):
+        project_from_another_account = m.Project.objects.create(
+            name="secret project",
+            app_id="Vetus",
+            account=self.another_account,
+        )
+        self.jim.iaso_profile.projects.add(self.project)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+
+        self.assertNotIn(project_from_another_account.name, header)
+        self.assertIn(self.project.name, header)
+
+        username_idx = header.index("username")
+        project_idx = header.index(self.project.name)
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+
+        self.assertEqual(jim_row[project_idx], "1", "Jim should have '1' for the project belonging to his account.")
+
+        self.assertEqual(len(jim_row), len(header))
 
     def test_profile_list_export_as_csv_multiple_teams(self):
         self.maxDiff = None

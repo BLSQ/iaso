@@ -1764,5 +1764,10 @@
     "trypelim.permissions.workzones": "Workzones",
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
-    "trypelim.permissions.zones_shapes_edit": "Edit zone shapes"
+    "trypelim.permissions.zones_shapes_edit": "Edit zone shapes",
+    "iaso.duplicates.manual.targetLabel": "Target Entity ID or UUID",
+    "iaso.duplicates.manual.button": "Add Duplicate",
+    "iaso.duplicates.manual.title": "Manually link duplicate",
+    "iaso.duplicates.manual.success": "Duplicate linked successfully, redirecting...",
+    "iaso.duplicates.manual.error": "Error linking duplicates"
 }

@@ -1764,5 +1764,11 @@
     "trypelim.permissions.workzones": "Rayons d'actions",
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
-    "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé"
+    "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé",
+    "iaso.duplicates.manual.success": "Redirection vers l'écran de comparaison...",
+    "iaso.duplicates.manual.error": "Une erreur s'est produite lors de l'identification des entités",
+    "iaso.duplicates.manual.title": "Spécifier manuellement un doublon",
+    "iaso.duplicates.manual.button": "Ajout doublon",
+    "iaso.duplicates.manual.targetLabel": "Identifiant (id ou uuid) de l'entité cible"
+
 }

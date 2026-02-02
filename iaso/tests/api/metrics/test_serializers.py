@@ -132,6 +132,14 @@ class MetricTypeWriteSerializerTestCase(TestCase):
             expected_legend_config,
         )
 
+    def test_update_metric_type_invalid_unit_symbol(self):
+        invalid_data = self.request_data.copy()
+        invalid_data["unit_symbol"] = "uuu"  # Exceeds max length of 2
+        serializer_context = {"request": self.request}
+        serializer = MetricTypeWriteSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Ensure this field has no more than 2 characters.", serializer.errors["unit_symbol"][0])
+
     def test_update_metric_type_invalid_scale(self):
         invalid_data = self.request_data.copy()
         invalid_data["scale"] = "[10]"  # Invalid for threshold (needs at least 2)

@@ -42,7 +42,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     category = serializers.CharField(required=True, allow_blank=False)
     description = serializers.CharField(required=False, allow_blank=True)
     units = serializers.CharField(required=False, allow_blank=True)
-    unit_symbol = serializers.CharField(required=False, allow_blank=True)
+    unit_symbol = serializers.CharField(required=False, allow_blank=True, max_length=2)
     origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
     legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
     scale = serializers.JSONField(allow_null=False, read_only=True)

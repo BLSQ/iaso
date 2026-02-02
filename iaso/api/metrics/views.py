@@ -11,7 +11,9 @@ from iaso.api.apps import serializers
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
+from iaso.api.org_unit_tree.filters import OrgUnitTreeFilter
 from iaso.models import MetricType, MetricValue
+from iaso.models.org_unit import OrgUnit
 
 from .serializers import (
     ImportMetricValuesSerializer,
@@ -90,7 +92,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         # Get all custom metric types for the user's account
         metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
         # Get All org units for the user's account
-        org_units = get_valid_org_units_for_account(account).prefetch_related("parent")
+        org_units = OrgUnitTreeFilter.filter_valid_org_units_for_account(OrgUnit.objects.all(), account).prefetch_related("parent")
 
         # Prepare the CSV response
         headers = REQUIRED_METRIC_VALUES_HEADERS.copy()

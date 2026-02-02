@@ -1,6 +1,7 @@
 import django_filters
 
 from django import forms
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
@@ -59,3 +60,11 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
             return queryset.filter(version=source.default_version)
 
         return queryset.filter(version__data_source_id=data_source_id)
+
+    def filter_valid_org_units_for_account(queryset: QuerySet, account):
+        return (
+            queryset.filter(version=account.default_version)
+            .filter(validation_status=OrgUnit.VALIDATION_VALID)
+            .filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
+            .order_by("name")
+        )

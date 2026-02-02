@@ -12,7 +12,6 @@ from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationS
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
 from iaso.models import MetricType, MetricValue
-from plugins.snt_malaria.api.scenarios.utils import get_valid_org_units_for_account
 
 from .serializers import (
     ImportMetricValuesSerializer,

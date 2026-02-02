@@ -86,10 +86,6 @@ def build_submission_annotations():
     prefixed_fields[f"{model_prefix}is_reference"] = Exists(
         m.OrgUnitReferenceInstance.objects.filter(org_unit_id=OuterRef("org_unit_id"), instance_id=OuterRef("pk"))
     )
-    # Trypelim-specific
-    prefixed_fields[f"{model_prefix}canonical_org_unit_id"] = F("entity__entityvillagestats__org_unit_id")
-    prefixed_fields[f"{model_prefix}canonical_org_unit_name"] = F("entity__entityvillagestats__org_unit__name")
-
     prefixed_fields[f"{model_prefix}form_version_id"] = KeyTextTransform("_version", "json")
     prefixed_fields[f"{model_prefix}longitude"] = ST_X(F("location"))
     prefixed_fields[f"{model_prefix}latitude"] = ST_Y(F("location"))

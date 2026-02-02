@@ -17,7 +17,8 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
 from phonenumbers import NumberParseException
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, serializers, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
@@ -179,6 +180,16 @@ class ProfileError(ValidationError):
     def __init__(self, field=None, detail=None, code=None):
         super().__init__(detail, code)
         self.field = field
+
+
+class ProfileColorUpdateSerializer(serializers.Serializer):
+    color = serializers.CharField()
+
+    def validate_color(self, value: str) -> str:
+        try:
+            return validate_hex_color(value)
+        except ValueError:
+            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
 
 class ProfilesViewSet(viewsets.ViewSet):
@@ -465,6 +476,23 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         audit_logger.log_modification(
             instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
+
+        return Response(profile.as_dict())
+
+    @action(detail=True, methods=["PATCH"])
+    def update_color(self, request, pk=None):
+        serializer = ProfileColorUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile = get_object_or_404(self.get_queryset(), id=pk)
+        audit_logger = ProfileAuditLogger()
+        old_data = audit_logger.serialize_instance(profile)
+
+        profile.color = serializer.validated_data["color"]
+        profile.save(update_fields=["color"])
+
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=PROFILE_API
         )
 
         return Response(profile.as_dict())

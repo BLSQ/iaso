@@ -1319,6 +1319,36 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(profile.color, new_color)
         self.assertEqual(response.json()["color"], new_color)
 
+    def test_update_profile_color_action(self):
+        self.client.force_authenticate(self.john)
+        profile = Profile.objects.get(user=self.jim)
+        original_first_name = profile.user.first_name
+        original_last_name = profile.user.last_name
+        original_email = profile.user.email
+        new_color = "#a1b2c3"
+        data = {"color": new_color}
+
+        response = self.client.patch(f"/api/profiles/{profile.id}/update_color/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        profile.refresh_from_db()
+        profile.user.refresh_from_db()
+        self.assertEqual(profile.color, "#A1B2C3")
+        self.assertEqual(response.json()["color"], "#A1B2C3")
+        self.assertEqual(profile.user.first_name, original_first_name)
+        self.assertEqual(profile.user.last_name, original_last_name)
+        self.assertEqual(profile.user.email, original_email)
+
+    def test_update_profile_color_action_invalid_color(self):
+        self.client.force_authenticate(self.john)
+        profile = Profile.objects.get(user=self.jim)
+        data = {"color": "invalid"}
+
+        response = self.client.patch(f"/api/profiles/{profile.id}/update_color/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("color", response.json())
+
     def test_update_user_with_malformed_phone_number(self):
         user = self.jam
         profile_to_edit = Profile.objects.get(user=self.jum)

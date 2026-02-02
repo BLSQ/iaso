@@ -6,6 +6,7 @@ from rest_framework import serializers
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
+from iaso.utils import legend
 
 
 class MetricTypeSerializer(serializers.ModelSerializer):
@@ -44,6 +45,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     unit_symbol = serializers.CharField(required=False, allow_blank=True)
     origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
     legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
+    scale = serializers.JSONField(allow_null=False, read_only=True)
 
     class Meta:
         model = MetricType
@@ -55,7 +57,35 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
             "unit_symbol",
             "legend_type",
             "origin",
+            "scale",
         ]
+
+    def get_legend_config_from_scale(self, instance):
+        scale = self.initial_data.get("scale")
+        return legend.get_legend_config(instance, scale) if scale else instance.legend_config
+
+    def update(self, instance, validated_data):
+        legend_config = self.get_legend_config_from_scale(instance)
+        return super().update(instance, {**validated_data, "legend_config": legend_config})
+
+    def validate(self, data):
+        legend_type = self.initial_data.get("legend_type")
+        scale_count = len(self.initial_data.get("scale", "").split(",")) if self.initial_data.get("scale") else 0
+        if legend_type == MetricType.LegendType.THRESHOLD:
+            if scale_count < 2:
+                raise serializers.ValidationError(_("Threshold legend type requires at least two scale items."))
+            if scale_count > 9:
+                raise serializers.ValidationError(_("Threshold legend type allows a maximum of nine scale items."))
+        elif legend_type == MetricType.LegendType.LINEAR:
+            if scale_count != 2:
+                raise serializers.ValidationError(_("Linear legend type requires exactly two scale items."))
+        elif legend_type == MetricType.LegendType.ORDINAL:
+            if scale_count < 2:
+                raise serializers.ValidationError(_("Ordinal legend type requires at least two scale items."))
+            if scale_count > 4:
+                raise serializers.ValidationError(_("Ordinal legend type allows a maximum of four scale items."))
+
+        return data
 
 
 class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
@@ -63,6 +93,13 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
 
     class Meta(MetricTypeWriteSerializer.Meta):
         fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
+
+    def create(self, validated_data):
+        account = self.context["request"].user.iaso_profile.account
+        instance = super().create({**validated_data, "account": account})
+        instance.legend_config = self.get_legend_config_from_scale(instance)
+        instance.save()
+        return instance
 
     def validate_code(self, value):
         if any(char.isspace() for char in value):

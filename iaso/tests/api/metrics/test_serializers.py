@@ -46,6 +46,41 @@ class MetricTypeSerializerTestCase(TestCase):
 
 
 class MetricTypeWriteSerializerTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="Account")
+        cls.user = cls.create_user_with_profile(
+            email="john@polio.org",
+            username="test",
+            first_name="John",
+            last_name="Doe",
+            account=cls.account,
+        )
+
+        cls.request = APIRequestFactory().get("/")
+        cls.request.user = cls.user
+
+        cls.request_data = {
+            "code": "existing_code",
+            "name": "Existing Metric Type",
+            "category": "Existing Category",
+            "legend_type": "threshold",
+            "units": "units",
+            "unit_symbol": "u",
+            "description": "An existing metric type",
+            "origin": "custom",
+            "scale": "[10, 20, 30, 40, 50, 60, 70]",
+        }
+
+        cls.metric_type = MetricType.objects.create(
+            account=cls.account,
+            code="MT1",
+            name="Metric Type 1",
+            category="Category 1",
+            legend_type="threshold",
+            legend_config={"thresholds": [10, 20, 30]},
+        )
+
     def test_fields(self):
         serializer = MetricTypeWriteSerializer()
         expected_fields = {
@@ -56,8 +91,84 @@ class MetricTypeWriteSerializerTestCase(TestCase):
             "unit_symbol",
             "legend_type",
             "origin",
+            "scale",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
+
+    def test_update(self):
+        serializer_context = {"request": self.request}
+        serializer = MetricTypeWriteSerializer(
+            instance=self.metric_type,
+            data={
+                "name": "Updated Metric Type 1",
+                "category": "Updated Category 1",
+                "description": "Updated description",
+                "units": "updated units",
+                "unit_symbol": "uu",
+                "legend_type": "threshold",
+                "origin": "custom",
+                "scale": "[5, 15, 25, 35]",
+            },
+            context=serializer_context,
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        updated_metric_type = serializer.save()
+
+        self.assertEqual(updated_metric_type.name, "Updated Metric Type 1")
+        self.assertEqual(updated_metric_type.category, "Updated Category 1")
+        self.assertEqual(updated_metric_type.description, "Updated description")
+        self.assertEqual(updated_metric_type.units, "updated units")
+        self.assertEqual(updated_metric_type.unit_symbol, "uu")
+        self.assertEqual(updated_metric_type.legend_type, "threshold")
+        self.assertEqual(updated_metric_type.origin, "custom")
+
+        expected_legend_config = {
+            "domain": [5.0, 15.0, 25.0, 35.0],
+            "range": ["#A2CAEA", "#ACDF9B", "#F5F1A0", "#F2B16E", "#A93A42"],
+        }
+
+        self.assertEqual(
+            updated_metric_type.legend_config,
+            expected_legend_config,
+        )
+
+    def test_update_metric_type_invalid_scale(self):
+        invalid_data = self.request_data.copy()
+        invalid_data["scale"] = "[10]"  # Invalid for threshold (needs at least 2)
+        serializer_context = {"request": self.request}
+        serializer = MetricTypeWriteSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Threshold legend type requires at least two scale items.", serializer.errors["non_field_errors"])
+
+        invalid_data["scale"] = "[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"  # Invalid for threshold (max 9)
+        serializer = MetricTypeWriteSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "Threshold legend type allows a maximum of nine scale items.", serializer.errors["non_field_errors"]
+        )
+
+        invalid_data = self.request_data.copy()
+        invalid_data["legend_type"] = "linear"
+        invalid_data["scale"] = "[10, 20, 30]"  # Invalid for linear (needs exactly 2)
+        serializer = MetricTypeWriteSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Linear legend type requires exactly two scale items.", serializer.errors["non_field_errors"])
+
+        invalid_data = self.request_data.copy()
+        invalid_data["legend_type"] = "ordinal"
+        invalid_data["scale"] = "[10]"  # Invalid for ordinal (needs at least 2)
+        serializer = MetricTypeWriteSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Ordinal legend type requires at least two scale items.", serializer.errors["non_field_errors"])
+
+        invalid_data = self.request_data.copy()
+        invalid_data["legend_type"] = "ordinal"
+        invalid_data["scale"] = "[10, 20, 30, 40, 50]"  # Invalid for ordinal (max 4)
+        serializer = MetricTypeWriteSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "Ordinal legend type allows a maximum of four scale items.", serializer.errors["non_field_errors"]
+        )
 
 
 class MetricTypeCreateSerializerTestCase(TestCase):
@@ -84,6 +195,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             "unit_symbol": "u",
             "description": "An existing metric type",
             "origin": "custom",
+            "scale": "[10, 20, 30, 40, 50, 60, 70]",
         }
 
     def test_fields(self):
@@ -97,6 +209,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             "unit_symbol",
             "legend_type",
             "origin",
+            "scale",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
 
@@ -121,6 +234,78 @@ class MetricTypeCreateSerializerTestCase(TestCase):
         serializer_context = {"request": self.request}
         serializer = MetricTypeCreateSerializer(data=self.request_data, context=serializer_context)
         self.assertTrue(serializer.is_valid())
+
+    def test_create_metric_type(self):
+        serializer_context = {"request": self.request}
+        serializer = MetricTypeCreateSerializer(data=self.request_data, context=serializer_context)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        metric_type = serializer.save()
+        self.assertEqual(metric_type.account, self.account)
+        self.assertEqual(metric_type.code, self.request_data["code"])
+        self.assertEqual(metric_type.name, self.request_data["name"])
+        self.assertEqual(metric_type.category, self.request_data["category"])
+        self.assertEqual(metric_type.units, self.request_data["units"])
+        self.assertEqual(metric_type.unit_symbol, self.request_data["unit_symbol"])
+        self.assertEqual(metric_type.description, self.request_data["description"])
+        self.assertEqual(metric_type.legend_type, self.request_data["legend_type"])
+        self.assertEqual(metric_type.origin, self.request_data["origin"])
+
+        expected_legend_config = {
+            "domain": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0],
+            "range": [
+                "#A2CAEA",
+                "#6BD39D",
+                "#ACDF9B",
+                "#F5F1A0",
+                "#F2B16E",
+                "#E4754F",
+                "#C54A53",
+                "#A93A42",
+            ],
+        }
+
+        self.assertEqual(
+            metric_type.legend_config,
+            expected_legend_config,
+        )
+
+    def test_create_metric_type_invalid_scale(self):
+        invalid_data = self.request_data.copy()
+        invalid_data["scale"] = "[10]"  # Invalid for threshold (needs at least 2)
+        serializer_context = {"request": self.request}
+        serializer = MetricTypeCreateSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Threshold legend type requires at least two scale items.", serializer.errors["non_field_errors"])
+
+        invalid_data["scale"] = "[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"  # Invalid for threshold (max 9)
+        serializer = MetricTypeCreateSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "Threshold legend type allows a maximum of nine scale items.", serializer.errors["non_field_errors"]
+        )
+
+        invalid_data = self.request_data.copy()
+        invalid_data["legend_type"] = "linear"
+        invalid_data["scale"] = "[10, 20, 30]"  # Invalid for linear (needs exactly 2)
+        serializer = MetricTypeCreateSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Linear legend type requires exactly two scale items.", serializer.errors["non_field_errors"])
+
+        invalid_data = self.request_data.copy()
+        invalid_data["legend_type"] = "ordinal"
+        invalid_data["scale"] = "[10]"  # Invalid for ordinal (needs at least 2)
+        serializer = MetricTypeCreateSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Ordinal legend type requires at least two scale items.", serializer.errors["non_field_errors"])
+
+        invalid_data = self.request_data.copy()
+        invalid_data["legend_type"] = "ordinal"
+        invalid_data["scale"] = "[10, 20, 30, 40, 50]"  # Invalid for ordinal (max 4)
+        serializer = MetricTypeCreateSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "Ordinal legend type allows a maximum of four scale items.", serializer.errors["non_field_errors"]
+        )
 
 
 class MetricValueSerializerTestCase(TestCase):

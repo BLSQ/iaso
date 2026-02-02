@@ -13,7 +13,6 @@ from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationS
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
 from iaso.models import MetricType, MetricValue
-from iaso.utils import legend
 from plugins.snt_malaria.api.scenarios.utils import get_valid_org_units_for_account
 
 from .serializers import (
@@ -45,18 +44,6 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
             if self.action in ["update", "partial_update"]
             else MetricTypeSerializer
         )
-
-    def perform_create(self, serializer):
-        metric_type = serializer.save(
-            account=self.request.user.iaso_profile.account,
-        )
-        metric_type.legend_config = legend.get_legend_config(metric_type, self.request.data.get("scale"))
-        metric_type.save()
-
-    def perform_update(self, serializer):
-        metric_type = serializer.save()
-        metric_type.legend_config = legend.get_legend_config(metric_type, self.request.data.get("scale"))
-        metric_type.save()
 
     def perform_destroy(self, instance):
         if instance.origin == MetricType.MetricTypeOrigin.OPENHEXA.value:

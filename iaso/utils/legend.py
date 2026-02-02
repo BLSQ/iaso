@@ -88,7 +88,6 @@ def get_legend_config(metric_type, scale):
 
     if metric_type.legend_type == "threshold":
         scales = get_scales_from_list_or_json_str(scale)
-        print(f"Parsed scales: {scales}")
         try:
             numeric_scales = [float(s) for s in scales]
         except Exception as e:
@@ -104,7 +103,8 @@ def get_legend_config(metric_type, scale):
         return {"domain": scales, "range": ORDINAL[len(scales)]}
     if metric_type.legend_type == "linear":
         max_value = get_max_range_value(metric_type)
-        return {"domain": [0, max_value], "range": [NINE_SHADES[0], NINE_SHADES[-1]]}
+        scales = get_scales_from_list_or_json_str(scale) if scale else [0, max_value]
+        return {"domain": scales, "range": [NINE_SHADES[0], NINE_SHADES[-1]]}
 
     return __get_legend_config(metric_type)
 

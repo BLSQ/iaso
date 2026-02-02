@@ -1,20 +1,17 @@
-Github flow
-===========
+# Github flow
 
 ## Create and merge a pull request
 
 - Make a new branch using the name of the JIRA issue in title
 - Make sure you fill up all sections of the template (changes, how to test, ...)
-- For any new feature make sure you wrote enough python or cypress tests 
+- For any new feature make sure you wrote enough tests
 - To be mergeable your PR needs to pass build, JS and Python tests.
-- You can also launch Cypress test manually to make sure you didn't brake something else just by tagging `@cypress` in a comment on your PR
 - Add reviewer(s) to make sure someone is gonna take care of it
 - Merge develop in your branch if you have conflicts
 - If a reviewer request changes apply the changes and mark the discussion on github as resolved when fixed. It will help other reviewers to see if the changes has been done.
 - Re-request a review when all changes are pushed (double check tests again)
 - Wait at least that one reviewer approved the PR, after you can sqaush and merge following conventional commit
 - Add documentation when necessary (new feature, change in config, etc)
-
 
 ## Review a pull request:
 
@@ -25,10 +22,9 @@ Github flow
 - Approve/comment/request changes while you are done
 - Restart the proccess if the author re-request a review
 
-
 ## Tips
 
-- You can always write a draft PR to run the tests or share a discussion with other developers 
+- You can always write a draft PR to run the tests or share a discussion with other developers
 - To make sure your PR will pass in the next release you can add the `release` label to it
 - You can add comments on a file or on multiple lines
 - Black formatting is not automatic on new migration files

@@ -51,6 +51,7 @@ def split_multi_type_campaigns(apps, schema_editor):
                         description=campaign.description,
                         separate_scopes_per_round=campaign.separate_scopes_per_round,
                         enable_send_weekly_email=campaign.enable_send_weekly_email,
+                        integrated_to=campaign,
                     )
                     if not campaign.separate_scopes_per_round:
                         new_campaign_scopes = []
@@ -91,32 +92,30 @@ def split_multi_type_campaigns(apps, schema_editor):
                             new_round.scopes.set(new_round_scopes)
 
                         new_rounds.append(new_round)
-                        if rnd.sub_activities.exists():
-                            new_subactivities = []
-                            for subactivity in rnd.sub_activities.all():
-                                new_subactivity = Subactivity.objects.create(
-                                    round=new_round,
-                                    name=subactivity.name,
-                                    age_unit=subactivity.age_unit,
-                                    age_min=subactivity.age_min,
-                                    age_max=subactivity.age_max,
-                                    start_date=subactivity.start_date,
-                                    end_date=subactivity.end_date,
-                                    im_started_at=subactivity.im_started_at,
-                                    im_ended_at=subactivity.im_ended_at,
-                                    lqas_started_at=subactivity.lqas_started_at,
-                                    lqas_ended_at=subactivity.lqas_ended_at,
+
+                        for subactivity in rnd.sub_activities.all():
+                            new_subactivity = Subactivity.objects.create(
+                                round=new_round,
+                                name=subactivity.name,
+                                age_unit=subactivity.age_unit,
+                                age_min=subactivity.age_min,
+                                age_max=subactivity.age_max,
+                                start_date=subactivity.start_date,
+                                end_date=subactivity.end_date,
+                                im_started_at=subactivity.im_started_at,
+                                im_ended_at=subactivity.im_ended_at,
+                                lqas_started_at=subactivity.lqas_started_at,
+                                lqas_ended_at=subactivity.lqas_ended_at,
+                            )
+                            new_subactivity_scopes = []
+                            for scope in subactivity.scopes.all():
+                                group = Group.objects.create(name="hidden round scope")
+                                new_scope = SubactivityScope.objects.create(
+                                    vaccine=scope.vaccine, subactivity=new_subactivity, group=group
                                 )
-                                new_subactivity_scopes = []
-                                for scope in subactivity.scopes.all():
-                                    group = Group.objects.create(name="hidden round scope")
-                                    new_scope = SubactivityScope.objects.create(
-                                        vaccine=scope.vaccine, subactivity=new_subactivity, group=group
-                                    )
-                                    new_scope.group.org_units.set(scope.group.org_units.all())
-                                    new_subactivity_scopes.append(new_scope)
-                                new_subactivity.scopes.set(new_subactivity_scopes)
-                                new_subactivities.append(new_subactivity)
+                                new_scope.group.org_units.set(scope.group.org_units.all())
+                                new_subactivity_scopes.append(new_scope)
+                            new_subactivity.scopes.set(new_subactivity_scopes)
 
                     new_campaign.rounds.set(new_rounds)
             campaign.campaign_types.set(CampaignType.objects.filter(slug="polio"))
@@ -127,4 +126,4 @@ class Migration(migrations.Migration):
         ("polio", "0249_alter_poliopermissionsupport_options"),
     ]
 
-    operations = [migrations.RunPython(split_multi_type_campaigns, migrations.RunPython.noop)]
+    operations = [migrations.RunPython(split_multi_type_campaigns, migrations.RunPython.noop, elidable=True)]

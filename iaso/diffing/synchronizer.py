@@ -42,6 +42,12 @@ class DataSourceVersionsSynchronizer:
 
     def __init__(self, data_source_sync: DataSourceVersionsSynchronization):
         self.data_source_sync = data_source_sync
+        self.task = getattr(self.data_source_sync, "sync_task", None)
+        self.groups_matched_count = 0
+        self.org_units_created_count = 0
+        self.groups_created_count = 0
+        self.org_units_modified_count = 0
+        self.change_requests_count = 0
 
         # The JSON that we deserialized is assumed to have been serialized
         # by `iaso.diffing.dumper.DataSourceVersionsSynchronizationEncoder`.
@@ -57,13 +63,42 @@ class DataSourceVersionsSynchronizer:
         self.insert_batch_size = 100
         self.json_batch_size = 10
 
+    def _report_progress(self, message: str) -> None:
+        if self.task:
+            self.task.report_progress_and_stop_if_killed(progress_message=message)
+
+    def _report_error(self, message: str, extra: dict) -> None:
+        self._report_progress(message)
+        logger.error(
+            message,
+            extra,
+        )
+
     def synchronize(self) -> None:
+        self._report_progress("Preparing groups matching…")
         self._prepare_groups_matching()
+        self._report_progress(f"Groups matched: {self.groups_matched_count}")
+
         self._create_missing_org_units_and_prepare_missing_groups()
+        self._report_progress(f"Created {self.org_units_created_count} org units; ")
+        self._report_progress(f"Prepared {len(self.groups_to_bulk_create)} groups for creation")
+
         self._bulk_create_missing_groups()
+        self._report_progress(
+            f"Bulk created {self.groups_created_count} groups; total matched: {len(self.groups_matching)}"
+        )
+
         self._prepare_change_requests()
+        self._report_progress(
+            f"Prepared {self.change_requests_count} change requests "
+            f"(modified org units: {self.org_units_modified_count})"
+        )
+
         self._bulk_create_change_requests()
+        self._report_progress(f"Bulk created {self.change_requests_count} change requests")
+
         self._bulk_create_change_request_groups()
+        self._report_progress("Bulk created change request groups")
 
     @staticmethod
     def sort_by_path(diffs: list[dict]) -> list:
@@ -95,12 +130,13 @@ class DataSourceVersionsSynchronizer:
         )
         for group in existing_groups:
             if not group.source_ref:
-                logger.error(
-                    f"Ignoring Group ID #{group.pk} because it has no `source_ref` attribute.",
+                self._report_error(
+                    message=f"Ignoring Group ID #{group.pk} because it has no `source_ref` attribute.",
                     extra={"group": group, "data_source_sync": self.data_source_sync},
                 )
                 continue
             self.groups_matching[group.source_ref] = group.pk
+        self.groups_matched_count = len(self.groups_matching)
 
     def _create_missing_org_units_and_prepare_missing_groups(self) -> None:
         """
@@ -130,8 +166,8 @@ class DataSourceVersionsSynchronizer:
                 org_unit = next(org_unit for org_unit in org_units if org_unit.id == org_unit_id)
 
                 if not org_unit.source_ref:
-                    logger.error(
-                        f"Ignoring OrgUnit ID #{org_unit.pk} because it has no `source_ref` attribute.",
+                    self._report_error(
+                        message=f"Ignoring OrgUnit ID #{org_unit.pk} because it has no `source_ref` attribute.",
                         extra={"org_unit": org_unit, "data_source_sync": self.data_source_sync},
                     )
                     continue
@@ -172,6 +208,7 @@ class DataSourceVersionsSynchronizer:
                 org_unit.save(skip_calculate_path=True)
 
                 self.org_units_matching[org_unit.source_ref].corresponding_id = org_unit.pk
+                self.org_units_created_count += 1
 
     def _bulk_create_missing_groups(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
@@ -186,6 +223,8 @@ class DataSourceVersionsSynchronizer:
             new_groups = Group.objects.bulk_create(new_groups_batch, self.insert_batch_size)
             for new_group in new_groups:
                 self.groups_matching[new_group.source_ref] = new_group.pk
+            self.groups_created_count += len(new_groups)
+        self.groups_matched_count = len(self.groups_matching)
 
     def _prepare_change_requests(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
@@ -199,7 +238,6 @@ class DataSourceVersionsSynchronizer:
 
             if not batch_diff:
                 break
-
             for diff in batch_diff:
                 if diff["status"] == Differ.STATUS_NEW:
                     change_request, group_changes = self._prepare_new_change_requests(diff)
@@ -210,6 +248,9 @@ class DataSourceVersionsSynchronizer:
                     continue
 
                 self.change_requests_to_bulk_create.append(change_request)
+                self.change_requests_count += 1
+                if diff["status"] == Differ.STATUS_MODIFIED:
+                    self.org_units_modified_count += 1
 
                 old_groups_ids = set()
                 new_groups_ids = set()
@@ -240,8 +281,8 @@ class DataSourceVersionsSynchronizer:
         ]
 
         if not requested_fields:
-            logger.error(
-                f"Ignoring OrgUnit ID #{diff['orgunit_ref']['id']} because `requested_fields` is empty.",
+            self._report_error(
+                message=f"Ignoring OrgUnit ID #{diff['orgunit_ref']['id']} because `requested_fields` is empty.",
                 extra={"diff": diff, "data_source_sync": self.data_source_sync},
             )
             return None, None
@@ -273,8 +314,8 @@ class DataSourceVersionsSynchronizer:
                     if matching_iaso_id:
                         new_group["iaso_id"] = matching_iaso_id
                     else:
-                        logger.error(
-                            f"Unable to find a corresponding `Group` with `source_ref={source_ref}` in the pyramid to update.",
+                        self._report_error(
+                            message=f"Unable to find a corresponding `Group` with `source_ref={source_ref}` in the pyramid to update.",
                             extra={"new_group": new_group, "data_source_sync": self.data_source_sync},
                         )
 
@@ -309,10 +350,11 @@ class DataSourceVersionsSynchronizer:
         return org_unit_change_request, group_changes
 
     def _prepare_modified_change_requests(self, diff: dict) -> tuple[OrgUnitChangeRequest, list]:
+        org_unit = diff["orgunit_dhis2"]
         changes = {
             comparison["field"]: comparison["after"]
             for comparison in diff["comparisons"]
-            if comparison["status"] == Differ.STATUS_MODIFIED
+            if comparison["status"] in [Differ.STATUS_MODIFIED, Differ.STATUS_NEW, Differ.STATUS_NOT_IN_ORIGIN]
             and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
         }
 
@@ -323,29 +365,33 @@ class DataSourceVersionsSynchronizer:
         new_opening_date = None
         new_closed_date = None
 
-        if changes.get("parent"):
+        if "parent" in changes:
             parent_source_ref = changes["parent"]
-            parent_org_unit = (
-                OrgUnit.objects.filter(
-                    source_ref=parent_source_ref, version=self.data_source_sync.source_version_to_update
+            parent_org_unit = None
+            if parent_source_ref:
+                parent_org_unit = (
+                    OrgUnit.objects.filter(
+                        source_ref=parent_source_ref, version=self.data_source_sync.source_version_to_update
+                    )
+                    .only("pk")
+                    .first()
                 )
-                .only("pk")
-                .first()
-            )
             if parent_org_unit:
                 new_parent_id = parent_org_unit.pk
             requested_fields.append("new_parent")
 
-        if changes.get("name"):
+        if "name" in changes and changes["name"] != "":
             new_name = changes["name"]
             requested_fields.append("new_name")
 
-        if changes.get("opening_date"):
-            new_opening_date = self.parse_date_str(changes["opening_date"])
+        if "opening_date" in changes:
+            new_opening_date_value = changes["opening_date"]
+            new_opening_date = self.parse_date_str(new_opening_date_value) if new_opening_date_value else None
             requested_fields.append("new_opening_date")
 
-        if changes.get("closed_date"):
-            new_closed_date = self.parse_date_str(changes["closed_date"])
+        if "closed_date" in changes:
+            new_closed_date_value = changes["closed_date"]
+            new_closed_date = self.parse_date_str(new_closed_date_value) if new_closed_date_value else None
             requested_fields.append("new_closed_date")
 
         group_changes = []

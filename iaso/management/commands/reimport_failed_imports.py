@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from hat.api_import.models import APIImport
 from iaso.api.instances.instances import import_data as import_instances
 from iaso.api.org_units import import_org_units
+from iaso.models import Project
 
 
 class Command(BaseCommand):
@@ -17,6 +18,8 @@ class Command(BaseCommand):
                 i.has_problem = False
                 i.save()
                 unit_count = unit_count + 1
+            except Project.DoesNotExist:
+                print(f"No Project found for app id {i}")
             except Exception as e:
                 print("An error happened", e)
 

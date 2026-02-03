@@ -271,17 +271,14 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         ids = request.query_params.get(IDS, None)
         if ids is not None:
-            try:
-                ids = ids.split(",")
-                queryset = (
-                    OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
-                    .order_by("path")
-                    .prefetch_related("parent__org_unit_type__projects", "groups")
-                    .select_related("org_unit_type", "parent", "parent__org_unit_type")
-                    .filter(id__in=ids)
-                )
-            except Project.DoesNotExist:
-                raise HttpResponseNotFound(f"No project found for app id {app_id}")
+            ids = ids.split(",")
+            queryset = (
+                OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
+                .order_by("path")
+                .prefetch_related("parent__org_unit_type__projects", "groups")
+                .select_related("org_unit_type", "parent", "parent__org_unit_type")
+                .filter(id__in=ids)
+            )
             if len(queryset) != len(ids):
                 return HttpResponseNotFound("One or more IDs were not found.")
             serializer = self.get_serializer(queryset, many=True)
@@ -313,7 +310,10 @@ class MobileOrgUnitViewSet(ModelViewSet):
     @safe_api_import("orgUnit")
     def create(self, _, request):
         data = sorted(request.data, key=lambda ou: float(ou["created_at"]))
-        new_org_units = import_org_units(data, request.user, self.get_app_id())
+        try:
+            new_org_units = import_org_units(data, request.user, self.get_app_id())
+        except Project.DoesNotExist:
+            new_org_units = []
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     @action(detail=False, methods=["GET"])

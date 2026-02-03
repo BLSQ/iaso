@@ -1,30 +1,23 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import MESSAGES from '../messages';
-import { DateTimeCellRfc } from 'Iaso/components/Cells/DateTimeCell';
-import { EditPerformanceThreshold } from '../Modal/CreateEditModal';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import { useDeletePerformanceThreshold } from '../hooks/api';
-import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
-import {
-    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
-    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
-} from '../../../../../src/constants/permissions';
-import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import React from 'react';
+import { useSafeIntl } from 'bluesquare-components';
+import { DateTimeCellRfc } from 'Iaso/components/Cells/DateTimeCell';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
+import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import { POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION } from '../../../../../src/constants/permissions';
+import { useDeletePerformanceThreshold } from '../hooks/api';
 
 import { useGetJSonLogicConverter } from '../hooks/useGetJsonLogicToString';
+import MESSAGES from '../messages';
+import { EditPerformanceThreshold } from '../Modal/CreateEditModal';
 
 export const useTableColumns = () => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const { mutate: deleteThreshold } = useDeletePerformanceThreshold();
     const hasActionPermission = userHasOneOfPermissions(
-        [
-            POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
-            POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
-        ],
+        [POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION],
         currentUser,
     );
     const convertJsonLogicToString = useGetJSonLogicConverter();
@@ -80,48 +73,35 @@ export const useTableColumns = () => {
 
                     return (
                         <>
-                            <DisplayIfUserHasPerm
-                                permissions={[
-                                    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
-                                    POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
-                                ]}
-                            >
-                                <EditPerformanceThreshold
-                                    performanceThreshold={performanceThreshold}
-                                    iconProps={{}}
-                                />
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[
-                                    POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
-                                ]}
-                            >
-                                <DeleteModal
-                                    key={`${performanceThreshold.id}`}
-                                    type="icon"
-                                    titleMessage={formatMessage(
-                                        MESSAGES.deletePerformanceThreshold,
-                                        {
-                                            name: performanceThreshold.indicator,
-                                        },
-                                    )}
-                                    onConfirm={() =>
-                                        deleteThreshold(performanceThreshold.id)
-                                    }
-                                    backdropClick
-                                />
-                            </DisplayIfUserHasPerm>
+                            <EditPerformanceThreshold
+                                performanceThreshold={performanceThreshold}
+                                iconProps={{}}
+                            />
+
+                            <DeleteModal
+                                key={`${performanceThreshold.id}`}
+                                type="icon"
+                                titleMessage={formatMessage(
+                                    MESSAGES.deletePerformanceThreshold,
+                                    {
+                                        name: performanceThreshold.indicator,
+                                    },
+                                )}
+                                onConfirm={() =>
+                                    deleteThreshold(performanceThreshold.id)
+                                }
+                                backdropClick
+                            />
                         </>
                     );
                 },
             });
-            return columns;
         }
+        return columns;
     }, [
         formatMessage,
         hasActionPermission,
         deleteThreshold,
-        currentUser,
         convertJsonLogicToString,
     ]);
 };

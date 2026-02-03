@@ -1192,3 +1192,14 @@ class ETL:
             .order_by("new_period", "org_unit")
         )
         return Paginator(instances, 15000)
+
+    def missing_entities_in_analytics_tables(self, account, entity_type, user):
+        entities = (
+            Entity.objects.filter_for_user(user)
+            .filter(
+                account_id=account, entity_type_id=entity_type, deleted_at__isnull=True, beneficiary__id__isnull=True
+            )
+            .annotate(beneficiary_id=F("beneficiary__id"), entity_id=F("id"), profile=F("attributes__json"))
+            .values("entity_id", "uuid", "deleted_at", "beneficiary_id", "profile")
+        )
+        return entities

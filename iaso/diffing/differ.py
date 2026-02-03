@@ -162,27 +162,27 @@ class Differ:
         comparisons = []
 
         for field in field_types:
-            dhis2_value = field.access(orgunit_dhis2)
+            origin_value = field.access(orgunit_dhis2)
             ref_value = field.access(orgunit_ref)
 
-            same = field.is_same(dhis2_value, ref_value)
+            same = field.is_same(origin_value, ref_value)
             if same:
                 status = self.STATUS_SAME
             else:
                 status = self.STATUS_MODIFIED
 
-            if not dhis2_value and ref_value:
+            if not origin_value and ref_value:
                 status = self.STATUS_NEW
-            if not same and dhis2_value is not None and (ref_value is None or ref_value == []):
+            if not same and origin_value is not None and (ref_value is None or ref_value == []):
                 status = self.STATUS_NOT_IN_ORIGIN
 
             comparisons.append(
                 Comparison(
-                    before=dhis2_value,
+                    before=origin_value,
                     after=ref_value,
                     field=field.field_name,
                     status=status,
-                    distance=0 if same else field.distance(dhis2_value, ref_value),
+                    distance=0 if same else field.distance(origin_value, ref_value),
                 )
             )
         return comparisons

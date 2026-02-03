@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
+from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
@@ -18,9 +20,58 @@ def create_uuid_index_action(modeladmin, request: HttpRequest, queryset):
     )
 
 
+class ProgrammeType(SimpleListFilter):
+    title = "Programme type"
+    parameter_name = "programme_type"
+
+    def lookups(self, request, modeladmin):
+        return Journey._meta.get_field("programme_type").choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(journey__programme_type=self.value()).distinct()
+        return queryset
+
+
+class Year(SimpleListFilter):
+    title = "Year"
+    parameter_name = "year"
+
+    def lookups(self, request, modeladmin):
+        years = (
+            modeladmin.model.objects.annotate(year=ExtractYear("date"))
+            .values_list("year", flat=True)
+            .distinct()
+            .order_by("-year")
+        )
+        return [(year, year) for year in years if year]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(date__year=self.value())
+
+
+class Month(SimpleListFilter):
+    title = "Month"
+    parameter_name = "month"
+
+    def lookups(self, request, modeladmin):
+        months = (
+            modeladmin.model.objects.annotate(month=ExtractMonth("date"))
+            .values_list("month", flat=True)
+            .distinct()
+            .order_by("month")
+        )
+        return [(month, month) for month in months if month]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(date__month=self.value())
+
+
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender", "account", "guidelines")
+    list_filter = ("birth_date", "gender", "account", "guidelines", ProgrammeType)
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
     actions = [create_uuid_index_action]
 
@@ -76,8 +127,11 @@ class VisitAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",
+        Year,
+        Month,
         "number",
         "journey__programme_type",
+        "journey__nutrition_programme",
         "journey__beneficiary__account",
     )
     search_fields = ("journey__beneficiary__account__name", "org_unit__id", "org_unit__name", "number")

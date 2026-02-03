@@ -1325,7 +1325,7 @@ class ProfileAPITestCase(APITestCase):
         original_first_name = profile.user.first_name
         original_last_name = profile.user.last_name
         original_email = profile.user.email
-        new_color = "#a1b2c3"
+        new_color = "#A1B2C3"
         data = {"color": new_color}
 
         response = self.client.patch(f"/api/profiles/{profile.id}/update_color/", data=data, format="json")
@@ -1346,7 +1346,7 @@ class ProfileAPITestCase(APITestCase):
 
         response = self.client.patch(f"/api/profiles/{profile.id}/update_color/", data=data, format="json")
 
-        result= self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST) # you need to import status
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("color", result)
 
     def test_update_user_with_malformed_phone_number(self):

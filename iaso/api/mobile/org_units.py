@@ -271,7 +271,12 @@ class MobileOrgUnitViewSet(ModelViewSet):
         roots_key = ""
         roots = []
         if request.user.is_authenticated:
-            roots = self.request.user.iaso_profile.org_units.values_list("id", flat=True).order_by("id")
+            # Trypelim-specific:
+            # SLEEP-1715: Use the coordination as the root
+            if coordination := self.request.user.trypelim_profile.coordination:
+                roots = coordination.org_units.values_list("id", flat=True).order_by("id")
+            else:
+                roots = self.request.user.iaso_profile.org_units.values_list("id", flat=True).order_by("id")
             roots_key = "|".join([str(root) for root in roots])
 
         page_size = self.paginator.get_page_size(request)

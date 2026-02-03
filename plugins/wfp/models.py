@@ -91,7 +91,7 @@ class Journey(models.Model):
         db_index=True,
     )
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True, db_index=True)
-    initial_weight = models.FloatField(default=0)
+    initial_weight = models.FloatField(null=True, blank=True)
     discharge_weight = models.FloatField(null=True, blank=True)
     weight_gain = models.FloatField(default=0)
     weight_loss = models.FloatField(default=0)

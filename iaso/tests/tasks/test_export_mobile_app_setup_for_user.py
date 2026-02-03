@@ -10,7 +10,8 @@ from unittest import mock
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from iaso.models import SUCCESS, Account, Project, Task
+from iaso.models import SUCCESS, Account, EntityType, Form, Project, Task, Workflow, WorkflowChange, WorkflowVersion
+from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.tasks.export_mobile_app_setup_for_user import (
     _call_cursor_pagination_page,
     _get_cursor_pagination_metadata,
@@ -179,8 +180,34 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
         self.app_id = "org.test.app"
         self.feature_flags = ["ENTITY"]
 
-    def test_strip_visited_at(self):
-        """SLEEP-1698: Test that `visited_at` is set to null when `strip_visited_at` options is set."""
+    def test_strip_workflow_attrs(self):
+        """
+        SLEEP-1698: Test that attributes derived from workflow changes are
+        set to null when `strip_workflow_attrs` options is set.
+        """
+
+        registration = Form.objects.create(name="Trypelim registration", form_id="trypelim_registration")
+        other_form = Form.objects.create(name="Random form", form_id="foo")
+
+        entity_type = EntityType.objects.create(
+            name="Participant",
+            reference_form=registration,
+        )
+
+        workflow = Workflow.objects.create(
+            entity_type=entity_type,
+        )
+
+        workflow_version = WorkflowVersion.objects.create(
+            workflow=workflow,
+            status=WorkflowVersionsStatus.PUBLISHED,
+        )
+
+        WorkflowChange.objects.create(
+            form=other_form,
+            workflow_version=workflow_version,
+            mapping={"some_field": "visited_at"},
+        )
 
         iaso_client_mock = mock.MagicMock()
         iaso_client_mock.get.side_effect = [
@@ -191,27 +218,29 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
                 "results": [
                     {
                         "instances": [
-                            {"id": 1, "json": {"visited_at": "2021-03-10"}},
-                            {"id": 2, "json": {"visited_at": None}},
-                            {"id": 3, "json": {}},
-                            {"id": 4},
+                            {"id": 1, "form_id": registration.id, "json": {"visited_at": "2021-03-10"}},
+                            {"id": 2, "form_id": registration.id, "json": {"visited_at": None}},
+                            {"id": 3, "form_id": registration.id, "json": {}},
+                            {"id": 4, "form_id": registration.id, "json": {"unrelated_attr": "bar"}},
+                            {"id": 5, "form_id": registration.id},
                         ]
                     }
                 ],
             },
         ]
         options = {
-            "strip_visited_at": True,
+            "strip_workflow_attrs": True,
         }
         zipf_mock = MockZip()
         _get_resource(iaso_client_mock, self.call, zipf_mock, self.app_id, self.feature_flags, options)
         self.assertIn("entities-1.json", zipf_mock.captured_files)
         expected = {
             "instances": [
-                {"id": 1, "json": {"visited_at": None}},
-                {"id": 2, "json": {"visited_at": None}},
-                {"id": 3, "json": {}},
-                {"id": 4},
+                {"id": 1, "form_id": registration.id, "json": {}},
+                {"id": 2, "form_id": registration.id, "json": {}},
+                {"id": 3, "form_id": registration.id, "json": {}},
+                {"id": 4, "form_id": registration.id, "json": {"unrelated_attr": "bar"}},
+                {"id": 5, "form_id": registration.id},
             ],
         }
         self.assertDictEqual(json.loads(zipf_mock.captured_files["entities-1.json"])["results"][0], expected)

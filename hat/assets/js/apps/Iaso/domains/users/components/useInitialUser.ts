@@ -120,6 +120,10 @@ export const useInitialUser = (
                 value: get(initialData, 'level', null),
                 errors: [],
             },
+            coordination: {
+                value: get(initialData, 'coordination', null),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);

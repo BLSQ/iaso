@@ -271,14 +271,17 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         ids = request.query_params.get(IDS, None)
         if ids is not None:
-            ids = ids.split(",")
-            queryset = (
-                OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
-                .order_by("path")
-                .prefetch_related("parent__org_unit_type__projects", "groups")
-                .select_related("org_unit_type", "parent", "parent__org_unit_type")
-                .filter(id__in=ids)
-            )
+            try:
+                ids = ids.split(",")
+                queryset = (
+                    OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
+                    .order_by("path")
+                    .prefetch_related("parent__org_unit_type__projects", "groups")
+                    .select_related("org_unit_type", "parent", "parent__org_unit_type")
+                    .filter(id__in=ids)
+                )
+            except Project.DoesNotExist:
+                raise HttpResponseNotFound(f"No project found for app id {app_id}")
             if len(queryset) != len(ids):
                 return HttpResponseNotFound("One or more IDs were not found.")
             serializer = self.get_serializer(queryset, many=True)

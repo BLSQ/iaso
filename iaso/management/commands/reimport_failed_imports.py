@@ -18,8 +18,8 @@ class Command(BaseCommand):
                 i.has_problem = False
                 i.save()
                 unit_count = unit_count + 1
-            except Project.DoesNotExist:
-                print(f"No Project found for app id {i}")
+            except Project.DoesNotExist as e:
+                print(f"No Project found for app id {i} {str(e)}")
             except Exception as e:
                 print("An error happened", e)
 

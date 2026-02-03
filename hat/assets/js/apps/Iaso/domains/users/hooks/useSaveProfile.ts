@@ -15,3 +15,13 @@ export const useSaveProfile = (
         invalidateQueryKey: ['profiles', 'usersHistoryList', 'team'],
         showSuccessSnackBar,
     });
+
+export const useSaveProfileColor = (
+    showSuccessSnackBar = true,
+): UseMutationResult<User, DjangoError, { id: number; color: string }> =>
+    useSnackMutation({
+        mutationFn: ({ id, color }) =>
+            patchRequest(`/api/profiles/${id}/update_color/`, { color }),
+        invalidateQueryKey: ['profiles', 'usersHistoryList', 'team'],
+        showSuccessSnackBar,
+    });

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-23 12:59+0000\n"
+"POT-Creation-Date: 2026-01-30 14:18+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -26,6 +26,10 @@ msgstr "Le modèle {value} n'existe pas."
 #: iaso/api/comment.py
 msgid "Invalid value."
 msgstr "Valeur invalide"
+
+#: iaso/api/custom_translations.py
+msgid "Account id is required."
+msgstr "L'identifiant du compte est requis."
 
 #: iaso/api/data_source_versions_synchronization/filters.py
 msgid "Created at greater than or equal to"
@@ -109,7 +113,9 @@ msgstr ""
 
 #: iaso/api/microplanning/views.py
 msgid "Planning is missing sampling group or target org unit scope"
-msgstr "La planification manque d'un groupe d'échantillonnage ou d'une unité organisationnelle cible"
+msgstr ""
+"La planification manque d'un groupe d'échantillonnage ou d'une unité "
+"organisationnelle cible"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"

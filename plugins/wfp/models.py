@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models import Account, OrgUnit
+from iaso.models import Account, Entity, OrgUnit
 from plugins.wfp.models import *
 
 
@@ -66,7 +66,7 @@ RATION_SIZE = [
 class Beneficiary(models.Model):
     birth_date = models.DateField()
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True, db_index=True)
-    entity_id = models.IntegerField(null=True, blank=True, db_index=True)
+    entity = models.ForeignKey(Entity, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     guidelines = models.CharField(max_length=8, null=True, blank=True)
 
@@ -91,7 +91,7 @@ class Journey(models.Model):
         db_index=True,
     )
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True, db_index=True)
-    initial_weight = models.FloatField(default=0)
+    initial_weight = models.FloatField(null=True, blank=True)
     discharge_weight = models.FloatField(null=True, blank=True)
     weight_gain = models.FloatField(default=0)
     weight_loss = models.FloatField(default=0)

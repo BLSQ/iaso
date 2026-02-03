@@ -4,10 +4,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from django.template import loader
 
-from iaso.models import Entity
+from iaso.models import Entity, EntityType
 
 from .common import ETL
 from .models import Beneficiary
@@ -22,6 +22,21 @@ def debug(request, id):
 
     template = loader.get_template("debug.html")
     context = {"entity": entity, "beneficiary": beneficiary, "info": beneficiary_info}
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def show_missing_entities_in_analytics(request, account_id, entity_type):
+    entities = get_list_or_404(ETL().missing_entities_in_analytics_tables(account_id, entity_type, request.user))
+    beneficiary_type = EntityType.objects.filter(id=entity_type).first()
+    template = loader.get_template("show_missing_beneficiaries.html")
+    context = {
+        "beneficiary_type": beneficiary_type.name,
+        "entities": entities,
+        "account": account_id,
+        "entity_type": entity_type,
+        "number": len(list(entities)),
+    }
     return HttpResponse(template.render(context, request))
 
 

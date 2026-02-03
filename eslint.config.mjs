@@ -26,7 +26,6 @@ export default defineConfig([
         extends: fixupConfigRules(
             compat.extends(
                 'plugin:react-hooks/recommended',
-                'plugin:cypress/recommended',
                 'plugin:react/recommended',
                 'plugin:react/jsx-runtime',
                 'prettier',
@@ -45,17 +44,6 @@ export default defineConfig([
             globals: {
                 ...globals.browser,
                 ...globals.commonjs,
-                // Cypress globals
-                Cypress: 'readonly',
-                cy: 'readonly',
-                describe: 'readonly',
-                it: 'readonly',
-                before: 'readonly',
-                beforeEach: 'readonly',
-                after: 'readonly',
-                afterEach: 'readonly',
-                context: 'readonly',
-                expect: 'readonly',
                 ...globals.node,
                 after: 'readonly',
                 afterEach: 'readonly',
@@ -228,8 +216,6 @@ export default defineConfig([
                 before: 'readonly',
                 beforeEach: 'readonly',
                 context: 'readonly',
-                cy: 'readonly',
-                Cypress: 'readonly',
                 describe: 'readonly',
                 expect: 'readonly',
                 it: 'readonly',

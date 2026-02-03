@@ -24,6 +24,11 @@ class CustomTranslationsAPITestCase(APITestCase):
         data = self.assertJSONResponse(response, 400)
         self.assertEqual(data, {"account_id": ["Account id is required."]})
 
+    def test_custom_translations_unknown_account_id_returns_404(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/custom_translations/?account_id=999999")
+        self.assertJSONResponse(response, 404)
+
     def test_custom_translations_forbidden_for_other_account(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/custom_translations/?account_id={self.wha.pk}")

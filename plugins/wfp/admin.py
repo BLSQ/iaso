@@ -131,6 +131,7 @@ class VisitAdmin(admin.ModelAdmin):
         Month,
         "number",
         "journey__programme_type",
+        "journey__nutrition_programme",
         "journey__beneficiary__account",
     )
     search_fields = ("journey__beneficiary__account__name", "org_unit__id", "org_unit__name", "number")

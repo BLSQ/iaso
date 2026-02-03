@@ -354,13 +354,19 @@ class ProfileAPITestCase(APITestCase):
 
         all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
         all_projects = sorted(list(self.account.project_set.values_list("name", flat=True)))
+        all_userRoles = sorted(
+            [
+                role.group.name.removeprefix(f"{self.account.pk}_")
+                for role in self.account.userrole_set.select_related("group")
+            ]
+        )
 
         base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
         perm_idx = base_columns.index("permissions")
 
         header_start = base_columns[:perm_idx]
-        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects"]]
-        expected_header = header_start + all_permissions + all_projects + header_end
+        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]]
+        expected_header = header_start + all_permissions + all_projects + all_userRoles + header_end
 
         def get_expected_row_list(
             profile,
@@ -380,9 +386,9 @@ class ProfileAPITestCase(APITestCase):
                 str(profile.id),
                 profile.user.username,
                 "",  # password
-                profile.user.email,
-                profile.user.first_name,
-                profile.user.last_name,
+                profile.user.email or "",
+                profile.user.first_name or "",
+                profile.user.last_name or "",
                 orgunit,
                 orgunit__source_ref,
                 profile_language,
@@ -391,9 +397,10 @@ class ProfileAPITestCase(APITestCase):
             ]
             matrix = [("1" if p in direct_perms else "0") for p in all_permissions]
             matrix_projects = [("1" if p in projects else "0") for p in all_projects]
+            matrix_user_roles = [("1" if r in user_roles else "0") for r in all_userRoles]
 
-            row_end = [user_roles, teams, phone, editable_org_unit_types]
-            return row_start + matrix + matrix_projects + row_end
+            row_end = [teams, phone, editable_org_unit_types]
+            return row_start + matrix + matrix_projects + matrix_user_roles + row_end
 
         expected_csv = [
             expected_header,
@@ -441,13 +448,19 @@ class ProfileAPITestCase(APITestCase):
 
         all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
         all_projects = sorted(list(self.account.project_set.values_list("name", flat=True)))
+        all_userRoles = sorted(
+            [
+                role.group.name.removeprefix(f"{self.account.pk}_")
+                for role in self.account.userrole_set.select_related("group")
+            ]
+        )
         base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
         perm_idx = base_columns.index("permissions")
 
         header_start = base_columns[:perm_idx]
-        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects"]]
+        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]]
 
-        expected_columns = header_start + all_permissions + all_projects + header_end
+        expected_columns = header_start + all_permissions + all_projects + all_userRoles + header_end
 
         self.assertEqual(excel_columns, expected_columns)
 
@@ -459,21 +472,30 @@ class ProfileAPITestCase(APITestCase):
 
         direct_permissions_map = {
             0: [CORE_FORMS_PERMISSION.codename],
-            1: [],
+            1: None,
             2: [CORE_FORMS_PERMISSION.codename, CORE_USERS_ADMIN_PERMISSION.codename],
             3: [CORE_USERS_MANAGED_PERMISSION.codename],
-            4: [],
-            5: [],
+            4: None,
+            5: None,
             6: [CORE_USERS_MANAGED_PERMISSION.codename],
         }
         projects_map = {
-            0: [],
-            1: [],
-            2: [],
-            3: [],
-            4: [],
+            0: None,
+            1: None,
+            2: None,
+            3: None,
+            4: None,
             5: [self.project.name],
-            6: [],
+            6: None,
+        }
+        user_roles_map = {
+            0: None,
+            1: None,
+            2: None,
+            3: None,
+            4: None,
+            5: None,
+            6: [self.user_role_name, self.user_role_another_account_name],
         }
 
         expected_excel_data = {
@@ -513,15 +535,7 @@ class ProfileAPITestCase(APITestCase):
             "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             **get_matrix_data(all_permissions, direct_permissions_map),
-            "user_roles": {
-                0: None,
-                1: None,
-                2: None,
-                3: None,
-                4: None,
-                5: None,
-                6: f"{self.user_role_name},{self.user_role_another_account_name}",
-            },
+            **get_matrix_data(all_userRoles, user_roles_map),
             **get_matrix_data(all_projects, projects_map),
             "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
             "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
@@ -575,9 +589,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(jom_row[forms_idx], "0", "Jom should have 0 for Forms because he has no permissions")
         self.assertEqual(jom_row[admin_idx], "0", "Jom should have 0 for Admin because he has no permissions")
-
-        user_roles_idx = header.index("user_roles")
-        self.assertIn("Role with Admin", jane_row[user_roles_idx])
 
     def text_export_project_matrix(self):
         self.jim.iaso_profile.projects.clear()
@@ -644,6 +655,62 @@ class ProfileAPITestCase(APITestCase):
         jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
 
         self.assertEqual(jim_row[project_idx], "1", "Jim should have '1' for the project belonging to his account.")
+
+        self.assertEqual(len(jim_row), len(header))
+
+    def test_export_user_role_matrix(self):
+        self.jim.iaso_profile.user_roles.clear()
+        self.jane.iaso_profile.user_roles.clear()
+        self.jom.iaso_profile.user_roles.clear()
+
+        self.jim.iaso_profile.user_roles.add(self.user_role)
+        self.jom.iaso_profile.user_roles.add(self.user_role)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+        username_idx = header.index("username")
+
+        role_name = "user role"
+        self.assertIn(role_name, header)
+        role_idx = header.index(role_name)
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+        jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
+        jom_row = next(r for r in csv_rows if r[username_idx] == "jom")
+
+        self.assertEqual(jim_row[role_idx], "1", "Jim should have '1' because he has the role")
+        self.assertEqual(jom_row[role_idx], "1", "Jom should have '1' because he has the role")
+        self.assertEqual(jane_row[role_idx], "0", "Jane should have '0' because she has no roles")
+
+    def test_export_user_role_from_another_account(self):
+        self.jim.iaso_profile.user_roles.clear()
+
+        self.jim.iaso_profile.user_roles.add(self.user_role)
+        self.jim.iaso_profile.user_roles.add(self.user_role_another_account)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+
+        self.assertIn(self.user_role.group.name, header)
+
+        self.assertNotIn(
+            self.user_role_another_account.group.name, header, "Roles from other accounts must not be exported"
+        )
+
+        username_idx = header.index("username")
+        valid_role_idx = header.index(self.user_role.group.name)
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+
+        self.assertEqual(jim_row[valid_role_idx], "1")
 
         self.assertEqual(len(jim_row), len(header))
 

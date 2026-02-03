@@ -2236,3 +2236,25 @@ class ProfileAPITestCase(APITestCase):
         alice_upper.refresh_from_db()
         self.assertEqual(alice_upper.username, "Alice")
         self.assertEqual(alice_upper.first_name, "Alice Upper")
+
+    def test_create_user_with_invitation_sets_random_password(self):
+        """Test that creating a user with send_email_invitation=True sets a random password instead of an unusable one."""
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "invited_user",
+            "password": "",
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
+            "email": "invited@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        user = get_user_model().objects.get(username="invited_user")
+        self.assertTrue(user.has_usable_password(), "Invited user should have a usable password")
+
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.to, ["invited@test.com"])

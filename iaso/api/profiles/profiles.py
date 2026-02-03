@@ -12,6 +12,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpRe
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
@@ -358,9 +359,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
 
         user_who_logs_in = new_user or tenant_main_user
-        if password != "":
-            user_who_logs_in.set_password(password)
-            user_who_logs_in.save()
+
+        user_who_logs_in.save()
 
         user = new_user or tenant_account_user
 
@@ -753,10 +753,20 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def update_password(user, request):
-        password = request.data.get("password", "")
-        if password != "":
+        password = request.data.get("password")
+        send_email_invitation = request.data.get("send_email_invitation")
+
+        if password:
             user.set_password(password)
             user.save()
+        elif send_email_invitation and user.email:
+            random_password = get_random_string(32)
+            user.set_password(random_password)
+            user.save()
+        else:
+            user.set_unusable_password()
+            user.save()
+
         if password and request.user == user:
             # update session hash if you changed your own password, so you don't get logged out
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change

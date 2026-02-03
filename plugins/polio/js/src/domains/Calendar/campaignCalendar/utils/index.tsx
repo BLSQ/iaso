@@ -230,24 +230,62 @@ export const getStaticFieldCellStyle = (
     campaign: MappedCampaign,
 ): SxProps => {
     const borderStyle = `2px solid ${INTEGRATED_CAMPAIGN_BORDER_COLOR}`;
-    const leftFields = ['edit'];
-    const rightFields = ['r1StartDate'];
-    const topBottomFields = [
-        'edit',
-        'country',
-        'name',
-        'campaign_types',
-        'r1StartDate',
-    ];
-
-    if (!topBottomFields.includes(fieldKey)) return {};
-
-    const style: Record<string, string> = {};
-    if (leftFields.includes(fieldKey)) style.borderLeft = borderStyle;
-    if (rightFields.includes(fieldKey)) style.borderRight = borderStyle;
-
-    if (campaign.layout === 'top') style.borderTop = borderStyle;
-    if (campaign.layout === 'bottom') style.borderBottom = borderStyle;
-
-    return style;
+    if (fieldKey === 'edit')
+        switch (campaign.layout) {
+            case 'top':
+                return {
+                    borderTop: borderStyle,
+                    borderLeft: borderStyle,
+                };
+            case 'middle':
+                return {
+                    borderLeft: borderStyle,
+                };
+            case 'bottom':
+                return {
+                    borderBottom: borderStyle,
+                    borderLeft: borderStyle,
+                };
+            default:
+                return {};
+        }
+    if (
+        fieldKey === 'country' ||
+        fieldKey == 'name' ||
+        fieldKey === 'campaign_types'
+    ) {
+        switch (campaign.layout) {
+            case 'top':
+                return {
+                    borderTop: borderStyle,
+                };
+            case 'middle':
+                return {};
+            case 'bottom':
+                return {
+                    borderBottom: borderStyle,
+                };
+            default:
+                return {};
+        }
+    }
+    if (fieldKey === 'r1StartDate') {
+        switch (campaign.layout) {
+            case 'top':
+                return {
+                    borderTop: borderStyle,
+                    borderRight: borderStyle,
+                };
+            case 'middle':
+                return { borderRight: borderStyle };
+            case 'bottom':
+                return {
+                    borderBottom: borderStyle,
+                    borderRight: borderStyle,
+                };
+            default:
+                return {};
+        }
+    }
+    return {};
 };

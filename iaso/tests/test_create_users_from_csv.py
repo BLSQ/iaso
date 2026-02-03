@@ -1,18 +1,17 @@
 import csv
 import io
-import json
 
 from unittest.mock import patch
 
 import jsonschema
 
 from django.contrib.auth.models import Permission, User
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
-from rest_framework import serializers
 
 from iaso import models as m
-from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
+from iaso.api.profiles.bulk_create_users import BulkCreateUserSerializer
 from iaso.models import BulkCreateUserCsvFile, Profile, Team
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
@@ -126,7 +125,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
-        with self.assertNumQueries(39):
+        with self.assertNumQueries(38):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         users = User.objects.all()
@@ -150,8 +149,17 @@ class BulkCreateCsvTestCase(APITestCase):
         expected_file_name = f"{self.account1.short_sanitized_name}_{self.account1.id}/bulk_create_user_csv/{file_upload.created_at.strftime('%Y_%m')}/{file_upload.id}"
         self.assertTrue(file_upload.file.name.startswith(expected_file_name))
 
+        # Verify default options are stored as empty when not provided
+        self.assertEqual(file_upload.default_profile_language, "")
+        self.assertEqual(file_upload.default_organization, "")
+        self.assertEqual(file_upload.default_permissions, [])
+        self.assertEqual(file_upload.default_user_roles, [])
+        self.assertEqual(file_upload.default_projects, [])
+        self.assertEqual(file_upload.default_org_units, [])
+        self.assertEqual(file_upload.default_teams, [])
+
     def test_upload_valid_csv_with_perms(self):
-        with self.assertNumQueries(47):
+        with self.assertNumQueries(46):
             self.client.force_authenticate(self.yoda)
             self.source.projects.set([self.project])
 
@@ -182,9 +190,9 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
         self.assertEqual(len(validation_errors), 1)
-        self.assertEqual(validation_errors[0]["row"], 3)
+        self.assertEqual(int(validation_errors[0]["row"]), 3)
         self.assertIn("email", validation_errors[0]["errors"])
 
     def test_upload_without_mail_must_work(self):
@@ -205,19 +213,19 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
         # Row 1 has invalid orgunit ID, rows 2-3 have invalid source_ref
         self.assertEqual(len(validation_errors), 3)
 
         # Check first error - invalid orgunit ID
-        self.assertEqual(validation_errors[0]["row"], 1)
+        self.assertEqual(int(validation_errors[0]["row"]), 1)
         self.assertIn("orgunit", validation_errors[0]["errors"])
         self.assertIn("99998", validation_errors[0]["errors"]["orgunit"])
 
         # Check second and third errors - invalid source_ref
-        self.assertEqual(validation_errors[1]["row"], 2)
+        self.assertEqual(int(validation_errors[1]["row"]), 2)
         self.assertIn("orgunit__source_ref", validation_errors[1]["errors"])
-        self.assertEqual(validation_errors[2]["row"], 3)
+        self.assertEqual(int(validation_errors[2]["row"]), 3)
         self.assertIn("orgunit__source_ref", validation_errors[2]["errors"])
 
     def test_upload_user_already_exists(self):
@@ -233,7 +241,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
         # Should have error for existing username
         username_error = next((e for e in validation_errors if "username" in e.get("errors", {})), None)
         self.assertIsNotNone(username_error)
@@ -250,7 +258,7 @@ class BulkCreateCsvTestCase(APITestCase):
         profiles = Profile.objects.all()
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
         self.assertTrue(len(validation_errors) > 0)
         self.assertEqual(len(users), 5)
         self.assertEqual(len(profiles), 5)
@@ -332,7 +340,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
         password_error = next((e for e in validation_errors if "password" in e.get("errors", {})), None)
         self.assertIsNotNone(password_error)
         self.assertIn("too short", password_error["errors"]["password"])
@@ -367,7 +375,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
         orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
         self.assertIsNotNone(orgunit_error)
         self.assertIn("Bazarre", orgunit_error["errors"]["orgunit"])
@@ -427,7 +435,7 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
         orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
         self.assertIsNotNone(orgunit_error)
         # The error should indicate access issue or invalid org unit
@@ -504,10 +512,9 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {"error": "Something is wrong with your CSV File. Possibly missing {'permissions'} column(s)."},
-        )
+        self.assertIn("error", response.data)
+        self.assertIn("file", response.data["error"])
+        self.assertIn("Missing required column(s): permissions", response.data["error"]["file"][0])
 
     def test_create_user_with_roles(self):
         self.client.force_authenticate(self.yoda)
@@ -704,25 +711,24 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_valid_phone_number(self):
         phone_number = "+12345678912"
         expected_output = "+12345678912"
-        result = BulkCreateUserFromCsvViewSet.validate_phone_number(phone_number)
+        result = BulkCreateUserSerializer._format_phone_number(phone_number)
         self.assertEqual(result, expected_output)
 
     def test_invalid_phone_number(self):
         invalid_phone_number = "+12345"
 
-        with self.assertRaises(serializers.ValidationError) as raisedException:
-            BulkCreateUserFromCsvViewSet.validate_phone_number(invalid_phone_number)
+        with self.assertRaises(ValidationError) as raisedException:
+            BulkCreateUserSerializer._format_phone_number(invalid_phone_number)
 
-        exception_message = raisedException.exception.detail["error"]
-        self.assertIn(f"Operation aborted. The phone number {invalid_phone_number} is invalid", exception_message)
+        self.assertIn("Invalid phone number", str(raisedException.exception))
 
     def test_number_parse_exception(self):
         phone_number = "This is not a phone number"
-        with self.assertRaises(serializers.ValidationError) as raisedException:
-            BulkCreateUserFromCsvViewSet.validate_phone_number(phone_number)
 
-        exception_message = raisedException.exception.detail["error"]
-        self.assertIn(f"Operation aborted. This '{phone_number}' is not a phone number", exception_message)
+        with self.assertRaises(ValidationError) as raisedException:
+            BulkCreateUserSerializer._format_phone_number(phone_number)
+
+        self.assertIn("Invalid phone number format", str(raisedException.exception))
 
     def test_audit_log_on_save(self):
         self.client.force_authenticate(self.yoda)
@@ -852,7 +858,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         response_data = response.json()
         self.assertIn("error", response_data)
-        validation_errors = response_data["error"]
+        validation_errors = response_data["error"]["file"]["csv_validation_errors"]
         self.assertEqual(len(validation_errors), 1)
         self.assertIn("teams", validation_errors[0]["errors"])
         self.assertIn(invalid_team_name, validation_errors[0]["errors"]["teams"])
@@ -884,7 +890,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         response_data = response.json()
         self.assertIn("error", response_data)
-        validation_errors = response_data["error"]
+        validation_errors = response_data["error"]["file"]["csv_validation_errors"]
         self.assertEqual(len(validation_errors), 1)
         self.assertIn("teams", validation_errors[0]["errors"])
         self.assertIn(secret_team_name, validation_errors[0]["errors"]["teams"])
@@ -945,8 +951,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertFalse(no_password1.has_usable_password())
         self.assertFalse(no_password2.has_usable_password())
 
-    def test_bulk_configuration_three_scenarios(self):
-        """Test bulk_configuration"""
+    def test_default_fields_three_scenarios(self):
+        """Test default field values in three scenarios: all applied, all ignored, and partial"""
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
@@ -960,22 +966,18 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.client.post("/api/userroles/", data={"name": "manager"})
 
-        bulk_configuration = {
-            "profile_language": "fr",
-            "organization": "UNICEF",
-            "permissions": ["iaso_forms"],
-            "user_roles": ["manager"],
-            "projects": [self.project.name],
-            "orgunit": [self.org_unit1.id, self.org_unit2.id],
-            "teams": ["Bulk Team"],
-        }
-
         with open("iaso/tests/fixtures/test_user_bulk_create_bulk_configuration.csv") as csv_file:
             response = self.client.post(
                 f"{BASE_URL}",
                 {
                     "file": csv_file,
-                    "bulk_configuration": json.dumps(bulk_configuration),
+                    "default_profile_language": "fr",
+                    "default_organization": "UNICEF",
+                    "default_permissions": ["iaso_forms"],
+                    "default_user_roles": ["manager"],
+                    "default_projects": [self.project.name],
+                    "default_org_units": [self.org_unit1.id, self.org_unit2.id],
+                    "default_teams": ["Bulk Team"],
                 },
                 format="multipart",
             )
@@ -983,24 +985,34 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["Accounts created"], 3)
 
-        # ALL bulk_configuration applied
+        # Verify default options are stored in BulkCreateUserCsvFile
+        csv_file_record = BulkCreateUserCsvFile.objects.last()
+        self.assertEqual(csv_file_record.default_profile_language, "fr")
+        self.assertEqual(csv_file_record.default_organization, "UNICEF")
+        self.assertEqual(csv_file_record.default_permissions, ["iaso_forms"])
+        self.assertEqual(csv_file_record.default_user_roles, ["manager"])
+        self.assertEqual(csv_file_record.default_projects, [self.project.name])
+        self.assertEqual(csv_file_record.default_org_units, [self.org_unit1.id, self.org_unit2.id])
+        self.assertEqual(csv_file_record.default_teams, ["Bulk Team"])
+
+        # ALL defaults applied (CSV fields empty)
         all_bulk_user = User.objects.get(username="all_bulk_user")
         all_bulk_profile = all_bulk_user.iaso_profile
         self.assertEqual(all_bulk_profile.language, "fr")
-        self.assertEqual(all_bulk_profile.organization, "UNICEF")  # From bulk_configuration
+        self.assertEqual(all_bulk_profile.organization, "UNICEF")  # From defaults
         self.assertIsNone(all_bulk_profile.dhis2_id)
         self.assertTrue(all_bulk_user.user_permissions.filter(codename="iaso_forms").exists())
         self.assertEqual(all_bulk_profile.user_roles.count(), 1)
         self.assertEqual(all_bulk_profile.user_roles.first().group.name, f"{self.account1.id}_manager")
         self.assertEqual(all_bulk_profile.projects.count(), 1)
         self.assertEqual(all_bulk_profile.projects.first(), self.project)
-        self.assertEqual(all_bulk_profile.org_units.count(), 2)  # From bulk_configuration
+        self.assertEqual(all_bulk_profile.org_units.count(), 2)  # From defaults
         self.assertIn(self.org_unit1, all_bulk_profile.org_units.all())
         self.assertIn(self.org_unit2, all_bulk_profile.org_units.all())
-        self.assertEqual(all_bulk_user.teams.count(), 1)  # From bulk_configuration
+        self.assertEqual(all_bulk_user.teams.count(), 1)  # From defaults
         self.assertEqual(all_bulk_user.teams.first().name, "Bulk Team")
 
-        # ALL bulk_configuration ignored
+        # ALL defaults ignored (CSV fields have values)
         no_bulk_user = User.objects.get(username="no_bulk_user")
         no_bulk_profile = no_bulk_user.iaso_profile
 
@@ -1016,10 +1028,10 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(no_bulk_profile.org_units.count(), 2)
         self.assertIn(self.org_unit1, no_bulk_profile.org_units.all())
         self.assertIn(self.org_unit2, no_bulk_profile.org_units.all())
-        self.assertEqual(no_bulk_user.teams.count(), 1)  # From CSV, not bulk_configuration
+        self.assertEqual(no_bulk_user.teams.count(), 1)  # From CSV, not defaults
         self.assertEqual(no_bulk_user.teams.first().name, "Test Team")
 
-        # PARTIAL bulk_configuration applied
+        # PARTIAL defaults applied (some CSV fields empty)
         mixed_user = User.objects.get(username="mixed_user")
         mixed_profile = mixed_user.iaso_profile
         self.assertEqual(mixed_profile.language, "en")
@@ -1034,5 +1046,5 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(mixed_profile.org_units.count(), 2)
         self.assertIn(self.org_unit1, mixed_profile.org_units.all())
         self.assertIn(self.org_unit2, mixed_profile.org_units.all())
-        self.assertEqual(mixed_user.teams.count(), 1)  # From bulk_configuration (CSV empty)
+        self.assertEqual(mixed_user.teams.count(), 1)  # From defaults (CSV empty)
         self.assertEqual(mixed_user.teams.first().name, "Bulk Team")

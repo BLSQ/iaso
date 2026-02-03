@@ -9,6 +9,7 @@ import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { useRedirectToReplace } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import { useBoundState } from 'Iaso/hooks/useBoundState';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
@@ -74,7 +75,8 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
-    const [showIntegrated, setShowIntegrated] = useState(
+    const [showIntegrated, setShowIntegrated] = useBoundState(
+        true,
         params.showIntegrated === 'true',
     );
     const [hideTest, setHideTest] = useState(params.show_test === 'false');

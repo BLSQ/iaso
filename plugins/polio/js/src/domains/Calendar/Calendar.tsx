@@ -118,6 +118,7 @@ export const Calendar: FunctionComponent = () => {
     useEffect(() => {
         const shouldSetCampaignType = !params.campaignType && !isTypeSet;
         const shouldSetOrder = !params.order;
+        const shouldSetShowIntegrated = !params.showIntegrated;
         const enforcedDefaults: Record<string, string> = { ...params };
 
         if (shouldSetCampaignType) {
@@ -128,7 +129,14 @@ export const Calendar: FunctionComponent = () => {
         if (shouldSetOrder) {
             enforcedDefaults.order = defaultOrder;
         }
-        if (shouldSetCampaignType || shouldSetOrder) {
+        if (shouldSetShowIntegrated) {
+            enforcedDefaults.showIntegrated = 'true';
+        }
+        if (
+            shouldSetCampaignType ||
+            shouldSetOrder ||
+            shouldSetShowIntegrated
+        ) {
             redirectToReplace(redirectUrl, enforcedDefaults);
         }
         // only test once to force polio as type and default order

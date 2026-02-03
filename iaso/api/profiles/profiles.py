@@ -482,6 +482,10 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=["PATCH"])
     def update_color(self, request, pk=None):
+        """
+        TODO: Remove this action once the profile PATCH is refactored to avoid
+        overwriting other fields when they are not provided.
+        """
         serializer = ProfileColorUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         profile = get_object_or_404(self.get_queryset(), id=pk)

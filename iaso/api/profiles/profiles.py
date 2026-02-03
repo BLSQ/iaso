@@ -560,15 +560,20 @@ class ProfilesViewSet(viewsets.ViewSet):
         account = request.user.iaso_profile.account
         all_permissions = sorted([perm.codename for perm in account.permissions_from_active_modules])
         all_projects = sorted(list(account.project_set.values_list("name", flat=True)))
+        all_userRoles = sorted(
+            [role.group.name.removeprefix(f"{account.pk}_") for role in account.userrole_set.select_related("group")]
+        )
         base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
 
         try:
             perm_idx = base_columns.index("permissions")
 
             header_start = base_columns[:perm_idx]
-            header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects"]]
+            header_end = [
+                col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]
+            ]
 
-            export_columns = header_start + all_permissions + all_projects + header_end
+            export_columns = header_start + all_permissions + all_projects + all_userRoles + header_end
         except ValueError:
             export_columns = base_columns
         columns = [{"title": column} for column in export_columns]
@@ -580,8 +585,13 @@ class ProfilesViewSet(viewsets.ViewSet):
             direct_perms = {p.codename for p in profile.user.user_permissions.all()}
             permission_matrix = [1 if perm_codename in direct_perms else 0 for perm_codename in all_permissions]
 
-            projects = {project.name for project in profile.projects.all().order_by("id")}
+            projects = {p.name for p in profile.projects.all().order_by("id")}
             project_matrix = [1 if project in projects else 0 for project in all_projects]
+
+            raw_roles = profile.user_roles.all().order_by("id")
+            user_roles_names = {role.group.name.removeprefix(f"{profile.account.pk}_") for role in raw_roles}
+
+            user_roles_matrix = [1 if user_role in user_roles_names else 0 for user_role in all_userRoles]
 
             row_start = [
                 profile.id,
@@ -598,16 +608,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             ]
 
             row_end = [
-                ",".join(
-                    item.group.name.removeprefix(f"{profile.account.pk}_")
-                    for item in profile.user_roles.all().order_by("id")
-                ),
                 ",".join(item.name for item in profile.user.teams.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
                 ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
 
-            return row_start + permission_matrix + project_matrix + row_end
+            return row_start + permission_matrix + project_matrix + user_roles_matrix + row_end
 
         filename = "users"
         response: Union[HttpResponse, StreamingHttpResponse]

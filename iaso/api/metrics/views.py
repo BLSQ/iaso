@@ -92,7 +92,9 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         # Get all custom metric types for the user's account
         metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
         # Get All org units for the user's account
-        org_units = OrgUnitTreeFilter.filter_valid_org_units_for_account(OrgUnit.objects.all(), account).prefetch_related("parent")
+        org_units = OrgUnitTreeFilter.filter_valid_org_units_for_account(
+            OrgUnit.objects.all(), account
+        ).prefetch_related("parent")
 
         # Prepare the CSV response
         headers = REQUIRED_METRIC_VALUES_HEADERS.copy()

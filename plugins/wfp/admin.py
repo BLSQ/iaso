@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.admin import DateFieldListFilter, SimpleListFilter
+from django.contrib.admin import SimpleListFilter
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
 

@@ -21,7 +21,6 @@ class Screening:
         instances = entity_type.get_screening_data(FORMS, account, update_at)
         pages = instances.page_range
 
-        logger.info(f"Screening data for {account}")
         all_screening_data = []
         for page in pages:
             data = sorted(
@@ -33,9 +32,11 @@ class Screening:
         instances_by_org_unit_period = list(
             map(lambda row: Q(org_unit=row.org_unit, period=row.period), all_screening_data)
         )
-        ScreeningData.objects.filter(reduce(or_, instances_by_org_unit_period)).delete()
-        logger.info(f"Inserted {len(all_screening_data)} rows for Screening data")
-        ScreeningData.objects.bulk_create(all_screening_data)
+        if len(instances_by_org_unit_period) > 0:
+            logger.info(f"Screening data for {account}")
+            ScreeningData.objects.filter(reduce(or_, instances_by_org_unit_period)).delete()
+            logger.info(f"Inserted {len(all_screening_data)} rows for Screening data")
+            ScreeningData.objects.bulk_create(all_screening_data)
 
     def group_submissions_by_org_unit(self, account, submissions):
         instances = []

@@ -3,7 +3,7 @@ from django.contrib.admin import SimpleListFilter
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
 
-from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, Step, Visit
+from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
 from .tasks import create_index_on_instance_uuid
 
 
@@ -230,6 +230,42 @@ class Dhis2SyncResultsAdmin(admin.ModelAdmin):
         "data_set_id",
         "period",
         "year__icontains",
+        "month__icontains",
+        "year__icontains",
+    )
+
+
+@admin.register(ScreeningData)
+class ScreeningDataAdmin(admin.ModelAdmin):
+    list_filter = (
+        "account",
+        "month",
+        "year",
+        "period",
+    )
+    list_display = (
+        "id",
+        "org_unit",
+        "account",
+        "month",
+        "year",
+        "period",
+        "u5_male_green",
+        "u5_female_green",
+        "u5_male_yellow",
+        "u5_female_yellow",
+        "u5_male_red",
+        "u5_female_red",
+        "pregnant_w_muac_gt_23",
+        "pregnant_w_muac_lte_23",
+        "lactating_w_muac_gt_23",
+        "lactating_w_muac_lte_23",
+    )
+    search_fields = (
+        "account__name",
+        "org_unit__id",
+        "org_unit__name",
+        "period",
         "month__icontains",
         "year__icontains",
     )

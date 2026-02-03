@@ -1,6 +1,7 @@
 import os
 
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 
@@ -30,3 +31,13 @@ class BulkCreateUserCsvFile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
+    default_permissions = ArrayField(models.CharField(max_length=50), default=list, blank=True)
+    default_projects = ArrayField(models.CharField(max_length=255), default=list, blank=True)
+    default_user_roles = ArrayField(models.CharField(max_length=100), default=list, blank=True)
+    default_org_units = ArrayField(models.IntegerField(), default=list, blank=True)
+    default_teams = ArrayField(models.CharField(max_length=255), default=list, blank=True)
+    default_profile_language = models.CharField(max_length=10, blank=True, default="")
+    default_organization = models.CharField(max_length=255, blank=True, default="")
+
+    class Meta:
+        ordering = ["-created_at"]

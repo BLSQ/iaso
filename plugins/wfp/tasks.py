@@ -13,6 +13,7 @@ from .management.commands.nigeria.Pbwg import NG_PBWG
 from .management.commands.nigeria.Under5 import NG_Under5
 from .management.commands.south_sudan.Dhis2 import Dhis2
 from .management.commands.south_sudan.Pbwg import PBWG
+from .management.commands.south_sudan.Screening import Screening
 from .management.commands.south_sudan.Under5 import Under5
 from .models import *
 
@@ -148,6 +149,8 @@ def etl_ssd(all_data=None):
         account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
     ).delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
+
+    Screening().run(child_account, last_success_task_date)
 
     external_credential = ExternalCredentials.objects.filter(account=pbwg_account).first()
     if external_credential is not None and (

@@ -34,13 +34,11 @@ from django.utils.translation import gettext as _
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from beanstalk_worker import task_decorator
-from iaso.models import Form, Project, WorkflowChange, WorkflowVersion
-from iaso.models.workflow import WorkflowVersionsStatus
+from iaso.models import Project
 from iaso.tasks.utils.mobile_app_setup_api_calls import API_CALLS
 from iaso.utils.encryption import encrypt_file
 from iaso.utils.iaso_api_client import IasoClient
 from iaso.utils.s3_client import upload_file_to_s3
-from plugins.trypelim.constants import REGISTRATION_FORM_ID
 
 
 logger = logging.getLogger(__name__)
@@ -297,16 +295,13 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
                 record["file"] = "formattachments/" + urlparse(record["file"]).path.split("/form_attachments/")[-1]
 
         # trypelim-specific
-        # SLEEP-1698: reset the calculated fields on the registration forms to reset the filters
-        if call["filename"] == "entities" and options.get("strip_workflow_attrs", False) and "results" in result:
-            fields = _get_workflow_mappings_keys()
-            registration_form_id = Form.objects.get(form_id=REGISTRATION_FORM_ID).id
+        # SLEEP-1698: set `visited_at` attribute to null so that the instances are excluded from filters
+        if call["filename"] == "entities" and options.get("strip_visited_at", False) and "results" in result:
             for entity in result["results"]:
                 for instance in entity.get("instances", []):
-                    if instance.get("form_id") == registration_form_id and instance.get("json"):
-                        for field in fields:
-                            instance["json"].pop(field, None)
-   
+                    if "visited_at" in instance.get("json", []):
+                        instance["json"]["visited_at"] = None
+
         with zipf.open(filename) as json_file:
             json.dump(result, json_file)
 
@@ -428,28 +423,3 @@ def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
     s3_object_name = "export-files/" + dest_name
     upload_file_to_s3(encrypted_file_path, object_name=s3_object_name)
     return s3_object_name
-
-
-# Trypelim-specific
-def _get_workflow_mappings_keys():
-    """Get the keys of all the calculated fields for the registration form."""
-
-    latest_versions_qs = (
-        WorkflowVersion.objects.filter(
-            status=WorkflowVersionsStatus.PUBLISHED,
-            workflow__entity_type__reference_form__form_id=REGISTRATION_FORM_ID,
-        )
-        .order_by("workflow__pk", "-created_at")
-        .distinct("workflow__pk")
-    )
-
-    mappings_qs = WorkflowChange.objects.filter(workflow_version__in=latest_versions_qs).values_list(
-        "mapping", flat=True
-    )
-
-    flattened_values = set()
-    for mapping in mappings_qs:
-        if mapping:
-            flattened_values.update(mapping.values())
-
-    return flattened_values

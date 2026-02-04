@@ -132,7 +132,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
             projectId: selectedProject.id,
             password,
             options: {
-                strip_workflow_attrs: excludeFromFilters,
+                strip_visited_at: excludeFromFilters,
             },
         })
             .then((task: TaskApiResponse<any>) => {

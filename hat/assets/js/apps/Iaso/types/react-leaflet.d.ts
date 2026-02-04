@@ -24,9 +24,3 @@ declare module 'react-leaflet' {
             | 'center';
     }
 }
-
-declare module 'leaflet' {
-    interface MapOptions {
-        contextmenu?: boolean;
-    }
-}

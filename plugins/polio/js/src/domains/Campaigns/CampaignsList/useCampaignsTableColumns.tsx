@@ -1,15 +1,14 @@
 import React, { useMemo } from 'react';
 import { Tooltip } from '@mui/material';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { LinkTo } from 'Iaso/components/nav/LinkTo';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
 import MESSAGES from '../../../constants/messages';
 import { CampaignListItem } from '../../../constants/types';
-import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
-import { CampaignCategoryCell } from './CampaignCategoryCell';
-import { LinkTo } from 'Iaso/components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
+import { CampaignCategoryCell } from './CampaignCategoryCell';
 
 type Args = {
     showOnlyDeleted: boolean;

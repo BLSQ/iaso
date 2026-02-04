@@ -275,7 +275,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
         except pd.errors.ParserError:
             raise serializers.ValidationError("Invalid CSV file")
         except Exception as e:
-            raise serializers.ValidationError(f"Failed to parse CSV: {str(e)}")
+            raise serializers.ValidationError("Failed to parse CSV")
 
         parsed_rows = []
         headers = None

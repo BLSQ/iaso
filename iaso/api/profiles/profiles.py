@@ -573,7 +573,11 @@ class ProfilesViewSet(viewsets.ViewSet):
                 col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]
             ]
 
-            export_columns = header_start + all_permissions + all_projects + all_userRoles + header_end
+            project_headers = [f"Project: {name}" for name in all_projects]
+            user_role_headers = [f"User Role: {name}" for name in all_userRoles]
+            permission_headers = [f"Permission: {name}" for name in all_permissions]
+
+            export_columns = header_start + project_headers + user_role_headers + permission_headers + header_end
         except ValueError:
             export_columns = base_columns
         columns = [{"title": column} for column in export_columns]
@@ -582,14 +586,14 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units = profile.org_units.order_by("id").only("id", "source_ref")
             editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
 
-            direct_perms = {p.codename for p in profile.user.user_permissions.all()}
-            permission_matrix = [1 if perm_codename in direct_perms else 0 for perm_codename in all_permissions]
-
             projects = {p.name for p in profile.projects.all().order_by("id")}
             project_matrix = [1 if project in projects else 0 for project in all_projects]
 
             raw_roles = profile.user_roles.all().order_by("id")
             user_roles_names = {role.group.name.removeprefix(f"{profile.account.pk}_") for role in raw_roles}
+
+            direct_perms = {p.codename for p in profile.user.user_permissions.all()}
+            permission_matrix = [1 if perm_codename in direct_perms else 0 for perm_codename in all_permissions]
 
             user_roles_matrix = [1 if user_role in user_roles_names else 0 for user_role in all_userRoles]
 
@@ -613,7 +617,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
 
-            return row_start + permission_matrix + project_matrix + user_roles_matrix + row_end
+            return row_start + project_matrix + user_roles_matrix + permission_matrix + row_end
 
         filename = "users"
         response: Union[HttpResponse, StreamingHttpResponse]

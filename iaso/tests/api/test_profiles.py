@@ -366,7 +366,11 @@ class ProfileAPITestCase(APITestCase):
 
         header_start = base_columns[:perm_idx]
         header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]]
-        expected_header = header_start + all_permissions + all_projects + all_userRoles + header_end
+        project_headers = [f"Project: {name}" for name in all_projects]
+        user_role_headers = [f"User Role: {name}" for name in all_userRoles]
+        permission_headers = [f"Permission: {name}" for name in all_permissions]
+
+        expected_header = header_start + project_headers + user_role_headers + permission_headers + header_end
 
         def get_expected_row_list(
             profile,
@@ -395,12 +399,12 @@ class ProfileAPITestCase(APITestCase):
                 dhis2_id,
                 organization,
             ]
-            matrix = [("1" if p in direct_perms else "0") for p in all_permissions]
+            matrix_perms = [("1" if p in direct_perms else "0") for p in all_permissions]
             matrix_projects = [("1" if p in projects else "0") for p in all_projects]
             matrix_user_roles = [("1" if r in user_roles else "0") for r in all_userRoles]
 
             row_end = [teams, phone, editable_org_unit_types]
-            return row_start + matrix + matrix_projects + matrix_user_roles + row_end
+            return row_start + matrix_projects + matrix_user_roles + matrix_perms + row_end
 
         expected_csv = [
             expected_header,
@@ -460,14 +464,20 @@ class ProfileAPITestCase(APITestCase):
         header_start = base_columns[:perm_idx]
         header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]]
 
-        expected_columns = header_start + all_permissions + all_projects + all_userRoles + header_end
+        project_headers = [f"Project: {name}" for name in all_projects]
+        user_role_headers = [f"User Role: {name}" for name in all_userRoles]
+        permission_headers = [f"Permission: {name}" for name in all_permissions]
+
+        expected_columns = header_start + project_headers + user_role_headers + permission_headers + header_end
 
         self.assertEqual(excel_columns, expected_columns)
 
-        def get_matrix_data(items_list, user_items_map):
+        def get_matrix_data(items_list, user_items_map, prefix):
             matrix_dict = {}
             for item in items_list:
-                matrix_dict[item] = {idx: (1 if item in (user_items_map.get(idx) or []) else 0) for idx in range(7)}
+                key = f"{prefix}: {item}"
+                matrix_dict[key] = {idx: (1 if item in (user_items_map.get(idx) or []) else 0) for idx in range(7)}
+
             return matrix_dict
 
         direct_permissions_map = {
@@ -534,9 +544,9 @@ class ProfileAPITestCase(APITestCase):
             "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
             "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-            **get_matrix_data(all_permissions, direct_permissions_map),
-            **get_matrix_data(all_userRoles, user_roles_map),
-            **get_matrix_data(all_projects, projects_map),
+            **get_matrix_data(all_permissions, direct_permissions_map, "Permission"),
+            **get_matrix_data(all_userRoles, user_roles_map, "User Role"),
+            **get_matrix_data(all_projects, projects_map, "Project"),
             "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
             "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             "editable_org_unit_types": {
@@ -575,8 +585,8 @@ class ProfileAPITestCase(APITestCase):
 
         header = csv_rows[0]
         username_idx = header.index("username")
-        forms_idx = header.index(CORE_FORMS_PERMISSION.codename)
-        admin_idx = header.index(CORE_USERS_ADMIN_PERMISSION.codename)
+        forms_idx = header.index(f"Permission: {CORE_FORMS_PERMISSION.codename}")
+        admin_idx = header.index(f"Permission: {CORE_USERS_ADMIN_PERMISSION.codename}")
 
         jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
         jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
@@ -675,8 +685,8 @@ class ProfileAPITestCase(APITestCase):
         username_idx = header.index("username")
 
         role_name = "user role"
-        self.assertIn(role_name, header)
-        role_idx = header.index(role_name)
+        self.assertIn(f"User Role: {role_name}", header)
+        role_idx = header.index(f"User Role: {role_name}")
 
         jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
         jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
@@ -699,14 +709,16 @@ class ProfileAPITestCase(APITestCase):
 
         header = csv_rows[0]
 
-        self.assertIn(self.user_role.group.name, header)
+        self.assertIn(f"User Role: {self.user_role.group.name}", header)
 
         self.assertNotIn(
-            self.user_role_another_account.group.name, header, "Roles from other accounts must not be exported"
+            f"User Role: {self.user_role_another_account.group.name}",
+            header,
+            "Roles from other accounts must not be exported",
         )
 
         username_idx = header.index("username")
-        valid_role_idx = header.index(self.user_role.group.name)
+        valid_role_idx = header.index(f"User Role: {self.user_role.group.name}")
 
         jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
 

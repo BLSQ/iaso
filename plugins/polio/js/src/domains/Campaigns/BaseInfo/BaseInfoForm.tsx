@@ -5,7 +5,7 @@ import React, {
     useMemo,
     useRef,
 } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
@@ -26,9 +26,9 @@ import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroup
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
-import { IntegratedCampaigns } from './IntegratedCampaigns/Widget/IntegratedCampaigns';
 import { IntegratedCampaignField } from './IntegratedCampaigns/IntegratedTo/IntegratedCampaignField';
 import { AddIntegratedCampaignsModal } from './IntegratedCampaigns/Widget/AddIntegratedCampaignsModal';
+import { IntegratedCampaigns } from './IntegratedCampaigns/Widget/IntegratedCampaigns';
 
 export const baseInfoFormFields: string[] = [
     'epid',

@@ -1,13 +1,13 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
 from iaso import models as m
-from iaso.api.org_unit_tree.filters import OrgUnitTreeFilter
 from iaso.models.base import Account
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
+from iaso.utils.org_units import get_valid_org_units_with_geography
 
 
-class OrgUnitTreeFilterTest(APITestCase):
+class OrgUnitUtilsTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Data source")
@@ -83,7 +83,7 @@ class OrgUnitTreeFilterTest(APITestCase):
 
     def test_filter_valid_org_units_for_account(self):
         queryset = m.OrgUnit.objects.all()
-        filtered_qs = OrgUnitTreeFilter.filter_valid_org_units_for_account(queryset, self.account)
+        filtered_qs = get_valid_org_units_with_geography(queryset, self.account)
         self.assertIn(self.angola_district, filtered_qs)
         self.assertNotIn(self.angola_district_new, filtered_qs)  # New status
         self.assertNotIn(self.angola_district_rejected, filtered_qs)  # New status

@@ -11,9 +11,8 @@ from iaso.api.apps import serializers
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
-from iaso.api.org_unit_tree.filters import OrgUnitTreeFilter
 from iaso.models import MetricType, MetricValue
-from iaso.models.org_unit import OrgUnit
+from iaso.utils.org_units import get_valid_org_units_with_geography
 
 from .serializers import (
     ImportMetricValuesSerializer,
@@ -92,9 +91,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         # Get all custom metric types for the user's account
         metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
         # Get All org units for the user's account
-        org_units = OrgUnitTreeFilter.filter_valid_org_units_for_account(
-            OrgUnit.objects.all(), account
-        ).prefetch_related("parent")
+        org_units = get_valid_org_units_with_geography(account).order_by("name").prefetch_related("parent")
 
         # Prepare the CSV response
         headers = REQUIRED_METRIC_VALUES_HEADERS.copy()
@@ -113,9 +110,9 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["post"], serializer_class=ImportMetricValuesSerializer)
     def import_from_csv(self, request):
-        serializer = ImportMetricValuesSerializer(data=request.data, context={"request": request})
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         metric_values = serializer.context.get("metric_values")
@@ -130,7 +127,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         return Response(
             {
                 "total_imported": len(metric_values),
-                "metric_type_import_count": len(set(mv.metric_type_id for mv in metric_values)),
+                "metric_type_import_count": len(metric_values),
             },
             status=status.HTTP_201_CREATED,
         )

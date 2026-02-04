@@ -7,6 +7,7 @@ from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_h
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
 from iaso.utils import legend
+from iaso.utils.org_units import get_valid_org_units_with_geography
 
 
 class MetricTypeSerializer(serializers.ModelSerializer):
@@ -45,7 +46,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     unit_symbol = serializers.CharField(required=False, allow_blank=True, max_length=2)
     origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
     legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
-    scale = serializers.JSONField(allow_null=False, read_only=True)
+    scale = serializers.JSONField(allow_null=False, write_only=True)
 
     class Meta:
         model = MetricType
@@ -60,17 +61,19 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
             "scale",
         ]
 
-    def get_legend_config_from_scale(self, instance):
-        scale = self.initial_data.get("scale")
+    def _get_legend_config_from_scale(self, instance, scale):
         return legend.get_legend_config(instance, scale) if scale else instance.legend_config
 
     def update(self, instance, validated_data):
-        legend_config = self.get_legend_config_from_scale(instance)
+        scale = validated_data.pop("scale", None)
+        legend_config = self._get_legend_config_from_scale(instance, scale)
         return super().update(instance, {**validated_data, "legend_config": legend_config})
 
     def validate(self, data):
-        legend_type = self.initial_data.get("legend_type")
-        scale_count = len(self.initial_data.get("scale", "").split(",")) if self.initial_data.get("scale") else 0
+        legend_type = data.get("legend_type")
+        scale = data.get("scale")
+
+        scale_count = len(scale.split(",")) if scale else 0
         if legend_type == MetricType.LegendType.THRESHOLD:
             if scale_count < 2:
                 raise serializers.ValidationError(_("Threshold legend type requires at least two scale items."))
@@ -96,8 +99,9 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
+        scale = validated_data.pop("scale", None)
         instance = super().create({**validated_data, "account": account})
-        instance.legend_config = self.get_legend_config_from_scale(instance)
+        instance.legend_config = self._get_legend_config_from_scale(instance, scale)
         instance.save()
         return instance
 
@@ -119,13 +123,22 @@ class MetricValueSerializer(serializers.ModelSerializer):
     year = serializers.IntegerField(required=False, allow_null=True)
     value = serializers.FloatField(required=False, allow_null=True)
     string_value = serializers.CharField(required=False, allow_null=True)
-    metric_type = serializers.PrimaryKeyRelatedField(queryset=MetricType.objects.all())
-    org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all(), allow_null=False)
+    metric_type = serializers.PrimaryKeyRelatedField(queryset=MetricType.objects.none())
+    org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.none(), allow_null=False)
 
     class Meta:
         model = MetricValue
         fields = ["id", "metric_type", "org_unit", "year", "value", "string_value"]
         read_only_fields = fields
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            account = user.iaso_profile.account
+            self.fields["metric_type"].queryset = MetricType.objects.filter(account=account)
+            self.fields["org_unit"].queryset = get_valid_org_units_with_geography(account)
 
 
 class ImportMetricValuesSerializer(serializers.Serializer):
@@ -161,20 +174,20 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 _("The following metric types do not exist: ") + ", ".join(missing_metric_types)
             )
 
-        self.context["existing_metric_types"] = {mt[0]: mt[1] for mt in existing_metric_types}
+        existing_metric_types_map = {mt[0]: mt[1] for mt in existing_metric_types}
 
         if df.shape[0] == 0:
             raise serializers.ValidationError(_("The CSV must contain at least one value row."))
 
         org_unit_ids = df["ADM2_ID"].tolist()
-        matching_org_unit_ids = OrgUnit.objects.filter(id__in=org_unit_ids).values_list("id", flat=True)
+        matching_org_unit_ids = (
+            get_valid_org_units_with_geography(account).filter(id__in=org_unit_ids).values_list("id", flat=True)
+        )
         missing_org_unit_ids = set(org_unit_ids) - set(matching_org_unit_ids)
         if missing_org_unit_ids:
             raise serializers.ValidationError(
                 _("The following org unit IDs do not exist: ") + ", ".join(str(ou_id) for ou_id in missing_org_unit_ids)
             )
-
-        self.context["dataframe"] = df
 
         # Prepare metric values but don't save yet
         metric_values = []
@@ -184,7 +197,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
                 value = row.get(code)
                 if pd.isna(value):
                     continue
-                metric_type_id = self.context["existing_metric_types"][code]
+                metric_type_id = existing_metric_types_map[code]
                 mv = MetricValue(org_unit_id=org_unit_id, metric_type_id=metric_type_id)
                 try:
                     # Parse the value as a float

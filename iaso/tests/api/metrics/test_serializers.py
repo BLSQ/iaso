@@ -1,3 +1,4 @@
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIRequestFactory
 
@@ -10,8 +11,10 @@ from iaso.api.metrics.serializers import (
     OrgUnitIdSerializer,
 )
 from iaso.models.base import Account
+from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.metric import MetricType
 from iaso.models.org_unit import OrgUnit, OrgUnitType
+from iaso.models.project import Project
 from iaso.test import TestCase
 
 
@@ -357,9 +360,70 @@ class ImportMetricValuesSerializerTestCase(TestCase):
             legend_config={"thresholds": [5, 15, 25]},
         )
 
+        # Create Org Units
+        cls.project = project = Project.objects.create(
+            name="Project",
+            app_id="APP_ID",
+            account=cls.account,
+        )
+        sw_source = DataSource.objects.create(name="data_source")
+        sw_source.projects.add(project)
+        cls.sw_source = sw_source
+        cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.account.default_version = sw_version_1
+        cls.account.save()
         cls.out_district = OrgUnitType.objects.create(name="DISTRICT")
-        cls.district1 = OrgUnit.objects.create(org_unit_type=cls.out_district, name="District 1")
-        cls.district2 = OrgUnit.objects.create(org_unit_type=cls.out_district, name="District 2")
+        cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+
+        cls.out_district = OrgUnitType.objects.create(name="DISTRICT")
+        cls.district1 = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District 1",
+            version=sw_version_1,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+        cls.district2 = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District 2",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            version=sw_version_1,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+        cls.district_rejected = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District Rejected",
+            validation_status=OrgUnit.VALIDATION_REJECTED,
+            version=sw_version_1,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+        cls.district_new = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District New",
+            validation_status=OrgUnit.VALIDATION_NEW,
+            version=sw_version_1,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+        cls.district_wrong_version = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District Wrong Version",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            version=None,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+        cls.district_no_location = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District No Location",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            version=sw_version_1,
+            location=None,
+            geom=cls.mock_multipolygon,
+        )
 
     def test_validate_metric_types_all_exist(self):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1\nDISTRICT,District 2,{self.district2.id},20"
@@ -408,6 +472,18 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
         self.assertIn("The following org unit IDs do not exist: 9999", serializer.errors["file"][0])
+
+    def test_validate_invalid_org_units(self):
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District Rejected,{self.district_rejected.id},1\nDISTRICT,District New,{self.district_new.id},1\nDISTRICT,District Wrong Version,{self.district_wrong_version.id},1\nDISTRICT,District No Location,{self.district_no_location.id},1"
+        invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(data={"file": invalid_file}, context={"request": self.request})
+        self.assertFalse(serializer.is_valid())
+        error_message = serializer.errors["file"][0]
+        self.assertIn("The following org unit IDs do not exist: ", error_message)
+        self.assertIn(str(self.district_rejected.id), error_message)
+        self.assertIn(str(self.district_new.id), error_message)
+        self.assertIn(str(self.district_wrong_version.id), error_message)
+        self.assertIn(str(self.district_no_location.id), error_message)
 
 
 class OrgUnitIdSerializerTestCase(TestCase):

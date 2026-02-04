@@ -1,0 +1,35 @@
+meta {
+  name: Get org units
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{HOST}}{{org_units_endpoint}}/?page={{page}}&limit={{limit}}&validation_status={{validation_status}}&search={{search}}&smallSearch={{smallSearch}}
+  body: json
+  auth: inherit
+}
+
+vars:pre-request {
+  page: 1
+  limit: 10
+  optimized: false
+  search: 
+  validation_status: VALID
+  org_units_endpoint: api/orgunits
+  smallSearch: 
+}
+
+script:pre-request {
+  const optimized = bru.getVar("optimized");
+  const search = bru.getVar("search");
+  if (optimized === true || optimized === "true") {
+    bru.setVar("org_units_endpoint", "api/orgunits/tree/search");
+    if (search) {
+      bru.setVar("smallSearch", "true");
+    }
+  } else {
+    bru.setVar("org_units_endpoint", "api/orgunits");
+    bru.setVar("smallSearch", "");
+  }
+}

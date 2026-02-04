@@ -1,0 +1,11 @@
+meta {
+  name: Get org units (csv)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{HOST}}api/orgunits/?csv=true
+  body: json
+  auth: inherit
+}

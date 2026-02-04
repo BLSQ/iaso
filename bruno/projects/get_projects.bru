@@ -1,0 +1,18 @@
+meta {
+  name: Get projects
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{HOST}}api/projects/?page={{page}}&limit={{limit}}&id={{id}}&search={{search}}
+  body: json
+  auth: inherit
+}
+
+vars:pre-request {
+  page: 1
+  limit: 10
+  id: 
+  search: 
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Get form instances (csv)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{HOST}}api/instances/?csv=true&form_id={{form_id}}&modificationDateFrom={{last_updated}}
+  body: json
+  auth: inherit
+}
+
+vars:pre-request {
+  form_id: 
+  last_updated: 
+}

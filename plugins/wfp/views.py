@@ -60,7 +60,7 @@ def debug_summary(request):
         "future_count": future_count,
         "recent_future_visits": recent_future_visits,
         "without_date_count": without_date_count,
-        "visits_without_date": visits_without_date
+        "visits_without_date": visits_without_date,
     }
     return HttpResponse(template.render(context, request))
 

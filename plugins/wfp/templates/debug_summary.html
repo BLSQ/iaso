@@ -1,0 +1,141 @@
+<html>
+<head>
+    <style>
+        th, td {
+            border: 1px black solid;
+            padding: 5px;
+        }
+
+        th {
+            text-align: right;
+            background-color: #f2f2f2;
+        }
+
+        .navbar {
+            background-color: #000000;
+            padding: 15px;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 20px;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 20px;
+            font-family: sans-serif;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .section-anchor {
+            scroll-margin-top: 80px;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0 0 20px 0; 
+        }
+        
+        .content-container {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="#negative_durations">1. Negative Durations ({{ negative_count }})</a>
+        <a href="#future_visits">2. Future Visits ({{ future_count }})</a>
+    </div>
+
+    <div class="content-container">
+        <h1>ETL Debug Summary</h1>
+
+        <div id="negative_durations" class="section-anchor">
+            <h2>Issue: Negative Durations</h2>
+            <p>Total Anomalies Found: {{ negative_count }}</p>
+            
+            {% for journey in recent_negatives %}
+            <h3>Journey {{ journey.id }}</h3>
+            <table>
+                <tr><th>Beneficiary ID</th><td>{{ journey.beneficiary.id }}</td></tr>
+                <tr><th>Entity ID</th><td>{{ journey.beneficiary.entity_id }}</td></tr>
+                <tr><th>Link</th>
+                    <td><a href="/dashboard/entities/details/accountId/{{ journey.beneficiary.account.id }}/entityId/{{ journey.beneficiary.entity_id }}">/dashboard/entities/details/accountId/{{ journey.beneficiary.account.id }}/entityId/{{ journey.beneficiary.entity_id }}</a></td>
+                </tr>
+                <tr><th>admission_criteria</th><td>{{ journey.admission_criteria }}</td></tr>
+                <tr><th>admission_type</th><td>{{ journey.admission_type }}</td></tr>
+                <tr><th>nutrition_programme</th><td>{{ journey.nutrition_programme }}</td></tr>
+                <tr><th>programme_type</th><td>{{ journey.programme_type }}</td></tr>
+                <tr><th>muac_size</th><td>{{ journey.muac_size }}</td></tr>
+                <tr><th>whz_score</th><td>{{ journey.whz_score }}</td></tr>
+                <tr><th>initial_weight</th><td>{{ journey.initial_weight }}</td></tr>
+                <tr><th>discharge_weight</th><td>{{ journey.discharge_weight }}</td></tr>
+                <tr><th>weight_gain</th><td>{{ journey.weight_gain }}</td></tr>
+                <tr><th>weight_loss</th><td>{{ journey.weight_loss }}</td></tr>
+                <tr><th>Start date</th><td>{{ journey.start_date | date }}</td></tr>
+                <tr><th>End date</th><td>{{ journey.end_date | date }}</td></tr>
+                <tr><th>Number of days (Duration)</th><td>{{ journey.duration }}</td></tr>
+                <tr><th>exit_type</th><td>{{ journey.exit_type }}</td></tr>
+                <tr><th>instance_id</th><td>{{ journey.instance_id }}</td></tr>
+            </table>
+
+            {% for visit in journey.visit_set.all %}
+            <div style="padding-left:30px">
+                <h4>Visit {{ visit.id }}</h4>
+                <table>
+                    <tr><th>date</th><td>{{ visit.date | date }}</td></tr>
+                    <tr><th>number</th><td>{{ visit.number }}</td></tr>
+                    <tr><th>muac_size</th><td>{{ visit.muac_size }}</td></tr>
+                    <tr><th>whz_color</th><td>{{ visit.whz_color }}</td></tr>
+                    <tr><th>oedema</th><td>{{ visit.oedema }}</td></tr>
+                    <tr><th>entry_point</th><td>{{ visit.entry_point }}</td></tr>
+                    <tr><th>org_unit</th><td>{{ visit.org_unit.name }}</td></tr>
+                    <tr><th>instance_id</th><td>{{ visit.instance_id }}</td></tr>
+                </table>
+
+                {% for step in visit.step_set.all %}
+                <div style="padding-left:60px">
+                    <h5>Step {{ step.id }} <a href="/dashboard/forms/submission/instanceId/{{step.instance_id}}">View submission</a></h5>
+                    <table>
+                        <tr><th>assistance_type</th><td>{{ step.assistance_type }}</td></tr>
+                        <tr><th>quantity_given</th><td>{{ step.quantity_given }}</td></tr>
+                        <tr><th>ration_size</th><td>{{ step.ration_size }}</td></tr>
+                        <tr><th>instance_id</th><td>{{ step.instance_id }}</td></tr>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            <br><hr>
+            {% endfor %}
+        </div>
+
+        <div id="future_visits" class="section-anchor">
+            <h2>Issue: Future Visit Dates</h2>
+            <p>Total Anomalies Found: {{ future_count }}</p>
+
+            {% for visit in recent_future_visits %}
+            <h3>Future Visit Detected: {{ visit.id }}</h3>
+            <table>
+                <tr><th>Visit Date</th><td>{{ visit.date | date }}</td></tr>
+                <tr><th>Visit Number</th><td>{{ visit.number }}</td></tr>
+                <tr><th>Journey ID</th><td>{{ visit.journey.id }}</td></tr>
+                <tr><th>Beneficiary ID</th><td>{{ visit.journey.beneficiary.id }}</td></tr>
+                <tr><th>Link</th>
+                    <td><a href="/dashboard/entities/details/accountId/{{ visit.journey.beneficiary.account.id }}/entityId/{{ visit.journey.beneficiary.entity_id }}">/dashboard/entities/details/accountId/{{ visit.journey.beneficiary.account.id }}/entityId/{{ visit.journey.beneficiary.entity_id }}</a></td>
+                </tr>
+            </table>
+            <br><hr>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,20 +1,10 @@
-What problem is this PR solving? Explain here in one sentence.
+## What problem is this PR solving?
 
-Related JIRA tickets : IA-XXX, WC2-XXX, POLIO-XXX
+Explain here in one sentence.
 
-## Self proofreading checklist
+### Related JIRA tickets
 
-- [ ] Did I use eslint and ruff formatters?
-- [ ] Is my code clear enough and well documented?
-- [ ] Are my typescript files well typed?
-- [ ] New translations have been added or updated if new strings have been introduced in the frontend
-- [ ] My migrations file are included
-- [ ] Are there enough tests?
-- [ ] Documentation has been included (for new feature)
-
-## Doc
-
-Tell us where the doc can be found (docs folder, wiki, in the code...).
+IA-XXX, WC2-XXX, POLIO-XXX, SLEEP-XXX, SNT-XXX, SAAS-XXX
 
 ## Changes
 
@@ -45,22 +35,6 @@ Things that the reviewers should know:
 - does the PR depends on a PR in [bluesquare-components](https://github.com/BLSQ/bluesquare-components)?
 - should the PR be merged into another PR?
 
-## Follow the Conventional Commits specification
+## Doc
 
-The **merge message** of a pull request must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
-
-This convention helps to automatically generate release notes.
-
-Use lowercase for consistency.
-
-[Example](https://github.com/BLSQ/iaso/commit/8b8d7d3064138c1e57878f17b4eb922516ab0112):
-
-```
-fix: empty instance pop up
-
-Refs: IA-3665
-```
-
-Note that the Jira reference is preceded by a _line break_.
-
-Both the line break and the Jira reference are entered in the _Add an optional extended description…_ field.
+Tell us where the doc can be found (docs folder, wiki, in the code...).

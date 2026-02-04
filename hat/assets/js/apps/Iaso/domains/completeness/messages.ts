@@ -33,7 +33,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'June',
         id: 'iaso.label.months.june',
     },
-    jully: {
+    july: {
         defaultMessage: 'July',
         id: 'iaso.label.months.july',
     },
@@ -120,7 +120,7 @@ const MESSAGES = defineMessages({
     quarter_nov: {
         id: 'iaso.label.periodType.quarter_nov',
         defaultMessage: 'Quarter Nov',
-    },    
+    },
     month: {
         id: 'iaso.label.periodType.month',
         defaultMessage: 'Month',
@@ -129,6 +129,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.periodType.six_month',
         defaultMessage: 'Semester',
     },
+    week: {
+        id: 'iaso.label.periodType.week',
+        defaultMessage: 'Week',
+    }
 });
 
 export default MESSAGES;

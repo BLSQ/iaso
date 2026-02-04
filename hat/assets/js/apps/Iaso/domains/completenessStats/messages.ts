@@ -15,7 +15,7 @@ const MESSAGES = defineMessages({
     },
     orgUnit: {
         id: 'iaso.instance.org_unit',
-        defaultMessage: 'Org unit',
+        defaultMessage: 'Org Unit',
     },
     form: {
         id: 'iaso.instance.formShort',

@@ -1,4 +1,5 @@
 import json
+import os
 
 from typing import Any, Dict
 
@@ -19,7 +20,11 @@ def favicon_path(request: HttpRequest) -> Dict[str, str]:
 
 
 def logo_path(request: HttpRequest) -> Dict[str, str]:
-    return {"logo_path": settings.LOGO_PATH}
+    path = settings.LOGIN_LOGO_PATH
+    directory = os.path.dirname(os.path.abspath(__file__))
+    if not os.path.isfile(f"{directory}/../../iaso/static/{path}"):
+        path = settings.LOGO_PATH
+    return {"logo_path": path}
 
 
 def sentry_config(request: HttpRequest) -> Dict[str, Any]:

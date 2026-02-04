@@ -62,6 +62,7 @@ services:
             GOOGLE_API_KEY_BASE64:
             LIVE_COMPONENTS:
             LOGO_PATH:
+            LOGIN_LOGO_PATH:
             LQAS_PIPELINE: #Optional: the version of the pipeline to run
             LQAS_PIPELINE_VERSION: # "prod", "staging" or "custom". Use "custom" for local testing
             MAINTENANCE_MODE:

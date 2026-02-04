@@ -111,7 +111,7 @@ const MESSAGES = defineMessages({
     },
     openingDate: {
         id: 'iaso.changeRequest.openingDate',
-        defaultMessage: 'Opening date',
+        defaultMessage: 'Opening Date',
     },
     closingDate: {
         id: 'iaso.changeRequest.closingDate',

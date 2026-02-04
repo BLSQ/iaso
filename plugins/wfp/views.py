@@ -44,8 +44,14 @@ def debug_summary(request):
         date__gt=now, journey__beneficiary__entity_id__in=allowed_entity_ids
     ).select_related("journey__beneficiary", "journey__beneficiary__account")
 
+    visits_with_missing_date = Visit.objects.filter(
+        date__isnull=True, journey__beneficiary__entity_id__in=allowed_entity_ids
+    ).select_related("journey__beneficiary", "journey__beneficiary__account")
+
     future_count = future_visits_qs.count()
     recent_future_visits = future_visits_qs.order_by("-date")[:3]
+    visits_without_date = visits_with_missing_date
+    without_date_count = visits_with_missing_date.count()
 
     template = loader.get_template("debug_summary.html")
     context = {
@@ -53,6 +59,8 @@ def debug_summary(request):
         "recent_negatives": recent_negatives,
         "future_count": future_count,
         "recent_future_visits": recent_future_visits,
+        "without_date_count": without_date_count,
+        "visits_without_date": visits_without_date
     }
     return HttpResponse(template.render(context, request))
 

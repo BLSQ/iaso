@@ -1,0 +1,32 @@
+meta {
+  name: Update color
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{HOST}}api/profiles/{{user_id}}/update_color/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  { "color": "#FEFEFE" }
+}
+
+vars:pre-request {
+  user_id: 
+}
+
+script:pre-request {
+  // Execute a request and get the response
+  const response = await bru.runRequest("profiles/my_profile");
+   
+  // Check if login was successful
+  if (response.status === 200) {
+    const { data } = response;
+    bru.setVar("user_id", data.id);
+  } else {
+    console.error(response.statusText);
+  }
+}

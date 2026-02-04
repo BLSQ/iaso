@@ -1,0 +1,11 @@
+meta {
+  name: My profile
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{HOST}}api/profiles/me/
+  body: json
+  auth: inherit
+}

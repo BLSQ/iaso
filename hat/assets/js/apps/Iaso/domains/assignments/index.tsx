@@ -11,7 +11,7 @@ import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { SubTeam, User } from '../teams/types/team';
 import { AssignmentsMap } from './components/AssignmentsMap';
-import { AssignmentsTeams } from './components/AssignmentsTeams';
+import { TeamTable } from './components/teams/TeamTable';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
 import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
@@ -138,7 +138,7 @@ export const Assignments: FunctionComponent = () => {
                             />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <AssignmentsTeams
+                            <TeamTable
                                 rootTeam={rootTeam}
                                 isLoadingRootTeam={isLoadingRootTeam}
                                 selectedUser={selectedUser}

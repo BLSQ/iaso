@@ -99,10 +99,7 @@ class ETL:
                 "entity__deleted_at",
                 "source_created_at",
             )
-            .order_by(
-                "entity_id",
-                "source_created_at",
-            )
+            .order_by("entity_id", "source_created_at", "created_at", "json__visit_date", "json___visit_date")
         )
         return Paginator(beneficiaries, 5000)
 
@@ -847,14 +844,18 @@ class ETL:
 
     def journey_with_visit_and_steps_per_visit(self, account, programme, org_unit_with_updated_data=None):
         aggregated_journeys = []
-        journeys = Step.objects.select_related(
-            "visit",
-            "visit__journey",
-            "visit__org_unit",
-            "visit__journey__beneficiary",
-        ).filter(
-            visit__journey__programme_type=programme,
-            visit__journey__beneficiary__account=account,
+        journeys = (
+            Step.objects.select_related(
+                "visit",
+                "visit__journey",
+                "visit__org_unit",
+                "visit__journey__beneficiary",
+            )
+            .filter(
+                visit__journey__programme_type=programme,
+                visit__journey__beneficiary__account=account,
+            )
+            .exclude(visit__date__isnull=True)
         )
 
         if org_unit_with_updated_data is not None and len(org_unit_with_updated_data) > 0:
@@ -988,7 +989,6 @@ class ETL:
             )
             .order_by("visit__id")
         )
-
         data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
 
         for org_unit, journeys in data_by_journey:

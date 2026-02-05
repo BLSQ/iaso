@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
-from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import permissions, status, viewsets
@@ -959,7 +959,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
     @safe_api_import("orgUnit")
     def create(self, _, request):
         """This endpoint is used by mobile app"""
-        new_org_units = import_org_units(request.data, request.user, request.query_params.get("app_id"))
+        try:
+            new_org_units = import_org_units(request.data, request.user, request.query_params.get("app_id"))
+        except Project.DoesNotExist:
+            raise Http404
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):

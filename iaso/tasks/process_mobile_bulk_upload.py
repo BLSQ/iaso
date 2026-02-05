@@ -62,9 +62,9 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     )
     api_import = APIImport.objects.get(id=api_import_id)
     user = api_import.user
-    project = Project.objects.get(id=project_id)
 
     try:
+        project = Project.objects.get(id=project_id)
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
 
         with zipfile.ZipFile(api_import.file, "r") as zip_ref:
@@ -126,7 +126,12 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         serializer.validated_data["created_by"] = user
                         serializer.save()
                         stats["new_change_requests"] += 1
-
+    except Project.DoesNotExist as e:
+        logger.exception(f"No Project found with id {project_id}! Rolling back import that failed:{str(e)}")
+        api_import.has_problem = True
+        api_import.exception = format_exc()
+        api_import.save()
+        raise e
     except Exception as e:
         logger.exception("Exception! Rolling back import that failed: " + str(e))
         api_import.has_problem = True

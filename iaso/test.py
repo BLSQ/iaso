@@ -308,11 +308,11 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         has_problems: bool,
         check_auth_header: bool = False,
         exception_contains_string: str = None,
+        exception_contains_code: str = None,
     ):
         """Make sure that a APIImport has been correctly generated"""
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
-        assert last_api_import is not None
         self.assertIsNotNone(last_api_import)
         self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, request_body)
@@ -326,8 +326,10 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
 
         if has_problems is False:
             self.assertEqual(last_api_import.exception, "")
-        elif exception_contains_string is not None:
+        if exception_contains_string is not None:
             self.assertTrue(exception_contains_string in last_api_import.exception)
+        if exception_contains_code is not None:
+            self.assertTrue(exception_contains_code in last_api_import.exception)
 
     def assertValidProjectData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)

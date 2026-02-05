@@ -582,3 +582,42 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(OrgUnit.objects.count(), count_before + 1)
         self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
+
+    def test_safe_api_import(self):
+        self.client.force_authenticate(self.user)
+        uuid = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f3"
+        name = "Hopital Sous Fifre"
+        unit_body = [
+            {
+                "id": uuid,
+                "latitude": 0,
+                "created_at": 1565194077699,
+                "updated_at": 1565194077800,
+                "longitude": 0,
+                "accuracy": 0,
+                "altitude": 0,
+                "time": 0,
+                "name": name,
+            }
+        ]
+        # No app id - An APIImport record with has_problem set to True should be created
+        response = self.client.post("/api/mobile/orgunits/", data=unit_body, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
+        )
+
+        # Wrong app id - An APIImport record with has_problem set to True should be created
+        response = self.client.post("/api/mobile/orgunits/?app_id=1234", data=unit_body, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
+        )

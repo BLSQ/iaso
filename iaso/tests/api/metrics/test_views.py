@@ -367,7 +367,7 @@ class MetricValueAPITestCase(APITestCase):
                 "string_value": "200",
             },
         )
-        print(response.data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_metric_value_post_unauthenticated(self):

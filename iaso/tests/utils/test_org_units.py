@@ -85,7 +85,7 @@ class OrgUnitUtilsTest(APITestCase):
         filtered_qs = get_valid_org_units_with_geography(self.account)
         self.assertIn(self.angola_district, filtered_qs)
         self.assertNotIn(self.angola_district_new, filtered_qs)  # New status
-        self.assertNotIn(self.angola_district_rejected, filtered_qs)  # New status
+        self.assertNotIn(self.angola_district_rejected, filtered_qs)  # Rejected status
         self.assertNotIn(self.angola_district_wrong_user, filtered_qs)  # Different version not linked to account
 
         self.assertNotIn(self.angola_district_missing_geom, filtered_qs)  # Missing geom and location

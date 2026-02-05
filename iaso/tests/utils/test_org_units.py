@@ -82,8 +82,7 @@ class OrgUnitUtilsTest(APITestCase):
         )
 
     def test_filter_valid_org_units_for_account(self):
-        queryset = m.OrgUnit.objects.all()
-        filtered_qs = get_valid_org_units_with_geography(queryset, self.account)
+        filtered_qs = get_valid_org_units_with_geography(self.account)
         self.assertIn(self.angola_district, filtered_qs)
         self.assertNotIn(self.angola_district_new, filtered_qs)  # New status
         self.assertNotIn(self.angola_district_rejected, filtered_qs)  # New status

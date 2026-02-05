@@ -5,9 +5,17 @@ meta {
 }
 
 get {
-  url: {{HOST}}api/forms/?page={{page}}&limit={{limit}}&org_units={{org_units}}&projects={{projects}}&search={{search}}
+  url: {{HOST}}/api/forms/?page={{page}}&limit={{limit}}&org_units={{org_units}}&projects={{projects}}&search={{search}}
   body: json
   auth: inherit
+}
+
+params:query {
+  page: {{page}}
+  limit: {{limit}}
+  org_units: {{org_units}}
+  projects: {{projects}}
+  search: {{search}}
 }
 
 vars:pre-request {

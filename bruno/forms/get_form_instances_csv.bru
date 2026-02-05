@@ -5,9 +5,15 @@ meta {
 }
 
 get {
-  url: {{HOST}}api/instances/?csv=true&form_id={{form_id}}&modificationDateFrom={{last_updated}}
+  url: {{HOST}}/api/instances/?csv=true&form_id={{form_id}}&modificationDateFrom={{last_updated}}
   body: json
   auth: inherit
+}
+
+params:query {
+  csv: true
+  form_id: {{form_id}}
+  modificationDateFrom: {{last_updated}}
 }
 
 vars:pre-request {

@@ -84,8 +84,15 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
     );
     const [orgUnitModified, setOrgUnitModified] = useState(false);
     const handleSave = () => {
-        const newOrgUnit = mapValues(formState, v =>
-            Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
+        const newOrgUnit: Record<string, any> = Object.fromEntries(
+            Object.entries(formState).map(([key, v]: [string, any]) => {
+                const value = 'value' in v ? v.value : v;
+                // For opening_date and closed_date, send null if value is undefined/null/empty
+                if (key === 'opening_date' || key === 'closed_date') {
+                    return [key, value ?? null];
+                }
+                return [key, value];
+            }),
         );
         newOrgUnit.parent_id =
             isNewOrgunit && params.parentOrgUnitId && !newOrgUnit.parent?.id

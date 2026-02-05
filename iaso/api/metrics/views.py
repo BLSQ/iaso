@@ -1,15 +1,21 @@
+import csv
+
+from django.db import transaction
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.apps import serializers
-from iaso.api.common import DropdownOptionsWithRepresentationSerializer
+from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
+from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
 from iaso.models import MetricType, MetricValue
-from iaso.utils import legend
+from iaso.utils.org_units import get_valid_org_units_with_geography
 
 from .serializers import (
+    ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
     MetricTypeSerializer,
     MetricTypeWriteSerializer,
@@ -37,13 +43,6 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
             if self.action in ["update", "partial_update"]
             else MetricTypeSerializer
         )
-
-    def perform_create(self, serializer):
-        metric_type = serializer.save(
-            account=self.request.user.iaso_profile.account,
-        )
-        metric_type.legend_config = legend.get_legend_config(metric_type, self.request.data.get("scale"))
-        metric_type.save()
 
     def perform_destroy(self, instance):
         if instance.origin == MetricType.MetricTypeOrigin.OPENHEXA.value:
@@ -81,10 +80,57 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     queryset = MetricValue.objects.all()
     filter_backends = [DjangoFilterBackend, ValueFilterBackend]
     filterset_fields = ["metric_type_id", "org_unit_id"]
-    http_method_names = ["get", "options"]
+    http_method_names = ["get", "options", "post"]
 
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
+
+    @action(detail=False, methods=["get"])
+    def csv_template(self, request):
+        account = request.user.iaso_profile.account
+        # Get all custom metric types for the user's account
+        metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
+        # Get All org units for the user's account
+        org_units = get_valid_org_units_with_geography(account).order_by("name")
+
+        # Prepare the CSV response
+        headers = REQUIRED_METRIC_VALUES_HEADERS.copy()
+        for mt in metric_types:
+            headers.append(f"{mt.code}")
+        response = HttpResponse(content_type=CONTENT_TYPE_CSV)
+        writer = csv.writer(response, delimiter=",")
+        writer.writerow(headers)
+        for ou in org_units:
+            row = [ou.parent.name if ou.parent else "", ou.name, ou.id]
+            for mt in metric_types:
+                row.append("")  # Empty value for the metric
+            writer.writerow(row)
+
+        filename = "metric_import_template.csv"
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+        return response
+
+    @action(detail=False, methods=["post"], serializer_class=ImportMetricValuesSerializer)
+    def import_from_csv(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        metric_values = serializer.context.get("metric_values")
+        with transaction.atomic():
+            # Clear existing metric values to avoid duplicates
+            metric_type_ids = set(mv.metric_type_id for mv in metric_values)
+            org_unit_ids = set(mv.org_unit_id for mv in metric_values)
+            MetricValue.objects.filter(metric_type_id__in=metric_type_ids, org_unit_id__in=org_unit_ids).delete()
+
+            MetricValue.objects.bulk_create(metric_values)
+
+        return Response(
+            {
+                "total_imported": len(metric_values),
+                "metric_type_import_count": len(metric_values),
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class MetricOrgUnitsViewSet(viewsets.ModelViewSet):

@@ -3,6 +3,11 @@ import json
 from django.db.models import Max, Min
 
 
+THREE_SHADES = [
+    "#ACDF9B",
+    "#F2B16E",
+    "#A93A42",
+]
 FOUR_SHADES = [
     "#A2CAEA",
     "#ACDF9B",
@@ -88,7 +93,6 @@ def get_legend_config(metric_type, scale):
 
     if metric_type.legend_type == "threshold":
         scales = get_scales_from_list_or_json_str(scale)
-        print(f"Parsed scales: {scales}")
         try:
             numeric_scales = [float(s) for s in scales]
         except Exception as e:
@@ -97,14 +101,15 @@ def get_legend_config(metric_type, scale):
         return {"domain": numeric_scales, "range": get_range_from_count(len(scales))}
     if metric_type.legend_type == "ordinal":
         scales = get_scales_from_list_or_json_str(scale)
-        if len(scales) == 3:
+        if len(scales) < 2 or len(scales) > 4:
             print(f"Metric ordinal has to many or to few scales {len(scales)}")
             return None
 
         return {"domain": scales, "range": ORDINAL[len(scales)]}
     if metric_type.legend_type == "linear":
         max_value = get_max_range_value(metric_type)
-        return {"domain": [0, max_value], "range": [NINE_SHADES[0], NINE_SHADES[-1]]}
+        scales = get_scales_from_list_or_json_str(scale) if scale else [0, max_value]
+        return {"domain": scales, "range": [NINE_SHADES[0], NINE_SHADES[-1]]}
 
     return __get_legend_config(metric_type)
 
@@ -197,6 +202,8 @@ def get_max_range_value(metric_type):
 
 def get_range_from_count(count):
     # Note, we always want one additional color, to cover latest value of the scale (> 500 000)
+    if count == 2:
+        return list(THREE_SHADES)
     if count == 3:
         return list(FOUR_SHADES)
     if count == 4:

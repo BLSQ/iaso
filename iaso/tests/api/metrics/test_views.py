@@ -1,8 +1,11 @@
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from rest_framework import status
 
 from iaso.models.base import Account
+from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.metric import MetricType, MetricValue
-from iaso.models.org_unit import OrgUnit
+from iaso.models.org_unit import OrgUnit, OrgUnitType
+from iaso.models.project import Project
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
@@ -264,6 +267,8 @@ class MetricValueAPITestCase(APITestCase):
             permissions=[CORE_ORG_UNITS_PERMISSION],
         )
 
+        cls.other_account = Account.objects.create(name="Other Account")
+
         cls.metric_type = MetricType.objects.create(
             account=cls.account,
             code="MT001",
@@ -272,7 +277,64 @@ class MetricValueAPITestCase(APITestCase):
             origin=MetricType.MetricTypeOrigin.OPENHEXA,
         )
 
-        cls.org_unit = OrgUnit.objects.create(name="Org Unit 1")
+        cls.metric_type_wrong_account = MetricType.objects.create(
+            account=cls.other_account,
+            code="MT999",
+            name="Other Metric Type",
+            description="Description for Other Metric Type",
+            origin=MetricType.MetricTypeOrigin.OPENHEXA,
+        )
+
+        # Create Org Units
+        cls.project = project = Project.objects.create(
+            name="Project",
+            app_id="APP_ID",
+            account=cls.account,
+        )
+        sw_source = DataSource.objects.create(name="data_source")
+        sw_source.projects.add(project)
+        cls.sw_source = sw_source
+        cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.account.default_version = sw_version_1
+        cls.account.save()
+        cls.out_district = OrgUnitType.objects.create(name="DISTRICT")
+        cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+
+        cls.org_unit = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District Wrong Version",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            version=cls.account.default_version,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+
+        cls.org_unit_rejected = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District Rejected",
+            validation_status=OrgUnit.VALIDATION_REJECTED,
+            version=sw_version_1,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+
+        cls.org_unit_wrong_version = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District Wrong Version",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            version=None,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+
+        cls.org_unit_no_location = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District No Location",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            version=sw_version_1,
+            location=None,
+            geom=cls.mock_multipolygon,
+        )
 
         cls.metric_value_1 = MetricValue.objects.create(
             metric_type=cls.metric_type,
@@ -300,11 +362,126 @@ class MetricValueAPITestCase(APITestCase):
             data={
                 "metric_type": self.metric_type.id,
                 "org_unit": self.org_unit.id,
-                "year": 2022,
                 "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
             },
         )
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)  # Method Not Allowed
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_metric_value_post_unauthenticated(self):
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": self.org_unit.id,
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
+    def test_metric_value_post_invalid_metric_type(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": 9999,  # Invalid metric type ID
+                "org_unit": self.org_unit.id,
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_post_metric_type_not_in_account(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type_wrong_account.id,  # Metric type not in user's account
+                "org_unit": self.org_unit.id,
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_post_invalid_org_unit(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": 9999,  # Invalid org unit ID
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_post_org_unit_rejected(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": self.org_unit_rejected.id,  # Rejected org unit
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_post_org_unit_wrong_version(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": self.org_unit_wrong_version.id,  # Org unit with wrong version
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_post_org_unit_no_location(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": self.org_unit_no_location.id,  # Org unit with no location
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_metric_value_post_org_unit_not_accessible(self):
+        inaccessible_org_unit = OrgUnit.objects.create(name="Inaccessible Org Unit")
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            "/api/metricvalues/",
+            data={
+                "metric_type": self.metric_type.id,
+                "org_unit": inaccessible_org_unit.id,  # Org unit not accessible to user
+                "value": 200.0,
+                "year": 2022,
+                "string_value": "200",
+            },
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_metric_value_patch(self):
         self.client.force_authenticate(user=self.user)

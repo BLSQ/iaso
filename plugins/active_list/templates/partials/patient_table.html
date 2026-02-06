@@ -1,0 +1,35 @@
+<div>
+<div>
+{% if last_import %}
+  {% if last_import.file %}
+    <a href="{{ last_import.file.url }}">Fichier uploadé</a> (par {{ last_import.user.username }})
+  {% else %}
+    Import sans fichier (par {{ last_import.user.username }})
+  {% endif %}
+
+  {% if last_import.creation_date %}
+    le {{ last_import.creation_date|date:"d/m/Y H:i" }}
+  {% endif %}
+{% endif %}
+
+
+</div>
+<table id="generatedTable">
+  <thead>
+    <tr>
+      {% for key in data.0.keys %}
+      <th>{{ key }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for obj in data %}
+    <tr>
+      {% for value in obj.values %}
+      <td>{{ value|safe }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>

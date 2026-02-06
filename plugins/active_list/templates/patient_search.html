@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+    <h2>{% trans "Recherche de patients" %}</h2>
+
+    <!-- Search input field -->
+    <input
+        id="searchBox"
+        type="text"
+        placeholder="{% trans "Entrez un code identifiant" %}"
+        style="width: 300px; padding: 8px; font-size: 16px;"
+    />
+
+    <!-- Loader -->
+    <div id="loading" class="loading" style="display: none;">Loading...</div>
+
+    <!-- Table for displaying search results -->
+    <div id="tableContainer">
+
+            <!-- Results will be dynamically added here -->
+
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const apiEndpoint = "/active_list/search_api/?query=";
+
+            // Debounce function to limit requests while typing
+            function debounce(func, delay) {
+                let timeoutId;
+                return function (...args) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
+
+            // Function to fetch results from the API
+            function fetchResults(query) {
+                if (!query.trim()) {
+                    $("#tablecontainer").hide();
+                    $("#loading").hide();
+                    return;
+                }
+
+                $("#loading").show(); // Show the loading indicator
+                $.ajax({
+                    url: apiEndpoint + encodeURIComponent(query),
+                    method: "GET",
+                    success: function (data) {
+                        $("#loading").hide(); // Hide the loading indicator
+
+                        const tableContainer = $("#tableContainer");
+                        console.log(tableContainer)
+                        tableContainer.empty(); // Clear any previous results
+
+                        // Check if data exists or not
+                        if (data.trim().length === 0) {
+                            $("#tableContainer").hide(); // Hide the table if no results
+                        } else {
+                            // Append rows dynamically from the server-generated HTML
+                            tableContainer.append(data);
+                            $("#tableContainer").show(); // Show the table with results
+                            initializeTableWithStickyHeaders('#generatedTable');
+                            console.log("coucou")
+                        }
+                    },
+                    error: function (error) {
+                        console.error("Error fetching results:", error);
+                        $("#loading").hide(); // Hide loading indicator
+                    }
+                });
+            }
+
+            // Attach the debounce function to the search box input event
+            const debouncedSearch = debounce(function () {
+                const query = $("#searchBox").val();
+                fetchResults(query); // Call the fetch results function
+            }, 300); // 300ms debounce delay
+
+            // Trigger the debounced search function on input
+            $("#searchBox").on("input", debouncedSearch);
+        });
+    </script>
+{% endblock %}

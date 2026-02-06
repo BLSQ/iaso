@@ -139,6 +139,8 @@ export const useSavePlanning = ({
             'planningDetails',
             'planningOrgUnits',
             'planningSamplingResults',
+            'planningRootOrgUnit',
+            'planningChildrenOrgUnits',
         ],
         ignoreErrorCodes,
         options: { onSuccess },

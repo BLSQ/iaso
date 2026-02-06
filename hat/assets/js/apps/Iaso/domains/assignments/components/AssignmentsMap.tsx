@@ -98,7 +98,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 zoom={defaultViewport.zoom}
                 scrollWheelZoom={false}
                 zoomControl={false}
-                contextmenu
                 boundsOptions={boundsOptions}
             >
                 <CloseTooltipOnMoveStart />

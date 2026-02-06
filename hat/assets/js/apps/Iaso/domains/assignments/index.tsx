@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import { Grid, Typography } from '@mui/material';
 import { useSafeIntl, useGoBack } from 'bluesquare-components';
@@ -16,7 +16,7 @@ import { useGetAssignments } from './hooks/requests/useGetAssignments';
 import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import MESSAGES from './messages';
-import { AssignmentParams, SaveAssignmentQuery } from './types/assigment';
+import { AssignmentParams } from './types/assigment';
 
 export const Assignments: FunctionComponent = () => {
     const [selectedUser, setSelectedUser] = useState<User | undefined>(
@@ -51,50 +51,12 @@ export const Assignments: FunctionComponent = () => {
         data?: AssignmentsResult;
         isLoading: boolean;
     } = useGetAssignments({ planning: planningId });
-    const { mutateAsync: saveAssignment, isLoading: isSaving } =
-        useSaveAssignment();
-    const handleSaveAssignment = useCallback(
-        (orgUnitId: number) => {
-            const existingAssignment = assignments?.allAssignments?.find(
-                assignment => assignment.org_unit === orgUnitId,
-            );
-            let payload: SaveAssignmentQuery | undefined;
-            if (selectedUser) {
-                payload = {
-                    planning: parseInt(planningId, 10),
-                    org_unit: orgUnitId,
-                    id: existingAssignment?.id,
-                    user:
-                        existingAssignment &&
-                        selectedUser?.id === existingAssignment.user
-                            ? null
-                            : selectedUser?.id,
-                };
-            } else if (selectedTeam) {
-                payload = {
-                    planning: parseInt(planningId, 10),
-                    org_unit: orgUnitId,
-                    id: existingAssignment?.id,
-                    team:
-                        existingAssignment &&
-                        selectedTeam?.id === existingAssignment.team
-                            ? null
-                            : selectedTeam?.id,
-                };
-            } else if (!payload) {
-                return;
-            }
-
-            saveAssignment(payload);
-        },
-        [
-            planningId,
-            saveAssignment,
-            assignments?.allAssignments,
-            selectedUser,
-            selectedTeam,
-        ],
-    );
+    const { handleSaveAssignment, isLoading: isSaving } = useSaveAssignment({
+        planningId,
+        assignments,
+        selectedUser,
+        selectedTeam,
+    });
 
     return (
         <>

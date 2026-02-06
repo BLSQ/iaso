@@ -246,13 +246,12 @@ export const getOrgUnitsBounds = (
         (childOrgUnit: OrgUnit | CompletenessMapStats | PlanningOrgUnits) => {
             const childrenBounds: Bounds | undefined =
                 getOrgUnitBounds(childOrgUnit);
-            if (bounds) {
-                if (childrenBounds) {
-                    bounds = bounds.extend(childrenBounds);
-                }
-            } else if (childrenBounds) {
-                bounds = childrenBounds;
-            }
+    
+    if (childrenBounds && bounds) {
+        bounds = bounds.extend(childrenBounds);
+    } else if (childrenBounds) {
+        bounds = childrenBounds;
+    }
         },
     );
     return bounds;

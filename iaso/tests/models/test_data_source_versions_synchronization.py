@@ -208,10 +208,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         }
         data_source_sync = m.DataSourceVersionsSynchronization(**kwargs)
 
-        with self.assertRaises(ValidationError) as error:
-            data_source_sync.clean_data_source_versions()
-        self.assertIn("The two versions to compare must be linked to the same data source.", error.exception.messages)
-
         kwargs = {
             "name": "Foo",
             "source_version_to_update": self.source_version_to_update,

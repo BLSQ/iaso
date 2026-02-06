@@ -70,8 +70,7 @@ export const Assignments: FunctionComponent = () => {
                             ? null
                             : selectedUser?.id,
                 };
-            }
-            if (selectedTeam) {
+            } else if (selectedTeam) {
                 payload = {
                     planning: parseInt(planningId, 10),
                     org_unit: orgUnitId,
@@ -82,8 +81,7 @@ export const Assignments: FunctionComponent = () => {
                             ? null
                             : selectedTeam?.id,
                 };
-            }
-            if (!payload) {
+            } else if (!payload) {
                 return;
             }
 

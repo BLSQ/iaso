@@ -16,7 +16,7 @@ import { User } from 'Iaso/domains/teams/types/team';
 import { useSaveProfileColor } from 'Iaso/domains/users/hooks/useSaveProfile';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import { AssignmentsResult } from '../../hooks/requests/useGetAssignments';
-import { TeamRow } from './TeamRow';
+import { AssigneeRow } from './AssigneeRow';
 
 const defaultHeight = '80vh';
 
@@ -102,7 +102,7 @@ export const TeamTable: FunctionComponent<Props> = ({
                             </TableHead>
                             <TableBody>
                                 {rootTeam?.sub_teams_details.map(subTeam => (
-                                    <TeamRow
+                                    <AssigneeRow
                                         key={subTeam.id}
                                         isActive={
                                             selectedTeam?.id === subTeam.id
@@ -126,7 +126,7 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         a.username.localeCompare(b.username),
                                     )
                                     .map(user => (
-                                        <TeamRow
+                                        <AssigneeRow
                                             key={user.id}
                                             isActive={
                                                 selectedUser?.id === user.id

@@ -11,7 +11,7 @@ type Props = {
     onColorChange: (color: string) => void;
 };
 
-export const TeamRow: FunctionComponent<Props> = ({
+export const AssigneeRow: FunctionComponent<Props> = ({
     isActive,
     setSelectedRow,
     currentColor,

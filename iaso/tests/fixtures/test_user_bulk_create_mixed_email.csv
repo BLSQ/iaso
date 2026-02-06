@@ -1,0 +1,5 @@
+username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,teams,phone_number,editable_org_unit_types
+with_password,SecurePass123!,with_pass@test.com,With,Password,9999,,en,,,,,,,,
+no_password1,,no_pass1@test.com,No,Password1,9999,,en,,,,,,,,
+no_password2,,no_pass2@test.com,No,Password2,9999,,fr,,,,,,,,
+no_email,SecurePass123!,,No,Email,9999,,en,,,,,,,,

@@ -156,17 +156,19 @@ class PlanningSerializersTestCase(APITestCase):
 
         geo_json = serializer.data["geo_json"]
         self.assertEqual(geo_json["type"], "FeatureCollection")
+        self.assertEqual(geo_json["crs"], {"type": "name", "properties": {"name": "EPSG:4326"}})
         self.assertEqual(len(geo_json["features"]), 1)
         feature = geo_json["features"][0]
         self.assertEqual(feature["id"], self.org_unit_parent.id)
-        self.assertEqual(feature["geometry"]["type"], "MultiPolygon")
+        self.assertEqual(feature["geometry"], org_unit.geo_json)
         self.assertTrue(serializer.data["has_geo_json"])
 
     def test_planning_org_unit_serializer_without_geo_json(self):
         self.org_unit_parent.simplified_geom = None
         self.org_unit_parent.save()
 
-        serializer = PlanningOrgUnitSerializer(self.org_unit_parent)
+        org_unit = OrgUnit.objects.with_geo_json().get(id=self.org_unit_parent.id)
+        serializer = PlanningOrgUnitSerializer(org_unit)
 
         self.assertIsNone(serializer.data["geo_json"])
         self.assertFalse(serializer.data["has_geo_json"])

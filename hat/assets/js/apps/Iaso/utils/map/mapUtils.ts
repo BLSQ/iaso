@@ -15,6 +15,7 @@ import {
 } from '../../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
 import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
+import { PlanningOrgUnits } from '../../domains/plannings/types';
 
 export const defaultCenter = L.latLng(5, 20);
 export const defaultZoom = 4;
@@ -211,10 +212,9 @@ export const getleafletGeoJson = (geoJson: any): L.GeoJSON | null =>
 export type Bounds = L.LatLngBounds;
 
 export const getOrgUnitBounds = (
-    orgUnit: OrgUnit | CompletenessMapStats,
+    orgUnit: OrgUnit | CompletenessMapStats | PlanningOrgUnits,
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
-
     if (orgUnit.geo_json) {
         try {
             bounds = L.geoJSON(orgUnit.geo_json as any).getBounds();
@@ -239,20 +239,20 @@ export const getOrgUnitBounds = (
 };
 
 export const getOrgUnitsBounds = (
-    orgUnits: OrgUnit[] | CompletenessMapStats[],
+    orgUnits: OrgUnit[] | CompletenessMapStats[] | PlanningOrgUnits[],
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
-    orgUnits.forEach((childOrgUnit: OrgUnit | CompletenessMapStats) => {
-        const childrenBounds: Bounds | undefined =
-            getOrgUnitBounds(childOrgUnit);
-        if (bounds) {
-            if (childrenBounds) {
+    orgUnits.forEach(
+        (childOrgUnit: OrgUnit | CompletenessMapStats | PlanningOrgUnits) => {
+            const childrenBounds: Bounds | undefined =
+                getOrgUnitBounds(childOrgUnit);
+            if (childrenBounds && bounds) {
                 bounds = bounds.extend(childrenBounds);
+            } else if (childrenBounds) {
+                bounds = childrenBounds;
             }
-        } else if (childrenBounds) {
-            bounds = childrenBounds;
-        }
-    });
+        },
+    );
     return bounds;
 };
 

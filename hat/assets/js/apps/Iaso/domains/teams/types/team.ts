@@ -11,6 +11,10 @@ export type SubTeam = {
 export type User = {
     id: number;
     username: string;
+    first_name: string;
+    last_name: string;
+    color: string;
+    iaso_profile_id: number;
 };
 
 export type Team = {

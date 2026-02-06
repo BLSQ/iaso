@@ -8,13 +8,13 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 
 import { Profile } from '../../../../utils/usersUtils';
+
+import { AssignmentsApi } from '../../../assignments/types/assigment';
+import { BaseLocation, Locations } from '../../../assignments/types/locations';
+
+import { getOrgUnitAssignation } from '../../../assignments/utils';
 import { OrgUnit, PaginatedOrgUnits } from '../../../orgUnits/types/orgUnit';
-
 import { DropdownTeamsOptions } from '../../../teams/types/team';
-import { AssignmentsApi } from '../../types/assigment';
-import { BaseLocation, Locations } from '../../types/locations';
-
-import { getOrgUnitAssignation } from '../../utils';
 
 type MapProps = {
     orgUnits: OrgUnit[];

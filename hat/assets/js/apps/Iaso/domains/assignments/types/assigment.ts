@@ -2,12 +2,6 @@ import { Shape } from '../../orgUnits/types/shapes';
 
 export type AssignmentParams = {
     planningId: string;
-    team?: string;
-    baseOrgunitType?: string;
-    parentOrgunitType?: string;
-    tab?: string;
-    order?: string;
-    search?: string;
 };
 
 type OrgUnitDetails = {

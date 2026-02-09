@@ -11,6 +11,7 @@ import pytz
 
 from django.core.paginator import Paginator
 from django.db.models import Exists, Max, OuterRef, Prefetch, Q
+from django.db.models.expressions import F
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404

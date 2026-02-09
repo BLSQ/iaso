@@ -43,7 +43,7 @@ export const useStaticColumns = (): Array<Column> => {
             accessor: 'uuid',
         },
         {
-            Header: formatMessage(MESSAGES.lastVisit),
+            Header: formatMessage(MESSAGES.updated_at),
             id: 'last_saved_instance',
             accessor: 'last_saved_instance',
             Cell: settings => {

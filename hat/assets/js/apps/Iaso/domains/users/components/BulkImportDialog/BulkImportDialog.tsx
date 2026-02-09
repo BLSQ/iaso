@@ -1,4 +1,5 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
+import { Box, FormControlLabel, Checkbox, Collapse } from '@mui/material';
 import {
     useSafeIntl,
     makeFullModal,
@@ -6,14 +7,15 @@ import {
     SimpleModal,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box } from '@mui/material';
 import { useFormik } from 'formik';
-import MESSAGES from '../../messages';
-import { BulkImportButton } from './BulkImportButton';
-import { useBulkUserValidation } from './hooks/useBulkUserValidation';
-import { useApiErrorValidation } from '../../../../libs/validation';
-import { useUploadCsv } from './hooks/useUploadCsv';
 import { FileUploadButtons } from '../../../../components/Buttons/FileUploadButtons';
+import { useApiErrorValidation } from '../../../../libs/validation';
+import MESSAGES from '../../messages';
+import { BulkImportDefaults } from '../../types';
+import { BulkImportButton } from './BulkImportButton';
+import { DefaultValuesSection } from './DefaultValuesSection';
+import { useBulkUserValidation } from './hooks/useBulkUserValidation';
+import { useUploadCsv } from './hooks/useUploadCsv';
 
 type Props = {
     closeDialog: () => void;
@@ -32,6 +34,10 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const titleMessage = formatMessage(MESSAGES.createUsersFromFile);
+
+    // State for default values toggle and values
+    const [showDefaults, setShowDefaults] = useState(false);
+    const [defaults, setDefaults] = useState<BulkImportDefaults>({});
 
     const { mutateAsync: upload, isLoading } = useUploadCsv();
 
@@ -52,7 +58,10 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         validateOnBlur: true,
         enableReinitialize: true,
         onSubmit: async (values, helpers) => {
-            save(values, helpers);
+            const uploadPayload = showDefaults
+                ? { ...values, ...defaults }
+                : values;
+            save(uploadPayload, helpers);
         },
     });
 
@@ -105,7 +114,11 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
             closeDialog={closeDialog}
             id={id ?? 'bulk-user-create'}
             dataTestId="test-bulk-user-create"
-            onClose={() => resetForm()}
+            onClose={() => {
+                resetForm();
+                setShowDefaults(false);
+                setDefaults({});
+            }}
             buttons={Buttons}
         >
             <Box mt={2}>
@@ -121,6 +134,29 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                     placeholder={formatMessage(MESSAGES.selectCsvFile)}
                 />
             </Box>
+
+            <Box mt={2}>
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={showDefaults}
+                            onChange={e => setShowDefaults(e.target.checked)}
+                            data-testid="default-values-toggle"
+                        />
+                    }
+                    label={formatMessage(MESSAGES.setDefaultValues)}
+                />
+            </Box>
+
+            <Collapse in={showDefaults}>
+                <Box mt={1}>
+                    <DefaultValuesSection
+                        defaults={defaults}
+                        onChange={setDefaults}
+                    />
+                </Box>
+            </Collapse>
+
             {/* The loading spinner is set so users can still close the modal when the users are loading */}
             {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
         </SimpleModal>

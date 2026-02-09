@@ -37,3 +37,17 @@ export type UserDisplayData = Pick<
     User,
     'id' | 'username' | 'user_name' | 'first_name' | 'last_name'
 >;
+
+export interface BulkImportDefaults {
+    default_permissions?: string[];
+    default_projects?: string[];
+    default_user_roles?: string[];
+    default_profile_language?: string;
+    default_org_units?: number[];
+    default_teams?: string[];
+    default_organization?: string;
+}
+
+export interface BulkImportPayload extends BulkImportDefaults {
+    file: File[];
+}

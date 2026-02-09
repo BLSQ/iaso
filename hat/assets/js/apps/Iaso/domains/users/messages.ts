@@ -540,6 +540,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.invalidEmailFormat',
         defaultMessage: 'Invalid email format',
     },
+    setDefaultValues: {
+        id: 'iaso.users.bulk.setDefaultValues',
+        defaultMessage: 'Set default values for missing fields',
+    },
+    defaultsInfo: {
+        id: 'iaso.users.bulk.defaultsInfo',
+        defaultMessage: 'Defaults apply only when CSV field is empty. CSV values take priority.',
+    },
 });
 
 export default MESSAGES;

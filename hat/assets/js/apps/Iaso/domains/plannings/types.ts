@@ -1,4 +1,5 @@
 import { UrlParams } from 'bluesquare-components';
+import { GeoJson } from 'Iaso/components/maps/types';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 
 export type PublishingStatus = 'all' | 'draft' | 'published';
@@ -90,4 +91,12 @@ export type SamplingResult = {
     created_at: string;
     created_by: number;
     created_by_details: UserDetails;
+};
+export type PlanningOrgUnits = {
+    id: number;
+    name: string;
+    geo_json: GeoJson;
+    has_geo_json: boolean;
+    latitude: number;
+    longitude: number;
 };

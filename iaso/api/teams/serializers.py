@@ -22,14 +22,19 @@ class NestedTeamSerializer(serializers.ModelSerializer):
 
 class NestedUserSerializer(serializers.ModelSerializer):
     color = serializers.SerializerMethodField()
+    iaso_profile_id = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "color"]
+        fields = ["id", "username", "first_name", "last_name", "color", "iaso_profile_id"]
 
     def get_color(self, obj):
         profile = getattr(obj, "iaso_profile", None)
         return getattr(profile, "color", None) if profile else None
+
+    def get_iaso_profile_id(self, obj):
+        profile = getattr(obj, "iaso_profile", None)
+        return getattr(profile, "id", None) if profile else None
 
 
 class AuditTeamSerializer(serializers.ModelSerializer):

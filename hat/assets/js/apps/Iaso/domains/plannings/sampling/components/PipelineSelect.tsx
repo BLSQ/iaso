@@ -2,7 +2,6 @@ import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { LQASForm } from 'Iaso/domains/assignments/sampling/customForms/LQASForm';
 import { Parameters } from 'Iaso/domains/openHexa/components/Parameters';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
@@ -12,6 +11,7 @@ import {
 } from 'Iaso/domains/openHexa/types/pipeline';
 
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { LQASForm } from 'Iaso/domains/plannings/sampling/customForms/LQASForm';
 
 import { Planning } from 'Iaso/domains/plannings/types';
 import { TaskStatus } from 'Iaso/domains/tasks/types';

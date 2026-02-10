@@ -74,7 +74,7 @@ def send_notification_email(campaign):
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
 
     # format thousands
-    target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
+    target_population = f"{next_round.target_population:,}" if next_round and next_round.target_population else ""
 
     # French
 

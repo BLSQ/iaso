@@ -20,13 +20,13 @@ class WeeklyEMailTestCase(APITestCase):
     now: datetime.datetime
     source_version_1: m.SourceVersion
     source_version_2: m.SourceVersion
-    star_wars: m.Account
+    other_account: m.Account
     jedi_squad: m.OrgUnitType
-    yoda: User
+    user: User
     org_unit: m.OrgUnit
     child_org_unit: m.OrgUnit
     org_units: List[m.OrgUnit]
-    luke: User
+    recipient: User
     account: m.Account
 
     @classmethod
@@ -37,44 +37,46 @@ class WeeklyEMailTestCase(APITestCase):
 
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
-        cls.star_wars = m.Account.objects.create(name="Star Wars")
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
         cls.account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
         )
+        cls.other_account = m.Account.objects.create(name="Other account")
+        cls.country_type = m.OrgUnitType.objects.create(name="Country", short_name="country")
+        cls.district_type = m.OrgUnitType.objects.create(name="District", short_name="district")
 
         cls.org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            org_unit_type=cls.country_type,
             version=cls.source_version_1,
-            name="Jedi Council A",
+            name="Country",
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
         )
 
         cls.child_org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            org_unit_type=cls.district_type,
             version=cls.source_version_1,
-            name="Sub Jedi Council A",
+            name="District",
             parent_id=cls.org_unit.id,
             validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
+            source_ref="PvtAbfuI4RUMkr",
+        )
+        cls.child_org_unit2 = m.OrgUnit.objects.create(
+            org_unit_type=cls.district_type,
+            version=cls.source_version_1,
+            name="District 2",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtghkhjkunRUMkr",
         )
 
-        cls.org_units = [
-            cls.org_unit,
-            cls.child_org_unit,
-            m.OrgUnit.objects.create(
-                org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-                version=cls.source_version_1,
-                name="Jedi Council B",
-                validation_status=m.OrgUnit.VALIDATION_VALID,
-                source_ref="PvtAI4RUMkr",
-            ),
-        ]
+        cls.org_units = [cls.org_unit, cls.child_org_unit, cls.child_org_unit2]
 
-        cls.luke = cls.create_user_with_profile(
-            username="luke", account=cls.account, permissions=[CORE_FORMS_PERMISSION], org_units=[cls.child_org_unit]
+        cls.recipient = cls.create_user_with_profile(
+            username="recipient",
+            account=cls.account,
+            permissions=[CORE_FORMS_PERMISSION],
+            org_units=[cls.child_org_unit],
         )
         cls.initial_data = ReasonForDelay.objects.create(
             account=cls.account, key_name="INITIAL_DATA", name_en="Initial data", name_fr="Données initiales"
@@ -89,7 +91,7 @@ class WeeklyEMailTestCase(APITestCase):
     def setUp(self) -> None:
         """Make sure we have a fresh client at the beginning of each test"""
         self.client = APIClient()
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user)
 
     def test_soft_deleted_campaign_weekly_mail(self):
         campaign_deleted = Campaign(
@@ -116,15 +118,15 @@ class WeeklyEMailTestCase(APITestCase):
         users = User.objects.all()
         country_user_grp.users.set(users)
 
-        self.luke.email = "luketest@lukepoliotest.io"
-        self.luke.save()
+        self.recipient.email = "recipienttest@recipientpoliotest.io"
+        self.recipient.save()
 
         campaign_deleted.save()
         campaign_deleted.delete()
         campaign_active.save()
 
-        self.assertEqual(send_notification_email(campaign_deleted), False)
-        self.assertEqual(send_notification_email(campaign_active), True)
+        self.assertFalse(send_notification_email(campaign_deleted))
+        self.assertTrue(send_notification_email(campaign_active))
 
     def test_weekly_mail_content(self):
         campaign_deleted = Campaign(
@@ -151,15 +153,15 @@ class WeeklyEMailTestCase(APITestCase):
         users = User.objects.all()
         country_user_grp.users.set(users)
 
-        self.luke.email = "luketest@lukepoliotest.io"
-        self.luke.save()
+        self.recipient.email = "recipienttest@recipientpoliotest.io"
+        self.recipient.save()
 
         campaign_deleted.save()
         campaign_deleted.delete()
         campaign_active.save()
 
-        self.assertEqual(send_notification_email(campaign_deleted), False)
-        self.assertEqual(send_notification_email(campaign_active), True)
+        self.assertFalse(send_notification_email(campaign_deleted))
+        self.assertTrue(send_notification_email(campaign_active))
 
     def test_weekly_mail_content_active_campaign(self):
         round = Round.objects.create(
@@ -170,7 +172,7 @@ class WeeklyEMailTestCase(APITestCase):
         campaign_active = Campaign(
             obr_name="active campaign",
             detection_status="PENDING",
-            virus="ABC",
+            virus="cVDPV2",
             country=self.org_unit,
             onset_at=now().date(),
             account=self.account,
@@ -186,8 +188,8 @@ class WeeklyEMailTestCase(APITestCase):
         users = User.objects.all()
         country_user_grp.users.set(users)
 
-        self.luke.email = "luketest@lukepoliotest.io"
-        self.luke.save()
+        self.recipient.email = "recipienttest@recipientpoliotest.io"
+        self.recipient.save()
         campaign_active.save()
 
         self.assertEqual(send_notification_email(campaign_active), True)

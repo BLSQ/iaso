@@ -11,9 +11,14 @@ export const useGetForms = (
     enabled: boolean,
     fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
-    const apiUrl = '/api/forms/?fields=id,name,latest_form_version,form_id';
-    const url = fields ? `${apiUrl},${fields.join(',')}` : apiUrl;
+    const params = new URLSearchParams({
+        fields: (
+            fields ?? ['id', 'name', 'latest_form_version', 'form_id']
+        ).join(','),
+        order: 'name',
+    });
 
+    const url = `/api/forms/?${params}`;
     return useSnackQuery({
         queryKey: ['forms'],
         queryFn: () => getRequest(url),

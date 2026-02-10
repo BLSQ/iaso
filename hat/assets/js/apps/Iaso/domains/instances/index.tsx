@@ -174,7 +174,8 @@ const Instances = () => {
                     tableColumns={tableColumns}
                     tab={tab}
                 />
-                {tab === 'list' && isSingleFormSearch && (
+                {/* Trypelim-specific: disable instance creation on this screen */}
+                {tab === 'list' && isSingleFormSearch && false && (
                     <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
                             <DisplayIfUserHasPerm

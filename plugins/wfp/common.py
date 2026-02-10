@@ -74,7 +74,7 @@ class ETL:
         return list(set(beneficiary_ids))
 
     def retrieve_entities(self, entity_ids):
-        steps_id = ETL().steps_to_exclude()
+        steps_id = self.steps_to_exclude()
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code=self.type)
             .filter(entity__id__in=entity_ids)
@@ -633,9 +633,9 @@ class ETL:
                 visit = visits[index]
                 for sub_step in step:
                     current_step = None
-                    given_assistance = ETL().map_assistance_step(sub_step, [])
+                    given_assistance = self.map_assistance_step(sub_step, [])
                     for assistance in given_assistance:
-                        current_step = ETL().assistance_to_step(
+                        current_step = self.assistance_to_step(
                             assistance,
                             visit,
                             sub_step["instance_id"],
@@ -737,7 +737,7 @@ class ETL:
                 if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
-                current_journey = ETL().journey_Formatter(
+                current_journey = self.journey_Formatter(
                     visit,
                     admission_form,
                     anthropometric_visit_forms,

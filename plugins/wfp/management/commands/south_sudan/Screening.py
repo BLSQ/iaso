@@ -17,8 +17,8 @@ FORMS = ["screening_tally"]
 
 class Screening:
     def run(self, account, update_at):
-        entity_type = ETL(type)
-        instances = entity_type.get_screening_data(FORMS, account, update_at)
+        etl_type = ETL(type)
+        instances = etl_type.get_screening_data(FORMS, account, update_at)
         pages = instances.page_range
 
         all_screening_data = []

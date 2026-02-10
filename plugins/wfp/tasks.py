@@ -75,22 +75,22 @@ def etl_ng(all_data=None):
 
     logger.info("Starting ETL for Nigeria")
     entity_type_U5_code = "nigeria_under5"
-    account = ETL([entity_type_U5_code]).account_related_to_entity_type()
-    updated_U5_beneficiaries = ETL([entity_type_U5_code]).get_updated_entity_ids(last_success_task_date)
+    account = ETL(entity_type_U5_code).account_related_to_entity_type()
+    updated_U5_beneficiaries = ETL(entity_type_U5_code).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=account, entity_id__in=updated_U5_beneficiaries).delete()
 
     NG_Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
     logger.info(
         f"----------------------------- Aggregating journey for {account} per org unit, admission and period(month and year) -----------------------------"
     )
-    org_units_with_updated_data = ETL([entity_type_U5_code]).get_org_unit_ids_with_updated_data(last_success_task_date)
+    org_units_with_updated_data = ETL(entity_type_U5_code).get_org_unit_ids_with_updated_data(last_success_task_date)
     MonthlyStatistics.objects.filter(
         account=account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
     ).delete()
     ETL().journey_with_visit_and_steps_per_visit(account, "U5", org_units_with_updated_data)
     entity_type_pbwg_code = "nigeria_pbwg"
-    pbwg_account = ETL([entity_type_pbwg_code]).account_related_to_entity_type()
-    updated_pbwg_beneficiaries = ETL([entity_type_pbwg_code]).get_updated_entity_ids(last_success_task_date)
+    pbwg_account = ETL(entity_type_pbwg_code).account_related_to_entity_type()
+    updated_pbwg_beneficiaries = ETL(entity_type_pbwg_code).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
     NG_PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries)
     logger.info(
@@ -122,23 +122,23 @@ def etl_ssd(all_data=None):
         last_success_task_date = None
     logger.info("Starting ETL for South Sudan")
     entity_type_U5_code = "ssd_under5"
-    child_account = ETL([entity_type_U5_code]).account_related_to_entity_type()
-    updated_U5_beneficiaries = ETL([entity_type_U5_code]).get_updated_entity_ids(last_success_task_date)
+    child_account = ETL(entity_type_U5_code).account_related_to_entity_type()
+    updated_U5_beneficiaries = ETL(entity_type_U5_code).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
     Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    org_units_with_updated_data = ETL([entity_type_U5_code]).get_org_unit_ids_with_updated_data(last_success_task_date)
+    org_units_with_updated_data = ETL(entity_type_U5_code).get_org_unit_ids_with_updated_data(last_success_task_date)
     MonthlyStatistics.objects.filter(
         account=child_account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
     ).delete()
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
 
     entity_type_pbwg_code = "ssd_pbwg"
-    pbwg_account = ETL([entity_type_pbwg_code]).account_related_to_entity_type()
-    updated_pbwg_beneficiaries = ETL([entity_type_pbwg_code]).get_updated_entity_ids(last_success_task_date)
+    pbwg_account = ETL(entity_type_pbwg_code).account_related_to_entity_type()
+    updated_pbwg_beneficiaries = ETL(entity_type_pbwg_code).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
     PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries)
     logger.info(
@@ -189,23 +189,23 @@ def etl_ethiopia(all_data=None):
 
     logger.info("Starting ETL for Ethiopia")
     entity_type_U5_code = "ethiopia_under5"
-    child_account = ETL([entity_type_U5_code]).account_related_to_entity_type()
-    updated_U5_beneficiaries = ETL([entity_type_U5_code]).get_updated_entity_ids(last_success_task_date)
+    child_account = ETL(entity_type_U5_code).account_related_to_entity_type()
+    updated_U5_beneficiaries = ETL(entity_type_U5_code).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
     ET_Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    org_units_with_updated_data = ETL([entity_type_U5_code]).get_org_unit_ids_with_updated_data(last_success_task_date)
+    org_units_with_updated_data = ETL(entity_type_U5_code).get_org_unit_ids_with_updated_data(last_success_task_date)
     MonthlyStatistics.objects.filter(
         account=child_account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
     ).delete()
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
 
     entity_type_pbwg_code = "ethiopia_pbwg"
-    pbwg_account = ETL([entity_type_pbwg_code]).account_related_to_entity_type()
-    updated_pbwg_beneficiaries = ETL([entity_type_pbwg_code]).get_updated_entity_ids(last_success_task_date)
+    pbwg_account = ETL(entity_type_pbwg_code).account_related_to_entity_type()
+    updated_pbwg_beneficiaries = ETL(entity_type_pbwg_code).get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
     PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries)
 

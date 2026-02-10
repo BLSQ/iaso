@@ -35,8 +35,8 @@ logger = logging.getLogger(__name__)
 
 
 class ETL:
-    def __init__(self, types=None):
-        self.types = types
+    def __init__(self, type=None):
+        self.type = type
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
@@ -49,12 +49,12 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.prefetch_related("account").filter(code__in=self.types).first()
+        entity_type = EntityType.objects.prefetch_related("account").filter(code=self.type).first()
         account = entity_type.account
         return account
 
     def get_updated_data(self, updated_at=None):
-        entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+        entities = Instance.objects.filter(entity__entity_type__code=self.type)
         if updated_at is not None:
             entities = entities.filter(updated_at__gte=updated_at)
         return entities
@@ -76,7 +76,7 @@ class ETL:
     def retrieve_entities(self, entity_ids):
         steps_id = ETL().steps_to_exclude()
         beneficiaries = (
-            Instance.objects.filter(entity__entity_type__code__in=self.types)
+            Instance.objects.filter(entity__entity_type__code=self.type)
             .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)

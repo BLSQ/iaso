@@ -1,6 +1,7 @@
 from django.db.models import Q
 
 from iaso.models import Group, OrgUnit
+from iaso.utils.memory import memory_mb
 
 from .comparisons import Comparison, Diff, as_field_types
 
@@ -123,7 +124,7 @@ class Differ:
                 status = "new"
 
             if index % 100 == 0:
-                self.iaso_logger.info(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2)
+                self.iaso_logger.info(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2, "", memory_mb())
 
             comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, field_types)
             all_same = all(map(lambda comp: comp.status == self.STATUS_SAME, comparisons))
@@ -132,8 +133,11 @@ class Differ:
             elif status != self.STATUS_NEW and all_same:
                 status = self.STATUS_SAME
 
-            diff = Diff(orgunit_ref=orgunit_ref, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons)
-            diffs.append(diff)
+            if status != self.STATUS_SAME:
+                diff = Diff(
+                    orgunit_ref=orgunit_ref, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons
+                )
+                diffs.append(diff)
 
         if show_deleted_org_units:
             target_set = set(orgunits_dhis2_by_ref.keys())

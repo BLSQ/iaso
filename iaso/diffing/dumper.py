@@ -7,6 +7,7 @@ from django.forms import model_to_dict
 
 from iaso.diffing import Differ
 from iaso.management.commands.command_logger import CommandLogger
+from iaso.utils.memory import memory_mb
 
 
 def color(status):
@@ -75,7 +76,9 @@ class Dumper:
         self.iaso_logger.info(self.as_json(diffs))
 
     def dump_as_csv(self, diffs, fields, csv_file, number_of_parents=5):
-        res = []
+        self.iaso_logger.info("Dumping as csv", memory_mb())
+
+        writer = csv.writer(csv_file)
 
         header = ["externalId", "diff status", "type"]
         sorted_fields = sorted(fields)
@@ -92,7 +95,8 @@ class Dumper:
                 header.append("distance diff (KM)")
         for i in range(1, number_of_parents + 1):
             header.extend(["parent %d name before" % i, "parent %d name after" % i])
-        res.append(header)
+
+        writer.writerow(header)
 
         for diff in diffs:
             results = [
@@ -137,10 +141,9 @@ class Dumper:
                     current_ref = current_ref.parent
                 results.append(current_ref.name if current_ref else None)
 
-            res.append(results)
-        writer = csv.writer(csv_file)
-        for row in res:
-            writer.writerow(row)
+            writer.writerow(results)
+
+        self.iaso_logger.info("Dumped as csv", memory_mb())
 
     def dump_as_table(self, diffs, fields, stats):
         display = []

@@ -2266,3 +2266,55 @@ class ProfileAPITestCase(APITestCase):
         alice_upper.refresh_from_db()
         self.assertEqual(alice_upper.username, "Alice")
         self.assertEqual(alice_upper.first_name, "Alice Upper")
+
+    def test_create_user_with_invitation_sets_random_password(self):
+        """Test that creating a user with send_email_invitation=True sets a random password instead of an unusable one."""
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "invited_user_empty_password",
+            "password": "",
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
+            "email": "invited1@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        user = get_user_model().objects.get(username="invited_user_empty_password")
+        self.assertTrue(user.has_usable_password(), "Invited user should have a usable password")
+
+        data = {
+            "user_name": "invited_user_missing_password",
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
+            "email": "invited2@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        user = get_user_model().objects.get(username="invited_user_missing_password")
+        self.assertTrue(user.has_usable_password())
+
+        data = {
+            "user_name": "invited_user_password_is_none",
+            "password": None,
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
+            "email": "invited3@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        user = get_user_model().objects.get(username="invited_user_password_is_none")
+        self.assertTrue(user.has_usable_password())
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(mail.outbox[0].to, ["invited1@test.com"])
+        self.assertEqual(mail.outbox[1].to, ["invited2@test.com"])
+        self.assertEqual(mail.outbox[2].to, ["invited3@test.com"])

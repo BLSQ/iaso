@@ -8,7 +8,7 @@ type Props = {
     PopupComponent?: any;
     TooltipComponent?: React.ComponentType<any>;
     customMarker?: Record<string, any>;
-    onMarkerClick: (item: any) => void;
+    onMarkerClick?: (item: any) => void;
     isCircle?: boolean;
     onDblclick?: (event: any, item: any) => void;
     markerProps?: (item: any) => any;

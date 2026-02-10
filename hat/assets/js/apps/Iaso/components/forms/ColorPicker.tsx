@@ -106,7 +106,7 @@ export const ColorPicker: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 <ClickAwayListener onClickAway={handleClickAway}>
-                    <div>
+                    <Box display="flex" alignItems="center">
                         <Tooltip
                             open={open}
                             arrow
@@ -141,7 +141,7 @@ export const ColorPicker: FunctionComponent<Props> = ({
                                 {' '}
                             </Box>
                         </Tooltip>
-                    </div>
+                    </Box>
                 </ClickAwayListener>
             </Box>
         </Box>

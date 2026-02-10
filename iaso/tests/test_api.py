@@ -241,6 +241,7 @@ class BasicAPITestCase(APITestCase):
             request_body=unit_body_2,
             has_problems=True,
             exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
         )
 
         # Wrong app id - An APIImport record with has_problem set to True should be created
@@ -251,6 +252,7 @@ class BasicAPITestCase(APITestCase):
             request_body=unit_body_2,
             has_problems=True,
             exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
         )
 
     def test_instance_insertion(self):

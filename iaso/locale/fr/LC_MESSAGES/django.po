@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-23 12:59+0000\n"
+"POT-Creation-Date: 2026-02-02 14:48+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -26,6 +26,10 @@ msgstr "Le modèle {value} n'existe pas."
 #: iaso/api/comment.py
 msgid "Invalid value."
 msgstr "Valeur invalide"
+
+#: iaso/api/custom_translations.py
+msgid "Account id is required."
+msgstr "L'identifiant du compte est requis."
 
 #: iaso/api/data_source_versions_synchronization/filters.py
 msgid "Created at greater than or equal to"
@@ -107,9 +111,56 @@ msgstr ""
 "Les paramètres objectId et contentType sont requis. contentType peut être "
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
 
+#: iaso/api/metrics/serializers.py
+msgid "Threshold legend type requires at least two scale items."
+msgstr "Le type de légende seuil nécessite au moins deux éléments d'échelle."
+
+#: iaso/api/metrics/serializers.py
+msgid "Threshold legend type allows a maximum of nine scale items."
+msgstr "Le type de légende seuil autorise un maximum de neuf éléments d'échelle."
+
+#: iaso/api/metrics/serializers.py
+msgid "Linear legend type requires exactly two scale items."
+msgstr "Le type de légende linéaire nécéssite exactement deux éléments d'échelle"
+
+#: iaso/api/metrics/serializers.py
+msgid "Ordinal legend type requires at least two scale items."
+msgstr "Le type de légende ordinal nécéssite au moins deux éléments d'échelle"
+
+#: iaso/api/metrics/serializers.py
+msgid "Ordinal legend type allows a maximum of four scale items."
+msgstr "Le type de légende ordinal autorise un maximum de quatre éléments d'échelle"
+
+#: iaso/api/metrics/serializers.py
+msgid "The file must be a CSV."
+msgstr "Le fichier doit être un CSV"
+
+#: iaso/api/metrics/serializers.py
+#, python-brace-format
+msgid "The CSV must contain '{missing_headers}' columns."
+msgstr "Le CSV doit contenir les en-têtes '{missing_headers}'"
+
+#: iaso/api/metrics/serializers.py
+msgid "The CSV must contain at least one metric type column."
+msgstr "Le CSV doit avoir au moins une column avec un type de metrique"
+
+#: iaso/api/metrics/serializers.py
+msgid "The following metric types do not exist: "
+msgstr "Ces types de metrique n'existent pas"
+
+#: iaso/api/metrics/serializers.py
+msgid "The CSV must contain at least one value row."
+msgstr "Le CSV doit avoir au moins une ligne avec des valeurs."
+
+#: iaso/api/metrics/serializers.py
+msgid "The following org unit IDs do not exist: "
+msgstr "Ces IDs d'org unit n'existent pas:"
+
 #: iaso/api/microplanning/views.py
 msgid "Planning is missing sampling group or target org unit scope"
-msgstr "La planification manque d'un groupe d'échantillonnage ou d'une unité organisationnelle cible"
+msgstr ""
+"La planification manque d'un groupe d'échantillonnage ou d'une unité "
+"organisationnelle cible"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"

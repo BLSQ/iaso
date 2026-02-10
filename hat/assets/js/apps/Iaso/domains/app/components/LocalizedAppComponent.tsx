@@ -2,13 +2,14 @@ import React, { FunctionComponent, ReactNode, useMemo } from 'react';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { LoadingSpinner } from 'bluesquare-components';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
+import translationsConfig from 'IasoModules/translations/configs';
 import { IntlProvider } from 'react-intl';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetCurrentUser } from 'Iaso/domains/users/hooks/useGetCurrentUser';
 import { usePluginsRouteConfigs } from 'Iaso/plugins/hooks/routes';
-import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
-import translationsConfig from 'IasoModules/translations/configs';
 import { useLocale } from '../contexts/LocaleContext';
+import { useGetCustomTranslations } from '../hooks/useGetCustomTranslations';
 import { useCurrentRoute, useGetRoutesConfigs } from '../hooks/useRoutes';
 
 type Props = {
@@ -40,17 +41,26 @@ const LocalizedAppComponent: FunctionComponent<Props> = ({
                 currentRoute?.baseUrl === baseUrls.home,
             false,
         );
+    const {
+        data: customTranslations,
+        isFetching: isFetchingCustomTranslations,
+    } = useGetCustomTranslations(currentUser?.account?.id);
     const allowDisplay =
         currentRoute?.allowAnonymous ||
-        (!isFetchingCurrentUser && Boolean(currentUser));
+        (!isFetchingCurrentUser &&
+            Boolean(currentUser) &&
+            !isFetchingCustomTranslations);
 
     const messages = useMemo(() => {
         const baseMessages = translationsConfig as unknown as Record<
             string,
             Record<string, string>
         >;
-        if (!currentRoute?.allowAnonymous && currentUser) {
-            const customTranslations = currentUser.account?.custom_translations;
+        if (
+            !currentRoute?.allowAnonymous &&
+            currentUser &&
+            !isFetchingCustomTranslations
+        ) {
             if (customTranslations) {
                 Object.keys(customTranslations).forEach(lang => {
                     baseMessages[lang] = {
@@ -61,7 +71,12 @@ const LocalizedAppComponent: FunctionComponent<Props> = ({
             }
         }
         return baseMessages;
-    }, [currentUser, currentRoute?.allowAnonymous]);
+    }, [
+        currentUser,
+        currentRoute?.allowAnonymous,
+        customTranslations,
+        isFetchingCustomTranslations,
+    ]);
 
     if (!allowDisplay) {
         return <LoadingSpinner />;

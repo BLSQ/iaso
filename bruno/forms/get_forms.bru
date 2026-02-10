@@ -1,0 +1,27 @@
+meta {
+  name: Get forms
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{HOST}}/api/forms/?page={{page}}&limit={{limit}}&org_units={{org_units}}&projects={{projects}}&search={{search}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  page: {{page}}
+  limit: {{limit}}
+  org_units: {{org_units}}
+  projects: {{projects}}
+  search: {{search}}
+}
+
+vars:pre-request {
+  page: 1
+  limit: 10
+  org_units: 
+  projects: 
+  search: 
+}

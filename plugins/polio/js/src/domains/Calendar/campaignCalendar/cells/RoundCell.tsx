@@ -5,17 +5,13 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-
 import { Box, TableCell } from '@mui/material';
 import classnames from 'classnames';
-
 import { isEqual } from 'lodash';
-import { useIsLoggedIn } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     OTHER_VACCINE_COLOR,
     polioVaccines,
 } from '../../../../constants/virus';
-import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 import { DEFAULT_CELL_COLOR } from '../constants';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
 import { hasScope } from '../map/utils';
@@ -37,8 +33,6 @@ export const RoundCell: FunctionComponent<Props> = ({
     periodType,
 }) => {
     const classes = useStyles();
-    const [dialogOpen, setDialogOpen] = useState(false);
-
     const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
     const [self, setSelf] = useState<HTMLElement | null>(null);
     const getCellColor = (vaccine: string) => {
@@ -72,7 +66,6 @@ export const RoundCell: FunctionComponent<Props> = ({
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
 
-    const isLogged = useIsLoggedIn();
     const vaccinesList = useMemo(() => {
         const list = campaign.separateScopesPerRound
             ? (round.vaccine_names?.split(',') ?? [])
@@ -133,14 +126,6 @@ export const RoundCell: FunctionComponent<Props> = ({
                     anchorEl={anchorEl}
                     campaign={campaign}
                     handleClose={handleClose}
-                    setDialogOpen={setDialogOpen}
-                />
-            )}
-            {isLogged && (
-                <CreateEditDialog
-                    campaignId={campaign.original.id}
-                    isOpen={dialogOpen}
-                    onClose={() => setDialogOpen(false)}
                 />
             )}
         </TableCell>

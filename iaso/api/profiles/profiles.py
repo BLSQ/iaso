@@ -12,12 +12,14 @@ from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpRe
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
 from phonenumbers import NumberParseException
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, serializers, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
@@ -181,6 +183,16 @@ class ProfileError(ValidationError):
         self.field = field
 
 
+class ProfileColorUpdateSerializer(serializers.Serializer):
+    color = serializers.CharField()
+
+    def validate_color(self, value: str) -> str:
+        try:
+            return validate_hex_color(value)
+        except ValueError:
+            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
+
+
 class ProfilesViewSet(viewsets.ViewSet):
     f"""Profiles API
 
@@ -286,6 +298,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             "user",
             "user_roles",
             "user__tenant_user",
+            "user__teams",
             "org_units",
             "org_units__version",
             "org_units__version__data_source",
@@ -357,9 +370,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
 
         user_who_logs_in = new_user or tenant_main_user
-        if password != "":
-            user_who_logs_in.set_password(password)
-            user_who_logs_in.save()
+
+        user_who_logs_in.save()
 
         user = new_user or tenant_account_user
 
@@ -464,6 +476,27 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         audit_logger.log_modification(
             instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
+
+        return Response(profile.as_dict())
+
+    @action(detail=True, methods=["PATCH"])
+    def update_color(self, request, pk=None):
+        """
+        TODO: Remove this action once the profile PATCH is refactored to avoid
+        overwriting other fields when they are not provided.
+        """
+        serializer = ProfileColorUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile = get_object_or_404(self.get_queryset(), id=pk)
+        audit_logger = ProfileAuditLogger()
+        old_data = audit_logger.serialize_instance(profile)
+
+        profile.color = serializer.validated_data["color"]
+        profile.save(update_fields=["color"])
+
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=PROFILE_API
         )
 
         return Response(profile.as_dict())
@@ -579,6 +612,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                     for item in profile.user_roles.all().order_by("id")
                 ),
                 ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
+                ",".join(item.name for item in profile.user.teams.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
                 ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
@@ -751,10 +785,20 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def update_password(user, request):
-        password = request.data.get("password", "")
-        if password != "":
+        password = request.data.get("password")
+        send_email_invitation = request.data.get("send_email_invitation")
+
+        if password:
             user.set_password(password)
             user.save()
+        elif send_email_invitation and user.email:
+            random_password = get_random_string(32)
+            user.set_password(random_password)
+            user.save()
+        else:
+            user.set_unusable_password()
+            user.save()
+
         if password and request.user == user:
             # update session hash if you changed your own password, so you don't get logged out
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change

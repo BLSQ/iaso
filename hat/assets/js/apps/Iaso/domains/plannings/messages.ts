@@ -223,6 +223,122 @@ const MESSAGES = defineMessages({
         id: 'iaso.plannings.label.selectSamplingResult',
         defaultMessage: 'Select sampling result',
     },
+    openHexaIntegration: {
+        defaultMessage: 'Sampling',
+        id: 'iaso.assignment.openHexaIntegration',
+    },
+    pipeline: {
+        defaultMessage: 'Pipeline',
+        id: 'iaso.assignment.pipeline',
+    },
+    launch: {
+        id: 'iaso.label.launch',
+        defaultMessage: 'Launch',
+    },
+    QUEUED: {
+        id: 'iaso.tasks.queued',
+        defaultMessage: 'QUEUED',
+    },
+    RUNNING: {
+        id: 'iaso.tasks.running',
+        defaultMessage: 'RUNNING',
+    },
+    ERRORED: {
+        id: 'iaso.tasks.errored',
+        defaultMessage: 'ERRORED',
+    },
+    EXPORTED: {
+        id: 'iaso.tasks.exported',
+        defaultMessage: 'EXPORTED',
+    },
+    SUCCESS: {
+        id: 'iaso.tasks.success',
+        defaultMessage: 'SUCCESS',
+    },
+    SKIPPED: {
+        id: 'iaso.tasks.skipped',
+        defaultMessage: 'SKIPPED',
+    },
+    KILLED: {
+        id: 'iaso.tasks.killed',
+        defaultMessage: 'KILLED',
+    },
+    addLevel: {
+        defaultMessage: 'Add level',
+        id: 'iaso.openHexalabel.addLevel',
+    },
+    removeLevel: {
+        defaultMessage: 'Remove level',
+        id: 'iaso.openHexalabel.removeLevel',
+    },
+    collapse: {
+        defaultMessage: 'Collapse',
+        id: 'iaso.openHexalabel.collapse',
+    },
+    expand: {
+        defaultMessage: 'Expand',
+        id: 'iaso.openHexalabel.expand',
+    },
+    noParameters: {
+        defaultMessage: 'No parameters',
+        id: 'iaso.label.noParameters',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+    quantity: {
+        defaultMessage: 'Qty',
+        id: 'iaso.label.quantityShort',
+    },
+    level: {
+        defaultMessage: 'Level',
+        id: 'iaso.forms.level',
+    },
+    excludedOrgUnits: {
+        defaultMessage: 'Excluded org units',
+        id: 'iaso.openHexalabel.excludedOrgUnits',
+    },
+    ruralUrban: {
+        defaultMessage: 'Rural/Urban',
+        id: 'iaso.openHexalabel.ruralUrban',
+    },
+    urban: {
+        defaultMessage: 'Urban',
+        id: 'iaso.openHexalabel.urban',
+    },
+    rural: {
+        defaultMessage: 'Rural',
+        id: 'iaso.openHexalabel.rural',
+    },
+    back: {
+        defaultMessage: 'Back',
+        id: 'iaso.label.back',
+    },
+    deleteAssignments: {
+        id: 'iaso.assignment.deleteAssignments',
+        defaultMessage: 'Delete assignments for planning : {name}',
+    },
+    deleteAssignmentsWarning: {
+        id: 'iaso.assignment.deleteAssignmentsWarning',
+        defaultMessage: 'Are you sure you want to delete {count} assignments?',
+    },
+    deleteAssignmentsInfos: {
+        id: 'iaso.assignment.deleteAssignmentsInfos',
+        defaultMessage: 'Please delete all assignments first',
+    },
+    emptyAssignments: {
+        id: 'iaso.assignment.emptyAssignments',
+        defaultMessage: 'Delete assignments',
+    },
+    progress: {
+        defaultMessage: 'Progress',
+        id: 'iaso.tasks.progress',
+    },
+    bulkDeleteAssignmentsSuccess: {
+        id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
+        defaultMessage: 'Assignments deleted successfully',
+    },
 });
 
 export default MESSAGES;

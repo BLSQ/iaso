@@ -8,7 +8,7 @@ from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
-from django.http import HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.decorators import action
@@ -310,7 +310,10 @@ class MobileOrgUnitViewSet(ModelViewSet):
     @safe_api_import("orgUnit")
     def create(self, _, request):
         data = sorted(request.data, key=lambda ou: float(ou["created_at"]))
-        new_org_units = import_org_units(data, request.user, self.get_app_id())
+        try:
+            new_org_units = import_org_units(data, request.user, self.get_app_id())
+        except Project.DoesNotExist:
+            raise Http404
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     @action(detail=False, methods=["GET"])

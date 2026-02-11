@@ -883,6 +883,7 @@ class ETL:
                 "visit__journey__beneficiary__account",
                 "visit__muac_size",
                 "visit__whz_color",
+                "visit__org_unit_id",
                 year=Extract("visit__date", "year"),
                 month=Extract("visit__date", "month"),
                 period=Concat(
@@ -1016,12 +1017,135 @@ class ETL:
         return f"{year}{month}"
 
     def aggregating_data_to_push_to_dhis2(self, account, org_unit_ids=None):
+        # org_unit_ids = ["43", "827", "744"]
+        org_unit_ids = ["43"]
+
         monthlyStatistics = (
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
-            .values()
+            .values(
+                "gender",
+                "org_unit_id",
+                "dhis2_id",
+                "period",
+                "programme_type",
+                "nutrition_programme",
+                "admission_type",
+                "admission_criteria",
+                "exit_type",
+            )
+            .annotate(
+                new_case=Case(
+                    When(admission_type="new_case", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                relapse=Case(
+                    When(admission_type="relapse", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                returned_defaulter=Case(
+                    When(admission_type="returned_defaulter", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                returned_referral=Case(
+                    When(admission_type="returned_referral", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                transfer_from_other_tsfp=Case(
+                    When(admission_type="transfer_from_other_tsfp", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                admission_sc_itp_otp=Case(
+                    When(
+                        Q(admission_type="referred_from_sc")
+                        | Q(admission_type="referred_from_otp_sam")
+                        | Q(admission_type="referred_from_otp_sam")
+                        | Q(admission_type="admission_sc_itp_otp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                transfer_sc_itp_otp=Case(
+                    When(
+                        Q(exit_type="transfer_to_sc_itp")
+                        | Q(exit_type="transferred_to_otp")
+                        | Q(exit_type="transfer_sc_itp_otp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                transfer_in_from_other_tsfp=Case(
+                    When(
+                        Q(exit_type="transfer_from_other_tsfp") | Q(exit_type="transfer_to_tsfp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                cured=Case(
+                    When(
+                        Q(exit_type="cured"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                death=Case(
+                    When(
+                        Q(exit_type="death"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                defaulter=Case(
+                    When(
+                        Q(exit_type="defaulter"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                non_respondent=Case(
+                    When(
+                        Q(exit_type="non_respondent"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+            )
+            .annotate(
+                muac_11_5_12_4=Sum(Cast("muac_11_5_12_4", FloatField())),
+                muac_above_12_5=Sum(Cast("muac_above_12_5", FloatField())),
+                muac_above_23=Sum(Cast("muac_above_23", FloatField())),
+                muac_under_11_5=Sum(Cast("muac_under_11_5", FloatField())),
+                muac_under_23=Sum(Cast("muac_under_23", FloatField())),
+                oedema=Sum(Cast("oedema", FloatField())),
+                whz_score_2=Sum(Cast("whz_score_2", FloatField())),
+                whz_score_3=Sum(Cast("whz_score_3", FloatField())),
+                whz_score_3_2=Sum(Cast("whz_score_3_2", FloatField())),
+                admission_sc_itp_otp=Sum(Cast("admission_sc_itp_otp", FloatField())),
+                transfer_to_otp=Sum(Cast("transfer_sc_itp_otp", FloatField())),
+                total_beneficiary_transfer_from_other_tsfp=Sum(Cast("transfer_from_other_tsfp", FloatField())),
+                transfer_to_tsfp=Sum(Cast("transfer_in_from_other_tsfp", FloatField())),
+                total_beneficiary_new_case=Sum(Cast("new_case", FloatField())),
+                total_beneficiary_relapse=Sum(Cast("relapse", FloatField())),
+                total_beneficiary_returned_referral=Sum(Cast("returned_referral", FloatField())),
+                total_beneficiary_returned_defaulter=Sum(Cast("returned_defaulter", FloatField())),
+                total_with_exit_type_defaulter=Sum(Cast("defaulter", FloatField())),
+                total_with_exit_type_cured=Sum(Cast("cured", FloatField())),
+            )
             .filter(account=account)
             .filter(org_unit__source_ref__isnull=False)
         )
+
         if org_unit_ids is not None and len(org_unit_ids) > 0:
             monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
@@ -1084,7 +1208,11 @@ class ETL:
                     for category in categories:
                         dataElement_by_category = dataElement.get(category)
                         dataElement_by_sub_category = dataElement_by_category
-                        if nutrition_programme == "TSFP":
+                        if (
+                            nutrition_programme == "TSFP"
+                            or nutrition_programme == "pregnant"
+                            or nutrition_programme == "breastfeeding"
+                        ):
                             dataElement_by_sub_category = dataElement.get("tsfp_reporting")
                         elif nutrition_programme == "OTP":
                             dataElement_by_sub_category = dataElement.get("otp_reporting")
@@ -1098,9 +1226,9 @@ class ETL:
                                     if dataElement_by_main_category is not None:
                                         dataValue = dataElement_by_main_category.get(sub_category)
                                         if sub_category == exit_type:
-                                            rows[sub_category] = rows["total_with_exit_type"]
+                                            rows[sub_category] = rows[f"total_with_exit_type_{sub_category}"]
                                         elif sub_category == admission_type:
-                                            rows[sub_category] = rows["total_beneficiary"]
+                                            rows[sub_category] = rows[f"total_beneficiary_{sub_category}"]
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": rows[sub_category]})
         dataValues = list(
@@ -1146,6 +1274,8 @@ class ETL:
                 json_u5_female_yellow=Cast(KeyTextTransform("u5_female_yellow", "json"), output_field=FloatField()),
                 json_u5_male_red=Cast(KeyTextTransform("u5_male_red", "json"), output_field=FloatField()),
                 json_u5_female_red=Cast(KeyTextTransform("u5_female_red", "json"), output_field=FloatField()),
+                json_u5_male_oedema=Cast(KeyTextTransform("u5_male_oedema", "json"), output_field=FloatField()),
+                json_u5_female_oedema=Cast(KeyTextTransform("u5_female_oedema", "json"), output_field=FloatField()),
                 json_pregnant_w_muac_gt_23=Cast(
                     KeyTextTransform("pregnant_w_muac_gt_23", "json"), output_field=FloatField()
                 ),

@@ -108,8 +108,21 @@ class AggregatedJourney:
 
     def aggregated_rows(self, journeys):
         row = {}
-        row["total_beneficiary"] = self.aggregate_by_field_name(journeys, "beneficiary_with_admission_type")
+        row["total_beneficiary_new_case"] = self.aggregate_by_field_name(journeys, "total_beneficiary_new_case")
+        row["total_beneficiary_relapse"] = self.aggregate_by_field_name(journeys, "total_beneficiary_relapse")
+        row["total_beneficiary_returned_defaulter"] = self.aggregate_by_field_name(
+            journeys, "total_beneficiary_returned_defaulter"
+        )
+        row["total_beneficiary_returned_referral"] = self.aggregate_by_field_name(
+            journeys, "total_beneficiary_returned_referral"
+        )
         row["total_with_exit_type"] = self.aggregate_by_field_name(journeys, "beneficiary_with_exit_type")
+        row["total_with_exit_type_cured"] = self.aggregate_by_field_name(journeys, "total_with_exit_type_cured")
+        row["total_with_exit_type_death"] = self.aggregate_by_field_name(journeys, "total_with_exit_type_death")
+        row["total_with_exit_type_defaulter"] = self.aggregate_by_field_name(journeys, "total_with_exit_type_defaulter")
+        row["total_with_exit_type_non_respondent"] = self.aggregate_by_field_name(
+            journeys, "total_with_exit_type_non_respondent"
+        )
         row["muac_under_11_5"] = self.aggregate_by_field_name(journeys, "muac_under_11_5")
         row["muac_11_5_12_4"] = self.aggregate_by_field_name(journeys, "muac_11_5_12_4")
         row["muac_above_12_5"] = self.aggregate_by_field_name(journeys, "muac_above_12_5")
@@ -122,4 +135,6 @@ class AggregatedJourney:
         row["admission_sc_itp_otp"] = self.aggregate_by_field_name(journeys, "admission_sc_itp_otp")
         row["transfer_from_other_tsfp"] = self.aggregate_by_field_name(journeys, "transfer_from_other_tsfp")
         row["transfer_sc_itp_otp"] = self.aggregate_by_field_name(journeys, "transfer_sc_itp_otp")
+        row["transfer_in_from_other_tsfp"] = self.aggregate_by_field_name(journeys, "transfer_in_from_other_tsfp")
+
         return row

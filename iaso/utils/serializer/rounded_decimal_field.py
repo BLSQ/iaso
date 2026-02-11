@@ -26,9 +26,11 @@ class RoundedDecimalField(serializers.DecimalField):
             # 123.45
             total_digits = len(digittuple)
             whole_digits = total_digits - abs(exponent)
+            # total_digits will vary based on how much we round. Therefore, we should validate on that number.
+            total_digits = whole_digits + min(self.decimal_places, abs(exponent))
         else:
             # 0.001234
-            total_digits = abs(exponent)
+            total_digits = min(self.decimal_places, abs(exponent))
             whole_digits = 0
 
         if self.max_whole_digits is not None and whole_digits > self.max_whole_digits:

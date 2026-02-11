@@ -35,8 +35,8 @@ logger = logging.getLogger(__name__)
 
 
 class ETL:
-    def __init__(self, types=None):
-        self.types = types
+    def __init__(self, entity_type=None):
+        self.entity_type = entity_type
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
@@ -49,12 +49,12 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.prefetch_related("account").filter(code__in=self.types).first()
+        entity_type = EntityType.objects.prefetch_related("account").filter(code=self.entity_type).first()
         account = entity_type.account
         return account
 
     def get_updated_data(self, updated_at=None):
-        entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+        entities = Instance.objects.filter(entity__entity_type__code=self.entity_type)
         if updated_at is not None:
             entities = entities.filter(updated_at__gte=updated_at)
         return entities
@@ -74,9 +74,9 @@ class ETL:
         return list(set(beneficiary_ids))
 
     def retrieve_entities(self, entity_ids):
-        steps_id = ETL().steps_to_exclude()
+        steps_id = self.steps_to_exclude()
         beneficiaries = (
-            Instance.objects.filter(entity__entity_type__code__in=self.types)
+            Instance.objects.filter(entity__entity_type__code=self.entity_type)
             .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
@@ -630,9 +630,9 @@ class ETL:
                 visit = visits[index]
                 for sub_step in step:
                     current_step = None
-                    given_assistance = ETL().map_assistance_step(sub_step, [])
+                    given_assistance = self.map_assistance_step(sub_step, [])
                     for assistance in given_assistance:
-                        current_step = ETL().assistance_to_step(
+                        current_step = self.assistance_to_step(
                             assistance,
                             visit,
                             sub_step["instance_id"],
@@ -734,7 +734,7 @@ class ETL:
                 if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
-                current_journey = ETL().journey_Formatter(
+                current_journey = self.journey_Formatter(
                     visit,
                     admission_form,
                     anthropometric_visit_forms,

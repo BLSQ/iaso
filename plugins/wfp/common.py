@@ -69,9 +69,7 @@ class ETL:
         entities = self.get_updated_data(updated_at)
         if updated_at is not None:
             entities = entities.filter(updated_at__gte=updated_at)
-        entities = entities.values("entity_id").distinct()
-        beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
-        return list(set(beneficiary_ids))
+        return entities.distinct().values_list("entity_id", flat=True)
 
     def retrieve_entities(self, entity_ids):
         steps_id = self.steps_to_exclude()

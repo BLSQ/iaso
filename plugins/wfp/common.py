@@ -61,9 +61,7 @@ class ETL:
 
     def get_org_unit_ids_with_updated_data(self, updated_at=None):
         entities = self.get_updated_data(updated_at)
-        org_units = entities.values("org_unit_id").distinct()
-        org_unit_ids = list(map(lambda org_unit: org_unit["org_unit_id"], org_units))
-        return list(set(org_unit_ids))
+        return entities.distinct().values_list("org_unit_id", flat=True)
 
     def get_updated_entity_ids(self, updated_at=None):
         entities = self.get_updated_data(updated_at)
@@ -72,7 +70,6 @@ class ETL:
         return entities.distinct().values_list("entity_id", flat=True)
 
     def retrieve_entities(self, entity_ids):
-        steps_id = self.steps_to_exclude()
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code=self.entity_type)
             .filter(entity__id__in=entity_ids)
@@ -80,7 +77,6 @@ class ETL:
             .filter(form__isnull=False)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
-            .exclude(id__in=steps_id)
             .select_related("entity")
             .prefetch_related("entity", "form", "org_unit")
             .values(
@@ -104,24 +100,6 @@ class ETL:
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
         return list(map(lambda x: x["entity_id"], existing_beneficiaries))
-
-    def instances_to_exclude(self):
-        journey = Journey.objects.values("instance_id").distinct()
-        return list(map(lambda x: x["instance_id"], journey))
-
-    def visits_to_exclude(self):
-        instances_id = self.instances_to_exclude()
-        visits = Visit.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
-        visits_id = list(map(lambda x: x["instance_id"], visits))
-        [instances_id.append(visit_id) for visit_id in visits_id if visit_id not in instances_id]
-        return instances_id
-
-    def steps_to_exclude(self):
-        instances_id = self.visits_to_exclude()
-        steps = Step.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
-        steps_id = list(map(lambda x: x["instance_id"], steps))
-        [instances_id.append(step_id) for step_id in steps_id if step_id not in instances_id]
-        return instances_id
 
     def program_mapper(self, visit):
         program = None

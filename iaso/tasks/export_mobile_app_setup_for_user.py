@@ -34,7 +34,8 @@ from django.utils.translation import gettext as _
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from beanstalk_worker import task_decorator
-from iaso.models import Project
+from iaso.models import Form, Project
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.tasks.utils.mobile_app_setup_api_calls import API_CALLS
 from iaso.utils.encryption import encrypt_file
 from iaso.utils.iaso_api_client import IasoClient
@@ -239,6 +240,12 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
 
     paginated = call.get("paginated", False)
 
+    # Trypelim registration form
+    if is_trypelim_plugin_active():
+        from plugins.trypelim.constants import REGISTRATION_FORM_ID
+
+        registration_form_id = Form.objects.get(form_id=REGISTRATION_FORM_ID).id
+
     # Determine if we're using cursor pagination and need to maintain
     # compatibility with the api responses from offset pagination
     cursor_shim = call.get("cursor_pagination", {}).get("shim", False)
@@ -295,12 +302,18 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
                 record["file"] = "formattachments/" + urlparse(record["file"]).path.split("/form_attachments/")[-1]
 
         # trypelim-specific
-        # SLEEP-1698: set `visited_at` attribute to null so that the instances are excluded from filters
-        if call["filename"] == "entities" and options.get("strip_visited_at", False) and "results" in result:
+        # SLEEP-1698: reset session-specific fields used in the mobile app filters.
+        if (
+            is_trypelim_plugin_active()
+            and call["filename"] == "entities"
+            and options.get("strip_visited_at", False)
+            and "results" in result
+        ):
             for entity in result["results"]:
                 for instance in entity.get("instances", []):
-                    if "visited_at" in instance.get("json", []):
-                        instance["json"]["visited_at"] = None
+                    if instance.get("form_id") == registration_form_id and instance.get("json"):
+                        resets = {k: v for k, v in SESSION_RESET_FIELDS.items() if k in instance["json"]}
+                        instance["json"].update(resets)
 
         with zipf.open(filename) as json_file:
             json.dump(result, json_file)
@@ -423,3 +436,27 @@ def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
     s3_object_name = "export-files/" + dest_name
     upload_file_to_s3(encrypted_file_path, object_name=s3_object_name)
     return s3_object_name
+
+
+# Trypelim-specific
+# These fields are reset to their default value to set
+# the mobile app filters to 0.
+SESSION_RESET_FIELDS = {
+    "is_ctcwoo_positive": "0",
+    "is_ctcwoo_negative": "0",
+    "is_pl_stad_positive": "0",
+    "is_pl_stad_negative": "0",
+    "is_confirmed_positive": "0",
+    "is_confirmed_negative": "0",
+    "is_pg_negative": "0",
+    "is_pg_positive": "0",
+    "is_maect_negative": "0",
+    "is_maect_positive": "0",
+    "is_plresearch_negative": "0",
+    "is_plresearch_positive": "0",
+    "visited_at": "0",
+    "is_absent": "0",
+    "is_suspect": "0",
+    "has_clinical_signs": "0",
+    "is_not_done": "1",
+}

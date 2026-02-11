@@ -220,13 +220,14 @@ export type SaveOrgUnitPayload = Omit<Partial<OrgUnit>, 'groups'> & {
 export const useSaveOrgUnit = (
     onSuccess?: () => void,
     invalidateQueryKey?: string[],
+    successMessage?: any,
 ) => {
     return useSnackMutation<OrgUnit, unknown, SaveOrgUnitPayload, unknown>(
         body =>
             body.id
                 ? patchRequest(`/api/orgunits/${body.id}/`, body)
                 : postRequest('/api/orgunits/create_org_unit/', body),
-        MESSAGES.saveOrgUnitSuccesfull,
+        successMessage || MESSAGES.saveOrgUnitSuccesfull,
         MESSAGES.saveOrgUnitError,
         invalidateQueryKey,
         { onSuccess },

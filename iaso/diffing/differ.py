@@ -29,19 +29,25 @@ class Differ:
         self.iaso_logger = logger
 
     def load_pyramid(
-        self, version, validation_status=None, top_org_unit=None, org_unit_types=None, org_unit_group=None
+        self,
+        version,
+        validation_status=None,
+        top_org_unit=None,
+        org_unit_types=None,
+        org_unit_group=None,
+        ignore_groups=False,
     ):
         self.iaso_logger.info(f"loading pyramid {version.data_source} {version} {top_org_unit} {org_unit_types}")
         queryset = (
-            OrgUnit.objects.prefetch_related("groups")
-            .prefetch_related("groups__group_sets")
-            .prefetch_related("parent")
+            OrgUnit.objects.prefetch_related("parent")
             .prefetch_related("parent__parent")
             .prefetch_related("parent__parent__parent")
             .prefetch_related("parent__parent__parent__parent")
             .select_related("org_unit_type")
             .filter(version=version)
         )
+        if not ignore_groups:
+            queryset = queryset.prefetch_related("groups").prefetch_related("groups__group_sets")
         if validation_status:
             queryset = queryset.filter(validation_status=validation_status)
         if top_org_unit:
@@ -80,6 +86,7 @@ class Differ:
             top_org_unit=top_org_unit,
             org_unit_types=org_unit_types,
             org_unit_group=org_unit_group,
+            ignore_groups=ignore_groups,
         )
         orgunit_refs = self.load_pyramid(
             version_ref,
@@ -87,6 +94,7 @@ class Differ:
             top_org_unit=top_org_unit_ref,
             org_unit_types=org_unit_types_ref,
             org_unit_group=org_unit_group_ref,
+            ignore_groups=ignore_groups,
         )
 
         # Fetching IDs to restrict groups to the ones that are in the pyramid

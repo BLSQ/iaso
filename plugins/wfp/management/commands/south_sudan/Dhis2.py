@@ -16,15 +16,16 @@ class Dhis2:
         results = []
         for dataValueSet in monthly_data:
             synced_data = Dhis2SyncResults()
+            dataSet = {
+                "dataSet": dataValueSet["dataSet"],
+                "period": dataValueSet["period"],
+                "orgUnit": dataValueSet["orgUnit"],
+                "dataValues": dataValueSet["dataValues"],
+            }
             try:
                 response = api.post(
                     "dataValueSets",
-                    data={
-                        "dataSet": dataValueSet["dataSet"],
-                        "period": dataValueSet["period"],
-                        "orgUnit": dataValueSet["orgUnit"],
-                        "dataValues": dataValueSet["dataValues"],
-                    },
+                    data=dataSet,
                 ).json()
 
             except RequestException as dhis2_exception:
@@ -42,6 +43,8 @@ class Dhis2:
             synced_data.org_unit_id = dataValueSet["orgUnitId"]
             synced_data.response = response
             synced_data.status = response.get("status")
+            synced_data.json = dataSet
+
             if response.get("response") is not None:
                 synced_data.status = response["response"]["status"]
             synced_data.account = account

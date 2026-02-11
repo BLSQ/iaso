@@ -165,6 +165,7 @@ class Dhis2SyncResults(models.Model):
     month = models.CharField(max_length=8, null=True, blank=True)
     year = models.CharField(max_length=6, null=True, blank=True)
     response = models.JSONField()
+    json = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -182,6 +183,8 @@ class ScreeningData(models.Model):
     u5_female_yellow = models.FloatField(null=True)
     u5_male_red = models.FloatField(null=True)
     u5_female_red = models.FloatField(null=True)
+    u5_male_oedema = models.FloatField(null=True)
+    u5_female_oedema = models.FloatField(null=True)
     pregnant_w_muac_gt_23 = models.FloatField(null=True)
     pregnant_w_muac_lte_23 = models.FloatField(null=True)
     lactating_w_muac_gt_23 = models.FloatField(null=True)

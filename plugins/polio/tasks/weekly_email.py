@@ -17,31 +17,13 @@ logger = getLogger(__name__)
 #  country has completed (activity done as per SOPs) and is now looking forward to (Next activity on SOPs).
 
 
-def send_notification_email(campaign):
-    country = campaign.country
-    domain = settings.DNS_DOMAIN
-    from_email = settings.DEFAULT_FROM_EMAIL
-
-    if not (campaign.obr_name and country and campaign.deleted_at is None):
-        logger.warning(f"Campaign {campaign} skipped because of missing fields")
-        return False
+def compute_values(campaign):
     try:
-        cug = CountryUsersGroup.objects.get(country=country)
-        lang = cug.language
-    except CountryUsersGroup.DoesNotExist:
-        return False
-    users = cug.users.all()
-    emails = [user.email for user in users if user.email]
-    if not emails:
-        return False
-
-    try:
-        first_round = campaign.rounds.earliest("number")
         next_round = campaign.rounds.filter(started_at__gte=now().date()).order_by("started_at").first()
 
     except Round.DoesNotExist:
-        first_round = None
         next_round = None
+        print("RND NOT FOUND")
 
     if next_round:
         preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
@@ -69,12 +51,64 @@ def send_notification_email(campaign):
         next_round_number = "N/A"
         next_round_preparedness_spreadsheet_url = "N/A"
         next_round_days_left = "N/A"
-
-    c = campaign
-    url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
-
-    # format thousands
     target_population = f"{next_round.target_population:,}" if next_round and next_round.target_population else ""
+    cvdpv2_notified_at = campaign.cvdpv2_notified_at
+    vaccines_extended = campaign.vaccines_extended
+    risk_assessment_rrt_oprtt_approval_at = campaign.risk_assessment_rrt_oprtt_approval_at
+    submitted_to_rrt_at_WFEDITABLE = campaign.submitted_to_rrt_at_WFEDITABLE
+    obr_name = campaign.obr_name
+
+    return (
+        prep_national,
+        prep_district,
+        prep_regional,
+        next_round_date,
+        next_round_number,
+        next_round_days_left,
+        next_round_preparedness_spreadsheet_url,
+        target_population,
+        cvdpv2_notified_at,
+        vaccines_extended,
+        risk_assessment_rrt_oprtt_approval_at,
+        submitted_to_rrt_at_WFEDITABLE,
+        obr_name,
+    )
+
+
+def send_notification_email(campaign):
+    country = campaign.country
+    domain = settings.DNS_DOMAIN
+    from_email = settings.DEFAULT_FROM_EMAIL
+
+    if not (campaign.obr_name and country and campaign.deleted_at is None):
+        logger.warning(f"Campaign {campaign} skipped because of missing fields")
+        return False
+    try:
+        cug = CountryUsersGroup.objects.get(country=country)
+        lang = cug.language
+    except CountryUsersGroup.DoesNotExist:
+        return False
+    users = cug.users.all()
+    emails = [user.email for user in users if user.email]
+    if not emails:
+        return False
+    (
+        prep_national,
+        prep_district,
+        prep_regional,
+        next_round_date,
+        next_round_number,
+        next_round_days_left,
+        next_round_preparedness_spreadsheet_url,
+        target_population,
+        cvdpv2_notified_at,
+        vaccines_extended,
+        risk_assessment_rrt_oprtt_approval_at,
+        submitted_to_rrt_at_WFEDITABLE,
+        obr_name,
+    ) = compute_values(campaign)
+
+    url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
 
     # French
 
@@ -85,14 +119,14 @@ Statut hebdomadaire: Il reste {next_round_days_left} jours avant le début du pr
 
 Veillez à mettre à jour le formulaire ODK et en particulier l’OBR name, le numéro de Round, et les données géographiques avant le début du prochain Round. Merci.
 
-Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles dans la plateforme. Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
+Ci-dessous un résumé des informations de la campagne {obr_name} disponibles dans la plateforme. Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
 
-* Date de notification              : {c.cvdpv2_notified_at}
-* Date du prochain round (Round {next_round_number})          : {next_round_date if campaign.rounds else None}
-* Type de vaccin                    : {c.vaccines_extended}
+* Date de notification              : {cvdpv2_notified_at}
+* Date du prochain round (Round {next_round_number})          : {next_round_date}
+* Type de vaccin                    : {vaccines_extended}
 * Population cible                  : {target_population} 
-* RA Date de l'approbation RRT/ORPG  : {c.risk_assessment_rrt_oprtt_approval_at}
-* Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
+* RA Date de l'approbation RRT/ORPG  : {risk_assessment_rrt_oprtt_approval_at}
+* Date de soumission du budget      : {submitted_to_rrt_at_WFEDITABLE}
 * Lien vers la preparedness google sheet du Round {next_round_number} : {next_round_preparedness_spreadsheet_url}
 * Prep. national                 : {prep_national}
 * Prep. régional                 : {prep_regional}
@@ -109,14 +143,14 @@ Message automatisé du suivi chronologique.
 
 Estado semanal: Faltam {next_round_days_left} dias para o início da próxima ronda.
 Por favor, actualize os formulários ODK, o nome OBR, o número da ronda e a informação geográfica antes da ronda. Obrigado pela vossa atenção.
-Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
+Segue em baixo um resumo das informações da campanha {obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
 
-* Data de notificação: {c.cvdpv2_notified_at}
-* Proxima ronda (Round {next_round_number}) data: {next_round_date if campaign.rounds else None}
-* Tipo de vacina: {c.vaccines_extended}
+* Data de notificação: {cvdpv2_notified_at}
+* Proxima ronda (Round {next_round_number}) data: {next_round_date}
+* Tipo de vacina: {vaccines_extended}
 * População-alvo: {target_population}
-* RA Data de aprovação RRT/ORPG: {c.risk_assessment_rrt_oprtt_approval_at}
-* Data de envio do orçamento:  {c.submitted_to_rrt_at_WFEDITABLE}
+* RA Data de aprovação RRT/ORPG: {risk_assessment_rrt_oprtt_approval_at}
+* Data de envio do orçamento:  {submitted_to_rrt_at_WFEDITABLE}
 * Link to {next_round_number} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
 * Prep. nacional: {prep_national}
 * Prep. regional: {prep_regional}
@@ -132,16 +166,16 @@ Mensagem automatizada do rastreador de cronograma.
 
 Weekly status update: Today is day {next_round_days_left} to Round {next_round_number} start date.
 Please update the ODK forms OBR name, Round number and Geographic information accordingly ahead of the Round. Thank you.
-Below is the summary of the campaign {c.obr_name}. For more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
+Below is the summary of the campaign {obr_name}. For more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
 If there are missing data or dates; visit {url} to update
 
-* Notification date              : {c.cvdpv2_notified_at}
-* Next round (Round {next_round_number}) date: {next_round_date if campaign.rounds else None}
-* Vaccine Type                   : {c.vaccines_extended}
+* Notification date              : {cvdpv2_notified_at}
+* Next round (Round {next_round_number}) date: {next_round_date}
+* Vaccine Type                   : {vaccines_extended}
 * Target population              : {target_population} 
-* RA RRT/ORPG approval date      : {c.risk_assessment_rrt_oprtt_approval_at}
-* Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
-* Link to Round {next_round_number if next_round else None} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
+* RA RRT/ORPG approval date      : {risk_assessment_rrt_oprtt_approval_at}
+* Date Budget Submitted          : {submitted_to_rrt_at_WFEDITABLE}
+* Link to Round {next_round_number} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
 * Prep. national                 : {prep_national}
 * Prep. regional                 : {prep_regional}
 * Prep. district                 : {prep_district}

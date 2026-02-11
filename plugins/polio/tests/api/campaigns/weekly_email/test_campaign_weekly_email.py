@@ -1,40 +1,24 @@
 import datetime
 
-from typing import List
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.utils.timezone import now
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from iaso import models as m
 from iaso.models import Account
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
-from plugins.polio.models import Campaign, ReasonForDelay, Round
+from plugins.polio.models import Campaign, CampaignScope, ReasonForDelay, Round
 from plugins.polio.preparedness.spreadsheet_manager import *
-from plugins.polio.tasks.weekly_email import send_notification_email
+from plugins.polio.tasks.weekly_email import compute_values, send_notification_email
 
 
 class WeeklyEMailTestCase(APITestCase):
-    data_source: m.DataSource
-    now: datetime.datetime
-    source_version_1: m.SourceVersion
-    source_version_2: m.SourceVersion
-    other_account: m.Account
-    jedi_squad: m.OrgUnitType
-    user: User
-    org_unit: m.OrgUnit
-    child_org_unit: m.OrgUnit
-    org_units: List[m.OrgUnit]
-    recipient: User
-    account: m.Account
-
     @classmethod
     def setUpTestData(cls) -> None:
         cls.data_source = m.DataSource.objects.create(name="Default source")
-
-        cls.now = now()
-
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
@@ -99,7 +83,7 @@ class WeeklyEMailTestCase(APITestCase):
             detection_status="PENDING",
             virus="ABC",
             country=self.org_unit,
-            onset_at=now(),
+            onset_at=timezone.now(),
             account=self.account,
         )
 
@@ -108,7 +92,7 @@ class WeeklyEMailTestCase(APITestCase):
             detection_status="PENDING",
             virus="ABC",
             country=self.org_unit,
-            onset_at=now(),
+            onset_at=timezone.now(),
             account=self.account,
         )
 
@@ -134,7 +118,7 @@ class WeeklyEMailTestCase(APITestCase):
             detection_status="PENDING",
             virus="ABC",
             country=self.org_unit,
-            onset_at=now(),
+            onset_at=timezone.now(),
             account=self.account,
         )
 
@@ -143,7 +127,7 @@ class WeeklyEMailTestCase(APITestCase):
             detection_status="PENDING",
             virus="ABC",
             country=self.org_unit,
-            onset_at=now(),
+            onset_at=timezone.now(),
             account=self.account,
         )
 
@@ -164,23 +148,19 @@ class WeeklyEMailTestCase(APITestCase):
         self.assertTrue(send_notification_email(campaign_active))
 
     def test_weekly_mail_content_active_campaign(self):
-        round = Round.objects.create(
-            started_at=datetime.date(2022, 9, 12),
-            number=1,
-        )
+        round1 = Round.objects.create(started_at=datetime.date(2022, 9, 12), number=1, target_population=100)
 
         campaign_active = Campaign(
             obr_name="active campaign",
             detection_status="PENDING",
             virus="cVDPV2",
             country=self.org_unit,
-            onset_at=now().date(),
+            onset_at=timezone.now().date(),
             account=self.account,
             cvdpv2_notified_at=datetime.date(2022, 9, 12),
         )
 
-        round.campaign = campaign_active
-        campaign_active.rounds.set([round])
+        campaign_active.rounds.set([round1])
 
         country_user_grp = CountryUsersGroup(country=self.org_unit)
         country_user_grp.save()
@@ -192,4 +172,81 @@ class WeeklyEMailTestCase(APITestCase):
         self.recipient.save()
         campaign_active.save()
 
-        self.assertEqual(send_notification_email(campaign_active), True)
+        self.assertTrue(send_notification_email(campaign_active))
+
+    @patch("plugins.polio.tasks.weekly_email.now")
+    def test_computed_values(self, mock_now):
+        now = timezone.make_aware(datetime.datetime(2022, 10, 13))
+        mock_now.return_value = now
+        round1 = Round.objects.create(
+            started_at=datetime.date(2022, 9, 12),
+            number=1,
+            target_population=100,
+            preparedness_spreadsheet_url="https://example.com/prep-round1",
+        )
+        round2 = Round.objects.create(
+            started_at=datetime.date(2022, 10, 20),
+            number=2,
+            target_population=99,
+            preparedness_spreadsheet_url="https://example.com/prep-round2",
+        )
+
+        campaign_active = Campaign(
+            obr_name="active campaign",
+            detection_status="PENDING",
+            virus="cVDPV2",
+            country=self.org_unit,
+            onset_at=timezone.now().date(),
+            account=self.account,
+            cvdpv2_notified_at=datetime.date(2022, 9, 12),
+            risk_assessment_rrt_oprtt_approval_at=datetime.date(2022, 9, 15),
+            submitted_to_rrt_at_WFEDITABLE=datetime.date(2022, 9, 20),
+        )
+
+        campaign_active.rounds.set([round1, round2])
+        campaign_active.save()
+
+        # Create a campaign scope with a vaccine for vaccines_extended
+        campaign_scope = CampaignScope.objects.create(campaign=campaign_active, vaccine="mOPV2")
+        campaign_scope.group.org_units.set([self.child_org_unit])
+
+        country_user_grp = CountryUsersGroup(country=self.org_unit)
+        country_user_grp.save()
+
+        users = User.objects.all()
+        country_user_grp.users.set(users)
+
+        (
+            prep_national,
+            prep_district,
+            prep_regional,
+            next_round_date,
+            next_round_number,
+            next_round_days_left,
+            next_round_preparedness_spreadsheet_url,
+            target_population,
+            cvdpv2_notified_at,
+            vaccines_extended,
+            risk_assessment_rrt_oprtt_approval_at,
+            submitted_to_rrt_at_WFEDITABLE,
+            obr_name,
+        ) = compute_values(campaign_active)
+
+        # All values are from round 2 (not round 1)
+        self.assertEqual(next_round_date, round2.started_at)
+        self.assertEqual(next_round_number, round2.number)
+        self.assertEqual(target_population, str(round2.target_population))
+        self.assertEqual(next_round_days_left, 7)  # 2022-10-20 - 2022-10-13 = 7 days
+        self.assertEqual(next_round_preparedness_spreadsheet_url, round2.preparedness_spreadsheet_url)
+
+        # Preparedness values are "N/A" since we don't have any values in cache
+        self.assertEqual(prep_national, "N/A")
+        self.assertEqual(prep_regional, "N/A")
+        self.assertEqual(prep_district, "N/A")
+
+        # Campaign-level fields
+        self.assertEqual(cvdpv2_notified_at, campaign_active.cvdpv2_notified_at)
+        self.assertEqual(vaccines_extended, campaign_active.vaccines_extended)
+        self.assertEqual(risk_assessment_rrt_oprtt_approval_at, campaign_active.risk_assessment_rrt_oprtt_approval_at)
+        self.assertEqual(submitted_to_rrt_at_WFEDITABLE, campaign_active.submitted_to_rrt_at_WFEDITABLE)
+        self.assertEqual(obr_name, campaign_active.obr_name)

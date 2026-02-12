@@ -158,22 +158,48 @@ def etl_ssd(all_data=None):
 
     Screening().run(child_account, last_success_task_date)
 
-    Screening().run(child_account, last_success_task_date)
+    # print("len(connection.queries)", len(connection.queries))  # Uncomment this line to see the number of SQL queries executed
+    # print(connection.queries) # Uncomment this line to see the SQL queries executed
 
-    external_credential = ExternalCredentials.objects.filter(account=pbwg_account).first()
+
+@shared_task()
+def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
+    from django_celery_results.models import TaskResult
+
+    last_success_task = TaskResult.objects.filter(
+        task_name="plugins.wfp.tasks.ssd_aggregate_and_push_data_to_dhis2", status="SUCCESS"
+    ).first()
+    if last_success_task:
+        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+    else:
+        last_success_task_date = None
+
+    # Allow to re-run on the whole data
+    if all_data is not None:
+        last_success_task_date = None
+
+    etl = ETL("ssd_under5")
+    account = etl.account_related_to_entity_type()
+    org_units_with_updated_data = etl.get_org_unit_ids_with_updated_data(last_success_task_date)
+
+    external_credential = ExternalCredentials.objects.filter(account=account).first()
     if external_credential is not None and (
         external_credential.url is not None
         and external_credential.login is not None
         and external_credential.password is not None
     ):
-        etl.aggregating_data_to_push_to_dhis2(pbwg_account, org_units_with_updated_data)
-        pushed_data = Dhis2().save_dhis2_sync_results(entity_type_pbwg_code, external_credential)
+        logger.info(
+            f"----------------------------- Aggregating monthly data to push to DHIS2 for {len(org_units_with_updated_data)} org unit on {account} -----------------------------"
+        )
+        monthly_data = etl.aggregating_data_to_push_to_dhis2(account, org_units_with_updated_data)
+        pushed_data = Dhis2().save_dhis2_sync_results(external_credential, account, monthly_data)
         logger.info(
             f"----------------------------- Pushed to DHIS2 on U5 and PBW for {len(pushed_data)} rows aggregated per year and month -----------------------------"
         )
-
-    # print("len(connection.queries)", len(connection.queries))  # Uncomment this line to see the number of SQL queries executed
-    # print(connection.queries) # Uncomment this line to see the SQL queries executed
+    else:
+        logger.info(
+            f"----------------------------- No DHIS2 credentials found for {account} -----------------------------"
+        )
 
 
 @shared_task()

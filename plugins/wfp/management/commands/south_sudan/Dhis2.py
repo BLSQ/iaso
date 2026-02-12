@@ -2,15 +2,11 @@ import json
 
 from dhis2 import Api, RequestException
 
-from plugins.wfp.common import ETL
-from plugins.wfp.models import *
+from plugins.wfp.models import Dhis2SyncResults
 
 
 class Dhis2:
-    def sync_data(self, type, external_credential):
-        entity_type = ETL([type])
-        account = entity_type.account_related_to_entity_type()
-        monthly_data = entity_type.aggregating_data_to_push_to_dhis2(account)
+    def sync_data(self, external_credential, account, monthly_data):
         api = Api(external_credential.url, external_credential.login, external_credential.password)
 
         results = []
@@ -49,6 +45,6 @@ class Dhis2:
 
         return results
 
-    def save_dhis2_sync_results(self, type, external_credential):
-        results = self.sync_data(type, external_credential)
+    def save_dhis2_sync_results(self, external_credential, account, monthly_data):
+        results = self.sync_data(external_credential, account, monthly_data)
         return Dhis2SyncResults.objects.bulk_create(results)

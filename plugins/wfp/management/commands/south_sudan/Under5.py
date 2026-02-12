@@ -3,6 +3,7 @@ import logging
 from itertools import groupby
 from operator import itemgetter
 
+from iaso.models import Task
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
@@ -35,11 +36,12 @@ class Under5:
         initial_date = None
         current_date = None
         duration = 0
+        etl = ETL()
         for entity_id, entity in instances_by_entity:
             instances.append({"entity_id": entity_id, "visits": [], "journey": []})
             for visit in entity:
                 current_record = visit.get("json", None)
-                instances[i]["program"] = ETL().program_mapper(current_record)
+                instances[i]["program"] = etl.program_mapper(current_record)
                 if current_record is not None and current_record != None:
                     if current_record.get("guidelines"):
                         instances[i]["guidelines"] = current_record.get("guidelines")
@@ -53,7 +55,7 @@ class Under5:
                         current_record.get("age_entry", None) is not None
                         and current_record.get("age_entry", None) != ""
                     ):
-                        calculated_date = ETL().calculate_birth_date(current_record)
+                        calculated_date = etl.calculate_birth_date(current_record)
                         instances[i]["birth_date"] = calculated_date
                     if current_record.get("gender") is not None:
                         gender = current_record.get("gender", "")
@@ -101,7 +103,7 @@ class Under5:
                         duration = (current_date - initial_date).days
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
 
-                    weight = ETL().compute_gained_weight(initial_weight, current_weight, duration)
+                    weight = etl.compute_gained_weight(initial_weight, current_weight, duration)
                     current_record["end_date"] = current_date.strftime("%Y-%m-%d")
                     current_record["weight_gain"] = weight["weight_gain"]
                     current_record["weight_loss"] = weight["weight_loss"]
@@ -134,7 +136,7 @@ class Under5:
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
-                    and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
+                    and len(etl.admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
                 instances,
             )
@@ -142,14 +144,16 @@ class Under5:
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
+        etl = ETL()
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
         if len(visit_nutrition_program) > 0:
-            current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
-        journey = ETL().entity_journey_mapper(visits, ANTHROPOMETRIC_FOLLOWUP_FORMS, admission_form, current_journey)
+            current_journey["nutrition_programme"] = etl.program_mapper(visit_nutrition_program[0])
+        journey = etl.entity_journey_mapper(visits, ANTHROPOMETRIC_FOLLOWUP_FORMS, admission_form, current_journey)
         return journey
 
     def save_journey(self, beneficiary, record):
         journey = Journey()
+        etl = ETL()
         journey.initial_weight = record.get("initial_weight", None)
 
         # Calculate the weight gain only for cured and Transfer from OTP to TSFP cases!
@@ -162,30 +166,33 @@ class Under5:
             journey.weight_gain = record.get("weight_gain", 0)
             journey.weight_loss = record.get("weight_loss", 0)
 
-        return ETL().save_entity_journey(journey, beneficiary, record, "U5")
+        return etl.save_entity_journey(journey, beneficiary, record, "U5")
 
-    def run(self, type, updated_beneficiaries):
-        entity_type = ETL([type])
-        account = entity_type.account_related_to_entity_type()
-        beneficiaries = entity_type.retrieve_entities(updated_beneficiaries)
+    def run(self, type, updated_beneficiaries, task_name):
+        etl_type = ETL(type)
+        account = etl_type.account_related_to_entity_type()
+        beneficiaries = etl_type.retrieve_entities(updated_beneficiaries)
         pages = beneficiaries.page_range
 
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")
+
+        etl = ETL()
 
         for page in pages:
             entities = sorted(
                 list(beneficiaries.page(page).object_list),
                 key=itemgetter("entity_id"),
             )
-            existing_beneficiaries = ETL().existing_beneficiaries()
+            existing_beneficiaries = etl.existing_beneficiaries()
             instances = self.group_visit_by_entity(entities)
             all_steps = []
             all_visits = []
             all_journeys = []
             all_beneficiaries = []
             for index, instance in enumerate(instances):
+                current_entity_id = instance["entity_id"]
                 logger.info(
-                    f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
+                    f"---------------------------------------- Beneficiary N° {(index + 1)} {current_entity_id}-----------------------------------"
                 )
                 instance["journey"] = self.journeyMapper(
                     instance["visits"],
@@ -213,14 +220,14 @@ class Under5:
                         if len(journey_instance["visits"]) > 0:
                             journey = self.save_journey(beneficiary, journey_instance)
                             all_journeys.append(journey)
-                            visits = ETL().save_visit(journey_instance["visits"], journey)
+                            visits = etl.save_visit(journey_instance["visits"], journey)
                             all_visits.extend(visits)
                             logger.info(f"Inserted {len(visits)} Visits")
-                            grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                            grouped_steps = etl.get_admission_steps(journey_instance["steps"])
                             admission_step = grouped_steps[0]
 
-                            followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
-                            steps = ETL().save_steps(visits, followUpVisits)
+                            followUpVisits = etl.group_followup_steps(grouped_steps, admission_step)
+                            steps = etl.save_steps(visits, followUpVisits)
                             all_steps.extend(steps)
                             logger.info(f"Inserted {len(steps)} Steps")
                         else:
@@ -228,7 +235,7 @@ class Under5:
                     logger.info(
                         "---------------------------------------------------------------------------------------------\n\n"
                     )
-            Beneficiary.objects.bulk_create(all_beneficiaries)
-            Journey.objects.bulk_create(all_journeys)
-            Visit.objects.bulk_create(all_visits)
-            Step.objects.bulk_create(all_steps)
+            task = Task(name=f"{task_name}  on Page {page} for {type}", account=account, status="QUEUED")
+            etl.save_analytics_data(
+                all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task
+            )

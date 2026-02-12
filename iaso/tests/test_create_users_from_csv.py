@@ -125,7 +125,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
-        with self.assertNumQueries(38):
+        with self.assertNumQueries(37):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         users = User.objects.all()
@@ -159,7 +159,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(file_upload.default_teams.count(), 0)
 
     def test_upload_valid_csv_with_perms(self):
-        with self.assertNumQueries(46):
+        with self.assertNumQueries(45):
             self.client.force_authenticate(self.yoda)
             self.source.projects.set([self.project])
 

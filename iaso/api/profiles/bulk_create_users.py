@@ -312,10 +312,8 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
         # Get existing data for uniqueness checks
         usernames = [data.get("username") for data in user_data if data.get("username")]
-        dhis2_ids = [data.get("dhis2_id") for data in user_data if data.get("dhis2_id")]
 
         existing_usernames = set(User.objects.filter(username__in=usernames).values_list("username", flat=True))
-        existing_dhis2_ids = set(Profile.objects.filter(dhis2_id__in=dhis2_ids).values_list("dhis2_id", flat=True))
 
         has_geo_limit = BulkCreateUserFromCsvViewSet.has_only_user_managed_permission(self.importer_user)
         importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(self.importer_user).only("id")
@@ -338,11 +336,6 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                     validators.validate_email(email)
                 except ValidationError:
                     row_errors["email"] = f"Invalid email format: '{email}'"
-
-            # Validate DHIS2 ID
-            dhis2_id = data.get("dhis2_id", "").strip() if data.get("dhis2_id") else None
-            if dhis2_id and dhis2_id in existing_dhis2_ids:
-                row_errors["dhis2_id"] = f"DHIS2 ID '{dhis2_id}' already exists"
 
             # Validate password
             password = data.get("password", "").strip() if data.get("password") else None

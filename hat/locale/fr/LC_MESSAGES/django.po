@@ -605,7 +605,7 @@ msgstr "Réinitialisation du mot de passe sur %(site_name)s"
 #~ msgstr "Id"
 
 #~ msgid "Reject Org Unit"
-#~ msgstr "Rejeter le Groupe d'unités d'organisation"
+#~ msgstr "Rejeter l'unité d'organisation"
 
 #~ msgid "Validation Status changed successfully"
 #~ msgstr "Statut de validation modifié avec succès"

@@ -80,7 +80,7 @@ class ETL:
             .filter(form__isnull=False)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
-            .prefetch_related("entity_idform__form_id", "org_unit__id")
+            .prefetch_related("entity_id", "form__form_id", "org_unit__id")
             .values(
                 "id",
                 "created_at",

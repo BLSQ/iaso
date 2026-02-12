@@ -167,12 +167,12 @@ export const useFilterState = ({
 
 type MultiTreeviewArgs = {
     paramIds: string | undefined;
-    handleChange: (key: string, value: (string | number)[] | undefined) => void;
+    handleChange: (key: string, value: string | string[] | undefined) => void;
 };
 
 type MultiTreeviewFilter = {
-    initialOrgUnits: OrgUnit[];
-    handleOrgUnitChange: (orgUnits: (number | string)[] | undefined) => void;
+    initialOrgUnits: OrgUnit[] | undefined;
+    handleOrgUnitChange: (orgUnits: OrgUnit[] | undefined) => void;
 };
 
 export const useMultiTreeviewFilterState = ({
@@ -185,11 +185,11 @@ export const useMultiTreeviewFilterState = ({
     const { data: initialOrgUnits } = useGetMultipleOrgUnits(initialOrgUnitIds);
 
     const handleOrgUnitChange = useCallback(
-        orgUnits => {
+        (orgUnits: OrgUnit[] | undefined) => {
             const ids = orgUnits ? orgUnits.map(orgUnit => orgUnit.id) : [];
             // When "emptying" the treeview, the value is [],
             // so we force it to undefined to avoid an empty string in the param org_unit which leads to a 404
-            handleChange('org_unit', ids.length ? ids : undefined);
+            handleChange('org_unit', ids?.length ? ids?.join(',') : undefined);
             setInitialOrgUnitIds(ids);
         },
         [handleChange],
@@ -211,6 +211,7 @@ type TreeviewFilter = {
     handleOrgUnitChange: (orgUnit: OrgUnit | undefined) => void;
 };
 
+// todo : remove this, it seems unused ?
 export const useTreeviewFilterState = ({
     paramId,
     handleChange,

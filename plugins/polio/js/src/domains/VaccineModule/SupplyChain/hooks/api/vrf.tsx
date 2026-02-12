@@ -166,16 +166,7 @@ export const useCampaignDropDowns = ({
             .filter(
                 c => c.separate_scopes_per_round || (c.scopes ?? []).length > 0,
             )
-            // filter out on hold campaign, except selected campaign to avoid UI bug
-            .filter(
-                c => !c.on_hold || c.obr_name === selectedCampaign?.obr_name,
-            )
-            // filter out campaign with all rounds on hold, except selected campaign to avoid UI bug
-            .filter(
-                c =>
-                    !c.rounds.every(rnd => rnd.on_hold) ||
-                    c.obr_name === selectedCampaign?.obr_name,
-            )
+
             .map(c => ({
                 label: c.obr_name,
                 value: c.obr_name,

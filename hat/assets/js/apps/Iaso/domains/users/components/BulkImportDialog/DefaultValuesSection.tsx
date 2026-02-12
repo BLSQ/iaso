@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useAppLocales } from '../../../app/constants';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
@@ -52,34 +51,19 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
     }));
 
     const selectedUserRoleIds = useMemo(() => {
-        if (!defaults.default_user_roles || !userRolesData) return [];
-        return defaults.default_user_roles
-            .map(name => {
-                const role = userRolesData.find(r => r.label === name);
-                return role?.value?.toString();
-            })
-            .filter(Boolean);
-    }, [defaults.default_user_roles, userRolesData]);
+        if (!defaults.default_user_roles) return [];
+        return defaults.default_user_roles.map(id => id.toString());
+    }, [defaults.default_user_roles]);
 
     const selectedProjectIds = useMemo(() => {
-        if (!defaults.default_projects || !availableProjects) return [];
-        return defaults.default_projects
-            .map(name => {
-                const project = availableProjects.find(p => p.label === name);
-                return project?.value?.toString();
-            })
-            .filter(Boolean);
-    }, [defaults.default_projects, availableProjects]);
+        if (!defaults.default_projects) return [];
+        return defaults.default_projects.map(id => id.toString());
+    }, [defaults.default_projects]);
 
     const selectedTeamIds = useMemo(() => {
-        if (!defaults.default_teams || !teamsData) return [];
-        return defaults.default_teams
-            .map(name => {
-                const team = teamsData.find(t => t.label === name);
-                return team?.value?.toString();
-            })
-            .filter(Boolean);
-    }, [defaults.default_teams, teamsData]);
+        if (!defaults.default_teams) return [];
+        return defaults.default_teams.map(id => id.toString());
+    }, [defaults.default_teams]);
 
     return (
         <Grid container spacing={2}>
@@ -89,9 +73,12 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     multi
                     keyValue="default_permissions"
                     label={MESSAGES.permissions}
-                    value={defaults.default_permissions || []}
+                    value={defaults.default_permissions?.map(String) || []}
                     onChange={(key, value) =>
-                        onChange({ ...defaults, default_permissions: value })
+                        onChange({
+                            ...defaults,
+                            default_permissions: value.map(Number),
+                        })
                     }
                     options={permissionsData || []}
                     loading={isLoadingPermissions}
@@ -107,17 +94,10 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     value={selectedUserRoleIds}
                     onChange={(key, value) => {
                         const selectedIds = value ? value.split(',') : [];
-                        const roleNames = selectedIds
-                            .map(id => {
-                                const role = userRolesData?.find(
-                                    r => r.value.toString() === id,
-                                );
-                                return role?.label;
-                            })
-                            .filter(Boolean);
+                        const roleIds = selectedIds.map(Number);
                         onChange({
                             ...defaults,
-                            default_user_roles: roleNames as string[],
+                            default_user_roles: roleIds,
                         });
                     }}
                     options={userRolesData || []}
@@ -134,17 +114,10 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     value={selectedProjectIds}
                     onChange={(key, value) => {
                         const selectedIds = value ? value.split(',') : [];
-                        const projectNames = selectedIds
-                            .map(id => {
-                                const project = availableProjects?.find(
-                                    p => p.value.toString() === id,
-                                );
-                                return project?.label;
-                            })
-                            .filter(Boolean);
+                        const projectIds = selectedIds.map(Number);
                         onChange({
                             ...defaults,
-                            default_projects: projectNames as string[],
+                            default_projects: projectIds,
                         });
                     }}
                     options={availableProjects}
@@ -177,17 +150,10 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     value={selectedTeamIds}
                     onChange={(key, value) => {
                         const selectedIds = value ? value.split(',') : [];
-                        const teamNames = selectedIds
-                            .map(id => {
-                                const team = teamsData?.find(
-                                    t => t.value.toString() === id,
-                                );
-                                return team?.label;
-                            })
-                            .filter(Boolean);
+                        const teamIds = selectedIds.map(Number);
                         onChange({
                             ...defaults,
-                            default_teams: teamNames as string[],
+                            default_teams: teamIds,
                         });
                     }}
                     options={teamsData || []}

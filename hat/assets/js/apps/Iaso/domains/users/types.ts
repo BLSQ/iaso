@@ -39,12 +39,12 @@ export type UserDisplayData = Pick<
 >;
 
 export interface BulkImportDefaults {
-    default_permissions?: string[];
-    default_projects?: string[];
-    default_user_roles?: string[];
+    default_permissions?: number[];
+    default_projects?: number[];
+    default_user_roles?: number[];
     default_profile_language?: string;
     default_org_units?: number[];
-    default_teams?: string[];
+    default_teams?: number[];
     default_organization?: string;
 }
 

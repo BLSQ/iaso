@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 
 from datetime import date, datetime, timedelta
 from itertools import groupby
@@ -1179,3 +1180,23 @@ class ETL:
             .values("entity_id", "uuid", "deleted_at", "beneficiary_id", "profile")
         )
         return entities
+
+    def save_analytics_data(
+        self, all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task: Task
+    ):
+        task.save()
+        try:
+            Beneficiary.objects.bulk_create(all_beneficiaries)
+            Journey.objects.bulk_create(all_journeys)
+            Visit.objects.bulk_create(all_visits)
+            Step.objects.bulk_create(all_steps)
+            status = "SUCCESS"
+        except Exception as e:
+            task.result = {
+                "message": str(e),
+                "error": traceback.format_exc(),
+            }
+            status = "ERRORED"
+            TaskLog.objects.create(task=task, message=f"{e} for {account} on beneficiary {current_entity_id}")
+        task.status = status
+        task.save()

@@ -3,6 +3,7 @@ import logging
 from itertools import groupby
 from operator import itemgetter
 
+from iaso.models import Task
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
@@ -167,7 +168,7 @@ class Under5:
 
         return etl.save_entity_journey(journey, beneficiary, record, "U5")
 
-    def run(self, type, updated_beneficiaries):
+    def run(self, type, updated_beneficiaries, task_name):
         etl_type = ETL(type)
         account = etl_type.account_related_to_entity_type()
         beneficiaries = etl_type.retrieve_entities(updated_beneficiaries)
@@ -189,8 +190,9 @@ class Under5:
             all_journeys = []
             all_beneficiaries = []
             for index, instance in enumerate(instances):
+                current_entity_id = instance["entity_id"]
                 logger.info(
-                    f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
+                    f"---------------------------------------- Beneficiary N° {(index + 1)} {current_entity_id}-----------------------------------"
                 )
                 instance["journey"] = self.journeyMapper(
                     instance["visits"],
@@ -233,7 +235,7 @@ class Under5:
                     logger.info(
                         "---------------------------------------------------------------------------------------------\n\n"
                     )
-            Beneficiary.objects.bulk_create(all_beneficiaries)
-            Journey.objects.bulk_create(all_journeys)
-            Visit.objects.bulk_create(all_visits)
-            Step.objects.bulk_create(all_steps)
+            task = Task(name=f"{task_name}  on Page {page} for {type}", account=account, status="QUEUED")
+            etl.save_analytics_data(
+                all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task
+            )

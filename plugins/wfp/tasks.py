@@ -59,7 +59,8 @@ def etl_ng(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
 
-    last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ng", status="SUCCESS").first()
+    task_name = "plugins.wfp.tasks.etl_ng"
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
 
     if last_success_task:
         # A task was found, use its creation date
@@ -81,7 +82,7 @@ def etl_ng(all_data=None):
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=account, entity_id__in=updated_U5_beneficiaries).delete()
 
-    NG_Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
+    NG_Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
     logger.info(
         f"----------------------------- Aggregating journey for {account} per org unit, admission and period(month and year) -----------------------------"
     )
@@ -95,7 +96,7 @@ def etl_ng(all_data=None):
     pbwg_account = etl_pbwg.account_related_to_entity_type()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    NG_PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries)
+    NG_PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
@@ -110,7 +111,8 @@ def etl_ssd(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
 
-    last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ssd", status="SUCCESS").first()
+    task_name = "plugins.wfp.tasks.etl_ssd"
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
 
     if last_success_task:
         # A task was found, use its creation date
@@ -130,7 +132,7 @@ def etl_ssd(all_data=None):
     child_account = etl_u5.account_related_to_entity_type()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
-    Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
+    Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
@@ -146,7 +148,7 @@ def etl_ssd(all_data=None):
     pbwg_account = etl_pbwg.account_related_to_entity_type()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries)
+    PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
@@ -207,7 +209,8 @@ def etl_ethiopia(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
 
-    last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ethiopia", status="SUCCESS").first()
+    task_name = "plugins.wfp.tasks.etl_ethiopia"
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
 
     if last_success_task:
         # A task was found, use its creation date
@@ -228,7 +231,7 @@ def etl_ethiopia(all_data=None):
     child_account = etl_u5.account_related_to_entity_type()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
-    ET_Under5().run(entity_type_U5_code, updated_U5_beneficiaries)
+    ET_Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
@@ -244,7 +247,7 @@ def etl_ethiopia(all_data=None):
     pbwg_account = etl_pbwg.account_related_to_entity_type()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries)
+    PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
 
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"

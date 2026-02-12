@@ -3,6 +3,7 @@ import logging
 from itertools import groupby
 from operator import itemgetter
 
+from iaso.models import Task
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
@@ -18,7 +19,7 @@ ANTHROPOMETRIC_FOLLOWUP_FORMS = [
 
 
 class PBWG:
-    def run(self, type, updated_beneficiaries):
+    def run(self, type, updated_beneficiaries, task_name):
         etl_type = ETL(type)
         account = etl_type.account_related_to_entity_type()
         beneficiaries = etl_type.retrieve_entities(updated_beneficiaries)
@@ -40,21 +41,22 @@ class PBWG:
             all_journeys = []
             all_beneficiaries = []
             for index, instance in enumerate(instances):
+                current_entity_id = instance["entity_id"]
                 logger.info(
-                    f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
+                    f"---------------------------------------- Beneficiary N° {(index + 1)} {current_entity_id}-----------------------------------"
                 )
                 instance["journey"] = self.journeyMapper(instance["visits"], ADMISSION_ANTHROPOMETRIC_FORMS)
                 beneficiary = Beneficiary()
-                if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
+                if current_entity_id not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                     beneficiary.gender = ""
-                    beneficiary.entity_id = instance["entity_id"]
+                    beneficiary.entity_id = current_entity_id
                     beneficiary.account = account
                     if instance.get("birth_date") is not None:
                         beneficiary.birth_date = instance["birth_date"]
                         all_beneficiaries.append(beneficiary)
                         logger.info("Created new beneficiary")
                 else:
-                    beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
+                    beneficiary = Beneficiary.objects.filter(entity_id=current_entity_id).first()
 
                 logger.info("Retrieving journey linked to beneficiary")
 
@@ -78,10 +80,10 @@ class PBWG:
                 logger.info(
                     "---------------------------------------------------------------------------------------------\n\n"
                 )
-            Beneficiary.objects.bulk_create(all_beneficiaries)
-            Journey.objects.bulk_create(all_journeys)
-            Visit.objects.bulk_create(all_visits)
-            Step.objects.bulk_create(all_steps)
+            task = Task(name=f"{task_name}  on Page {page} for {type}", account=account, status="QUEUED")
+            etl.save_analytics_data(
+                all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task
+            )
 
     def save_journey(self, beneficiary, record):
         journey = Journey()

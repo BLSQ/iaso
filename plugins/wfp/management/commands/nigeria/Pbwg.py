@@ -3,6 +3,7 @@ import logging
 from itertools import groupby
 from operator import itemgetter
 
+from iaso.models import Task
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
@@ -13,39 +14,42 @@ ADMISSION_ANTHROPOMETRIC_FORMS = ["ng_pbwg_anthropometric"]
 
 
 class NG_PBWG:
-    def run(self, type, updated_beneficiaries):
-        entity_type = ETL([type])
-        account = entity_type.account_related_to_entity_type()
-        beneficiaries = entity_type.retrieve_entities(updated_beneficiaries)
+    def run(self, type, updated_beneficiaries, task_name):
+        etl_type = ETL(type)
+        account = etl_type.account_related_to_entity_type()
+        beneficiaries = etl_type.retrieve_entities(updated_beneficiaries)
         pages = beneficiaries.page_range
         logger.info(f"Instances linked to PBWG program: {beneficiaries.count} for {account}")
 
+        etl = ETL()
+
         for page in pages:
             entities = sorted(list(beneficiaries.page(page).object_list), key=itemgetter("entity_id"))
-            existing_beneficiaries = ETL().existing_beneficiaries()
+            existing_beneficiaries = etl.existing_beneficiaries()
             instances = self.group_visit_by_entity(entities)
             all_steps = []
             all_visits = []
             all_journeys = []
             all_beneficiaries = []
             for index, instance in enumerate(instances):
+                current_entity_id = instance["entity_id"]
                 logger.info(
-                    f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
+                    f"---------------------------------------- Beneficiary N° {(index + 1)} {current_entity_id}-----------------------------------"
                 )
 
                 instance["journey"] = self.journeyMapper(instance["visits"], ADMISSION_ANTHROPOMETRIC_FORMS)
                 beneficiary = Beneficiary()
 
-                if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
+                if current_entity_id not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                     beneficiary.gender = ""
-                    beneficiary.entity_id = instance["entity_id"]
+                    beneficiary.entity_id = current_entity_id
                     beneficiary.account = account
                     if instance.get("birth_date") is not None:
                         beneficiary.birth_date = instance["birth_date"]
                         all_beneficiaries.append(beneficiary)
                         logger.info("Created new beneficiary")
                 else:
-                    beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
+                    beneficiary = Beneficiary.objects.filter(entity_id=current_entity_id).first()
 
                 logger.info("Retrieving journey linked to beneficiary")
 
@@ -53,15 +57,15 @@ class NG_PBWG:
                     if len(journey_instance["visits"]) > 0:
                         journey = self.save_journey(beneficiary, journey_instance)
                         all_journeys.append(journey)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
+                        visits = etl.save_visit(journey_instance["visits"], journey)
                         all_visits.extend(visits)
                         logger.info(f"Inserted {len(visits)} Visits")
 
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                        grouped_steps = etl.get_admission_steps(journey_instance["steps"])
                         admission_step = grouped_steps[0]
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                        followUpVisits = etl.group_followup_steps(grouped_steps, admission_step)
 
-                        steps = ETL().save_steps(visits, followUpVisits)
+                        steps = etl.save_steps(visits, followUpVisits)
                         all_steps.extend(steps)
                         logger.info(f"Inserted {len(steps)} Steps")
                     else:
@@ -69,22 +73,24 @@ class NG_PBWG:
                 logger.info(
                     "---------------------------------------------------------------------------------------------\n\n"
                 )
-            Beneficiary.objects.bulk_create(all_beneficiaries)
-            Journey.objects.bulk_create(all_journeys)
-            Visit.objects.bulk_create(all_visits)
-            Step.objects.bulk_create(all_steps)
+            task = Task(name=f"{task_name}  on Page {page} for {type}", account=account, status="QUEUED")
+            etl.save_analytics_data(
+                all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task
+            )
 
     def save_journey(self, beneficiary, record):
         journey = Journey()
+        etl = ETL()
 
         if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
             journey.duration = record.get("duration", None)
             journey.end_date = record.get("end_date", None)
 
-        return ETL().save_entity_journey(journey, beneficiary, record, "PLW")
+        return etl.save_entity_journey(journey, beneficiary, record, "PLW")
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
+        etl = ETL()
         anthropometric_visit_forms = [
             "wfp_coda_pbwg_luctating_followup_anthro",
             "wfp_coda_pbwg_followup_anthro",
@@ -93,7 +99,7 @@ class NG_PBWG:
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] == "ng_pbwg_registration"][0]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = visit_nutrition_program.get("physiology_status", None)
-        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
+        journey = etl.entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
         return journey
 
     def group_visit_by_entity(self, entities):
@@ -102,6 +108,7 @@ class NG_PBWG:
         instances_by_entity = groupby(list(entities), key=itemgetter("entity_id"))
         initial_date = None
         duration = 0
+        etl = ETL()
 
         for entity_id, entity in instances_by_entity:
             instances.append({"entity_id": entity_id, "visits": [], "journey": []})
@@ -109,7 +116,7 @@ class NG_PBWG:
             for visit in entity:
                 current_record = visit.get("json", None)
 
-                instances[i]["program"] = ETL().program_mapper(current_record)
+                instances[i]["program"] = etl.program_mapper(current_record)
                 if current_record is not None and current_record != None:
                     if (
                         current_record.get("actual_birthday__date__") is not None
@@ -127,7 +134,7 @@ class NG_PBWG:
                         current_record.get("age_entry", None) is not None
                         and current_record.get("age_entry", None) != ""
                     ):
-                        calculated_date = ETL().calculate_birth_date(current_record)
+                        calculated_date = etl.calculate_birth_date(current_record)
                         instances[i]["birth_date"] = calculated_date
 
                     if current_record.get("last_name") is not None:

@@ -49,7 +49,7 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.prefetch_related("account").filter(code=self.entity_type).first()
+        entity_type = EntityType.objects.select_related("account").filter(code=self.entity_type).first()
         account = entity_type.account
         return account
 
@@ -77,8 +77,7 @@ class ETL:
             .filter(form__isnull=False)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
-            .select_related("entity")
-            .prefetch_related("entity", "form", "org_unit")
+            .prefetch_related("entity_idform__form_id", "org_unit__id")
             .values(
                 "id",
                 "created_at",
@@ -87,7 +86,6 @@ class ETL:
                 "deleted",
                 "form__form_id",
                 "org_unit_id",
-                "org_unit",
                 "updated_at",
                 "form",
                 "entity__deleted_at",

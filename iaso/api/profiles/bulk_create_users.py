@@ -1,6 +1,5 @@
 import csv
 import io
-import json
 
 import pandas as pd
 import phonenumbers
@@ -45,33 +44,12 @@ BULK_CREATE_USER_COLUMNS_LIST = [
 ]
 
 
-class JSONListField(serializers.ListField):
-    """ListField that accepts JSON strings in multipart form data."""
-
-    def to_internal_value(self, data):
-        # Handle JSON string (e.g., '["item1", "item2"]')
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                raise serializers.ValidationError("Invalid JSON format for list field.")
-        # Handle list containing a single JSON string (e.g., ['["item1", "item2"]'])
-        elif isinstance(data, list) and len(data) == 1 and isinstance(data[0], str):
-            try:
-                parsed = json.loads(data[0])
-                if isinstance(parsed, list):
-                    data = parsed
-            except json.JSONDecodeError:
-                pass  # Keep original data, let parent handle validation
-        return super().to_internal_value(data)
-
-
 class BulkCreateUserSerializer(serializers.ModelSerializer):
-    default_permissions = JSONListField(child=serializers.CharField(max_length=255), required=False, allow_empty=True)
-    default_projects = JSONListField(child=serializers.CharField(max_length=255), required=False, allow_empty=True)
-    default_user_roles = JSONListField(child=serializers.CharField(max_length=255), required=False, allow_empty=True)
-    default_org_units = JSONListField(child=serializers.IntegerField(), required=False, allow_empty=True)
-    default_teams = JSONListField(child=serializers.CharField(max_length=255), required=False, allow_empty=True)
+    default_permissions = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_projects = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_user_roles = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_org_units = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_teams = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
 
     class Meta:
         model = BulkCreateUserCsvFile
@@ -125,27 +103,28 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_default_permissions(self, value):
-        """Validate permissions against available permissions."""
+        """Validate permission IDs exist."""
         if not value:
             return value
 
         if not self.importer_account:
             return value
 
-        module_permissions = [perm.codename for perm in self.importer_account.permissions_from_active_modules]
-        invalid_permissions = [pn for pn in value if pn not in module_permissions]
+        # Validate that permission IDs exist
+        valid_permissions = Permission.objects.filter(id__in=value)
+        valid_permission_ids = set(valid_permissions.values_list("id", flat=True))
+        invalid_ids = [pid for pid in value if pid not in valid_permission_ids]
 
-        if invalid_permissions:
-            raise serializers.ValidationError(f"Invalid permissions: {', '.join(invalid_permissions)}")
+        if invalid_ids:
+            raise serializers.ValidationError(f"Invalid permission IDs: {', '.join(map(str, invalid_ids))}")
 
         # Cache resolved permission objects for later use
-        valid_permissions = Permission.objects.filter(codename__in=[pn for pn in value if pn in module_permissions])
         self.csv_objects_cache["permissions"] = list(valid_permissions)
 
         return value
 
     def validate_default_projects(self, value):
-        """Validate projects exist in user's account."""
+        """Validate project IDs exist in user's account."""
         if not value:
             return value
 
@@ -157,7 +136,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
         if user_has_project_restrictions and has_geo_limit:
             available_projects = Project.objects.filter(
-                name__in=value, account=self.importer_account
+                id__in=value, account=self.importer_account
             ).filter_on_user_projects(self.importer_user)
 
             if not available_projects.exists():
@@ -165,12 +144,12 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                     self.importer_user
                 )
         else:
-            available_projects = Project.objects.filter(name__in=value, account=self.importer_account)
-            valid_project_names = set(available_projects.values_list("name", flat=True))
-            invalid_projects = [pn for pn in value if pn not in valid_project_names]
+            available_projects = Project.objects.filter(id__in=value, account=self.importer_account)
+            valid_project_ids = set(available_projects.values_list("id", flat=True))
+            invalid_ids = [pid for pid in value if pid not in valid_project_ids]
 
-            if invalid_projects:
-                raise serializers.ValidationError(f"Invalid projects: {', '.join(invalid_projects)}")
+            if invalid_ids:
+                raise serializers.ValidationError(f"Invalid project IDs: {', '.join(map(str, invalid_ids))}")
 
         # Cache resolved objects
         self.csv_objects_cache["projects"] = list(available_projects)
@@ -178,7 +157,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_default_user_roles(self, value):
-        """Validate user roles exist in account."""
+        """Validate user role IDs exist in account."""
         if not value:
             return value
 
@@ -187,13 +166,13 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
         existing_roles = UserRole.objects.filter(
             account=self.importer_account,
-            group__name__in=[f"{self.importer_account.id}_{role}" for role in value],
+            id__in=value,
         )
-        existing_role_names = set(existing_roles.values_list("group__name", flat=True))
-        invalid_roles = [role for role in value if f"{self.importer_account.id}_{role}" not in existing_role_names]
+        valid_role_ids = set(existing_roles.values_list("id", flat=True))
+        invalid_ids = [rid for rid in value if rid not in valid_role_ids]
 
-        if invalid_roles:
-            raise serializers.ValidationError(f"Invalid user roles: {', '.join(invalid_roles)}")
+        if invalid_ids:
+            raise serializers.ValidationError(f"Invalid user role IDs: {', '.join(map(str, invalid_ids))}")
 
         # Cache resolved objects
         self.csv_objects_cache["user_roles"] = list(existing_roles)
@@ -224,19 +203,19 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_default_teams(self, value):
-        """Validate team names exist in user's account."""
+        """Validate team IDs exist in user's account."""
         if not value:
             return value
 
         if not self.importer_account:
             return value
 
-        existing_teams = Team.objects.filter(name__in=value, project__account=self.importer_account)
-        existing_team_names = set(existing_teams.values_list("name", flat=True))
+        existing_teams = Team.objects.filter(id__in=value, project__account=self.importer_account)
+        valid_team_ids = set(existing_teams.values_list("id", flat=True))
 
-        invalid_teams = [team for team in value if team not in existing_team_names]
-        if invalid_teams:
-            raise serializers.ValidationError(f"Invalid teams: {', '.join(invalid_teams)}")
+        invalid_ids = [tid for tid in value if tid not in valid_team_ids]
+        if invalid_ids:
+            raise serializers.ValidationError(f"Invalid team IDs: {', '.join(map(str, invalid_ids))}")
 
         # Cache resolved objects
         self.csv_objects_cache["teams"] = list(existing_teams)
@@ -565,45 +544,44 @@ class HasUserPermission(permissions.BasePermission):
 
 
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
-    """Api endpoint to bulkcreate users and profiles from a CSV File.
+    """API endpoint to bulk create users and profiles from a CSV file.
 
-    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions", "user_roles", "projects"]
+    CSV Columns (all columns must be present, but values can be empty):
+        - username (required)
+        - password (required if no email, otherwise optional for email invitation)
+        - email (optional, triggers email invitation if no password)
+        - first_name (optional)
+        - last_name (optional)
+        - orgunit (optional, comma-separated IDs or names)
+        - orgunit__source_ref (optional, comma-separated source refs)
+        - profile_language (optional)
+        - dhis2_id (optional)
+        - organization (optional)
+        - permissions (optional, comma-separated permission codenames)
+        - user_roles (optional, comma-separated role names)
+        - projects (optional, comma-separated project names)
+        - teams (optional, comma-separated team names)
+        - phone_number (optional, E.164 format)
+        - editable_org_unit_types (optional, comma-separated type IDs)
 
-    Email, dhis2_id, permissions, profile_language and org_unit are not mandatory, but you must keep the columns.
+    Default Values (applied to all users when CSV field is empty):
+        All default fields use IDs (integers), not names:
+        - default_permissions: list of permission IDs, e.g. [1, 2, 3]
+        - default_projects: list of project IDs, e.g. [1]
+        - default_user_roles: list of user role IDs, e.g. [1, 2]
+        - default_org_units: list of org unit IDs, e.g. [123, 456]
+        - default_teams: list of team IDs, e.g. [1, 2]
+        - default_profile_language: language code, e.g. "en" or "fr"
+        - default_organization: organization name, e.g. "WHO"
 
-    Sample csv input:
+    Sample CSV:
+        username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,teams,phone_number,editable_org_unit_types
+        john,SecurePass123!,john@example.com,John,Doe,123,,,en,,iaso_forms,manager,Project1,Team1,+1234567890,1
 
-    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id,user_role,projects
-
-    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3, manager, "oms, RDC"
-
-    You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
-    You can add multiples org_units for the same user by ID or Name : "28334, Bas Uele, 9999"
-
-    It's a better practice and less error-prone to use org_units IDs instead of names.
-
-
-    The permissions are :
-
-    "iaso_forms",
-
-    "iaso_submissions",
-
-    "iaso_mappings",
-
-    "iaso_completeness",
-
-    "iaso_org_units",
-
-    "iaso_links",
-
-    "iaso_users",
-
-    "iaso_projects",
-
-    "iaso_sources",
-
-    "iaso_data_tasks",
+    Notes:
+        - CSV field values take precedence over default values
+        - Use org unit IDs instead of names when possible (less error-prone)
+        - Users with email but no password will receive an email invitation
     """
 
     result_key = "file"
@@ -639,12 +617,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         Request body:
         {
             "file": <csv file>,
-            "default_permissions": ["iaso_forms", "iaso_submissions"],
-            "default_projects": ["Project 1"],
-            "default_user_roles": ["manager"],
+            "default_permissions": [1, 2],
+            "default_projects": [1],
+            "default_user_roles": [1, 2],
             "default_profile_language": "en",
             "default_organization": "WHO",
-            "default_org_units": [123, 456]
+            "default_org_units": [123, 456],
+            "default_teams": [1, 2]
         }
         """
         importer_user = request.user
@@ -672,17 +651,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             csv_objects_cache,
         )
 
-        csv_file_instance = BulkCreateUserCsvFile.objects.create(
-            file=request.FILES["file"],
-            created_by=importer_user,
-            account=importer_account,
-            default_permissions=default_data.get("default_permissions", []),
-            default_projects=default_data.get("default_projects", []),
-            default_user_roles=default_data.get("default_user_roles", []),
-            default_org_units=default_data.get("default_org_units", []),
-            default_teams=default_data.get("default_teams", []),
-            default_profile_language=default_data.get("default_profile_language", ""),
-            default_organization=default_data.get("default_organization", ""),
+        csv_file_instance = self._create_csv_file_record(
+            request.FILES["file"], default_data, csv_objects_cache, importer_user, importer_account
         )
 
         # remove passwords from stored CSV using pandas
@@ -701,6 +671,43 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         response = {"Accounts created": len(created_users)}
         return Response(response)
+
+    def _create_csv_file_record(self, file, default_data, csv_objects_cache, importer_user, importer_account):
+        """Create BulkCreateUserCsvFile record with M2M relationships."""
+        instance = BulkCreateUserCsvFile.objects.create(
+            file=file,
+            account=importer_account,
+            created_by=importer_user,
+            default_profile_language=default_data.get("default_profile_language", ""),
+            default_organization=default_data.get("default_organization", ""),
+        )
+
+        if default_data.get("default_permissions"):
+            permissions = csv_objects_cache.get("permissions", [])
+            if permissions:
+                instance.default_permissions.set(permissions)
+
+        if default_data.get("default_projects"):
+            projects = csv_objects_cache.get("projects", [])
+            if projects:
+                instance.default_projects.set(projects)
+
+        if default_data.get("default_user_roles"):
+            user_roles = csv_objects_cache.get("user_roles", [])
+            if user_roles:
+                instance.default_user_roles.set(user_roles)
+
+        if default_data.get("default_org_units"):
+            org_units = csv_objects_cache.get("org_units", [])
+            if org_units:
+                instance.default_org_units.set(org_units)
+
+        if default_data.get("default_teams"):
+            teams = csv_objects_cache.get("teams", [])
+            if teams:
+                instance.default_teams.set(teams)
+
+        return instance
 
     def _bulk_create_users_and_profiles(
         self,

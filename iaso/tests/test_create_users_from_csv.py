@@ -12,7 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserSerializer
-from iaso.models import BulkCreateUserCsvFile, Profile, Team
+from iaso.models import BulkCreateUserCsvFile, Profile, Team, UserRole
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
     CORE_SUBMISSIONS_PERMISSION,
@@ -152,11 +152,11 @@ class BulkCreateCsvTestCase(APITestCase):
         # Verify default options are stored as empty when not provided
         self.assertEqual(file_upload.default_profile_language, "")
         self.assertEqual(file_upload.default_organization, "")
-        self.assertEqual(file_upload.default_permissions, [])
-        self.assertEqual(file_upload.default_user_roles, [])
-        self.assertEqual(file_upload.default_projects, [])
-        self.assertEqual(file_upload.default_org_units, [])
-        self.assertEqual(file_upload.default_teams, [])
+        self.assertEqual(file_upload.default_permissions.count(), 0)
+        self.assertEqual(file_upload.default_user_roles.count(), 0)
+        self.assertEqual(file_upload.default_projects.count(), 0)
+        self.assertEqual(file_upload.default_org_units.count(), 0)
+        self.assertEqual(file_upload.default_teams.count(), 0)
 
     def test_upload_valid_csv_with_perms(self):
         with self.assertNumQueries(46):
@@ -964,7 +964,11 @@ class BulkCreateCsvTestCase(APITestCase):
         bulk_team = Team.objects.create(name="Bulk Team", project=self.project, manager=self.yoda)
         csv_team = Team.objects.create(name="Test Team", project=self.project, manager=self.yoda)
 
-        self.client.post("/api/userroles/", data={"name": "manager"})
+        response = self.client.post("/api/userroles/", data={"name": "manager"})
+        manager_role = UserRole.objects.get(group__name=f"{self.account1.id}_manager")
+
+        # Get the permission ID for iaso_forms
+        iaso_forms_perm = Permission.objects.get(codename="iaso_forms")
 
         with open("iaso/tests/fixtures/test_user_bulk_create_bulk_configuration.csv") as csv_file:
             response = self.client.post(
@@ -973,11 +977,11 @@ class BulkCreateCsvTestCase(APITestCase):
                     "file": csv_file,
                     "default_profile_language": "fr",
                     "default_organization": "UNICEF",
-                    "default_permissions": ["iaso_forms"],
-                    "default_user_roles": ["manager"],
-                    "default_projects": [self.project.name],
+                    "default_permissions": [iaso_forms_perm.id],
+                    "default_user_roles": [manager_role.id],
+                    "default_projects": [self.project.id],
                     "default_org_units": [self.org_unit1.id, self.org_unit2.id],
-                    "default_teams": ["Bulk Team"],
+                    "default_teams": [bulk_team.id],
                 },
                 format="multipart",
             )
@@ -985,15 +989,21 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["Accounts created"], 3)
 
-        # Verify default options are stored in BulkCreateUserCsvFile
+        # Verify default options are stored in BulkCreateUserCsvFile (now M2M fields)
         csv_file_record = BulkCreateUserCsvFile.objects.last()
         self.assertEqual(csv_file_record.default_profile_language, "fr")
         self.assertEqual(csv_file_record.default_organization, "UNICEF")
-        self.assertEqual(csv_file_record.default_permissions, ["iaso_forms"])
-        self.assertEqual(csv_file_record.default_user_roles, ["manager"])
-        self.assertEqual(csv_file_record.default_projects, [self.project.name])
-        self.assertEqual(csv_file_record.default_org_units, [self.org_unit1.id, self.org_unit2.id])
-        self.assertEqual(csv_file_record.default_teams, ["Bulk Team"])
+        self.assertEqual(csv_file_record.default_permissions.count(), 1)
+        self.assertTrue(csv_file_record.default_permissions.filter(codename="iaso_forms").exists())
+        self.assertEqual(csv_file_record.default_user_roles.count(), 1)
+        self.assertEqual(csv_file_record.default_user_roles.first(), manager_role)
+        self.assertEqual(csv_file_record.default_projects.count(), 1)
+        self.assertEqual(csv_file_record.default_projects.first(), self.project)
+        self.assertEqual(csv_file_record.default_org_units.count(), 2)
+        self.assertIn(self.org_unit1, csv_file_record.default_org_units.all())
+        self.assertIn(self.org_unit2, csv_file_record.default_org_units.all())
+        self.assertEqual(csv_file_record.default_teams.count(), 1)
+        self.assertEqual(csv_file_record.default_teams.first(), bulk_team)
 
         # ALL defaults applied (CSV fields empty)
         all_bulk_user = User.objects.get(username="all_bulk_user")

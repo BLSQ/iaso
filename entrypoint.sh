@@ -41,7 +41,7 @@ case "$1" in
   "test" )
     export TESTING=true
     # Linting tasks first
-    flake8 ./hat
+    ruff check ./hat
     npm run lint
     # Then tests
     ./scripts/wait_for_dbs.sh
@@ -51,7 +51,7 @@ case "$1" in
   ;;
   "test_lint" )
     export TESTING=true
-    flake8 ./hat -v
+    ruff check -v ./hat
     npm run lint
   ;;
   "test_js" )

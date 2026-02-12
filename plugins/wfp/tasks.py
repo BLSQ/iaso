@@ -196,6 +196,10 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
         logger.info(
             f"----------------------------- Pushed to DHIS2 on U5 and PBW for {len(pushed_data)} rows aggregated per year and month -----------------------------"
         )
+    else:
+        logger.info(
+            f"----------------------------- No DHIS2 credentials found for {account} -----------------------------"
+        )
 
 
 @shared_task()

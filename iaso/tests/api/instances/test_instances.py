@@ -2,6 +2,7 @@ import datetime
 import json
 import typing
 
+from decimal import Decimal
 from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
@@ -417,7 +418,6 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_instance_create_with_accuracy_rounded(self):
         """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
-        from decimal import Decimal
 
         instance_uuid = str(uuid4())
         body = [
@@ -446,7 +446,6 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_instance_create_with_accuracy_rounded_with_long_number(self):
         """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
-        from decimal import Decimal
 
         instance_uuid = str(uuid4())
         body = [

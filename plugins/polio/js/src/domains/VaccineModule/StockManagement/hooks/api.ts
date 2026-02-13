@@ -19,6 +19,7 @@ import {
 
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { Campaign } from '../../../../constants/types';
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
@@ -311,7 +312,7 @@ export const useCampaignOptions = (
                   };
               })
             : [];
-    }, [campaignName, data, formatMessage, selectedCampaign, round]);
+    }, [formatMessage, selectedCampaign]);
 
     const roundNumberOptions = useMemo(() => {
         return selectedCampaign
@@ -325,10 +326,10 @@ export const useCampaignOptions = (
                       };
                   })
             : [];
-    }, [campaignName, data, formatMessage, selectedCampaign]);
+    }, [formatMessage, round, selectedCampaign]);
 
     const campaignOptions = useMemo(() => {
-        const campaignsList = (data ?? []).map(c => {
+        const campaignsList = ((data ?? []) as Campaign[]).map(c => {
             return { label: c.obr_name, value: c.obr_name };
         });
         const defaultList = [{ label: campaignName, value: campaignName }];
@@ -339,7 +340,7 @@ export const useCampaignOptions = (
             return defaultList;
         }
         return [];
-    }, [campaignName, data, selectedCampaign?.id]);
+    }, [campaignName, data]);
 
     return useMemo(() => {
         return {

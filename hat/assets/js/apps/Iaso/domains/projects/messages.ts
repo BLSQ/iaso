@@ -353,6 +353,32 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Copy to clipboard',
         id: 'iaso.label.copyToClipboard',
     },
+    mobile_stock_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_stock_tooltip',
+        defaultMessage:
+            'Enables the tab for stock levels per organization unit tracking',
+    },
+    mobile_hide_closed_org_unit_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_hide_closed_org_unit_tooltip',
+        defaultMessage:
+            'On the mobile interface, hide the organization units whose closing date is in the past from the possible selection',
+    },
+    mobile_use_ethiopic_calendar_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_use_ethiopic_calendar_tooltip',
+        defaultMessage: 'Activates the Ethiopian calendar on mobile',
+    },
+    mobile_stock: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_stock',
+        defaultMessage: 'Mobile: Enable stock managementg',
+    },
+    mobile_hide_closed_org_unit: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_hide_closed_org_unit',
+        defaultMessage: 'Hide closed org units',
+    },
+    mobile_use_ethiopic_calendar: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_use_ethiopic_calendar',
+        defaultMessage: 'Ethiopian calendar',
+    },
 });
 
 export default MESSAGES;

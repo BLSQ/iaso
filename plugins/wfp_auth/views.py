@@ -114,7 +114,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         """
 
         # Call the userinfo url with the identifying token to get more data on the user.
-        extra_data_get = requests.get(self.profile_url, params={"access_token": token})
+        extra_data_get = requests.get(self.profile_url, headers={"Authorization": f"Bearer {token}"})
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
 

@@ -3,6 +3,7 @@ import importlib
 import io
 import typing
 
+from cgi import parse_header
 from unittest import mock
 
 import numpy as np
@@ -13,7 +14,7 @@ from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
@@ -206,9 +207,9 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertEqual(expected_content_type, response["Content-Type"])
 
         if expected_attachment_filename is not None:
-            self.assertEqual(
-                response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
-            )
+            value, params = parse_header(response.get("Content-Disposition"))
+            self.assertEqual(value, "attachment")
+            self.assertEqual(params.get("filename"), expected_attachment_filename)
 
         content = response.getvalue()
 
@@ -217,7 +218,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             # we need to force the reading of the whole content stream - some errors might be hidden in the generator
             self.assertIsInstance(list(content), list)
         else:
-            self.assertIsInstance(response, HttpResponse)
+            self.assertIsInstance(response, (HttpResponse, FileResponse))
         return content
 
     def assertCsvFileResponse(

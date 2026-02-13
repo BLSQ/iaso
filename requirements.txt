@@ -100,6 +100,9 @@ django-allauth==0.54.0  # https://github.com/pennersr/django-allauth/tags
 django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat/tags
 django-celery-results==2.5.1  # https://github.com/celery/django-celery-results/tags
 
+# process utility for memory usage and other system information.
+psutil==7.2.2 # https://pypi.org/project/psutil/
+
 # Webpack loader.
 # ------------------------------------------------------------------------------
 # This is our custom version of webpack loader to handle S3 better.

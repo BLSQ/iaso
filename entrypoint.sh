@@ -47,7 +47,7 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     # Run python tests and pass on any args to e.g. run individual tests
     ./manage.py test --exclude-tag selenium "${@:2}"
-    npm run mocha
+    npm run test
   ;;
   "test_lint" )
     export TESTING=true
@@ -57,8 +57,8 @@ case "$1" in
   "test_js" )
     npm run test
   ;;
-  "mocha" )
-    npm run mocha
+  "vitest" )
+    npm run test
   ;;
   "gen_docs" )
     ./scripts/gen_docs.sh

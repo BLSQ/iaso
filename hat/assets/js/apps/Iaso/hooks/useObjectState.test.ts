@@ -1,4 +1,4 @@
-import { recursiveReducer } from './useObjectState.ts';
+import { recursiveReducer } from './useObjectState';
 
 const state = {
     red: {

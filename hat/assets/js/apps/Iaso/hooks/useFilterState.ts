@@ -201,41 +201,6 @@ export const useMultiTreeviewFilterState = ({
     );
 };
 
-type TreeviewArgs = {
-    paramId: string | undefined;
-    handleChange: (key: string, value: (string | number)[] | undefined) => void;
-};
-
-type TreeviewFilter = {
-    initialOrgUnit: OrgUnit;
-    handleOrgUnitChange: (orgUnit: OrgUnit | undefined) => void;
-};
-
-// todo : remove this, it seems unused ?
-export const useTreeviewFilterState = ({
-    paramId,
-    handleChange,
-}: TreeviewArgs): TreeviewFilter => {
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState<
-        string | (number | string)[] | undefined
-    >(paramId);
-    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-
-    const handleOrgUnitChange = useCallback(
-        orgUnit => {
-            const id = orgUnit ? [orgUnit.id] : undefined;
-            setInitialOrgUnitId(id);
-            handleChange('org_unit', id);
-        },
-        [handleChange],
-    );
-
-    return useMemo(
-        () => ({ initialOrgUnit, handleOrgUnitChange }),
-        [handleOrgUnitChange, initialOrgUnit],
-    );
-};
-
 type CheckBoxFilterArgs = {
     keyValue: string;
     handleChange: (key: string, value: boolean) => void;

@@ -190,12 +190,6 @@ export const useCampaignDropDowns = ({
                           (!selectedCampaign?.separate_scopes_per_round &&
                               (selectedCampaign?.scopes ?? []).length > 0),
                   )
-                  // filter out rounds on_hold, except selected round to avoid UI bug
-                  .filter(
-                      round =>
-                          !round.on_hold ||
-                          (rndsParams ?? []).includes(round.number),
-                  )
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,

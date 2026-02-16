@@ -284,18 +284,16 @@ class StockItemAPITestCase(APITestCase):
 
     def test_list_filter_org_unit_id(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(3):
-            # 1. SELECT FROM OrgUnit
-            # 2. SELECT COUNT(*)
-            # 3. SELECT StockItem
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockItem
             response = self.client.get(STOCK_ITEM_URL, {"org_unit_id": self.org_unit_1.id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(2, response.data["count"])
 
-        with self.assertNumQueries(3):
-            # 1. SELECT FROM OrgUnit
-            # 2. SELECT COUNT(*)
-            # 3. SELECT StockItem
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockItem
             response = self.client.get(STOCK_ITEM_URL, {"org_unit_id": self.org_unit_2.id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(1, response.data["count"])
@@ -470,17 +468,15 @@ class StockLedgerItemAPITestCase(APITestCase):
 
     def test_list_filter_org_unit_id(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(3):
-            # 1. SELECT OrgUnit
-            # 2. SELECT COUNT(*)
-            # 3. SELECT StockLedgerItem
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockLedgerItem
             response = self.client.get(LEDGER_ITEM_URL, {"org_unit_id": self.org_unit_1.id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(1, response.data["count"])
 
-        with self.assertNumQueries(2):
-            # 1. SELECT OrgUnit
-            # 2. SELECT COUNT(*)
+        with self.assertNumQueries(1):
+            # 1. SELECT COUNT(*)
             response = self.client.get(LEDGER_ITEM_URL, {"org_unit_id": self.org_unit_2.id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(0, response.data["count"])
@@ -781,18 +777,16 @@ class StockItemRuleAPITestCase(APITestCase):
 
     def test_list_filter_form_id(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(3):
-            # 1. SELECT Form
-            # 2. SELECT COUNT(*)
-            # 3. SELECT StockItemRule
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockItemRule
             response = self.client.get(RULE_ITEM_URL, {"form_id": self.form_1.id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(1, response.data["count"])
 
-        with self.assertNumQueries(3):
-            # 1. SELECT Form
-            # 2. SELECT COUNT(*)
-            # 3. SELECT StockItemRule
+        with self.assertNumQueries(2):
+            # 1. SELECT COUNT(*)
+            # 2. SELECT StockItemRule
             response = self.client.get(RULE_ITEM_URL, {"form_id": self.form_2.id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(3, response.data["count"])

@@ -164,4 +164,4 @@ export const ReAssignDialog = makeFullModal(
     UpdateIcon,
 );
 
-export { CreateReAssignDialog };
+export { CreateReAssignDialog, Props };

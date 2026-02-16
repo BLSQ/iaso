@@ -19,7 +19,7 @@ type Props = {
     baseUrls: any;
     showDeleted: boolean;
     hasDhis2Module: boolean;
-    deleteForm: (body: {id: number}) => Promise<any>;
+    deleteForm: (body: { id: number }) => Promise<any>;
 };
 
 export const FormActions: FunctionComponent<Props> = ({
@@ -47,6 +47,7 @@ export const FormActions: FunctionComponent<Props> = ({
     urlToInstances = `${urlToInstances}/tab/list`;
     // Restore and delete form's hooks
     const { mutateAsync: restoreForm } = useRestoreForm();
+    const hasNoVersion = settings.row.original.latest_form_version === null;
 
     return (
         <section>
@@ -96,7 +97,9 @@ export const FormActions: FunctionComponent<Props> = ({
                                     orgUnitTypes={
                                         settings.row.original.org_unit_type_ids
                                     }
-                                    iconProps={{}}
+                                    iconProps={{
+                                        disabled: hasNoVersion,
+                                    }}
                                 />
                             </DisplayIfUserHasPerm>
 

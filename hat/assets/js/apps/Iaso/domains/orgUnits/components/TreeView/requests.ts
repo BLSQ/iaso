@@ -172,7 +172,7 @@ export const useGetOrgUnit = (
     );
 
 const getOrgUnits = async (
-    orgUnitsIds: string[] | string,
+    orgUnitsIds: string | (number | string)[] | undefined,
     statusSettings = 'all',
 ): Promise<OrgUnit[]> => {
     const idsString = Array.isArray(orgUnitsIds)
@@ -183,7 +183,7 @@ const getOrgUnits = async (
 };
 
 export const useGetMultipleOrgUnits = (
-    orgUnitsIds: string[] | string,
+    orgUnitsIds: string | (number | string)[] | undefined,
     statusSettings = 'all',
 ): UseQueryResult<OrgUnit[], Error> => {
     return useSnackQuery({

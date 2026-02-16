@@ -87,6 +87,7 @@ export type User = {
     editable_org_unit_type_ids?: number[];
     user_roles: number[];
     user_roles_editable_org_unit_type_ids?: number[];
+    color?: string;
 };
 
 export const getDisplayName = (

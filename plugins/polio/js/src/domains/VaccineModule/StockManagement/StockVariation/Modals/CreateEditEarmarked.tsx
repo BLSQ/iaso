@@ -15,12 +15,12 @@ import { VaccineForStock } from '../../../../../constants/types';
 import { useGetVrfListByRound } from '../../../SupplyChain/hooks/api/vrf';
 import { useCampaignOptions, useSaveEarmarked } from '../../hooks/api';
 import MESSAGES from '../../messages';
+import { DosesPerVialDropdown } from '../../types';
 import {
     useAvailablePresentations,
     useEarmarkOptions,
 } from './dropdownOptions';
 import { useEarmarkValidation } from './validation';
-import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     earmark?: any;

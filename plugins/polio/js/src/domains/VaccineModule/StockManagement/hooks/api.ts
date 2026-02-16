@@ -19,19 +19,20 @@ import {
 
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { Campaign } from '../../../../constants/types';
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
+import { FormAFormValues } from '../StockVariation/Modals/CreateEditFormA';
 import {
     DosesPerVialDropdown,
     StockManagementDetailsParams,
     StockManagementListParams,
     StockVariationParams,
 } from '../types';
-import { FormAFormValues } from '../StockVariation/Modals/CreateEditFormA';
 
 const defaults = { order: 'country', pageSize: 20, page: 1 };
 const options = {
@@ -131,7 +132,6 @@ export const useGetUnusableVials = (
     });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 const getStockManagementSummary = async (id?: string) => {
     return getRequest(`${apiUrl}${id}/summary/`);
 };
@@ -305,16 +305,14 @@ export const useCampaignOptions = (
     );
     const roundOptions = useMemo(() => {
         return selectedCampaign
-            ? selectedCampaign.rounds
-                  .filter(r => !r.on_hold || r.number === round)
-                  .map(rnd => {
-                      return {
-                          label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
-                          value: rnd.id,
-                      };
-                  })
+            ? selectedCampaign.rounds.map(rnd => {
+                  return {
+                      label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
+                      value: rnd.id,
+                  };
+              })
             : [];
-    }, [campaignName, data, formatMessage, selectedCampaign, round]);
+    }, [formatMessage, selectedCampaign]);
 
     const roundNumberOptions = useMemo(() => {
         return selectedCampaign
@@ -328,21 +326,12 @@ export const useCampaignOptions = (
                       };
                   })
             : [];
-    }, [campaignName, data, formatMessage, selectedCampaign]);
+    }, [formatMessage, round, selectedCampaign]);
 
     const campaignOptions = useMemo(() => {
-        const campaignsList = (data ?? [])
-            // @ts-ignore
-            .filter(
-                c =>
-                    (!c.on_hold &&
-                        !c.is_test &&
-                        !c.rounds.every(rnd => rnd.on_hold)) ||
-                    c.id === selectedCampaign?.id,
-            )
-            .map(c => {
-                return { label: c.obr_name, value: c.obr_name };
-            });
+        const campaignsList = ((data ?? []) as Campaign[]).map(c => {
+            return { label: c.obr_name, value: c.obr_name };
+        });
         const defaultList = [{ label: campaignName, value: campaignName }];
         if ((campaignsList ?? []).length > 0) {
             return campaignsList;
@@ -351,7 +340,7 @@ export const useCampaignOptions = (
             return defaultList;
         }
         return [];
-    }, [campaignName, data, selectedCampaign?.id]);
+    }, [campaignName, data]);
 
     return useMemo(() => {
         return {
@@ -696,9 +685,9 @@ export const useCheckDestructionDuplicate = ({
         options: {
             enabled: Boolean(
                 vaccineStockId &&
-                    destructionReportDate &&
-                    unusableVialsDestroyed &&
-                    moment(destructionReportDate, 'YYYY-MM-DD', true).isValid(),
+                destructionReportDate &&
+                unusableVialsDestroyed &&
+                moment(destructionReportDate, 'YYYY-MM-DD', true).isValid(),
             ),
             staleTime: 1000 * 60 * 15, // in MS
             keepPreviousData: false,

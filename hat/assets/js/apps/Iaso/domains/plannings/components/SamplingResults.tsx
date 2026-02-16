@@ -6,9 +6,9 @@ import { useSafeIntl } from 'bluesquare-components';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 
-import { OpenhexaIntegrationDrawer } from 'Iaso/domains/assignments/sampling/OpenhexaIntegrationDrawer';
 import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { OpenhexaIntegrationDrawer } from 'Iaso/domains/plannings/sampling/OpenhexaIntegrationDrawer';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';

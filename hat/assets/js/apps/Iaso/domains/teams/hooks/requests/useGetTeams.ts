@@ -11,17 +11,18 @@ import {
     TeamDropdown,
 } from '../../types/team';
 
-const getTeam = async (teamId: number): Promise<Team> => {
+const getTeam = async (teamId?: number): Promise<Team> => {
     return getRequest(`/api/teams/${teamId}/`) as Promise<Team>;
 };
 
-export const useGetTeam = (teamId: number): UseQueryResult<Team, Error> => {
+export const useGetTeam = (teamId?: number): UseQueryResult<Team, Error> => {
     return useSnackQuery({
         queryKey: ['team', `team-${teamId}`],
         queryFn: () => getTeam(teamId),
         options: {
             enabled: Boolean(teamId),
             staleTime: Infinity,
+            cacheTime: Infinity,
         },
     });
 };

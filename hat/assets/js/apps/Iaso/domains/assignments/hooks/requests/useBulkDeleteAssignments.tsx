@@ -2,7 +2,7 @@ import { UseMutationResult } from 'react-query';
 
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import MESSAGES from '../../messages';
+import MESSAGES from '../../../plannings/messages';
 
 export type Params = {
     planning: number;

@@ -53,7 +53,7 @@ export const useSaveTeam = (
     const queryClient = useQueryClient();
     const editTeam = useSnackMutation({
         mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
-        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
+        invalidateQueryKey: ['teamsList', 'teamsDropdown', 'team'],
         ignoreErrorCodes,
         showSuccessSnackBar,
         options: {

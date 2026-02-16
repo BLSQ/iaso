@@ -198,11 +198,6 @@ POLIO_COUNTRY_PLAN_ADMIN_PERMISSION = PolioPermission(
 POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION = PolioPermission(
     codename="iaso_polio_perf_threshold_write",
     label=_("Polio Performance Thresholds Write"),
-    module=MODULE_POLIO_PROJECT,
-    ui_group=PERMISSION_GROUP_POLIO,
-    ui_category="iaso_polio_country_plan_permissions",
-    ui_type_in_category="admin",
-    ui_order_in_category=4,
 )
 
 

@@ -1,9 +1,12 @@
 import json
 import logging
+import traceback
 
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
+
+import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -35,8 +38,8 @@ logger = logging.getLogger(__name__)
 
 
 class ETL:
-    def __init__(self, types=None):
-        self.types = types
+    def __init__(self, entity_type=None):
+        self.entity_type = entity_type
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
@@ -49,42 +52,35 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.prefetch_related("account").filter(code__in=self.types).first()
+        entity_type = EntityType.objects.select_related("account").filter(code=self.entity_type).first()
         account = entity_type.account
         return account
 
     def get_updated_data(self, updated_at=None):
-        entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+        entities = Instance.objects.filter(entity__entity_type__code=self.entity_type)
         if updated_at is not None:
             entities = entities.filter(updated_at__gte=updated_at)
         return entities
 
     def get_org_unit_ids_with_updated_data(self, updated_at=None):
         entities = self.get_updated_data(updated_at)
-        org_units = entities.values("org_unit_id").distinct()
-        org_unit_ids = list(map(lambda org_unit: org_unit["org_unit_id"], org_units))
-        return list(set(org_unit_ids))
+        return entities.distinct().values_list("org_unit_id", flat=True)
 
     def get_updated_entity_ids(self, updated_at=None):
         entities = self.get_updated_data(updated_at)
         if updated_at is not None:
             entities = entities.filter(updated_at__gte=updated_at)
-        entities = entities.values("entity_id").distinct()
-        beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
-        return list(set(beneficiary_ids))
+        return entities.distinct().values_list("entity_id", flat=True)
 
     def retrieve_entities(self, entity_ids):
-        steps_id = ETL().steps_to_exclude()
         beneficiaries = (
-            Instance.objects.filter(entity__entity_type__code__in=self.types)
+            Instance.objects.filter(entity__entity_type__code=self.entity_type)
             .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
-            .exclude(id__in=steps_id)
-            .select_related("entity")
-            .prefetch_related("entity", "form", "org_unit")
+            .prefetch_related("entity_id", "form__form_id", "org_unit__id")
             .values(
                 "id",
                 "created_at",
@@ -93,7 +89,6 @@ class ETL:
                 "deleted",
                 "form__form_id",
                 "org_unit_id",
-                "org_unit",
                 "updated_at",
                 "form",
                 "entity__deleted_at",
@@ -106,24 +101,6 @@ class ETL:
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
         return list(map(lambda x: x["entity_id"], existing_beneficiaries))
-
-    def instances_to_exclude(self):
-        journey = Journey.objects.values("instance_id").distinct()
-        return list(map(lambda x: x["instance_id"], journey))
-
-    def visits_to_exclude(self):
-        instances_id = self.instances_to_exclude()
-        visits = Visit.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
-        visits_id = list(map(lambda x: x["instance_id"], visits))
-        [instances_id.append(visit_id) for visit_id in visits_id if visit_id not in instances_id]
-        return instances_id
-
-    def steps_to_exclude(self):
-        instances_id = self.visits_to_exclude()
-        steps = Step.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
-        steps_id = list(map(lambda x: x["instance_id"], steps))
-        [instances_id.append(step_id) for step_id in steps_id if step_id not in instances_id]
-        return instances_id
 
     def program_mapper(self, visit):
         program = None
@@ -630,9 +607,9 @@ class ETL:
                 visit = visits[index]
                 for sub_step in step:
                     current_step = None
-                    given_assistance = ETL().map_assistance_step(sub_step, [])
+                    given_assistance = self.map_assistance_step(sub_step, [])
                     for assistance in given_assistance:
-                        current_step = ETL().assistance_to_step(
+                        current_step = self.assistance_to_step(
                             assistance,
                             visit,
                             sub_step["instance_id"],
@@ -734,7 +711,7 @@ class ETL:
                 if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
-                current_journey = ETL().journey_Formatter(
+                current_journey = self.journey_Formatter(
                     visit,
                     admission_form,
                     anthropometric_visit_forms,
@@ -1333,3 +1310,24 @@ class ETL:
             .values("entity_id", "uuid", "deleted_at", "beneficiary_id", "profile")
         )
         return entities
+
+    def save_analytics_data(
+        self, all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task: Task
+    ):
+        task.save()
+        try:
+            Beneficiary.objects.bulk_create(all_beneficiaries)
+            Journey.objects.bulk_create(all_journeys)
+            Visit.objects.bulk_create(all_visits)
+            Step.objects.bulk_create(all_steps)
+            status = "SUCCESS"
+        except Exception as err:
+            sentry_sdk.capture_exception(err)
+            task.result = {
+                "message": str(err),
+                "error": traceback.format_exc(),
+            }
+            status = "ERRORED"
+            TaskLog.objects.create(task=task, message=f"{err} for {account} on beneficiary {current_entity_id}")
+        task.status = status
+        task.save()

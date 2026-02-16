@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.db.models import JSONField
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
+
+from iaso.admin.base import IasoJSONEditorWidget
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
 from .tasks import create_index_on_instance_uuid
@@ -208,6 +211,9 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
 
 @admin.register(Dhis2SyncResults)
 class Dhis2SyncResultsAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        JSONField: {"widget": IasoJSONEditorWidget},
+    }
     list_display = (
         "id",
         "org_unit_dhis2_id",
@@ -217,6 +223,7 @@ class Dhis2SyncResultsAdmin(admin.ModelAdmin):
         "month",
         "year",
         "response",
+        "json",
         "account",
         "status",
         "created_at",

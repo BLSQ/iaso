@@ -53,3 +53,48 @@ class BulkCreateUserCsvFileTestCase(FileUploadToTestCase):
             f"unknown_account/bulk_create_user_csv/{bulk_create.created_at.strftime('%Y_%m')}/{self.FILE_NAME}"
         )
         self.assertEqual(bulk_create.file.name, expected_file_name)
+
+    def test_csv_contains_same_user_name_twice(self):
+        pass
+
+    def test_csv_contains_org_units_from_wrong_account(self):
+        # name
+        # id
+        pass
+
+    def test_csv_contains_inaccessible_org_units(self):
+        # for geo-restricted user
+        # name
+        # id
+        pass
+
+    def test_csv_contains_nonexistent_org_unit(self):
+        # name
+        # id
+        pass
+
+    def test_csv_contains_unknown_language(self):
+        pass
+
+    def test_csv_contains_wrong_project(self):
+        # project does not exists
+        # project from wrong account
+        pass
+
+    def test_csv_contains_wrong_org_unit_types(self):
+        # org unit types does not exist
+        # org unit type incompatible with project
+        # org unit type incompatible with account
+        # org unit type not editable by user
+        pass
+
+    def test_csv_contains_unknown_permission(self):
+        # permission from inactive plugin
+        # wrong permission name
+        pass
+
+    def test_csv_lacks_mandatory_fields(self):
+        # username
+        # password
+        # both
+        pass

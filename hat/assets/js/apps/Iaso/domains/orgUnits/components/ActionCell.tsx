@@ -18,8 +18,8 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
     );
 
     const cell = useMemo(() => {
-        const handleRejectOrgUnit = async () => {
-            await saveOu({
+        const handleRejectOrgUnit = () => {
+            saveOu({
                 id: orgUnit.id,
                 validation_status: 'REJECTED',
                 groups: orgUnit.groups.map(g => g.id),

@@ -162,25 +162,6 @@ export const OrgUnits: FunctionComponent = () => {
         isFetchingOrgUnits ||
         isSavingMulti ||
         (tab === 'map' && isFetchingOrgUnitsDataLocation);
-
-    const filteredOrgUnitsData = useMemo(() => {
-        if (!orgUnitsData) return null;
-
-        const isRejectedExplicitlyRequested = searches.some(search =>
-            search.validation_status?.includes('REJECTED'),
-        );
-
-        if (!isRejectedExplicitlyRequested) {
-            return {
-                ...orgUnitsData,
-                orgunits: orgUnitsData.orgunits.filter(
-                    ou => ou.validation_status !== 'REJECTED',
-                ),
-            };
-        }
-
-        return orgUnitsData;
-    }, [orgUnitsData, searches]);
     return (
         <>
             {isLoading && <LoadingSpinner fixed={false} absolute />}
@@ -192,12 +173,12 @@ export const OrgUnits: FunctionComponent = () => {
                     onSearch={onSearch}
                     currentTab={tab}
                     paramsSearches={searches || []}
-                    counts={(!isLoading && filteredOrgUnitsData?.counts) || []}
+                    counts={(!isLoading && orgUnitsData?.counts) || []}
                     colors={colors || []}
                 />
                 {tab === 'list' &&
-                    filteredOrgUnitsData &&
-                    filteredOrgUnitsData?.orgunits?.length > 0 && (
+                    orgUnitsData &&
+                    orgUnitsData?.orgunits?.length > 0 && (
                         <Box
                             mb={2}
                             mt={2}
@@ -237,7 +218,7 @@ export const OrgUnits: FunctionComponent = () => {
                         <TableList
                             params={params}
                             saveMulti={saveMulti}
-                            orgUnitsData={filteredOrgUnitsData}
+                            orgUnitsData={orgUnitsData}
                         />
                     )}
 

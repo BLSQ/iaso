@@ -1,17 +1,17 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasOneOfPermissions } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     POLIO_COUNTRY_PLAN_ADMIN_PERMISSION,
     POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION,
 } from '../../../../constants/permissions';
+import { useDeleteNationalLogisticsPlan } from '../hooks/api';
 import MESSAGES from '../messages';
 import { EditNationalLogisticsPlanModal } from '../modals/CreateEditModal';
-import { useDeleteNationalLogisticsPlan } from '../hooks/api';
-import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 
 export const useNationalLogisticsPlanColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -49,6 +49,13 @@ export const useNationalLogisticsPlanColumns = (): Column[] => {
                 accessor: 'vaccine',
                 id: 'vaccine',
                 sortable: true,
+            },
+            {
+                Header: formatMessage(MESSAGES.physicalInventory),
+                accessor: 'physical_inventory',
+                id: 'physical_inventory',
+                sortable: true,
+                Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.createdAt),

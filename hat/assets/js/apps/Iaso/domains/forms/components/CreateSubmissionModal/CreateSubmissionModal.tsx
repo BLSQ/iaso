@@ -1,8 +1,16 @@
 import { makeFullModal } from 'bluesquare-components';
-import { CreateReAssignDialogComponent } from '../../../instances/components/CreateReAssignDialogComponent';
+import {
+    CreateReAssignDialogComponent,
+    Props as DialogProps,
+} from '../../../instances/components/CreateReAssignDialogComponent';
 import { CreateSubmissionModalButton } from './CreateSubmissionModalButton';
 
-export const CreateSubmissionModal = makeFullModal(
+type ButtonProps = {
+    onClick: () => void;
+    disabled?: boolean;
+};
+
+export const CreateSubmissionModal = makeFullModal<DialogProps, ButtonProps>(
     CreateReAssignDialogComponent,
     CreateSubmissionModalButton,
 );

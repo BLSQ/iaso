@@ -481,7 +481,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Org unit type',
     },
     ID: {
-        defaultMessage: 'ID',
+        defaultMessage: 'Identifier',
         id: 'iaso.label.id',
     },
     detailTitle: {

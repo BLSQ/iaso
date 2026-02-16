@@ -594,6 +594,7 @@
     "iaso.polio.label.performanceThresholds": "Performance Thresholds",
     "iaso.polio.label.physical_inventory_add": "Add to Physical inventory",
     "iaso.polio.label.physical_inventory_remove": "Remove from Physical inventory",
+    "iaso.polio.label.physicalInventory": "Physical inventory",
     "iaso.polio.label.planned": "Planned",
     "iaso.polio.label.plannedCampaign": "Planned campaign",
     "iaso.polio.label.plannedRound": "Planned round",

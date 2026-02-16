@@ -1,6 +1,7 @@
 import logging
 
 from celery import shared_task
+from django.core.management import call_command
 from django.db import connection
 
 from iaso.management.commands import unique_indexes
@@ -52,6 +53,24 @@ def create_index_on_instance_uuid():
             raise
         finally:
             connection.set_autocommit(old_autocommit)
+
+
+# how to test this task manually:
+#
+# in .env make sure to have these variables set:
+#   PLUGINS=wfp
+#   USE_CELERY=true
+#   CELERY_BROKER_URL=redis://redis:6379/0
+#   CELERY_RESULT_BACKEND=redis://redis:6379/0
+#
+# docker compose --profile celery up
+# docker compose run iaso start_celery_worker
+# then go in admin http://localhost:8081/admin/wfp/beneficiary/
+#   - select (or create a first beneficiary if it's empty)
+#   - and select action "Clean-up duplicate instances (non-blocking)"
+@shared_task()
+def clean_up_duplicate_instances():
+    call_command("clean_up_duplicate_submissions")
 
 
 @shared_task()

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 14:48+0000\n"
+"POT-Creation-Date: 2026-02-16 11:48+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -117,11 +117,13 @@ msgstr "Le type de légende seuil nécessite au moins deux éléments d'échelle
 
 #: iaso/api/metrics/serializers.py
 msgid "Threshold legend type allows a maximum of nine scale items."
-msgstr "Le type de légende seuil autorise un maximum de neuf éléments d'échelle."
+msgstr ""
+"Le type de légende seuil autorise un maximum de neuf éléments d'échelle."
 
 #: iaso/api/metrics/serializers.py
 msgid "Linear legend type requires exactly two scale items."
-msgstr "Le type de légende linéaire nécéssite exactement deux éléments d'échelle"
+msgstr ""
+"Le type de légende linéaire nécéssite exactement deux éléments d'échelle"
 
 #: iaso/api/metrics/serializers.py
 msgid "Ordinal legend type requires at least two scale items."
@@ -129,7 +131,8 @@ msgstr "Le type de légende ordinal nécéssite au moins deux éléments d'éche
 
 #: iaso/api/metrics/serializers.py
 msgid "Ordinal legend type allows a maximum of four scale items."
-msgstr "Le type de légende ordinal autorise un maximum de quatre éléments d'échelle"
+msgstr ""
+"Le type de légende ordinal autorise un maximum de quatre éléments d'échelle"
 
 #: iaso/api/metrics/serializers.py
 msgid "The file must be a CSV."
@@ -226,7 +229,7 @@ msgstr "IDs (séparés par des virgules)"
 msgid "Org unit"
 msgstr "Unité d'organisation"
 
-#: iaso/api/org_unit_change_requests/filters.py
+#: iaso/api/org_unit_change_requests/filters.py iaso/api/stocks/filters.py
 msgid "Org unit ID"
 msgstr "ID de l'unité organisationnelle"
 
@@ -467,6 +470,22 @@ msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
 #: iaso/api/stocks/filters.py
 msgid "SKUs - SKU IDs (comma-separated)"
 msgstr "SKUs - IDs des SKUs (séparé par des virgules)"
+
+#: iaso/api/stocks/filters.py
+msgid "SKU ID"
+msgstr "SKU ID"
+
+#: iaso/api/stocks/filters.py
+msgid "Submission ID"
+msgstr "ID de soumission"
+
+#: iaso/api/stocks/filters.py
+msgid "Form ID"
+msgstr "ID de Formulaire"
+
+#: iaso/api/stocks/filters.py
+msgid "Form Version ID"
+msgstr "ID de Version de Formulaire"
 
 #: iaso/models/base.py
 msgid "Aggregate"

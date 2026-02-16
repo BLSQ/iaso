@@ -30,7 +30,7 @@ export default defineConfig({
         environment: 'jsdom',
         include: ['./hat/assets/js/**/*.test.{ts,tsx}'],
         setupFiles: ['./hat/assets/js/tests/setup.ts'],
-        exclude: [...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js'],
+        exclude: [...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**'],
         coverage: {
             provider: 'v8',
             include: ['./hat/assets/js/apps/**'],

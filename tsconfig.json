@@ -20,7 +20,7 @@
         "paths": {
             "Iaso/*": ["hat/assets/js/apps/Iaso/*"]
         },
-        "types": ["vitest/globals", "@testing-library/jest-dom"]
+        "types": ["vitest/globals", "@testing-library/jest-dom", "playwright", "node"]
     },
     "exclude": ["node_modules"],
     "include": [

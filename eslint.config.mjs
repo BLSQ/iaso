@@ -375,6 +375,15 @@ export default defineConfig([
                     ...globals.jest,
                 },
             },
+            {
+                files: ['playwright.config.ts', '**/playwright/**/*.test.ts'],
+                env: {
+                    node: true,
+                },
+                rules: {
+                    'no-process-env': 'off',
+                },
+            },
         ],
     },
 ]);

@@ -1,3 +1,4 @@
+import { UseMutationResult } from 'react-query';
 import {
     postRequest,
     patchRequest,
@@ -14,7 +15,10 @@ const saveNationalLogisticsPlan = (
     return postRequest('/api/polio/country_plan/', data);
 };
 
-export const useSaveNationalLogisticsPlan = () => {
+export const useSaveNationalLogisticsPlan = (): UseMutationResult<
+    NationalLogisticsPlanData,
+    Error
+> => {
     return useSnackMutation({
         mutationFn: (data: Partial<NationalLogisticsPlanData>) =>
             saveNationalLogisticsPlan(data),

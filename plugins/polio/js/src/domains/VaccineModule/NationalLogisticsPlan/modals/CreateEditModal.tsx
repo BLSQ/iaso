@@ -45,6 +45,7 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
             status: nationaPlanData?.status,
             country_id: nationaPlanData?.country_id,
             vaccine: nationaPlanData?.vaccine,
+            physical_inventory: nationaPlanData?.physical_inventory,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -124,6 +125,15 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
                         options={vaccineOptions}
                         clearable={false}
                         isSearchable={false}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.physicalInventory)}
+                        name="physical_inventory"
+                        component={DateInput}
+                        required
+                        clearable
                     />
                 </Box>
             </ConfirmCancelModal>

@@ -593,6 +593,7 @@
     "iaso.polio.label.performanceThresholds": "Seuils de performance",
     "iaso.polio.label.physical_inventory_add": "Ajouter à l'inventaire physique",
     "iaso.polio.label.physical_inventory_remove": "Retirer de l'inventaire physique",
+    "iaso.polio.label.physicalInventory": "Inventaire physique",
     "iaso.polio.label.planned": "Planifiée",
     "iaso.polio.label.plannedCampaign": "Campagne planifiée",
     "iaso.polio.label.plannedRound": "Round planifié",

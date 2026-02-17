@@ -10,7 +10,7 @@ from unittest import mock
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from iaso.models import SUCCESS, Account, Form, Project, Task
+from iaso.models import SUCCESS, Account, Project, Task
 from iaso.tasks.export_mobile_app_setup_for_user import (
     _call_cursor_pagination_page,
     _get_cursor_pagination_metadata,
@@ -18,7 +18,6 @@ from iaso.tasks.export_mobile_app_setup_for_user import (
     export_mobile_app_setup_for_user,
 )
 from iaso.utils.encryption import decrypt_file
-from plugins.trypelim.constants import REGISTRATION_FORM_ID
 
 
 def mocked_iaso_client_get(*args, **kwargs):
@@ -81,10 +80,6 @@ def mock_upload_file(dest):
 
 class ExportMobileAppSetupForUserTest(TestCase):
     fixtures = ["user.yaml"]
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.registration_form = Form.objects.create(name="Trypelim registration", form_id=REGISTRATION_FORM_ID)
 
     def setUp(self):
         self.user = User.objects.first()
@@ -172,10 +167,6 @@ class MockZip:
 class ExportMobileAppSetupTrypelimFeatures(TestCase):
     """Test trypelim-specific features for the export mobile setup task."""
 
-    @classmethod
-    def setUpTestData(cls):
-        cls.registration_form = Form.objects.create(name="Trypelim registration", form_id=REGISTRATION_FORM_ID)
-
     def setUp(self):
         self.call = {
             "path": "/api/internal/entities/",
@@ -191,9 +182,6 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
     def test_strip_visited_at(self):
         """SLEEP-1698: Test that `visited_at` is set to null when `strip_visited_at` options is set."""
 
-        registration_id = self.registration_form.id
-        other_form = Form.objects.create(name="Random form", form_id="foo")
-
         iaso_client_mock = mock.MagicMock()
         iaso_client_mock.get.side_effect = [
             {"count": 4},
@@ -203,12 +191,10 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
                 "results": [
                     {
                         "instances": [
-                            {"id": 1, "form_id": registration_id, "json": {"visited_at": "2021-03-10"}},
-                            {"id": 2, "form_id": registration_id, "json": {"visited_at": None}},
-                            {"id": 3, "form_id": registration_id, "json": {}},
-                            {"id": 4, "form_id": registration_id, "json": {"unrelated_attr": "bar"}},
-                            {"id": 5, "form_id": registration_id},
-                            {"id": 6, "form_id": other_form.id, "json": {"visited_at": None}},
+                            {"id": 1, "json": {"visited_at": "2021-03-10"}},
+                            {"id": 2, "json": {"visited_at": None}},
+                            {"id": 3, "json": {}},
+                            {"id": 4},
                         ]
                     }
                 ],
@@ -222,12 +208,10 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
         self.assertIn("entities-1.json", zipf_mock.captured_files)
         expected = {
             "instances": [
-                {"id": 1, "form_id": registration_id, "json": {"visited_at": "0"}},
-                {"id": 2, "form_id": registration_id, "json": {"visited_at": "0"}},
-                {"id": 3, "form_id": registration_id, "json": {}},
-                {"id": 4, "form_id": registration_id, "json": {"unrelated_attr": "bar"}},
-                {"id": 5, "form_id": registration_id},
-                {"id": 6, "form_id": other_form.id, "json": {"visited_at": None}},
+                {"id": 1, "json": {"visited_at": None}},
+                {"id": 2, "json": {"visited_at": None}},
+                {"id": 3, "json": {}},
+                {"id": 4},
             ],
         }
         self.assertDictEqual(json.loads(zipf_mock.captured_files["entities-1.json"])["results"][0], expected)

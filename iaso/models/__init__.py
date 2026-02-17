@@ -18,6 +18,7 @@ from .pages import IFRAME, POWERBI, RAW, SUPERSET, TEXT, Page
 from .payments import Payment, PaymentLot, PotentialPayment
 from .project import Project
 from .reports import Report, ReportVersion
+from .risp import RISPNode, RISPNodeInstance, RISPTransition, RISPTransitionInstance, RISPWorkflow, RISPWorkflowInstance
 from .stocks import (
     StockImpacts,
     StockItem,
@@ -83,6 +84,12 @@ __all__ = [
     "Project",
     "Report",
     "ReportVersion",
+    "RISPNode",
+    "RISPNodeInstance",
+    "RISPTransition",
+    "RISPTransitionInstance",
+    "RISPWorkflow",
+    "RISPWorkflowInstance",
     "SourceVersion",
     "StockKeepingUnit",
     "StockKeepingUnitChildren",

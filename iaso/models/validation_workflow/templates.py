@@ -8,9 +8,10 @@ from django.utils.translation import gettext_lazy as _
 
 from iaso.models.base import UserRole
 from iaso.models.common import CreatedAndUpdatedModel
+from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
-class ValidationWorkflow(CreatedAndUpdatedModel):
+class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     """
     The main workflow object that is a template, a static definition of a workflow
     """
@@ -20,8 +21,6 @@ class ValidationWorkflow(CreatedAndUpdatedModel):
     name = models.CharField(max_length=256)
     slug = AutoSlugField(populate_from="name", unique=True)
     description = models.TextField(blank=True, max_length=1024)
-
-    # is_active = models.BooleanField(default=True) => SoftDeletableModel ? needed ?
 
     owner = models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.SET_NULL)
 
@@ -58,24 +57,29 @@ class ValidationNode(CreatedAndUpdatedModel):
 
     class MergeStrategy(models.TextChoices):
         WAIT_ALL = "wait_for_all", _("Wait for all")  # we wait for all parallel branches to merge
-        PRIORITY = _(
-            "Priority"
+        PRIORITY = (
+            "priority",
+            _("Priority"),
         )  # by priority (e.g approved director manager is better than 10k steps of normal employees
+        LINEAR = "linear", _("Linear")  # the default one
 
-    # only relevant if the node is of node_type merge
-    merge_strategy = models.CharField(max_length=50, choices=MergeStrategy.choices, blank=True, null=True)
+    merge_strategy = models.CharField(max_length=50, choices=MergeStrategy.choices, default=MergeStrategy.LINEAR)
 
     def __str__(self):
         return f"{self.workflow_id} - {self.name}"
 
 
 class ValidationTransition(CreatedAndUpdatedModel):
-    from_node = models.ForeignKey(ValidationNode, on_delete=models.CASCADE, related_name="from_node")
-    to_node = models.ForeignKey(ValidationNode, on_delete=models.CASCADE, related_name="to_node")
+    name = models.CharField(max_length=100)
+    slug = AutoSlugField(populate_from="name")
+
+    from_node = models.ForeignKey(ValidationNode, on_delete=models.CASCADE, related_name="outgoing")
+    to_node = models.ForeignKey(ValidationNode, on_delete=models.CASCADE, related_name="incoming")
 
     roles_required = models.ManyToManyField(UserRole, blank=True)
     priority = models.PositiveIntegerField(default=0)
 
+    # todo : could be improved by defining a whole rejection strategy : to previous node, stops, to target
     rejection_target = models.ForeignKey(
         ValidationNode, blank=True, null=True, on_delete=models.SET_NULL, related_name="rejection_target"
     )  # if set : goes to that node on reject, otherwise whole workflow stops, and we send a notification to user.

@@ -2,11 +2,12 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from .templates import RISPWorkflow, RISPNode
+
 from ..common import CreatedAndUpdatedModel
+from .templates import ValidationNode, ValidationWorkflow
 
 
-class RISPWorkflowInstance(CreatedAndUpdatedModel):
+class ValidationWorkflowInstance(CreatedAndUpdatedModel):
     """
     Represents a running instance of the workflow
     """
@@ -15,10 +16,9 @@ class RISPWorkflowInstance(CreatedAndUpdatedModel):
         ACTIVE = "active", _("Active")
         COMPLETED = "completed", _("Completed")
 
-    workflow = models.ForeignKey(RISPWorkflow, on_delete=models.CASCADE)
+    workflow = models.ForeignKey(ValidationWorkflow, on_delete=models.CASCADE)
 
-    status = models.CharField(max_length=20, choices=WorkflowStatus.choices,
-                              default=WorkflowStatus.ACTIVE)
+    status = models.CharField(max_length=20, choices=WorkflowStatus.choices, default=WorkflowStatus.ACTIVE)
 
     # we attach here any object, can be a form submission, an orgunit, whatever.
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -26,23 +26,21 @@ class RISPWorkflowInstance(CreatedAndUpdatedModel):
     content_object = GenericForeignKey("content_type", "object_id")
 
 
-class RISPNodeInstance(CreatedAndUpdatedModel):
+class ValidationNodeInstance(CreatedAndUpdatedModel):
     """
     Represents a running instance of the workflow
     """
 
     class Status(models.TextChoices):
-        COMPLETED = 'completed', _("Completed")
-        CANCELLED = 'cancelled', _('Cancelled') # in case a parallel branch with higher prio went over
-        ACTIVE = 'active', _('Active')
+        COMPLETED = "completed", _("Completed")
+        CANCELLED = "cancelled", _("Cancelled")  # in case a parallel branch with higher prio went over
+        ACTIVE = "active", _("Active")
 
     workflow_instance = models.ForeignKey(
-        RISPWorkflowInstance,
-        on_delete=models.CASCADE,
-        related_name="node_instances"
+        ValidationWorkflowInstance, on_delete=models.CASCADE, related_name="node_instances"
     )
 
-    node = models.ForeignKey(RISPNode, on_delete=models.CASCADE)
+    node = models.ForeignKey(ValidationNode, on_delete=models.CASCADE)
 
     status = models.CharField(
         choices=Status.choices,
@@ -50,7 +48,7 @@ class RISPNodeInstance(CreatedAndUpdatedModel):
     )
 
 
-class RISPTransitionInstance(CreatedAndUpdatedModel):
+class ValidationTransitionInstance(CreatedAndUpdatedModel):
     """
     Reprensents a running instance of a transition
     """
@@ -59,9 +57,11 @@ class RISPTransitionInstance(CreatedAndUpdatedModel):
         PENDING = "pending", _("Pending")
         APPROVED = "approved", _("Approved")
         REJECTED = "rejected", _("Rejected")
-        CANCELLED = "cancelled", _("Cancelled") # in case a parallel branch with higher prio went over
+        CANCELLED = "cancelled", _("Cancelled")  # in case a parallel branch with higher prio went over
 
-    node_instance = models.ForeignKey(RISPNodeInstance, on_delete=models.CASCADE, related_name='transition_instances')
+    node_instance = models.ForeignKey(
+        ValidationNodeInstance, on_delete=models.CASCADE, related_name="transition_instances"
+    )
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
 

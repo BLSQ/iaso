@@ -18,7 +18,6 @@ from .pages import IFRAME, POWERBI, RAW, SUPERSET, TEXT, Page
 from .payments import Payment, PaymentLot, PotentialPayment
 from .project import Project
 from .reports import Report, ReportVersion
-from .risp import RISPNode, RISPNodeInstance, RISPTransition, RISPTransitionInstance, RISPWorkflow, RISPWorkflowInstance
 from .stocks import (
     StockImpacts,
     StockItem,
@@ -33,6 +32,14 @@ from .storage import StorageDevice, StorageLogEntry, StoragePassword
 from .task import Task, TaskLog
 from .team import Team
 from .tenant_users import TenantUser
+from .validation_workflow import (
+    ValidationNode,
+    ValidationNodeInstance,
+    ValidationTransition,
+    ValidationTransitionInstance,
+    ValidationWorkflow,
+    ValidationWorkflowInstance,
+)
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
 
 
@@ -84,12 +91,6 @@ __all__ = [
     "Project",
     "Report",
     "ReportVersion",
-    "RISPNode",
-    "RISPNodeInstance",
-    "RISPTransition",
-    "RISPTransitionInstance",
-    "RISPWorkflow",
-    "RISPWorkflowInstance",
     "SourceVersion",
     "StockKeepingUnit",
     "StockKeepingUnitChildren",
@@ -114,6 +115,12 @@ __all__ = [
     "TaskLog",
     "Team",
     "TenantUser",
+    "ValidationNode",
+    "ValidationNodeInstance",
+    "ValidationTransition",
+    "ValidationTransitionInstance",
+    "ValidationWorkflow",
+    "ValidationWorkflowInstance",
     "Workflow",
     "WorkflowChange",
     "WorkflowFollowup",

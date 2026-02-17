@@ -158,8 +158,11 @@ export const PlanningForm: FunctionComponent<Props> = ({
         validationSchema: schema,
         onSubmit: save,
     });
-    // const publishingStatusValue = formik.values.publishingStatus;
     const isPublishing = formik.values.publishingStatus === 'published';
+    const hasStarted =
+        formik.values.startDate &&
+        moment().isAfter(moment(formik.values.startDate), 'day');
+    const isPublishingDisabled = isPublishing || !hasStarted;
     const {
         values,
         setFieldValue,
@@ -277,7 +280,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                         withMarginTop={false}
-                        disabled={isPublishing}
+                        disabled={isPublishingDisabled}
                     />
 
                     <DatesRange
@@ -290,7 +293,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         keyDateTo="endDate"
                         errors={[getErrors('startDate'), getErrors('endDate')]}
                         blockInvalidDates={false}
-                        disabled={isPublishing}
+                        disabled={isPublishingDisabled}
                     />
                     <InputComponent
                         keyValue="description"
@@ -299,7 +302,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         errors={getErrors('description')}
                         type="textarea"
                         label={MESSAGES.description}
-                        disabled={isPublishing}
+                        disabled={isPublishingDisabled}
                     />
                 </Grid>
 
@@ -324,7 +327,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         required
                                         options={projectsDropdown}
                                         loading={isFetchingProjects}
-                                        disabled={isPublishing}
+                                        disabled={isPublishingDisabled}
                                     />
                                 </Grid>
                                 <Grid xs={6} item>
@@ -339,7 +342,8 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         options={teamsDropdown || []}
                                         loading={isFetchingTeams}
                                         disabled={
-                                            !values.project || isPublishing
+                                            !values.project ||
+                                            isPublishingDisabled
                                         }
                                     />
                                 </Grid>
@@ -360,7 +364,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 multi
                                 options={formsDropdown}
                                 loading={isFetchingForms}
-                                disabled={!values.project || isPublishing}
+                                disabled={
+                                    !values.project || isPublishingDisabled
+                                }
                             />
                         </Box>
                     </InputWithInfos>
@@ -381,7 +387,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                             value={values.pipelineUuids}
                             errors={getErrors('pipelineUuids')}
                             label={MESSAGES.pipelines}
-                            disabled={isPublishing}
+                            disabled={isPublishingDisabled}
                         />
                     )}
                 </Grid>
@@ -397,7 +403,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.selectOrgUnit)}
                                 name="selectedOrgUnit"
                                 errors={getErrors('selectedOrgUnit')}
-                                disabled={isPublishing}
+                                disabled={isPublishingDisabled}
                             />
                             <InputComponent
                                 type="select"
@@ -412,7 +418,8 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         : values.targetOrgUnitType
                                 }
                                 disabled={
-                                    !values.selectedOrgUnit || isPublishing
+                                    !values.selectedOrgUnit ||
+                                    isPublishingDisabled
                                 }
                                 options={orgunitTypes || []}
                                 loading={
@@ -488,7 +495,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                         startIcon={
                                                             <DeleteIcon />
                                                         }
-                                                        disabled={isPublishing}
+                                                        disabled={
+                                                            isPublishingDisabled
+                                                        }
                                                     >
                                                         {formatMessage(
                                                             MESSAGES.delete,

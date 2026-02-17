@@ -244,7 +244,7 @@ class EntityViewSet(ModelViewSet):
 
         # annotate with last instance on Entity, to allow ordering by it
         entities = queryset.annotate(
-            last_saved_instance=F("created_at")
+            last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
         )
         columns_list: List[Any] = []
 

@@ -4,7 +4,7 @@ from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
-from .tasks import clean_up_duplicate_instances, create_index_on_instance_uuid
+from .tasks import clean_up_duplicate_instances, clean_up_duplicate_instances_dry_run, create_index_on_instance_uuid
 
 
 @admin.action(description="Create indexes on UUID field (non-blocking)")
@@ -26,6 +26,19 @@ def clean_up_duplicates_action(modeladmin, request: HttpRequest, queryset):
     Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
     """
     clean_up_duplicate_instances.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+@admin.action(description="DRY-RUN: Clean-up duplicate instances (non-blocking)")
+def clean_up_duplicates_action_dry_run(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    clean_up_duplicate_instances_dry_run.delay()
 
     modeladmin.message_user(
         request,
@@ -86,7 +99,7 @@ class Month(SimpleListFilter):
 class BeneficiaryAdmin(admin.ModelAdmin):
     list_filter = ("birth_date", "gender", "account", "guidelines", ProgrammeType)
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
-    actions = [create_uuid_index_action, clean_up_duplicates_action]
+    actions = [create_uuid_index_action, clean_up_duplicates_action, clean_up_duplicates_action_dry_run]
 
 
 @admin.register(Journey)

@@ -1,3 +1,5 @@
+import argparse
+
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db.models import Count
@@ -5,11 +7,18 @@ from django.db.models import Count
 from iaso.models import Entity, Instance
 
 
+DRY_RUN_ARG = "dryrun"
+
+
 class Command(BaseCommand):
     help = "Clean-up duplicate submissions"
 
+    def add_arguments(self, parser):
+        parser.add_argument(f"--{DRY_RUN_ARG}", default=False, action=argparse.BooleanOptionalAction)
+
     @transaction.atomic
     def handle(self, *args, **options):
+        dry_run = options[DRY_RUN_ARG]
         self.stdout.write("Computing duplicate submissions...")
         duplicates = Instance.objects.values("uuid", "file_name").annotate(total=Count("uuid")).filter(total__gt=1)
         if len(duplicates) <= 0:
@@ -49,14 +58,14 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(" - file_name is None, that's odd!"))
                     continue
                 # We should use the content of the latest file received.
-                file_name = Instance.objects.filter(uuid__isnull=True, file_name=duplicate["file_name"]).order_by(
+                file_name_qs = Instance.objects.filter(uuid__isnull=True, file_name=duplicate["file_name"]).order_by(
                     "-created_at"
                 )
-                if file_name.exists():
+                if file_name_qs.exists():
                     self.stdout.write(
-                        self.style.SUCCESS(f" - Found {file_name.count()} instances with file_name matching.")
+                        self.style.SUCCESS(f" - Found {file_name_qs.count()} instances with file_name matching.")
                     )
-                    file = file_name.first()
+                    file = file_name_qs.first()
                     first.json = file.json
                     first.file = file.file
                     if file.location:
@@ -67,7 +76,7 @@ class Command(BaseCommand):
                         first.correlation_id = file.correlation_id
                     first.save()
                     self.stdout.write(self.style.WARNING(" - Deleting instances with file_name matching."))
-                    file_name.delete()
+                    file_name_qs.delete()
                     no_content_with_file += 1
                 else:
                     no_content_no_file += 1
@@ -78,11 +87,15 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f" - Multiple instances with content corrected: {multiple_content}"))
         self.stdout.write(self.style.SUCCESS(f" - No instances with content corrected: {no_content_with_file}"))
         self.stdout.write(self.style.WARNING(f" - No instances with content still empty: {no_content_no_file}"))
-        duplicates = Instance.objects.values("uuid", "file_name").annotate(total=Count("uuid")).filter(total__gt=1)
+
+        duplicates = Instance.objects.values("uuid").annotate(total=Count("uuid")).filter(total__gt=1)
         if len(duplicates) <= 0:
             self.stdout.write(self.style.SUCCESS("No duplicate submissions found anymore!"))
         else:
             self.stdout.write(self.style.ERROR(f"Duplicates: {len(duplicates)}"))
+
+        if dry_run:
+            raise Exception("Rollback, this was a dry-run!")
 
     def _delete_instances(self, uuid: str, file_name: str, first_id: str):
         to_delete = Instance.objects.filter(uuid=uuid, file_name=file_name).exclude(id=first_id)

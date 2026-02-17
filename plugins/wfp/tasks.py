@@ -5,7 +5,7 @@ from django.core.management import call_command
 from django.db import connection
 
 from iaso.management.commands import unique_indexes
-from iaso.models import *
+from iaso.management.commands.clean_up_duplicate_submissions import DRY_RUN_ARG
 from iaso.models.base import ExternalCredentials
 from plugins.wfp.common import ETL
 
@@ -71,6 +71,11 @@ def create_index_on_instance_uuid():
 @shared_task()
 def clean_up_duplicate_instances():
     call_command("clean_up_duplicate_submissions")
+
+
+@shared_task()
+def clean_up_duplicate_instances_dry_run():
+    call_command("clean_up_duplicate_submissions", f"--{DRY_RUN_ARG}")
 
 
 @shared_task()

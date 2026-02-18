@@ -588,7 +588,7 @@ class ETL:
                     quantity = step.get("_total_number_of_sachets", step.get("_total_number_of_sachets_rutf", quantity))
             assistance = {
                 "type": step.get("ration_type", step.get("ration")),
-                "quantity": quantity,
+                "quantity":step.get("quantity", quantity),
                 "ration_size": ration_size,
             }
             given_assistance.append(assistance)
@@ -924,6 +924,7 @@ class ETL:
             )
             .annotate(
                 admission_sc_itp_otp=Case(
+                #referred_from_otp_sam=Case(
                     When(
                         Q(visit__journey__admission_type="referred_from_sc")
                         | Q(visit__journey__admission_type="referred_from_otp_sam"),
@@ -995,7 +996,7 @@ class ETL:
 
     def aggregating_data_to_push_to_dhis2(self, account, org_unit_ids=None):
         # org_unit_ids = ["43", "827", "744"]
-        org_unit_ids = ["43"]
+        org_unit_ids = ["744"]
 
         monthlyStatistics = (
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
@@ -1036,7 +1037,7 @@ class ETL:
                     default=Value(0),
                     output_field=IntegerField(),
                 ),
-                admission_sc_itp_otp=Case(
+                referred_from_otp_sam=Case(
                     When(
                         Q(admission_type="referred_from_sc")
                         | Q(admission_type="referred_from_otp_sam")
@@ -1108,7 +1109,7 @@ class ETL:
                 whz_score_2=Sum(Cast("whz_score_2", FloatField())),
                 whz_score_3=Sum(Cast("whz_score_3", FloatField())),
                 whz_score_3_2=Sum(Cast("whz_score_3_2", FloatField())),
-                admission_sc_itp_otp=Sum(Cast("admission_sc_itp_otp", FloatField())),
+                total_beneficiary_admission_sc_itp_otp=Sum(Cast("referred_from_otp_sam", FloatField())),
                 transfer_to_otp=Sum(Cast("transfer_sc_itp_otp", FloatField())),
                 total_beneficiary_transfer_from_other_tsfp=Sum(Cast("transfer_from_other_tsfp", FloatField())),
                 transfer_to_tsfp=Sum(Cast("transfer_in_from_other_tsfp", FloatField())),
@@ -1125,6 +1126,8 @@ class ETL:
 
         if org_unit_ids is not None and len(org_unit_ids) > 0:
             monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
+
+        print("QUERRY ...:", monthlyStatistics.query)
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
         # Reading the dhis2 datalement mapper json file
@@ -1158,15 +1161,22 @@ class ETL:
                     "muac_under_11_5",
                     "muac_11_5_12_4",
                     "muac_above_12_5",
-                    "total_beneficiary",
+                    # "total_beneficiary",
                     "whz_score_3",
-                    "total_with_exit_type",
+                    # "total_with_exit_type",
                     "transfer_sc_itp_otp",
+                    "admission_sc_itp_otp",
                 ]
                 journey = groupby(list(journey_by_program), key=itemgetter("gender"))
             elif program_type == "PLW":
                 categories = ["screening_reporting", "tsfp_reporting", "bsfp_reporting"]
-                sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23", "total_with_exit_type"]
+                sub_categories = [
+                    # "total_beneficiary",
+                    "muac_under_23",
+                    "muac_above_23",
+                    # "total_with_exit_type",
+                    "admission_sc_itp_otp",
+                ]
                 journey = groupby(list(journey_by_program), key=itemgetter("nutrition_programme"))
 
             for main_category, journey_by_category in journey:
@@ -1181,7 +1191,17 @@ class ETL:
                 )
                 rows = AggregatedJourney().aggregated_rows(journey_by_categories)
 
+                print("GOT ROWS ...:", rows)
+
                 for nutrition_programme, journey_program in journey_by_gender_and_nutrition_program:
+                    print(
+                        "CATEGORIES ...:",
+                        categories,
+                        "JOURNEY PROGRAM ...:",
+                        journey_program,
+                        "NUTRITION PROGRAM ...:",
+                        nutrition_programme,
+                    )
                     for category in categories:
                         dataElement_by_category = dataElement.get(category)
                         dataElement_by_sub_category = dataElement_by_category
@@ -1193,6 +1213,9 @@ class ETL:
                             dataElement_by_sub_category = dataElement.get("tsfp_reporting")
                         elif nutrition_programme == "OTP":
                             dataElement_by_sub_category = dataElement.get("otp_reporting")
+                            print("OTP ...:", nutrition_programme)
+                            print("OTP REPORTING ...:", dataElement.get("otp_reporting"))
+
                         elif nutrition_programme == "BSFP":
                             dataElement_by_sub_category = dataElement.get("bsfp_reporting")
                             sub_categories = ["new_case"]
@@ -1200,12 +1223,16 @@ class ETL:
                             if dataElement_by_category is not None:
                                 dataElement_by_main_category = dataElement_by_category.get(main_category)
                                 for sub_category in sub_categories:
+                                    print("GETTING SUB CATEGORY ...:", sub_category, admission_type, rows)
                                     if dataElement_by_main_category is not None:
                                         dataValue = dataElement_by_main_category.get(sub_category)
                                         if sub_category == exit_type:
                                             rows[sub_category] = rows[f"total_with_exit_type_{sub_category}"]
                                         elif sub_category == admission_type:
                                             rows[sub_category] = rows[f"total_beneficiary_{sub_category}"]
+                                        #else:
+                                        #    rows[sub_category] = rows[sub_category]
+                                        print(f"DATAVALUES FOR {sub_category} ...:", dataValue)
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": rows[sub_category]})
         dataValues = list(

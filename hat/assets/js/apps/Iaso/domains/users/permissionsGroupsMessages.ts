@@ -63,6 +63,10 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     stock_management: {
         id: 'iaso.permissions.group.stock_management',
         defaultMessage: 'Stock management:',
+    },
+    snt_malaria: {
+        id: 'iaso.permissions.group.snt_malaria',
+        defaultMessage: 'SNT Malaria',
     }
 });
 

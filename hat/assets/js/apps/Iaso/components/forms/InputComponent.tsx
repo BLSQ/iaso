@@ -45,7 +45,7 @@ export type NumberInputOptions = {
     max?: number;
     decimalScale?: number;
     decimalSeparator?: '.' | ',';
-    thousandSeparator?: '.' | ',';
+    thousandSeparator?: '.' | ',' | ' ';
     thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
 };
 
@@ -99,7 +99,7 @@ export type InputComponentProps = {
         max?: number;
         decimalScale?: number;
         decimalSeparator?: '.' | ',';
-        thousandSeparator?: '.' | ',';
+        thousandSeparator?: '.' | ',' | ' ';
     };
     phoneInputOptions?: PhoneInputOptions;
     setFieldError?: (keyValue: string, message: string) => void;

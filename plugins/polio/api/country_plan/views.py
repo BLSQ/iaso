@@ -37,7 +37,7 @@ class CountryPlanViewSet(AuditMixin, ModelViewSet):
         django_filters.rest_framework.DjangoFilterBackend,
     ]
     filterset_class = CountryPlanFilter
-    ordering_fields = ["date", "country__name", "status", "vaccine", "updated_at"]
+    ordering_fields = ["date", "country__name", "status", "vaccine", "updated_at", "physical_inventory"]
     http_method_names = ["get", "post", "patch", "delete"]
     audit_serializer = CountryPlanAuditSerializer
 

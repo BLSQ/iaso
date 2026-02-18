@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import serializers
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
@@ -20,25 +22,72 @@ class CountryPlanSerializerAPITestCase(CountryPlanAPIBase):
         """
         Test that the List/Read serializer returns the correct structure and data.
         """
-        dashboard = self.dashboard_1
-        serializer = CountryPlanListSerializer(instance=dashboard)
+
+        serializer = CountryPlanListSerializer(instance=self.dashboard_1)
         data = serializer.data
 
         self.assertIn("id", data)
         self.assertIn("date", data)
         self.assertIn("status", data)
         self.assertIn("vaccine", data)
+        self.assertIn("physical_inventory", data)
 
         # Check that the values are correct
-        self.assertEqual(data["id"], dashboard.id)
-        self.assertEqual(data["status"], dashboard.status)
+        self.assertEqual(data["id"], self.dashboard_1.id)
+        self.assertEqual(data["status"], self.dashboard_1.status)
+        self.assertEqual(
+            data["physical_inventory"],
+            datetime.datetime.strftime(self.dashboard_1.physical_inventory, "%Y-%m-%d"),
+        )
 
-        self.assertEqual(data["country_name"], dashboard.country.name)
+        self.assertEqual(data["country_name"], self.dashboard_1.country.name)
+
+        # Test object without physical inventory
+        serializer = CountryPlanListSerializer(instance=self.dashboard_2)
+        data = serializer.data
+        self.assertIn("id", data)
+        self.assertIn("date", data)
+        self.assertIn("status", data)
+        self.assertIn("vaccine", data)
+        self.assertIn("physical_inventory", data)
+
+        # Check that the values are correct
+        self.assertEqual(data["id"], self.dashboard_2.id)
+        self.assertEqual(data["status"], self.dashboard_2.status)
+        self.assertIsNone(data["physical_inventory"])
+
+        self.assertEqual(data["country_name"], self.dashboard_2.country.name)
 
     def test_write_serializer_create_success(self):
         """
         Test that the Write serializer can successfully create a new object.
         """
+        data = {
+            "date": "2023-05-01",
+            "status": "draft",
+            "vaccine": "bOPV",
+            "country_id": self.east.id,
+            "physical_inventory": "2025-05-05",
+        }
+        factory = APIRequestFactory()
+        django_request = factory.post(self.COUNTRY_PLAN_API_URL, data, format="json")
+
+        drf_request = Request(django_request)
+        drf_request.user = self.user_admin_1
+
+        serializer = CountryPlanWriteSerializer(data=data, context={"request": drf_request})
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+        new_dashboard = serializer.save()
+
+        self.assertIsInstance(new_dashboard, CountryPlan)
+        self.assertEqual(new_dashboard.status, "draft")
+        self.assertEqual(new_dashboard.country, self.east)
+        self.assertEqual(new_dashboard.physical_inventory, datetime.date(2025, 5, 5))
+
+        self.assertEqual(new_dashboard.account, self.account_one)
+        # test w/o physiccal inventory
         data = {
             "date": "2023-05-01",
             "status": "draft",
@@ -60,6 +109,7 @@ class CountryPlanSerializerAPITestCase(CountryPlanAPIBase):
         self.assertIsInstance(new_dashboard, CountryPlan)
         self.assertEqual(new_dashboard.status, "draft")
         self.assertEqual(new_dashboard.country, self.east)
+        self.assertIsNone(new_dashboard.physical_inventory)
 
         self.assertEqual(new_dashboard.account, self.account_one)
 

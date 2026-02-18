@@ -167,12 +167,12 @@ export const useFilterState = ({
 
 type MultiTreeviewArgs = {
     paramIds: string | undefined;
-    handleChange: (key: string, value: (string | number)[] | undefined) => void;
+    handleChange: (key: string, value: string | string[] | undefined) => void;
 };
 
 type MultiTreeviewFilter = {
-    initialOrgUnits: OrgUnit[];
-    handleOrgUnitChange: (orgUnits: (number | string)[] | undefined) => void;
+    initialOrgUnits: OrgUnit[] | undefined;
+    handleOrgUnitChange: (orgUnits: OrgUnit[] | undefined) => void;
 };
 
 export const useMultiTreeviewFilterState = ({
@@ -185,11 +185,11 @@ export const useMultiTreeviewFilterState = ({
     const { data: initialOrgUnits } = useGetMultipleOrgUnits(initialOrgUnitIds);
 
     const handleOrgUnitChange = useCallback(
-        orgUnits => {
+        (orgUnits: OrgUnit[] | undefined) => {
             const ids = orgUnits ? orgUnits.map(orgUnit => orgUnit.id) : [];
             // When "emptying" the treeview, the value is [],
             // so we force it to undefined to avoid an empty string in the param org_unit which leads to a 404
-            handleChange('org_unit', ids.length ? ids : undefined);
+            handleChange('org_unit', ids?.length ? ids?.join(',') : undefined);
             setInitialOrgUnitIds(ids);
         },
         [handleChange],
@@ -198,40 +198,6 @@ export const useMultiTreeviewFilterState = ({
     return useMemo(
         () => ({ initialOrgUnits, handleOrgUnitChange }),
         [handleOrgUnitChange, initialOrgUnits],
-    );
-};
-
-type TreeviewArgs = {
-    paramId: string | undefined;
-    handleChange: (key: string, value: (string | number)[] | undefined) => void;
-};
-
-type TreeviewFilter = {
-    initialOrgUnit: OrgUnit;
-    handleOrgUnitChange: (orgUnit: OrgUnit | undefined) => void;
-};
-
-export const useTreeviewFilterState = ({
-    paramId,
-    handleChange,
-}: TreeviewArgs): TreeviewFilter => {
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState<
-        string | (number | string)[] | undefined
-    >(paramId);
-    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-
-    const handleOrgUnitChange = useCallback(
-        orgUnit => {
-            const id = orgUnit ? [orgUnit.id] : undefined;
-            setInitialOrgUnitId(id);
-            handleChange('org_unit', id);
-        },
-        [handleChange],
-    );
-
-    return useMemo(
-        () => ({ initialOrgUnit, handleOrgUnitChange }),
-        [handleOrgUnitChange, initialOrgUnit],
     );
 };
 

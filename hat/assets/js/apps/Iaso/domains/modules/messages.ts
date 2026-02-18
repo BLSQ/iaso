@@ -94,6 +94,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Stock management',
         id: 'iaso.modules.stock_management',
     },
+    snt_malaria: {
+        defaultMessage: 'SNT Malaria',
+        id: 'iaso.modules.snt_malaria',
+    }
 });
 
 export default MESSAGES;

@@ -1000,6 +1000,7 @@
     "iaso.modules.trypelim_project": "Projet Trypelim",
     "iaso.openHexa.label.pipelineDetails": "Détails de la pipeline",
     "iaso.openHexa.label.pipelines": "Pipelines",
+    "iaso.openHexaIntegration.planningAlreadyPublished": "Planification déjà publiée",
     "iaso.openHexalabel.addLevel": "Ajouter un niveau",
     "iaso.openHexalabel.collapse": "Réduire",
     "iaso.openHexalabel.excludedOrgUnits": "Unités d'org. exclues",

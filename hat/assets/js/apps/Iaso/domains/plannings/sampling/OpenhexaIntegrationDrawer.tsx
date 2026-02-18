@@ -139,7 +139,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         setCurrentStep(1);
         setTaskStatus(undefined);
     };
-
+    const isPublished = Boolean(planning.published_at);
     useEffect(() => {
         if (isSubmitting && !isLaunchingTask) {
             setIsSubmitting(false);
@@ -147,7 +147,16 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     }, [isSubmitting, isLaunchingTask]);
     return (
         <>
-            <Tooltip title={disabled ? disabledMessage : undefined}>
+            <Tooltip
+                title={
+                    // eslint-disable-next-line no-nested-ternary
+                    disabled
+                        ? disabledMessage
+                        : isPublished
+                          ? formatMessage(MESSAGES.planningAlreadyPublished)
+                          : ''
+                }
+            >
                 <Box>
                     <Button
                         variant="outlined"
@@ -156,7 +165,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                             setIsOpen(true);
                         }}
                         sx={styles.button}
-                        disabled={disabled}
+                        disabled={disabled || isPublished}
                     >
                         <PlusIcon sx={styles.icon} />
                         {formatMessage(MESSAGES.openHexaIntegration)}

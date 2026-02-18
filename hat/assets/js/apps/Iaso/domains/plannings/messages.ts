@@ -339,6 +339,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
         defaultMessage: 'Assignments deleted successfully',
     },
+    planningAlreadyPublished: {
+        id: 'iaso.openHexaIntegration.planningAlreadyPublished',
+        defaultMessage: 'Planning is already published',
+    },
 });
 
 export default MESSAGES;

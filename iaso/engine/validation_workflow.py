@@ -5,182 +5,184 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 
 from iaso.models import (
-    ValidationNode,
-    ValidationNodeInstance,
-    ValidationTransition,
-    ValidationTransitionInstance,
-    ValidationWorkflow,
-    ValidationWorkflowInstance,
+    ValidationStateObject,
+    ValidationStateTemplate,
+    ValidationStepObject,
+    ValidationStepTemplate,
+    ValidationWorkflowObject,
+    ValidationWorkflowTemplate,
 )
-from iaso.models.validation_workflow.run_instances import ValidationWorkflowInstanceStatus
+from iaso.models.validation_workflow.run_instances import (
+    ValidationStateObjectStatus,
+    ValidationStepObjectStatus,
+    ValidationWorkflowObjectStatus,
+)
+from iaso.models.validation_workflow.templates import ValidationStateTemplateMergeStrategy, ValidationStateTemplateType
 
 
 class WorkflowEngine:
     @staticmethod
     @transaction.atomic
-    def start(workflow: ValidationWorkflow, user, entity=None):
+    def start(workflow_template: ValidationWorkflowTemplate, user, entity=None):
         """
-        Start a workflow by creating a workflow instance and activating the START node.
+        Start a workflow by creating a workflow object and activating the START step.
         We also check the entity passed.
         """
 
-        if entity and not workflow.is_entity_allowed(entity):
+        if entity and not workflow_template.is_entity_allowed(entity):
             raise ValueError("This workflow cannot be attached to this entity type")
 
         if entity:
             ct = ContentType.objects.get_for_model(entity)
-            workflow_instance = ValidationWorkflowInstance.objects.create(
-                created_by=user, workflow=workflow, content_type=ct, object_id=entity.pk
+            workflow_object = ValidationWorkflowObject.objects.create(
+                created_by=user, workflow_template=workflow_template, content_type=ct, object_id=entity.pk
             )
         else:
-            workflow_instance = ValidationWorkflowInstance.objects.create(workflow=workflow, created_by=user)
+            workflow_object = ValidationWorkflowObject.objects.create(
+                workflow_template=workflow_template, created_by=user
+            )
 
-        start_node = workflow.get_start_node()
+        start_state_template = workflow_template.get_start_state()
 
-        return WorkflowEngine._activate_node(
-            workflow_instance=workflow_instance,
-            node=start_node,
-        )
+        return WorkflowEngine._activate_state(workflow_object=workflow_object, state_template=start_state_template)
 
     @staticmethod
-    def _activate_node(workflow_instance: ValidationWorkflowInstance, node: ValidationNode):
+    def _activate_state(workflow_object: ValidationWorkflowObject, state_template: ValidationStateTemplate):
         """
-        Create a NodeInstance and initialize its transitions. It should only happen when the incoming transition has been approved or if it's a start node.
-        START nodes auto-complete immediately.
+        This function is solely responsible for activating a state and the outgoing related steps (if any) if the incoming transitions are approved.
+
+        In case of END state, it also closes the workflow by setting it to approved.
+
+        In case of START state, it auto sets the state to COMPLETED
         """
 
-        node_instance = ValidationNodeInstance.objects.create(
-            workflow_instance=workflow_instance,
-            node=node,
-            status=ValidationNodeInstance.Status.ACTIVE,
+        state_object = ValidationStateObject.objects.create(
+            workflow_object=workflow_object,
+            state_template=state_template,
+            status=ValidationStateObjectStatus.ACTIVE,
         )
 
-        # END node => complete and end workflow
-        if node.node_type == ValidationNode.NodeType.END:
-            node_instance.status = ValidationNodeInstance.Status.COMPLETED
-            node_instance.save(update_fields=["status"])
+        # END node => complete and end workflow (approved)
+        if state_template.state_type == ValidationStateTemplateType.END:
+            state_object.status = ValidationStateObjectStatus.COMPLETED
+            state_object.save(update_fields=["status"])
 
-            workflow_instance.status = ValidationWorkflowInstanceStatus.APPROVED
-            workflow_instance.save(update_fields=["status"])
-            return node_instance
+            workflow_object.status = ValidationWorkflowObjectStatus.APPROVED
+            workflow_object.save(update_fields=["status"])
+            return workflow_object
 
-        # Create TransitionInstances for all transition outgoing from this node
+        # Create ValidationStepObject for all steps outgoing from this state
         with transaction.atomic():
-            ValidationTransitionInstance.objects.bulk_create(
+            ValidationStepObject.objects.bulk_create(
                 (
-                    ValidationTransitionInstance(
-                        from_node_instance=node_instance,
-                        transition=transition,
-                        status=ValidationTransitionInstance.Status.PENDING,
+                    ValidationStepObject(
+                        from_state_object=state_object,
+                        step_template=step_template,
+                        status=ValidationStepObjectStatus.PENDING,
                     )
-                    for transition in node.outgoing.all()
+                    for step_template in state_template.outgoing.all()
                 ),
                 batch_size=1000,
             )
 
         # START node auto-completes
-        if node.node_type == ValidationNode.NodeType.START:
-            node_instance.status = ValidationNodeInstance.Status.COMPLETED
-            node_instance.save(update_fields=["status"])
-            WorkflowEngine._advance_node(node_instance)
+        if state_template.state_type == ValidationStateTemplateType.START:
+            state_object.status = ValidationStateObjectStatus.COMPLETED
+            state_object.save(update_fields=["status"])
+            # we move to the next node
+            WorkflowEngine._advance_state(state_object)
 
-        return node_instance
+        return state_object
 
     @staticmethod
     @transaction.atomic
-    def complete_transition(
-        transition_instance: ValidationTransitionInstance, approved: bool, user, comment: Optional[str] = None
-    ):
+    def complete_step(step_object: ValidationStepObject, approved: bool, user, comment: Optional[str] = None):
         """
-        Complete a TransitionInstance.
+        Complete (finish) a ValidationStepObject.
         Business logic POV: the user decides to validate or not the step.
         """
 
-        if transition_instance.status != ValidationTransitionInstance.Status.PENDING:
-            raise ValueError("Transition already done")
+        if step_object.status != ValidationStepObjectStatus.PENDING:
+            raise ValueError("Step already done")
 
         # we check if the user has permissions to approve/reject this step
-        WorkflowEngine._check_transition_permission(
-            user=user,
-            transition=transition_instance.transition,
-        )
+        WorkflowEngine._check_step_permission(user=user, step_template=step_object.step_template)
 
-        transition_instance.status = (
-            ValidationTransitionInstance.Status.APPROVED if approved else ValidationTransitionInstance.Status.REJECTED
-        )
+        step_object.status = ValidationStepObjectStatus.APPROVED if approved else ValidationStepObjectStatus.REJECTED
 
         if not approved and comment:
-            transition_instance.rejection_comment = comment
+            step_object.rejection_comment = comment
         if user:
-            transition_instance.updated_by = user
-        transition_instance.save()
+            step_object.updated_by = user
+        step_object.save()
 
         if not approved:
-            # Handle the reject here, if rejection_target is set we fallback to that node, otherwise we stop completely
-            if transition_instance.transition.rejection_target:
-                node_instance = transition_instance.from_node_instance
+            # Handle the reject here, if rejection_target is set we fall back to that node, otherwise we stop completely
+            if step_object.step_template.rejection_target:
+                state_object = step_object.from_state_object
 
-                # Cancel remaining pending transitions (e.g parallel routes)
-                # WorkflowEngine._cancel_other_pending(node_instance)
+                # Cancel remaining pending steps (e.g parallel routes)
+                # WorkflowEngine._cancel_other_pending(state_object)
 
-                node_instance.status = ValidationNodeInstance.Status.COMPLETED
-                node_instance.save()
+                state_object.status = ValidationStateObjectStatus.COMPLETED
+                state_object.save()
 
                 # Activate rejection target
-                WorkflowEngine._activate_node(
-                    workflow_instance=node_instance.workflow_instance,
-                    node=transition_instance.transition.rejection_target,
+                WorkflowEngine._activate_state(
+                    workflow_object=state_object.workflow_object,
+                    state_template=step_object.step_template.rejection_target,
                 )
                 return
-            node_instance = transition_instance.from_node_instance
-            workflow_instance = node_instance.workflow_instance
+            state_object = step_object.from_state_object
+            workflow_object = state_object.workflow_object
 
             # Complete the node
-            node_instance.status = ValidationNodeInstance.Status.COMPLETED
-            node_instance.save(update_fields=["status"])
+            state_object.status = ValidationStateObjectStatus.COMPLETED
+            state_object.save(update_fields=["status"])
 
             # Finalize workflow
-            workflow_instance.status = ValidationWorkflowInstanceStatus.REJECTED
-            workflow_instance.save(update_fields=["status"])
+            workflow_object.status = ValidationWorkflowObjectStatus.REJECTED
+            workflow_object.save(update_fields=["status"])
             return
 
         # Otherwise continue normal flow: approve
-        WorkflowEngine._advance_node(transition_instance.from_node_instance)
+        WorkflowEngine._advance_state(step_object.from_state_object)
 
     @staticmethod
-    def _advance_node(node_instance: ValidationNodeInstance):
+    def _advance_state(state_object: ValidationStateObject):
         """
-        Moving to next node.
+        Moving to next state.
         """
 
-        if not node_instance.workflow_instance.is_active:
+        if not state_object.workflow_object.is_active:
             return
 
-        node = node_instance.node
-        # transitions = node_instance.outgoing_transition_instances.all()
+        state_template = state_object.state_template
+        # transitions = node_object.outgoing_transition_objects.all()
         #
-        # pending = transitions.filter(status=ValidationTransitionInstance.Status.PENDING)
-        # approved = transitions.filter(status=ValidationTransitionInstance.Status.APPROVED)
-        # rejected = transitions.filter(status=ValidationTransitionInstance.Status.REJECTED)
+        # pending = transitions.filter(status=ValidationStepObject.Status.PENDING)
+        # approved = transitions.filter(status=ValidationStepObject.Status.APPROVED)
+        # rejected = transitions.filter(status=ValidationStepObject.Status.REJECTED)
 
-        strategy = node.merge_strategy
+        strategy = state_template.merge_strategy
 
-        # if strategy == ValidationNode.MergeStrategy.WAIT_ALL:
+        # todo : review this
+        # if strategy == ValidationStateTemplate.MergeStrategy.WAIT_ALL:
         #
         #     if pending.exists():
         #         return
         #
-        #     node_instance.status = ValidationNodeInstance.Status.COMPLETED
-        #     node_instance.save()
+        #     node_object.status = ValidationStateObject.Status.COMPLETED
+        #     node_object.save()
         #
         #     for ti in approved:
         #         WorkflowEngine._activate_node(
-        #             workflow_instance=node_instance.workflow_instance,
+        #             workflow_object=node_object.workflow_object,
         #             node=ti.transition.to_node,
         #         )
         #     return
         #
-        # elif strategy == ValidationNode.MergeStrategy.PRIORITY:
+        # elif strategy == ValidationStateTemplate.MergeStrategy.PRIORITY:
         #
         #     if approved.exists():
         #
@@ -190,89 +192,89 @@ class WorkflowEngine:
         #         # Cancel lower-priority pending transitions
         #         for ti in pending:
         #             if ti.transition.priority < winner.transition.priority:
-        #                 ti.status = ValidationTransitionInstance.Status.CANCELLED
+        #                 ti.status = ValidationStepObject.Status.CANCELLED
         #                 ti.save()
         #
         #         # Recompute pending after cancellations
-        #         remaining_pending = node_instance.transition_instances.filter(
-        #             status=ValidationTransitionInstance.Status.PENDING
+        #         remaining_pending = node_object.transition_objects.filter(
+        #             status=ValidationStepObject.Status.PENDING
         #         )
         #
         #         # If no higher priority still pending → finalize
         #         if not remaining_pending.filter(
         #                 transition__priority__gt=winner.transition.priority
         #         ).exists():
-        #             node_instance.status = ValidationNodeInstance.Status.COMPLETED
-        #             node_instance.save()
+        #             node_object.status = ValidationStateObject.Status.COMPLETED
+        #             node_object.save()
         #
         #             WorkflowEngine._activate_node(
-        #                 workflow_instance=node_instance.workflow_instance,
+        #                 workflow_object=node_object.workflow_object,
         #                 node=winner.transition.to_node,
         #             )
         #             return
         #
         #     # If nothing pending and no approvals
         #     if not pending.exists():
-        #         node_instance.status = ValidationNodeInstance.Status.COMPLETED
-        #         node_instance.save()
+        #         node_object.status = ValidationStateObject.Status.COMPLETED
+        #         node_object.save()
         #
         #     return
 
-        if strategy == ValidationNode.MergeStrategy.LINEAR:
-            # no strategy, meaning there isn't any split, we just move on
+        if strategy == ValidationStateTemplateMergeStrategy.LINEAR:
+            # no strategy, meaning there isn't any split, we just move on to next one
 
-            transition_instance = node_instance.outgoing_transition_instances.get()
+            step_object = state_object.outgoing_step_objects.get()
 
-            if transition_instance.status == ValidationTransitionInstance.Status.PENDING:
-                return  # transition still pending
+            if step_object.status == ValidationStepObjectStatus.PENDING:
+                return  # transition still pending, waiting for user to do anything
 
             # otherwise we can already assume the node is completed
-            node_instance.status = ValidationNodeInstance.Status.COMPLETED
-            node_instance.save()
+            state_object.status = ValidationStateObjectStatus.COMPLETED
+            state_object.save()
 
-            if transition_instance.status == ValidationWorkflowInstanceStatus.APPROVED:
-                WorkflowEngine._activate_node(node_instance.workflow_instance, transition_instance.transition.to_node)
+            if step_object.status == ValidationWorkflowObjectStatus.APPROVED:
+                WorkflowEngine._activate_state(state_object.workflow_object, step_object.step_template.to_state)
                 return
             # rejected
 
+    # @staticmethod
+    # @transaction.atomic
+    # def _cancel_other_pending(state_instance: ValidationStateObject):
+    #     """
+    #     Cancel all remaining pending transitions
+    #     Business logic POV: there are parallel branches and one of them got rejected, we have to automatically cancel the other ones
+    #     """
+    #
+    #     bulk_update_objects = []
+    #
+    #     for transition_instance in state_instance.transition_instances.filter(
+    #         status=ValidationStepObject.Status.PENDING
+    #     ):
+    #         transition_instance.status = ValidationStepObject.Status.CANCELLED
+    #         bulk_update_objects.append(transition_instance)
+    #
+    #     ValidationStepObject.objects.bulk_update(bulk_update_objects, fields=["status"], batch_size=500)
+
+    # @staticmethod
+    # def cancel_node(node_instance):
+    #     """
+    #     Cancel a node instance entirely.
+    #     """
+    #     node_instance.status = ValidationStateObject.Status.CANCELLED
+    #     node_instance.save()
+    #
+    #     for transition_instance in node_instance.transition_instances.filter(
+    #         status=ValidationStepObject.Status.PENDING
+    #     ):
+    #         transition_instance.status = ValidationStepObject.Status.CANCELLED
+    #         transition_instance.save(update_fields=["status"])
+
     @staticmethod
-    @transaction.atomic
-    def _cancel_other_pending(node_instance):
+    def _check_step_permission(user, step_template: ValidationStepTemplate):
         """
-        Cancel all remaining pending transitions
-        Business logic POV: there are parallel branches and one of them got rejected, we have to automatically cancel the other ones
+        We check if the user has the permission to execute this step.
         """
-
-        bulk_update_objects = []
-
-        for transition_instance in node_instance.transition_instances.filter(
-            status=ValidationTransitionInstance.Status.PENDING
-        ):
-            transition_instance.status = ValidationTransitionInstance.Status.CANCELLED
-            bulk_update_objects.append(transition_instance)
-
-        ValidationTransitionInstance.objects.bulk_update(bulk_update_objects, fields=["status"], batch_size=500)
-
-    @staticmethod
-    def cancel_node(node_instance):
-        """
-        Cancel a node instance entirely.
-        """
-        node_instance.status = ValidationNodeInstance.Status.CANCELLED
-        node_instance.save()
-
-        for transition_instance in node_instance.transition_instances.filter(
-            status=ValidationTransitionInstance.Status.PENDING
-        ):
-            transition_instance.status = ValidationTransitionInstance.Status.CANCELLED
-            transition_instance.save(update_fields=["status"])
-
-    @staticmethod
-    def _check_transition_permission(user, transition: ValidationTransition):
-        """
-        We check if the user has the permission to execute this transition.
-        """
-        required_roles = transition.roles_required.all()
+        required_roles = step_template.roles_required.all()
 
         if not required_roles.exists():
             return  # No perm required , anybody can do it

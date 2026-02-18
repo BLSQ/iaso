@@ -7,6 +7,7 @@ from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_h
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
 from iaso.utils.org_units import get_valid_org_units_with_geography
+from iaso.utils.serializer.json_schema_field import JSONSchemaField
 
 
 class MetricTypeSerializer(serializers.ModelSerializer):
@@ -45,7 +46,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     unit_symbol = serializers.CharField(required=False, allow_blank=True, max_length=2)
     origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
     legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
-    legend_config = serializers.JSONField(allow_null=False, write_only=True)
+    legend_config = JSONSchemaField(schema=MetricType.LEGEND_CONFIG_SCHEMA, allow_null=False, write_only=True)
 
     class Meta:
         model = MetricType

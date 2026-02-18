@@ -315,7 +315,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             expected_legend_config,
         )
 
-    def test_create_metric_type_invalid_scale(self):
+    def test_create_metric_type_invalid_legend_config(self):
         invalid_data = self.request_data.copy()
         invalid_data["legend_config"] = {
             "domain": [10],
@@ -378,6 +378,17 @@ class MetricTypeCreateSerializerTestCase(TestCase):
         self.assertIn(
             "Ordinal legend type allows a maximum of four scale items.", serializer.errors["non_field_errors"]
         )
+
+    def test_create_metric_type_invalid_legend_type_schema(self):
+        invalid_data = self.request_data.copy()
+        invalid_data["legend_config"] = {
+            "domain": "not an array",
+            "range": "not an array",
+        }
+        serializer_context = {"request": self.request}
+        serializer = MetricTypeCreateSerializer(data=invalid_data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("'not an array' is not of type 'array'", serializer.errors["legend_config"][0])
 
 
 class MetricValueSerializerTestCase(TestCase):

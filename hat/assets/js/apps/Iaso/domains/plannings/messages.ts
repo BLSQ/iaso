@@ -340,7 +340,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Assignments deleted successfully',
     },
     planningAlreadyPublished: {
-        id: 'iaso.openHexaIntegration.planningAlreadyPublished',
+        id: 'iaso.planning.label.planningAlreadyPublished',
         defaultMessage: 'Planning is already published',
     },
 });

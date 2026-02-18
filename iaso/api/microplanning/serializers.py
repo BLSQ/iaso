@@ -363,18 +363,28 @@ class BulkAssignmentSerializer(serializers.Serializer):
 
 
 class BulkDeleteAssignmentSerializer(serializers.Serializer):
-    """Bulk soft delete all assignments for a specific planning.
+    """Bulk soft delete all assignments for a specific user and/or planning.
 
     Marks all assignments linked to the specified planning as deleted using the deleted_at field.
     Audit the modification.
     """
 
     planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.none(), write_only=True, required=False, allow_null=True
+    )
+    team = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.none(), write_only=True, required=False, allow_null=True
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
         self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["user"].queryset = User.objects.select_related("iaso_profile__account").filter(
+            iaso_profile__account__id=user.iaso_profile.account.id
+        )
+        self.fields["team"].queryset = Team.objects.filter_for_user(user)
 
 
 # noinspection PyMethodMayBeStatic

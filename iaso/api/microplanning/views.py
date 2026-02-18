@@ -300,6 +300,8 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
 
         # Handle the save logic in the view (following codebase patterns)
         planning = serializer.validated_data["planning"]
+        user = serializer.validated_data.get("user", None)
+        team = serializer.validated_data.get("team", None)
         requester = request.user
 
         # Get all assignments for this planning that are not already deleted
@@ -309,12 +311,18 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
             .filter_for_user(requester)
         )
 
+        if user:
+            assignments = assignments.filter(user=user)
+        if team:
+            assignments = assignments.filter(team=team)
+
         if not assignments.exists():
             return Response(
                 {
                     "message": _("No assignments to delete"),
                     "deleted_count": 0,
                     "planning_id": planning.id,
+                    "user": user.id if user else None,
                 }
             )
 
@@ -346,5 +354,6 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
                 "message": _("Successfully deleted %(count)s assignments") % {"count": deleted_count},
                 "deleted_count": deleted_count,
                 "planning_id": planning.id,
+                "user": user.id if user else None,
             }
         )

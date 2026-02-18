@@ -198,7 +198,6 @@ class PlanningTestCase(APITestCase):
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        print(r)
         self.assertIsNotNone(r["started_at"])
         self.assertEqual(r["started_at"][0], "publishedWithoutStartDate")
 
@@ -223,7 +222,6 @@ class PlanningTestCase(APITestCase):
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        print(r)
         self.assertIsNotNone(r["ended_at"])
         self.assertEqual(r["ended_at"][0], "publishedWithoutEndDate")
 
@@ -1315,10 +1313,10 @@ class AssignmentAPITestCase(APITestCase):
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
 
         # Get the assignment for this specific planning and org_unit
+        deleted_assignment.refresh_from_db()
         restored_assignment = Assignment.objects.filter(
             planning=self.planning, org_unit=self.child2, deleted_at__isnull=True
         ).first()
-
         self.assertJSONResponse(response, 200)
         # The serializer creates a new assignment, not restore the old one
         self.assertNotEqual(restored_assignment.id, deleted_assignment.id)

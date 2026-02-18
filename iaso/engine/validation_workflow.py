@@ -110,10 +110,12 @@ class WorkflowEngine:
 
         step_object.status = ValidationStepObjectStatus.APPROVED if approved else ValidationStepObjectStatus.REJECTED
 
-        if not approved and comment:
-            step_object.rejection_comment = comment
+        if comment:
+            step_object.comment = comment
+
         if user:
             step_object.updated_by = user
+
         step_object.save()
 
         if not approved:
@@ -282,7 +284,15 @@ class WorkflowEngine:
         if user is None:  # not sure it'll happen IRL
             raise PermissionDenied("User required for this transition")
 
-        user_role_ids = user.profile.user_roles.values_list("id", flat=True)
+        if not hasattr(user, "iaso_profile"):  # not sure it'll happen IRL
+            raise PermissionDenied("User required for this step")
 
-        if not required_roles.filter(id__in=user_role_ids).exists():
-            raise PermissionDenied("You do not have permission to execute this transition")
+        if not user.iaso_profile:  # not sure it'll happen IRL
+            raise PermissionDenied("User required for this step")
+
+        user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
+
+        required_roles_id = required_roles.values_list("pk", flat=True)
+
+        if not set(required_roles_id).issubset(set(user_role_ids)):
+            raise PermissionDenied("You do not have permission to execute this step")

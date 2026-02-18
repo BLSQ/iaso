@@ -1,8 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 
 from iaso.engine.validation_workflow import WorkflowEngine
 from iaso.models import (
+    Account,
+    Profile,
+    UserRole,
     ValidationStateObject,
     ValidationStateTemplate,
     ValidationStepObject,
@@ -98,7 +103,7 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         # we check it has been approved
         self.assertEqual(step_object.status, ValidationStepObjectStatus.APPROVED)
         self.assertEqual(step_object.updated_by, self.other_user)
-        self.assertEqual(step_object.rejection_comment, "")
+        self.assertEqual(step_object.comment, "")
 
         # we check the ending state object has been created
         self.assertEqual(
@@ -129,7 +134,7 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         # we check it has been approved
         self.assertEqual(step_object.status, ValidationStepObjectStatus.REJECTED)
         self.assertEqual(step_object.updated_by, self.other_user)
-        self.assertEqual(step_object.rejection_comment, "A rejection comment")
+        self.assertEqual(step_object.comment, "A rejection comment")
 
         # we check the ending state object has not been created
         self.assertFalse(
@@ -408,9 +413,7 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
             ValidationStepObjectStatus.REJECTED,
         )
         self.assertEqual(
-            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object)
-            .first()
-            .rejection_comment,
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).first().comment,
             "A rejection comment",
         )
 
@@ -464,7 +467,7 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
             ValidationStepObjectStatus.APPROVED,
         )
         self.assertEqual(
-            ValidationStepObject.objects.filter(step_template=self.step_check_file_name).first().rejection_comment,
+            ValidationStepObject.objects.filter(step_template=self.step_check_file_name).first().comment,
             "A rejection comment",
         )
 
@@ -518,7 +521,7 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
         self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.APPROVED)
         self.assertEqual(step_manager_approves_object.status, ValidationStepObjectStatus.REJECTED)
-        self.assertEqual(step_manager_approves_object.rejection_comment, "A rejection comment")
+        self.assertEqual(step_manager_approves_object.comment, "A rejection comment")
 
         # check already existing state objects
         start_states = ValidationStateObject.objects.filter(
@@ -612,7 +615,7 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
         self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.APPROVED)
         self.assertEqual(step_manager_approves_object.status, ValidationStepObjectStatus.REJECTED)
-        self.assertEqual(step_manager_approves_object.rejection_comment, "A rejection comment")
+        self.assertEqual(step_manager_approves_object.comment, "A rejection comment")
 
         # check already existing state objects
         start_states = ValidationStateObject.objects.filter(
@@ -650,3 +653,115 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         )
 
         self.assertEqual(fallback_step.status, ValidationStepObjectStatus.PENDING)
+
+    def test_permission_check_for_step(self):
+        """
+        Purpose of this test is to check that the `check_permission` function works correctly:
+        * It rejects the user
+        * It doesn't modify anything in the workflow/state/step objects
+        """
+        # modify the step so it has some roles required
+        account = Account.objects.create(name="test")
+        group_1 = Group.objects.create(name="Group 1")
+        group_2 = Group.objects.create(name="Group 2")
+        user_role_1 = UserRole.objects.create(group=group_1, account=account)
+        user_role_2 = UserRole.objects.create(group=group_2, account=account)
+
+        another_user = get_user_model().objects.create_user(username="johndoe2", password="testpass")
+        another_user_2 = get_user_model().objects.create_user(username="johndoe3", password="testpass")
+
+        profile = Profile.objects.create(account=account, user=another_user)
+        profile.user_roles.add(user_role_1)
+        profile.user_roles.add(user_role_2)
+
+        profile_with_just_one_role = Profile.objects.create(account=account, user=another_user_2)
+        profile_with_just_one_role.user_roles.add(user_role_1)
+
+        self.step_check_file_type.roles_required.add(user_role_1)
+        self.step_check_file_type.roles_required.add(user_role_2)
+
+        ## CREATE
+        WorkflowEngine.start(self.workflow, self.user)
+
+        workflow_object = ValidationWorkflowObject.objects.filter(workflow_template=self.workflow).first()
+
+        ### Trying to complete first step without the required permissions or while being anonymous
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+
+        for approved in [False, True]:
+            for user in [None, self.other_user]:
+                with self.subTest(f"{'approve' if approved else 'reject'}{' with user' if user else ''}"):
+                    with self.assertRaises(PermissionDenied):
+                        WorkflowEngine.complete_step(step_check_file_type_object, approved, user)
+
+                    workflow_object.refresh_from_db()
+
+                    # check that the status hasn't changed
+                    self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+                    # check that the states and steps are still there and untouched
+                    # check the starting state - it should be there and autocompleted
+                    self.assertEqual(
+                        ValidationStateObject.objects.filter(
+                            workflow_object=workflow_object, state_template=self.start_state
+                        ).count(),
+                        1,
+                    )
+                    start_state_object = ValidationStateObject.objects.filter(
+                        workflow_object=workflow_object, state_template=self.start_state
+                    ).first()
+                    self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+
+                    # check the step after
+                    self.assertEqual(
+                        ValidationStepObject.objects.filter(step_template=self.step_check_file_type).count(), 1
+                    )
+                    step_check_file_type_object = ValidationStepObject.objects.filter(
+                        step_template=self.step_check_file_type
+                    ).first()
+                    self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.PENDING)
+
+                    # check that there isn't any other state or step object
+                    self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 1)
+                    self.assertEqual(
+                        ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+                        1,
+                    )
+
+        # check with a user that only has a subset of the required roles => should be permission denied
+        with self.assertRaises(PermissionDenied):
+            WorkflowEngine.complete_step(step_check_file_type_object, True, another_user_2)
+
+        # approve with permissions
+        WorkflowEngine.complete_step(step_check_file_type_object, True, another_user)
+
+        # we check if everything went fine
+        start_state_object.refresh_from_db()
+        step_check_file_type_object.refresh_from_db()
+        workflow_object.refresh_from_db()
+
+        # check that the workflow object is still in the right status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+        # check existing states and steps
+        self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
+
+        # check next states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 2)
+        file_type_checked_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.file_type_checked_state
+        ).first()
+        self.assertEqual(file_type_checked_state_object.status, ValidationStateObjectStatus.ACTIVE)
+
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            2,
+        )
+        self.assertEqual(ValidationStepObject.objects.filter(step_template=self.step_check_file_type).count(), 1)
+        step_check_file_name_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_name
+        ).first()
+        self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.PENDING)

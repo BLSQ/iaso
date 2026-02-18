@@ -99,4 +99,4 @@ class ValidationStepObject(CreatedAndUpdatedModel):
     updated_by = models.ForeignKey(
         get_user_model(), null=True, blank=True, on_delete=models.PROTECT, related_name="%(class)s_updated_set"
     )
-    rejection_comment = models.TextField(blank=True)
+    comment = models.TextField(blank=True)

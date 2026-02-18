@@ -99,6 +99,7 @@ export const Assignments: FunctionComponent = () => {
                         </Grid>
                         <Grid item xs={12} md={4}>
                             <TeamTable
+                                planningId={planningId}
                                 rootTeam={rootTeam}
                                 isLoadingRootTeam={isLoadingRootTeam}
                                 selectedUser={selectedUser}

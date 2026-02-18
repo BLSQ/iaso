@@ -1,25 +1,27 @@
 import { UseMutationResult } from 'react-query';
-
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import MESSAGES from '../../../plannings/messages';
 
-export type Params = {
-    planning: number;
-};
-
-const bulkDeleteAssignments = async (planning?: number): Promise<any> => {
+const bulkDeleteAssignments = async ({
+    planning,
+    user,
+    team,
+}: {
+    planning?: number;
+    user?: number;
+    team?: number;
+}): Promise<any> => {
     return postRequest(
         `/api/microplanning/assignments/bulk_delete_assignments/`,
-        { planning },
+        { planning, user, team },
     );
 };
 
-export const useBulkDeleteAssignments = (
-    planningId?: number,
-): UseMutationResult => {
+export const useBulkDeleteAssignments = (): UseMutationResult => {
     return useSnackMutation({
-        mutationFn: () => bulkDeleteAssignments(planningId),
+        mutationFn: ({ planning, user, team }) =>
+            bulkDeleteAssignments({ planning, user, team }),
         invalidateQueryKey: ['assignmentsList'],
         snackSuccessMessage: MESSAGES.bulkDeleteAssignmentsSuccess,
     });

@@ -22,6 +22,7 @@ const defaultHeight = '80vh';
 
 type Props = {
     rootTeam?: Team;
+    planningId: string;
     isLoadingRootTeam: boolean;
     selectedUser?: User;
     setSelectedUser: Dispatch<React.SetStateAction<User | undefined>>;
@@ -32,6 +33,7 @@ type Props = {
 
 export const TeamTable: FunctionComponent<Props> = ({
     rootTeam,
+    planningId,
     isLoadingRootTeam,
     selectedUser,
     setSelectedUser,
@@ -54,7 +56,7 @@ export const TeamTable: FunctionComponent<Props> = ({
         },
         [assignments],
     );
-    const countUsers = useCallback(
+    const assignmentsCountForUser = useCallback(
         (user: User) => {
             return (
                 assignments?.allAssignments?.filter(
@@ -119,6 +121,8 @@ export const TeamTable: FunctionComponent<Props> = ({
                                                 color,
                                             });
                                         }}
+                                        team={subTeam}
+                                        planningId={planningId}
                                     />
                                 ))}
                                 {rootTeam?.users_details
@@ -135,14 +139,18 @@ export const TeamTable: FunctionComponent<Props> = ({
                                                 setSelectedUser(user)
                                             }
                                             currentColor={user?.color}
-                                            displayName={getDisplayName(user)}
-                                            count={countUsers(user)}
+                                            count={assignmentsCountForUser(
+                                                user,
+                                            )}
                                             onColorChange={color => {
                                                 updateUser({
                                                     id: user.iaso_profile_id,
                                                     color,
                                                 });
                                             }}
+                                            user={user}
+                                            displayName={getDisplayName(user)}
+                                            planningId={planningId}
                                         />
                                     ))}
                             </TableBody>

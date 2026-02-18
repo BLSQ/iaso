@@ -1,13 +1,10 @@
 import { UseMutationResult } from 'react-query';
-import { useSnackMutation } from '../../../../libs/apiHooks';
 import { deleteRequest } from '../../../../libs/Api';
+import { useSnackMutation } from '../../../../libs/apiHooks';
 
 export const useDeleteAssignment = (): UseMutationResult =>
-    useSnackMutation(
-        body => deleteRequest(`/api/microplanning/assignments/${body.id}/`),
-        undefined,
-        undefined,
-        ['assignmentsList'],
-        {},
-        true,
-    );
+    useSnackMutation({
+        mutationFn: body =>
+            deleteRequest(`/api/microplanning/assignments/${body.id}/`),
+        invalidateQueryKey: ['assignmentsList'],
+    });

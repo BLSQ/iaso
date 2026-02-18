@@ -15,6 +15,7 @@ import { textPlaceholder } from 'bluesquare-components';
 import isPlainObject from 'lodash/isPlainObject';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
 import { getFileName, getFileType } from 'Iaso/utils/filesUtils';
 import { useLocale } from '../../app/contexts/LocaleContext';
 import { InstanceImagePreview } from './InstanceImagePreview';
@@ -373,6 +374,22 @@ const FormChild = ({
     showNote = true,
     files = [],
 }: FormChildProps): JSX.Element | null => {
+    // Trypelim-specific
+    // Load a different component for referenced Org Units.
+    const ORG_UNIT_FIELDNAMES = [
+        'traveller_village_id',
+        'st_fixe_traveller_village_id',
+        'infection_location_village_id',
+    ];
+    if (ORG_UNIT_FIELDNAMES.includes(descriptor.name)) {
+        return (
+            <FormVillageField
+                descriptor={descriptor}
+                data={data}
+                showQuestionKey={showQuestionKey}
+            />
+        );
+    }
     switch (descriptor.type) {
         case 'repeat':
             return data[descriptor.name] ? (
@@ -451,6 +468,45 @@ const FormChild = ({
                 />
             );
     }
+};
+
+// Trypelim-specifc component
+export const FormVillageField: FunctionComponent<FormFieldProps> = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+}) => {
+    const LinkedVillageLabel = useFindCustomComponent(
+        'instances.linked_village_label',
+    );
+    const classes = useStyles();
+    const { locale: activeLocale } = useLocale();
+    const rawValue = getDisplayedValue(descriptor, data, activeLocale);
+
+    return (
+        <TableRow>
+            <TableCell className={classes.tableCell}>
+                <div className={classes.tableCellLabelWrapper}>
+                    <FunctionsIcon
+                        color="disabled"
+                        className={classes.tableCellLabelIcon}
+                    />
+                    <Label
+                        descriptor={descriptor}
+                        tooltip={descriptor.bind?.calculate || null}
+                        showQuestionKey={showQuestionKey}
+                    />
+                </div>
+            </TableCell>
+            <TableCell className={classes.tableCell} align="right">
+                {rawValue && rawValue != '--' ? (
+                    <LinkedVillageLabel villageId={rawValue} />
+                ) : (
+                    '--'
+                )}
+            </TableCell>
+        </TableRow>
+    );
 };
 
 const FormGroup: FunctionComponent<FormGroupProps> = ({

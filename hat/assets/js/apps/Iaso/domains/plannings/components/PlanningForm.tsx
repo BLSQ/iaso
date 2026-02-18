@@ -162,7 +162,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const hasStarted =
         formik.values.startDate &&
         moment().isAfter(moment(formik.values.startDate), 'day');
-    const isPublishingDisabled = isPublishing || hasStarted;
+    const isPublishingDisabled = Boolean(isPublishing || hasStarted);
     const {
         values,
         setFieldValue,

@@ -132,8 +132,8 @@ class AggregatedJourney:
         row["whz_score_2"] = self.aggregate_by_field_name(journeys, "whz_score_2")
         row["whz_score_3"] = self.aggregate_by_field_name(journeys, "whz_score_3")
         row["oedema"] = self.aggregate_by_field_name(journeys, "oedema")
-        row["admission_sc_itp_otp"] = self.aggregate_by_field_name(journeys, "admission_sc_itp_otp")
-        row["transfer_from_other_tsfp"] = self.aggregate_by_field_name(journeys, "transfer_from_other_tsfp")
+        row["total_beneficiary_admission_sc_itp_otp"] = self.aggregate_by_field_name(journeys, "total_beneficiary_admission_sc_itp_otp")
+        row["transfer_from_other_tsfp"] = self.aggregate_by_field_name(journeys, "total_beneficiary_transfer_from_other_tsfp")
         row["transfer_sc_itp_otp"] = self.aggregate_by_field_name(journeys, "transfer_sc_itp_otp")
         row["transfer_in_from_other_tsfp"] = self.aggregate_by_field_name(journeys, "transfer_in_from_other_tsfp")
 

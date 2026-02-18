@@ -134,7 +134,7 @@ class NG_Under5:
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")
 
         etl = ETL()
-
+        current_entity_id = None
         for page in pages:
             entities = sorted(list(beneficiaries.page(page).object_list), key=itemgetter("entity_id"))
             existing_beneficiaries = etl.existing_beneficiaries()

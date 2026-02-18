@@ -316,7 +316,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.back',
     },
     deleteAssignments: {
-        id: 'iaso.assignment.deleteAssignments',
+        id: 'iaso.assignment.deleteAssignmentsForPlanning',
         defaultMessage: 'Delete assignments for planning : {name}',
     },
     deleteAssignmentsWarning: {

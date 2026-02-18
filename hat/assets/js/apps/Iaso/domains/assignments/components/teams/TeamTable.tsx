@@ -100,6 +100,7 @@ export const TeamTable: FunctionComponent<Props> = ({
                                             MESSAGES.assignationsCount,
                                         )}
                                     </TableCell>
+                                    <TableCell />
                                 </TableRow>
                             </TableHead>
                             <TableBody>

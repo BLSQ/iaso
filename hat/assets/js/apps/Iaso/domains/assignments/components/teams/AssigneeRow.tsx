@@ -2,13 +2,13 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { TableCell, TableRow, Checkbox, useTheme } from '@mui/material';
 import { IconButton } from 'bluesquare-components';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
-import { Team, User } from 'Iaso/domains/teams/types/team';
+import { SubTeam, User } from 'Iaso/domains/teams/types/team';
 import { useBulkDeleteAssignments } from '../../hooks/requests/useBulkDeleteAssignments';
 import MESSAGES from '../../messages';
 
 type Props = {
     user?: User;
-    team?: Team;
+    team?: SubTeam;
     planningId: string;
     isActive: boolean;
     setSelectedRow: () => void;
@@ -36,8 +36,6 @@ export const AssigneeRow: FunctionComponent<Props> = ({
             mutateAsync({ planning: planningId, team: team.id });
         } else if (user) {
             mutateAsync({ planning: planningId, user: user.id });
-        } else {
-            console.log('NOTHING!');
         }
     }, [user, team, planningId, mutateAsync]);
     return (
@@ -81,15 +79,17 @@ export const AssigneeRow: FunctionComponent<Props> = ({
             >
                 {count}
             </TableCell>
+
             <TableCell
                 sx={{
                     textAlign: 'center',
                 }}
             >
                 <IconButton
-                    tooltipMessage={MESSAGES.cancel}
+                    tooltipMessage={MESSAGES.deleteAssignments}
                     onClick={() => deleteAssignments()}
                     icon="delete"
+                    disabled={count === 0}
                 />
             </TableCell>
         </TableRow>

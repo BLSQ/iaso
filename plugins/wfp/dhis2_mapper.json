@@ -121,13 +121,13 @@
             },
             "transfer_from_other_tsfp": {
                 "Male": {
-                    "total_beneficiary": {
+                    "total_beneficiary_transfer_from_other_tsfp": {
                         "dataElement": "jh4uMjpyFeC",
                         "categoryOptionCombo": "JdekLvpgdQ3"
                     }
                 },
                 "Female": {
-                    "total_beneficiary": {
+                    "total_beneficiary_transfer_from_other_tsfp": {
                         "dataElement": "jh4uMjpyFeC",
                         "categoryOptionCombo": "kyIFy9GuWJ6"
                     }
@@ -135,13 +135,13 @@
             },
             "cured": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_cured": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "GY0Wv5bCjNG"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_cured": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "S31DHHucDWV"
                     }
@@ -149,13 +149,13 @@
             },
             "death": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_death": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "UtyDhZcM5KV"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_death": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "Or1dTOACYV0"
                     }
@@ -163,13 +163,13 @@
             },
             "defaulter": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_defaulter": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "wRhj2sDa1sE"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_defaulter": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "XRvLNSlj0PU"
                     }
@@ -177,13 +177,13 @@
             },
             "non_respondent": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_non_respondent": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "bno5z1hT6nR"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_non_respondent": {
                         "dataElement": "ghX9uosXLtl",
                         "categoryOptionCombo": "XJaSPkakLJn"
                     }
@@ -221,7 +221,7 @@
         "otp_reporting": {
             "new_case": {
                 "Male": {
-                    "total_beneficiary": {
+                    "total_beneficiary_new_case": {
                         "dataElement": "t4WxTl6Gp14",
                         "categoryOptionCombo": "OUXxVEWIxuM"
                     },
@@ -239,7 +239,7 @@
                     }
                 },
                 "Female": {
-                    "total_beneficiary": {
+                    "total_beneficiary_new_case": {
                         "dataElement": "t4WxTl6Gp14",
                         "categoryOptionCombo": "qvjvq1hK7Lc"
                     },
@@ -259,13 +259,13 @@
             },
             "relapse": {
                 "Male": {
-                    "total_beneficiary": {
+                    "total_beneficiary_relapse": {
                         "dataElement": "BMNn4quX4qt",
                         "categoryOptionCombo": "Mxkp0GrKG5h"
                     }
                 },
                 "Female": {
-                    "total_beneficiary": {
+                    "total_beneficiary_relapse": {
                         "dataElement": "BMNn4quX4qt",
                         "categoryOptionCombo": "abwmtb6Nn1D"
                     }
@@ -273,13 +273,13 @@
             },
             "returned_defaulter": {
                 "Male": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_defaulter": {
                         "dataElement": "z2cqC057w7V",
                         "categoryOptionCombo": "bgh3f3DwLLa"
                     }
                 },
                 "Female": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_defaulter": {
                         "dataElement": "z2cqC057w7V",
                         "categoryOptionCombo": "Ms6oRxjgYx6"
                     }
@@ -287,27 +287,27 @@
             },
             "returned_referral": {
                 "Male": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_referral": {
                         "dataElement": "z2cqC057w7V",
                         "categoryOptionCombo": "akho7qSqR50"
                     }
                 },
                 "Female": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_referral": {
                         "dataElement": "z2cqC057w7V",
                         "categoryOptionCombo": "d6wvVB6wgJk"
                     }
                 }
             },
-            "referred_from_otp_sam": {
+            "admission_sc_itp_otp": {
                 "Male": {
-                    "total_beneficiary": {
+                    "total_beneficiary_admission_sc_itp_otp": {
                         "dataElement": "z2cqC057w7V",
                         "categoryOptionCombo": "caEaXrcOE6g"
                     }
                 },
                 "Female": {
-                    "total_beneficiary": {
+                    "total_beneficiary_admission_sc_itp_otp": {
                         "dataElement": "z2cqC057w7V",
                         "categoryOptionCombo": "wKmEtZG1gYi"
                     }
@@ -315,13 +315,13 @@
             },
             "cured": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_cured": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "GY0Wv5bCjNG"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_cured": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "S31DHHucDWV"
                     }
@@ -329,13 +329,13 @@
             },
             "death": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_death": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "UtyDhZcM5KV"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_death": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "Or1dTOACYV0"
                     }
@@ -343,13 +343,13 @@
             },
             "defaulter": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_defaulter": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "wRhj2sDa1sE"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_defaulter": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "XRvLNSlj0PU"
                     }
@@ -357,13 +357,13 @@
             },
             "non_respondent": {
                 "Male": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_non_respondent": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "bno5z1hT6nR"
                     }
                 },
                 "Female": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_non_respondent": {
                         "dataElement": "X0n5lYJInut",
                         "categoryOptionCombo": "XJaSPkakLJn"
                     }
@@ -402,7 +402,7 @@
             "new_case": {
                 "Male": {
                     "new_case": {
-                        "total_beneficiary": {
+                        "total_beneficiary_new_case": {
                             "dataElement": "guwOLVJGIyJ",
                             "categoryOptionCombo": "TlDOlnLmDqE"
                         }
@@ -410,7 +410,7 @@
                 },
                 "Female": {
                     "new_case": {
-                        "total_beneficiary": {
+                        "total_beneficiary_new_case": {
                             "dataElement": "guwOLVJGIyJ",
                             "categoryOptionCombo": "jSDX5P0PQHc"
                         }
@@ -445,7 +445,7 @@
         "tsfp_reporting": {
             "new_case": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_beneficiary_new_case": {
                         "dataElement": "U08IHbRAVXk",
                         "categoryOptionCombo": "xdEOX113CTu"
                     },
@@ -455,7 +455,7 @@
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_beneficiary_new_case": {
                         "dataElement": "U08IHbRAVXk",
                         "categoryOptionCombo": "wegLiifhZWx"
                     },
@@ -467,13 +467,13 @@
             },
             "relapse": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_beneficiary_relapse": {
                         "dataElement": "lZCG2xRpJCj",
                         "categoryOptionCombo": "ahvlVBapPJY"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_beneficiary_relapse": {
                         "dataElement": "lZCG2xRpJCj",
                         "categoryOptionCombo": "IxnPEkgrEBP"
                     }
@@ -481,13 +481,13 @@
             },
             "returned_defaulter": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_defaulter": {
                         "dataElement": "vg9xavgIUzI",
                         "categoryOptionCombo": "P8JJNxdgtBC"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_defaulter": {
                         "dataElement": "vg9xavgIUzI",
                         "categoryOptionCombo": "VWkJaEnT40n"
                     }
@@ -495,13 +495,13 @@
             },
             "returned_referral": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_referral": {
                         "dataElement": "vg9xavgIUzI",
                         "categoryOptionCombo": "cCW0naFXFMa"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_beneficiary_returned_referral": {
                         "dataElement": "vg9xavgIUzI",
                         "categoryOptionCombo": "cbExzILioDH"
                     }
@@ -523,13 +523,13 @@
             },
             "cured": {
                 "pregnant": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_cured": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "mrK0RmaXqt2"
                     }
                 },
                 "breastfeeding": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_cured": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "dpq8Cb9TEke"
                     }
@@ -537,13 +537,13 @@
             },
             "death": {
                 "pregnant": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_death": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "OOfTlfKJuBd"
                     }
                 },
                 "breastfeeding": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_death": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "VzaOKz5E2HW"
                     }
@@ -551,13 +551,13 @@
             },
             "defaulter": {
                 "pregnant": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_defaulter": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "Gntpx1F0hwv"
                     }
                 },
                 "breastfeeding": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_defaulter": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "YRfzDcccVY3"
                     }
@@ -565,13 +565,13 @@
             },
             "non_respondent": {
                 "pregnant": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_non_respondent": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "FZmnV1ugQp3"
                     }
                 },
                 "breastfeeding": {
-                    "total_with_exit_type": {
+                    "total_with_exit_type_non_respondent": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "oMdzWvTR9Bz"
                     }

@@ -90,6 +90,7 @@ export const Assignments: FunctionComponent = () => {
                                 deleteAll({ planning: planningId });
                             }}
                             startIcon={<DeleteIcon />}
+                            disabled={!assignments?.allAssignments?.length}
                         >
                             {formatMessage(MESSAGES.deleteAllAssignments)}
                         </Button>

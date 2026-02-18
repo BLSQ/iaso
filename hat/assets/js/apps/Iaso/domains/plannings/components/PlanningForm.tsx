@@ -17,6 +17,7 @@ import moment from 'moment';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useBulkDeleteAssignments } from 'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
@@ -112,6 +113,12 @@ export const PlanningForm: FunctionComponent<Props> = ({
         type: mode,
         onSuccess: onSaveSuccess,
     });
+    const { mutateAsync } = useBulkDeleteAssignments();
+    const deleteAssignments = useCallback(() => {
+        if (planning) {
+            mutateAsync({ planning: planning.id });
+        }
+    }, [mutateAsync, planning]);
     const {
         apiErrors,
         payload,
@@ -493,16 +500,36 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                 MESSAGES.duplicatePlanning,
                                             )}
                                         </LinkButton>
-                                        <LinkButton
-                                            disabled={!canAssign}
-                                            to={assignmentUrl}
-                                            variant="outlined"
-                                            startIcon={<Assignment />}
+                                        <Box
+                                            display="flex"
+                                            justifyContent="space-between"
                                         >
-                                            {formatMessage(
-                                                MESSAGES.assignments,
-                                            )}
-                                        </LinkButton>
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                onClick={deleteAssignments}
+                                                startIcon={<DeleteIcon />}
+                                                sx={{
+                                                    marginRight: theme =>
+                                                        theme.spacing(2),
+                                                }}
+                                                disabled={!planning}
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.deleteAllAssignments,
+                                                )}
+                                            </Button>
+                                            <LinkButton
+                                                disabled={!canAssign}
+                                                to={assignmentUrl}
+                                                variant="outlined"
+                                                startIcon={<Assignment />}
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.assignments,
+                                                )}
+                                            </LinkButton>
+                                        </Box>
                                     </>
                                 )}
                             </Box>

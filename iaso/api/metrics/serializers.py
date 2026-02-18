@@ -6,7 +6,6 @@ from rest_framework import serializers
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
-from iaso.utils import legend
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
 
@@ -46,7 +45,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     unit_symbol = serializers.CharField(required=False, allow_blank=True, max_length=2)
     origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
     legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
-    scale = serializers.JSONField(allow_null=False, write_only=True)
+    legend_config = serializers.JSONField(allow_null=False, write_only=True)
 
     class Meta:
         model = MetricType
@@ -58,22 +57,14 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
             "unit_symbol",
             "legend_type",
             "origin",
-            "scale",
+            "legend_config",
         ]
-
-    def _get_legend_config_from_scale(self, instance, scale):
-        return legend.get_legend_config(instance, scale) if scale else instance.legend_config
-
-    def update(self, instance, validated_data):
-        scale = validated_data.pop("scale", None)
-        legend_config = self._get_legend_config_from_scale(instance, scale)
-        return super().update(instance, {**validated_data, "legend_config": legend_config})
 
     def validate(self, data):
         legend_type = data.get("legend_type")
-        scale = data.get("scale")
+        legend_config = data.get("legend_config")
 
-        scale_count = len(scale.split(",")) if scale else 0
+        scale_count = len(legend_config.get("domain", [])) if legend_config else 0
         if legend_type == MetricType.LegendType.THRESHOLD:
             if scale_count < 2:
                 raise serializers.ValidationError(_("Threshold legend type requires at least two scale items."))
@@ -99,9 +90,7 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
-        scale = validated_data.pop("scale", None)
         instance = super().create({**validated_data, "account": account})
-        instance.legend_config = self._get_legend_config_from_scale(instance, scale)
         instance.save()
         return instance
 

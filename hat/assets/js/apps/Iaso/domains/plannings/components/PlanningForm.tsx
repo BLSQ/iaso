@@ -158,6 +158,11 @@ export const PlanningForm: FunctionComponent<Props> = ({
         validationSchema: schema,
         onSubmit: save,
     });
+    const isPublished = formik.values.publishingStatus === 'published';
+    const hasStarted =
+        formik.values.startDate &&
+        moment().isAfter(moment(formik.values.startDate), 'day');
+    const isEditingDisabled = Boolean(isPublished || hasStarted);
     const {
         values,
         setFieldValue,
@@ -275,6 +280,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                         withMarginTop={false}
+                        disabled={isEditingDisabled}
                     />
 
                     <DatesRange
@@ -287,6 +293,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         keyDateTo="endDate"
                         errors={[getErrors('startDate'), getErrors('endDate')]}
                         blockInvalidDates={false}
+                        disabled={isEditingDisabled}
                     />
                     <InputComponent
                         keyValue="description"
@@ -295,6 +302,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                         errors={getErrors('description')}
                         type="textarea"
                         label={MESSAGES.description}
+                        disabled={isEditingDisabled}
                     />
                 </Grid>
 
@@ -319,6 +327,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         required
                                         options={projectsDropdown}
                                         loading={isFetchingProjects}
+                                        disabled={isEditingDisabled}
                                     />
                                 </Grid>
                                 <Grid xs={6} item>
@@ -332,7 +341,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         required
                                         options={teamsDropdown || []}
                                         loading={isFetchingTeams}
-                                        disabled={!values.project}
+                                        disabled={
+                                            !values.project || isEditingDisabled
+                                        }
                                     />
                                 </Grid>
                             </Grid>
@@ -352,7 +363,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 multi
                                 options={formsDropdown}
                                 loading={isFetchingForms}
-                                disabled={!values.project}
+                                disabled={!values.project || isEditingDisabled}
                             />
                         </Box>
                     </InputWithInfos>
@@ -373,6 +384,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                             value={values.pipelineUuids}
                             errors={getErrors('pipelineUuids')}
                             label={MESSAGES.pipelines}
+                            disabled={isEditingDisabled}
                         />
                     )}
                 </Grid>
@@ -388,6 +400,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.selectOrgUnit)}
                                 name="selectedOrgUnit"
                                 errors={getErrors('selectedOrgUnit')}
+                                disabled={isEditingDisabled}
                             />
                             <InputComponent
                                 type="select"
@@ -401,7 +414,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         ? undefined
                                         : values.targetOrgUnitType
                                 }
-                                disabled={!values.selectedOrgUnit}
+                                disabled={
+                                    !values.selectedOrgUnit || isEditingDisabled
+                                }
                                 options={orgunitTypes || []}
                                 loading={
                                     isFetchingOrgunitTypes ||
@@ -420,7 +435,16 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     value={values.publishingStatus}
                                     errors={getErrors('publishingStatus')}
                                     label={MESSAGES.publishingStatus}
-                                    options={publishingStatusOptions}
+                                    options={useMemo(
+                                        () =>
+                                            publishingStatusOptions.map(
+                                                option => ({
+                                                    ...option,
+                                                    disabled: hasStarted,
+                                                }),
+                                            ),
+                                        [publishingStatusOptions, hasStarted],
+                                    )}
                                     required
                                 />
                             </Box>
@@ -475,6 +499,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                         onClick={onClick}
                                                         startIcon={
                                                             <DeleteIcon />
+                                                        }
+                                                        disabled={
+                                                            isEditingDisabled
                                                         }
                                                     >
                                                         {formatMessage(

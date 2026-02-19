@@ -182,10 +182,15 @@ const InputComponent: React.FC<InputComponentProps> = ({
     };
     const inputValue =
         value === null || typeof value === 'undefined' ? '' : value;
-    const labelText =
-        typeof labelString === 'string'
-            ? labelString
-            : formatMessage(label || MESSAGES[keyValue]);
+    let labelText = '';
+    if (labelString && typeof labelString === 'string') {
+        labelText = labelString;
+    } else if (label) {
+        labelText = formatMessage(label);
+    } else if (MESSAGES[keyValue]) {
+        labelText = formatMessage(MESSAGES[keyValue]);
+    }
+
     const renderInput = () => {
         switch (type) {
             case 'email':

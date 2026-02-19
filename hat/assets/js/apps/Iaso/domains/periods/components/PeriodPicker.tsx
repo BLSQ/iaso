@@ -77,15 +77,15 @@ const PeriodPicker: FunctionComponent<Props> = ({
     message,
 }) => {
     const [currentPeriod, setCurrentPeriod] =
-        useState<Partial<PeriodObject> | null>(
-            activePeriodString && Period.getPeriodType(activePeriodString)
-                ? Period.parse(activePeriodString)[1]
-                : null,
-        );
+        useState<Partial<PeriodObject> | null>(null);
 
     useEffect(() => {
-        setCurrentPeriod(null);
-    }, [periodType]);
+        if (activePeriodString && Period.getPeriodType(activePeriodString)) {
+            setCurrentPeriod(Period.parse(activePeriodString)[1]);
+        } else {
+            setCurrentPeriod(null);
+        }
+    }, [activePeriodString]);
 
     const handleChange = (
         changedKeyName: 'month' | 'year' | 'quarter' | 'semester',

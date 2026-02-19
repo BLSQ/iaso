@@ -12,6 +12,7 @@ export const useGetPublishingStatusOptions = () => {
             {
                 label: formatMessage(MESSAGES.published),
                 value: 'published',
+                disabled: true,
             },
             {
                 label: formatMessage(MESSAGES.draft),

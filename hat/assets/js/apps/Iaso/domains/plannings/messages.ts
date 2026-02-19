@@ -343,6 +343,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Delete all assignments',
         id: 'iaso.assignment.deleteAllAssignments',
     },
+    planningAlreadyPublished: {
+        id: 'iaso.planning.label.planningAlreadyPublished',
+        defaultMessage: 'Planning is already published',
+    },
 });
 
 export default MESSAGES;

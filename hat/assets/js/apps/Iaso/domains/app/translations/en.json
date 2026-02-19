@@ -1002,6 +1002,7 @@
     "iaso.modules.trypelim_project": "Trypelim project",
     "iaso.openHexa.label.pipelineDetails": "Pipeline details",
     "iaso.openHexa.label.pipelines": "Pipelines",
+    "iaso.planning.label.planningAlreadyPublished": "Planning is already published",
     "iaso.openHexalabel.addLevel": "Add level",
     "iaso.openHexalabel.collapse": "Collapse",
     "iaso.openHexalabel.excludedOrgUnits": "Excluded org units",

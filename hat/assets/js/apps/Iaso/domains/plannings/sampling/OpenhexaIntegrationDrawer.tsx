@@ -18,6 +18,7 @@ import {
     Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
 import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
@@ -139,7 +140,12 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         setCurrentStep(1);
         setTaskStatus(undefined);
     };
-
+    const isPublished = Boolean(planning.published_at);
+    const hasStarted = Boolean(
+        planning.started_at &&
+        moment().isAfter(moment(planning.started_at), 'day'),
+    );
+    const isCreateSamplingDisabled = isPublished || hasStarted;
     useEffect(() => {
         if (isSubmitting && !isLaunchingTask) {
             setIsSubmitting(false);
@@ -147,7 +153,16 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     }, [isSubmitting, isLaunchingTask]);
     return (
         <>
-            <Tooltip title={disabled ? disabledMessage : undefined}>
+            <Tooltip
+                title={
+                    // eslint-disable-next-line no-nested-ternary
+                    disabled
+                        ? disabledMessage
+                        : isCreateSamplingDisabled
+                          ? formatMessage(MESSAGES.planningAlreadyPublished)
+                          : ''
+                }
+            >
                 <Box>
                     <Button
                         variant="outlined"
@@ -156,7 +171,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                             setIsOpen(true);
                         }}
                         sx={styles.button}
-                        disabled={disabled}
+                        disabled={disabled || isCreateSamplingDisabled}
                     >
                         <PlusIcon sx={styles.icon} />
                         {formatMessage(MESSAGES.openHexaIntegration)}

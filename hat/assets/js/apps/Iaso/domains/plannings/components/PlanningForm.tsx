@@ -435,7 +435,16 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     value={values.publishingStatus}
                                     errors={getErrors('publishingStatus')}
                                     label={MESSAGES.publishingStatus}
-                                    options={publishingStatusOptions}
+                                    options={useMemo(
+                                        () =>
+                                            publishingStatusOptions.map(
+                                                option => ({
+                                                    ...option,
+                                                    disabled: hasStarted,
+                                                }),
+                                            ),
+                                        [publishingStatusOptions, hasStarted],
+                                    )}
                                     required
                                 />
                             </Box>

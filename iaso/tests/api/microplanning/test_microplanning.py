@@ -57,6 +57,8 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
 
+    maxDiff = None
+
     def test_query_id(self):
         self.client.force_authenticate(self.user)
         id = self.planning.id
@@ -72,7 +74,7 @@ class PlanningTestCase(APITestCase):
                     "id": self.team1.id,
                     "name": self.team1.name,
                     "deleted_at": self.team1.deleted_at,
-                    "color": self.team1.color,
+                    "color": self.team1.color.upper(),
                 },
                 "project_details": {
                     "id": self.planning.project.id,

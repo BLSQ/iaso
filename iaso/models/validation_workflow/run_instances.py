@@ -91,6 +91,10 @@ class ValidationStepObject(CreatedAndUpdatedModel):
     from_state_object = models.ForeignKey(
         ValidationStateObject, on_delete=models.CASCADE, related_name="outgoing_step_objects"
     )
+    to_state_object = models.ForeignKey(
+        ValidationStateObject, on_delete=models.CASCADE, related_name="incoming_step_objects", null=True, blank=True
+    )
+
     step_template = models.ForeignKey(ValidationStepTemplate, on_delete=models.CASCADE, related_name="step_objects")
 
     status = models.CharField(

@@ -765,3 +765,557 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
             step_template=self.step_check_file_name
         ).first()
         self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.PENDING)
+
+
+class TestUndoFeatureForValidationWorkflowEngine(TestCase):
+    """
+    Purpose of this test is to show how the "undo" feature should work (aka the user made a mistake and wants to rollback).
+
+    * Undo should be possible if it's made by the same user
+    * For reject, undo should be possible if and only if the rejection target is set (aka the whole flows does not stop and sends a notification to the user)
+    * What undo actually does :
+        * Delete (or cancel) state objects created by the transition
+        * Reset the original step to PENDING
+        * Clear updated_by, comment
+
+
+    However, this has the cons that there's no history. The user can submit and cancel 10 times, we won't know.
+    Moreover, it only works if rejection target is set.
+
+    Setup of this test is as follows :
+
+    * Multiple steps (e.g check file type, check file name, etc)
+    * Multiple states (not just a start and end)
+    * In case of rejection:
+        * at step `manager approves` it goes back to state `start`
+        * at any other step it stops the whole flow (and sends back to user)
+    * No Permission checks by default
+
+    In summary:
+
+    [ state: START ]
+        |
+        |  (step: check file type)
+        v
+    [ state: file type checked ]
+        |
+        |  (step: check file name)
+        v
+    [ state: file name checked ]
+        |
+        |  (step: manager approves)
+        v
+    [  state: END   ]
+    """
+
+    def setUp(self):
+        # we define the users
+        self.user = get_user_model().objects.create_user(username="noprofile", password="testpass")
+        self.other_user = get_user_model().objects.create(username="john.doe", password="testpass")
+        self.other_user_2 = get_user_model().objects.create(username="john.wick", password="testpass")
+
+        # workflow
+        self.workflow = ValidationWorkflowTemplate.objects.get_or_create(name="test workflow")[0]
+
+        # states
+        self.start_state = ValidationStateTemplate.objects.create(
+            name="start", state_type=ValidationStateTemplateType.START, workflow=self.workflow
+        )
+        self.file_type_checked_state = ValidationStateTemplate.objects.create(
+            name="file type checked", state_type=ValidationStateTemplateType.TASK, workflow=self.workflow
+        )
+        self.file_name_checked_state = ValidationStateTemplate.objects.create(
+            name="file name checked", state_type=ValidationStateTemplateType.TASK, workflow=self.workflow
+        )
+        self.end_state = ValidationStateTemplate.objects.create(
+            name="end", state_type=ValidationStateTemplateType.END, workflow=self.workflow
+        )
+
+        # step
+        self.step_check_file_type = ValidationStepTemplate.objects.create(
+            name="check file type", from_state=self.start_state, to_state=self.file_type_checked_state
+        )
+        self.step_check_file_name = ValidationStepTemplate.objects.create(
+            name="check file name", from_state=self.file_type_checked_state, to_state=self.file_name_checked_state
+        )
+        self.step_manager_approves = ValidationStepTemplate.objects.create(
+            name="manager approves",
+            from_state=self.file_name_checked_state,
+            to_state=self.end_state,
+            rejection_target=self.start_state,
+        )
+
+    def test_undo_approved_file_type_step(self):
+        ### Create
+        WorkflowEngine.start(self.workflow, self.user)
+
+        workflow_object = ValidationWorkflowObject.objects.filter(workflow_template=self.workflow).first()
+
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+
+        ### Approve first step
+
+        # approve next step : file type check
+        WorkflowEngine.complete_step(step_check_file_type_object, True, self.other_user)
+
+        # check that step has the to_state_object
+        step_check_file_type_object.refresh_from_db()
+        self.assertIsNotNone(step_check_file_type_object.to_state_object)
+
+        ### Didn't mean to approve: undo
+        with self.subTest("undo as another user"):
+            with self.assertRaisesMessage(ValueError, "Only the same user can undone the step."):
+                WorkflowEngine.undo_step_object(step_check_file_type_object, self.other_user_2)
+
+        WorkflowEngine.undo_step_object(step_check_file_type_object, self.other_user)
+
+        # we check the workflow, states and steps
+        workflow_object.refresh_from_db()
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+        # check the starting state - it should be there and autocompleted
+        self.assertEqual(
+            ValidationStateObject.objects.filter(
+                workflow_object=workflow_object, state_template=self.start_state
+            ).count(),
+            1,
+        )
+        start_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.start_state
+        ).first()
+        self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+
+        # check the step after
+        self.assertEqual(ValidationStepObject.objects.filter(step_template=self.step_check_file_type).count(), 1)
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+        self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.PENDING)
+
+        # check that there isn't any other state or step object
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 1)
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            1,
+        )
+
+        # and now we can approve again, with another user if needed
+        WorkflowEngine.complete_step(step_check_file_type_object, True, self.other_user_2)
+
+        # we check it went through
+
+        start_state_object.refresh_from_db()
+        step_check_file_type_object.refresh_from_db()
+        workflow_object.refresh_from_db()
+
+        # check that the workflow object is still in the right status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+        # check existing states and steps
+        self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
+        self.assertEqual(step_check_file_type_object.updated_by, self.other_user_2)
+
+        # check next states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 2)
+        file_type_checked_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.file_type_checked_state
+        ).first()
+        self.assertEqual(file_type_checked_state_object.status, ValidationStateObjectStatus.ACTIVE)
+
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            2,
+        )
+        self.assertEqual(ValidationStepObject.objects.filter(step_template=self.step_check_file_type).count(), 1)
+        step_check_file_name_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_name
+        ).first()
+        self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.PENDING)
+
+    def test_undo_approved_file_name_step(self):
+        ### Create
+        WorkflowEngine.start(self.workflow, self.user)
+
+        workflow_object = ValidationWorkflowObject.objects.filter(workflow_template=self.workflow).first()
+
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+
+        ### Approve first step
+
+        # approve next step : file type check
+        WorkflowEngine.complete_step(step_check_file_type_object, True, self.other_user)
+
+        ### Approve second step
+        # approve second step : file name check
+        step_check_file_name_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_name
+        ).first()
+        WorkflowEngine.complete_step(step_check_file_name_object, True, self.other_user)
+
+        ### Didn't mean to approve: undo
+        step_check_file_name_object.refresh_from_db()
+        with self.subTest("undo as another user"):
+            with self.assertRaisesMessage(ValueError, "Only the same user can undone the step."):
+                WorkflowEngine.undo_step_object(step_check_file_name_object, self.other_user_2)
+
+        WorkflowEngine.undo_step_object(step_check_file_name_object, self.other_user)
+
+        # we check that we correctly reverted back
+        start_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.start_state
+        ).first()
+
+        step_check_file_type_object.refresh_from_db()
+        workflow_object.refresh_from_db()
+
+        # check that the workflow object is still in the right status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+        # check existing states and steps
+        self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
+
+        # check next states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 2)
+        file_type_checked_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.file_type_checked_state
+        ).first()
+        self.assertEqual(file_type_checked_state_object.status, ValidationStateObjectStatus.ACTIVE)
+
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            2,
+        )
+        self.assertEqual(ValidationStepObject.objects.filter(step_template=self.step_check_file_type).count(), 1)
+        step_check_file_name_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_name
+        ).first()
+        self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.PENDING)
+
+        # continue : approve
+        WorkflowEngine.complete_step(step_check_file_name_object, True, self.other_user_2)
+
+        start_state_object.refresh_from_db()
+        file_type_checked_state_object.refresh_from_db()
+        step_check_file_type_object.refresh_from_db()
+        step_check_file_name_object.refresh_from_db()
+        workflow_object.refresh_from_db()
+
+        # check that the workflow object is still in the right status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+        # check existing states and steps
+        self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(file_type_checked_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
+        self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.APPROVED)
+        self.assertEqual(step_check_file_name_object.updated_by, self.other_user_2)
+
+        # check next states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 3)
+        file_name_checked_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.file_name_checked_state
+        ).first()
+        self.assertEqual(file_name_checked_state_object.status, ValidationStateObjectStatus.ACTIVE)
+
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            3,
+        )
+        self.assertEqual(ValidationStepObject.objects.filter(step_template=self.step_manager_approves).count(), 1)
+        step_manager_approves_object = ValidationStepObject.objects.filter(
+            step_template=self.step_manager_approves
+        ).first()
+        self.assertEqual(step_manager_approves_object.status, ValidationStepObjectStatus.PENDING)
+
+    def test_undo_approved_manager_step(self):
+        ### Create
+        WorkflowEngine.start(self.workflow, self.user)
+
+        workflow_object = ValidationWorkflowObject.objects.filter(workflow_template=self.workflow).first()
+
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+
+        ### Approve first step
+
+        # approve next step : file type check
+        WorkflowEngine.complete_step(step_check_file_type_object, True, self.other_user)
+
+        ### Approve second step
+        # approve second step : file name check
+        step_check_file_name_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_name
+        ).first()
+        WorkflowEngine.complete_step(step_check_file_name_object, True, self.other_user)
+
+        ### Approve last step
+        # approve last step : manager
+        step_manager_approves_object = ValidationStepObject.objects.filter(
+            step_template=self.step_manager_approves
+        ).first()
+        WorkflowEngine.complete_step(step_manager_approves_object, True, self.other_user)
+
+        # Manager wants to undo
+        step_manager_approves_object.refresh_from_db()
+
+        with self.subTest("undo as another user"):
+            with self.assertRaisesMessage(ValueError, "Only the same user can undone the step."):
+                WorkflowEngine.undo_step_object(step_manager_approves_object, self.other_user_2)
+
+        WorkflowEngine.undo_step_object(step_manager_approves_object, self.other_user)
+
+        # check that the rollback went fine
+
+        start_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.start_state
+        ).first()
+
+        file_type_checked_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.file_type_checked_state
+        ).first()
+        step_check_file_type_object.refresh_from_db()
+        step_check_file_name_object.refresh_from_db()
+        workflow_object.refresh_from_db()
+
+        # check that the workflow object is still in the right status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+        # check existing states and steps
+        self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(file_type_checked_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
+        self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.APPROVED)
+
+        # check next states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 3)
+        file_name_checked_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.file_name_checked_state
+        ).first()
+        self.assertEqual(file_name_checked_state_object.status, ValidationStateObjectStatus.ACTIVE)
+
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            3,
+        )
+        self.assertEqual(ValidationStepObject.objects.filter(step_template=self.step_manager_approves).count(), 1)
+        step_manager_approves_object = ValidationStepObject.objects.filter(
+            step_template=self.step_manager_approves
+        ).first()
+        self.assertEqual(step_manager_approves_object.status, ValidationStepObjectStatus.PENDING)
+
+        ## Last approval: manager approves
+        WorkflowEngine.complete_step(step_manager_approves_object, True, self.other_user)
+
+        workflow_object.refresh_from_db()
+
+        # check that the workflow object is in the right status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.APPROVED)
+
+        # check states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 4)
+        self.assertEqual(
+            ValidationStateObject.objects.filter(
+                workflow_object=workflow_object, status=ValidationStateObjectStatus.COMPLETED
+            ).count(),
+            4,
+        )
+
+        # check steps
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            3,
+        )
+        self.assertEqual(
+            ValidationStepObject.objects.filter(
+                from_state_object__workflow_object=workflow_object,
+                status=ValidationStepObjectStatus.APPROVED,
+            ).count(),
+            3,
+        )
+
+    def test_undo_rejected_file_type_step(self):
+        """
+        Imho it shouldn't be possible there as the rejection stops the flow completely and might have sent a notification to the user already
+        """
+
+        ### Create
+        WorkflowEngine.start(self.workflow, self.user)
+
+        workflow_object = ValidationWorkflowObject.objects.filter(workflow_template=self.workflow).first()
+
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+
+        ### Reject first step
+
+        # reject next step : file type check
+        WorkflowEngine.complete_step(step_check_file_type_object, False, self.other_user)
+
+        # undo
+        step_check_file_type_object.refresh_from_db()
+        with self.assertRaisesMessage(ValueError, "Step can no longer be undone."):
+            WorkflowEngine.undo_step_object(step_check_file_type_object, self.other_user)
+
+        workflow_object.refresh_from_db()
+
+        # check workflow object status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.REJECTED)
+
+        # check states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 1)
+        self.assertEqual(
+            ValidationStateObject.objects.filter(workflow_object=workflow_object).first().status,
+            ValidationStateObjectStatus.COMPLETED,
+        )
+
+        # check steps
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            1,
+        )
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).first().status,
+            ValidationStepObjectStatus.REJECTED,
+        )
+
+    def test_undo_rejected_file_name_step(self):
+        """
+        Imho it shouldn't be possible there as the rejection stops the flow completely and might have sent a notification to the user already
+        """
+
+        ### Create
+        WorkflowEngine.start(self.workflow, self.user)
+
+        workflow_object = ValidationWorkflowObject.objects.filter(workflow_template=self.workflow).first()
+
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+
+        ### Approve first step
+
+        # approve next step : file type check
+        WorkflowEngine.complete_step(step_check_file_type_object, True, self.other_user)
+
+        ### Reject second step
+        step_check_file_name_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_name
+        ).first()
+
+        WorkflowEngine.complete_step(step_check_file_name_object, False, self.other_user)
+
+        ### Try to undo
+        with self.assertRaisesMessage(ValueError, "Step can no longer be undone."):
+            WorkflowEngine.undo_step_object(step_check_file_name_object, self.other_user)
+
+        ### check that everything is as expected still
+        workflow_object.refresh_from_db()
+
+        # check workflow object status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.REJECTED)
+
+        # check states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 2)
+        self.assertEqual(
+            ValidationStateObject.objects.filter(
+                workflow_object=workflow_object, status=ValidationStateObjectStatus.COMPLETED
+            ).count(),
+            2,
+        )
+
+        # check steps
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            2,
+        )
+        self.assertEqual(
+            ValidationStepObject.objects.filter(step_template=self.step_check_file_name).first().status,
+            ValidationStepObjectStatus.REJECTED,
+        )
+        self.assertEqual(
+            ValidationStepObject.objects.filter(step_template=self.step_check_file_type).first().status,
+            ValidationStepObjectStatus.APPROVED,
+        )
+
+    def test_undo_rejected_manager_step(self):
+        ### Create
+        WorkflowEngine.start(self.workflow, self.user)
+
+        workflow_object = ValidationWorkflowObject.objects.filter(workflow_template=self.workflow).first()
+
+        step_check_file_type_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_type
+        ).first()
+
+        ### Approve first step
+
+        # approve next step : file type check
+        WorkflowEngine.complete_step(step_check_file_type_object, True, self.other_user)
+
+        ### Approve second step
+        # approve second step : file name check
+        step_check_file_name_object = ValidationStepObject.objects.filter(
+            step_template=self.step_check_file_name
+        ).first()
+        WorkflowEngine.complete_step(step_check_file_name_object, True, self.other_user)
+
+        ### Reject last step
+        # reject last step : manager
+        step_manager_approves_object = ValidationStepObject.objects.filter(
+            step_template=self.step_manager_approves
+        ).first()
+        WorkflowEngine.complete_step(step_manager_approves_object, False, self.other_user, "A rejection comment")
+
+        ### try to undo
+        step_manager_approves_object.refresh_from_db()
+        with self.subTest("undo as another user"):
+            with self.assertRaisesMessage(ValueError, "Only the same user can undone the step."):
+                WorkflowEngine.undo_step_object(step_manager_approves_object, self.other_user_2)
+
+        WorkflowEngine.undo_step_object(step_manager_approves_object, self.other_user)
+
+        ### check that everything went through
+        start_state_object = ValidationStateObject.objects.filter(state_template=self.start_state).first()
+        file_type_checked_state_object = ValidationStateObject.objects.filter(
+            state_template=self.file_type_checked_state
+        ).first()
+        step_check_file_type_object.refresh_from_db()
+        step_check_file_name_object.refresh_from_db()
+        workflow_object.refresh_from_db()
+
+        # check that the workflow object is still in the right status
+        self.assertEqual(workflow_object.status, ValidationWorkflowObjectStatus.ACTIVE)
+
+        # check existing states and steps
+        self.assertEqual(start_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(file_type_checked_state_object.status, ValidationStateObjectStatus.COMPLETED)
+        self.assertEqual(step_check_file_type_object.status, ValidationStepObjectStatus.APPROVED)
+        self.assertEqual(step_check_file_name_object.status, ValidationStepObjectStatus.APPROVED)
+
+        # check next states
+        self.assertEqual(ValidationStateObject.objects.filter(workflow_object=workflow_object).count(), 3)
+        file_name_checked_state_object = ValidationStateObject.objects.filter(
+            workflow_object=workflow_object, state_template=self.file_name_checked_state
+        ).first()
+        self.assertEqual(file_name_checked_state_object.status, ValidationStateObjectStatus.ACTIVE)
+
+        self.assertEqual(
+            ValidationStepObject.objects.filter(from_state_object__workflow_object=workflow_object).count(),
+            3,
+        )
+        self.assertEqual(ValidationStepObject.objects.filter(step_template=self.step_manager_approves).count(), 1)
+        step_manager_approves_object = ValidationStepObject.objects.filter(
+            step_template=self.step_manager_approves
+        ).first()
+        self.assertEqual(step_manager_approves_object.status, ValidationStepObjectStatus.PENDING)
+
+        # we can even reject again after
+        WorkflowEngine.complete_step(step_manager_approves_object, False, self.other_user)

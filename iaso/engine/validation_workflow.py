@@ -47,7 +47,11 @@ class WorkflowEngine:
         return WorkflowEngine._activate_state(workflow_object=workflow_object, state_template=start_state_template)
 
     @staticmethod
-    def _activate_state(workflow_object: ValidationWorkflowObject, state_template: ValidationStateTemplate):
+    def _activate_state(
+        workflow_object: ValidationWorkflowObject,
+        state_template: ValidationStateTemplate,
+        caused_by_step_object: Optional[ValidationStepObject] = None,
+    ):
         """
         This function is solely responsible for activating a state and the outgoing related steps (if any) if the incoming transitions are approved.
 
@@ -61,6 +65,10 @@ class WorkflowEngine:
             state_template=state_template,
             status=ValidationStateObjectStatus.ACTIVE,
         )
+
+        if caused_by_step_object is not None:
+            caused_by_step_object.to_state_object = state_object
+            caused_by_step_object.save(update_fields=["to_state_object"])
 
         # END node => complete and end workflow (approved)
         if state_template.state_type == ValidationStateTemplateType.END:
@@ -133,6 +141,7 @@ class WorkflowEngine:
                 WorkflowEngine._activate_state(
                     workflow_object=state_object.workflow_object,
                     state_template=step_object.step_template.rejection_target,
+                    caused_by_step_object=step_object,
                 )
                 return
             state_object = step_object.from_state_object
@@ -234,8 +243,10 @@ class WorkflowEngine:
             state_object.status = ValidationStateObjectStatus.COMPLETED
             state_object.save()
 
-            if step_object.status == ValidationWorkflowObjectStatus.APPROVED:
-                WorkflowEngine._activate_state(state_object.workflow_object, step_object.step_template.to_state)
+            if step_object.status == ValidationStepObjectStatus.APPROVED:
+                WorkflowEngine._activate_state(
+                    state_object.workflow_object, step_object.step_template.to_state, step_object
+                )
                 return
             # rejected
 
@@ -296,3 +307,53 @@ class WorkflowEngine:
 
         if not set(required_roles_id).issubset(set(user_role_ids)):
             raise PermissionDenied("You do not have permission to execute this step")
+
+    @staticmethod
+    def can_undo_step_object(step_object: ValidationStepObject, user):
+        if step_object.status == ValidationStepObjectStatus.PENDING:
+            return False
+
+        to_state = step_object.to_state_object
+        if not to_state:
+            return False
+
+        workflow_object = step_object.from_state_object.workflow_object
+        if not workflow_object.is_active:
+            # If workflow is completed, only allow undo if this step ended it
+            if to_state.state_template.state_type != ValidationStateTemplateType.END:
+                return False
+
+        if step_object.to_state_object.outgoing_step_objects.exclude(
+            status=ValidationStepObjectStatus.PENDING
+        ).exists():
+            return False
+
+        return True
+
+    @staticmethod
+    @transaction.atomic
+    def undo_step_object(step_object: ValidationStepObject, user):
+        if not WorkflowEngine.can_undo_step_object(step_object, user):
+            raise ValueError("Step can no longer be undone.")
+
+        if step_object.updated_by != user:
+            raise ValueError("Only the same user can undone the step.")
+
+        from_state = step_object.from_state_object
+        to_state = step_object.to_state_object
+
+        to_state.delete()
+
+        if from_state.state_template.state_type != ValidationStateTemplateType.START:
+            from_state.status = ValidationStateObjectStatus.ACTIVE
+            from_state.save(update_fields=["status"])
+
+        if to_state.state_template.state_type == ValidationStateTemplateType.END:
+            to_state.workflow_object.status = ValidationWorkflowObjectStatus.ACTIVE
+            to_state.workflow_object.save(update_fields=["status"])
+
+        step_object.status = ValidationStepObjectStatus.PENDING
+        step_object.comment = ""
+        step_object.updated_by = None
+        step_object.to_state_object = None
+        step_object.save()

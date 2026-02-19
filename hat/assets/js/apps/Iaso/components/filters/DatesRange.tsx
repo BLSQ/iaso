@@ -170,7 +170,7 @@ const DatesRange: FunctionComponent<Props> = ({
                             error={errors[0].length > 0}
                             disabled={disabled}
                         />
-                        {dateFrom && (
+                        {dateFrom && !disabled && (
                             <span className={classes.clearDateButton}>
                                 <IconButton
                                     size="small"
@@ -226,7 +226,7 @@ const DatesRange: FunctionComponent<Props> = ({
                             error={errors[1].length > 0}
                             disabled={disabled}
                         />
-                        {dateTo && (
+                        {dateTo && !disabled && (
                             <span className={classes.clearDateButton}>
                                 <IconButton
                                     size="small"

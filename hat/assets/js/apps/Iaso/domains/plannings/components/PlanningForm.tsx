@@ -166,9 +166,10 @@ export const PlanningForm: FunctionComponent<Props> = ({
         onSubmit: save,
     });
     const isPublished = formik.values.publishingStatus === 'published';
-    const hasStarted =
+    const hasStarted = Boolean(
         formik.values.startDate &&
-        moment().isAfter(moment(formik.values.startDate), 'day');
+        moment().isAfter(moment(formik.values.startDate), 'day'),
+    );
     const isEditingDisabled = Boolean(isPublished || hasStarted);
     const {
         values,
@@ -272,7 +273,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
-    const publishingStatusOptions = useGetPublishingStatusOptions();
+    const publishingStatusOptions = useGetPublishingStatusOptions(hasStarted);
     const canAssign = canAssignPlanning(planning);
     return (
         <FormikProvider value={formik}>
@@ -442,16 +443,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     value={values.publishingStatus}
                                     errors={getErrors('publishingStatus')}
                                     label={MESSAGES.publishingStatus}
-                                    options={useMemo(
-                                        () =>
-                                            publishingStatusOptions.map(
-                                                option => ({
-                                                    ...option,
-                                                    disabled: hasStarted,
-                                                }),
-                                            ),
-                                        [publishingStatusOptions, hasStarted],
-                                    )}
+                                    options={publishingStatusOptions}
                                     required
                                 />
                             </Box>

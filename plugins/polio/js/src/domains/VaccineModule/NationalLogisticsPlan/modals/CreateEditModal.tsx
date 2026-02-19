@@ -129,7 +129,7 @@ const CreateEditNationalLogisticsPlanModal: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.physicalInventory)}
+                        label={formatMessage(MESSAGES.latestPhysicalInventory)}
                         name="physical_inventory"
                         component={DateInput}
                         required

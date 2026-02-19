@@ -223,7 +223,11 @@ const MESSAGES = defineMessages({
     },
     unreadable_label: {
         id: 'iaso.polio.label.unreadable_label',
-        defaultMessage: 'Unreadable Label',
+        defaultMessage: 'Unreadable label',
+    },
+    missing_droppers: {
+        id: 'iaso.polio.label.missing_droppers',
+        defaultMessage: 'Missing droppers',
     },
     stockCorrection: {
         id: 'iaso.polio.label.stockCorrection',

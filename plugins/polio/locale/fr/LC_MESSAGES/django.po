@@ -410,6 +410,10 @@ msgid "Unreadable label"
 msgstr "Étiquette illisible"
 
 #: plugins/polio/models/base.py
+msgid "Missing droppers"
+msgstr "Compte-gouttes manquants"
+
+#: plugins/polio/models/base.py
 msgid "Created"
 msgstr "Créé"
 

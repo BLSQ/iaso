@@ -113,6 +113,15 @@ const MESSAGES = defineMessages({
         defaultMessage:
             "Disables the feature that pre-ticks the box 'Finalized' at the end of the form",
     },
+    mobile_select_closest_org_unit_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_select_closest_org_unit',
+        defaultMessage:
+            'Allows the user to select an organization unit based on its location instead of using the hierarchy pyramid',
+    },
+    mobile_select_closest_org_unit: {
+        id: 'iaso.projets.featureflag.mobile_select_closest_org_unit',
+        defaultMessage: 'Mobile: Propose to jump to closest OrgUnit',
+    },
     reports: {
         id: 'iaso.projets.featureflag.reports',
         defaultMessage: 'Enable reports',
@@ -326,6 +335,10 @@ const MESSAGES = defineMessages({
     mobile_change_requests_tab_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_change_requests_tab',
         defaultMessage: 'Tab enabling display of change requests (read only)',
+    },
+    mobile_change_requests_tab: {
+        id: 'iaso.projets.featureflag.mobile_change_requests_tab',
+        defaultMessage: 'Mobile: Show change requests tab',
     },
     mobile_org_unit_registry_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_org_unit_registry',

@@ -54,7 +54,7 @@ class Command(BaseCommand):
         for index, duplicate in enumerate(duplicates):
             has_content = Instance.objects.filter(
                 uuid=duplicate["uuid"], file_name=duplicate["file_name"], json__isnull=False
-            )
+            ).order_by("pk")
             if has_content.count() == 1:
                 self.stdout.write(
                     f"{index}. Duplicate with uuid '{duplicate['uuid']}' has only one instance with content."
@@ -74,7 +74,11 @@ class Command(BaseCommand):
                 multiple_content += 1
             else:
                 self.stdout.write(f"{index}. Duplicate with uuid '{duplicate['uuid']}' has no instances with content.")
-                first = Instance.objects.filter(uuid=duplicate["uuid"], file_name=duplicate["file_name"]).first()
+                first = (
+                    Instance.objects.filter(uuid=duplicate["uuid"], file_name=duplicate["file_name"])
+                    .order_by("pk")
+                    .first()
+                )
                 # First, let's keep only one
                 self._delete_instances(uuid=duplicate["uuid"], file_name=duplicate["file_name"], first_id=first.id)
                 # We should look if there are Instances with the same `file_name` but no `uuid` and reimport them

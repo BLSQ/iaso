@@ -1,8 +1,9 @@
-import React, { useState, FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { DialogContentText, IconButton } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
+import { useBoundState } from 'Iaso/hooks/useBoundState';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { bulkDelete } from '../actions';
 import MESSAGES from '../messages';
@@ -25,13 +26,10 @@ const DeleteInstanceDialog: FunctionComponent<Props> = ({
     resetSelection,
     isUnDeleteAction,
 }) => {
-    const [allowConfirm, setAllowConfirm] = useState(false);
-
-    useEffect(() => {
-        if (selection?.selectCount) {
-            setAllowConfirm(true);
-        }
-    }, [selection]);
+    const [allowConfirm, setAllowConfirm] = useBoundState(
+        false,
+        Boolean(selection?.selectCount),
+    );
 
     const onConfirm = closeDialog => {
         setAllowConfirm(false);

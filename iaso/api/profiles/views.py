@@ -6,9 +6,10 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Min, Q, QuerySet
 from django.db.transaction import atomic
-from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
@@ -28,8 +29,13 @@ from hat.audit.models import PROFILE_API
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.profiles.serializers import (
+    ProfileCreateSerializer,
+    ProfileListSerializer,
+    ProfileRetrieveSerializer,
+    ProfileUserFallbackRetrieveSerializer,
+)
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
-from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request, search_by_ids_refs
@@ -193,7 +199,7 @@ class ProfileColorUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
 
-class ProfilesViewSet(viewsets.ViewSet):
+class ProfilesViewSet(viewsets.ModelViewSet):
     f"""Profiles API
 
     This API is restricted to authenticated users having the "{CORE_USERS_ADMIN_PERMISSION}" or "{CORE_USERS_MANAGED_PERMISSION}"
@@ -203,7 +209,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     Any logged user can also edit his profile to set his language.
 
-
     GET /api/profiles/
     GET /api/profiles/me => current user
     GET /api/profiles/<id>
@@ -211,43 +216,46 @@ class ProfilesViewSet(viewsets.ViewSet):
     PATCH /api/profiles/me => current user, can only set language field
     PATCH /api/profiles/<id>
     DELETE /api/profiles/<id>
+    DELETE /api/profiles/me => current user
     """
 
-    # FIXME : replace by a model viewset
-
+    http_method_names = ["get", "post", "patch", "delete", "head", "options", "trace"]
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
+    serializer_class = Profile
+
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = [
+    #
+    # ]
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ProfileRetrieveSerializer
+        if self.action == "create":
+            return ProfileCreateSerializer
+        if self.action == "list":
+            return ProfileListSerializer
+        raise NotImplementedError(f"Serializer not implemented for action {self.action}")
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
         return Profile.objects.filter(account=account).with_editable_org_unit_types()
 
-    def retrieve(self, request, *args, **kwargs):
-        pk = kwargs.get("pk")
-        if pk == PK_ME:
-            try:
-                queryset = self.get_queryset()
-                profile = queryset.get(user=request.user)
-                profile_dict = profile.as_dict()
-                return Response(profile_dict)
-            except Profile.DoesNotExist:
-                return Response(
-                    {
-                        "first_name": request.user.first_name,
-                        "user_name": request.user.username,
-                        "last_name": request.user.last_name,
-                        "email": request.user.email,
-                        "user_id": request.user.id,
-                        "projects": [],
-                        "is_staff": request.user.is_staff,
-                        "is_superuser": request.user.is_superuser,
-                        "account": None,
-                    }
-                )
-        else:
-            profile = get_object_or_404(self.get_queryset(), pk=pk)
-            return Response(profile.as_dict())
+    def get_object(self):
+        if self.kwargs.get(self.lookup_field, "") == PK_ME:
+            return self.filter_queryset(self.get_queryset()).get(user=self.request.user)
+        return super().get_object()
 
-    def list(self, request):
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            return super().retrieve(request, *args, **kwargs)
+        except Profile.DoesNotExist:
+            if kwargs.get(self.lookup_field, "") == PK_ME:
+                serializer = ProfileUserFallbackRetrieveSerializer(instance=self.request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            raise Http404
+
+    def list(self, request, *args, **kwargs):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "user__username").split(",")
@@ -335,104 +343,32 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(res)
         return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
 
-    @atomic
-    def create(self, request):
-        current_profile = request.user.iaso_profile
-        current_account = current_profile.account
-
-        email = request.data.get("email", "")
-        first_name = request.data.get("first_name", "")
-        last_name = request.data.get("last_name", "")
-        password = request.data.get("password", "")
-        send_email_invitation = request.data.get("send_email_invitation")
-        username = request.data.get("user_name")
-
-        if not username:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-
-        if not password and not send_email_invitation:
-            return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-
-        try:
-            # Currently, the `account` is always the same in the UI.
-            # This means that we'll never get back a `tenant_main_user` here - at least for the moment.
-            # Yet we keep `create_user_or_tenant_user()` here to avoid repeating part of its logic.
-            new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
-                data=UserCreationData(
-                    username=username,
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                    account=current_account,
-                )
-            )
-        except UsernameAlreadyExistsError as e:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
-
-        user_who_logs_in = new_user or tenant_main_user
-
-        user_who_logs_in.save()
-
-        user = new_user or tenant_account_user
-
-        user.profile = Profile.objects.create(
-            user=user,
-            account=current_account,
-            language=request.data.get("language", ""),
-            home_page=request.data.get("home_page", ""),
-            organization=request.data.get("organization", None),
-        )
-
-        try:
-            user_permissions = self.validate_user_permissions(request, current_account)
-            org_units = self.validate_org_units(request, user.profile)
-            user_roles_data = self.validate_user_roles(request)
-            projects = self.validate_projects(request, user.profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request, user.profile)
-            color = self.validate_color(request)
-        except ProfileError as error:
-            # Delete profile if error since we're creating a new user
-            user.profile.delete()
-            return JsonResponse(
-                {"errorKey": error.field, "errorMessage": error.detail},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        profile = self.update_user_profile(
-            request=request,
-            profile=user.profile,
-            user=user,
-            user_permissions=user_permissions,
-            org_units=org_units,
-            user_roles=user_roles_data["user_roles"],
-            user_roles_groups=user_roles_data["groups"],
-            projects=projects,
-            editable_org_unit_types=editable_org_unit_types,
-            color=color,
-        )
-
-        dhis2_id = request.data.get("dhis2_id", None)
-        if dhis2_id == "":
-            dhis2_id = None
-        profile.dhis2_id = dhis2_id
-
-        profile.phone_number = self.extract_phone_number(request)
-
-        profile.save()
+    def perform_create(self, serializer):
+        profile = serializer.save()
 
         audit_logger = ProfileAuditLogger()
-        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
-        audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user, source=source)
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(self.request) else PROFILE_API
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=None, request_user=self.request.user, source=source
+        )
 
-        # send an email invitation to new user when the send_email_invitation checkbox has been checked
-        # and the email adresse has been given
-        if send_email_invitation and profile.user.email:
-            email_subject = self.get_subject_by_language(self, request.data.get("language"))
-            email_message = self.get_message_by_language(self, request.data.get("language"))
-            email_html_message = self.get_html_message_by_language(self, request.data.get("language"))
-            self.send_email_invitation(profile, email_subject, email_message, email_html_message)
+        send_invite = serializer.validated_data.get("send_email_invitation")
+        email = serializer.validated_data.get("email")
+        language = serializer.validated_data.get("language")
 
-        return Response(user.profile.as_dict())
+        if send_invite and email:
+            transaction.on_commit(lambda: self._send_email_invitation(profile, language))
+
+    # todo : not sure this is needed, it should be there by default
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    def _send_email_invitation(self, profile, language):
+        email_subject = self.get_subject_by_language(self, language)
+        email_message = self.get_message_by_language(self, language)
+        email_html_message = self.get_html_message_by_language(self, language)
+        self.send_email_invitation(profile, email_subject, email_message, email_html_message)
 
     @atomic
     def partial_update(self, request, pk=None):
@@ -500,17 +436,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         )
 
         return Response(profile.as_dict())
-
-    def delete(self, request, pk=None):
-        profile = get_object_or_404(self.get_queryset(), id=pk)
-        user = profile.user
-        # TODO log after actual deletion
-        audit_logger = ProfileAuditLogger()
-        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
-        audit_logger.log_hard_deletion(instance=profile, request_user=request.user, source=source)
-        user.delete()
-        profile.delete()
-        return Response(True)
 
     @staticmethod
     def update_user_own_profile(request):
@@ -842,6 +767,28 @@ class ProfilesViewSet(viewsets.ViewSet):
             [profile.user.email],
             html_message=rendered_html_email,
         )
+
+    def perform_destroy(self, instance):
+        user = instance.user
+
+        audit_logger = ProfileAuditLogger()
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(self.request) else PROFILE_API
+
+        # Log BEFORE deletion while instance still exists
+        audit_logger.log_hard_deletion(
+            instance=instance,
+            request_user=self.request.user,
+            source=source,
+        )
+
+        # Atomic delete of related objects
+        user.delete()
+        instance.delete()
+
+    # todo : not sure this atomic is not enabled by default
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
     @staticmethod
     def get_message_by_language(self, language="en"):

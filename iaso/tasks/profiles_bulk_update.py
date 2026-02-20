@@ -11,7 +11,7 @@ from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from hat.audit.audit_logger import AuditLogger
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.api.profiles.profiles import get_filtered_profiles
+from iaso.api.profiles.views import get_filtered_profiles
 from iaso.api.teams.serializers import AuditTeamSerializer
 from iaso.models import OrgUnit, Profile, Project, Task, UserRole
 from iaso.models.team import Team, TeamType

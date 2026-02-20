@@ -5,7 +5,8 @@ import jsonschema
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
-from django.test import override_settings
+from django.test import override_settings, tag
+from django.urls import reverse
 from rest_framework import status
 
 from iaso import models as m
@@ -19,7 +20,6 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_MANAGED_PERMISSION,
 )
 from iaso.test import APITestCase
-from iaso.utils.colors import DEFAULT_COLOR
 
 
 name_and_id_schema = {
@@ -201,7 +201,11 @@ class ProfileAPITestCase(APITestCase):
 
         # Users.
         cls.jane = cls.create_user_with_profile(
-            username="janedoe", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
+            first_name="Jane",
+            last_name="Doe",
+            username="janedoe",
+            account=cls.account,
+            permissions=[CORE_FORMS_PERMISSION],
         )
         cls.john = cls.create_user_with_profile(username="johndoe", account=cls.account, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
@@ -236,6 +240,229 @@ class ProfileAPITestCase(APITestCase):
             f"{cls.user_managed_geo_limit.iaso_profile.account.pk}_"
         )
 
+    def assertValidProfileListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
+        self.assertValidListData(
+            list_data=list_data,
+            expected_length=expected_length,
+            results_key="profiles",
+            paginated=paginated,
+        )
+
+        for profile_data in list_data["profiles"]:
+            self.assertValidProfileData(profile_data)
+
+    def assertValidProfileData(self, project_data: typing.Mapping):
+        self.assertHasField(project_data, "id", int)
+        self.assertHasField(project_data, "first_name", str)
+        self.assertHasField(project_data, "last_name", str)
+        self.assertHasField(project_data, "email", str)
+        self.assertHasField(project_data, "color", str)
+
+    def get_new_user_data(self):
+        user_name = "audit_user"
+        pwd = "admin1234lol"
+        first_name = "audit_user_first_name"
+        last_name = "audit_user_last_name"
+        email = "audit@test.com"
+        organization = "Bluesquare"
+        org_units = [
+            {
+                "id": f"{self.org_unit_from_parent_type.id}",
+                "name": self.org_unit_from_parent_type.name,
+                "validation_status": self.org_unit_from_parent_type.validation_status,
+                "has_children": False,
+                "org_unit_type_id": self.parent_org_unit_type.id,
+                "org_unit_type_short_name": "Cnc",
+            }
+        ]
+        language = "fr"
+        home_page = "/forms/list"
+        dhis2_id = "666666666666"
+        user_roles = [self.user_role.id]
+        user_roles_permissions = [
+            {
+                "id": self.user_role.id,
+                "name": self.user_role.group.name,
+                "permissions": [self.permission.name],
+                "created_at": self.user_role.created_at,
+                "updated_at": self.user_role.updated_at,
+            }
+        ]
+        user_permissions = [CORE_ORG_UNITS_READ_PERMISSION.codename]
+        send_email_invitation = False
+        projects = [self.project.id]
+        phone_number = "32475888888"
+        country_code = "be"
+        data = {
+            "user_name": user_name,
+            "password": pwd,
+            "first_name": first_name,
+            "last_name": last_name,
+            "send_email_invitation": send_email_invitation,
+            "email": email,
+            "organization": organization,
+            "language": language,
+            "home_page": home_page,
+            "dhis2_id": dhis2_id,
+            "permissions": [],  # This looks legacy from an older version of the API
+            "user_permissions": user_permissions,
+            "projects": projects,
+            "phone_number": phone_number,
+            "country_code": country_code,
+            "user_roles": user_roles,
+            "user_roles_permissions": user_roles_permissions,
+            "org_units": org_units,
+        }
+        return data
+
+    @tag("retrieve", "me")
+    def test_retrieve_profile_me_without_auth(self):
+        """GET /profiles/me/ without auth should result in a 401"""
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        self.assertJSONResponse(response, 401)
+
+    @tag("retrieve", "me", "current")
+    def test_retrieve_profile_me_ok(self):
+        """GET /profiles/me/ with auth"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        self.assertJSONResponse(response, 200)
+
+        """
+        
+        other_accounts = []
+        if hasattr(self.user, "tenant_user"):
+            other_accounts = self.user.tenant_user.get_other_accounts()
+            
+        result = {
+            "id": self.id,
+            "first_name": user_infos.first_name,
+            "user_name": user_infos.username,
+            "last_name": user_infos.last_name,
+            "email": user_infos.email,
+            "permissions": permissions,
+            "user_permissions": user_permissions,
+            "is_staff": self.user.is_staff,
+            "is_superuser": self.user.is_superuser,
+            "user_roles": list(role.id for role in user_roles),
+            "user_roles_permissions": list(role.as_dict() for role in user_roles),
+            "language": self.language,
+            "organization": self.organization,
+            "user_id": self.user.id,
+            "dhis2_id": self.dhis2_id,
+            "home_page": self.home_page,
+            "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+            "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+            "projects": [{"id": p.id, "name": p.name, "app_id": p.app_id, "color": p.color} for p in
+                         self.projects.all().order_by("name")],
+            "other_accounts": [{"name": account.name,
+                                "id": account.id,
+                                "created_at": account.created_at.timestamp() if account.created_at else None,
+                                "updated_at": account.updated_at.timestamp() if account.updated_at else None,
+                                "default_version": {
+                "data_source": account.default_version.data_source.as_dict(),
+                "number": account.default_version.number,
+                "description": account.default_version.description,
+                "id": account.default_version.id,
+                "created_at": account.default_version.created_at.timestamp() if self.created_at else None,
+                "updated_at": account.default_version.updated_at.timestamp() if self.updated_at else None,
+            } if account.default_version else None,
+                                "feature_flags": [flag.code for flag in account.feature_flags.all()],
+                                "user_manual_path": account.user_manual_path or settings.USER_MANUAL_PATH,
+                                "forum_path": account.forum_path or settings.FORUM_PATH,
+                                "analytics_script": account.analytics_script} for account in other_accounts],
+            "editable_org_unit_type_ids": editable_org_unit_type_ids,
+            "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+            "color": self.color or DEFAULT_COLOR,
+            "account": {
+                "name": self.account.name,
+                "id": self.account.id,
+                "created_at": self.account.created_at.timestamp() if self.created_at else None,
+                "updated_at": self.account.updated_at.timestamp() if self.updated_at else None,
+                "default_version": self.default_version.as_small_dict() if self.default_version else None,
+                "feature_flags": [flag.code for flag in self.Account.feature_flags.all()],
+                "user_manual_path": self.account.user_manual_path or settings.USER_MANUAL_PATH,
+                "forum_path": self.account.forum_path or settings.FORUM_PATH,
+                "analytics_script": self.account.analytics_script,
+                "modules": self.account.modules,
+            }
+            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")]
+        }
+        """
+        response_data = response.json()
+
+        print(response_data)
+        self.assertIn("id", response_data)
+        self.assertIn("first_name", response_data)
+        self.assertIn("user_name", response_data)
+        self.assertIn("last_name", response_data)
+        self.assertIn("email", response_data)
+        self.assertIn("permissions", response_data)
+        self.assertIn("user_permissions", response_data)
+        self.assertIn("is_staff", response_data)
+        self.assertIn("is_superuser", response_data)
+        self.assertIn("user_roles", response_data)
+        self.assertIn("user_roles_permissions", response_data)
+        self.assertIn("language", response_data)
+        self.assertIn("organization", response_data)
+        self.assertIn("user_id", response_data)
+        self.assertIn("dhis2_id", response_data)
+        self.assertIn("home_page", response_data)
+        self.assertIn("phone_number", response_data)
+        self.assertIn("country_code", response_data)
+        self.assertIn("projects", response_data)
+        self.assertIn("other_accounts", response_data)
+        self.assertIn("editable_org_unit_type_ids", response_data)
+        self.assertIn("user_roles_editable_org_unit_type_ids", response_data)
+        self.assertIn("color", response_data)
+        self.assertIn("account", response_data)
+        self.assertIn("org_units", response_data)
+
+        # self.assertValidProfileData(response_data)
+        # self.assertEqual(response_data["user_name"], "janedoe")
+        # self.assertHasField(response_data, "account", dict)
+        # self.assertHasField(response_data, "permissions", list)
+        # self.assertHasField(response_data, "is_superuser", bool)
+        # self.assertHasField(response_data, "org_units", list)
+        # self.assertEqual(response_data["color"], DEFAULT_COLOR)
+
+    @tag("retrieve", "me")
+    def test_retrieve_profile_me_no_profile(self):
+        """GET /profiles/me/ with auth, but without profile
+        The goal is to know that this call doesn't result in a 500 error
+        """
+        username = "I don't have a profile, i'm sad :("
+        user_without_profile = get_user_model().objects.create(username=username)
+        self.client.force_authenticate(user_without_profile)
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(response_data["user_name"], username)
+        self.assertEqual(response_data["first_name"], "")
+        self.assertEqual(response_data["last_name"], "")
+        self.assertEqual(response_data["user_id"], user_without_profile.id)
+        self.assertEqual(response_data["email"], "")
+        self.assertEqual(response_data["projects"], [])
+        self.assertFalse(response_data["is_staff"])
+        self.assertFalse(response_data["is_superuser"])
+        self.assertIsNone(response_data["account"])
+
+    @tag("retrieve", "me")
+    def test_retrieve_profile_me_superuser_ok(self):
+        """GET /profiles/me/ with auth (superuser)"""
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        self.assertValidProfileData(response_data)
+        self.assertEqual(response_data["user_name"], "johndoe")
+
+    # todo : write tests for retrieve , but not for "me"
+
+    @tag("patch")
     def test_can_delete_dhis2_id(self):
         self.client.force_authenticate(self.john)
         jim = Profile.objects.get(user=self.jim)
@@ -259,71 +486,20 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200, response)
 
-    def test_profile_me_without_auth(self):
-        """GET /profiles/me/ without auth should result in a 401"""
-
-        response = self.client.get("/api/profiles/me/")
-        self.assertJSONResponse(response, 401)
-
-    def test_profile_me_ok(self):
-        """GET /profiles/me/ with auth"""
-
-        self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/profiles/me/")
-        self.assertJSONResponse(response, 200)
-
-        response_data = response.json()
-        self.assertValidProfileData(response_data)
-        self.assertEqual(response_data["user_name"], "janedoe")
-        self.assertHasField(response_data, "account", dict)
-        self.assertHasField(response_data, "permissions", list)
-        self.assertHasField(response_data, "is_superuser", bool)
-        self.assertHasField(response_data, "org_units", list)
-
-    def test_profile_me_no_profile(self):
-        """GET /profiles/me/ with auth, but without profile
-        The goal is to know that this call doesn't result in a 500 error
-        """
-        User = get_user_model()
-        username = "I don't have a profile, i'm sad :("
-        user_without_profile = User.objects.create(username=username)
-        self.client.force_authenticate(user_without_profile)
-        response = self.client.get("/api/profiles/me/")
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-
-        response_data = response.json()
-        self.assertEqual(response_data["user_name"], username)
-        self.assertEqual(response_data["first_name"], "")
-        self.assertEqual(response_data["last_name"], "")
-        self.assertEqual(response_data["user_id"], user_without_profile.id)
-        self.assertEqual(response_data["email"], "")
-        self.assertEqual(response_data["projects"], [])
-        self.assertFalse(response_data["is_staff"])
-        self.assertFalse(response_data["is_superuser"])
-        self.assertIsNone(response_data["account"])
-
-    def test_profile_me_superuser_ok(self):
-        """GET /profiles/me/ with auth (superuser)"""
-
-        self.client.force_authenticate(self.john)
-        response = self.client.get("/api/profiles/me/")
-        self.assertJSONResponse(response, 200)
-        response_data = response.json()
-        self.assertValidProfileData(response_data)
-        self.assertEqual(response_data["user_name"], "johndoe")
-
+    @tag("list")
     def test_profile_list_no_auth(self):
         """GET /profiles/ without auth -> 401"""
 
-        response = self.client.get("/api/profiles/")
+        response = self.client.get(reverse("profiles-list"))
         self.assertJSONResponse(response, 401)
 
+    @tag("list")
     def test_profile_list_read_only_permissions(self):
         """GET /profiles/ with auth (user has read only permissions)"""
 
         self.client.force_authenticate(self.jane)
         with self.assertNumQueries(13):
-            response = self.client.get("/api/profiles/")
+            response = self.client.get(reverse("profiles-list"))
         self.assertJSONResponse(response, 200)
         profile_url = "/api/profiles/%s/" % self.jane.iaso_profile.id
         response = self.client.get(profile_url)
@@ -334,13 +510,15 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(profile_url)
         self.assertJSONResponse(response, 403)
 
+    @tag("list")
     def test_profile_list_ok(self):
         """GET /profiles/ with auth"""
         self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/profiles/")
+        response = self.client.get(reverse("profiles-list"))
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 7)
 
+    @tag("list", "export")
     def test_profile_list_export_as_csv(self):
         self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
@@ -385,6 +563,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response_csv, expected_csv)
 
+    @tag("list", "export")
     def test_profile_list_export_as_xlsx(self):
         self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
@@ -488,6 +667,7 @@ class ProfileAPITestCase(APITestCase):
             },
         )
 
+    @tag("list", "export")
     def test_profile_list_export_as_csv_multiple_teams(self):
         self.maxDiff = None
         multi_user = self.create_user_with_profile(username="multiteam", account=self.account)
@@ -511,13 +691,15 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(user_row[teams_idx], expected_teams_value)
 
+    @tag("list")
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""
         self.client.force_authenticate(self.jim)
-        response = self.client.get("/api/profiles/")
+        response = self.client.get(reverse("profiles-list"))
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 7)
 
+    @tag("list")
     def test_profile_list_superuser_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
@@ -525,6 +707,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 7)
 
+    @tag("list")
     def test_profile_list_user_manager_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
@@ -532,6 +715,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 7)
 
+    @tag("list")
     def test_profile_list_managed_user_only_superuser(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
@@ -539,6 +723,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 7)
 
+    @tag("list")
     def test_profile_list_managed_user_only_user_admin(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
@@ -546,6 +731,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 7)
 
+    @tag("list")
     def test_profile_list_managed_user_only_user_manager_no_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
@@ -553,6 +739,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 6)
 
+    @tag("list")
     def test_profile_list_managed_user_only_user_manager_with_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
@@ -562,6 +749,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 2)
 
+    @tag("list")
     def test_profile_list_managed_user_only_user_regular_user(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jane)
@@ -569,23 +757,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 0)
 
-    def assertValidProfileListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
-        self.assertValidListData(
-            list_data=list_data,
-            expected_length=expected_length,
-            results_key="profiles",
-            paginated=paginated,
-        )
-
-        for profile_data in list_data["profiles"]:
-            self.assertValidProfileData(profile_data)
-
-    def test_profile_me_includes_color(self):
-        self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/profiles/me/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["color"], DEFAULT_COLOR)
-
+    @tag("create")
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         data = {
@@ -594,10 +766,11 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
         }
-        response = self.client.post("/api/profiles/", data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
         self.assertEqual(response.status_code, 403)
 
+    @tag("create")
     def test_create_user_with_user_roles_and_permissions(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -609,7 +782,7 @@ class ProfileAPITestCase(APITestCase):
             "user_permissions": [CORE_FORMS_PERMISSION.codename],
             "user_roles": [self.user_role.id],
         }
-        response = self.client.post("/api/profiles/", data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
@@ -622,6 +795,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(user.user_permissions.count(), 1)
         self.assertEqual(user.user_permissions.first().codename, "iaso_forms")
 
+    @tag("create")
     def test_create_user_with_not_allowed_user_roles(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -639,6 +813,7 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["detail"], "Not found.")
 
+    @tag("create")
     def test_create_profile_duplicate_user(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -652,6 +827,7 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["errorKey"], "user_name")
 
+    @tag("create")
     def test_create_profile_duplicate_user_with_capitale_letters(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -665,6 +841,7 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["errorKey"], "user_name")
 
+    @tag("create")
     def test_create_profile_then_delete(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -699,6 +876,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertQuerySetEqual(m.User.objects.filter(id=user_id), [])
         self.assertQuerySetEqual(m.Profile.objects.filter(id=profile_id), [])
 
+    @tag("create")
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -739,6 +917,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
+    @tag("create")
     def test_create_profile_with_color(self):
         self.client.force_authenticate(self.jim)
         color = "#123ABC"
@@ -760,6 +939,7 @@ class ProfileAPITestCase(APITestCase):
         profile = m.Profile.objects.get(pk=response_data["id"])
         self.assertEqual(profile.color, color)
 
+    @tag("create")
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
         self.client.force_authenticate(self.jim)
@@ -772,7 +952,7 @@ class ProfileAPITestCase(APITestCase):
             "email": "test@test.com",
         }
 
-        response = self.client.post("/api/profiles/", data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(len(mail.outbox), 1)
@@ -783,6 +963,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn("http://iaso-test.bluesquare.org", email.body)
         self.assertIn("The iaso-test.bluesquare.org Team.", email.body)
 
+    @tag("create")
     def test_create_profile_with_no_password_and_not_send_email(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -794,12 +975,13 @@ class ProfileAPITestCase(APITestCase):
             "email": "test@test.com",
         }
 
-        response = self.client.post("/api/profiles/", data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(response.status_code, 400)
 
         response_data = response.json()
-        self.assertEqual(response_data["errorKey"], "password")
+        self.assertHasError(response_data, "password", "This field is required")
 
+    @tag("create")
     def test_create_profile_with_managed_geo_limit(self):
         self.client.force_authenticate(self.user_managed_geo_limit)
         data = {
@@ -838,6 +1020,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
+    @tag("create")
     def test_create_profile_without_org_unit_with_managed_geo_limit(self):
         self.client.force_authenticate(self.user_managed_geo_limit)
         data = {
@@ -852,6 +1035,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    @tag("create")
     def test_create_user_is_atomic(self):
         project_1 = m.Project.objects.create(name="Project 1", app_id="project.1", account=self.account)
         project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
@@ -884,13 +1068,7 @@ class ProfileAPITestCase(APITestCase):
         # If the creation is not successfully completed, no changes should be committed to the database.
         self.assertEqual(get_user_model().objects.filter(username=username).count(), 0)
 
-    def assertValidProfileData(self, project_data: typing.Mapping):
-        self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "first_name", str)
-        self.assertHasField(project_data, "last_name", str)
-        self.assertHasField(project_data, "email", str)
-        self.assertHasField(project_data, "color", str)
-
+    @tag("delete")
     def test_delete_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         response = self.client.delete("/api/profiles/1/")
@@ -1303,6 +1481,26 @@ class ProfileAPITestCase(APITestCase):
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
+    def test_patch_user_fails(self):
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
+
+        self.client.force_authenticate(self.john)
+        jum = Profile.objects.get(user=self.jum)
+        original_dict = jum.as_dict()
+
+        data = {
+            "country_code": "be",
+            "phone_number": "32477123456",
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        updated_jum = Profile.objects.get(user=self.jum)
+        self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
+
+        self.assertEqual(original_dict, updated_jum.as_dict())
+
     def test_update_profile_color(self):
         self.client.force_authenticate(self.john)
         profile = Profile.objects.get(user=self.jim)
@@ -1568,63 +1766,6 @@ class ProfileAPITestCase(APITestCase):
         profile_to_edit.refresh_from_db()
         self.assertEqual(profile_to_edit.projects.count(), 1)
         self.assertEqual(profile_to_edit.projects.first(), project_2)
-
-    def get_new_user_data(self):
-        user_name = "audit_user"
-        pwd = "admin1234lol"
-        first_name = "audit_user_first_name"
-        last_name = "audit_user_last_name"
-        email = "audit@test.com"
-        organization = "Bluesquare"
-        org_units = [
-            {
-                "id": f"{self.org_unit_from_parent_type.id}",
-                "name": self.org_unit_from_parent_type.name,
-                "validation_status": self.org_unit_from_parent_type.validation_status,
-                "has_children": False,
-                "org_unit_type_id": self.parent_org_unit_type.id,
-                "org_unit_type_short_name": "Cnc",
-            }
-        ]
-        language = "fr"
-        home_page = "/forms/list"
-        dhis2_id = "666666666666"
-        user_roles = [self.user_role.id]
-        user_roles_permissions = [
-            {
-                "id": self.user_role.id,
-                "name": self.user_role.group.name,
-                "permissions": [self.permission.name],
-                "created_at": self.user_role.created_at,
-                "updated_at": self.user_role.updated_at,
-            }
-        ]
-        user_permissions = [CORE_ORG_UNITS_READ_PERMISSION.codename]
-        send_email_invitation = False
-        projects = [self.project.id]
-        phone_number = "32475888888"
-        country_code = "be"
-        data = {
-            "user_name": user_name,
-            "password": pwd,
-            "first_name": first_name,
-            "last_name": last_name,
-            "send_email_invitation": send_email_invitation,
-            "email": email,
-            "organization": organization,
-            "language": language,
-            "home_page": home_page,
-            "dhis2_id": dhis2_id,
-            "permissions": [],  # This looks legacy from an older version of the API
-            "user_permissions": user_permissions,
-            "projects": projects,
-            "phone_number": phone_number,
-            "country_code": country_code,
-            "user_roles": user_roles,
-            "user_roles_permissions": user_roles_permissions,
-            "org_units": org_units,
-        }
-        return data
 
     def test_log_on_user_create(self):
         self.client.force_authenticate(self.john)

@@ -97,7 +97,7 @@ from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, Payme
 from .api.periods import PeriodsViewSet
 from .api.permissions.permissions import PermissionsViewSet
 from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
-from .api.profiles.profiles import ProfilesViewSet
+from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet

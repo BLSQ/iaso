@@ -251,7 +251,7 @@ class SetupAccountSerializer(serializers.Serializer):
 
         # Send email invitation if requested
         if email_invitation and user.email:
-            from iaso.api.profiles.profiles import ProfilesViewSet
+            from iaso.api.profiles.views import ProfilesViewSet
 
             profile_viewset = ProfilesViewSet()
             profile_viewset.request = self.context.get("request")

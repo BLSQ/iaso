@@ -1,0 +1,2 @@
+username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,permissions,user_roles,projects,teams,phone_number,organization,editable_org_unit_types
+testuser,validPassword123!,testuser@example.com,Test,User,9999,,invalid_lang,,,,,,,,

@@ -1058,3 +1058,34 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertIn(self.org_unit2, mixed_profile.org_units.all())
         self.assertEqual(mixed_user.teams.count(), 1)  # From defaults (CSV empty)
         self.assertEqual(mixed_user.teams.first().name, "Bulk Team")
+
+    def test_upload_invalid_permission_name(self):
+        """Test that CSV with invalid permission name returns validation error."""
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        self.account1.modules = self.MODULES
+        self.account1.save()
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_permission.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+
+        self.assertEqual(response.status_code, 400)
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
+        self.assertEqual(len(validation_errors), 1)
+        self.assertIn("permissions", validation_errors[0]["errors"])
+        self.assertIn("iaso_fake_permission", validation_errors[0]["errors"]["permissions"])
+
+    def test_upload_invalid_language(self):
+        """Test that CSV with invalid language returns validation error."""
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_language.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+
+        self.assertEqual(response.status_code, 400)
+        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
+        self.assertEqual(len(validation_errors), 1)
+        self.assertIn("profile_language", validation_errors[0]["errors"])
+        self.assertIn("invalid_lang", validation_errors[0]["errors"]["profile_language"])

@@ -15,6 +15,21 @@ class MetricType(models.Model):
         CUSTOM = "custom", _("Custom")
         OTHER = "other", _("Other")
 
+    LEGEND_CONFIG_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "domain": {
+                "type": "array",
+                "items": {"type": ["number", "string"]},
+            },
+            "range": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        "required": ["domain", "range"],
+    }
+
     class Meta:
         ordering = ["id"]  # force ordering in order of creation (for demo)
         unique_together = [

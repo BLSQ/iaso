@@ -4,13 +4,13 @@ import io
 import pandas as pd
 import phonenumbers
 
-from django.contrib.auth.models import Group, Permission, User
+from django.conf import settings
+from django.contrib.auth.models import Permission, User
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db import transaction
 from django.http import FileResponse
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import permissions, serializers
@@ -22,6 +22,7 @@ from hat.audit.models import PROFILE_API_BULK
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
+from iaso.tasks.bulk_create_users_email import send_bulk_email_invitations
 
 
 BULK_CREATE_USER_COLUMNS_LIST = [
@@ -45,10 +46,494 @@ BULK_CREATE_USER_COLUMNS_LIST = [
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
+    default_permissions = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_projects = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_user_roles = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_org_units = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_teams = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+
     class Meta:
         model = BulkCreateUserCsvFile
-        fields = ["file"]
-        read_only_fields = ["created_by", "created_at", "account"]
+        fields = [
+            "file",
+            "default_permissions",
+            "default_projects",
+            "default_user_roles",
+            "default_profile_language",
+            "default_organization",
+            "default_org_units",
+            "default_teams",
+        ]
+        read_only_fields = [
+            "created_by",
+            "created_at",
+            "account",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        self.importer_user = request.user
+        self.importer_account = request.user.iaso_profile.account
+
+        self.parsed_csv_data = []
+
+        # Cache for validated objects
+        self.csv_objects_cache = {
+            "permissions": [],
+            "projects": [],
+            "user_roles": [],
+            "org_units": [],
+            "teams": [],
+        }
+
+        # Cache for CSV row validation data
+        self.csv_data_cache = {}
+
+    def validate_file(self, value):
+        if not value.name.endswith(".csv"):
+            raise serializers.ValidationError("Only CSV files are allowed.")
+
+        self.parsed_csv_data = self._parse_csv_file(value)
+
+        validation_errors, self.csv_data_cache = self._validate_csv_users(self.parsed_csv_data)
+
+        if validation_errors:
+            raise serializers.ValidationError({"csv_validation_errors": validation_errors})
+
+        return value
+
+    def validate_default_permissions(self, value):
+        """Validate permission IDs exist."""
+        if not value:
+            return value
+
+        if not self.importer_account:
+            return value
+
+        # Validate that permission IDs exist
+        valid_permissions = Permission.objects.filter(id__in=value)
+        valid_permission_ids = set(valid_permissions.values_list("id", flat=True))
+        invalid_ids = [pid for pid in value if pid not in valid_permission_ids]
+
+        if invalid_ids:
+            raise serializers.ValidationError(f"Invalid permission IDs: {', '.join(map(str, invalid_ids))}")
+
+        # Cache resolved permission objects for later use
+        self.csv_objects_cache["permissions"] = list(valid_permissions)
+
+        return value
+
+    def validate_default_projects(self, value):
+        """Validate project IDs exist in user's account."""
+        if not value:
+            return value
+
+        if not self.importer_account or not self.importer_user:
+            return value
+
+        has_geo_limit = BulkCreateUserFromCsvViewSet.has_only_user_managed_permission(self.importer_user)
+        user_has_project_restrictions = bool(self.importer_user.iaso_profile.projects_ids)
+
+        if user_has_project_restrictions and has_geo_limit:
+            available_projects = Project.objects.filter(
+                id__in=value, account=self.importer_account
+            ).filter_on_user_projects(self.importer_user)
+
+            if not available_projects.exists():
+                available_projects = Project.objects.filter(account=self.importer_account).filter_on_user_projects(
+                    self.importer_user
+                )
+        else:
+            available_projects = Project.objects.filter(id__in=value, account=self.importer_account)
+            valid_project_ids = set(available_projects.values_list("id", flat=True))
+            invalid_ids = [pid for pid in value if pid not in valid_project_ids]
+
+            if invalid_ids:
+                raise serializers.ValidationError(f"Invalid project IDs: {', '.join(map(str, invalid_ids))}")
+
+        # Cache resolved objects
+        self.csv_objects_cache["projects"] = list(available_projects)
+
+        return value
+
+    def validate_default_user_roles(self, value):
+        """Validate user role IDs exist in account."""
+        if not value:
+            return value
+
+        if not self.importer_account:
+            return value
+
+        existing_roles = UserRole.objects.filter(
+            account=self.importer_account,
+            id__in=value,
+        )
+        valid_role_ids = set(existing_roles.values_list("id", flat=True))
+        invalid_ids = [rid for rid in value if rid not in valid_role_ids]
+
+        if invalid_ids:
+            raise serializers.ValidationError(f"Invalid user role IDs: {', '.join(map(str, invalid_ids))}")
+
+        # Cache resolved objects
+        self.csv_objects_cache["user_roles"] = list(existing_roles)
+
+        return value
+
+    def validate_default_org_units(self, value):
+        """Validate org unit IDs exist and user has access."""
+        if not value:
+            return value
+
+        if not self.importer_user:
+            return value
+
+        importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(self.importer_user)
+        accessible_ou_ids = set(importer_access_ou.values_list("id", flat=True))
+
+        invalid_ids = [ou_id for ou_id in value if ou_id not in accessible_ou_ids]
+        if invalid_ids:
+            raise serializers.ValidationError(
+                f"Invalid or inaccessible org unit IDs: {', '.join(map(str, invalid_ids))}"
+            )
+
+        # Cache resolved objects
+        valid_org_units = OrgUnit.objects.filter(id__in=value, pk__in=importer_access_ou)
+        self.csv_objects_cache["org_units"] = list(valid_org_units)
+
+        return value
+
+    def validate_default_teams(self, value):
+        """Validate team IDs exist in user's account."""
+        if not value:
+            return value
+
+        if not self.importer_account:
+            return value
+
+        existing_teams = Team.objects.filter(id__in=value, project__account=self.importer_account)
+        valid_team_ids = set(existing_teams.values_list("id", flat=True))
+
+        invalid_ids = [tid for tid in value if tid not in valid_team_ids]
+        if invalid_ids:
+            raise serializers.ValidationError(f"Invalid team IDs: {', '.join(map(str, invalid_ids))}")
+
+        # Cache resolved objects
+        self.csv_objects_cache["teams"] = list(existing_teams)
+
+        return value
+
+    @staticmethod
+    def _format_phone_number(phone_number):
+        """Format phone number using E.164 format or raise ValidationError."""
+        try:
+            parsed_number = phonenumbers.parse(phone_number, None)
+            if not phonenumbers.is_valid_number(parsed_number):
+                raise ValidationError(f"Invalid phone number: {phone_number}")
+            return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+        except phonenumbers.NumberParseException:
+            raise ValidationError(f"Invalid phone number format: {phone_number}")
+
+    def _parse_csv_file(self, csv_file):
+        """Parse CSV file and return structured data."""
+        try:
+            user_csv_decoded = csv_file.read().decode("utf-8")
+            csv_str = io.StringIO(user_csv_decoded)
+            delimiter = ";" if ";" in user_csv_decoded else ","
+            reader = csv.reader(csv_str, delimiter=delimiter)
+
+            if delimiter == ";":
+                new_reader = []
+                for row in reader:
+                    new_row = [cell.replace(",", "*") for cell in row]
+                    new_reader.append(new_row)
+                reader = new_reader
+
+            pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
+        except UnicodeDecodeError:
+            raise serializers.ValidationError("Invalid file encoding")
+        except pd.errors.ParserError:
+            raise serializers.ValidationError("Invalid CSV file")
+        except Exception as e:
+            raise serializers.ValidationError("Failed to parse CSV")
+
+        parsed_rows = []
+        headers = None
+        value_splitter = "," if delimiter == "," else "*"
+
+        # Fields that contain multiple values separated by delimiter
+        multi_value_fields = [
+            "orgunit",
+            "orgunit__source_ref",
+            "projects",
+            "user_roles",
+            "teams",
+            "permissions",
+            "editable_org_unit_types",
+        ]
+
+        for i, row in enumerate(reader):
+            if i == 0:
+                headers = row
+                # Validate required columns exist
+                missing_columns = set(BULK_CREATE_USER_COLUMNS_LIST) - set(headers)
+                if missing_columns:
+                    raise serializers.ValidationError(
+                        f"Missing required column(s): {', '.join(sorted(missing_columns))}"
+                    )
+            else:
+                row_data = dict(zip(headers, row))
+                row_data["_row_number"] = i  # Data row numbering starts at 1 (ignoring header)
+
+                for field in multi_value_fields:
+                    if field in row_data and row_data[field]:
+                        row_data[field] = [v.strip() for v in row_data[field].split(value_splitter) if v.strip()]
+                    else:
+                        row_data[field] = []
+
+                parsed_rows.append(row_data)
+
+        return parsed_rows
+
+    def _validate_csv_users(self, user_data):
+        """Validate all CSV users and cache resolved objects."""
+        if not self.importer_user or not self.importer_account:
+            raise serializers.ValidationError("Invalid user context for CSV validation")
+
+        validation_errors = []
+        validation_context = {
+            "permissions_by_row": {},
+            "projects_by_row": {},
+            "user_roles_by_row": {},
+            "teams_by_row": {},
+            "org_units_by_row": {},
+            "editable_org_unit_types_by_row": {},
+            "phone_numbers_by_row": {},
+        }
+
+        # Get existing data for uniqueness checks
+        usernames = [data.get("username") for data in user_data if data.get("username")]
+
+        existing_usernames = set(User.objects.filter(username__in=usernames).values_list("username", flat=True))
+
+        has_geo_limit = BulkCreateUserFromCsvViewSet.has_only_user_managed_permission(self.importer_user)
+        importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(self.importer_user).only("id")
+
+        for row_index, data in enumerate(user_data):
+            row_errors = {}
+            row_num = data.get("_row_number", "unknown")
+
+            # Validate username
+            username = data.get("username", "").strip()
+            if not username:
+                row_errors["username"] = "Username is required"
+            elif username in existing_usernames:
+                row_errors["username"] = f"Username '{username}' already exists"
+
+            # Validate email
+            email = data.get("email", "").strip() if data.get("email") else None
+            if email:
+                try:
+                    validators.validate_email(email)
+                except ValidationError:
+                    row_errors["email"] = f"Invalid email format: '{email}'"
+
+            # Validate password
+            password = data.get("password", "").strip() if data.get("password") else None
+            if not password and email:
+                # Email invitation mode - no password validation
+                pass
+            elif password:
+                try:
+                    temp_user = User(username=username)
+                    validate_password(password, temp_user)
+                except ValidationError as e:
+                    row_errors["password"] = f"Invalid password: {'; '.join(e.messages)}"
+            else:
+                # Error: need either password or email
+                row_errors["password"] = "Either password or email required for user creation"
+
+            # Validate OrgUnits
+            org_unit_list = data.get("orgunit") or []
+            org_unit_source_refs = data.get("orgunit__source_ref") or []
+            has_any_org_unit = org_unit_list or org_unit_source_refs
+
+            if has_geo_limit and not has_any_org_unit:
+                row_errors["orgunit"] = (
+                    f"A User with {CORE_USERS_MANAGED_PERMISSION.full_name()} permission "
+                    "must create users with OrgUnits"
+                )
+            elif has_any_org_unit:
+                valid_org_units = []
+
+                # Resolve org units by ID/name
+                if org_unit_list:
+                    resolved, invalid_org_units, inaccessible_org_units = self._resolve_org_units_for_user(
+                        org_unit_list, importer_access_ou
+                    )
+                    if invalid_org_units:
+                        row_errors["orgunit"] = f"Invalid OrgUnit: {', '.join(invalid_org_units)}"
+                    elif inaccessible_org_units:
+                        row_errors["orgunit"] = f"You don't have access to OrgUnit: {', '.join(inaccessible_org_units)}"
+                    else:
+                        valid_org_units.extend(resolved)
+
+                # Resolve org units by source_ref
+                if org_unit_source_refs and "orgunit" not in row_errors:
+                    invalid_source_refs = []
+                    for ou_ref in org_unit_source_refs:
+                        ou = OrgUnit.objects.filter(
+                            pk__in=importer_access_ou,
+                            version_id=self.importer_account.default_version_id,
+                            source_ref=ou_ref,
+                        ).first()
+                        if ou:
+                            if ou not in valid_org_units:
+                                valid_org_units.append(ou)
+                        else:
+                            invalid_source_refs.append(ou_ref)
+
+                    if invalid_source_refs:
+                        row_errors["orgunit__source_ref"] = (
+                            f"Invalid or inaccessible OrgUnit source_ref: {', '.join(invalid_source_refs)}"
+                        )
+
+                if "orgunit" not in row_errors and "orgunit__source_ref" not in row_errors:
+                    validation_context["org_units_by_row"][row_index] = valid_org_units
+
+            # Validate permissions
+            permission_names = data.get("permissions", [])
+            if permission_names:
+                module_permissions = [perm.codename for perm in self.importer_account.permissions_from_active_modules]
+                invalid_permissions = [pn for pn in permission_names if pn not in module_permissions]
+                if invalid_permissions:
+                    row_errors["permissions"] = f"Invalid permissions: {', '.join(invalid_permissions)}"
+                else:
+                    valid_permissions = Permission.objects.filter(
+                        codename__in=[pn for pn in permission_names if pn in module_permissions]
+                    )
+                    validation_context["permissions_by_row"][row_index] = list(valid_permissions)
+
+            # Validate user roles
+            role_names = data.get("user_roles", [])
+            if role_names:
+                existing_roles = UserRole.objects.filter(
+                    account=self.importer_account,
+                    group__name__in=[f"{self.importer_account.id}_{role}" for role in role_names],
+                )
+                existing_role_names = set(existing_roles.values_list("group__name", flat=True))
+                invalid_roles = [
+                    role for role in role_names if f"{self.importer_account.id}_{role}" not in existing_role_names
+                ]
+                if invalid_roles:
+                    row_errors["user_roles"] = f"Invalid user roles: {', '.join(invalid_roles)}"
+                else:
+                    validation_context["user_roles_by_row"][row_index] = list(existing_roles)
+
+            # Validate projects
+            project_names = data.get("projects", [])
+            if project_names:
+                user_has_project_restrictions = bool(self.importer_user.iaso_profile.projects_ids)
+
+                if user_has_project_restrictions and has_geo_limit:
+                    available_projects = Project.objects.filter(
+                        name__in=project_names, account=self.importer_account
+                    ).filter_on_user_projects(self.importer_user)
+
+                    if not available_projects.exists():
+                        available_projects = Project.objects.filter(
+                            account=self.importer_account
+                        ).filter_on_user_projects(self.importer_user)
+                    validation_context["projects_by_row"][row_index] = list(available_projects)
+                else:
+                    available_projects = Project.objects.filter(name__in=project_names, account=self.importer_account)
+                    valid_project_names = set(available_projects.values_list("name", flat=True))
+                    invalid_projects = [pn for pn in project_names if pn not in valid_project_names]
+                    if invalid_projects:
+                        row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
+                    else:
+                        validation_context["projects_by_row"][row_index] = list(available_projects)
+
+            # Validate teams
+            team_names = data.get("teams", [])
+            if team_names:
+                existing_teams = Team.objects.filter(name__in=team_names, project__account=self.importer_account)
+                existing_team_names = set(existing_teams.values_list("name", flat=True))
+                invalid_teams = [team for team in team_names if team not in existing_team_names]
+                if invalid_teams:
+                    row_errors["teams"] = f"Row {row_num}: Team '{invalid_teams[0]}' does not exist."
+                else:
+                    validation_context["teams_by_row"][row_index] = list(existing_teams)
+
+            # Validate editable org unit types
+            editable_org_unit_type_ids = data.get("editable_org_unit_types", [])
+            if editable_org_unit_type_ids:
+                available_org_unit_types = OrgUnitType.objects.filter(
+                    projects__account=self.importer_account, id__in=editable_org_unit_type_ids
+                ).distinct()
+                validation_context["editable_org_unit_types_by_row"][row_index] = list(available_org_unit_types)
+
+            # Validate and format phone number
+            phone_number = data.get("phone_number", "").strip()
+            formatted_phone = ""
+            if phone_number:
+                try:
+                    formatted_phone = self._format_phone_number(phone_number)
+                except ValidationError:
+                    # Silent correction: invalid phones become empty string
+                    formatted_phone = ""
+            validation_context["phone_numbers_by_row"][row_index] = formatted_phone
+
+            # Validate language
+            language = data.get("profile_language", "").strip().lower()
+            if language:
+                valid_languages = [lang[0] for lang in settings.LANGUAGES]
+                if language not in valid_languages:
+                    available = ", ".join(valid_languages)
+                    row_errors["profile_language"] = f"Invalid language '{language}'. Available: {available}"
+
+            if row_errors:
+                validation_errors.append({"row": row_num, "errors": row_errors})
+
+        return validation_errors, validation_context
+
+    def _resolve_org_units_for_user(self, org_unit_refs, importer_access_ou):
+        """Resolve org unit references to OrgUnit objects."""
+        valid_org_units = []
+        invalid_refs = []
+        inaccessible_refs = []
+
+        accessible_ou_ids = set(importer_access_ou.values_list("id", flat=True))
+        accessible_ou_dict = {ou.id: ou for ou in importer_access_ou}
+
+        for ou_ref in org_unit_refs:
+            if ou_ref.isdigit():
+                ou_id = int(ou_ref)
+                if ou_id not in accessible_ou_dict:
+                    if not OrgUnit.objects.filter(id=ou_id).exists():
+                        invalid_refs.append(ou_ref)
+                    else:
+                        inaccessible_refs.append(ou_ref)
+                else:
+                    valid_org_units.append(accessible_ou_dict[ou_id])
+            else:
+                # Check org unit by name within accessible org units
+                ou = (
+                    OrgUnit.objects.filter(
+                        pk__in=importer_access_ou,
+                        version_id=self.importer_account.default_version_id,
+                        name=ou_ref,
+                    )
+                    .order_by("-version_id")
+                    .first()
+                )
+
+                if ou:
+                    valid_org_units.append(ou)
+                else:
+                    invalid_refs.append(ou_ref)
+
+        return valid_org_units, invalid_refs, inaccessible_refs
 
 
 class HasUserPermission(permissions.BasePermission):
@@ -61,45 +546,44 @@ class HasUserPermission(permissions.BasePermission):
 
 
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
-    """Api endpoint to bulkcreate users and profiles from a CSV File.
+    """API endpoint to bulk create users and profiles from a CSV file.
 
-    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions", "user_roles", "projects"]
+    CSV Columns (all columns must be present, but values can be empty):
+        - username (required)
+        - password (required if no email, otherwise optional for email invitation)
+        - email (optional, triggers email invitation if no password)
+        - first_name (optional)
+        - last_name (optional)
+        - orgunit (optional, comma-separated IDs or names)
+        - orgunit__source_ref (optional, comma-separated source refs)
+        - profile_language (optional)
+        - dhis2_id (optional)
+        - organization (optional)
+        - permissions (optional, comma-separated permission codenames)
+        - user_roles (optional, comma-separated role names)
+        - projects (optional, comma-separated project names)
+        - teams (optional, comma-separated team names)
+        - phone_number (optional, E.164 format)
+        - editable_org_unit_types (optional, comma-separated type IDs)
 
-    Email, dhis2_id, permissions, profile_language and org_unit are not mandatory, but you must keep the columns.
+    Default Values (applied to all users when CSV field is empty):
+        All default fields use IDs (integers), not names:
+        - default_permissions: list of permission IDs, e.g. [1, 2, 3]
+        - default_projects: list of project IDs, e.g. [1]
+        - default_user_roles: list of user role IDs, e.g. [1, 2]
+        - default_org_units: list of org unit IDs, e.g. [123, 456]
+        - default_teams: list of team IDs, e.g. [1, 2]
+        - default_profile_language: language code, e.g. "en" or "fr"
+        - default_organization: organization name, e.g. "WHO"
 
-    Sample csv input:
+    Sample CSV:
+        username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,teams,phone_number,editable_org_unit_types
+        john,SecurePass123!,john@example.com,John,Doe,123,,,en,,iaso_forms,manager,Project1,Team1,+1234567890,1
 
-    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id,user_role,projects
-
-    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3, manager, "oms, RDC"
-
-    You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
-    You can add multiples org_units for the same user by ID or Name : "28334, Bas Uele, 9999"
-
-    It's a better practice and less error-prone to use org_units IDs instead of names.
-
-
-    The permissions are :
-
-    "iaso_forms",
-
-    "iaso_submissions",
-
-    "iaso_mappings",
-
-    "iaso_completeness",
-
-    "iaso_org_units",
-
-    "iaso_links",
-
-    "iaso_users",
-
-    "iaso_projects",
-
-    "iaso_sources",
-
-    "iaso_data_tasks",
+    Notes:
+        - CSV field values take precedence over default values
+        - Use org unit IDs instead of names when possible (less error-prone)
+        - Users with email but no password will receive an email invitation
     """
 
     result_key = "file"
@@ -115,8 +599,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         return queryset
 
     @staticmethod
-    def has_only_user_managed_permission(request):
-        if not request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()) and request.user.has_perm(
+    def has_only_user_managed_permission(user):
+        if not user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()) and user.has_perm(
             CORE_USERS_MANAGED_PERMISSION.full_name()
         ):
             return True
@@ -124,351 +608,311 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        user_created_count = 0
+        """Create users from CSV file with optional default values.
 
-        has_geo_limit = False
-        if self.has_only_user_managed_permission(request):
-            has_geo_limit = True
+        CSV field values take precedence. Default fields provide fallback values
+        for empty fields across all users in a single atomic transaction.
 
-        user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
-            request.user.iaso_profile.projects_ids
+        Email invitations are sent automatically to users without passwords
+        (users with email but no password in CSV).
+
+        Request body:
+        {
+            "file": <csv file>,
+            "default_permissions": [1, 2],
+            "default_projects": [1],
+            "default_user_roles": [1, 2],
+            "default_profile_language": "en",
+            "default_organization": "WHO",
+            "default_org_units": [123, 456],
+            "default_teams": [1, 2]
+        }
+        """
+        importer_user = request.user
+        importer_account = importer_user.iaso_profile.account
+
+        # Validate file and bulk configuration fields via serializer (includes CSV parsing and validation)
+        serializer = self.get_serializer(data=request.data, context={"request": request})
+        if not serializer.is_valid():
+            return Response({"error": serializer.errors}, status=400)
+
+        # Get validated CSV data and context from serializer
+        csv_data = serializer.parsed_csv_data
+        csv_data_cache = serializer.csv_data_cache
+
+        # Use serializer data and cached objects directly
+        default_data = serializer.validated_data
+        csv_objects_cache = serializer.csv_objects_cache
+
+        created_users, created_profiles = self._bulk_create_users_and_profiles(
+            csv_data,
+            importer_user,
+            importer_account,
+            csv_data_cache,
+            default_data,
+            csv_objects_cache,
         )
 
-        if request.FILES:
-            # Retrieve and check the validity and format of the CSV File
-            try:
-                user_csv = request.FILES["file"]
-                user_csv_decoded = user_csv.read().decode("utf-8")
-                csv_str = io.StringIO(user_csv_decoded)
-                delimiter = ";" if ";" in user_csv_decoded else ","
-                reader = csv.reader(csv_str, delimiter=delimiter)
-                """In case the delimiter is " ; " we must ensure that the multiple value can be read so we replace it
-                    with a " * " instead of " , " """
-                if delimiter == ";":
-                    new_reader = []
-                    for row in reader:
-                        new_row = [cell.replace(",", "*") for cell in row]
-                        new_reader.append(new_row)
-                    reader = new_reader
-                pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
-            except UnicodeDecodeError as e:
-                raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
-            except pd.errors.ParserError as e:
-                raise serializers.ValidationError({"error": f"Invalid CSV File. Error: {e}"})
-            importer_user = request.user
-            importer_account = request.user.iaso_profile.account
-            importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user).only("id")
-            csv_indexes = []
-            file_instance = BulkCreateUserCsvFile.objects.create(
-                file=user_csv, created_by=importer_user, account=importer_account
-            )
-            value_splitter = "," if delimiter == "," else "*"
-            file_instance.save()
-            audit_logger = ProfileAuditLogger()
-            for i, row in enumerate(reader):
-                if i > 0 and not set(BULK_CREATE_USER_COLUMNS_LIST).issubset(csv_indexes):
-                    missing_elements = set(BULK_CREATE_USER_COLUMNS_LIST) - set(csv_indexes)
-                    raise serializers.ValidationError(
-                        {
-                            "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."
-                        }
-                    )
-                org_units_list = set()
-                user_roles_list = []
-                user_groups_list = []
-                projects_instance_list = []
-                if i > 0:
-                    email_address = True if row[csv_indexes.index("email")] else None
-                    if email_address:
-                        try:
-                            validators.validate_email(row[csv_indexes.index("email")])
-                        except ValidationError:
-                            raise serializers.ValidationError(
-                                {
-                                    "error": f"Operation aborted. Invalid Email at row : {i}. Fix the error and try "
-                                    "again."
-                                }
-                            )
-                    try:
-                        try:
-                            user = User.objects.create(
-                                username=row[csv_indexes.index("username")],
-                                first_name=row[csv_indexes.index("first_name")],
-                                last_name=row[csv_indexes.index("last_name")],
-                                email=row[csv_indexes.index("email")],
-                            )
-                            validate_password(row[csv_indexes.index("password")], user)
-                            user.set_password(row[csv_indexes.index("password")])
-                            user.save()
-                        except ValidationError as e:
-                            raise serializers.ValidationError(
-                                {"error": "Operation aborted. Error at row %d. %s" % (i + 1, "; ".join(e.messages))}
-                            )
-                    except IntegrityError:
-                        raise serializers.ValidationError(
-                            {
-                                "error": "Operation aborted. Error at row {0} Account already exists : {1}. Fix the "
-                                "error and try "
-                                "again.".format(i, row[csv_indexes.index("username")])
-                            }
-                        )
+        csv_file_instance = self._create_csv_file_record(
+            request.FILES["file"], default_data, csv_objects_cache, importer_user, importer_account
+        )
 
-                    org_units = row[csv_indexes.index("orgunit")].split(value_splitter)
-                    if has_geo_limit and len(list(filter(None, org_units))) == 0:
-                        raise serializers.ValidationError(
-                            {
-                                "error": f"Operation aborted. A User with {CORE_USERS_MANAGED_PERMISSION} permission "
-                                "has to create users with OrgUnits in the file"
-                            }
-                        )
+        # remove passwords from stored CSV using pandas
+        csv_file_instance.file.seek(0)
+        file_content = csv_file_instance.file.read().decode("utf-8")
+        delimiter = ";" if ";" in file_content else ","
+        csv_data = pd.read_csv(io.StringIO(file_content), delimiter=delimiter)
+        csv_data["password"] = ""
+        csv_content = csv_data.to_csv(path_or_buf=None, index=False, sep=delimiter)
+        content_file = ContentFile(csv_content.encode("utf-8"))
+        csv_file_instance.file.save(f"{csv_file_instance.id}.csv", content_file, save=False)
+        csv_file_instance.save()
 
-                    org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
-                    org_units += org_units_source_refs
-                    for ou in list(filter(None, org_units)):
-                        ou = ou.strip()
-                        if ou.isdigit():
-                            try:
-                                ou = OrgUnit.objects.select_related("org_unit_type").get(id=int(ou))
-                                if ou not in importer_access_ou:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. "
-                                            "You don't have access to this orgunit"
-                                        }
-                                    )
-                                org_units_list.add(ou)
-                            except ObjectDoesNotExist:
-                                raise serializers.ValidationError(
-                                    {
-                                        "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. "
-                                        "Fix the error "
-                                        "and try "
-                                        "again."
-                                    }
-                                )
-                        else:
-                            # The same `OrgUnit` can appear more than once with the same `name` and `source_ref`
-                            # due to multiple sequential imports from DHIS2 (this happens a lot). So we must
-                            # select the one that matches the "default source version" of the account.
-                            org_unit = (
-                                OrgUnit.objects.select_related("org_unit_type")
-                                .filter(
-                                    Q(pk__in=importer_access_ou),
-                                    Q(version_id=importer_account.default_version_id),
-                                    Q(name=ou) | Q(source_ref=ou),
-                                )
-                                .order_by("-version_id")
-                            )
-                            if org_unit.count() > 1:
-                                raise serializers.ValidationError(
-                                    {
-                                        "error": f"Operation aborted. Multiple OrgUnits with `name` or `source_ref`: {ou} at row : {i + 1}."
-                                        "Use Orgunit ID instead of name."
-                                    }
-                                )
-                            if not org_unit.count():
-                                raise serializers.ValidationError(
-                                    {
-                                        "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. Fix "
-                                        "the error "
-                                        "and try "
-                                        "again. Use Orgunit ID instead of name."
-                                    }
-                                )
-                            if org_unit[0] not in importer_access_ou:
-                                raise serializers.ValidationError(
-                                    {
-                                        "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. "
-                                        "You don't have access to this orgunit"
-                                    }
-                                )
-                            org_units_list.add(org_unit[0])
+        audit_logger = ProfileAuditLogger()
+        self._audit(created_profiles, audit_logger, importer_user)
 
-                    profile = Profile.objects.create(account=importer_account, user=user)
-
-                    # Using try except for dhis2_id in case users are being created with an older version of the template
-                    try:
-                        dhis2_id = row[csv_indexes.index("dhis2_id")]
-                    except ValueError:
-                        dhis2_id = None
-                    if dhis2_id:
-                        # check if a profile with the same dhis_id already exists
-                        if Profile.objects.filter(dhis2_id=dhis2_id).count() > 0:
-                            raise serializers.ValidationError(
-                                {
-                                    "error": f"Operation aborted. User with same dhis_2 id already exists at row : {i + 1}. Fix "
-                                    "the error "
-                                    "and try "
-                                    "again"
-                                }
-                            )
-
-                        profile.dhis2_id = dhis2_id
-
-                    # Using try except for organization in case users are being created with an older version of the template
-                    try:
-                        organization = row[csv_indexes.index("organization")]
-                    except ValueError:
-                        organization = None
-                    if organization:
-                        profile.organization = organization
-
-                    try:
-                        user_roles = row[csv_indexes.index("user_roles")]
-                    except (IndexError, ValueError):
-                        user_roles = None
-                    if user_roles:
-                        user_roles = [role.strip() for role in user_roles.split(value_splitter) if role]
-                        # check if the roles exists in the account of the request user
-                        # and add it to user_roles_list
-                        for role in user_roles:
-                            try:
-                                role_instance = UserRole.objects.get(
-                                    account=importer_account,
-                                    group__name=f"{importer_account.id}_{role}",
-                                )
-                                user_roles_list.append(role_instance)
-                                # get the user group linked to the userrole
-                                user_group_item = Group.objects.get(pk=role_instance.group.id)
-                                user_groups_list.append(user_group_item)
-
-                            except ObjectDoesNotExist:
-                                raise serializers.ValidationError(
-                                    {
-                                        "error": f"Error. User Role: {role}, at row {i + 1} does not exists: Fix "
-                                        "the error and try again."
-                                    }
-                                )
-                    try:
-                        projects = row[csv_indexes.index("projects")]
-                    except (IndexError, ValueError):
-                        projects = None
-                    if projects:
-                        project_names = [name.strip() for name in projects.split(value_splitter) if name]
-                        if user_has_project_restrictions and has_geo_limit:
-                            projects_instance_list = Project.objects.filter(
-                                name__in=project_names,
-                                account=importer_account,
-                            ).filter_on_user_projects(request.user)
-                            # If none of the submitted projects is a subset of the user's project restrictions,
-                            # fallback to the same restrictions as the user.
-                            if not projects_instance_list.exists():
-                                projects_instance_list = Project.objects.filter(
-                                    account=importer_account
-                                ).filter_on_user_projects(request.user)
-                        else:
-                            projects_instance_list = Project.objects.filter(
-                                name__in=project_names, account=importer_account
-                            )
-
-                    try:
-                        teams_val = row[csv_indexes.index("teams")]
-                    except (IndexError, ValueError):
-                        teams_val = None
-
-                    if teams_val:
-                        team_names = [name.strip() for name in teams_val.split(value_splitter) if name]
-
-                        teams_to_add = Team.objects.filter(name__in=team_names, project__account=importer_account)
-
-                        found_names = list(teams_to_add.values_list("name", flat=True))
-                        for requested_name in team_names:
-                            if requested_name not in found_names:
-                                raise serializers.ValidationError(
-                                    {"error": f"Row {i + 1}: Team '{requested_name}' does not exist."}
-                                )
-
-                        for team in teams_to_add:
-                            team.users.add(user)
-
-                    try:
-                        user_permissions = [
-                            perm.strip() for perm in row[csv_indexes.index("permissions")].split(value_splitter) if perm
-                        ]
-                        current_account = request.user.iaso_profile.account
-                        module_permissions = [perm.codename for perm in current_account.permissions_from_active_modules]
-                        for perm in user_permissions:
-                            if perm in module_permissions:
-                                try:
-                                    perm = Permission.objects.get(codename=perm)
-                                    user.user_permissions.add(perm)
-                                    user.save()
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Operation aborted. Invalid permission {perm} at row : {i + 1}. Fix "
-                                            "the error "
-                                            "and try "
-                                            "again"
-                                        }
-                                    )
-                    except ValueError:
-                        pass
-                    if row[csv_indexes.index("profile_language")]:
-                        language = row[csv_indexes.index("profile_language")].lower()
-                        profile.language = language
-                    else:
-                        profile.language = "fr"
-
-                    if row[csv_indexes.index("phone_number")]:
-                        phone_number = row[csv_indexes.index("phone_number")]
-                        profile.phone_number = self.validate_phone_number(phone_number)
-
-                    try:
-                        editable_org_unit_types_ids = row[csv_indexes.index("editable_org_unit_types")]
-                        editable_org_unit_types_ids = (
-                            editable_org_unit_types_ids.split(",") if editable_org_unit_types_ids else None
-                        )
-                    except (IndexError, ValueError):
-                        editable_org_unit_types_ids = None
-
-                    if editable_org_unit_types_ids:
-                        new_editable_org_unit_types = OrgUnitType.objects.filter(
-                            projects__account=importer_account, id__in=editable_org_unit_types_ids
-                        )
-                        if new_editable_org_unit_types:
-                            profile.editable_org_unit_types.set(new_editable_org_unit_types)
-
-                    profile.org_units.set(org_units_list)
-                    # link the auth user to the user role corresponding auth group
-                    profile.user.groups.set(user_groups_list)
-                    # link the user profile to the user role.
-                    profile.user_roles.set(user_roles_list)
-                    profile.projects.set(projects_instance_list)
-
-                    csv_file = pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
-                    csv_file.at[i - 1, "password"] = None
-                    csv_file = csv_file.to_csv(path_or_buf=None, index=False)
-                    content_file = ContentFile(csv_file.encode("utf-8"))
-                    file_instance.file.save(f"{file_instance.id}.csv", content_file)
-                    profile.save()
-                    audit_logger.log_modification(
-                        instance=profile,
-                        old_data_dump=None,
-                        request_user=request.user,
-                        source=f"{PROFILE_API_BULK}_create",
-                    )
-                    user_created_count += 1
-                else:
-                    csv_indexes = row
-        response = {"Accounts created": user_created_count}
+        response = {"Accounts created": len(created_users)}
         return Response(response)
 
-    @staticmethod
-    def validate_phone_number(phone_number):
-        try:
-            # Parse phone number
-            parsed_number = phonenumbers.parse(phone_number, None)
-            # Check if the number is valid
-            if not phonenumbers.is_valid_number(parsed_number):
-                raise serializers.ValidationError(
-                    {"error": f"Operation aborted. The phone number {phone_number} is invalid"}
+    def _create_csv_file_record(self, file, default_data, csv_objects_cache, importer_user, importer_account):
+        """Create BulkCreateUserCsvFile record with M2M relationships."""
+        instance = BulkCreateUserCsvFile.objects.create(
+            file=file,
+            account=importer_account,
+            created_by=importer_user,
+            default_profile_language=default_data.get("default_profile_language", ""),
+            default_organization=default_data.get("default_organization", ""),
+        )
+
+        if default_data.get("default_permissions"):
+            permissions = csv_objects_cache.get("permissions", [])
+            if permissions:
+                instance.default_permissions.set(permissions)
+
+        if default_data.get("default_projects"):
+            projects = csv_objects_cache.get("projects", [])
+            if projects:
+                instance.default_projects.set(projects)
+
+        if default_data.get("default_user_roles"):
+            user_roles = csv_objects_cache.get("user_roles", [])
+            if user_roles:
+                instance.default_user_roles.set(user_roles)
+
+        if default_data.get("default_org_units"):
+            org_units = csv_objects_cache.get("org_units", [])
+            if org_units:
+                instance.default_org_units.set(org_units)
+
+        if default_data.get("default_teams"):
+            teams = csv_objects_cache.get("teams", [])
+            if teams:
+                instance.default_teams.set(teams)
+
+        return instance
+
+    def _bulk_create_users_and_profiles(
+        self,
+        csv_data,
+        importer_user,
+        importer_account,
+        csv_data_cache,
+        default_data=None,
+        csv_objects_cache=None,
+    ):
+        """Create users and profiles using bulk operations validation context.
+        Uses default_data for fallback values and csv_objects_cache for cached objects
+        """
+        default_data = default_data or {}
+        csv_objects_cache = csv_objects_cache or {}
+        audit_logger = ProfileAuditLogger()
+
+        # Phase 1: Prepare User objects for bulk_create
+        users_to_create = []
+
+        for data in csv_data:
+            user = User(
+                username=data.get("username", "").strip(),
+                first_name=data.get("first_name", "").strip(),
+                last_name=data.get("last_name", "").strip(),
+                email=data.get("email", "").strip(),
+                is_active=True,
+            )
+
+            password = data.get("password", "").strip()
+            email = data.get("email", "").strip() if data.get("email") else None
+            # Auto-detect email invitation: no password + has email = send invitation
+            send_invitation = not password and bool(email)
+
+            if send_invitation:
+                user.set_unusable_password()
+            elif password:
+                user.set_password(password)
+
+            users_to_create.append(user)
+
+        created_users = User.objects.bulk_create(users_to_create)
+
+        # Phase 2: Prepare Profile objects for bulk_create
+        profiles_to_create = []
+        invitation_users = []
+
+        for row_index, (user, data) in enumerate(zip(created_users, csv_data)):
+            language = (
+                data.get("profile_language", "").strip().lower()
+                or default_data.get("default_profile_language", "").lower()
+                or "fr"
+            )
+
+            organization = data.get("organization", "").strip() or default_data.get("default_organization", "")
+
+            dhis2_id = data.get("dhis2_id", "").strip()
+
+            profile = Profile(
+                user=user,
+                account=importer_account,
+                language=language,
+                dhis2_id=dhis2_id or None,
+                organization=organization,
+                phone_number=csv_data_cache.get("phone_numbers_by_row", {}).get(row_index, ""),
+            )
+            profiles_to_create.append(profile)
+
+            if not data.get("password", "").strip() and data.get("email", "").strip():
+                invitation_users.append(user)
+
+        created_profiles = Profile.objects.bulk_create(profiles_to_create)
+
+        # Phase 3: Handle ManyToMany relationships with bulk operations
+        self._bulk_set_many_to_many_relationships(
+            created_profiles,
+            csv_data,
+            importer_user,
+            importer_account,
+            csv_data_cache,
+            default_data,
+            csv_objects_cache,
+        )
+
+        # Phase 4: Send email invitations
+        if invitation_users:
+            self._send_bulk_email_invitations(invitation_users)
+
+        return created_users, created_profiles
+
+    def _bulk_set_many_to_many_relationships(
+        self,
+        profiles,
+        user_data,
+        importer_user,
+        importer_account,
+        csv_data_cache,
+        default_data=None,
+        csv_objects_cache=None,
+    ):
+        """Set ManyToMany relationships using bulk operations and cached validated objects.
+
+        Uses default_data for defaults and csv_objects_cache for cached objects.
+        """
+        default_data = default_data or {}
+        csv_objects_cache = csv_objects_cache or {}
+
+        profile_org_units_list = []
+        profile_projects_list = []
+        profile_user_roles_list = []
+        user_groups_list = []
+        user_permissions_list = []
+        profile_editable_types_list = []
+        team_users_list = []
+
+        for row_index, (profile, data) in enumerate(zip(profiles, user_data)):
+            org_units_to_add = csv_data_cache["org_units_by_row"].get(row_index, [])
+            if not org_units_to_add:
+                org_units_to_add = csv_objects_cache.get("org_units", [])
+
+            for ou in org_units_to_add:
+                profile_org_units_list.append(Profile.org_units.through(profile=profile, orgunit=ou))
+
+            cached_projects = csv_data_cache["projects_by_row"].get(row_index, [])
+            if not cached_projects:
+                cached_projects = csv_objects_cache.get("projects", [])
+
+            for project in cached_projects:
+                profile_projects_list.append(Profile.projects.through(profile=profile, project=project))
+
+            cached_teams = csv_data_cache["teams_by_row"].get(row_index, [])
+            if not cached_teams:
+                cached_teams = csv_objects_cache.get("teams", [])
+
+            for team in cached_teams:
+                team_users_list.append(Team.users.through(team=team, user=profile.user))
+
+            cached_roles = csv_data_cache["user_roles_by_row"].get(row_index, [])
+            if not cached_roles:
+                cached_roles = csv_objects_cache.get("user_roles", [])
+
+            for role in cached_roles:
+                profile_user_roles_list.append(Profile.user_roles.through(profile=profile, userrole=role))
+                user_groups_list.append(User.groups.through(user=profile.user, group=role.group))
+
+            cached_permissions = csv_data_cache["permissions_by_row"].get(row_index, [])
+            if not cached_permissions:
+                cached_permissions = csv_objects_cache.get("permissions", [])
+
+            for permission in cached_permissions:
+                user_permissions_list.append(User.user_permissions.through(user=profile.user, permission=permission))
+
+            cached_editable_types = csv_data_cache["editable_org_unit_types_by_row"].get(row_index, [])
+            for org_unit_type in cached_editable_types:
+                profile_editable_types_list.append(
+                    Profile.editable_org_unit_types.through(profile=profile, orgunittype=org_unit_type)
                 )
 
-            return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
-        except phonenumbers.NumberParseException as e:
-            raise serializers.ValidationError(
-                {"error": f"Operation aborted. This '{phone_number}' is not a phone number"}
+        # Bulk create all relationships
+        if profile_org_units_list:
+            Profile.org_units.through.objects.bulk_create(profile_org_units_list, ignore_conflicts=True)
+
+        if profile_projects_list:
+            Profile.projects.through.objects.bulk_create(profile_projects_list, ignore_conflicts=True)
+
+        if profile_user_roles_list:
+            Profile.user_roles.through.objects.bulk_create(profile_user_roles_list, ignore_conflicts=True)
+
+        if user_groups_list:
+            User.groups.through.objects.bulk_create(user_groups_list, ignore_conflicts=True)
+
+        if user_permissions_list:
+            User.user_permissions.through.objects.bulk_create(user_permissions_list, ignore_conflicts=True)
+
+        if team_users_list:
+            Team.users.through.objects.bulk_create(team_users_list, ignore_conflicts=True)
+
+        if profile_editable_types_list:
+            Profile.editable_org_unit_types.through.objects.bulk_create(
+                profile_editable_types_list, ignore_conflicts=True
+            )
+
+    def _send_bulk_email_invitations(self, users):
+        """Queue background task to send email invitations to users without passwords."""
+        user_ids = [
+            user.id
+            for user in users
+            if user.email and not user.has_usable_password()  # Only users with unusable passwords need invitations
+        ]
+
+        if not user_ids:
+            return
+
+        send_bulk_email_invitations(user_ids, self.request.is_secure(), user=self.request.user)
+
+    def _audit(self, created_profiles, audit_logger, importer_user):
+        """Log created users"""
+        for profile in created_profiles:
+            audit_logger.log_modification(
+                instance=profile,
+                old_data_dump=None,
+                request_user=importer_user,
+                source=f"{PROFILE_API_BULK}_create",
             )
 
     @swagger_auto_schema(request_body=no_body)

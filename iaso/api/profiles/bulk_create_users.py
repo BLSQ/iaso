@@ -4,6 +4,7 @@ import io
 import pandas as pd
 import phonenumbers
 
+from django.conf import settings
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
@@ -482,6 +483,14 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                     # Silent correction: invalid phones become empty string
                     formatted_phone = ""
             validation_context["phone_numbers_by_row"][row_index] = formatted_phone
+
+            # Validate language
+            language = data.get("profile_language", "").strip().lower()
+            if language:
+                valid_languages = [lang[0] for lang in settings.LANGUAGES]
+                if language not in valid_languages:
+                    available = ", ".join(valid_languages)
+                    row_errors["profile_language"] = f"Invalid language '{language}'. Available: {available}"
 
             if row_errors:
                 validation_errors.append({"row": row_num, "errors": row_errors})

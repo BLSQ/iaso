@@ -168,7 +168,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const isPublished = formik.values.publishingStatus === 'published';
     const hasStarted = Boolean(
         formik.values.startDate &&
-        moment().isAfter(moment(formik.values.startDate), 'day'),
+        moment().isAfter(moment(formik.values.startDate, 'DD/MM/YYYY'), 'day'),
     );
     const isEditingDisabled = Boolean(isPublished || hasStarted);
     const {
@@ -273,6 +273,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
+
     const publishingStatusOptions = useGetPublishingStatusOptions(hasStarted);
     const canAssign = canAssignPlanning(planning);
     return (
@@ -523,21 +524,23 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             display="flex"
                                             justifyContent="space-between"
                                         >
-                                            <Button
-                                                variant="outlined"
-                                                color="error"
-                                                onClick={deleteAssignments}
-                                                startIcon={<DeleteIcon />}
-                                                sx={{
-                                                    marginRight: theme =>
-                                                        theme.spacing(2),
-                                                }}
-                                                disabled={!planning}
-                                            >
-                                                {formatMessage(
-                                                    MESSAGES.deleteAllAssignments,
-                                                )}
-                                            </Button>
+                                            {canAssign && Boolean(planning) && (
+                                                <Button
+                                                    variant="outlined"
+                                                    color="error"
+                                                    onClick={deleteAssignments}
+                                                    startIcon={<DeleteIcon />}
+                                                    sx={{
+                                                        marginRight: theme =>
+                                                            theme.spacing(2),
+                                                    }}
+                                                    disabled={!planning}
+                                                >
+                                                    {formatMessage(
+                                                        MESSAGES.deleteAllAssignments,
+                                                    )}
+                                                </Button>
+                                            )}
                                             <LinkButton
                                                 disabled={!canAssign}
                                                 to={assignmentUrl}

@@ -250,10 +250,9 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
                 source="API " + request.method + request.path,
             )
             audit_for_update.append(audit)
-            # serialize new value? but updated_at will be wrong
+        now = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         with transaction.atomic():
             Assignment.objects.bulk_update(assignments_to_update, ["user", "team"])
-            now = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             for modification in audit_for_update:
                 modification.new_value = [{**modification.new_value[0], "updated_at": now}]
             Modification.objects.bulk_create(audit_for_update)
@@ -271,7 +270,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
             new_assignments = Assignment.objects.bulk_create(created_assignments)
             for new_assignment in new_assignments:
                 new_value = [AuditAssignmentSerializer(instance=new_assignment).data]
-                audit = Modification(  # Bug: assignment has no id at this stage
+                audit = Modification(
                     user=requester,
                     past_value=[],
                     new_value=new_value,

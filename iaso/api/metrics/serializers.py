@@ -91,9 +91,7 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
-        instance = super().create({**validated_data, "account": account})
-        instance.save()
-        return instance
+        return super().create({**validated_data, "account": account})
 
     def validate_code(self, value):
         if any(char.isspace() for char in value):

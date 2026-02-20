@@ -323,7 +323,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         <DocumentUploadWithPreview
                                             errors={documentErrors}
                                             onFilesSelect={files => {
-                                                if (files.length) {
+                                                if (Array.isArray(files)) {
                                                     setFieldTouched(
                                                         'vrf.file',
                                                         true,
@@ -345,6 +345,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                                 values?.vrf?.scan_timestamp
                                             }
                                             coloredScanResultIcon
+                                            enableDelete
                                         />
                                     </Box>
                                 </Grid>

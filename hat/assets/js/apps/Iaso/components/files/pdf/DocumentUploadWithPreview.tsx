@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid } from '@mui/material';
-import { FilesUpload, useSafeIntl } from 'bluesquare-components';
+import { FilesUpload, IconButton, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { PdfPreview } from './PdfPreview';
 import { acceptPDF } from './utils';
@@ -13,6 +13,7 @@ type DocumentUploadWithPreviewProps = {
     scanResult?: string | undefined;
     scanTimestamp?: number | undefined;
     coloredScanResultIcon?: boolean;
+    enableDelete?: boolean;
 };
 
 const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
@@ -23,6 +24,7 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     scanResult,
     scanTimestamp,
     coloredScanResultIcon,
+    enableDelete = false,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -38,10 +40,16 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     } else if (document instanceof File) {
         pdfUrl = URL.createObjectURL(document);
     }
+    let mainGridSize = 12;
+    if (document && enableDelete) {
+        mainGridSize = 9;
+    } else if (document) {
+        mainGridSize = 10;
+    }
 
     return (
         <Grid container spacing={2} alignItems="center">
-            <Grid item xs={document ? 10 : 12}>
+            <Grid item xs={mainGridSize}>
                 <FilesUpload
                     accept={acceptPDF}
                     files={document ? [document as unknown as File] : []}
@@ -53,14 +61,27 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
                 />
             </Grid>
             {pdfUrl && (
-                <Grid item xs={2} sx={{ textAlign: 'right' }}>
-                    <PdfPreview
-                        pdfUrl={pdfUrl}
-                        scanResult={scanResult}
-                        scanTimestamp={scanTimestamp}
-                        coloredScanResultIcon={coloredScanResultIcon}
-                    />
-                </Grid>
+                <>
+                    <Grid
+                        item
+                        xs={enableDelete ? 3 : 2}
+                        sx={{ textAlign: 'right' }}
+                    >
+                        {enableDelete && (
+                            <IconButton
+                                icon="delete"
+                                onClick={() => onFilesSelect([])}
+                                tooltipMessage={MESSAGES.delete}
+                            />
+                        )}
+                        <PdfPreview
+                            pdfUrl={pdfUrl}
+                            scanResult={scanResult}
+                            scanTimestamp={scanTimestamp}
+                            coloredScanResultIcon={coloredScanResultIcon}
+                        />
+                    </Grid>
+                </>
             )}
         </Grid>
     );

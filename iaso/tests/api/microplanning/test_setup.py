@@ -76,7 +76,7 @@ class PlanningSerializersTestBase(APITestCase):
         )
 
         # Create planning in account_2
-        self.account_2planning_account_2 = Planning.objects.create(
+        self.planning_account_2 = Planning.objects.create(
             project=self.project_3,
             name="planning_account_2",
             team=self.team_3,

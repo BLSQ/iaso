@@ -9,7 +9,6 @@ from iaso.api.microplanning.serializers import (
     PlanningWriteSerializer,
 )
 from iaso.models import OrgUnit
-from iaso.test import IasoTestCaseMixin
 from iaso.tests.api.microplanning.test_setup import PlanningSerializersTestBase
 from iaso.utils.colors import COLOR_CHOICES, DEFAULT_COLOR
 
@@ -111,7 +110,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
         self.assertFalse(serializer.data["has_geo_json"])
 
 
-class AssignmentSerializesTestCase(PlanningSerializersTestBase, IasoTestCaseMixin):
+class AssignmentSerializesTestCase(PlanningSerializersTestBase):
     def test_bulk_delete_planning_tenancy(self):
         """Test that user cannot use planning from different account"""
         # User from account_1 tries to use planning from account_2

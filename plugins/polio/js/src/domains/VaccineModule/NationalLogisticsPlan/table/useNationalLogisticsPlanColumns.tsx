@@ -51,7 +51,7 @@ export const useNationalLogisticsPlanColumns = (): Column[] => {
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.physicalInventory),
+                Header: formatMessage(MESSAGES.latestPhysicalInventory),
                 accessor: 'physical_inventory',
                 id: 'physical_inventory',
                 sortable: true,

@@ -10,6 +10,7 @@ from django_ltree.fields import PathField  # type: ignore
 from iaso.models import Project
 from iaso.utils.colors import COLOR_CHOICES
 from iaso.utils.expressions import ArraySubquery
+from iaso.utils.models.color import ColorField
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
@@ -59,7 +60,7 @@ class Team(SoftDeletableModel):
     path = PathField(unique=True)
     # scope = models.ManyToManyField("OrgUnit", related_name="teams")
     type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
-    color = models.CharField(max_length=7, default=COLOR_CHOICES[0][0])
+    color = ColorField(default=COLOR_CHOICES[0][0])
 
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

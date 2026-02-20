@@ -1,15 +1,30 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useCallback } from 'react';
 import { IconButton } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
-import { OrgUnit } from '../types/orgUnit';
 import { isValidCoordinate } from '../../../utils/map/mapUtils';
+import { useSaveOrgUnit } from '../hooks';
 import MESSAGES from '../messages';
+import { OrgUnit } from '../types/orgUnit';
 
 type Props = {
     orgUnit: OrgUnit;
 };
 
 export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
+    const { mutateAsync: saveOu, isLoading: isSaving } = useSaveOrgUnit(
+        undefined,
+        ['orgunits'],
+        MESSAGES.orgUnitRejected,
+    );
+
+    const handleRejectOrgUnit = useCallback(() => {
+        saveOu({
+            id: orgUnit.id,
+            validation_status: 'REJECTED',
+            groups: orgUnit.groups.map(g => g.id),
+        });
+    }, [saveOu, orgUnit.id, orgUnit.groups]);
+
     const cell = useMemo(() => {
         return (
             <section>
@@ -32,8 +47,21 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
                     icon="history"
                     tooltipMessage={MESSAGES.history}
                 />
+                <IconButton
+                    onClick={handleRejectOrgUnit}
+                    icon="delete"
+                    tooltipMessage={MESSAGES.rejectOrgUnit}
+                    disabled={isSaving}
+                />
             </section>
         );
-    }, [orgUnit.has_geo_json, orgUnit.id, orgUnit.latitude, orgUnit.longitude]);
+    }, [
+        orgUnit.id,
+        orgUnit.has_geo_json,
+        orgUnit.latitude,
+        orgUnit.longitude,
+        handleRejectOrgUnit,
+        isSaving,
+    ]);
     return cell;
 };

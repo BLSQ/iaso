@@ -345,6 +345,7 @@
     "iaso.forms.new": "nouveau",
     "iaso.forms.newCap": "Nouveau",
     "iaso.forms.no": "Non",
+    "iaso.forms.noFormVersion": "Aucune version de votre formulaire n'est encore disponible.",
     "iaso.forms.noResultsFound": "Aucun résultat trouvé",
     "iaso.forms.notValidated": "Non validé",
     "iaso.forms.org_unit_type": "Type d'unité d'organisation",

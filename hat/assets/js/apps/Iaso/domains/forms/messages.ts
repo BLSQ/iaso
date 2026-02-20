@@ -739,6 +739,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
     },
+    noFormVersion: {
+        id: 'iaso.forms.noFormVersion',
+        defaultMessage: 'There is no version yet of your form',
+    },
 });
 
 export default MESSAGES;

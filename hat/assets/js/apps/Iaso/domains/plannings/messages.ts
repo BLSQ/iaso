@@ -316,7 +316,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.back',
     },
     deleteAssignments: {
-        id: 'iaso.assignment.deleteAssignments',
+        id: 'iaso.assignment.deleteAssignmentsForPlanning',
         defaultMessage: 'Delete assignments for planning : {name}',
     },
     deleteAssignmentsWarning: {
@@ -338,6 +338,10 @@ const MESSAGES = defineMessages({
     bulkDeleteAssignmentsSuccess: {
         id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
         defaultMessage: 'Assignments deleted successfully',
+    },
+    deleteAllAssignments: {
+        defaultMessage: 'Delete all assignments',
+        id: 'iaso.assignment.deleteAllAssignments',
     },
     planningAlreadyPublished: {
         id: 'iaso.planning.label.planningAlreadyPublished',

@@ -232,9 +232,9 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         assignments_to_update = Assignment.objects.select_related("user", "team", "org_unit").filter(
             planning=planning, org_unit__in=org_units, deleted_at__isnull=True
         )
-        assignment_values = list(assignments_to_update.values("id", "org_unit__id"))
+        assignment_values = list(assignments_to_update.values("id", "org_unit_id"))
         assignment_ids_to_update = [assignment["id"] for assignment in assignment_values]
-        org_units_to_exclude = {assignment["org_unit__id"] for assignment in assignment_values}
+        org_units_to_exclude = {assignment["org_unit_id"] for assignment in assignment_values}
         audit_for_update = []
         for assignment in assignments_to_update:
             # serialize old_value

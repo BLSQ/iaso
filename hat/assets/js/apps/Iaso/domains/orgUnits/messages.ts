@@ -629,9 +629,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.rejectOrgUnit',
         defaultMessage: 'Reject Org Unit',
     },
-    validationStatusChanged: {
-        id: 'iaso.orgUnits.validationStatusChanged',
-        defaultMessage: 'Validation Status changed successfully',
+    orgUnitRejected: {
+        id: 'iaso.orgUnits.orgUnitRejected',
+        defaultMessage: 'Org Unit rejected successfully',
     },
 });
 

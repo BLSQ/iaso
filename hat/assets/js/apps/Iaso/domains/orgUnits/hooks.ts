@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react';
+import { IntlMessage } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
@@ -220,7 +221,7 @@ export type SaveOrgUnitPayload = Omit<Partial<OrgUnit>, 'groups'> & {
 export const useSaveOrgUnit = (
     onSuccess?: () => void,
     invalidateQueryKey?: string[],
-    successMessage?: any,
+    successMessage?: IntlMessage,
 ) => {
     return useSnackMutation<OrgUnit, unknown, SaveOrgUnitPayload, unknown>(
         body =>

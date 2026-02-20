@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useCallback } from 'react';
 import { IconButton } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { isValidCoordinate } from '../../../utils/map/mapUtils';
@@ -14,18 +14,18 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
     const { mutateAsync: saveOu, isLoading: isSaving } = useSaveOrgUnit(
         undefined,
         ['orgunits'],
-        MESSAGES.validationStatusChanged,
+        MESSAGES.orgUnitRejected,
     );
 
-    const cell = useMemo(() => {
-        const handleRejectOrgUnit = () => {
-            saveOu({
-                id: orgUnit.id,
-                validation_status: 'REJECTED',
-                groups: orgUnit.groups.map(g => g.id),
-            });
-        };
+    const handleRejectOrgUnit = useCallback(() => {
+        saveOu({
+            id: orgUnit.id,
+            validation_status: 'REJECTED',
+            groups: orgUnit.groups.map(g => g.id),
+        });
+    }, [saveOu, orgUnit.id, orgUnit.groups]);
 
+    const cell = useMemo(() => {
         return (
             <section>
                 <IconButton
@@ -60,9 +60,8 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
         orgUnit.has_geo_json,
         orgUnit.latitude,
         orgUnit.longitude,
-        orgUnit.groups,
+        handleRejectOrgUnit,
         isSaving,
-        saveOu,
     ]);
     return cell;
 };

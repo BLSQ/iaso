@@ -33,12 +33,12 @@ from .task import Task, TaskLog
 from .team import Team
 from .tenant_users import TenantUser
 from .validation_workflow import (
+    ValidationState,
     ValidationStateObject,
-    ValidationStateTemplate,
+    ValidationStatus,
+    ValidationStep,
     ValidationStepObject,
-    ValidationStepTemplate,
-    ValidationWorkflowObject,
-    ValidationWorkflowTemplate,
+    ValidationWorfklow,
 )
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
 
@@ -116,11 +116,11 @@ __all__ = [
     "Team",
     "TenantUser",
     "ValidationStateObject",
-    "ValidationStateTemplate",
+    "ValidationState",
     "ValidationStepObject",
-    "ValidationStepTemplate",
-    "ValidationWorkflowObject",
-    "ValidationWorkflowTemplate",
+    "ValidationStep",
+    "ValidationStatus",
+    "ValidationWorfklow",
     "Workflow",
     "WorkflowChange",
     "WorkflowFollowup",

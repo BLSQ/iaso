@@ -26,6 +26,7 @@ from ..utils.models.soft_deletable import (
     SoftDeletableModel,
 )
 from ..utils.virus_scan.model import VirusScanStatus
+from . import ValidationWorfklow
 from .project import Project
 
 
@@ -183,6 +184,8 @@ class Form(SoftDeletableModel):
     legend_threshold = models.JSONField(blank=True, null=True)
 
     change_request_mode = models.TextField(choices=CHANGE_REQUEST_MODE, default=CR_MODE_NONE)
+
+    validation_workflow = models.ForeignKey(ValidationWorfklow, null=True, on_delete=models.SET_NULL)
 
     @property
     def latest_version(self):

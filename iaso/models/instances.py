@@ -33,6 +33,7 @@ from iaso.utils.jsonlogic import annotate_suffixed_json_fields, instance_jsonlog
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
+from . import ValidationStatus
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -417,7 +418,7 @@ class InMemoryTask:
 class Instance(models.Model):
     """A series of answers by an individual for a specific form
 
-    Note that instances are called "Submissions" in the UI
+    Note that instances are called "Submissions" in the UI. The historical reason for the use of the name is that this is what ODK uses on mobile for the same concept
     """
 
     STATUS_READY = "READY"
@@ -478,6 +479,8 @@ class Instance(models.Model):
     deleted = models.BooleanField(default=False)
     # See public_create_url workflow in enketo/README.md. used to tell we should export immediately
     to_export = models.BooleanField(default=False)
+
+    validation_status = models.ForeignKey(ValidationStatus, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         indexes = [

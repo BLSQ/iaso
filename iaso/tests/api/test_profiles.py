@@ -9,7 +9,8 @@ from django.test import override_settings
 from rest_framework import status
 
 from iaso import models as m
-from iaso.models import Profile
+from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.models import Profile, UserRole
 from iaso.models.team import Team
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
@@ -322,7 +323,7 @@ class ProfileAPITestCase(APITestCase):
         """GET /profiles/ with auth (user has read only permissions)"""
 
         self.client.force_authenticate(self.jane)
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(14):
             response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
         profile_url = "/api/profiles/%s/" % self.jane.iaso_profile.id
@@ -348,42 +349,97 @@ class ProfileAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "text/csv")
 
-        response_csv = response.getvalue().decode("utf-8")
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
 
-        expected_csv = "".join(
+        all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
+        all_projects = sorted(list(self.account.project_set.values_list("name", flat=True)))
+        all_userRoles = sorted(
             [
-                "user_profile_id,"
-                "username,"
-                "password,"
-                "email,"
-                "first_name,"
-                "last_name,"
-                "orgunit,"
-                "orgunit__source_ref,"
-                "profile_language,"
-                "dhis2_id,"
-                "organization,"
-                "permissions,"
-                "user_roles,"
-                "projects,"
-                "teams,"
-                "phone_number,"
-                "editable_org_unit_types\r\n"
+                role.group.name.removeprefix(f"{self.account.pk}_")
+                for role in self.account.userrole_set.select_related("group")
             ]
         )
 
-        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,{self.team1.name},,\r\n"
-        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,,\r\n'
-        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,{self.team2.name},,\r\n'
-        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,,\r\n"
-        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,,\r\n"
-        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,,\r\n'
+        base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
+        perm_idx = base_columns.index("permissions")
 
-        self.assertEqual(response_csv, expected_csv)
+        header_start = base_columns[:perm_idx]
+        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]]
+        project_headers = [f"Project: {name}" for name in all_projects]
+        user_role_headers = [f"User Role: {name}" for name in all_userRoles]
+        permission_headers = [f"Permission: {name}" for name in all_permissions]
+
+        expected_header = header_start + project_headers + user_role_headers + permission_headers + header_end
+
+        def get_expected_row_list(
+            profile,
+            direct_perms,
+            user_roles="",
+            projects="",
+            phone="",
+            orgunit="",
+            orgunit__source_ref="",
+            profile_language="",
+            dhis2_id="",
+            organization="",
+            teams="",
+            editable_org_unit_types="",
+        ):
+            row_start = [
+                str(profile.id),
+                profile.user.username,
+                "",  # password
+                profile.user.email or "",
+                profile.user.first_name or "",
+                profile.user.last_name or "",
+                orgunit,
+                orgunit__source_ref,
+                profile_language,
+                dhis2_id,
+                organization,
+            ]
+            matrix_perms = [("1" if p in direct_perms else "0") for p in all_permissions]
+            matrix_projects = [("1" if p in projects else "0") for p in all_projects]
+            matrix_user_roles = [("1" if r in user_roles else "0") for r in all_userRoles]
+
+            row_end = [teams, phone, editable_org_unit_types]
+            return row_start + matrix_projects + matrix_user_roles + matrix_perms + row_end
+
+        expected_csv = [
+            expected_header,
+            get_expected_row_list(self.jane.iaso_profile, [CORE_FORMS_PERMISSION.codename], teams=self.team1.name),
+            get_expected_row_list(
+                self.john.iaso_profile,
+                [],
+                orgunit=f"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",
+                orgunit__source_ref=self.org_unit_from_parent_type.source_ref,
+            ),
+            get_expected_row_list(
+                self.jim.iaso_profile,
+                [CORE_FORMS_PERMISSION.codename, CORE_USERS_ADMIN_PERMISSION.codename],
+                teams=self.team2.name,
+            ),
+            get_expected_row_list(
+                self.jam.iaso_profile, [CORE_USERS_MANAGED_PERMISSION.codename], profile_language="en"
+            ),
+            get_expected_row_list(self.jom.iaso_profile, [], profile_language="fr"),
+            get_expected_row_list(
+                self.jum.iaso_profile,
+                [],
+                projects=self.project.name,
+                editable_org_unit_types=str(self.sub_unit_type.pk),
+            ),
+            get_expected_row_list(
+                self.user_managed_geo_limit.iaso_profile,
+                [CORE_USERS_MANAGED_PERMISSION.codename],
+                orgunit=str(self.org_unit_from_parent_type.id),
+                orgunit__source_ref=str(self.org_unit_from_parent_type.source_ref),
+                user_roles=f"{self.user_role_name},{self.user_role_another_account_name}",
+            ),
+        ]
+
+        self.assertEqual(csv_rows, expected_csv)
 
     def test_profile_list_export_as_xlsx(self):
         self.maxDiff = None
@@ -394,99 +450,281 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.get("/api/profiles/?xlsx=true")
         excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
-        self.assertEqual(
-            excel_columns,
+        all_permissions = sorted([perm.codename for perm in self.account.permissions_from_active_modules])
+        all_projects = sorted(list(self.account.project_set.values_list("name", flat=True)))
+        all_userRoles = sorted(
             [
-                "user_profile_id",
-                "username",
-                "password",
-                "email",
-                "first_name",
-                "last_name",
-                "orgunit",
-                "orgunit__source_ref",
-                "profile_language",
-                "dhis2_id",
-                "organization",
-                "permissions",
-                "user_roles",
-                "projects",
-                "teams",
-                "phone_number",
-                "editable_org_unit_types",
-            ],
+                role.group.name.removeprefix(f"{self.account.pk}_")
+                for role in self.account.userrole_set.select_related("group")
+            ]
+        )
+        base_columns = ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST
+        perm_idx = base_columns.index("permissions")
+
+        header_start = base_columns[:perm_idx]
+        header_end = [col for col in base_columns[perm_idx:] if col not in ["permissions", "projects", "user_roles"]]
+
+        project_headers = [f"Project: {name}" for name in all_projects]
+        user_role_headers = [f"User Role: {name}" for name in all_userRoles]
+        permission_headers = [f"Permission: {name}" for name in all_permissions]
+
+        expected_columns = header_start + project_headers + user_role_headers + permission_headers + header_end
+
+        self.assertEqual(excel_columns, expected_columns)
+
+        def get_matrix_data(items_list, user_items_map, prefix):
+            matrix_dict = {}
+            for item in items_list:
+                key = f"{prefix}: {item}"
+                matrix_dict[key] = {idx: (1 if item in (user_items_map.get(idx) or []) else 0) for idx in range(7)}
+
+            return matrix_dict
+
+        direct_permissions_map = {
+            0: [CORE_FORMS_PERMISSION.codename],
+            1: None,
+            2: [CORE_FORMS_PERMISSION.codename, CORE_USERS_ADMIN_PERMISSION.codename],
+            3: [CORE_USERS_MANAGED_PERMISSION.codename],
+            4: None,
+            5: None,
+            6: [CORE_USERS_MANAGED_PERMISSION.codename],
+        }
+        projects_map = {
+            0: None,
+            1: None,
+            2: None,
+            3: None,
+            4: None,
+            5: [self.project.name],
+            6: None,
+        }
+        user_roles_map = {
+            0: None,
+            1: None,
+            2: None,
+            3: None,
+            4: None,
+            5: None,
+            6: [self.user_role_name, self.user_role_another_account_name],
+        }
+
+        expected_excel_data = {
+            "user_profile_id": {
+                0: self.jane.iaso_profile.id,
+                1: self.john.iaso_profile.id,
+                2: self.jim.iaso_profile.id,
+                3: self.jam.iaso_profile.id,
+                4: self.jom.iaso_profile.id,
+                5: self.jum.iaso_profile.id,
+                6: self.user_managed_geo_limit.iaso_profile.id,
+            },
+            "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
+            "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "orgunit": {
+                0: None,
+                1: f"{self.org_unit_from_sub_type.id},{self.org_unit_from_parent_type.id}",
+                2: None,
+                3: None,
+                4: None,
+                5: None,
+                6: f"{self.org_unit_from_parent_type.id}",
+            },
+            "orgunit__source_ref": {
+                0: None,
+                1: self.org_unit_from_parent_type.source_ref,
+                2: None,
+                3: None,
+                4: None,
+                5: None,
+                6: self.org_unit_from_parent_type.source_ref,
+            },
+            "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
+            "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            **get_matrix_data(all_permissions, direct_permissions_map, "Permission"),
+            **get_matrix_data(all_userRoles, user_roles_map, "User Role"),
+            **get_matrix_data(all_projects, projects_map, "Project"),
+            "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
+            "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+            "editable_org_unit_types": {
+                0: None,
+                1: None,
+                2: None,
+                3: None,
+                4: None,
+                5: self.sub_unit_type.pk,
+                6: None,
+            },
+        }
+
+        self.assertDictEqual(excel_data, expected_excel_data)
+
+    def test_export_permission_matrix_while_ignoring_roles(self):
+        self.jim.user_permissions.clear()
+        self.jane.user_permissions.clear()
+
+        forms_perm = Permission.objects.get(codename=CORE_FORMS_PERMISSION.codename)
+        self.jim.user_permissions.add(forms_perm)
+
+        admin_perm_obj = Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename)
+        self.jim.user_permissions.add(admin_perm_obj)
+
+        new_group = Group.objects.create(name="Role with Admin")
+        new_group.permissions.add(admin_perm_obj)
+
+        jane_role = UserRole.objects.create(group=new_group, account=self.account)
+        self.jane.iaso_profile.user_roles.add(jane_role)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+        username_idx = header.index("username")
+        forms_idx = header.index(f"Permission: {CORE_FORMS_PERMISSION.codename}")
+        admin_idx = header.index(f"Permission: {CORE_USERS_ADMIN_PERMISSION.codename}")
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+        jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
+        jom_row = next(r for r in csv_rows if r[username_idx] == "jom")
+
+        self.assertEqual(jim_row[forms_idx], "1")
+        self.assertEqual(jim_row[admin_idx], "1")
+
+        self.assertEqual(jane_row[admin_idx], "0", "Jane should have 0 for Admin because it is in a Role")
+
+        self.assertEqual(jom_row[forms_idx], "0", "Jom should have 0 for Forms because he has no permissions")
+        self.assertEqual(jom_row[admin_idx], "0", "Jom should have 0 for Admin because he has no permissions")
+
+    def text_export_project_matrix(self):
+        self.jim.iaso_profile.projects.clear()
+        self.jane.iaso_profile.projects.clear()
+        self.jom.iaso_profile.projects.clear()
+
+        new_project = m.Project.objects.create(
+            name="Veto",
+            app_id="Vetus",
+            account=self.account,
         )
 
-        self.assertDictEqual(
-            excel_data,
-            {
-                "user_profile_id": {
-                    0: self.jane.iaso_profile.id,
-                    1: self.john.iaso_profile.id,
-                    2: self.jim.iaso_profile.id,
-                    3: self.jam.iaso_profile.id,
-                    4: self.jom.iaso_profile.id,
-                    5: self.jum.iaso_profile.id,
-                    6: self.user_managed_geo_limit.iaso_profile.id,
-                },
-                "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
-                "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "orgunit": {
-                    0: None,
-                    1: f"{self.org_unit_from_sub_type.id},{self.org_unit_from_parent_type.id}",
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: None,
-                    6: f"{self.org_unit_from_parent_type.id}",
-                },
-                "orgunit__source_ref": {
-                    0: None,
-                    1: self.org_unit_from_parent_type.source_ref,
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: None,
-                    6: self.org_unit_from_parent_type.source_ref,
-                },
-                "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
-                "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "permissions": {
-                    0: CORE_FORMS_PERMISSION.codename,
-                    1: None,
-                    2: f"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",
-                    3: CORE_USERS_MANAGED_PERMISSION.codename,
-                    4: None,
-                    5: None,
-                    6: CORE_USERS_MANAGED_PERMISSION.codename,
-                },
-                "user_roles": {
-                    0: None,
-                    1: None,
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: None,
-                    6: f"{self.user_role_name},{self.user_role_another_account_name}",
-                },
-                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
-                "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
-                "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "editable_org_unit_types": {
-                    0: None,
-                    1: None,
-                    2: None,
-                    3: None,
-                    4: None,
-                    5: self.sub_unit_type.pk,
-                    6: None,
-                },
-            },
+        self.jim.iaso_profile.projects.add(self.project)
+        self.jom.iaso_profile.projects.add(*(self.project, new_project))
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+        username_idx = header.index("username")
+
+        self.assertIn(self.project.name, header)
+        self.assertIn(new_project.name, header)
+
+        project1_idx = header.index(self.project.name)
+        project2_idx = header.index(new_project.name)
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+        jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
+        jom_row = next(r for r in csv_rows if r[username_idx] == "jom")
+
+        self.assertEqual(jom_row[project1_idx], "1", "Jom should have '1' for Hydroponic gardens")
+        self.assertEqual(jom_row[project2_idx], "1", "Jom should have '1' for Veto")
+
+        self.assertEqual(jim_row[project1_idx], "1", "Jim should have '1' for Hydroponic gardens")
+        self.assertEqual(jim_row[project2_idx], "0", "Jim should have '0' for Veto")
+
+        self.assertEqual(jane_row[project1_idx], "0", "Jane should have '0' for Hydroponic gardens")
+        self.assertEqual(jane_row[project2_idx], "0", "Jane should have '0' for Veto")
+
+    def text_export_project_from_another_account(self):
+        project_from_another_account = m.Project.objects.create(
+            name="secret project",
+            app_id="Vetus",
+            account=self.another_account,
         )
+        self.jim.iaso_profile.projects.add(self.project)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+
+        self.assertNotIn(project_from_another_account.name, header)
+        self.assertIn(self.project.name, header)
+
+        username_idx = header.index("username")
+        project_idx = header.index(self.project.name)
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+
+        self.assertEqual(jim_row[project_idx], "1", "Jim should have '1' for the project belonging to his account.")
+
+        self.assertEqual(len(jim_row), len(header))
+
+    def test_export_user_role_matrix(self):
+        self.jim.iaso_profile.user_roles.clear()
+        self.jane.iaso_profile.user_roles.clear()
+        self.jom.iaso_profile.user_roles.clear()
+
+        self.jim.iaso_profile.user_roles.add(self.user_role)
+        self.jom.iaso_profile.user_roles.add(self.user_role)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+        username_idx = header.index("username")
+
+        role_name = "user role"
+        self.assertIn(f"User Role: {role_name}", header)
+        role_idx = header.index(f"User Role: {role_name}")
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+        jane_row = next(r for r in csv_rows if r[username_idx] == "janedoe")
+        jom_row = next(r for r in csv_rows if r[username_idx] == "jom")
+
+        self.assertEqual(jim_row[role_idx], "1", "Jim should have '1' because he has the role")
+        self.assertEqual(jom_row[role_idx], "1", "Jom should have '1' because he has the role")
+        self.assertEqual(jane_row[role_idx], "0", "Jane should have '0' because she has no roles")
+
+    def test_export_user_role_from_another_account(self):
+        self.jim.iaso_profile.user_roles.clear()
+
+        self.jim.iaso_profile.user_roles.add(self.user_role)
+        self.jim.iaso_profile.user_roles.add(self.user_role_another_account)
+
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?csv=true")
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+
+        self.assertIn(f"User Role: {self.user_role.group.name}", header)
+
+        self.assertNotIn(
+            f"User Role: {self.user_role_another_account.group.name}",
+            header,
+            "Roles from other accounts must not be exported",
+        )
+
+        username_idx = header.index("username")
+        valid_role_idx = header.index(f"User Role: {self.user_role.group.name}")
+
+        jim_row = next(r for r in csv_rows if r[username_idx] == "jim")
+
+        self.assertEqual(jim_row[valid_role_idx], "1")
+
+        self.assertEqual(len(jim_row), len(header))
 
     def test_profile_list_export_as_csv_multiple_teams(self):
         self.maxDiff = None

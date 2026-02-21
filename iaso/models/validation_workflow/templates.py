@@ -37,6 +37,7 @@ class ValidationState(CreatedAndUpdatedModel):
     workflow = models.ForeignKey(ValidationWorfklow, on_delete=models.CASCADE, related_name="states")
     name = models.CharField(max_length=256)
     slug = AutoSlugField(populate_from="name")
+    color = models.CharField(max_length=256)
 
     # maybe here add a notion of "final state", to be able to filter all submissions that are in the final state of validation
     def __str__(self):

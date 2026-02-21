@@ -1,11 +1,11 @@
 from django.test import TestCase
 
-from iaso.models.validation_workflow.templates import ValidationWorkflowTemplate
+from iaso.models.validation_workflow.templates import ValidationWorfklow
 
 
 class TestValidationWorkflowTemplate(TestCase):
     def test_ensure_slug_is_updating(self):
-        d1 = ValidationWorkflowTemplate.objects.create(name="test")
+        d1 = ValidationWorfklow.objects.create(name="test")
         slug_1 = d1.slug
         d1.name = "new test"
         d1.save()
@@ -20,7 +20,7 @@ class TestValidationWorkflowTemplate(TestCase):
         ]
         for sentence in sentences:
             with self.subTest(sentence=sentence[0]):
-                d1 = ValidationWorkflowTemplate.objects.create(name=sentence[0])
+                d1 = ValidationWorfklow.objects.create(name=sentence[0])
                 self.assertEqual(
                     d1.slug,
                     sentence[1],

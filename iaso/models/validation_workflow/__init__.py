@@ -1,12 +1,11 @@
-from .run_instances import ValidationStateObject, ValidationStepObject, ValidationWorkflowObject
-from .templates import ValidationStateTemplate, ValidationStepTemplate, ValidationWorkflowTemplate
+from .run_instances import ValidationHistoryStep, ValidationStatus
+from .templates import ValidationState, ValidationStep, ValidationWorfklow
 
 
 __all__ = [
-    "ValidationStateObject",
-    "ValidationStateTemplate",
-    "ValidationStepObject",
-    "ValidationStepTemplate",
-    "ValidationWorkflowObject",
-    "ValidationWorkflowTemplate",
+    "ValidationWorfklow",
+    "ValidationState",
+    "ValidationStep",
+    "ValidationStatus",
+    "ValidationHistoryStep",
 ]

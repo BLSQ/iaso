@@ -113,6 +113,15 @@ const MESSAGES = defineMessages({
         defaultMessage:
             "Disables the feature that pre-ticks the box 'Finalized' at the end of the form",
     },
+    mobile_select_closest_org_unit_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_select_closest_org_unit',
+        defaultMessage:
+            'Allows the user to select an organization unit based on its location instead of using the hierarchy pyramid',
+    },
+    mobile_select_closest_org_unit: {
+        id: 'iaso.projets.featureflag.mobile_select_closest_org_unit',
+        defaultMessage: 'Mobile: Propose to jump to closest OrgUnit',
+    },
     reports: {
         id: 'iaso.projets.featureflag.reports',
         defaultMessage: 'Enable reports',
@@ -327,6 +336,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.projets.featureflag.tooltip.mobile_change_requests_tab',
         defaultMessage: 'Tab enabling display of change requests (read only)',
     },
+    mobile_change_requests_tab: {
+        id: 'iaso.projets.featureflag.mobile_change_requests_tab',
+        defaultMessage: 'Mobile: Show change requests tab',
+    },
     mobile_org_unit_registry_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_org_unit_registry',
         defaultMessage:
@@ -352,6 +365,32 @@ const MESSAGES = defineMessages({
     copyToClipboard: {
         defaultMessage: 'Copy to clipboard',
         id: 'iaso.label.copyToClipboard',
+    },
+    mobile_stock_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_stock_tooltip',
+        defaultMessage:
+            'Enables the tab for stock levels per organization unit tracking',
+    },
+    mobile_hide_closed_org_unit_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_hide_closed_org_unit_tooltip',
+        defaultMessage:
+            'On the mobile interface, hide the organization units whose closing date is in the past from the possible selection',
+    },
+    mobile_use_ethiopic_calendar_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_use_ethiopic_calendar_tooltip',
+        defaultMessage: 'Activates the Ethiopian calendar on mobile',
+    },
+    mobile_stock: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_stock',
+        defaultMessage: 'Mobile: Enable stock managementg',
+    },
+    mobile_hide_closed_org_unit: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_hide_closed_org_unit',
+        defaultMessage: 'Hide closed org units',
+    },
+    mobile_use_ethiopic_calendar: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_use_ethiopic_calendar',
+        defaultMessage: 'Ethiopian calendar',
     },
 });
 

@@ -39,12 +39,13 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
         pdfUrl = URL.createObjectURL(document[0]);
     } else if (document instanceof File) {
         pdfUrl = URL.createObjectURL(document);
-    }
-    let mainGridSize = 12;
-    if (document && enableDelete) {
-        mainGridSize = 9;
-    } else if (document) {
-        mainGridSize = 10;
+    } else if (
+        document &&
+        typeof document === 'object' &&
+        'path' in document &&
+        typeof document.path === 'string'
+    ) {
+        pdfUrl = document.path;
     }
     const files = useMemo(() => {
         if (!document) return [];
@@ -53,6 +54,13 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
         }
         return [document as unknown as File];
     }, [document]);
+
+    let mainGridSize = 12;
+    if (document && enableDelete) {
+        mainGridSize = 9;
+    } else if (document) {
+        mainGridSize = 10;
+    }
     return (
         <Grid container spacing={2} alignItems="center">
             <Grid item xs={mainGridSize}>

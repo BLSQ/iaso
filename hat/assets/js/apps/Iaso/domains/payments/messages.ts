@@ -34,7 +34,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.title',
     },
     userRoles: {
-        defaultMessage: 'User roles',
+        defaultMessage: 'User Roles',
         id: 'iaso.label.userRoles',
     },
     createdDateFrom: {

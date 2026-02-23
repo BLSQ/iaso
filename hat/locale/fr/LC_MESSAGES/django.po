@@ -604,6 +604,13 @@ msgstr "Réinitialisation du mot de passe sur %(site_name)s"
 #~ msgid "Id"
 #~ msgstr "Id"
 
+#~ msgid "Reject Org Unit"
+#~ msgstr "Rejeter l'unité d'organisation"
+
+#~ msgid "Reject Org unit"
+#~ msgstr "Statut de validation modifié avec succès"
+
+
 #, python-format
 #~ msgid ""
 #~ "\n"

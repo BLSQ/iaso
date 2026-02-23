@@ -28,7 +28,7 @@ ANTHROPOMETRIC_FOLLOWUP_FORMS = [
 
 class Under5:
     def group_visit_by_entity(self, entities):
-        beneficiary = []
+        beneficiaries = []
         i = 0
         instances_by_entity = groupby(list(entities), key=itemgetter("entity_id"))
         initial_weight = None
@@ -37,38 +37,38 @@ class Under5:
         current_date = None
         duration = 0
         etl = ETL()
-        for entity_id, entity in instances_by_entity:
-            beneficiary.append({"entity_id": entity_id, "visits": [], "journey": []})
-            for submission in entity:
+        for entity_id, entity_instances in instances_by_entity:
+            beneficiary_dict = {"entity_id": entity_id, "visits": [], "journeys": []}
+            for submission in entity_instances:
                 current_record = submission.get("json", None)
-                beneficiary[i]["program"] = etl.program_mapper(current_record)
+                beneficiary_dict["program"] = etl.program_mapper(current_record)
                 if current_record is not None and current_record != None:
                     if current_record.get("guidelines"):
-                        beneficiary[i]["guidelines"] = current_record.get("guidelines")
+                        beneficiary_dict["guidelines"] = current_record.get("guidelines")
                     if (
                         current_record.get("actual_birthday__date__") is not None
                         and current_record.get("actual_birthday__date__", None) != ""
                     ):
                         birth_date = current_record.get("actual_birthday__date__", None)
-                        beneficiary[i]["birth_date"] = birth_date[:10]
+                        beneficiary_dict["birth_date"] = birth_date[:10]
                     elif (
                         current_record.get("age_entry", None) is not None
                         and current_record.get("age_entry", None) != ""
                     ):
                         calculated_date = etl.calculate_birth_date(current_record)
-                        beneficiary[i]["birth_date"] = calculated_date
+                        beneficiary_dict["birth_date"] = calculated_date
                     if current_record.get("gender") is not None:
                         gender = current_record.get("gender", "")
                         if current_record.get("gender") == "F":
                             gender = "Female"
                         elif current_record.get("gender") == "M":
                             gender = "Male"
-                        beneficiary[i]["gender"] = gender
+                        beneficiary_dict["gender"] = gender
                     if current_record.get("last_name") is not None:
-                        beneficiary[i]["last_name"] = current_record.get("last_name", "")
+                        beneficiary_dict["last_name"] = current_record.get("last_name", "")
 
                     if current_record.get("first_name") is not None:
-                        beneficiary[i]["first_name"] = current_record.get("first_name", "")
+                        beneficiary_dict["first_name"] = current_record.get("first_name", "")
 
                     form_id = submission.get("form__form_id")
                     current_record["org_unit_id"] = submission.get("org_unit_id", None)
@@ -92,7 +92,9 @@ class Under5:
 
                     if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_weight = current_weight
-                        beneficiary[i]["initial_weight"] = initial_weight
+                        beneficiary_dict["initial_weight"] = (
+                            initial_weight  # this is going to be problematic when grouping by journeys, you probably need the initial weight in each journey
+                        )
                         visit_date = submission.get(
                             "source_created_at",
                             submission.get("_visit_date", submission.get("visit_date", current_date)),
@@ -104,7 +106,9 @@ class Under5:
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
 
                     weight = etl.compute_gained_weight(initial_weight, current_weight, duration)
-                    current_record["end_date"] = current_date.strftime("%Y-%m-%d")
+                    current_record["end_date"] = current_date.strftime(
+                        "%Y-%m-%d"
+                    )  # martin: fixme: it does not seem right that current_record is edited
                     current_record["weight_gain"] = weight["weight_gain"]
                     current_record["weight_loss"] = weight["weight_loss"]
                     current_record["initial_weight"] = weight["initial_weight"]
@@ -126,30 +130,36 @@ class Under5:
 
                     current_record["instance_id"] = submission["id"]
                     current_record["form_id"] = form_id
-                    beneficiary[i]["visits"].append(current_record)
+                    beneficiary_dict["visits"].append(current_record)
+                    print(beneficiary_dict)
+                    break
             i = i + 1
         return list(
             filter(
-                lambda instance: (
-                    instance.get("visits")
-                    and instance.get("gender") is not None
-                    and instance.get("gender") != ""
-                    and instance.get("birth_date") is not None
-                    and instance.get("birth_date") != ""
-                    and len(etl.admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
+                lambda beneficiary_d: (
+                    beneficiary_d.get("visits")
+                    and beneficiary_d.get("gender") is not None
+                    and beneficiary_d.get("gender") != ""
+                    and beneficiary_d.get("birth_date") is not None
+                    and beneficiary_d.get("birth_date") != ""
+                    and len(etl.admission_forms(beneficiary_d.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
-                beneficiary,
+                beneficiaries,
             )
         )
 
-    def journeyMapper(self, visits, admission_form_ids):
+    def journey_mapper(self, visits, admission_form_ids):
         current_journey = {"visits": [], "steps": []}
         etl = ETL()
-        admission_submissions = [visit for visit in visits if visit["form_id"] in admission_form_ids]
+        admission_submissions = [
+            visit for visit in visits if visit["form_id"] in admission_form_ids
+        ]  # martin: why is this not done in entity_journey_mapper ?
         if len(admission_submissions) > 0:
             current_journey["nutrition_programme"] = etl.program_mapper(admission_submissions[0])
-        journey = etl.entity_journey_mapper(visits, ANTHROPOMETRIC_FOLLOWUP_FORMS, admission_form_ids, current_journey)
-        return journey
+        journeys = etl.entity_journey_mapper(
+            visits, ANTHROPOMETRIC_FOLLOWUP_FORMS, admission_form_ids, current_journey
+        )  # martin: why does this function takes a current journey as a parameter? (this is linked to the comment above)
+        return journeys
 
     def save_journey(self, beneficiary, record):
         journey = Journey()
@@ -170,72 +180,67 @@ class Under5:
 
     def run(self, type, updated_beneficiaries, task_name):
         etl_type = ETL(type)
+        print("etl_type", type)
         account = etl_type.account_related_to_entity_type()
-        beneficiaries = etl_type.retrieve_entities(updated_beneficiaries)
-        pages = beneficiaries.page_range
 
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")
-
-        etl = ETL()
+        entities = etl_type.retrieve_entities(updated_beneficiaries)
         current_entity_id = None
-        for page in pages:
-            entities = sorted(
-                list(beneficiaries.page(page).object_list),
-                key=itemgetter("entity_id"),
+
+        beneficiaries = self.group_visit_by_entity(entities)
+        all_steps = []
+        all_visits = []
+        all_journeys = []
+        all_beneficiaries_models = []
+        existing_beneficiaries = etl_type.existing_beneficiaries()
+        for index, beneficiary_json in enumerate(beneficiaries):
+            current_entity_id = beneficiary_json["entity_id"]
+            logger.info(
+                f"---------------------------------------- Beneficiary N° {(index + 1)} {current_entity_id}-----------------------------------"
             )
-            existing_beneficiaries = etl.existing_beneficiaries()
-            beneficiaries = self.group_visit_by_entity(entities)
-            all_steps = []
-            all_visits = []
-            all_journeys = []
-            all_beneficiaries = []
-            for index, beneficiary_json in enumerate(beneficiaries):
-                current_entity_id = beneficiary_json["entity_id"]
-                logger.info(
-                    f"---------------------------------------- Beneficiary N° {(index + 1)} {current_entity_id}-----------------------------------"
-                )
-                beneficiary_json["journey"] = self.journeyMapper(
-                    beneficiary_json["visits"],
-                    ADMISSION_ANTHROPOMETRIC_FORMS,
-                )
-                beneficiary_model = Beneficiary()
-                if (
-                    beneficiary_json["entity_id"] not in existing_beneficiaries
-                    and len(beneficiary_json["journey"][0]["visits"]) > 0
-                    and beneficiary_json["journey"][0].get("nutrition_programme") is not None
-                ):
-                    beneficiary_model.gender = beneficiary_json["gender"]
-                    beneficiary_model.birth_date = beneficiary_json["birth_date"]
-                    beneficiary_model.entity_id = beneficiary_json["entity_id"]
-                    beneficiary_model.account = account
-                    beneficiary_model.guidelines = beneficiary_json.get("guidelines", "OLD")
-                    all_beneficiaries.append(beneficiary_model)
-                    logger.info("Created new beneficiary")
+            beneficiary_json["journeys"] = self.journey_mapper(
+                beneficiary_json["visits"],
+                ADMISSION_ANTHROPOMETRIC_FORMS,
+            )
+            beneficiary_model = Beneficiary()
+            if (
+                beneficiary_json["entity_id"] not in existing_beneficiaries
+                and len(beneficiary_json["journeys"][0]["visits"]) > 0  # Martin: this should probably not happen
+                and beneficiary_json["journeys"][0].get("nutrition_programme") is not None
+            ):
+                beneficiary_model.gender = beneficiary_json["gender"]
+                beneficiary_model.birth_date = beneficiary_json["birth_date"]
+                beneficiary_model.entity_id = beneficiary_json["entity_id"]
+                beneficiary_model.account = account
+                beneficiary_model.guidelines = beneficiary_json.get("guidelines", "OLD")
+                all_beneficiaries_models.append(beneficiary_model)
+                logger.info("Created new beneficiary")
+            else:
+                beneficiary_model = Beneficiary.objects.filter(
+                    entity_id=beneficiary_json["entity_id"]
+                ).first()  # martin: this should be a get. If there are multiple beneficaries with the same entity id, it's a bug
+
+            logger.info("Retrieving journey linked to beneficiary")
+
+            for journey_instance in beneficiary_json["journeys"]:
+                if len(journey_instance["visits"]) > 0:
+                    journey = self.save_journey(beneficiary_model, journey_instance)
+                    all_journeys.append(journey)
+                    visits = etl_type.save_visit(journey_instance["visits"], journey)
+                    all_visits.extend(visits)
+                    logger.info(f"Inserted {len(visits)} Visits")
+                    grouped_steps = etl_type.get_admission_steps(journey_instance["steps"])
+                    admission_step = grouped_steps[0]
+
+                    followUpVisits = etl_type.group_followup_steps(grouped_steps, admission_step)
+                    steps = etl_type.save_steps(visits, followUpVisits)
+                    all_steps.extend(steps)
+                    logger.info(f"Inserted {len(steps)} Steps")
                 else:
-                    beneficiary_model = Beneficiary.objects.filter(entity_id=beneficiary_json["entity_id"]).first()
-
-                logger.info("Retrieving journey linked to beneficiary")
-                if beneficiary_model is not None:
-                    for journey_instance in beneficiary_json["journey"]:
-                        if len(journey_instance["visits"]) > 0:
-                            journey = self.save_journey(beneficiary_model, journey_instance)
-                            all_journeys.append(journey)
-                            visits = etl.save_visit(journey_instance["visits"], journey)
-                            all_visits.extend(visits)
-                            logger.info(f"Inserted {len(visits)} Visits")
-                            grouped_steps = etl.get_admission_steps(journey_instance["steps"])
-                            admission_step = grouped_steps[0]
-
-                            followUpVisits = etl.group_followup_steps(grouped_steps, admission_step)
-                            steps = etl.save_steps(visits, followUpVisits)
-                            all_steps.extend(steps)
-                            logger.info(f"Inserted {len(steps)} Steps")
-                        else:
-                            logger.info("No new journey")
-                    logger.info(
-                        "---------------------------------------------------------------------------------------------\n\n"
-                    )
-            task = Task(name=f"{task_name}  on Page {page} for {type}", account=account, status="QUEUED")
-            etl.save_analytics_data(
-                all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task
+                    logger.info("No new journey")
+            logger.info(
+                "---------------------------------------------------------------------------------------------\n\n"
             )
+        task = Task(name=f"{task_name} for {type}", account=account, status="QUEUED")
+        etl_type.save_analytics_data(
+            all_beneficiaries_models, all_journeys, all_visits, all_steps, account, current_entity_id, task
+        )

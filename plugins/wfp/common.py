@@ -73,7 +73,7 @@ class ETL:
         return entities.distinct().values_list("entity_id", flat=True)
 
     def retrieve_entities(self, entity_ids):
-        beneficiaries = (
+        entities = (
             Instance.objects.filter(entity__entity_type__code=self.entity_type)
             .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
@@ -94,9 +94,9 @@ class ETL:
                 "entity__deleted_at",
                 "source_created_at",
             )
-            .order_by("entity_id", "source_created_at", "created_at", "json__visit_date", "json___visit_date")
+            .order_by("entity_id", "source_created_at", "created_at", "json__visit_date")
         )
-        return Paginator(beneficiaries, 5000)
+        return entities
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
@@ -356,7 +356,7 @@ class ETL:
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
-    def journey_Formatter(
+    def journey_formatter(
         self,
         visit,
         anthropometric_visit_form,
@@ -369,7 +369,9 @@ class ETL:
         default_admission_form = None
         if visit["form_id"] in anthropometric_visit_form:
             default_admission_form = visit["form_id"]
-            current_journey["instance_id"] = visit.get("instance_id", None)
+            current_journey["instance_id"] = visit.get(
+                "instance_id", None
+            )  # martin: why does a journey have an instance_id (it's the start instance?)
             current_journey["start_date"] = visits[0].get("date", visit.get("start_date", None))
             current_journey["initial_weight"] = visit.get("initial_weight", None)
             current_journey["muac_size"] = visit.get("muac", visit.get("muac_size"))
@@ -702,7 +704,7 @@ class ETL:
         return calculated_date
 
     def entity_journey_mapper(self, visits, anthropometric_visit_forms, admission_form, current_journey):
-        journey = []
+        journeys = []
         new_journey_after_transfer = {}
         for index, visit in enumerate(visits):
             if visit:
@@ -711,7 +713,7 @@ class ETL:
                 if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
-                current_journey = self.journey_Formatter(
+                current_journey = self.journey_formatter(
                     visit,
                     admission_form,
                     anthropometric_visit_forms,
@@ -722,7 +724,9 @@ class ETL:
             current_journey["steps"].append(visit)
             if current_journey.get("exit_type") == "transfer_to_tsfp":
                 new_journey_after_transfer["programme_type"] = "TSFP"
-                new_journey_after_transfer["nutrition_programme"] = "TSFP"
+                new_journey_after_transfer["nutrition_programme"] = (
+                    "TSFP"  # Martin: it seems to me that this common method is used across multiple ETL, including ones where TSFP is not an option
+                )
                 new_journey_after_transfer["admission_type"] = "referred_from_otp_sam"
             elif current_journey.get("exit_type") == "transfer_to_otp":
                 new_journey_after_transfer["programme_type"] = "OTP"
@@ -733,12 +737,14 @@ class ETL:
             new_journey_after_transfer["visits"] = [visit]
             new_journey_after_transfer["start_date"] = current_journey.get("end_date")
             new_journey_after_transfer["initial_weight"] = current_journey.get("discharge_weight")
-        journey.append(current_journey)
+        journeys.append(current_journey)
         if new_journey_after_transfer.get("programme_type") is not None:
             if current_journey.get("nutrition_programme") == "BSFP":
                 new_journey_after_transfer["admission_type"] = "referred_from_BSFP"
-            journey.append(new_journey_after_transfer)
-        return journey
+            journeys.append(
+                new_journey_after_transfer
+            )  # martin: it seems to me that it's impossible to have more than 2 journeys per beneficiaries with this method which sounds wrong (I checked, and on staging, it's the case, there are never more than 2 journeys for a beneficiary). I don't see where defaulters are handled either
+        return journeys
 
     def compute_gained_weight(self, initial_weight, current_weight, duration):
         weight_gain = 0
@@ -753,9 +759,13 @@ class ETL:
                 if duration == 0:
                     weight_gain = 0
                 elif duration > 0 and current_weight > 0 and initial_weight > 0:
-                    weight_gain = round((weight_difference / (initial_weight * float(duration))), 4)
+                    weight_gain = round(
+                        (weight_difference / (initial_weight * float(duration))), 4
+                    )  # Martin: I don't understand this
             elif weight_difference < 0:
-                weight_loss = abs(weight_difference)
+                weight_loss = abs(
+                    weight_difference
+                )  # Martin: I don't get why weight loss is not computed as weight gain
         return {
             "initial_weight": (
                 float(initial_weight) if initial_weight is not None and initial_weight != "" else initial_weight

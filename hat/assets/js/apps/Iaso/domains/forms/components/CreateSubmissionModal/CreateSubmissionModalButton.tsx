@@ -5,7 +5,7 @@ import MESSAGES from '../../messages';
 
 type Props = {
     onClick: () => void;
-    disabled: false;
+    disabled?: boolean;
 };
 
 export const CreateSubmissionModalButton: FunctionComponent<Props> = ({

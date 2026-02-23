@@ -200,7 +200,6 @@ class PlanningTestCase(APITestCase):
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        print(r)
         self.assertIsNotNone(r["started_at"])
         self.assertEqual(r["started_at"][0], "publishedWithoutStartDate")
 
@@ -225,7 +224,6 @@ class PlanningTestCase(APITestCase):
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        print(r)
         self.assertIsNotNone(r["ended_at"])
         self.assertEqual(r["ended_at"][0], "publishedWithoutEndDate")
 
@@ -1317,10 +1315,10 @@ class AssignmentAPITestCase(APITestCase):
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
 
         # Get the assignment for this specific planning and org_unit
+        deleted_assignment.refresh_from_db()
         restored_assignment = Assignment.objects.filter(
             planning=self.planning, org_unit=self.child2, deleted_at__isnull=True
         ).first()
-
         self.assertJSONResponse(response, 200)
         # The serializer creates a new assignment, not restore the old one
         self.assertNotEqual(restored_assignment.id, deleted_assignment.id)
@@ -1329,7 +1327,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(restored_assignment.org_unit, self.child2)
         self.assertEqual(restored_assignment.team, self.team1)
 
-    def test_bulk_delete_assignments(self):
+    def test_bulk_delete_assignments_whole_planning(self):
         """Test successful bulk delete of all assignments for a planning"""
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
@@ -1368,6 +1366,127 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(all_assignments.count(), 4)
         for assignment in all_assignments:
             self.assertIsNotNone(assignment.deleted_at)
+
+    def test_bulk_delete_assignments_for_team(self):
+        """Test successful bulk delete of assignments for a specific team"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        initial_assignment = Assignment.objects.get(planning=self.planning, org_unit=self.child1)
+        initial_assignment.team = self.team1
+        initial_assignment.save()
+
+        team2 = Team.objects.create(project=self.project1, name="team2", manager=self.user)
+
+        data_team1 = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id, self.child3.id],
+            "team": self.team1.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team1, format="json")
+
+        data_team2 = {
+            "planning": self.planning.id,
+            "org_units": [self.child4.id, self.child5.id],
+            "team": team2.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team2, format="json")
+
+        # Expect 5 assignments total (1 from setUp + 2 from team1 + 2 from team2)
+        assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(assignments.count(), 5)
+
+        # Expect 3 assignments for team 1 (1 from setUp + 2 from bulk create)
+        team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1, deleted_at__isnull=True)
+        self.assertEqual(team1_assignments.count(), 3)
+
+        # Expect 2 assignments for team 2
+        team2_assignments = Assignment.objects.filter(planning=self.planning, team=team2, deleted_at__isnull=True)
+        self.assertEqual(team2_assignments.count(), 2)
+
+        # Bulk delete assignments for team1
+        delete_data = {"planning": self.planning.id, "team": self.team1.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        result = self.assertJSONResponse(response, 200)
+        self.assertEqual(result["deleted_count"], 3)
+        self.assertEqual(result["planning_id"], self.planning.id)
+        self.assertIn("Successfully deleted 3 assignments", result["message"])
+
+        # Team1 assignments are (soft) deleted
+        team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1, deleted_at__isnull=True)
+        self.assertEqual(team1_assignments.count(), 0)
+        all_team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1)
+        self.assertEqual(all_team1_assignments.count(), 3)
+        for assignment in all_team1_assignments:
+            self.assertIsNotNone(assignment.deleted_at)
+
+        # Team2 assignments are not (soft) deleted
+        team2_assignments = Assignment.objects.filter(planning=self.planning, team=team2, deleted_at__isnull=True)
+        self.assertEqual(team2_assignments.count(), 2)
+
+    def test_bulk_delete_assignments_for_user(self):
+        """Test successful bulk delete of assignments for a specific user"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        user2 = self.create_user_with_profile(username="user2", account=self.account)
+
+        data_user1 = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id, self.child3.id],
+            "user": self.user.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user1, format="json")
+
+        data_user2 = {
+            "planning": self.planning.id,
+            "org_units": [self.child4.id, self.child5.id],
+            "user": user2.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user2, format="json")
+
+        # 5 assignments total (1 from setUp + 2 from user1 + 2 from user2)
+        assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(assignments.count(), 5)
+
+        # 3 assignments for user 1 (1 from setUp + 2 from bulk create)
+        user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user, deleted_at__isnull=True)
+        self.assertEqual(user1_assignments.count(), 3)
+
+        # 2 assignments for user 2
+        user2_assignments = Assignment.objects.filter(planning=self.planning, user=user2, deleted_at__isnull=True)
+        self.assertEqual(user2_assignments.count(), 2)
+
+        # Bulk delete assignments for user1
+        delete_data = {"planning": self.planning.id, "user": self.user.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        result = self.assertJSONResponse(response, 200)
+        self.assertEqual(result["deleted_count"], 3)
+        self.assertEqual(result["planning_id"], self.planning.id)
+        self.assertEqual(result["user"], self.user.id)
+        self.assertIn("Successfully deleted 3 assignments", result["message"])
+
+        # Verify user1 assignments are soft deleted
+        user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user, deleted_at__isnull=True)
+        self.assertEqual(user1_assignments.count(), 0)
+        all_user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user)
+        self.assertEqual(all_user1_assignments.count(), 3)
+        for assignment in all_user1_assignments:
+            self.assertIsNotNone(assignment.deleted_at)
+
+        # Verify user2 assignments are NOT deleted
+        user2_assignments = Assignment.objects.filter(planning=self.planning, user=user2, deleted_at__isnull=True)
+        self.assertEqual(user2_assignments.count(), 2)
 
     def test_bulk_delete_assignments_no_assignments(self):
         """Test bulk delete when no assignments exist for the planning"""

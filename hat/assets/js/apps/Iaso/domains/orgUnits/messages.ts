@@ -625,6 +625,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.addChild',
         defaultMessage: 'Add child',
     },
+    rejectOrgUnit: {
+        id: 'iaso.orgUnits.rejectOrgUnit',
+        defaultMessage: 'Reject Org Unit',
+    },
+    orgUnitRejected: {
+        id: 'iaso.orgUnits.orgUnitRejected',
+        defaultMessage: 'Org Unit rejected successfully',
+    },
 });
 
 export default MESSAGES;

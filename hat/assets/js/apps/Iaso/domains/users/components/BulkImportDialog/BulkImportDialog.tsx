@@ -1,5 +1,12 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
-import { Box, FormControlLabel, Checkbox, Collapse } from '@mui/material';
+import {
+    Box,
+    FormControlLabel,
+    Checkbox,
+    Collapse,
+    Alert,
+    Typography,
+} from '@mui/material';
 import {
     useSafeIntl,
     makeFullModal,
@@ -14,6 +21,7 @@ import MESSAGES from '../../messages';
 import { BulkImportDefaults } from '../../types';
 import { BulkImportButton } from './BulkImportButton';
 import { DefaultValuesSection } from './DefaultValuesSection';
+import { ValidationErrorTable } from './ValidationErrorTable';
 import { useBulkUserValidation } from './hooks/useBulkUserValidation';
 import { useUploadCsv } from './hooks/useUploadCsv';
 
@@ -78,17 +86,24 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
 
     // custom logic to show both api and formik errors.
     // No translation is possible for the backend as it needs to be refactored to send translation keys
-    const formikAndApiErrors = useMemo(() => {
-        const result: string[] = [];
+    const { csvValidationErrors, simpleErrors } = useMemo(() => {
+        const csvErrors = apiErrors?.error?.file?.csv_validation_errors || [];
+        const simple: string[] = [];
+
         const formikError = errors.file;
-        const apiError = apiErrors.error;
         if (formikError) {
-            result.push(formikError);
+            simple.push(formikError);
         }
-        if (apiError) {
-            result.push(apiError);
+
+        const apiError = apiErrors.error;
+        if (apiError && !csvErrors.length) {
+            simple.push(apiError);
         }
-        return result;
+
+        return {
+            csvValidationErrors: csvErrors,
+            simpleErrors: simple,
+        };
     }, [apiErrors.error, errors.file]);
 
     const allowConfirm = isValid && Boolean(touched.file) && !isLoading;
@@ -109,7 +124,7 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
     return (
         <SimpleModal
             titleMessage={titleMessage}
-            maxWidth="sm"
+            maxWidth={csvValidationErrors.length > 0 ? 'lg' : 'sm'}
             open={isOpen}
             closeDialog={closeDialog}
             id={id ?? 'bulk-user-create'}
@@ -130,7 +145,7 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                     }}
                     required
                     multi={false}
-                    errors={formikAndApiErrors}
+                    errors={simpleErrors}
                     placeholder={formatMessage(MESSAGES.selectCsvFile)}
                 />
             </Box>
@@ -156,6 +171,22 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                     />
                 </Box>
             </Collapse>
+
+            {csvValidationErrors.length > 0 && (
+                <Box mt={2}>
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        <Typography variant="subtitle1">
+                            {formatMessage(MESSAGES.validationFailed)}
+                        </Typography>
+                        <Typography variant="body2">
+                            {formatMessage(MESSAGES.fixErrorsAndRetry, {
+                                count: csvValidationErrors.length,
+                            })}
+                        </Typography>
+                    </Alert>
+                    <ValidationErrorTable errors={csvValidationErrors} />
+                </Box>
+            )}
 
             {/* The loading spinner is set so users can still close the modal when the users are loading */}
             {isLoading && <LoadingSpinner absolute={false} fixed={false} />}

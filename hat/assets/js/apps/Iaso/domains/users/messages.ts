@@ -548,6 +548,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.bulk.defaultsInfo',
         defaultMessage: 'Defaults apply only when CSV field is empty. CSV values take priority.',
     },
+    validationFailed: {
+        id: 'iaso.users.bulk.validationFailed',
+        defaultMessage: 'Validation Failed - No Users Created',
+    },
+    fixErrorsAndRetry: {
+        id: 'iaso.users.bulk.fixErrorsAndRetry',
+        defaultMessage: 'Fix the {count} error(s) in your CSV file and upload again.',
+    },
+    row: {
+        id: 'iaso.users.bulk.row',
+        defaultMessage: 'Row',
+    },
+    field: {
+        id: 'iaso.users.bulk.field',
+        defaultMessage: 'Field',
+    },
+    errorMessage: {
+        id: 'iaso.users.bulk.errorMessage',
+        defaultMessage: 'Error',
+    },
 });
 
 export default MESSAGES;

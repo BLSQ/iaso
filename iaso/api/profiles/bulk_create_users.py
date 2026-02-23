@@ -11,6 +11,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.db.models import Q
 from django.http import FileResponse
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import permissions, serializers
@@ -431,24 +432,41 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                     validation_context["user_roles_by_row"][row_index] = list(existing_roles)
 
             # Validate projects
-            project_names = data.get("projects", [])
-            if project_names:
+            project_refs = data.get("projects", [])
+            if project_refs:
+                # Separate numeric IDs from names
+                project_ids = [int(ref) for ref in project_refs if ref.isdigit()]
+                project_names = [ref for ref in project_refs if not ref.isdigit()]
+
+                # Build a single query matching either IDs or names
+                project_query = Q()
+                if project_ids:
+                    project_query |= Q(id__in=project_ids)
+                if project_names:
+                    project_query |= Q(name__in=project_names)
+
                 user_has_project_restrictions = bool(self.importer_user.iaso_profile.projects_ids)
 
                 if user_has_project_restrictions and has_geo_limit:
-                    available_projects = Project.objects.filter(
-                        name__in=project_names, account=self.importer_account
+                    matched_projects = Project.objects.filter(
+                        project_query, account=self.importer_account
                     ).filter_on_user_projects(self.importer_user)
 
-                    if not available_projects.exists():
+                    if matched_projects.exists():
+                        validation_context["projects_by_row"][row_index] = list(matched_projects)
+                    else:
                         available_projects = Project.objects.filter(
                             account=self.importer_account
                         ).filter_on_user_projects(self.importer_user)
-                    validation_context["projects_by_row"][row_index] = list(available_projects)
+                        validation_context["projects_by_row"][row_index] = list(available_projects)
                 else:
-                    available_projects = Project.objects.filter(name__in=project_names, account=self.importer_account)
-                    valid_project_names = set(available_projects.values_list("name", flat=True))
-                    invalid_projects = [pn for pn in project_names if pn not in valid_project_names]
+                    available_projects = Project.objects.filter(project_query, account=self.importer_account)
+                    found_ids = set(available_projects.values_list("id", flat=True))
+                    found_names = set(available_projects.values_list("name", flat=True))
+                    invalid_projects = (
+                        [str(pid) for pid in project_ids if pid not in found_ids]
+                        + [pname for pname in project_names if pname not in found_names]
+                    )
                     if invalid_projects:
                         row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
                     else:

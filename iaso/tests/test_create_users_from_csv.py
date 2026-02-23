@@ -1089,3 +1089,28 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(validation_errors), 1)
         self.assertIn("profile_language", validation_errors[0]["errors"])
         self.assertIn("invalid_lang", validation_errors[0]["errors"]["profile_language"])
+
+    def test_create_user_with_project_by_id(self):
+        """Test that CSV with project ID works correctly."""
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        context = {"project_id": self.project.id}
+
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures",
+            fixture_name="test_user_bulk_create_valid_with_project_ids.csv",
+            context=context,
+        )
+
+        test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["Accounts created"], 1)
+
+        user = User.objects.get(username="projectid_user")
+        self.assertEqual(user.iaso_profile.projects.count(), 1)
+        self.assertEqual(user.iaso_profile.projects.first().id, self.project.id)
+
+

@@ -1,43 +1,45 @@
 from typing import Any, List, Optional, Union
 
 from django.conf import settings
-from django.contrib.auth import models, update_session_auth_hash
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
-from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Min, Q, QuerySet
 from django.db.transaction import atomic
-from django.http import Http404, HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from django.template import Context, Template
+from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import translation
 from django.utils.crypto import get_random_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from phonenumber_field.phonenumber import PhoneNumber
-from phonenumbers import NumberParseException
-from rest_framework import permissions, serializers, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
-from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, ModelViewSet
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.profiles.filters import ProfileListFilter
+from iaso.api.profiles.pagination import ProfilePagination
+from iaso.api.profiles.policies import GroupFromUserRolesPolicy, OrgUnitPolicy, ProjectsPolicy, UserPermissionsPolicy
 from iaso.api.profiles.serializers import (
     ProfileCreateSerializer,
     ProfileListSerializer,
     ProfileRetrieveSerializer,
     ProfileUserFallbackRetrieveSerializer,
 )
-from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
+from iaso.models import OrgUnit, Profile, TenantUser
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
-from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request, search_by_ids_refs
 from iaso.utils.colors import COLOR_FORMAT_ERROR, DEFAULT_COLOR, validate_hex_color
 
@@ -114,9 +116,6 @@ def get_filtered_profiles(
                 | Q(user__last_name__icontains=search)
             ).distinct()
 
-    if perms:
-        queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
-
     if location and not (parent_ou or children_ou):
         queryset = queryset.filter(
             user__iaso_profile__org_units__pk=location,
@@ -147,23 +146,6 @@ def get_filtered_profiles(
                 org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
             queryset = queryset.filter(org_unit_filter).distinct()
 
-    if org_unit_type:
-        if org_unit_type == "unassigned":
-            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
-        else:
-            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
-
-    if projects:
-        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects).distinct()
-
-    if user_roles:
-        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles).distinct()
-
-    if teams:
-        queryset = queryset.filter(user__teams__id__in=teams).distinct()
-
-    if ids:
-        queryset = queryset.filter(user__id__in=ids.split(","))
     if managed_users_only:
         if not user:
             raise Exception("User cannot be 'None' when filtering on managed users only")
@@ -199,7 +181,7 @@ class ProfileColorUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
 
-class ProfilesViewSet(viewsets.ModelViewSet):
+class ProfilesViewSet(ModelViewSet):
     f"""Profiles API
 
     This API is restricted to authenticated users having the "{CORE_USERS_ADMIN_PERMISSION}" or "{CORE_USERS_MANAGED_PERMISSION}"
@@ -221,12 +203,11 @@ class ProfilesViewSet(viewsets.ModelViewSet):
 
     http_method_names = ["get", "post", "patch", "delete", "head", "options", "trace"]
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
-    serializer_class = Profile
+    pagination_class = ProfilePagination
 
-    # filter_backends = [DjangoFilterBackend]
-    # filterset_fields = [
-    #
-    # ]
+    filter_backends = [OrderingFilter, DjangoFilterBackend]
+    filterset_class = ProfileListFilter
+    ordering_filters = ["user__username"]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -255,28 +236,24 @@ class ProfilesViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             raise Http404
 
+    @action(detail=False, methods=["get"], url_path="export-csv")
+    def export_csv(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        return self.list_export(queryset, file_format=FileFormatEnum.CSV)
+
+    @action(detail=False, methods=["get"], url_path="export-xlsx")
+    def export_xlsx(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        return self.list_export(queryset, file_format=FileFormatEnum.XLSX)
+
     def list(self, request, *args, **kwargs):
-        limit = request.GET.get("limit", None)
-        page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "user__username").split(",")
-        ids = request.GET.get("ids", None)
         search = request.GET.get("search", None)
-        perms = request.GET.get("permissions", None)
-        if perms:
-            perms = perms.split(",")
+
         location = request.GET.get("location", None)
         org_unit_type = request.GET.get("orgUnitTypes", None)
         parent_ou = request.GET.get("ouParent", None) == "true"
         children_ou = request.GET.get("ouChildren", None) == "true"
-        projects = request.GET.get("projects", None)
-        if projects:
-            projects = projects.split(",")
-        user_roles = request.GET.get("userRoles", None)
-        if user_roles:
-            user_roles = user_roles.split(",")
-        teams = request.GET.get("teams", None)
-        if teams:
-            teams = teams.split(",")
+
         managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
         queryset = (
             get_filtered_profiles(
@@ -319,56 +296,75 @@ class ProfilesViewSet(viewsets.ModelViewSet):
             "projects",
             "editable_org_unit_types",
         )
-        if request.GET.get("csv"):
-            return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)
-        if request.GET.get("xlsx"):
-            return self.list_export(queryset=queryset, file_format=FileFormatEnum.XLSX)
 
-        if limit:
-            queryset = queryset.order_by(*orders)
-            limit = int(limit)
-            page_offset = int(page_offset)
-            paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
-
-            res["profiles"] = map(lambda x: x.as_dict(small=True), page.object_list)
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            return Response(res)
         return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
+
+    def _post_create_set_user_password(self, password, user, send_email_invitation):
+        if password:
+            user.set_password(password)
+        elif send_email_invitation:
+            random_password = get_random_string(32)
+            user.set_password(random_password)
 
     def perform_create(self, serializer):
         profile = serializer.save()
 
+        # post-create groups
+        roles = serializer.validated_data.get("user_roles") or []
+        groups = {role.group for role in roles}
+
+        profile.user.groups.set(groups)
+
+        # post-create user permissions
+        user_permissions = serializer.validated_data.get("user_permissions") or []
+        profile.user.user_permissions.set(user_permissions)
+
+        # post-create user profile
+        self._post_create_set_user_password(
+            user=profile.user,
+            password=serializer.validated_data.get("password", ""),
+            send_email_invitation=serializer.validated_data.get("send_email_invitation", False),
+        )
+
+        # save
+        profile.user.save()
+
+        # audit
         audit_logger = ProfileAuditLogger()
         source = f"{PROFILE_API}_mobile" if is_mobile_request(self.request) else PROFILE_API
         audit_logger.log_modification(
             instance=profile, old_data_dump=None, request_user=self.request.user, source=source
         )
 
+        # send email
         send_invite = serializer.validated_data.get("send_email_invitation")
         email = serializer.validated_data.get("email")
         language = serializer.validated_data.get("language")
 
         if send_invite and email:
-            transaction.on_commit(lambda: self._send_email_invitation(profile, language))
+            transaction.on_commit(lambda: self.send_email_invitation(profile, language))
 
-    # todo : not sure this is needed, it should be there by default
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        """
+        Big change for org_unit: from [
+        {"id": 1}
+        ] to [1]
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-    def _send_email_invitation(self, profile, language):
-        email_subject = self.get_subject_by_language(self, language)
-        email_message = self.get_message_by_language(self, language)
-        email_html_message = self.get_html_message_by_language(self, language)
-        self.send_email_invitation(profile, email_subject, email_message, email_html_message)
+        # run the advanced checks : authorization/policy validation
+        OrgUnitPolicy.validate_create(self.request.user, serializer.validated_data.get("org_units", None) or [])
+        GroupFromUserRolesPolicy.authorize(
+            user=self.request.user, user_roles=serializer.validated_data.get("user_roles", None) or []
+        )
+        UserPermissionsPolicy.create(
+            user=self.request.user, user_permissions=serializer.validated_data.get("user_permissions", None) or []
+        )
+        ProjectsPolicy.create(user=self.request.user, projects=serializer.validated_data.get("projects", None) or [])
+
+        return super().create(request, *args, **kwargs)
 
     @atomic
     def partial_update(self, request, pk=None):
@@ -502,13 +498,6 @@ class ProfilesViewSet(viewsets.ModelViewSet):
         profile.save()
         return profile
 
-    def validate_color(self, request) -> str:
-        color = request.data.get("color", None)
-        try:
-            return validate_hex_color(color)
-        except ValueError:
-            raise ProfileError(field="color", detail=COLOR_FORMAT_ERROR)
-
     @staticmethod
     def list_export(
         queryset: "QuerySet[Profile]", file_format: FileFormatEnum
@@ -563,151 +552,6 @@ class ProfilesViewSet(viewsets.ModelViewSet):
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 
-    def validate_user_name(self, request, user):
-        if TenantUser.is_multi_account_user(user):
-            return  # username cannot be updated for multi-account users
-
-        username = request.data.get("user_name")
-        # Skip validation if username not provided or did not change (case-insensitive)
-        if not username or user.username == username:
-            return
-
-        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
-        if existing_user:
-            # Prevent from username change with existing username
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
-
-    def validate_user_permissions(self, request, current_account):
-        user_permissions = []
-        module_permissions = [perm.codename for perm in current_account.permissions_from_active_modules]
-        valid_permissions = []
-        for permission_codename in request.data.get("user_permissions", []):
-            if permission_codename in module_permissions:
-                user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
-                valid_permissions.append(permission_codename)
-        # Making sure that this user can actually assign those permissions
-        raise_error_if_user_lacks_admin_permission(request.user, valid_permissions)
-        return user_permissions
-
-    def validate_org_units(self, request, profile) -> QuerySet[OrgUnit]:
-        org_unit = request.data.get("org_units", [])
-        if not org_unit:
-            return OrgUnit.objects.none()
-
-        # Convert the ids received from the APIs to int.
-        org_unit_ids = []
-        for ou in org_unit:
-            try:
-                org_unit_ids.append(int(ou["id"]))
-            except (KeyError, ValueError):
-                pass
-        org_unit_ids = set(org_unit_ids)
-        existing_org_unit_ids = set(profile.org_units.values_list("id", flat=True))
-
-        if org_unit_ids == existing_org_unit_ids:
-            # No change detected, the user must be trying to change another field.
-            return OrgUnit.objects.filter(id__in=org_unit_ids)
-
-        filtered_org_unit_ids = []
-        if request.user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()) and not request.user.has_perm(
-            CORE_USERS_ADMIN_PERMISSION.full_name()
-        ):
-            profile_org_units = request.user.iaso_profile.org_units.all()
-            managed_org_units = OrgUnit.objects.hierarchy(profile_org_units).values_list("id", flat=True)
-            # Only filter if there's an org unit limitation in place.
-            if profile_org_units.exists():
-                for org_unit_id in org_unit_ids:
-                    if (
-                        org_unit_id not in list(managed_org_units)
-                        and org_unit_id not in existing_org_unit_ids
-                        and not request.user.is_superuser
-                    ):
-                        raise PermissionDenied(
-                            f"User with {CORE_USERS_MANAGED_PERMISSION} cannot assign an OrgUnit outside of their own health "
-                            f"pyramid. Trying to assign {org_unit_id}."
-                        )
-                    filtered_org_unit_ids.append(org_unit_id)
-
-        valid_ids = filtered_org_unit_ids or org_unit_ids
-        org_units = OrgUnit.objects.filter(id__in=valid_ids)
-
-        return org_units
-
-    def validate_user_roles(self, request):
-        result = {"groups": [], "user_roles": []}
-        user_roles = request.data.get("user_roles", [])
-        # Get the current connected user
-        current_profile = request.user.iaso_profile
-        for user_role_id in user_roles:
-            # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
-            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
-            # Checking if that user can receive that role
-            role_permission_names = user_group_item.permissions.values_list("codename", flat=True)
-            raise_error_if_user_lacks_admin_permission(request.user, role_permission_names)
-            result["groups"].append(user_group_item)
-            result["user_roles"].append(user_role_item)
-        return result
-
-    def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
-        new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-
-        if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
-            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
-
-        user_restricted_projects_ids = set(request.user.iaso_profile.projects_ids)
-
-        if not new_project_ids:
-            if user_restricted_projects_ids:
-                raise PermissionDenied("You must specify which projects are authorized for this user.")
-            return []  # No project restrictions.
-
-        if not user_restricted_projects_ids:
-            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
-
-        profile_restricted_projects_ids = set(profile.projects_ids)
-        if profile_restricted_projects_ids > user_restricted_projects_ids:
-            raise PermissionDenied("You cannot edit a user who has broader access to projects.")
-
-        if new_project_ids.issubset(user_restricted_projects_ids):
-            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
-
-        raise PermissionDenied("Some projects are outside your scope.")
-
-    def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:
-        editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
-        editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
-        existing_editable_org_unit_type_ids = set(profile.editable_org_unit_types.values_list("id", flat=True))
-
-        if editable_org_unit_type_ids == existing_editable_org_unit_type_ids:
-            # No change detected, the user must be trying to change another field.
-            return editable_org_unit_types
-
-        if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
-            raise ValidationError("Invalid editable org unit type submitted.")
-
-        return editable_org_unit_types
-
-    @staticmethod
-    def extract_phone_number(request):
-        phone_number = request.data.get("phone_number")
-        country_code = request.data.get("country_code")
-        number = ""
-
-        if any([phone_number, country_code]) and not all([phone_number, country_code]):
-            raise ValidationError({"phone_number": _("Both phone number and country code must be provided")})
-
-        if phone_number and country_code:
-            try:
-                number = PhoneNumber.from_string(phone_number, region=country_code.upper())
-            except NumberParseException:
-                raise ValidationError({"phone_number": _("Invalid phone number format")})
-
-            if not number.is_valid():
-                raise ValidationError({"phone_number": _("Invalid phone number")})
-
-        return number
-
     @staticmethod
     def update_password(user, request):
         password = request.data.get("password")
@@ -729,43 +573,43 @@ class ProfilesViewSet(viewsets.ModelViewSet):
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
             update_session_auth_hash(request, user)
 
-    def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
+    def send_email_invitation(self, profile, language):
         domain = settings.DNS_DOMAIN
+        protocol = "https" if self.request.is_secure() else "http"
+
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(profile.user)
-
         uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
         create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
 
-        protocol = "https" if self.request.is_secure() else "http"
-        email_message_text = email_message.format(
-            userName=profile.user.username,
-            url=f"{protocol}://{domain}{create_password_path}",
+        email_subject = self.get_subject_by_language(language, domain)
+        email_message = self.get_message_by_language(
+            language,
             protocol=protocol,
             domain=domain,
+            user_name=profile.user.username,
+            url=f"{protocol}://{domain}{create_password_path}",
             account_name=profile.account.name,
         )
 
-        email_subject_text = email_subject.format(domain=f"{domain}")
-        html_email_template = Template(email_html_message)
-        html_email_context = Context(
-            {
-                "protocol": protocol,
-                "domain": domain,
-                "account_name": profile.account.name,
-                "userName": profile.user.username,
-                "url": f"{protocol}://{domain}{create_password_path}",
-            }
-        )
-
-        rendered_html_email = html_email_template.render(html_email_context)
+        with translation.override(language):
+            html_email_content = render_to_string(
+                "emails/create_password_email.html",
+                context={
+                    "protocol": protocol,
+                    "domain": domain,
+                    "account_name": profile.account.name,
+                    "user_name": profile.user.username,
+                    "url": f"{protocol}://{domain}{create_password_path}",
+                },
+            )
 
         send_mail(
-            email_subject_text,
-            email_message_text,
+            email_subject,
+            email_message,
             settings.DEFAULT_FROM_EMAIL,
             [profile.user.email],
-            html_message=rendered_html_email,
+            html_message=html_email_content,
         )
 
     def perform_destroy(self, instance):
@@ -791,22 +635,14 @@ class ProfilesViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     @staticmethod
-    def get_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
-
-    @staticmethod
-    def get_html_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_HTML_MESSAGE_EN
-
-    @staticmethod
-    def get_subject_by_language(self, language="en"):
-        return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
-
-    CREATE_PASSWORD_MESSAGE_EN = """Hello,
+    def get_message_by_language(language=settings.LANGUAGE_CODE, **kwargs):
+        with translation.override(language):
+            return _(
+                """Hello,
 
 You have been invited to access IASO - {protocol}://{domain}.
 
-Username: {userName} 
+Username: {user_name} 
 
 Please click on the link below to create your password:
 
@@ -819,62 +655,16 @@ If you did not request an account on {account_name}, you can ignore this e-mail 
 
 Sincerely,
 The {domain} Team.
-    """
+    """.format(
+                    protocol=kwargs["protocol"],
+                    domain=kwargs["domain"],
+                    user_name=kwargs["user_name"],
+                    url=kwargs["url"],
+                    account_name=kwargs["account_name"],
+                )
+            )
 
-    CREATE_PASSWORD_HTML_MESSAGE_EN = """<p>Hello,<br><br>
-
-You have been invited to access IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
-
-Username: <strong>{{userName}}</strong><br><br>
-
-Please click on the link below to create your password:<br><br>
-
-<a href="{{url}}" target="_blank">{{url}}</a><br><br>
-
-If clicking the link above doesn't work, please copy and paste the URL in a new browser<br>
-window instead.<br><br>
-
-If you did not request an account on {{account_name}}, you can ignore this e-mail - no password will be created.<br><br>
-
-Sincerely,<br>
-The {{domain}} Team.</p>
-    """
-
-    CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
-
-Vous avez été invité à accéder à l'IASO - {protocol}://{domain}.
-
-Nom d'utilisateur: {userName}
-
-Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :
-
-{url}
-
-Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.
-
-Si vous n'avez pas demandé de compte sur {account_name}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
-
-Cordialement,
-L'équipe {domain}.
-    """
-
-    CREATE_PASSWORD_HTML_MESSAGE_FR = """<p>Bonjour,<br><br>
-
-Vous avez été invité à accéder à l'IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
-
-Nom d'utilisateur: <strong>{{userName}}</strong><br><br>
-
-Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :<br><br>
-
-<a href="{{url}}" target="_blank">{{url}}</a><br><br>
-
-Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.<br><br>
-
-Si vous n'avez pas demandé de compte sur {{account_name}}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.<br><br>
-
-Cordialement,<br>
-L'équipe {{domain}}.</p>
-    """
-
-    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {domain}"
-    EMAIL_SUBJECT_EN = "Set up a password for your new account on {domain}"
+    @staticmethod
+    def get_subject_by_language(language=settings.LANGUAGE_CODE, domain=settings.DNS_DOMAIN):
+        with translation.override(language):
+            return _("Set up a password for your new account on %(domain)s") % {"domain": domain}

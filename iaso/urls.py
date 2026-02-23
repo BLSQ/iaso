@@ -10,7 +10,7 @@ from hat.api.token_authentication import token_auth
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
-from iaso.api.profiles.profile_logs import ProfileLogsViewset
+from iaso.api.profile_logs.views import ProfileLogsViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReferenceBulkLinkViewSet
@@ -233,7 +233,7 @@ router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobilework
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 router.register(r"userroles", UserRolesViewSet, basename="userroles")
-router.register(r"userlogs", ProfileLogsViewset, basename="userlogs")
+router.register(r"userlogs", ProfileLogsViewSet, basename="userlogs")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")

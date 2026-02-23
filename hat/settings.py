@@ -276,6 +276,7 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             "./hat/templates",
+            os.path.join(BASE_DIR, "iaso", "templates"),
             "./django_sql_dashboard_export/templates",
         ],
         "APP_DIRS": True,

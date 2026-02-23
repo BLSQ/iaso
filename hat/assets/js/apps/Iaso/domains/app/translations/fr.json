@@ -1348,6 +1348,7 @@
     "iaso.projets.featureflag.mobile_force_forms_update": "Mobile: Forcer l'utilisateur à mettre à jour les formulaires",
     "iaso.projets.featureflag.mobile_force_ou_update": "Mobile: Forcer l'utilisateur à mettre à jour les unités d'org",
     "iaso.projets.featureflag.mobile_org_unit_deep_search": "Mobile: Recherchez parmi les enfants dans l’arborescence de l'unité d'org",
+    "iaso.projets.featureflag.mobile_org_unit_deep_search_tooltip": "Rechercher parmi les enfants dans l’arborescence de l'unité d'org.",
     "iaso.projets.featureflag.mobile_org_unit_registry": "Mobile: Activer les demandes de changement.",
     "iaso.projets.featureflag.mobile_select_closest_org_unit": "Mobile: Proposer de passer à l'unité d'organisation la plus proche",
     "iaso.projets.featureflag.mobile_submission_incomplete_by_default": "Ne pas cocher 'Finalisé' par défaut à la fin des formulaires",

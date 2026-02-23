@@ -213,6 +213,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.projets.featureflag.mobile_org_unit_deep_search',
         defaultMessage: 'Mobile: Search through children in OrgUnit tree.',
     },
+    mobile_org_unit_deep_search_tooltip: {
+        id: 'iaso.projets.featureflag.mobile_org_unit_deep_search',
+        defaultMessage: 'Search through children in OrgUnit tree.',
+    },
     data_collection: {
         id: 'iaso.projets.featureflag.data_collection',
         defaultMessage: 'Mobile: show data collection screen',

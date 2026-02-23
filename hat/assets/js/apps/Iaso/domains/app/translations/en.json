@@ -1348,6 +1348,7 @@
     "iaso.projets.featureflag.mobile_force_forms_update": "Mobile: Warn the user when forms have been updated and force them to update",
     "iaso.projets.featureflag.mobile_force_ou_update": "Mobile: Warn the user when the org units have been updated and force them to update",
     "iaso.projets.featureflag.mobile_org_unit_deep_search": "Mobile: Search through children in OrgUnit tree.",
+    "iaso.projets.featureflag.mobile_org_unit_deep_search_tooltip": "Search through children in OrgUnit tree.",
     "iaso.projets.featureflag.mobile_org_unit_registry": "Mobile: Change requests",
     "iaso.projets.featureflag.mobile_select_closest_org_unit": "Mobile: Propose to jump to closest OrgUnit",
     "iaso.projets.featureflag.mobile_submission_incomplete_by_default": "Do not check 'finalized' by default at the end of the form",

@@ -463,10 +463,9 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                     available_projects = Project.objects.filter(project_query, account=self.importer_account)
                     found_ids = set(available_projects.values_list("id", flat=True))
                     found_names = set(available_projects.values_list("name", flat=True))
-                    invalid_projects = (
-                        [str(pid) for pid in project_ids if pid not in found_ids]
-                        + [pname for pname in project_names if pname not in found_names]
-                    )
+                    invalid_projects = [str(pid) for pid in project_ids if pid not in found_ids] + [
+                        pname for pname in project_names if pname not in found_names
+                    ]
                     if invalid_projects:
                         row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
                     else:

@@ -1112,5 +1112,3 @@ class BulkCreateCsvTestCase(APITestCase):
         user = User.objects.get(username="projectid_user")
         self.assertEqual(user.iaso_profile.projects.count(), 1)
         self.assertEqual(user.iaso_profile.projects.first().id, self.project.id)
-
-

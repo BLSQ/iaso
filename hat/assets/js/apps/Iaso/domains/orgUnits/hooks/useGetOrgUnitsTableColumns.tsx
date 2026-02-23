@@ -81,10 +81,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Cell: settings => getStatusMessage(settings.value),
             },
             {
-                Header: formatMessage(MESSAGES.instances_count),
-                accessor: 'instances_count',
-            },
-            {
                 Header: formatMessage(MESSAGES.created_at),
                 accessor: 'created_at',
                 Cell: DateTimeCell,

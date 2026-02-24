@@ -526,7 +526,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             display="flex"
                                             sx={{ flexWrap: 'nowrap' }}
                                         >
-                                            {planning && Boolean(planning) && (
+                                            {Boolean(planning) && (
                                                 <DeleteDialog
                                                     iconColor="error"
                                                     titleMessage={

@@ -621,6 +621,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.bulk.errorMessage',
         defaultMessage: 'Error',
     },
+    bulkImportDialogDescription: {
+        id: 'iaso.users.bulkImportDialogDescription',
+        defaultMessage:
+            'Please check the file encoding. It must be in UTF-8 format to be read by Iaso.',
+    },
 });
 
 export default MESSAGES;

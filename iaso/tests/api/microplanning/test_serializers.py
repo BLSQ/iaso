@@ -36,6 +36,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
                     "group_id": None,
                     "task_id": None,
                 },
+                "assignments_count": 0,
                 "team_details": {
                     "id": self.team_1.id,
                     "name": self.team_1.name,

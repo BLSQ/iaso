@@ -117,11 +117,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             self.queryset.filter_for_user(user)
             .select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related("forms")
-            .annotate(
-                assignments_count=Count(
-                    "assignment", filter=Q(assignment__deleted_at__isnull=True)
-                )
-            )
+            .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))
         )
 
     def _read_response(self, instance, status_code=status.HTTP_200_OK):

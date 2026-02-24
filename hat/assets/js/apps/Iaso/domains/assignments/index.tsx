@@ -84,17 +84,6 @@ export const Assignments: FunctionComponent = () => {
                             <ChevronRight sx={{ fontSize: 40, px: 1 }} />
                             {planning.target_org_unit_type_details?.name}
                         </Typography>
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            onClick={() => {
-                                deleteAssignments({ planning: planningId });
-                            }}
-                            startIcon={<DeleteIcon />}
-                            disabled={!assignments?.allAssignments?.length}
-                        >
-                            {formatMessage(MESSAGES.deleteAllAssignments)}
-                        </Button>
                         <DeleteDialog
                             iconColor="error"
                             titleMessage={MESSAGES.deleteAllAssignments}

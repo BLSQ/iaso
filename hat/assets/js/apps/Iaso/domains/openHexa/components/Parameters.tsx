@@ -242,19 +242,9 @@ export const Parameters: React.FC<ParametersProps> = ({
         ],
     );
 
-    if (!parameters || parameters.length === 0) {
-        return (
-            <Box>
-                <Typography variant="body2" color="text.secondary">
-                    No parameters available
-                </Typography>
-            </Box>
-        );
-    }
-
     return (
         <Box>
-            {parameters.map(parameter => (
+            {parameters?.map(parameter => (
                 <Box key={parameter.code}>
                     {renderParameterInput(parameter)}
                 </Box>

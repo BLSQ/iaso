@@ -1,3 +1,5 @@
+import { DateAsString } from '../../../constants/types';
+
 export type NationalLogisticsPlanData = {
     id: number;
     date: string;
@@ -7,6 +9,7 @@ export type NationalLogisticsPlanData = {
     vaccine: string;
     account: number;
     created_at: string;
+    physical_inventory?: DateAsString;
     created_by: {
         id: number;
         username: string;

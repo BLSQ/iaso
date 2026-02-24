@@ -817,6 +817,31 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             "Allows to manage data for vaccine module's national logistics plan",
     },
+    iaso_snt_scenario_permissions: {
+        id: 'iaso.permissions.iaso_snt_scenario_permissions',
+        defaultMessage: 'Scenarios - Write',
+    },
+    iaso_snt_scenario_permissions_tooltip: {
+        id: 'iaso.permissions.iaso_snt_scenario_permissions_tooltip',
+        defaultMessage: 'Allows to create and update Scenarios. Basic = can edit only your own scenarios, Full = can edit all scenarios.',
+    },
+    basic: {
+        id: 'iaso.permissions.readEdit.basic',
+        defaultMessage: 'Basic',
+    },
+    full: {
+        id: 'iaso.permissions.readEdit.full',
+        defaultMessage: 'Full',
+    },
+    iaso_snt_settings_permissions: {
+        id: 'iaso.permissions.iaso_snt_settings_permissions',
+        defaultMessage: 'Settings',
+    },
+    iaso_snt_settings_permissions_tooltip: {
+        id: 'iaso.permissions.iaso_snt_settings_permissions_tooltip',
+        defaultMessage:
+            'Allows to view and edit global settings',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

@@ -1,7 +1,6 @@
 import logging
 import sys
-
-from io import StringIO
+import tempfile
 
 from rest_framework import serializers
 
@@ -116,10 +115,10 @@ class DiffSerializer(serializers.Serializer):
             org_unit_group_ref=data.get("ref_org_unit_group_id"),
             field_names=data.get("fields_to_export"),
         )
-        buffer = StringIO()
-        Dumper(iaso_logger).dump_as_csv(diffs, fields, buffer)
-        buffer.seek(0)
-        return buffer
+        file = tempfile.NamedTemporaryFile(mode="w+t", encoding="utf-8", newline="", suffix=".csv", delete=False)
+        Dumper(iaso_logger).dump_as_csv(diffs, fields, file)
+        file.seek(0)
+        return file
 
 
 class ExportSerializer(DiffSerializer):

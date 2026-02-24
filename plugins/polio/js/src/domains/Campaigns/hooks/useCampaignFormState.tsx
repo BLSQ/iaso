@@ -1,12 +1,38 @@
-import { useQueryClient } from 'react-query';
-import { useValidateCampaign } from './useValidateCampaign';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CampaignFormValues } from '../../../constants/types';
-import { isEqual, merge } from 'lodash';
 import { useFormik } from 'formik';
+import { isEqual, merge } from 'lodash';
+import { useQueryClient } from 'react-query';
+import { CampaignFormValues } from '../../../constants/types';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useWarningModal } from '../MainDialog/WarningModal/useWarningModal';
 import { useCampaignAPI } from './useCampaignAPI';
+import { useValidateCampaign } from './useValidateCampaign';
+
+const baseValues: CampaignFormValues = {
+    subactivity: undefined, // we save subactivities one by one, so no array here
+    rounds: [],
+    scopes: [],
+    group: {
+        name: 'hidden group',
+        org_units: [],
+    },
+    campaign_types: [],
+    integrated_campaigns: [],
+    integrated_to: undefined,
+    is_preventive: false,
+    is_test: false,
+    on_hold: false,
+    is_planned: false,
+    enable_send_weekly_email: true,
+    // Those are Polio default values to be set if the types changes to Polio
+    has_data_in_budget_tool: false,
+    budget_current_state_key: '-',
+    detection_status: 'PENDING',
+    risk_assessment_status: 'TO_SUBMIT',
+    separate_scopes_per_round: false,
+    org_unit: undefined,
+    non_field_errors: undefined, // TODO find out whether we still use this formik state value or not
+};
 
 export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
     const [selectedCampaignId, setSelectedCampaignId] = useState<
@@ -33,33 +59,10 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
     const queryClient = useQueryClient();
     const validate = useValidateCampaign();
     const initialValues: CampaignFormValues = useMemo(() => {
-        const baseValues: CampaignFormValues = {
-            subactivity: undefined, // we save subactivities one by one, so no array here
-            rounds: [],
-            scopes: [],
-            group: {
-                name: 'hidden group',
-                org_units: [],
-            },
-            campaign_types: [],
-            integrated_campaigns: [],
-            integrated_to: undefined,
-            is_preventive: false,
-            is_test: false,
-            on_hold: false,
-            is_planned: false,
-            enable_send_weekly_email: true,
-            // Those are Polio default values to be set if the types changes to Polio
-            has_data_in_budget_tool: false,
-            budget_current_state_key: '-',
-            detection_status: 'PENDING',
-            risk_assessment_status: 'TO_SUBMIT',
-            separate_scopes_per_round: false,
-            org_unit: undefined,
-            non_field_errors: undefined, // TODO find out whether we still use this formik state value or not
-        };
-
-        // Merge default values with the campaign data
+        if (!campaignId) {
+            return baseValues;
+        }
+        // Merge default values with the campaign data only if we have selected an existing campaign
         return merge({}, baseValues, {
             ...selectedCampaign,
             rounds: selectedCampaign?.rounds
@@ -68,7 +71,7 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
                   )
                 : [],
         });
-    }, [selectedCampaign]);
+    }, [selectedCampaign, campaignId]);
 
     const formik = useFormik({
         initialValues,
@@ -104,12 +107,13 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
     );
 
     const handleClose = useCallback(() => {
-        formik.resetForm();
+        formik.setValues(baseValues);
+        setSelectedCampaignId(undefined);
         if (isUpdated) {
             queryClient.invalidateQueries('campaigns');
             queryClient.invalidateQueries('subActivities');
         }
-    }, [isUpdated, formik.resetForm, queryClient]);
+    }, [isUpdated, formik, queryClient]);
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
 
     const handleConfirm = useCallback(() => {
@@ -128,6 +132,7 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formik.handleSubmit,
+        formik.resetForm,
         formik.values.id,
         formik.values.separate_scopes_per_round,
         formik.initialValues.separate_scopes_per_round,
@@ -156,6 +161,7 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
             selectedCampaign,
             isFetching,
             saveDisabled,
+            showObrInTitle: Boolean(selectedCampaignId),
         };
     }, [
         isFormChanged,
@@ -171,6 +177,7 @@ export const useCampaignFormState = ({ campaignId, enableAPI = true }) => {
         saveCampaign,
         isSaving,
         selectedCampaign,
+        selectedCampaignId,
         isFetching,
         saveDisabled,
     ]);

@@ -1,31 +1,37 @@
-import React, { FunctionComponent, useEffect, useRef } from 'react';
-import { PolioDialogTabs } from './MainDialog/PolioDialogTabs';
-import { FormikProvider } from 'formik';
-import { useCampaignFormState } from './hooks/useCampaignFormState';
-import { useCampaignTabs } from './hooks/useCampaignTabs';
-import { Form } from '../../components/Form';
-import TopBar from 'Iaso/components/nav/TopBarComponent';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useRef,
+} from 'react';
+import { Box, Button, Grid } from '@mui/material';
 import {
     LoadingSpinner,
     useGoBack,
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
-import MESSAGES from '../../constants/messages';
-import { WarningModal } from './MainDialog/WarningModal/WarningModal';
-import { CampaignHistoryIconButton } from './CampaignHistory/CampaignHistoryIconButton';
-import { baseUrls } from '../../constants/urls';
+import { FormikProvider } from 'formik';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import { Box, Button, Grid } from '@mui/material';
-import { useStyles } from '../../styles/theme';
+import { Form } from '../../components/Form';
+import MESSAGES from '../../constants/messages';
 import { Campaign } from '../../constants/types';
+import { baseUrls } from '../../constants/urls';
+import { useStyles } from '../../styles/theme';
+import { CampaignHistoryIconButton } from './CampaignHistory/CampaignHistoryIconButton';
+import { useCampaignFormState } from './hooks/useCampaignFormState';
+import { useCampaignTabs } from './hooks/useCampaignTabs';
+import { PolioDialogTabs } from './MainDialog/PolioDialogTabs';
+import { WarningModal } from './MainDialog/WarningModal/WarningModal';
 
 const useTitle = (
     campaignId: string | undefined,
+    showObrInTitle: boolean,
     selectedCampaign?: Campaign,
 ): string => {
     const { formatMessage } = useSafeIntl();
-    if (selectedCampaign) {
+    if (selectedCampaign && showObrInTitle) {
         return formatMessage(MESSAGES.campaignDetail, {
             obrName: `${selectedCampaign.obr_name}`,
         });
@@ -58,6 +64,7 @@ export const CampaignDetails: FunctionComponent = () => {
         selectedCampaign,
         isFetching,
         saveDisabled,
+        showObrInTitle,
     } = useCampaignFormState({
         campaignId,
     });
@@ -66,8 +73,14 @@ export const CampaignDetails: FunctionComponent = () => {
         formik,
         selectedCampaign,
     });
-    const title = useTitle(campaignId, selectedCampaign);
-    // // force refresh on redirection from integrated campaign
+    const title = useTitle(campaignId, showObrInTitle, selectedCampaign);
+
+    const goBackAndResetForm = useCallback(() => {
+        handleCancel();
+        goBack();
+    }, [goBack, handleCancel]);
+
+    // force refresh on redirection from integrated campaign
     useEffect(() => {
         if (campaignIdRef.current !== campaignId) {
             campaignIdRef.current = campaignId;
@@ -76,10 +89,13 @@ export const CampaignDetails: FunctionComponent = () => {
             );
         }
     }, [redirectToReplace, campaignId]);
-
     return (
         <>
-            <TopBar title={title} displayBackButton goBack={goBack} />
+            <TopBar
+                title={title}
+                displayBackButton
+                goBack={goBackAndResetForm}
+            />
             {(isFetching || isSaving) && <LoadingSpinner absolute />}
             <WarningModal
                 title={scopeWarningTitle}

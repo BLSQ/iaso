@@ -126,6 +126,8 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
 
 
 class PlanningReadSerializer(serializers.ModelSerializer):
+    assignments_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Planning
         fields = [
@@ -138,12 +140,16 @@ class PlanningReadSerializer(serializers.ModelSerializer):
             "ended_at",
             "pipeline_uuids",
             "selected_sampling_result",
+            "assignments_count",
             "team_details",
             "org_unit_details",
             "project_details",
             "target_org_unit_type_details",
         ]
         read_only_fields = fields
+
+    def get_assignments_count(self, obj):
+        return getattr(obj, "assignments_count", 0)
 
     selected_sampling_result = NestedPlanningSamplingResultSerializer(read_only=True)
     team_details = NestedTeamSerializer(source="team", read_only=True)
@@ -363,18 +369,28 @@ class BulkAssignmentSerializer(serializers.Serializer):
 
 
 class BulkDeleteAssignmentSerializer(serializers.Serializer):
-    """Bulk soft delete all assignments for a specific planning.
+    """Bulk soft delete all assignments for a specific user and/or planning.
 
     Marks all assignments linked to the specified planning as deleted using the deleted_at field.
     Audit the modification.
     """
 
     planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.none(), write_only=True, required=False, allow_null=True
+    )
+    team = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.none(), write_only=True, required=False, allow_null=True
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
         self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["user"].queryset = User.objects.select_related("iaso_profile__account").filter(
+            iaso_profile__account__id=user.iaso_profile.account.id
+        )
+        self.fields["team"].queryset = Team.objects.filter_for_user(user)
 
 
 # noinspection PyMethodMayBeStatic

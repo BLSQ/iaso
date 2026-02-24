@@ -97,6 +97,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
+    latestPhysicalInventory: {
+        id: 'iaso.polio.label.latestPhysicalInventory',
+        defaultMessage: 'Latest physical inventory',
+    },
 });
 
 export default MESSAGES;

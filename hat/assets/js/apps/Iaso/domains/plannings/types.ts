@@ -49,6 +49,7 @@ export type Planning = {
     pipeline_uuids: string[];
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
     selected_sampling_result?: SamplingResult;
+    assignments_count: number;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 

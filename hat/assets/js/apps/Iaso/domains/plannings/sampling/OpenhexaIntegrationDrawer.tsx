@@ -3,6 +3,7 @@ import React, {
     useCallback,
     useEffect,
     useState,
+    useMemo,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -18,6 +19,7 @@ import {
     Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
 import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
@@ -64,6 +66,16 @@ const styles: SxStyles = {
     },
 };
 
+const parametersToRemove = [
+    'task_id',
+    'pipeline_id',
+    'connection_host',
+    'connection_token',
+    'sampling_name',
+    'planning_id',
+    'version',
+];
+
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
     disabled = false,
@@ -89,11 +101,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { data: pipeline, isFetching: isFetchingPipeline } =
-        useGetPipelineDetails(selectedPipelineId, [
-            'task_id',
-            'pipeline_id',
-            'planning_id',
-        ]);
+        useGetPipelineDetails(selectedPipelineId, parametersToRemove);
     const {
         mutate: launchTask,
         data: launchResult,
@@ -139,15 +147,26 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         setCurrentStep(1);
         setTaskStatus(undefined);
     };
-
+    const isPublished = Boolean(planning.published_at);
+    const hasStarted = Boolean(
+        planning.started_at &&
+        moment().isAfter(moment(planning.started_at), 'day'),
+    );
+    const isCreateSamplingDisabled = isPublished || hasStarted;
     useEffect(() => {
         if (isSubmitting && !isLaunchingTask) {
             setIsSubmitting(false);
         }
     }, [isSubmitting, isLaunchingTask]);
+    const title = useMemo(() => {
+        if (disabled) return disabledMessage;
+        if (isCreateSamplingDisabled)
+            return formatMessage(MESSAGES.planningAlreadyPublished);
+        return undefined;
+    }, [disabled, disabledMessage, formatMessage, isCreateSamplingDisabled]);
     return (
         <>
-            <Tooltip title={disabled ? disabledMessage : undefined}>
+            <Tooltip title={title}>
                 <Box>
                     <Button
                         variant="outlined"
@@ -156,7 +175,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                             setIsOpen(true);
                         }}
                         sx={styles.button}
-                        disabled={disabled}
+                        disabled={disabled || isCreateSamplingDisabled}
                     >
                         <PlusIcon sx={styles.icon} />
                         {formatMessage(MESSAGES.openHexaIntegration)}

@@ -14,6 +14,7 @@ export const PHYSICAL_INVENTORY_ADD = 'physical_inventory_add';
 export const PHYSICAL_INVENTORY_REMOVE = 'physical_inventory_remove';
 export const BROKEN = 'broken';
 export const UNREADABLE_LABEL = 'unreadable_label';
+export const MISSING_DROPPERS = 'missing_droppers';
 // from backend model.
 // class StockCorrectionChoices(models.TextChoices):
 // VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
@@ -22,7 +23,8 @@ export const UNREADABLE_LABEL = 'unreadable_label';
 // RETURN = "return", _("Return")
 // STEALING = "stealing", _("Stealing")
 // PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
-// PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("rempove from Physical Inventory")
+// PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("remove from Physical Inventory")
+// MISSING_DROPPERS = "missing_droppers", _("Missing droppers")
 
 type IncidentType =
     | 'vaccine_expired'
@@ -33,6 +35,7 @@ type IncidentType =
     | 'physical_inventory_add'
     | 'physical_inventory_remove'
     | 'broken'
+    | 'missing_droppers'
     | 'unreadable_label'
     | 'return';
 
@@ -69,6 +72,10 @@ export const useIncidentOptions = (
             {
                 label: formatMessage(MESSAGES[UNREADABLE_LABEL]),
                 value: UNREADABLE_LABEL,
+            },
+            {
+                label: formatMessage(MESSAGES[MISSING_DROPPERS]),
+                value: MISSING_DROPPERS,
             },
         ];
         const inventoryOptions: DropdownOptions<IncidentType>[] = [

@@ -51,6 +51,7 @@ class CountryPlan(SoftDeletableModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="country_plans", null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    physical_inventory = models.DateField(blank=True, null=True)
 
     # Managers
     objects = DefaultSoftDeletableManager.from_queryset(CountryPlanQuerySet)()

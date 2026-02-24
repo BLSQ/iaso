@@ -1,7 +1,9 @@
 import React, { FunctionComponent, useState } from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import { Grid, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, Grid, Typography } from '@mui/material';
 import { useSafeIntl, useGoBack } from 'bluesquare-components';
+import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
@@ -12,6 +14,7 @@ import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { SubTeam, User } from '../teams/types/team';
 import { AssignmentsMap } from './components/AssignmentsMap';
 import { TeamTable } from './components/teams/TeamTable';
+import { useBulkDeleteAssignments } from './hooks/requests/useBulkDeleteAssignments';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
 import { AssignmentsResult } from './hooks/requests/useGetAssignments';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
@@ -57,6 +60,7 @@ export const Assignments: FunctionComponent = () => {
         selectedUser,
         selectedTeam,
     });
+    const { mutateAsync: deleteAssignments } = useBulkDeleteAssignments();
 
     return (
         <>
@@ -69,8 +73,8 @@ export const Assignments: FunctionComponent = () => {
             />
 
             <MainWrapper sx={{ p: 4 }}>
-                <>
-                    {planning && (
+                {planning && (
+                    <Box display="flex" justifyContent="space-between" mb={2}>
                         <Typography
                             variant="h6"
                             display="flex"
@@ -80,36 +84,66 @@ export const Assignments: FunctionComponent = () => {
                             <ChevronRight sx={{ fontSize: 40, px: 1 }} />
                             {planning.target_org_unit_type_details?.name}
                         </Typography>
-                    )}
+                        <DeleteDialog
+                            iconColor="error"
+                            titleMessage={MESSAGES.deleteAllAssignments}
+                            message={{
+                                ...MESSAGES.deleteAssignmentsWarning,
+                                values: {
+                                    count: planning?.assignments_count,
+                                },
+                            }}
+                            onConfirm={() =>
+                                deleteAssignments({ planning: planningId })
+                            }
+                            keyName="delete-all-assignments"
+                            Trigger={({ onClick }) => (
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={onClick}
+                                    disabled={planning.assignments_count === 0}
+                                    startIcon={<DeleteIcon />}
+                                    sx={{
+                                        marginRight: theme => theme.spacing(2),
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {formatMessage(
+                                        MESSAGES.deleteAllAssignments,
+                                    )}
+                                </Button>
+                            )}
+                        />
+                    </Box>
+                )}
 
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} md={8}>
-                            <AssignmentsMap
-                                planningId={planningId}
-                                rootTeam={rootTeam}
-                                isLoadingRootTeam={isLoadingRootTeam}
-                                assignments={assignments}
-                                isLoadingAssignments={isLoadingAssignments}
-                                handleSaveAssignment={handleSaveAssignment}
-                                isSaving={isSaving}
-                                canAssign={Boolean(
-                                    selectedUser || selectedTeam,
-                                )}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <TeamTable
-                                rootTeam={rootTeam}
-                                isLoadingRootTeam={isLoadingRootTeam}
-                                selectedUser={selectedUser}
-                                setSelectedUser={setSelectedUser}
-                                selectedTeam={selectedTeam}
-                                setSelectedTeam={setSelectedTeam}
-                                assignments={assignments}
-                            />
-                        </Grid>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={8}>
+                        <AssignmentsMap
+                            planningId={planningId}
+                            rootTeam={rootTeam}
+                            isLoadingRootTeam={isLoadingRootTeam}
+                            assignments={assignments}
+                            isLoadingAssignments={isLoadingAssignments}
+                            handleSaveAssignment={handleSaveAssignment}
+                            isSaving={isSaving}
+                            canAssign={Boolean(selectedUser || selectedTeam)}
+                        />
                     </Grid>
-                </>
+                    <Grid item xs={12} md={4}>
+                        <TeamTable
+                            planningId={planningId}
+                            rootTeam={rootTeam}
+                            isLoadingRootTeam={isLoadingRootTeam}
+                            selectedUser={selectedUser}
+                            setSelectedUser={setSelectedUser}
+                            selectedTeam={selectedTeam}
+                            setSelectedTeam={setSelectedTeam}
+                            assignments={assignments}
+                        />
+                    </Grid>
+                </Grid>
             </MainWrapper>
         </>
     );

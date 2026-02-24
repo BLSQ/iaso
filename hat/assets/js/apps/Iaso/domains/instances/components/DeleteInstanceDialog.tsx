@@ -1,19 +1,12 @@
-import React, { useState, FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { DialogContentText } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { DialogContentText, IconButton } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
-import { bulkDelete } from '../actions';
+import { useBoundState } from 'Iaso/hooks/useBoundState';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { bulkDelete } from '../actions';
 import MESSAGES from '../messages';
-
-const useStyles = makeStyles(() => ({
-    iconDisabled: {
-        opacity: 0.3,
-        cursor: 'not-allowed',
-    },
-}));
 
 type Props = {
     selection: { selectCount: number; filters?: any };
@@ -33,29 +26,31 @@ const DeleteInstanceDialog: FunctionComponent<Props> = ({
     resetSelection,
     isUnDeleteAction,
 }) => {
-    const classes = useStyles();
-    const [allowConfirm, setAllowConfirm] = useState(true);
+    const [allowConfirm, setAllowConfirm] = useBoundState(
+        false,
+        Boolean(selection?.selectCount),
+    );
+
     const onConfirm = closeDialog => {
         setAllowConfirm(false);
         bulkDelete(selection, filters, isUnDeleteAction, () => {
             closeDialog();
             resetSelection();
             setForceRefresh();
-            setAllowConfirm(false);
         });
     };
 
     const renderTrigger = ({ openDialog }) => {
-        const iconProps = {
-            className:
-                selection.selectCount === 0 ? classes.iconDisabled : null,
+        const iconButtonProps = {
             onClick: selection.selectCount > 0 ? openDialog : () => null,
-            disabled: selection.selectCount === 0,
+            disabled: selection.selectCount === 0
         };
-        if (isUnDeleteAction) {
-            return <RestoreFromTrashIcon {...iconProps} />;
-        }
-        return <DeleteIcon {...iconProps} />;
+
+        return (
+            <IconButton {...iconButtonProps}>
+                {isUnDeleteAction ? <RestoreFromTrashIcon /> : <DeleteIcon />}
+            </IconButton>
+        );
     };
     const titleMessage = isUnDeleteAction
         ? MESSAGES.unDeleteInstanceCount

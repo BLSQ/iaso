@@ -13,6 +13,7 @@ class CountryPlanAuditSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     deleted_at = serializers.DateTimeField(read_only=True)
+    physical_inventory = serializers.DateField(read_only=True)
     country_name = serializers.CharField(source="country.name", read_only=True)
     country_id = serializers.CharField(source="country.id", read_only=True)
 
@@ -28,12 +29,14 @@ class CountryPlanAuditSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "deleted_at",
+            "physical_inventory",
         ]
 
 
 class CountryPlanListSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
+    physical_inventory = serializers.DateField(read_only=True)
 
     country_name = serializers.CharField(source="country.name", read_only=True)
 
@@ -49,6 +52,7 @@ class CountryPlanListSerializer(serializers.ModelSerializer):
             "account",
             "created_at",
             "updated_at",
+            "physical_inventory",
         ]
         read_only_fields = ["account"]
         extra_kwargs = {"country_id": {"read_only": True}}
@@ -60,13 +64,7 @@ class CountryPlanWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CountryPlan
-        fields = [
-            "id",
-            "date",
-            "status",
-            "country_id",
-            "vaccine",
-        ]
+        fields = ["id", "date", "status", "country_id", "vaccine", "physical_inventory"]
 
     def create(self, validated_data):
         request = self.context.get("request")

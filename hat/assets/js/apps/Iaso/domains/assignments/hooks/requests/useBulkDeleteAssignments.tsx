@@ -22,7 +22,7 @@ export const useBulkDeleteAssignments = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: ({ planning, user, team }) =>
             bulkDeleteAssignments({ planning, user, team }),
-        invalidateQueryKey: ['assignmentsList'],
+        invalidateQueryKey: ['assignmentsList', 'planningDetails'],
         snackSuccessMessage: MESSAGES.bulkDeleteAssignmentsSuccess,
     });
 };

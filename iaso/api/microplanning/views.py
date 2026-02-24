@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -116,6 +117,11 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             self.queryset.filter_for_user(user)
             .select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related("forms")
+            .annotate(
+                assignments_count=Count(
+                    "assignment", filter=Q(assignment__deleted_at__isnull=True)
+                )
+            )
         )
 
     def _read_response(self, instance, status_code=status.HTTP_200_OK):

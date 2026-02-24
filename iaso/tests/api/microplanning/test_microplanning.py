@@ -94,6 +94,7 @@ class PlanningTestCase(APITestCase):
                 "pipeline_uuids": [],
                 "target_org_unit_type_details": None,
                 "selected_sampling_result": None,
+                "assignments_count": 0,
             },
             r,
         )

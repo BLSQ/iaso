@@ -170,7 +170,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
         formik.values.startDate &&
         moment().isAfter(moment(formik.values.startDate, 'DD/MM/YYYY'), 'day'),
     );
-    const isEditingDisabled = Boolean(isPublished || hasStarted);
+    const isEditingDisabled = Boolean(
+        (isPublished || hasStarted) && mode === 'edit',
+    );
     const {
         values,
         setFieldValue,
@@ -522,24 +524,52 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         </LinkButton>
                                         <Box
                                             display="flex"
-                                            justifyContent="space-between"
+                                            sx={{ flexWrap: 'nowrap' }}
                                         >
-                                            {canAssign && Boolean(planning) && (
-                                                <Button
-                                                    variant="outlined"
-                                                    color="error"
-                                                    onClick={deleteAssignments}
-                                                    startIcon={<DeleteIcon />}
-                                                    sx={{
-                                                        marginRight: theme =>
-                                                            theme.spacing(2),
+                                            {Boolean(planning) && (
+                                                <DeleteDialog
+                                                    iconColor="error"
+                                                    titleMessage={
+                                                        MESSAGES.deleteAllAssignments
+                                                    }
+                                                    message={{
+                                                        ...MESSAGES.deleteAssignmentsWarning,
+                                                        values: {
+                                                            count: planning?.assignments_count,
+                                                        },
                                                     }}
-                                                    disabled={!planning}
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES.deleteAllAssignments,
+                                                    onConfirm={
+                                                        deleteAssignments
+                                                    }
+                                                    keyName="delete-all-assignments"
+                                                    Trigger={({ onClick }) => (
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            onClick={onClick}
+                                                            disabled={
+                                                                planning.assignments_count ===
+                                                                0
+                                                            }
+                                                            startIcon={
+                                                                <DeleteIcon />
+                                                            }
+                                                            sx={{
+                                                                marginRight:
+                                                                    theme =>
+                                                                        theme.spacing(
+                                                                            2,
+                                                                        ),
+                                                                whiteSpace:
+                                                                    'nowrap',
+                                                            }}
+                                                        >
+                                                            {formatMessage(
+                                                                MESSAGES.deleteAllAssignments,
+                                                            )}
+                                                        </Button>
                                                     )}
-                                                </Button>
+                                                />
                                             )}
                                             <LinkButton
                                                 disabled={!canAssign}

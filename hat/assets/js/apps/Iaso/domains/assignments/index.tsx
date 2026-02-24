@@ -3,6 +3,7 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Button, Grid, Typography } from '@mui/material';
 import { useSafeIntl, useGoBack } from 'bluesquare-components';
+import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
@@ -59,7 +60,7 @@ export const Assignments: FunctionComponent = () => {
         selectedUser,
         selectedTeam,
     });
-    const { mutateAsync: deleteAll } = useBulkDeleteAssignments();
+    const { mutateAsync: deleteAssignments } = useBulkDeleteAssignments();
 
     return (
         <>
@@ -83,17 +84,37 @@ export const Assignments: FunctionComponent = () => {
                             <ChevronRight sx={{ fontSize: 40, px: 1 }} />
                             {planning.target_org_unit_type_details?.name}
                         </Typography>
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            onClick={() => {
-                                deleteAll({ planning: planningId });
+                        <DeleteDialog
+                            iconColor="error"
+                            titleMessage={MESSAGES.deleteAllAssignments}
+                            message={{
+                                ...MESSAGES.deleteAssignmentsWarning,
+                                values: {
+                                    count: planning?.assignments_count,
+                                },
                             }}
-                            startIcon={<DeleteIcon />}
-                            disabled={!assignments?.allAssignments?.length}
-                        >
-                            {formatMessage(MESSAGES.deleteAllAssignments)}
-                        </Button>
+                            onConfirm={() =>
+                                deleteAssignments({ planning: planningId })
+                            }
+                            keyName="delete-all-assignments"
+                            Trigger={({ onClick }) => (
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={onClick}
+                                    disabled={planning.assignments_count === 0}
+                                    startIcon={<DeleteIcon />}
+                                    sx={{
+                                        marginRight: theme => theme.spacing(2),
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {formatMessage(
+                                        MESSAGES.deleteAllAssignments,
+                                    )}
+                                </Button>
+                            )}
+                        />
                     </Box>
                 )}
 

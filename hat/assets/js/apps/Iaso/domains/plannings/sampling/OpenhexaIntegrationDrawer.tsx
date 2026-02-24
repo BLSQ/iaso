@@ -3,6 +3,7 @@ import React, {
     useCallback,
     useEffect,
     useState,
+    useMemo,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -65,6 +66,16 @@ const styles: SxStyles = {
     },
 };
 
+const parametersToRemove = [
+    'task_id',
+    'pipeline_id',
+    'connection_host',
+    'connection_token',
+    'sampling_name',
+    'planning_id',
+    'version',
+];
+
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
     disabled = false,
@@ -90,11 +101,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { data: pipeline, isFetching: isFetchingPipeline } =
-        useGetPipelineDetails(selectedPipelineId, [
-            'task_id',
-            'pipeline_id',
-            'planning_id',
-        ]);
+        useGetPipelineDetails(selectedPipelineId, parametersToRemove);
     const {
         mutate: launchTask,
         data: launchResult,
@@ -151,18 +158,15 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             setIsSubmitting(false);
         }
     }, [isSubmitting, isLaunchingTask]);
+    const title = useMemo(() => {
+        if (disabled) return disabledMessage;
+        if (isCreateSamplingDisabled)
+            return formatMessage(MESSAGES.planningAlreadyPublished);
+        return undefined;
+    }, [disabled, disabledMessage, formatMessage, isCreateSamplingDisabled]);
     return (
         <>
-            <Tooltip
-                title={
-                    // eslint-disable-next-line no-nested-ternary
-                    disabled
-                        ? disabledMessage
-                        : isCreateSamplingDisabled
-                          ? formatMessage(MESSAGES.planningAlreadyPublished)
-                          : ''
-                }
-            >
+            <Tooltip title={title}>
                 <Box>
                     <Button
                         variant="outlined"

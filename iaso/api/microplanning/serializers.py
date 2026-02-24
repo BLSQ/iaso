@@ -126,6 +126,8 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
 
 
 class PlanningReadSerializer(serializers.ModelSerializer):
+    assignments_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Planning
         fields = [
@@ -138,12 +140,16 @@ class PlanningReadSerializer(serializers.ModelSerializer):
             "ended_at",
             "pipeline_uuids",
             "selected_sampling_result",
+            "assignments_count",
             "team_details",
             "org_unit_details",
             "project_details",
             "target_org_unit_type_details",
         ]
         read_only_fields = fields
+
+    def get_assignments_count(self, obj):
+        return getattr(obj, "assignments_count", 0)
 
     selected_sampling_result = NestedPlanningSamplingResultSerializer(read_only=True)
     team_details = NestedTeamSerializer(source="team", read_only=True)

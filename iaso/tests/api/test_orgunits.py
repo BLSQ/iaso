@@ -1799,6 +1799,14 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.opening_date, datetime.date(2024, 6, 22))
         self.assertEqual(ou.closed_date, datetime.date(2025, 10, 30))
 
+        data = {"name": "yabadabadoo"}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        # expect dates not to be overwritten if not in the request body
+        self.assertEqual(ou.opening_date, datetime.date(2024, 6, 22))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 10, 30))
+
         data = {"opening_date": None, "closed_date": ""}
         response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
         self.assertJSONResponse(response, 200)

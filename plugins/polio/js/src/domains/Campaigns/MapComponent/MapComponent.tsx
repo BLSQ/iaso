@@ -1,7 +1,9 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
+import L from 'leaflet';
 import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { PaneWithPattern } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern';
 import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
 import { Shape } from '../Scope/Scopes/types';
@@ -12,8 +14,8 @@ const findBackgroundShape = (shape, backgroundShapes) => {
     )[0]?.name;
 };
 
-const boundsOptions = {
-    padding: [5, 5],
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(5, 5),
 };
 
 type Props = {
@@ -49,22 +51,24 @@ export const MapComponent: FunctionComponent<Props> = ({
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
-        if (!fitToBounds) return null;
+        if (!fitToBounds) return undefined;
         const referenceLayer = fitBoundsToBackground
             ? backgroundLayer
             : mainLayer;
         if (!referenceLayer || referenceLayer.length === 0) {
-            return null;
+            return undefined;
         }
         const bounds_list = referenceLayer
             .map(orgunit => geoJSON(orgunit.geo_json).getBounds())
             .filter(b => b !== undefined);
         if (bounds_list.length === 0) {
-            return null;
+            return undefined;
         }
-        const newBounds = bounds_list[0];
-        newBounds.extend(bounds_list);
-        return newBounds;
+        const [firstBounds, ...restBounds] = bounds_list;
+        return restBounds.reduce(
+            (acc, current) => acc.extend(current),
+            firstBounds,
+        );
     }, [fitToBounds, fitBoundsToBackground, backgroundLayer, mainLayer]);
 
     return (
@@ -79,6 +83,7 @@ export const MapComponent: FunctionComponent<Props> = ({
             boundsOptions={boundsOptions}
             zoomControl={false}
         >
+            <CloseTooltipOnMoveStart />
             <CustomZoomControl
                 bounds={bounds}
                 boundsOptions={boundsOptions}

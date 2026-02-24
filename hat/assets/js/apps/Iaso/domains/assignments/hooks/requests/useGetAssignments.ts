@@ -23,7 +23,7 @@ export const useGetAssignments = (
     options: Option,
     currentTeam?: Team,
 ): UseQueryResult<AssignmentsResult, Error> => {
-    const queryKey: any[] = ['assignmentsList'];
+    const queryKey: any[] = ['assignmentsList', options];
     return useSnackQuery(queryKey, () => getAssignments(options), undefined, {
         enabled: Boolean(options.planning),
         select: data => {

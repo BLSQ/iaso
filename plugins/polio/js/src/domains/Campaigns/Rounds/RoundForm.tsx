@@ -1,12 +1,12 @@
-import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { Field, useFormikContext } from 'formik';
 import React, {
     FunctionComponent,
     useCallback,
     useMemo,
     useState,
 } from 'react';
+import { Box, Grid } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { Field, useFormikContext } from 'formik';
 import {
     BooleanInput,
     DateInput,
@@ -58,7 +58,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     const isRequiredForPlannedRnd =
         isCampaignPlanned ||
         isEarlierRoundPlanned ||
-        rounds[roundIndex].is_planned;
+        Boolean(rounds[roundIndex]?.is_planned);
 
     // Logic is duplicated for is_planned and on_hold because abstracting it away in a hook
     // caused weird state bugs (probably due to formik's use of the context API)

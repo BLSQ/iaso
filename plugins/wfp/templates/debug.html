@@ -102,7 +102,7 @@
 
 {% for visit in journey.visit_set.all %}
 <div style="padding-left:30px">
-    <h4>Visit {{ visit.id }}</h4>
+    <h4>Visit {{ visit.id }} <a href="/dashboard/forms/submission/instanceId/{{visit.instance_id}}">View submission</a></h4>
     <table>
         <tr>
             <th>date</th>

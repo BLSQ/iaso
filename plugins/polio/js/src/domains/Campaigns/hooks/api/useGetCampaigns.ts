@@ -178,9 +178,7 @@ export const useCampaignsQueryKey = ({
     ]);
 };
 export const useGetCampaigns = (
-    // eslint-disable-next-line default-param-last
     options: Options = {},
-    // eslint-disable-next-line default-param-last
     url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,

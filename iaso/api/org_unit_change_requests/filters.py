@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import parse_comma_separated_numeric_values
 from iaso.api.org_unit_search import apply_org_unit_search
+from iaso.api.utils.filters import CharInFilter, NumberInFilter
 from iaso.models import OrgUnit, OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
 
@@ -19,14 +20,6 @@ class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterS
     class Meta:
         model = OrgUnitChangeRequest
         fields = []
-
-
-class CharInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
-    pass
-
-
-class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
-    pass
 
 
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):

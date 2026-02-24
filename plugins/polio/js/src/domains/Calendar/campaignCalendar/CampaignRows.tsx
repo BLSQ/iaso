@@ -1,7 +1,6 @@
 import React, { Fragment, FunctionComponent, useMemo, useState } from 'react';
-
 import { TableRow } from '@mui/material';
-
+import classNames from 'classnames';
 import { StaticFieldsCells } from './cells/StaticFields';
 import { StaticSubactivitiesFields } from './cells/StaticSubactivitiesFields';
 import { useStyles } from './Styles';
@@ -13,7 +12,6 @@ import {
 } from './types';
 import { getRoundsCells } from './utils/rounds';
 import { getSubActivitiesRow } from './utils/subactivities';
-import classNames from 'classnames';
 
 type Props = {
     campaign: MappedCampaign;

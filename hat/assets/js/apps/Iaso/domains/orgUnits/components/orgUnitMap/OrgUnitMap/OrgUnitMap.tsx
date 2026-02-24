@@ -15,8 +15,10 @@ import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import 'leaflet-draw';
 import { Map as LeafletMap } from 'leaflet';
 
+import L from 'leaflet';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
 import { MapLegend } from '../../../../../components/maps/MapLegend';
 
@@ -56,7 +58,7 @@ import { MappedOrgUnit } from './types';
 import { getAncestorWithGeojson, initialState } from './utils';
 
 export const zoom = 5;
-export const padding = [75, 75];
+export const padding = L.point(75, 75);
 export const clusterSize = 25;
 export const orgunitsPane = 'org-units';
 
@@ -500,12 +502,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     options={[
                         {
                             value: 'ouCurrent',
-                            label: formatMessage(MESSAGES.ouCurrent),
+                            label: formatMessage(MESSAGES.ouCurrent) || '',
                             color: theme.palette.primary.main,
                         },
                         {
                             value: 'ouParent',
-                            label: formatMessage(MESSAGES.ouParent),
+                            label: formatMessage(MESSAGES.ouParent) || '',
                             color: pink['300'],
                         },
                     ]}
@@ -522,6 +524,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     keyboard={false}
                     ref={map}
                 >
+                    <CloseTooltipOnMoveStart />
                     <CustomZoomControl
                         bounds={bounds}
                         boundsOptions={{ padding }}

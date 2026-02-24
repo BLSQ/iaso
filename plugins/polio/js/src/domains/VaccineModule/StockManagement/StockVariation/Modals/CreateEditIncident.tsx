@@ -29,12 +29,12 @@ import { Vaccine } from '../../../../../constants/types';
 import { useSaveIncident } from '../../hooks/api';
 import { useGetMovementDescription } from '../../hooks/useGetMovementDescription';
 import MESSAGES from '../../messages';
+import { DosesPerVialDropdown } from '../../types';
 import {
     useAvailablePresentations,
     useIncidentOptions,
 } from './dropdownOptions';
 import { useIncidentValidation } from './validation';
-import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     incident?: any;

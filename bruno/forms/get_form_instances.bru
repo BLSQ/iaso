@@ -1,0 +1,23 @@
+meta {
+  name: Get form instances
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{HOST}}/api/instances/?page={{page}}&limit={{limit}}&form_id={{form_id}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  page: {{page}}
+  limit: {{limit}}
+  form_id: {{form_id}}
+}
+
+vars:pre-request {
+  page: 1
+  limit: 10
+  form_id: 
+}

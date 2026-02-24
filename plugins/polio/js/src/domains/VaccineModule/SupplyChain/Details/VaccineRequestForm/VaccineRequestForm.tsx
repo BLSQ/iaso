@@ -7,6 +7,7 @@ import React, {
 import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
+import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -21,7 +22,6 @@ import {
 } from '../../hooks/api/vrf';
 import MESSAGES from '../../messages';
 import { useSharedStyles } from '../shared';
-import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 
 type Props = { className?: string; vrfData: any };
 

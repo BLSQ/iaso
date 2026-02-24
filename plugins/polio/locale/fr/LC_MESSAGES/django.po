@@ -716,3 +716,23 @@ msgstr "Polio - Seuils de performance (écriture)"
 #: plugins/polio/preparedness/spreadsheet_manager.py
 msgid "No country found for campaign"
 msgstr "Aucun pays trouvé pour la campagne"
+
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Country groups"
+msgstr "Groupes de pays"
+
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Campaign groups"
+msgstr "Groupes de campagnes"
+
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Campaign types"
+msgstr "Types de campagnes"
+
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Campaign category"
+msgstr "Catégorie de campagne"
+
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Show test"
+msgstr "Afficher les tests"

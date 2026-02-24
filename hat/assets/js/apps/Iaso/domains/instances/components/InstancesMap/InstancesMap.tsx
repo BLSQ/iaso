@@ -1,29 +1,29 @@
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import L from 'leaflet';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
+import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
+
+import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
+import { MapToggleCluster } from '../../../../components/maps/tools/MapToggleCluster';
+import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
+import tiles from '../../../../constants/mapTiles';
 import {
     clusterCustomMarker,
     defaultCenter,
     defaultZoom,
     getLatLngBounds,
 } from '../../../../utils/map/mapUtils';
-
-import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
-import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
-import { MapToggleCluster } from '../../../../components/maps/tools/MapToggleCluster';
-import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
 import { Instance } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
 import { useShowWarning } from './useShowWarning';
 
-import tiles from '../../../../constants/mapTiles';
-
-const boundsOptions = { padding: [50, 50] };
+const boundsOptions: L.FitBoundsOptions = { padding: L.point(50, 50) };
 
 type Props = {
     instances: Instance[];
@@ -40,6 +40,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
     instances,
     fetching,
 }) => {
+    //@ts-ignore
     const classes = useStyles();
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
 

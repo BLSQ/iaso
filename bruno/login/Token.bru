@@ -1,0 +1,34 @@
+meta {
+  name: Token
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{HOST}}/api/token/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "{{LOGIN}}",
+    "password": "{{PASSWORD}}"
+  }
+}
+
+script:post-response {
+  // Check if login was successful
+  if (res.status === 200) {
+    const data = res.getBody().access;
+    bru.setEnvVar("API_TOKEN", data, { "persist": true });
+    console.log("Login successful, token saved");
+  } else {
+    console.error("Login failed:", response.statusText);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

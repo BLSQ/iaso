@@ -12,21 +12,21 @@ import { isEqual } from 'lodash';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
     DateInput,
     NumberInput,
     TextInput,
 } from '../../../../../components/Inputs';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
 import {
     useCheckDestructionDuplicate,
     useSaveDestruction,
 } from '../../hooks/api';
 import MESSAGES from '../../messages';
-import { useDestructionValidation } from './validation';
 import { DosesPerVialDropdown } from '../../types';
 import { useAvailablePresentations } from './dropdownOptions';
+import { useDestructionValidation } from './validation';
 
 type Props = {
     destruction?: any;

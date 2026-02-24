@@ -1,395 +1,213 @@
-import React, { FunctionComponent, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import {
-    GeoJSON,
-    MapContainer,
-    Pane,
-    ScaleControl,
-    Tooltip,
-} from 'react-leaflet';
-
-import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
-import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-
-import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
-import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
-import { GeoJson } from '../../../components/maps/types';
-import tiles from '../../../constants/mapTiles';
+import L from 'leaflet';
+import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
+import CircleMarkerComponent from 'Iaso/components/maps/markers/CircleMarkerComponent';
+import { CustomTileLayer } from 'Iaso/components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from 'Iaso/components/maps/tools/CustomZoomControl';
+import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
+import tiles from 'Iaso/constants/mapTiles';
+import { useGetAssignmentColor } from 'Iaso/domains/app/hooks/useGetAssignmentColor';
+import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
+import { Team } from 'Iaso/domains/teams/types/team';
 import {
     Bounds,
     circleColorMarkerOptions,
-    getLatLngBounds,
-    getShapesBounds,
-} from '../../../utils/map/mapUtils';
-import { Profile } from '../../../utils/usersUtils';
-import { DropdownTeamsOptions } from '../../teams/types/team';
+    CloseTooltipOnMoveStart,
+    getOrgUnitsBounds,
+    isValidCoordinate,
+} from 'Iaso/utils/map/mapUtils';
+import { useGetPlanningDetails } from '../../plannings/hooks/requests/useGetPlanningDetails';
+import { Planning } from '../../plannings/types';
 import {
-    disabledColor,
-    parentColor,
-    unSelectedColor,
-} from '../constants/colors';
-import { AssignmentParams, AssignmentsApi } from '../types/assigment';
-import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
-import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
-import { MapLegend } from './MapLegend';
-import { OrgUnitPopup } from './OrgUnitPopup';
-
-const defaultViewport = {
-    center: [1, 20],
-    zoom: 3.25,
-};
-
-type AnchorPoint = { x: number; y: number };
+    useGetPlanningOrgUnitsChildren,
+    useGetPlanningOrgUnitsRoot,
+} from '../../teams/hooks/requests/useGetPlanningOrgUnits';
+import { AssignmentsResult } from '../hooks/requests/useGetAssignments';
 
 type Props = {
-    handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
-    handleParentClick: (shape: OrgUnitShape) => void;
-    teams: DropdownTeamsOptions[];
-    locations: Locations | undefined;
-    isFetchingLocations: boolean;
-    parentLocations: OrgUnitShape[] | undefined;
-    isFetchingParentLocations: boolean;
-    assignments: AssignmentsApi;
-    profiles: Profile[];
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
-    isFetchingOrgunitTypes: boolean;
-    params: AssignmentParams;
+    planningId: string;
+    rootTeam?: Team;
+    isLoadingRootTeam: boolean;
+    assignments?: AssignmentsResult;
+    isLoadingAssignments: boolean;
+    handleSaveAssignment: (orgUnitId: number) => void;
+    isSaving: boolean;
+    canAssign: boolean;
 };
 
-const boundsOptions = {
-    padding: [50, 50],
+const defaultViewport = {
+    center: L.latLng(1, 20),
+    zoom: 3.25,
 };
-
-const getLocationsBounds = (
-    locations: Locations,
-    parentLocations: OrgUnitShape[] | undefined,
-) => {
-    const shapeBounds = locations
-        ? getShapesBounds(locations.shapes.all, 'geoJson')
-        : null;
-    const locationsBounds = locations
-        ? getLatLngBounds(locations.markers.all)
-        : null;
-    let bounds;
-    let parentShapeBounds;
-    if (parentLocations) {
-        parentShapeBounds = getShapesBounds(parentLocations, 'geoJson');
-    }
-    if (locationsBounds && shapeBounds) {
-        bounds = locationsBounds.extend(shapeBounds);
-    } else if (locationsBounds) {
-        bounds = locationsBounds;
-    } else if (shapeBounds) {
-        bounds = shapeBounds;
-    }
-    if (parentShapeBounds && bounds) {
-        bounds = bounds.extend(parentShapeBounds);
-    }
-    return bounds;
+const boundsOptions: L.FitBoundsOptions = {
+    padding: L.point(25, 25),
+    maxZoom: 12,
 };
+const defaultHeight = '80vh';
 
 export const AssignmentsMap: FunctionComponent<Props> = ({
-    handleClick,
-    handleParentClick,
-    teams,
-    locations,
-    isFetchingLocations,
-    parentLocations,
-    isFetchingParentLocations,
+    planningId,
+    rootTeam,
+    isLoadingRootTeam,
     assignments,
-    profiles,
-    orgunitTypes,
-    isFetchingOrgunitTypes,
-    params,
+    isLoadingAssignments,
+    handleSaveAssignment,
+    isSaving,
+    canAssign,
 }) => {
-    const mapContainer: any = useRef();
-    const [selectedLocation, setSelectedLocation] = useState<
-        OrgUnitShape | OrgUnitMarker | undefined
-    >(undefined);
-    const [popupPosition, sePopupPosition] = useState<
-        'top' | 'bottom' | 'left'
-    >('bottom');
-    const [anchorPoint, setAnchorPoint] = useState<AnchorPoint>({
-        x: 0,
-        y: 0,
-    });
-    const [
-        selectedLocationAlreadyeAssigned,
-        setSelectedLocationAlreadyeAssigned,
-    ] = useState<boolean>(false);
-    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    const {
+        data: planning,
+    }: {
+        data?: Planning;
+        isLoading: boolean;
+    } = useGetPlanningDetails(planningId);
+
+    const { data: childrenOrgUnits, isLoading: isLoadingChildrenOrgUnits } =
+        useGetPlanningOrgUnitsChildren(planningId);
+    const { data: rootOrgUnit, isLoading: isLoadingRootOrgUnit } =
+        useGetPlanningOrgUnitsRoot(planningId);
 
     const bounds: Bounds | undefined = useMemo(
-        () => locations && getLocationsBounds(locations, parentLocations),
-        [locations, parentLocations],
-    );
-
-    const onClick = (selecteOrgunit: OrgUnitShape | OrgUnitMarker) => {
-        if (!selectedLocation) {
-            handleClick(selecteOrgunit);
-        }
-    };
-
-    const onParentClick = (selecteOrgunit: OrgUnitShape) => {
-        if (!selectedLocation) {
-            handleParentClick(selecteOrgunit);
-        }
-    };
-
-    const handleContextMenu = (
-        event,
-        selectedItem: OrgUnitShape | OrgUnitMarker,
-        isAlreadyAssigned: boolean,
-    ) => {
-        const offset = 200;
-        let position: 'top' | 'bottom' | 'left' = 'bottom';
-        if (window.innerHeight - event.originalEvent.pageY < offset) {
-            position = 'top';
-        }
-        if (window.innerWidth - event.originalEvent.pageX < offset) {
-            position = 'left';
-        }
-        sePopupPosition(position);
-        setSelectedLocationAlreadyeAssigned(isAlreadyAssigned);
-        setAnchorPoint({
-            x: event.containerPoint.x,
-            y: event.containerPoint.y,
-        });
-        setSelectedLocation(selectedItem);
-    };
-
-    const onEachFeature = (layer, selectedItem, isAlreadyAssigned = false) => {
-        layer.on({
-            contextmenu: event =>
-                handleContextMenu(event, selectedItem, isAlreadyAssigned),
-        });
-    };
-
-    const isLoading = isFetchingLocations || isFetchingParentLocations;
-    const markersColors = useMemo(
         () =>
-            (locations?.markers.selected || [])
-                .map(marker => `${marker.color}_${marker.id}`)
-                .join('-'),
-        [locations?.markers.selected],
+            childrenOrgUnits &&
+            rootOrgUnit &&
+            getOrgUnitsBounds([...childrenOrgUnits, rootOrgUnit]),
+        [childrenOrgUnits, rootOrgUnit],
     );
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+
+    const getAssignmentColor = useGetAssignmentColor(assignments, rootTeam);
+
+    const isLoading =
+        isLoadingChildrenOrgUnits ||
+        isLoadingRootTeam ||
+        isLoadingAssignments ||
+        isLoadingRootOrgUnit ||
+        isSaving;
     return (
-        <section ref={mapContainer}>
-            <Box position="relative">
-                <AssignmentsMapSelectors
-                    params={params}
-                    orgunitTypes={orgunitTypes}
-                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                />
-                <MapLegend />
-                {/* TODO uncomment when feature is reinstated */}
-                {/* <MapInfo /> */}
-                {selectedLocation && (
-                    <OrgUnitPopup
-                        top={anchorPoint.y}
-                        left={anchorPoint.x}
-                        closePopup={() => setSelectedLocation(undefined)}
-                        location={selectedLocation}
-                        alreadyAssigned={selectedLocationAlreadyeAssigned}
-                        teams={teams}
-                        profiles={profiles}
-                        assignments={assignments}
-                        popupPosition={popupPosition}
-                    />
-                )}
-                {isLoading && <LoadingSpinner absolute />}
-                <MapContainer
-                    doubleClickZoom
-                    isLoading={isLoading}
-                    maxZoom={currentTile.maxZoom}
-                    style={{ height: '68vh' }}
+        <Box position="relative">
+            {isLoading && <LoadingSpinner />}
+            <MapContainer
+                key={planning?.id}
+                bounds={bounds}
+                maxZoom={currentTile.maxZoom}
+                style={{ height: defaultHeight }}
+                center={defaultViewport.center}
+                zoom={defaultViewport.zoom}
+                scrollWheelZoom={false}
+                zoomControl={false}
+                boundsOptions={boundsOptions}
+            >
+                <CloseTooltipOnMoveStart />
+                <CustomZoomControl
                     bounds={bounds}
                     boundsOptions={boundsOptions}
-                    center={defaultViewport.center}
-                    zoom={defaultViewport.zoom}
-                    scrollWheelZoom={false}
-                    zoomControl={false}
-                    contextmenu
-                    onMovestart={() => setSelectedLocation(undefined)}
+                    fitOnLoad
+                />
+                <ScaleControl imperial={false} />
+                <CustomTileLayer
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
+                />
+                {rootOrgUnit?.geo_json && (
+                    <Pane name="root-org-unit-shape" style={{ zIndex: 200 }}>
+                        <GeoJSON
+                            key={rootOrgUnit?.id}
+                            data={rootOrgUnit.geo_json}
+                        />
+                    </Pane>
+                )}
+                <Pane
+                    name="target-org-units-shapes-unassigned"
+                    style={{ zIndex: 201 }}
                 >
-                    <CustomZoomControl
-                        bounds={bounds}
-                        boundsOptions={boundsOptions}
-                        fitOnLoad
-                    />
-                    <ScaleControl imperial={false} />
-                    <CustomTileLayer
-                        currentTile={currentTile}
-                        setCurrentTile={setCurrentTile}
-                        styles={{
-                            top: 'auto',
-                            left: 16,
-                            bottom: 74,
-                            right: 'auto',
-                        }}
-                    />
-                    {locations && (
-                        <>
-                            <Pane name="shapes-unselected-already-assigned">
-                                {locations.shapes.unselected
-                                    .filter(
-                                        shape =>
-                                            shape.otherAssignation?.assignment,
-                                    )
-                                    .map(shape => {
-                                        return (
-                                            <GeoJSON
-                                                onEachFeature={(_, layer) =>
-                                                    onEachFeature(
-                                                        layer,
-                                                        shape,
-                                                        true,
-                                                    )
-                                                }
-                                                key={shape.id}
-                                                data={
-                                                    shape.geoJson as unknown as GeoJson
-                                                }
-                                                style={() => ({
-                                                    color: disabledColor,
-                                                    fillOpacity: 0.5,
-                                                })}
-                                            />
-                                        );
-                                    })}
-                            </Pane>
-                            <Pane name="shapes-unselected">
-                                {locations.shapes.unselected
-                                    .filter(
-                                        shape =>
-                                            !shape.otherAssignation?.assignment,
-                                    )
-                                    .map(shape => (
-                                        <GeoJSON
-                                            onEachFeature={(_, layer) =>
-                                                onEachFeature(layer, shape)
-                                            }
-                                            eventHandlers={{
-                                                click: () => onClick(shape),
-                                            }}
-                                            key={shape.id}
-                                            data={
-                                                shape.geoJson as unknown as GeoJson
-                                            }
-                                            style={() => ({
-                                                color: unSelectedColor,
-                                            })}
-                                        />
-                                    ))}
-                            </Pane>
-                            <Pane name="shapes-selected">
-                                {locations.shapes.selected.map(shape => (
-                                    <GeoJSON
-                                        onEachFeature={(_, layer) =>
-                                            onEachFeature(layer, shape)
-                                        }
-                                        key={shape.id}
-                                        eventHandlers={{
-                                            click: () => onClick(shape),
-                                        }}
-                                        data={
-                                            shape.geoJson as unknown as GeoJson
-                                        }
-                                        style={() => ({
-                                            color: shape.color,
-                                            fillOpacity: 0.4,
-                                        })}
-                                    />
-                                ))}
-                            </Pane>
-                            <Pane name="markers-unselected-already-assigned">
-                                <MarkersListComponent
-                                    items={
-                                        locations.markers.unselected.filter(
-                                            marker =>
-                                                marker.otherAssignation
-                                                    ?.assignment,
-                                        ) || []
-                                    }
-                                    onMarkerClick={() => null}
-                                    markerProps={() => ({
-                                        ...circleColorMarkerOptions(
-                                            disabledColor,
-                                        ),
-                                    })}
-                                    onContextmenu={(event, marker) =>
-                                        handleContextMenu(event, marker, true)
-                                    }
-                                    isCircle
-                                />
-                            </Pane>
-                            <Pane name="markers-unselected">
-                                <MarkersListComponent
-                                    items={
-                                        locations.markers.unselected.filter(
-                                            marker =>
-                                                !marker.otherAssignation
-                                                    ?.assignment,
-                                        ) || []
-                                    }
-                                    onMarkerClick={shape => onClick(shape)}
-                                    markerProps={() => ({
-                                        ...circleColorMarkerOptions(
-                                            unSelectedColor,
-                                        ),
-                                    })}
-                                    onContextmenu={(event, marker) =>
-                                        handleContextMenu(event, marker, false)
-                                    }
-                                    isCircle
-                                />
-                            </Pane>
-                            <Pane name="markers-selected">
-                                <MarkersListComponent
-                                    key={markersColors}
-                                    items={locations.markers.selected || []}
-                                    onMarkerClick={marker => onClick(marker)}
-                                    markerProps={marker => ({
-                                        ...circleColorMarkerOptions(
-                                            marker.color,
-                                        ),
-                                    })}
-                                    onContextmenu={(event, marker) =>
-                                        handleContextMenu(event, marker, false)
-                                    }
-                                    isCircle
-                                />
-                            </Pane>
-                            {parentLocations && (
-                                <Pane name="parent-shapes">
-                                    {parentLocations.map(shape => (
-                                        <GeoJSON
-                                            key={shape.id}
-                                            eventHandlers={{
-                                                click: () =>
-                                                    onParentClick(shape),
-                                            }}
-                                            data={
-                                                shape.geoJson as unknown as GeoJson
-                                            }
-                                            style={{
-                                                color: parentColor,
-                                                fillOpacity: '0',
-                                            }}
-                                        >
-                                            <Tooltip pane="popupPane">
-                                                {shape.name}
-                                            </Tooltip>
-                                        </GeoJSON>
-                                    ))}
-                                </Pane>
-                            )}
-                        </>
-                    )}
-                </MapContainer>
-            </Box>
-        </section>
+                    {childrenOrgUnits
+                        ?.filter(
+                            ou =>
+                                ou.has_geo_json &&
+                                !assignments?.allAssignments?.find(
+                                    assignment => assignment.org_unit === ou.id,
+                                ),
+                        )
+                        .map(ou => (
+                            <GeoJSON
+                                key={ou.id}
+                                eventHandlers={{
+                                    click: () =>
+                                        canAssign &&
+                                        handleSaveAssignment(ou.id),
+                                }}
+                                data={ou.geo_json}
+                                style={{
+                                    color: getAssignmentColor(ou.id),
+                                    fillOpacity: 0.3,
+                                    fillColor: getAssignmentColor(ou.id),
+                                }}
+                            >
+                                <MapToolTip pane="popupPane" label={ou.name} />
+                            </GeoJSON>
+                        ))}
+                </Pane>
+                <Pane
+                    name="target-org-units-shapes-assigned"
+                    style={{ zIndex: 201 }}
+                >
+                    {childrenOrgUnits
+                        ?.filter(
+                            ou =>
+                                ou.has_geo_json &&
+                                assignments?.allAssignments?.find(
+                                    assignment => assignment.org_unit === ou.id,
+                                ),
+                        )
+                        .map(ou => (
+                            <GeoJSON
+                                key={ou.id}
+                                eventHandlers={{
+                                    click: () =>
+                                        canAssign &&
+                                        handleSaveAssignment(ou.id),
+                                }}
+                                data={ou.geo_json}
+                                style={{
+                                    color: getAssignmentColor(ou.id),
+                                    fillOpacity: 0.8,
+                                    fillColor: getAssignmentColor(ou.id),
+                                }}
+                            >
+                                <MapToolTip pane="popupPane" label={ou.name} />
+                            </GeoJSON>
+                        ))}
+                </Pane>
+                <Pane name="target-org-units-locations" style={{ zIndex: 202 }}>
+                    {childrenOrgUnits
+                        ?.filter(ou =>
+                            isValidCoordinate(ou.latitude, ou.longitude),
+                        )
+                        .map(ou => (
+                            <CircleMarkerComponent
+                                key={ou.id}
+                                item={ou}
+                                onClick={() =>
+                                    canAssign && handleSaveAssignment(ou.id)
+                                }
+                                TooltipComponent={MapToolTip}
+                                tooltipProps={() => ({
+                                    pane: 'popupPane',
+                                    label: ou.name,
+                                })}
+                                markerProps={() => ({
+                                    ...circleColorMarkerOptions(
+                                        getAssignmentColor(ou.id),
+                                    ),
+                                    radius: 12,
+                                })}
+                            />
+                        ))}
+                </Pane>
+            </MapContainer>
+        </Box>
     );
 };

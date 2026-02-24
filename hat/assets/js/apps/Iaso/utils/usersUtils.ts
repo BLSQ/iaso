@@ -60,7 +60,6 @@ export type Account = {
     default_version?: DefaultVersion;
     feature_flags: string[];
     modules: string[];
-    custom_translations: Record<string, Record<string, string>>;
     user_manual_path?: string;
     forum_path?: string;
 };
@@ -88,6 +87,7 @@ export type User = {
     editable_org_unit_type_ids?: number[];
     user_roles: number[];
     user_roles_editable_org_unit_type_ids?: number[];
+    color?: string;
 };
 
 export const getDisplayName = (

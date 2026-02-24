@@ -72,16 +72,6 @@ class CampaignSerializer(serializers.ModelSerializer):
     def get_single_vaccines(self, obj):
         return obj.single_vaccines_extended
 
-    def get_top_level_org_unit_name(self, campaign):
-        if campaign.country:
-            return campaign.country.name
-        return ""
-
-    def get_top_level_org_unit_id(self, campaign):
-        if campaign.country:
-            return campaign.country.id
-        return ""
-
     def get_general_status(self, campaign):
         now_utc = timezone.now().date()
         ordered_rounds = list(campaign.rounds.all())

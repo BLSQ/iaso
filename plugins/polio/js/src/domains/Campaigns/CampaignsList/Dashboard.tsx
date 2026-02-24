@@ -68,7 +68,6 @@ export const Dashboard: FunctionComponent = () => {
         showOnlyDeleted: Boolean(params.showOnlyDeleted),
         handleClickDeleteRow: handleDeleteConfirmDialogConfirm,
         handleClickRestoreRow: handleRestoreDialogConfirm,
-        params,
     });
 
     return (

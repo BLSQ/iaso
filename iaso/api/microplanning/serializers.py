@@ -433,7 +433,7 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
 
     def get_geo_json(self, org_unit: OrgUnit):
-        if not hasattr(org_unit, "geo_json"):
+        if not self.get_has_geo_json(org_unit):
             return None
 
         # Fakes the format of geojson_queryset() so that data can be passed to leaflet
@@ -450,4 +450,4 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
         }
 
     def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
-        return hasattr(org_unit, "geo_json")
+        return hasattr(org_unit, "geo_json") and org_unit.geo_json is not None

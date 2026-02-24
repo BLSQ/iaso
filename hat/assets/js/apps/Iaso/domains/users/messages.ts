@@ -67,7 +67,7 @@ const MESSAGES = defineMessages({
         defaultMessage:
             // eslint-disable-next-line max-len
             'Use prefix “refs:” for dhis2 ID search, “ids:” for internal profile ID. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd”',
-    },    
+    },
     infos: {
         defaultMessage: 'Infos',
         id: 'iaso.orgUnits.infos',
@@ -539,6 +539,11 @@ const MESSAGES = defineMessages({
     invalidEmailFormat: {
         id: 'iaso.users.invalidEmailFormat',
         defaultMessage: 'Invalid email format',
+    },
+    bulkImportDialogDescription: {
+        id: 'iaso.users.bulkImportDialogDescription',
+        defaultMessage:
+            'Please check the file encoding. It must be in UTF-8 format to be read by Iaso.',
     },
 });
 

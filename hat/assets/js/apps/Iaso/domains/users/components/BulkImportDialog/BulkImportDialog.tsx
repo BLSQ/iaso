@@ -123,6 +123,9 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
             </Box>
             {/* The loading spinner is set so users can still close the modal when the users are loading */}
             {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
+            <Box mt={2}>
+                {formatMessage(MESSAGES.bulkImportDialogDescription)}
+            </Box>
         </SimpleModal>
     );
 };

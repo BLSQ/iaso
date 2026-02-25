@@ -247,18 +247,9 @@ const createFormDataRequest = (
         formData.append(key, converted_value);
     });
 
-    const init: Record<string, unknown> = {
-        method,
-        body: formData,
-        signal,
-        headers: {
-            'Accept-Language': moment.locale(),
-        },
-    };
-
     if (Object.keys(fileData).length > 0) {
         Object.entries(fileData).forEach(([key, value]) => {
-            if (key === 'files' && Array.isArray(value) && value.length > 0) {
+            if (key === 'files' && Array.isArray(value)) {
                 formData.append('file', value[0]); // Use 'file' key
             } else if (Array.isArray(value)) {
                 value.forEach((blob, index) => {
@@ -269,6 +260,24 @@ const createFormDataRequest = (
             }
         });
     }
+
+    const body =
+        Array.isArray(fileData?.files) && fileData?.files?.length === 0
+            ? JSON.stringify({ ...data, file: null })
+            : formData;
+
+    const init: Record<string, unknown> = {
+        method,
+        body,
+        signal,
+        headers: {
+            'Accept-Language': moment.locale(),
+            'Content-Type':
+                Array.isArray(fileData?.files) && fileData?.files?.length === 0
+                    ? 'application/json'
+                    : undefined,
+        },
+    };
 
     return iasoFetch(url, init).then(response => response.json());
 };

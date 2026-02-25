@@ -31,7 +31,7 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
                 fields = ['id', 'title', 'file', 'scan_result', 'scan_timestamp']
     """
 
-    file = serializers.FileField(required=False)
+    file = serializers.FileField(required=False, allow_empty_file=True, allow_null=True)
     scan_result = serializers.CharField(read_only=True, source="file_scan_status")
     scan_timestamp = serializers.SerializerMethodField()
 

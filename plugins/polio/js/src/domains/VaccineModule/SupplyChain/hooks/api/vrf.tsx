@@ -260,11 +260,11 @@ const createFormDataRequest = (
             }
         });
     }
-
-    const body =
-        Array.isArray(fileData?.files) && fileData?.files?.length === 0
-            ? JSON.stringify({ ...data, file: null })
-            : formData;
+    const isFileDeleted =
+        Array.isArray(fileData?.files) && fileData?.files?.length === 0;
+    const body = isFileDeleted
+        ? JSON.stringify({ ...data, file: null })
+        : formData;
 
     const init: Record<string, unknown> = {
         method,
@@ -272,12 +272,14 @@ const createFormDataRequest = (
         signal,
         headers: {
             'Accept-Language': moment.locale(),
-            'Content-Type':
-                Array.isArray(fileData?.files) && fileData?.files?.length === 0
-                    ? 'application/json'
-                    : undefined,
         },
     };
+    if (isFileDeleted) {
+        init.headers = {
+            ...(init.headers as Record<string, string>),
+            'Content-Type': 'application/json',
+        };
+    }
 
     return iasoFetch(url, init).then(response => response.json());
 };

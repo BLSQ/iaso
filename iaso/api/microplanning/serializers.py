@@ -445,8 +445,8 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
-        read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
+        fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude", "org_unit_type_id"]
+        read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude", "org_unit_type_id"]
 
     def get_geo_json(self, org_unit: OrgUnit):
         if not self.get_has_geo_json(org_unit):

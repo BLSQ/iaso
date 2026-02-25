@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 
@@ -11,15 +11,111 @@ from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from hat.audit.audit_logger import AuditLogger
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.api.profiles.views import get_filtered_profiles
 from iaso.api.teams.serializers import AuditTeamSerializer
 from iaso.models import OrgUnit, Profile, Project, Task, UserRole
 from iaso.models.team import Team, TeamType
 from iaso.permissions.core_permissions import (
     CORE_TEAMS_PERMISSION,
     CORE_USERS_ADMIN_PERMISSION,
+    CORE_USERS_MANAGED_PERMISSION,
 )
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
+from iaso.utils import search_by_ids_refs
+
+
+def get_filtered_profiles(
+    queryset: QuerySet[Profile],
+    user: Optional[User],
+    search: Optional[str] = None,
+    perms: Optional[List[str]] = None,
+    location: Optional[str] = None,
+    org_unit_type: Optional[str] = None,
+    parent_ou: Optional[bool] = False,
+    children_ou: Optional[bool] = False,
+    projects: Optional[List[int]] = None,
+    user_roles: Optional[List[int]] = None,
+    teams: Optional[List[int]] = None,
+    managed_users_only: Optional[bool] = False,
+    ids: Optional[str] = None,
+) -> QuerySet[Profile]:
+    if search:
+        if search.startswith("ids:"):
+            queryset = queryset.filter(id__in=search_by_ids_refs.parse_ids("ids:", search))
+        elif search.startswith("refs:"):
+            queryset = queryset.filter(dhis2_id__in=search_by_ids_refs.parse_ids("refs:", search))
+        else:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search)
+                | Q(user__tenant_user__main_user__username__icontains=search)
+                | Q(user__first_name__icontains=search)
+                | Q(user__last_name__icontains=search)
+            ).distinct()
+
+    if perms:
+        queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
+
+    if location and not (parent_ou or children_ou):
+        queryset = queryset.filter(
+            user__iaso_profile__org_units__pk=location,
+        ).distinct()
+
+    parent: Optional[OrgUnit] = None
+    if (parent_ou and location) or (children_ou and location):
+        ou = get_object_or_404(OrgUnit, pk=location)
+        if parent_ou and ou.parent is not None:
+            parent = ou.parent
+
+        org_unit_filter = Q(user__iaso_profile__org_units__pk=location)
+
+        if parent_ou and not children_ou:
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
+
+        elif children_ou and not parent_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            queryset = queryset.filter(org_unit_filter).distinct()
+
+        elif parent_ou and children_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
+
+    if org_unit_type:
+        if org_unit_type == "unassigned":
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
+        else:
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
+
+    if projects:
+        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects).distinct()
+
+    if user_roles:
+        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles).distinct()
+
+    if teams:
+        queryset = queryset.filter(user__teams__id__in=teams).distinct()
+
+    if ids:
+        queryset = queryset.filter(user__id__in=ids.split(","))
+    if managed_users_only:
+        if not user:
+            raise Exception("User cannot be 'None' when filtering on managed users only")
+        if user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
+            queryset = queryset  # no filter needed
+        elif user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
+            managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
+                "id", flat=True
+            )
+            if managed_org_units and len(managed_org_units) > 0:
+                queryset = queryset.filter(user__iaso_profile__org_units__id__in=managed_org_units)
+            queryset = queryset.exclude(user=user)
+        else:
+            queryset = Profile.objects.none()
+    return queryset
 
 
 class TeamAuditLogger(AuditLogger):

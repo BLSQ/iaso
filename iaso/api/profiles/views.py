@@ -1,14 +1,23 @@
-from typing import Any, List, Optional, Union
+# todo : what's left to fix imho :
+# mix of camelCase and snake_case in query Params : fix that
+# ColorFieldSerializer
+# retrieve : do we really need such a huge payload ???
+# check number of queries and fine tune perf/optimize
+# Fix front end:
+# * Org units => [{"id": 1}] to [1]
+# * Check that we send booleans and not 1 or whatever
+# * standard pagination
+# * export actions have been moved to other endpoints
+from typing import Any, List, Union
 
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import Min, Q, QuerySet
+from django.db.models import Min, QuerySet
 from django.db.transaction import atomic
-from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -18,9 +27,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import permissions, serializers, status
+from rest_framework import permissions, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
@@ -31,17 +40,24 @@ from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.profiles.filters import ProfileListFilter
 from iaso.api.profiles.pagination import ProfilePagination
-from iaso.api.profiles.policies import GroupFromUserRolesPolicy, OrgUnitPolicy, ProjectsPolicy, UserPermissionsPolicy
+from iaso.api.profiles.policies import (
+    GroupFromUserRolesPolicy,
+    ManagedUsersPolicy,
+    OrgUnitPolicy,
+    ProjectsPolicy,
+    UserPermissionsPolicy,
+)
 from iaso.api.profiles.serializers import (
     ProfileCreateSerializer,
     ProfileListSerializer,
     ProfileRetrieveSerializer,
+    ProfileUpdateSerializer,
     ProfileUserFallbackRetrieveSerializer,
 )
+from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer
 from iaso.models import OrgUnit, Profile, TenantUser
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
-from iaso.utils import is_mobile_request, search_by_ids_refs
-from iaso.utils.colors import COLOR_FORMAT_ERROR, DEFAULT_COLOR, validate_hex_color
+from iaso.utils import is_mobile_request
 
 
 PK_ME = "me"
@@ -50,20 +66,23 @@ PK_ME = "me"
 class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         pk = view.kwargs.get("pk")
-        if view.action in ("retrieve", "partial_update") and pk == PK_ME:
+
+        if view.action in ("retrieve", "partial_update", "update") and pk == PK_ME:
             return True
+
         if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
             return True
-        if request.user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
-            return self.has_permission_over_user(request, pk)
 
-        return request.method == "GET"
+        if request.user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
+            return self.has_permission_over_user(request, pk, view.action)
+
+        return view.action in ["retrieve", "list", "export_csv", "export_xlsx"]
 
     # We could `return False` instead of raising exceptions,
     # but it's better to be explicit about why the permission was denied.
     @staticmethod
-    def has_permission_over_user(request, pk):
-        if request.method == "GET":
+    def has_permission_over_user(request, pk, view_action):
+        if view_action in ["retrieve", "list", "export_csv", "export_xlsx"]:
             return True
 
         if not pk:
@@ -88,99 +107,6 @@ class HasProfilePermission(permissions.BasePermission):
         return True
 
 
-def get_filtered_profiles(
-    queryset: QuerySet[Profile],
-    user: Optional[User],
-    search: Optional[str] = None,
-    perms: Optional[List[str]] = None,
-    location: Optional[str] = None,
-    org_unit_type: Optional[str] = None,
-    parent_ou: Optional[bool] = False,
-    children_ou: Optional[bool] = False,
-    projects: Optional[List[int]] = None,
-    user_roles: Optional[List[int]] = None,
-    teams: Optional[List[int]] = None,
-    managed_users_only: Optional[bool] = False,
-    ids: Optional[str] = None,
-) -> QuerySet[Profile]:
-    if search:
-        if search.startswith("ids:"):
-            queryset = queryset.filter(id__in=search_by_ids_refs.parse_ids("ids:", search))
-        elif search.startswith("refs:"):
-            queryset = queryset.filter(dhis2_id__in=search_by_ids_refs.parse_ids("refs:", search))
-        else:
-            queryset = queryset.filter(
-                Q(user__username__icontains=search)
-                | Q(user__tenant_user__main_user__username__icontains=search)
-                | Q(user__first_name__icontains=search)
-                | Q(user__last_name__icontains=search)
-            ).distinct()
-
-    if location and not (parent_ou or children_ou):
-        queryset = queryset.filter(
-            user__iaso_profile__org_units__pk=location,
-        ).distinct()
-
-    parent: Optional[OrgUnit] = None
-    if (parent_ou and location) or (children_ou and location):
-        ou = get_object_or_404(OrgUnit, pk=location)
-        if parent_ou and ou.parent is not None:
-            parent = ou.parent
-
-        org_unit_filter = Q(user__iaso_profile__org_units__pk=location)
-
-        if parent_ou and not children_ou:
-            if parent:
-                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
-            queryset = queryset.filter(org_unit_filter).distinct()
-
-        elif children_ou and not parent_ou:
-            descendant_ous = OrgUnit.objects.hierarchy(ou)
-            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
-            queryset = queryset.filter(org_unit_filter).distinct()
-
-        elif parent_ou and children_ou:
-            descendant_ous = OrgUnit.objects.hierarchy(ou)
-            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
-            if parent:
-                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
-            queryset = queryset.filter(org_unit_filter).distinct()
-
-    if managed_users_only:
-        if not user:
-            raise Exception("User cannot be 'None' when filtering on managed users only")
-        if user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
-            queryset = queryset  # no filter needed
-        elif user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
-            managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
-                "id", flat=True
-            )
-            if managed_org_units and len(managed_org_units) > 0:
-                queryset = queryset.filter(user__iaso_profile__org_units__id__in=managed_org_units)
-            queryset = queryset.exclude(user=user)
-        else:
-            queryset = Profile.objects.none()
-    return queryset
-
-
-class ProfileError(ValidationError):
-    field = None
-
-    def __init__(self, field=None, detail=None, code=None):
-        super().__init__(detail, code)
-        self.field = field
-
-
-class ProfileColorUpdateSerializer(serializers.Serializer):
-    color = serializers.CharField()
-
-    def validate_color(self, value: str) -> str:
-        try:
-            return validate_hex_color(value)
-        except ValueError:
-            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
-
-
 class ProfilesViewSet(ModelViewSet):
     f"""Profiles API
 
@@ -194,6 +120,8 @@ class ProfilesViewSet(ModelViewSet):
     GET /api/profiles/
     GET /api/profiles/me => current user
     GET /api/profiles/<id>
+    GET /api/profiles/export-csv/
+    GET /api/profiles/export-xlsx/
     POST /api/profiles/
     PATCH /api/profiles/me => current user, can only set language field
     PATCH /api/profiles/<id>
@@ -207,7 +135,8 @@ class ProfilesViewSet(ModelViewSet):
 
     filter_backends = [OrderingFilter, DjangoFilterBackend]
     filterset_class = ProfileListFilter
-    ordering_filters = ["user__username"]
+    ordering = ["id"]  # default ordering
+    ordering_fields = ["id", "user__username", "annotated_first_user_role"]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -216,11 +145,43 @@ class ProfilesViewSet(ModelViewSet):
             return ProfileCreateSerializer
         if self.action == "list":
             return ProfileListSerializer
+        if self.action in ["update", "partial_update"]:
+            if self.kwargs.get(self.lookup_url_kwarg or self.lookup_field, "") == PK_ME:
+                return ProfileMeUpdateSerializer
+            return ProfileUpdateSerializer
+
         raise NotImplementedError(f"Serializer not implemented for action {self.action}")
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        return Profile.objects.filter(account=account).with_editable_org_unit_types()
+        qs = Profile.objects.filter(account=account).with_editable_org_unit_types()
+
+        if self.action == "list":
+            if self.request.query_params.get("managedUsersOnly", "").lower() in ["true", "1"]:
+                qs = ManagedUsersPolicy.authorize_list(self.request.user, qs)
+
+            qs = qs.annotate(
+                # Adds a sortable field containing each user's alphabetically first role name,
+                # enabling consistent frontend sorting of users with multiple roles.
+                annotated_first_user_role=Min("user_roles__group__name")
+            ).prefetch_related(
+                "user",
+                "user_roles",
+                "user__tenant_user",
+                "user__teams",
+                "org_units",
+                "org_units__version",
+                "org_units__version__data_source",
+                "org_units__parent",
+                "org_units__parent__parent",
+                "org_units__parent__parent__parent",
+                "org_units__org_unit_type",
+                "org_units__parent__org_unit_type",
+                "org_units__parent__parent__org_unit_type",
+                "projects",
+                "editable_org_unit_types",
+            )
+        return qs
 
     def get_object(self):
         if self.kwargs.get(self.lookup_field, "") == PK_ME:
@@ -236,75 +197,29 @@ class ProfilesViewSet(ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             raise Http404
 
-    @action(detail=False, methods=["get"], url_path="export-csv")
+    @action(detail=False, methods=["get"], url_path="export-csv", url_name="export-csv")
     def export_csv(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         return self.list_export(queryset, file_format=FileFormatEnum.CSV)
 
-    @action(detail=False, methods=["get"], url_path="export-xlsx")
+    @action(detail=False, methods=["get"], url_path="export-xlsx", url_name="export-xlsx")
     def export_xlsx(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         return self.list_export(queryset, file_format=FileFormatEnum.XLSX)
 
-    def list(self, request, *args, **kwargs):
-        search = request.GET.get("search", None)
-
-        location = request.GET.get("location", None)
-        org_unit_type = request.GET.get("orgUnitTypes", None)
-        parent_ou = request.GET.get("ouParent", None) == "true"
-        children_ou = request.GET.get("ouChildren", None) == "true"
-
-        managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
-        queryset = (
-            get_filtered_profiles(
-                queryset=self.get_queryset(),
-                user=request.user,
-                search=search,
-                perms=perms,
-                location=location,
-                org_unit_type=org_unit_type,
-                parent_ou=parent_ou,
-                children_ou=children_ou,
-                projects=projects,
-                user_roles=user_roles,
-                teams=teams,
-                managed_users_only=managed_users_only,
-                ids=ids,
-            )
-            .annotate(
-                # Adds a sortable field containing each user's alphabetically first role name,
-                # enabling consistent frontend sorting of users with multiple roles.
-                annotated_first_user_role=Min("user_roles__group__name")
-            )
-            .order_by("id")
-        )
-
-        queryset = queryset.prefetch_related(
-            "user",
-            "user_roles",
-            "user__tenant_user",
-            "user__teams",
-            "org_units",
-            "org_units__version",
-            "org_units__version__data_source",
-            "org_units__parent",
-            "org_units__parent__parent",
-            "org_units__parent__parent__parent",
-            "org_units__org_unit_type",
-            "org_units__parent__org_unit_type",
-            "org_units__parent__parent__org_unit_type",
-            "projects",
-            "editable_org_unit_types",
-        )
-
-        return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
-
-    def _post_create_set_user_password(self, password, user, send_email_invitation):
+    def _post_create_user(self, password, user, send_email_invitation, first_name, last_name, user_name, email):
         if password:
             user.set_password(password)
         elif send_email_invitation:
             random_password = get_random_string(32)
             user.set_password(random_password)
+
+        if not TenantUser.is_multi_account_user(user):
+            user.first_name = first_name
+            user.last_name = last_name
+            if user_name:
+                user.username = user_name
+            user.email = email
 
     def perform_create(self, serializer):
         profile = serializer.save()
@@ -320,10 +235,14 @@ class ProfilesViewSet(ModelViewSet):
         profile.user.user_permissions.set(user_permissions)
 
         # post-create user profile
-        self._post_create_set_user_password(
+        self._post_create_user(
             user=profile.user,
             password=serializer.validated_data.get("password", ""),
             send_email_invitation=serializer.validated_data.get("send_email_invitation", False),
+            email=serializer.validated_data.get("email", ""),
+            first_name=serializer.validated_data.get("first_name", ""),
+            user_name=serializer.validated_data.get("user_name", ""),
+            last_name=serializer.validated_data.get("last_name", ""),
         )
 
         # save
@@ -339,164 +258,128 @@ class ProfilesViewSet(ModelViewSet):
         # send email
         send_invite = serializer.validated_data.get("send_email_invitation")
         email = serializer.validated_data.get("email")
-        language = serializer.validated_data.get("language")
+        language = serializer.validated_data.get("language", settings.LANGUAGE_CODE)
 
         if send_invite and email:
             transaction.on_commit(lambda: self.send_email_invitation(profile, language))
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        """
-        Big change for org_unit: from [
-        {"id": 1}
-        ] to [1]
-        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # run the advanced checks : authorization/policy validation
-        OrgUnitPolicy.validate_create(self.request.user, serializer.validated_data.get("org_units", None) or [])
+        OrgUnitPolicy.authorize_create(self.request.user, serializer.validated_data.get("org_units", None) or [])
         GroupFromUserRolesPolicy.authorize(
             user=self.request.user, user_roles=serializer.validated_data.get("user_roles", None) or []
         )
-        UserPermissionsPolicy.create(
+        UserPermissionsPolicy.authorize_create(
             user=self.request.user, user_permissions=serializer.validated_data.get("user_permissions", None) or []
         )
-        ProjectsPolicy.create(user=self.request.user, projects=serializer.validated_data.get("projects", None) or [])
+        ProjectsPolicy.authorize_create(
+            user=self.request.user, projects=serializer.validated_data.get("projects", None) or []
+        )
 
-        return super().create(request, *args, **kwargs)
+        # from super().create() to avoid calling again the serializer
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update_password(self, user, password):
+        user.set_password(password)
+
+        if self.request.user == user:
+            update_session_auth_hash(self.request, user)
+
+    def _post_update_user(self, user, serializer_data):
+        if "password" in serializer_data and serializer_data.get("password"):
+            if TenantUser.is_multi_account_user(user):
+                self.update_password(user.tenant_user.main_user, serializer_data["password"])
+                user.tenant_user.main_user.save()
+            else:
+                self.update_password(user, serializer_data["password"])
+
+        if not TenantUser.is_multi_account_user(user):
+            if "first_name" in serializer_data:
+                user.first_name = serializer_data["first_name"]
+            if "last_name" in serializer_data:
+                user.last_name = serializer_data["last_name"]
+            if "user_name" in serializer_data and serializer_data.get("user_name"):
+                user.username = serializer_data.get("user_name")
+            if "email" in serializer_data:
+                user.email = serializer_data["email"]
+
+    def perform_update(self, serializer):
+        # pre-audit
+        audit_logger = ProfileAuditLogger()
+        old_data = audit_logger.serialize_instance(self.get_object())
+
+        # perform update
+        profile = serializer.save()
+
+        # post-update groups
+        if "user_roles" in serializer.validated_data:
+            roles = serializer.validated_data.get("user_roles") or []
+            groups = {role.group for role in roles}
+
+            profile.user.groups.set(groups)
+
+        # post-update user permissions
+        if "user_permissions" in serializer.validated_data:
+            user_permissions = serializer.validated_data.get("user_permissions") or []
+            profile.user.user_permissions.set(user_permissions)
+
+        # post-update user profile
+        self._post_update_user(user=profile.user, serializer_data=serializer.validated_data)
+
+        # save
+        profile.user.save()
+
+        # post-audit
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(self.request) else PROFILE_API
+
+        if self.kwargs.get(self.lookup_url_kwarg or self.lookup_field, "") == PK_ME:
+            source = f"{PROFILE_API}_mobile_me" if is_mobile_request(self.request) else f"{PROFILE_API}_me"
+
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=self.request.user, source=source
+        )
 
     @atomic
-    def partial_update(self, request, pk=None):
-        if pk == PK_ME:
-            return self.update_user_own_profile(request)
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
 
-        profile = get_object_or_404(self.get_queryset(), id=pk)
-        user = profile.user
-        # profile.account is safe to use because we never update it through the API
-        current_account = user.iaso_profile.account
-        audit_logger = ProfileAuditLogger()
-        old_data = audit_logger.serialize_instance(profile)
-        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
-        # Validation
-        try:
-            self.validate_user_name(request, user)
-            user_permissions = self.validate_user_permissions(request, current_account)
-            org_units = self.validate_org_units(request, profile)
-            user_roles_data = self.validate_user_roles(request)
-            projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
-            color = self.validate_color(request)
-        except ProfileError as error:
-            return JsonResponse(
-                {"errorKey": error.field, "errorMessage": error.detail},
-                status=status.HTTP_400_BAD_REQUEST,
+        # run the advanced checks : authorization/policy validation
+        UserPermissionsPolicy.authorize_update(
+            user=self.request.user, user_permissions=serializer.validated_data.get("user_permissions", None) or []
+        )
+        ProjectsPolicy.authorize_update(
+            user=self.request.user,
+            profile=instance,
+            new_project_ids=serializer.validated_data.get("projects", None) or [],
+        )
+        GroupFromUserRolesPolicy.authorize(
+            user=self.request.user, user_roles=serializer.validated_data.get("user_roles", None) or []
+        )
+        if "org_units" in serializer.validated_data and not getattr(serializer, "_org_units_unchanged", False):
+            OrgUnitPolicy.authorize_update(
+                user=request.user,
+                profile=instance,
+                new_org_unit_ids={ou.id for ou in serializer.validated_data["org_units"]},
             )
 
-        profile = self.update_user_profile(
-            request=request,
-            profile=profile,
-            user=user,
-            user_permissions=user_permissions,
-            org_units=org_units,
-            user_roles=user_roles_data["user_roles"],
-            user_roles_groups=user_roles_data["groups"],
-            projects=projects,
-            editable_org_unit_types=editable_org_unit_types,
-            color=color,
-        )
+        # from super().update to avoid the get_object and serializer again
+        self.perform_update(serializer)
 
-        audit_logger.log_modification(
-            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
-        )
+        if getattr(instance, "_prefetched_objects_cache", None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
 
-        return Response(profile.as_dict())
-
-    @action(detail=True, methods=["PATCH"])
-    def update_color(self, request, pk=None):
-        """
-        TODO: Remove this action once the profile PATCH is refactored to avoid
-        overwriting other fields when they are not provided.
-        """
-        serializer = ProfileColorUpdateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        profile = get_object_or_404(self.get_queryset(), id=pk)
-        audit_logger = ProfileAuditLogger()
-        old_data = audit_logger.serialize_instance(profile)
-
-        profile.color = serializer.validated_data["color"]
-        profile.save(update_fields=["color"])
-
-        audit_logger.log_modification(
-            instance=profile, old_data_dump=old_data, request_user=request.user, source=PROFILE_API
-        )
-
-        return Response(profile.as_dict())
-
-    @staticmethod
-    def update_user_own_profile(request):
-        audit_logger = ProfileAuditLogger()
-        # allow user to change his own language
-        profile = request.user.iaso_profile
-        old_data = audit_logger.serialize_instance(profile)
-        if "home_page" in request.data:
-            profile.home_page = request.data["home_page"]
-        if "language" in request.data:
-            profile.language = request.data["language"]
-        profile.save()
-        source = f"{PROFILE_API}_mobile_me" if is_mobile_request(request) else f"{PROFILE_API}_me"
-        audit_logger.log_modification(
-            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
-        )
-        return Response(profile.as_dict())
-
-    def update_user_profile(
-        self,
-        request,
-        profile,
-        user,
-        user_roles,
-        user_roles_groups,
-        projects,
-        color,
-        org_units,
-        user_permissions,
-        editable_org_unit_types,
-    ):
-        if TenantUser.is_multi_account_user(user):
-            # In multi-tenant mode, `main_user` is the user who logs in.
-            self.update_password(user.tenant_user.main_user, request)
-        else:
-            user.first_name = request.data.get("first_name", "")
-            user.last_name = request.data.get("last_name", "")
-            user_name = request.data.get("user_name")
-            if user_name:
-                user.username = user_name
-            user.email = request.data.get("email", "")
-            self.update_password(user, request)
-
-        user.groups.set(user_roles_groups)
-        user.save()
-        user.user_permissions.set(user_permissions)
-
-        profile.phone_number = self.extract_phone_number(request)
-
-        profile.language = request.data.get("language", "")
-        profile.organization = request.data.get("organization", None)
-        profile.home_page = request.data.get("home_page", "")
-        profile.dhis2_id = request.data.get("dhis2_id", "")
-        if profile.dhis2_id == "":
-            profile.dhis2_id = None
-
-        resolved_color = color if color is not None else profile.color or DEFAULT_COLOR
-        profile.color = resolved_color
-
-        profile.user_roles.set(user_roles)
-        profile.projects.set(projects)
-        profile.org_units.set(org_units)
-        profile.editable_org_unit_types.set(editable_org_unit_types)
-        profile.save()
-        return profile
+        return Response(serializer.data)
 
     @staticmethod
     def list_export(
@@ -552,26 +435,26 @@ class ProfilesViewSet(ModelViewSet):
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 
-    @staticmethod
-    def update_password(user, request):
-        password = request.data.get("password")
-        send_email_invitation = request.data.get("send_email_invitation")
+    def perform_destroy(self, instance):
+        user = instance.user
 
-        if password:
-            user.set_password(password)
-            user.save()
-        elif send_email_invitation and user.email:
-            random_password = get_random_string(32)
-            user.set_password(random_password)
-            user.save()
-        else:
-            user.set_unusable_password()
-            user.save()
+        audit_logger = ProfileAuditLogger()
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(self.request) else PROFILE_API
 
-        if password and request.user == user:
-            # update session hash if you changed your own password, so you don't get logged out
-            # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
-            update_session_auth_hash(request, user)
+        # Log BEFORE deletion while instance still exists
+        audit_logger.log_hard_deletion(
+            instance=instance,
+            request_user=self.request.user,
+            source=source,
+        )
+
+        # Atomic delete of related objects
+        user.delete()
+        instance.delete()
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
     def send_email_invitation(self, profile, language):
         domain = settings.DNS_DOMAIN
@@ -583,16 +466,19 @@ class ProfilesViewSet(ModelViewSet):
         create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
 
         email_subject = self.get_subject_by_language(language, domain)
-        email_message = self.get_message_by_language(
-            language,
-            protocol=protocol,
-            domain=domain,
-            user_name=profile.user.username,
-            url=f"{protocol}://{domain}{create_password_path}",
-            account_name=profile.account.name,
-        )
 
         with translation.override(language):
+            email_message = render_to_string(
+                "emails/create_password_email.txt",
+                context={
+                    "protocol": protocol,
+                    "domain": domain,
+                    "account_name": profile.account.name,
+                    "user_name": profile.user.username,
+                    "url": f"{protocol}://{domain}{create_password_path}",
+                },
+            )
+
             html_email_content = render_to_string(
                 "emails/create_password_email.html",
                 context={
@@ -612,59 +498,7 @@ class ProfilesViewSet(ModelViewSet):
             html_message=html_email_content,
         )
 
-    def perform_destroy(self, instance):
-        user = instance.user
-
-        audit_logger = ProfileAuditLogger()
-        source = f"{PROFILE_API}_mobile" if is_mobile_request(self.request) else PROFILE_API
-
-        # Log BEFORE deletion while instance still exists
-        audit_logger.log_hard_deletion(
-            instance=instance,
-            request_user=self.request.user,
-            source=source,
-        )
-
-        # Atomic delete of related objects
-        user.delete()
-        instance.delete()
-
-    # todo : not sure this atomic is not enabled by default
-    @transaction.atomic
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    @staticmethod
-    def get_message_by_language(language=settings.LANGUAGE_CODE, **kwargs):
-        with translation.override(language):
-            return _(
-                """Hello,
-
-You have been invited to access IASO - {protocol}://{domain}.
-
-Username: {user_name} 
-
-Please click on the link below to create your password:
-
-{url}
-
-If clicking the link above doesn't work, please copy and paste the URL in a new browser
-window instead.
-
-If you did not request an account on {account_name}, you can ignore this e-mail - no password will be created.
-
-Sincerely,
-The {domain} Team.
-    """.format(
-                    protocol=kwargs["protocol"],
-                    domain=kwargs["domain"],
-                    user_name=kwargs["user_name"],
-                    url=kwargs["url"],
-                    account_name=kwargs["account_name"],
-                )
-            )
-
     @staticmethod
     def get_subject_by_language(language=settings.LANGUAGE_CODE, domain=settings.DNS_DOMAIN):
         with translation.override(language):
-            return _("Set up a password for your new account on %(domain)s") % {"domain": domain}
+            return _("Set up a password for your new account on {domain}").format(domain=domain)

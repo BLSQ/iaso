@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { FilesUpload, IconButton, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
@@ -39,20 +39,34 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
         pdfUrl = URL.createObjectURL(document[0]);
     } else if (document instanceof File) {
         pdfUrl = URL.createObjectURL(document);
+    } else if (
+        document &&
+        typeof document === 'object' &&
+        'path' in document &&
+        typeof document.path === 'string'
+    ) {
+        pdfUrl = document.path;
     }
+    const files = useMemo(() => {
+        if (!document) return [];
+        if (Array.isArray(document)) {
+            return document as unknown as File[];
+        }
+        return [document as unknown as File];
+    }, [document]);
+
     let mainGridSize = 12;
     if (document && enableDelete) {
         mainGridSize = 9;
     } else if (document) {
         mainGridSize = 10;
     }
-
     return (
         <Grid container spacing={2} alignItems="center">
             <Grid item xs={mainGridSize}>
                 <FilesUpload
                     accept={acceptPDF}
-                    files={document ? [document as unknown as File] : []}
+                    files={files}
                     onFilesSelect={onFilesSelect}
                     multi={false}
                     errors={errors}

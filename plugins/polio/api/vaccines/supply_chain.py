@@ -217,6 +217,17 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
             read_only_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION,
         )
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.file:
+            ret["file"] = {
+                "path": instance.file.url,
+                "name": os.path.basename(instance.file.name),
+            }
+        else:
+            ret["file"] = None
+        return ret
+
 
 class NestedVaccineArrivalReportSerializerForPost(serializers.ModelSerializer):
     class Meta:
@@ -543,6 +554,7 @@ class VaccineRequestFormDetailSerializer(ModelWithFileSerializer):
     obr_name = serializers.CharField(source="campaign.obr_name")
     rounds = NestedRoundSerializer(many=True)
     can_edit = serializers.SerializerMethodField()
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineRequestForm
@@ -584,6 +596,14 @@ class VaccineRequestFormDetailSerializer(ModelWithFileSerializer):
             non_admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION,
             read_only_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION,
         )
+
+    def get_file(self, obj):
+        if obj.file:
+            return {
+                "path": obj.file.url,
+                "name": os.path.basename(obj.file.name),
+            }
+        return None
 
     def create(self, validated_data):
         self.scan_file_if_exists(validated_data)

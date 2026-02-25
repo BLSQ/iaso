@@ -548,7 +548,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                             color="error"
                                                             onClick={onClick}
                                                             disabled={
-                                                                planning.assignments_count ===
+                                                                planning?.assignments_count ===
                                                                 0
                                                             }
                                                             startIcon={

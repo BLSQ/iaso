@@ -290,9 +290,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         users_in_account = User.objects.filter(iaso_profile__account=account)
 
         self.fields["user"].queryset = users_in_account
-        self.fields["planning"].queryset = (
-            Planning.objects.filter_for_user(user).select_related("org_unit")
-        )
+        self.fields["planning"].queryset = Planning.objects.filter_for_user(user).select_related("org_unit")
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
 

@@ -24,6 +24,7 @@ import {
     useGetPlanningOrgUnitsChildren,
     useGetPlanningOrgUnitsRoot,
 } from '../../teams/hooks/requests/useGetPlanningOrgUnits';
+import { parentColor } from '../constants/colors';
 import { AssignmentsResult } from '../hooks/requests/useGetAssignments';
 
 type Props = {
@@ -79,7 +80,46 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
     const getAssignmentColor = useGetAssignmentColor(assignments, rootTeam);
+    const unassignedGeoJson = useMemo(() => {
+        return childrenOrgUnits?.filter(
+            ou =>
+                ou.has_geo_json &&
+                ou.org_unit_type_id ===
+                    planning?.target_org_unit_type_details?.id &&
+                !assignments?.allAssignments?.find(
+                    assignment => assignment.org_unit === ou.id,
+                ),
+        );
+    }, [
+        childrenOrgUnits,
+        planning?.target_org_unit_type_details?.id,
+        assignments?.allAssignments,
+    ]);
 
+    const assignedGeoJson = useMemo(() => {
+        return childrenOrgUnits?.filter(
+            ou =>
+                ou.has_geo_json &&
+                ou.org_unit_type_id ===
+                    planning?.target_org_unit_type_details?.id &&
+                assignments?.allAssignments?.find(
+                    assignment => assignment.org_unit === ou.id,
+                ),
+        );
+    }, [
+        childrenOrgUnits,
+        planning?.target_org_unit_type_details?.id,
+        assignments?.allAssignments,
+    ]);
+
+    const parentGeoJson = useMemo(() => {
+        return childrenOrgUnits?.filter(
+            ou =>
+                ou.has_geo_json &&
+                ou.org_unit_type_id !==
+                    planning?.target_org_unit_type_details?.id,
+        );
+    }, [childrenOrgUnits, planning?.target_org_unit_type_details?.id]);
     const isLoading =
         isLoadingChildrenOrgUnits ||
         isLoadingRootTeam ||
@@ -116,70 +156,72 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         <GeoJSON
                             key={rootOrgUnit?.id}
                             data={rootOrgUnit.geo_json}
-                        />
+                        >
+                            <MapToolTip
+                                pane="popupPane"
+                                label={rootOrgUnit.name}
+                            />
+                        </GeoJSON>
                     </Pane>
                 )}
+                <Pane name="org-units-shapes-parent" style={{ zIndex: 201 }}>
+                    {parentGeoJson?.map(ou => (
+                        <GeoJSON
+                            key={ou.id}
+                            data={ou.geo_json}
+                            style={{
+                                color: parentColor,
+                                fillOpacity: 0.3,
+                                fillColor: parentColor,
+                            }}
+                        >
+                            <MapToolTip pane="popupPane" label={ou.name} />
+                        </GeoJSON>
+                    ))}
+                </Pane>
                 <Pane
                     name="target-org-units-shapes-unassigned"
-                    style={{ zIndex: 201 }}
+                    style={{ zIndex: 202 }}
                 >
-                    {childrenOrgUnits
-                        ?.filter(
-                            ou =>
-                                ou.has_geo_json &&
-                                !assignments?.allAssignments?.find(
-                                    assignment => assignment.org_unit === ou.id,
-                                ),
-                        )
-                        .map(ou => (
-                            <GeoJSON
-                                key={ou.id}
-                                eventHandlers={{
-                                    click: () =>
-                                        canAssign &&
-                                        handleSaveAssignment(ou.id),
-                                }}
-                                data={ou.geo_json}
-                                style={{
-                                    color: getAssignmentColor(ou.id),
-                                    fillOpacity: 0.3,
-                                    fillColor: getAssignmentColor(ou.id),
-                                }}
-                            >
-                                <MapToolTip pane="popupPane" label={ou.name} />
-                            </GeoJSON>
-                        ))}
+                    {unassignedGeoJson?.map(ou => (
+                        <GeoJSON
+                            key={ou.id}
+                            eventHandlers={{
+                                click: () =>
+                                    canAssign && handleSaveAssignment(ou.id),
+                            }}
+                            data={ou.geo_json}
+                            style={{
+                                color: getAssignmentColor(ou.id),
+                                fillOpacity: 0.3,
+                                fillColor: getAssignmentColor(ou.id),
+                            }}
+                        >
+                            <MapToolTip pane="popupPane" label={ou.name} />
+                        </GeoJSON>
+                    ))}
                 </Pane>
                 <Pane
                     name="target-org-units-shapes-assigned"
-                    style={{ zIndex: 201 }}
+                    style={{ zIndex: 203 }}
                 >
-                    {childrenOrgUnits
-                        ?.filter(
-                            ou =>
-                                ou.has_geo_json &&
-                                assignments?.allAssignments?.find(
-                                    assignment => assignment.org_unit === ou.id,
-                                ),
-                        )
-                        .map(ou => (
-                            <GeoJSON
-                                key={ou.id}
-                                eventHandlers={{
-                                    click: () =>
-                                        canAssign &&
-                                        handleSaveAssignment(ou.id),
-                                }}
-                                data={ou.geo_json}
-                                style={{
-                                    color: getAssignmentColor(ou.id),
-                                    fillOpacity: 0.8,
-                                    fillColor: getAssignmentColor(ou.id),
-                                }}
-                            >
-                                <MapToolTip pane="popupPane" label={ou.name} />
-                            </GeoJSON>
-                        ))}
+                    {assignedGeoJson?.map(ou => (
+                        <GeoJSON
+                            key={ou.id}
+                            eventHandlers={{
+                                click: () =>
+                                    canAssign && handleSaveAssignment(ou.id),
+                            }}
+                            data={ou.geo_json}
+                            style={{
+                                color: getAssignmentColor(ou.id),
+                                fillOpacity: 0.8,
+                                fillColor: getAssignmentColor(ou.id),
+                            }}
+                        >
+                            <MapToolTip pane="popupPane" label={ou.name} />
+                        </GeoJSON>
+                    ))}
                 </Pane>
                 <Pane name="target-org-units-locations" style={{ zIndex: 202 }}>
                     {childrenOrgUnits

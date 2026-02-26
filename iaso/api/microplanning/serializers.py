@@ -290,7 +290,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         users_in_account = User.objects.filter(iaso_profile__account=account)
 
         self.fields["user"].queryset = users_in_account
-        self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["planning"].queryset = Planning.objects.filter_for_user(user).select_related("org_unit")
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
 
@@ -317,7 +317,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
         org_units_available: OrgUnitQuerySet = self.fields["org_unit"].queryset
         org_units_available = org_units_available.descendants(planning.org_unit)
-        if org_unit not in org_units_available:
+        if not org_units_available.filter(pk=org_unit.pk).exists():
             raise serializers.ValidationError({"org_unit": "OrgUnit is not in planning scope"})
         # TODO More complex check possible:
         # - Team or user should be under the root planning team
@@ -445,8 +445,8 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
-        read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude"]
+        fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude", "org_unit_type_id"]
+        read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude", "org_unit_type_id"]
 
     def get_geo_json(self, org_unit: OrgUnit):
         if not self.get_has_geo_json(org_unit):

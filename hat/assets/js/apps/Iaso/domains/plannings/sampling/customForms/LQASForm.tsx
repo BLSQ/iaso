@@ -9,10 +9,8 @@ import PlusIcon from '@mui/icons-material/Add';
 import { Box, Button, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
-import { useQueryClient } from 'react-query';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning } from 'Iaso/domains/plannings/types';
-import { useGetTaskDetails } from 'Iaso/domains/tasks/hooks/useGetTasks';
 import { SxStyles } from 'Iaso/types/general';
 import {
     addToArray,
@@ -21,7 +19,7 @@ import {
 } from 'Iaso/utils/arrays';
 import MESSAGES from '../../messages';
 
-import { Criteria, TaskStatus } from '../types';
+import { Criteria } from '../types';
 import { Level } from './Level';
 
 const styles: SxStyles = {
@@ -62,8 +60,6 @@ type Props = {
     handleParameterChange: (parameterName: string, value: any) => void;
     orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     isFetchingOrgunitTypes: boolean;
-    taskStatus: TaskStatus;
-    taskId?: number;
 };
 
 export const LQASForm: FunctionComponent<Props> = ({
@@ -73,8 +69,6 @@ export const LQASForm: FunctionComponent<Props> = ({
     handleParameterChange,
     orgunitTypes,
     isFetchingOrgunitTypes,
-    taskStatus,
-    taskId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [expandedLevels, setExpandedLevels] = useState<boolean[]>([false]);
@@ -167,18 +161,6 @@ export const LQASForm: FunctionComponent<Props> = ({
         },
         [update],
     );
-
-    const queryClient = useQueryClient();
-    useGetTaskDetails(
-        taskStatus === 'SUCCESS' ? taskId : undefined,
-        false,
-        data => {
-            if (data.result?.group_id) {
-                queryClient.invalidateQueries('planningSamplingResults');
-            }
-        },
-    );
-
     // Memoized values
     const levels = useMemo(() => {
         const orgunitTypeIds =
@@ -235,6 +217,7 @@ export const LQASForm: FunctionComponent<Props> = ({
         canAddLevel,
         planning.target_org_unit_type_details?.id,
         latestOptions?.value,
+        planning.target_org_unit_type_details,
     ]);
 
     return (

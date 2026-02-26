@@ -100,4 +100,5 @@ export type PlanningOrgUnits = {
     has_geo_json: boolean;
     latitude: number;
     longitude: number;
+    org_unit_type_id: number;
 };

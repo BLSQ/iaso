@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Assignment } from '@mui/icons-material';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import moment from 'moment';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -20,6 +21,11 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
     deletePlanning,
 }) => {
     const canAssign = canAssignPlanning(planning);
+    const hasStarted = Boolean(
+        planning.started_at &&
+        moment().isAfter(moment(planning.started_at, 'DD/MM/YYYY'), 'day'),
+    );
+    const cannotDelete = Boolean(planning.published_at || hasStarted);
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
@@ -60,7 +66,7 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
                             name: planning.name,
                         },
                     }}
-                    disabled={false}
+                    disabled={cannotDelete}
                     onConfirm={() => deletePlanning(planning.id)}
                     keyName="delete-planning"
                 />

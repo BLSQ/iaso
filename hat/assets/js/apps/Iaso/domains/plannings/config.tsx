@@ -24,12 +24,10 @@ import { Planning, SamplingResult } from './types';
 
 type Props = {
     samplingResult: SamplingResult;
-    planning: Planning;
 };
 
-const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
+const ActionCell: FunctionComponent<Props> = ({ samplingResult }) => {
     const { data: colors } = useGetColors(true);
-    const greenColor = getColor(31, colors).replace('#', '');
     const purpleColor = getColor(3, colors).replace('#', '');
     const urlParams: Record<string, any> = useMemo(
         () => ({
@@ -44,19 +42,12 @@ const ActionCell: FunctionComponent<Props> = ({ samplingResult, planning }) => {
             searches: encodeUriSearches([
                 {
                     validation_status: 'VALID',
-                    color: greenColor,
-                    levels: `${planning.org_unit_details?.id}`,
-                    orgUnitTypeId: `${planning.target_org_unit_type_details?.id}`,
-                },
-                {
-                    validation_status: 'VALID',
                     color: purpleColor,
                     group: `${samplingResult.group_id}`,
-                    orgUnitTypeId: `${planning.target_org_unit_type_details?.id}`,
                 },
             ]),
         }),
-        [greenColor, purpleColor, planning, samplingResult],
+        [purpleColor, samplingResult],
     );
 
     return (
@@ -200,10 +191,7 @@ export const useSamplingResultsColumns = (
                 accessor: 'actions',
                 sortable: false,
                 Cell: settings => (
-                    <ActionCell
-                        samplingResult={settings.row.original}
-                        planning={planning}
-                    />
+                    <ActionCell samplingResult={settings.row.original} />
                 ),
             },
             {

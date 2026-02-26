@@ -21,6 +21,7 @@ class ProfileMeUpdateSerializer(BaseProfileUpdateSerializer):
 class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     _org_units_unchanged = False
 
+    email = serializers.EmailField(required=False, allow_blank=True, write_only=True)
     first_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
     last_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
@@ -53,9 +54,11 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
         model = Profile
         fields = BaseProfileUpdateSerializer.Meta.fields + [
             "first_name",
+            "organization",
             "last_name",
             "user_name",
             "password",
+            "email",
             "color",
             "phone_number",
             "country_code",

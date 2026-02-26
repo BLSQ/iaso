@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import MESSAGES from '../messages';
 
 type Props = {
     handleChange: (value: any[]) => void;
@@ -23,7 +23,7 @@ const UsersLocations: FunctionComponent<Props> = ({
             titleMessage={MESSAGES.chooseLocation}
             onConfirm={onConfirm}
             multiselect
-            initialSelection={currentUser.org_units.value}
+            initialSelection={currentUser.org_units.value.map((orgUnit) => {return {id: orgUnit}})}
         />
     );
 };

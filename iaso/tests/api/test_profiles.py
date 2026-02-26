@@ -1507,7 +1507,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
-    @tag("patch")
     def test_update_user_add_phone_number(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.john)
@@ -1524,6 +1523,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
+
+        res = self.client.get(reverse("profiles-detail", kwargs={"pk": jum.id}))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["phone_number"], "+32477123456")
 
     @tag("patch")
     def test_update_profile_color(self):

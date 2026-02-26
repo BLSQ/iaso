@@ -186,7 +186,7 @@ class NestedOrgUnitSerializer(serializers.ModelSerializer):
     def get_opening_date(self, obj):
         return obj.opening_date.strftime("%d/%m/%Y") if obj.opening_date else None
 
-    def get_closing_date(self, obj):
+    def get_closed_date(self, obj):
         return obj.closed_date.strftime("%d/%m/%Y") if obj.closed_date else None
 
 
@@ -236,9 +236,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
 
     projects = NestedProjectSerializer(many=True, read_only=True, source="get_ordered_projects")
 
-    other_accounts = NestedAccountSerializer(
-        many=True, read_only=True, source="user.tenant_user.get_other_accounts"
-    )  # todo: Account as_dict
+    other_accounts = NestedAccountSerializer(many=True, read_only=True, source="user.tenant_user.get_other_accounts")
 
     editable_org_unit_type_ids = serializers.SerializerMethodField()
     user_roles_editable_org_unit_type_ids = serializers.ListField(

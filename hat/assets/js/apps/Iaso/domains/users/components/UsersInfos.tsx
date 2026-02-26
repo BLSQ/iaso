@@ -11,6 +11,7 @@ import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import MESSAGES from '../messages';
 import { InitialUserData, UserDialogData } from '../types';
 import { userHasAccessToModule } from '../utils';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 
 const styles: SxStyles = {
     passwordDisabled: {
@@ -29,6 +30,7 @@ type Props = {
     canBypassProjectRestrictions: boolean;
     setPhoneNumber: (phoneNumber: string, countryCode: string) => void;
     setEmail: (email: string) => void;
+    withPassword?: boolean;
 };
 
 export const UsersInfos: FunctionComponent<Props> = ({
@@ -39,6 +41,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
     canBypassProjectRestrictions,
     setPhoneNumber,
     setEmail,
+    withPassword=true,
 }) => {
     const loggedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -133,7 +136,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         disabled={isMultiAccountUser}
                     />
 
-                    {allowSendEmailInvitation && (
+                    {allowSendEmailInvitation && withPassword && (
                         <InputComponent
                             keyValue="send_email_invitation"
                             onChange={(key, value) => setFieldValue(key, value)}
@@ -143,6 +146,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
                             label={sendUserIEmailnvitationLabel}
                         />
                     )}
+                    {withPassword && (
                     <Box sx={passwordDisabled ? styles.passwordDisabled : {}}>
                         <InputComponent
                             keyValue="password"
@@ -161,6 +165,8 @@ export const UsersInfos: FunctionComponent<Props> = ({
                             disabled={passwordDisabled}
                         />
                     </Box>
+                    )
+                    }
                 </Grid>
                 <Grid item sm={12} md={6}>
                     <InputComponent
@@ -237,6 +243,12 @@ export const UsersInfos: FunctionComponent<Props> = ({
                                 label: locale.label,
                             };
                         })}
+                    />
+                    <ColorPicker
+                        currentColor={currentUser?.color?.value}
+                        onChangeColor={(color: string): void =>
+                            setFieldValue('color', color)
+                        }
                     />
                 </Grid>
             </Grid>

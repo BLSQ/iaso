@@ -121,7 +121,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                                     aria-labelledby="account-button"
                                     onKeyDown={menuListKeyDownHandler}
                                 >
-                                    {currentUser.other_accounts.map(account => (
+                                    {currentUser?.other_accounts?.map(account => (
                                         <MenuItem
                                             key={account.id}
                                             selected={

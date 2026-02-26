@@ -8,7 +8,6 @@ import React, {
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    AddButton,
     ConfirmCancelModal,
     IntlMessage,
     makeFullModal,
@@ -17,7 +16,6 @@ import {
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
-import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import * as Permissions from '../../../utils/permissions';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
@@ -30,6 +28,8 @@ import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { EditButton } from 'Iaso/domains/users/components/EditButton';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -59,7 +59,7 @@ type Props = {
 
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const defaultData: InitialUserData = {};
-const UserDialogComponent: FunctionComponent<Props> = ({
+const EditUserDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
     initialData = defaultData,
@@ -190,17 +190,8 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
         );
     }, [allUserRolesPermissions.length, allUserUserRolesPermissions]);
-    const isNewUser = !user.id?.value;
-    const allowConfirm =
-        !hasErrors &&
-        !(
-            user.user_name.value === '' ||
-            (isNewUser &&
-                (((!user.password.value || user.password.value === '') &&
-                        !user.send_email_invitation.value) ||
-                    (user.send_email_invitation.value &&
-                        user.email?.value === '')))
-        );
+    const allowConfirm = !hasErrors
+
     return (
         <>
             <WarningModal
@@ -290,6 +281,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             }
                             setPhoneNumber={setPhoneNumber}
                             setEmail={setEmail}
+                            withPassword={false}
                         />
                     </div>
                     {tab === 'permissions' && (
@@ -322,7 +314,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             handleChange={(ouTypesIds: number[]) =>
                                 setFieldValue(
-                                    'editable_org_unit_types',
+                                    'editable_org_unit_type_ids',
                                     ouTypesIds,
                                 )
                             }
@@ -334,7 +326,8 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-const modalWithButton = makeFullModal(UserDialogComponent, AddButton);
-const modalWithIcon = makeFullModal(UserDialogComponent, EditIconButton);
+const modalWithButton = makeFullModal(EditUserDialogComponent, EditButton);
+const modalWithIcon = makeFullModal(EditUserDialogComponent, EditIconButton);
 
-export { modalWithButton as AddUsersDialog, modalWithIcon as EditUsersDialog };
+export { modalWithButton as EditUserWithButtonDialog };
+export { modalWithIcon as EditUserWithIconDialog };

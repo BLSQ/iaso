@@ -1,6 +1,8 @@
+import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { makeUrlWithParams } from '../../../libs/utils.tsx';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { Profile } from 'Iaso/utils/usersUtils';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
 
 export const useGetProfilesApiParams = params => {
     const apiParams = params
@@ -35,4 +37,20 @@ export const useGetProfilesApiParams = params => {
 export const useGetProfiles = params => {
     const { url, apiParams } = useGetProfilesApiParams(params);
     return useSnackQuery(['profiles', apiParams], () => getRequest(url));
+};
+
+const getProfile = async (
+    profileId?: string,
+): Promise<Profile> => {
+    return getRequest(`/api/profiles/${profileId}/`);
+};
+
+export const useGetProfile = (
+    profileId?: string,
+): UseQueryResult<Profile, Error> => {
+    const queryKey: any[] = ['user', profileId];
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getProfile(profileId),
+    });
 };

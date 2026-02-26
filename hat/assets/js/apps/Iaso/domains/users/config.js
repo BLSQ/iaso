@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { IconButton, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
@@ -9,10 +9,11 @@ import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDia
 import PermissionCheckBoxes from './components/PermissionCheckBoxes.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import { UserRolePermissions } from './components/UserRolePermissions.tsx';
-import { EditUsersDialog } from './components/UsersDialog.tsx';
+import { EditUserWithIconDialog } from './components/EditUserDialog.tsx';
 import MESSAGES from './messages.ts';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
 import { userHasOneOfPermissions } from './utils';
+import { baseUrls } from 'Iaso/constants/urls';
 
 export const useUsersTableColumns = ({
     deleteProfile,
@@ -29,26 +30,31 @@ export const useUsersTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects__name',
                 accessor: 'projects',
+                sortable: false,
                 Cell: settings => <ProjectChips projects={settings.value} />,
             },
             {
                 Header: formatMessage(MESSAGES.userName),
                 id: 'user__username',
+                sortable: false,
                 accessor: 'user_name',
             },
             {
                 Header: formatMessage(MESSAGES.firstName),
                 id: 'user__first_name',
+                sortable: false,
                 accessor: 'first_name',
             },
             {
                 Header: formatMessage(MESSAGES.lastName),
                 id: 'user__last_name',
+                sortable: false,
                 accessor: 'last_name',
             },
             {
                 Header: formatMessage(MESSAGES.phoneNumber),
                 id: 'phone_number',
+                sortable: false,
                 accessor: 'phone_number',
                 Cell: settings =>
                     settings.value ? (
@@ -60,6 +66,7 @@ export const useUsersTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.email),
                 id: 'user__email',
+                sortable: false,
                 accessor: 'email',
                 Cell: settings =>
                     settings.value ? (
@@ -86,7 +93,12 @@ export const useUsersTableColumns = ({
                 sortable: false,
                 Cell: settings => (
                     <section>
-                        <EditUsersDialog
+                        <IconButton
+                            url={`/${baseUrls.userDetails}/userId/${settings.row.original.id}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.viewUser}
+                        />
+                        <EditUserWithIconDialog
                             initialData={settings.row.original}
                             titleMessage={MESSAGES.updateUser}
                             params={params}
@@ -126,6 +138,7 @@ export const useUsersTableColumns = ({
                                 onCreateExport={exportMobileSetup}
                             />
                         </DisplayIfUserHasPerm>
+
                     </section>
                 ),
             },

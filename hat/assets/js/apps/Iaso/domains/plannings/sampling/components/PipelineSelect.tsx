@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { Parameters } from 'Iaso/domains/openHexa/components/Parameters';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
@@ -14,6 +15,7 @@ import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUni
 import { LQASForm } from 'Iaso/domains/plannings/sampling/customForms/LQASForm';
 
 import { Planning } from 'Iaso/domains/plannings/types';
+import { useGetTaskDetails } from 'Iaso/domains/tasks/hooks/useGetTasks';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 import MESSAGES from '../../messages';
 
@@ -68,6 +70,17 @@ export const PipelineSelect: FunctionComponent<Props> = ({
         [setParameterValues],
     );
 
+    const queryClient = useQueryClient();
+    useGetTaskDetails(
+        taskStatus === 'SUCCESS' ? taskId : undefined,
+        false,
+        data => {
+            if (data.result?.group_id) {
+                queryClient.invalidateQueries('planningSamplingResults');
+            }
+        },
+    );
+
     return (
         <Box>
             <InputComponent
@@ -106,8 +119,6 @@ export const PipelineSelect: FunctionComponent<Props> = ({
                             handleParameterChange={handleParameterChange}
                             orgunitTypes={orgunitTypes}
                             isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                            taskStatus={taskStatus ?? 'QUEUED'}
-                            taskId={taskId}
                         />
                     )}
                     {pipeline.code !== lQAS_code && (

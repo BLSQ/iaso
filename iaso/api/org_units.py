@@ -98,15 +98,13 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 
 def is_field_referenced(field_name, requested_fields, order):
-        if not requested_fields:
-            return False
-        
-        fields_list = requested_fields.split(",")
-        return (
-            ":all" in fields_list 
-            or field_name in fields_list 
-            or field_name in order
-    )
+    if not requested_fields:
+        return False
+
+    fields_list = requested_fields.split(",")
+    return ":all" in fields_list or field_name in fields_list or field_name in order
+
+
 # noinspection PyMethodMayBeStatic
 class OrgUnitViewSet(viewsets.ViewSet):
     f"""Org units API
@@ -218,10 +216,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         order = request.query_params.get("order", "name").split(",")
         # Annotate number of instance per org unit to sort by it
         # order_by_instance_count = "instances_count" in order or "-instances_count" in order
-        count_instances = any([
-            is_export,
-            is_field_referenced("instances_count", requested_fields, order),
-        ])
+        count_instances = any(
+            [
+                is_export,
+                is_field_referenced("instances_count", requested_fields, order),
+            ]
+        )
         count_per_form = csv_format or xlsx_format
         # add annotation(s) if needed
         queryset = annotate_query(queryset, count_instances, count_per_form, forms)

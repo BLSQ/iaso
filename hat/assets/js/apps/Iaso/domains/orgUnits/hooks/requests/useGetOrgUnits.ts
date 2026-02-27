@@ -20,6 +20,18 @@ export type Result = Pagination & {
     counts: Count[];
 };
 
+export const DEFAULT_ORG_UNIT_COLUMNS = [
+    'id',
+    'projects',
+    'name',
+    'org_unit_type__name',
+    'source',
+    'validation_status',
+    'created_at',
+    'updated_at',
+    'actions',
+];
+
 type Props = {
     params: ApiParams;
     callback?: () => void;
@@ -41,9 +53,13 @@ export const useGetOrgUnits = ({
     enabled = false,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
-    const queryString = new URLSearchParams(params);
+    const apiParams = {
+        ...params,
+        fields: params.fields ?? DEFAULT_ORG_UNIT_COLUMNS.join(','),
+    };
+    const queryString = new URLSearchParams(apiParams);
     return useSnackQuery({
-        queryKey: ['orgunits', params],
+        queryKey: ['orgunits', apiParams],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
             enabled,

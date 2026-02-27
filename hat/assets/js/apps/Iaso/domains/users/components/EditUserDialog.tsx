@@ -16,6 +16,9 @@ import {
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { EditButton } from 'Iaso/domains/users/components/EditButton';
 import * as Permissions from '../../../utils/permissions';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
@@ -27,9 +30,6 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import { EditButton } from 'Iaso/domains/users/components/EditButton';
-import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -93,8 +93,15 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                 user[key].value !== '' &&
                 user[key].value?.length !== 0 &&
                 user[key].value !== null
-            )
-                currentUser[key] = user[key].value;
+            ) {
+                if (key === 'org_units') {
+                    currentUser[key] = user?.[key].value?.map(
+                        (orgUnit: OrgUnit) => orgUnit?.id,
+                    );
+                } else {
+                    currentUser[key] = user[key].value;
+                }
+            }
         });
 
         saveProfile(currentUser, {
@@ -190,7 +197,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
         );
     }, [allUserRolesPermissions.length, allUserUserRolesPermissions]);
-    const allowConfirm = !hasErrors
+    const allowConfirm = !hasErrors;
 
     return (
         <>
@@ -299,12 +306,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>
-                                setFieldValue(
-                                    'org_units',
-                                    ouList.map(
-                                        (ouListItem: OrgUnit): number => ouListItem.id,
-                                    ),
-                                )
+                                setFieldValue('org_units', ouList)
                             }
                             currentUser={user}
                         />
@@ -326,7 +328,18 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-const modalWithButton = makeFullModal(EditUserDialogComponent, EditButton);
+const EditUserButton = props => {
+    return (
+        <EditButton
+            message={{
+                id: 'test',
+                defaultMessage: 'Update user',
+            }}
+            {...props}
+        />
+    );
+};
+const modalWithButton = makeFullModal(EditUserDialogComponent, EditUserButton);
 const modalWithIcon = makeFullModal(EditUserDialogComponent, EditIconButton);
 
 export { modalWithButton as EditUserWithButtonDialog };

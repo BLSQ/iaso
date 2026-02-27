@@ -13,7 +13,7 @@ export const Details: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.userDetails) as {
         userId?: string;
     };
-    const {userId} = params;
+    const { userId } = params;
 
     return (
         <>
@@ -25,4 +25,4 @@ export const Details: FunctionComponent = () => {
             <UserDetailsView userId={userId} />
         </>
     );
-};
+}

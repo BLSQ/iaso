@@ -17,13 +17,14 @@ const UsersLocations: FunctionComponent<Props> = ({
         }
         handleChange(orgUnitsList);
     };
+
     return (
         <OrgUnitTreeviewModal
             toggleOnLabelClick={false}
             titleMessage={MESSAGES.chooseLocation}
             onConfirm={onConfirm}
             multiselect
-            initialSelection={currentUser.org_units.value.map((orgUnit) => {return {id: orgUnit}})}
+            initialSelection={currentUser.org_units.value}
         />
     );
 };

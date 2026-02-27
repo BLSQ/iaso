@@ -53,3 +53,8 @@ export type Profile = {
     country_code?: string | null;
     projects?: Project[];
 };
+
+export type SaveUserPasswordQuery = {
+    password: string,
+    confirm_password: string
+}

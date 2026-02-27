@@ -1,7 +1,26 @@
 from phonenumbers import region_code_for_number
 from rest_framework import serializers
 
-from iaso.models import Profile
+from iaso.api.profiles.serializers.retrieve import NestedOrgUnitSerializer
+from iaso.models import Profile, Project, UserRole
+
+
+class RelatedProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ["id", "name", "color"]
+
+
+class NestedUserRoleSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserRole
+        fields = ["id", "name"]
+
+    def get_name(self, obj):
+        head, sep, tail = obj.group.name.partition("_")
+        return tail if sep else obj.group.name
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
@@ -17,7 +36,12 @@ class ProfileListSerializer(serializers.ModelSerializer):
     user_roles_editable_org_unit_type_ids = serializers.ReadOnlyField(
         source="get_user_roles_editable_org_unit_type_ids"
     )
-    user_roles = serializers.PrimaryKeyRelatedField(source="get_ordered_user_roles", many=True, read_only=True)
+    user_roles = NestedUserRoleSerializer(source="get_ordered_user_roles", many=True, read_only=True)
+    projects = RelatedProjectSerializer(many=True, read_only=True)
+    user_permissions = serializers.SerializerMethodField()
+    is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
+    is_superuser = serializers.BooleanField(source="user.is_superuser", read_only=True)
+    org_units = NestedOrgUnitSerializer(many=True, source="get_ordered_org_units")
 
     class Meta:
         model = Profile
@@ -35,6 +59,11 @@ class ProfileListSerializer(serializers.ModelSerializer):
             "user_roles_editable_org_unit_type_ids",
             "user_roles",
             "color",
+            "projects",
+            "user_permissions",
+            "is_staff",
+            "is_superuser",
+            "org_units",
         ]
 
     # todo : cache this ?
@@ -66,3 +95,6 @@ class ProfileListSerializer(serializers.ModelSerializer):
             editable_org_unit_type_ids = [out.pk for out in obj.editable_org_unit_types.all()]
 
         return editable_org_unit_type_ids
+
+    def get_user_permissions(self, obj):
+        return list(obj.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True))

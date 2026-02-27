@@ -80,7 +80,7 @@ export const useUsersTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.userRoles),
                 id: 'annotated_first_user_role',
-                accessor: 'user_roles_permissions',
+                accessor: 'user_roles',
                 Cell: settings =>
                     settings.value
                         ?.map(user_role => user_role.name)

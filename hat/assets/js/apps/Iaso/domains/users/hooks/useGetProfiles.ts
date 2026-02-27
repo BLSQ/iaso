@@ -48,7 +48,7 @@ const getProfile = async (
 export const useGetProfile = (
     profileId?: string,
 ): UseQueryResult<Profile, Error> => {
-    const queryKey: any[] = ['user', profileId];
+    const queryKey: any[] = ['userDetail', profileId];
     return useSnackQuery({
         queryKey,
         queryFn: () => getProfile(profileId),

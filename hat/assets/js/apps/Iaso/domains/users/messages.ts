@@ -99,6 +99,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Update user',
         id: 'iaso.users.update',
     },
+    updateUserPassword: {
+        defaultMessage: 'Update password',
+        id: 'iaso.users.updatePassword',
+    },
     deleteUserTitle: {
         id: 'iaso.users.dialog.deleteUserTitle',
         defaultMessage: 'Are you sure you want to delete this user?',
@@ -542,6 +546,14 @@ const MESSAGES = defineMessages({
     viewUser: {
         id: 'iaso.users.viewUser',
         defaultMessage: 'View user details',
+    },
+    delete: {
+        id: "iaso.users.delete",
+        defaultMessage: 'Delete'
+    },
+    passwordMatch: {
+        id: "iaso.users.password.match",
+        defaultMessage: "Passwords must match."
     }
 });
 

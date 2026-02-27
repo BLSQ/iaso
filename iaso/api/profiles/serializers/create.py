@@ -29,8 +29,13 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
     org_units = serializers.PrimaryKeyRelatedField(
         allow_empty=True, allow_null=True, many=True, queryset=OrgUnit.objects.all(), required=False
     )
-    editable_org_unit_types = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, queryset=OrgUnitType.objects.all(), required=False, many=True
+    editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
+        source="editable_org_unit_types",
+        allow_empty=True,
+        allow_null=True,
+        queryset=OrgUnitType.objects.all(),
+        required=False,
+        many=True,
     )
 
     user_permissions = serializers.SlugRelatedField(
@@ -58,7 +63,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
             "user_roles",
             "projects",
             "org_units",
-            "editable_org_unit_types",
+            "editable_org_unit_type_ids",
             "user_permissions",
             "phone_number",
             "country_code",

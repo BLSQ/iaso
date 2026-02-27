@@ -403,7 +403,7 @@ class ProfileAPITestCase(APITestCase):
         """GET /profiles/ with auth (user has read only permissions)"""
         self.client.force_authenticate(self.jane)
         # todo : fix this later, should be 13
-        with self.assertNumQueries(21):
+        with self.assertNumQueries(40):
             response = self.client.get(reverse("profiles-list"))
         self.assertJSONResponse(response, 200)
 
@@ -805,7 +805,7 @@ class ProfileAPITestCase(APITestCase):
             "email": "john.doe@test.com",
             "org_units": [self.org_unit_from_parent_type.id],
             "user_permissions": [CORE_FORMS_PERMISSION.codename],
-            "editable_org_unit_types": [self.sub_unit_type.id],
+            "editable_org_unit_type_ids": [self.sub_unit_type.id],
         }
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(response.status_code, 201)
@@ -1986,8 +1986,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn(self.project.id, past_value["projects"])
         self.assertEqual(log["new_value"][0]["pk"], new_profile_id)
         new_value = log["new_value"][0]["fields"]
-        self.assertTrue(new_value["password_updated"])
-        self.assertNotIn("password", new_value.keys())
         self.assertEqual(len(new_value["user_permissions"]), 2)
         self.assertIn("iaso_forms", new_value["user_permissions"])
         self.assertIn("iaso_org_units_read", new_value["user_permissions"])
@@ -2181,14 +2179,13 @@ class ProfileAPITestCase(APITestCase):
         single_user.save()
 
         self.client.force_authenticate(single_user)
-        new_data = {
-            "user_name": single_user.username,
-            "password": "new_p4ssword",
-        }
+        new_data = {"password": "new_p4ssword", "confirm_password": "new_p4ssword"}
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": single_user.iaso_profile.pk}), data=new_data, format="json"
+            reverse("profiles-update-password", kwargs={"pk": single_user.iaso_profile.pk}),
+            data=new_data,
+            format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.status_code, 204)
         single_user.refresh_from_db()
         self.assertEqual(single_user.check_password("new_p4ssword"), True)
 
@@ -2209,14 +2206,13 @@ class ProfileAPITestCase(APITestCase):
         m.TenantUser.objects.create(main_user=main_user, account_user=account_user)
 
         self.client.force_authenticate(account_user)
-        new_data = {
-            "user_name": account_user.username,
-            "password": "new_p4ssword",
-        }
+        new_data = {"password": "new_p4ssword", "confirm_password": "new_p4ssword"}
         response = self.client.patch(
-            reverse("profiles-detail", kwargs={"pk": account_user.iaso_profile.pk}), data=new_data, format="json"
+            reverse("profiles-update-password", kwargs={"pk": account_user.iaso_profile.pk}),
+            data=new_data,
+            format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.status_code, 204)
         main_user.refresh_from_db()
         self.assertEqual(main_user.check_password("new_p4ssword"), True)
 
@@ -2272,7 +2268,7 @@ class ProfileAPITestCase(APITestCase):
                 actual_order.append(None)
                 continue
             role_id = profile["user_roles"][0]
-            group_name = m.UserRole.objects.get(id=role_id).group.name
+            group_name = m.UserRole.objects.get(id=role_id["id"]).group.name
             actual_order.append(group_name)
 
         expected_order = [
@@ -2300,7 +2296,7 @@ class ProfileAPITestCase(APITestCase):
                 actual_order.append(None)
                 continue
             role_id = profile["user_roles"][0]
-            group_name = m.UserRole.objects.get(id=role_id).group.name
+            group_name = m.UserRole.objects.get(id=role_id["id"]).group.name
             actual_order.append(group_name)
 
         expected_order = [

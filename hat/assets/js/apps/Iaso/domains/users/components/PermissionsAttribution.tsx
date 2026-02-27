@@ -74,9 +74,10 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
         // Permission list is not displayed for superuser, no need to fetch it from server
         options: { enabled: !isSuperUser },
     });
+
     const setPermissions = useCallback(
         (codeName: string | string[], isChecked: boolean) => {
-            const newUserPerms = [...currentUser.user_permissions.value];
+            const newUserPerms = [...currentUser.user_permissions.value?.map((v: {id: number, name: string} | number) => typeof v === "object" && "id" in v ? v.id : v)];
             if (!isChecked) {
                 const permIndex = newUserPerms.indexOf(codeName);
                 newUserPerms.splice(permIndex, 1);
@@ -105,7 +106,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
         return permissions;
     }, [data?.permissions, loggedInUser]);
 
-    const userPermissions = currentUser.user_permissions.value;
+    const userPermissions = currentUser.user_permissions.value?.map((v: {id: number, name: string} | number) => typeof v === "object" && "id" in v ? v.id : v);
     const { data: userRoles, isFetching } = useGetUserRolesDropDown();
     const permissionsData = useGetUserPermissions(
         allPermissions,
@@ -148,7 +149,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
                         <InputComponent
                             keyValue="user_roles"
                             onChange={handleChangeUserRoles}
-                            value={currentUser.user_roles.value}
+                            value={currentUser.user_roles.value?.map((v: {id: number, name: string} | number) => typeof v === "object" && "id" in v ? v.id : v)}
                             type="select"
                             multi
                             label={MESSAGES.userRoles}

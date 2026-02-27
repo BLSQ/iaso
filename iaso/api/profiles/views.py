@@ -54,7 +54,7 @@ from iaso.api.profiles.serializers import (
     ProfileUpdateSerializer,
     ProfileUserFallbackRetrieveSerializer,
 )
-from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer
+from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer, ProfileUpdatePasswordSerializer
 from iaso.models import OrgUnit, Profile, TenantUser
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
@@ -129,7 +129,7 @@ class ProfilesViewSet(ModelViewSet):
     DELETE /api/profiles/me => current user
     """
 
-    http_method_names = ["get", "post", "patch", "delete", "head", "options", "trace"]
+    http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
 
@@ -149,6 +149,8 @@ class ProfilesViewSet(ModelViewSet):
             if self.kwargs.get(self.lookup_url_kwarg or self.lookup_field, "") == PK_ME:
                 return ProfileMeUpdateSerializer
             return ProfileUpdateSerializer
+        if self.action in ["update_password"]:
+            return ProfileUpdatePasswordSerializer
 
         raise NotImplementedError(f"Serializer not implemented for action {self.action}")
 
@@ -206,6 +208,26 @@ class ProfilesViewSet(ModelViewSet):
     def export_xlsx(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         return self.list_export(queryset, file_format=FileFormatEnum.XLSX)
+
+    @action(detail=True, methods=["patch", "put"], url_path="update-password", url_name="update-password")
+    def update_password(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = instance.user
+
+        if TenantUser.is_multi_account_user(user):
+            self.perform_update_password(user.tenant_user.main_user, serializer.validated_data["password"])
+            user.tenant_user.main_user.save()
+        else:
+            self.perform_update_password(user, serializer.validated_data["password"])
+            user.save()
+
+        if self.request.user == user:
+            update_session_auth_hash(self.request, user)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def _post_create_user(self, password, user, send_email_invitation, first_name, last_name, user_name, email):
         if password:
@@ -285,7 +307,7 @@ class ProfilesViewSet(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def update_password(self, user, password):
+    def perform_update_password(self, user, password):
         user.set_password(password)
 
         if self.request.user == user:
@@ -294,10 +316,10 @@ class ProfilesViewSet(ModelViewSet):
     def _post_update_user(self, user, serializer_data):
         if "password" in serializer_data and serializer_data.get("password"):
             if TenantUser.is_multi_account_user(user):
-                self.update_password(user.tenant_user.main_user, serializer_data["password"])
+                self.perform_update_password(user.tenant_user.main_user, serializer_data["password"])
                 user.tenant_user.main_user.save()
             else:
-                self.update_password(user, serializer_data["password"])
+                self.perform_update_password(user, serializer_data["password"])
 
         if not TenantUser.is_multi_account_user(user):
             if "first_name" in serializer_data:

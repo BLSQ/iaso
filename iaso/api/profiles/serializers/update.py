@@ -28,7 +28,6 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     user_name = serializers.CharField(required=False, write_only=True)
 
     country_code = serializers.CharField(write_only=True, required=False)
-    password = serializers.CharField(write_only=True, required=False, allow_blank=False)
 
     projects = serializers.PrimaryKeyRelatedField(
         allow_empty=True, allow_null=True, queryset=Project.objects.all(), required=False, many=True
@@ -44,8 +43,13 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     org_units = serializers.PrimaryKeyRelatedField(
         allow_empty=True, allow_null=True, many=True, queryset=OrgUnit.objects.all(), required=False
     )
-    editable_org_unit_types = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, queryset=OrgUnitType.objects.all(), required=False, many=True
+    editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
+        source="editable_org_unit_types",
+        allow_empty=True,
+        allow_null=True,
+        queryset=OrgUnitType.objects.all(),
+        required=False,
+        many=True,
     )
 
     phone_number = CountryAwarePhoneNumberField(required=False, allow_blank=True)
@@ -57,7 +61,6 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
             "organization",
             "last_name",
             "user_name",
-            "password",
             "email",
             "color",
             "phone_number",
@@ -65,7 +68,7 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
             "dhis2_id",
             "user_permissions",
             "org_units",
-            "editable_org_unit_types",
+            "editable_org_unit_type_ids",
             "projects",
             "user_roles",
         ]
@@ -155,7 +158,18 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
 
         return value
 
+
+class ProfileUpdatePasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
     def validate_password(self, value):
         if not value.strip():
             raise serializers.ValidationError(_("Password cannot be empty."))
         return value
+
+    def validate(self, data):
+        if data.get("password", "") != data.get("confirm_password", ""):
+            raise serializers.ValidationError(_("Passwords must match."))
+
+        return data

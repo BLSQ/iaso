@@ -13,7 +13,7 @@ import MESSAGES from 'Iaso/domains/assignments/messages';
 import { useSaveTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
 import { SubTeam, Team } from 'Iaso/domains/teams/types/team';
 import { User } from 'Iaso/domains/teams/types/team';
-import { useSaveProfileColor } from 'Iaso/domains/users/hooks/useSaveProfile';
+import { useSaveProfile, useSaveProfileColor } from 'Iaso/domains/users/hooks/useSaveProfile';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import { AssignmentsResult } from '../../hooks/requests/useGetAssignments';
 import { AssigneeRow } from './AssigneeRow';
@@ -42,7 +42,7 @@ export const TeamTable: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { mutate: updateTeam } = useSaveTeam('edit', false);
-    const { mutate: updateUser } = useSaveProfileColor(false);
+    const { mutate: updateUser } = useSaveProfile(undefined, false);
 
     const countTeams = useCallback(
         (subTeam: SubTeam) => {

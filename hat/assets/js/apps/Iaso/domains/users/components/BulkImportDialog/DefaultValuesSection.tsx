@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Grid } from '@mui/material';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useAppLocales } from '../../../app/constants';
@@ -51,19 +51,81 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
     }));
 
     const selectedUserRoleIds = useMemo(() => {
-        if (!defaults.default_user_roles) return [];
-        return defaults.default_user_roles.map(id => id.toString());
+        return defaults.default_user_roles?.map(String) ?? [];
     }, [defaults.default_user_roles]);
 
     const selectedProjectIds = useMemo(() => {
-        if (!defaults.default_projects) return [];
-        return defaults.default_projects.map(id => id.toString());
+        return defaults.default_projects?.map(String) ?? [];
     }, [defaults.default_projects]);
 
     const selectedTeamIds = useMemo(() => {
-        if (!defaults.default_teams) return [];
-        return defaults.default_teams.map(id => id.toString());
+        return defaults.default_teams?.map(String) ?? [];
     }, [defaults.default_teams]);
+
+    const handlePermissionChange = useCallback(
+        (_key: string, value: string) => {
+            const selectedIds = value ? value.split(',') : [];
+            const permissionIds = selectedIds.map(Number);
+            onChange({
+                ...defaults,
+                default_permissions: permissionIds,
+            });
+        },
+        [defaults, onChange],
+    );
+
+    const handleUserRolesChange = useCallback(
+        (_key: string, value: string) => {
+            const selectedIds = value ? value.split(',') : [];
+            const roleIds = selectedIds.map(Number);
+            onChange({
+                ...defaults,
+                default_user_roles: roleIds,
+            });
+        },
+        [defaults, onChange],
+    );
+
+    const handleProjectsChange = useCallback(
+        (_key: string, value: string) => {
+            const selectedIds = value ? value.split(',') : [];
+            const projectIds = selectedIds.map(Number);
+            onChange({
+                ...defaults,
+                default_projects: projectIds,
+            });
+        },
+        [defaults, onChange],
+    );
+
+    const handleLanguageChange = useCallback(
+        (_key: string, value: string) => {
+            onChange({
+                ...defaults,
+                default_profile_language: value,
+            });
+        },
+        [defaults, onChange],
+    );
+
+    const handleTeamsChange = useCallback(
+        (_key: string, value: string) => {
+            const selectedIds = value ? value.split(',') : [];
+            const teamIds = selectedIds.map(Number);
+            onChange({
+                ...defaults,
+                default_teams: teamIds,
+            });
+        },
+        [defaults, onChange],
+    );
+
+    const handleOrganizationChange = useCallback(
+        (_key: string, value: string) => {
+            onChange({ ...defaults, default_organization: value });
+        },
+        [defaults, onChange],
+    );
 
     return (
         <Grid container spacing={2}>
@@ -74,12 +136,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     keyValue="default_permissions"
                     label={MESSAGES.permissions}
                     value={defaults.default_permissions?.map(String) || []}
-                    onChange={(key, value) =>
-                        onChange({
-                            ...defaults,
-                            default_permissions: value.map(Number),
-                        })
-                    }
+                    onChange={handlePermissionChange}
                     options={permissionsData || []}
                     loading={isLoadingPermissions}
                 />
@@ -92,14 +149,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     keyValue="default_user_roles"
                     label={MESSAGES.userRoles}
                     value={selectedUserRoleIds}
-                    onChange={(key, value) => {
-                        const selectedIds = value ? value.split(',') : [];
-                        const roleIds = selectedIds.map(Number);
-                        onChange({
-                            ...defaults,
-                            default_user_roles: roleIds,
-                        });
-                    }}
+                    onChange={handleUserRolesChange}
                     options={userRolesData || []}
                     loading={isLoadingUserRoles}
                 />
@@ -112,14 +162,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     keyValue="default_projects"
                     label={MESSAGES.projects}
                     value={selectedProjectIds}
-                    onChange={(key, value) => {
-                        const selectedIds = value ? value.split(',') : [];
-                        const projectIds = selectedIds.map(Number);
-                        onChange({
-                            ...defaults,
-                            default_projects: projectIds,
-                        });
-                    }}
+                    onChange={handleProjectsChange}
                     options={availableProjects}
                     loading={isFetchingProjects}
                 />
@@ -131,12 +174,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     keyValue="default_profile_language"
                     label={MESSAGES.language}
                     value={defaults.default_profile_language || ''}
-                    onChange={(key, value) =>
-                        onChange({
-                            ...defaults,
-                            default_profile_language: value,
-                        })
-                    }
+                    onChange={handleLanguageChange}
                     options={languageOptions}
                 />
             </Grid>
@@ -148,14 +186,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     keyValue="default_teams"
                     label={MESSAGES.teams}
                     value={selectedTeamIds}
-                    onChange={(key, value) => {
-                        const selectedIds = value ? value.split(',') : [];
-                        const teamIds = selectedIds.map(Number);
-                        onChange({
-                            ...defaults,
-                            default_teams: teamIds,
-                        });
-                    }}
+                    onChange={handleTeamsChange}
                     options={teamsData || []}
                     loading={isFetchingTeams}
                 />
@@ -167,9 +198,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     keyValue="default_organization"
                     label={MESSAGES.organization}
                     value={defaults.default_organization || ''}
-                    onChange={(key, value) =>
-                        onChange({ ...defaults, default_organization: value })
-                    }
+                    onChange={handleOrganizationChange}
                 />
             </Grid>
 

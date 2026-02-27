@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import {
     Box,
     FormControlLabel,
@@ -21,9 +21,10 @@ import MESSAGES from '../../messages';
 import { BulkImportDefaults } from '../../types';
 import { BulkImportButton } from './BulkImportButton';
 import { DefaultValuesSection } from './DefaultValuesSection';
-import { ValidationErrorTable } from './ValidationErrorTable';
 import { useBulkUserValidation } from './hooks/useBulkUserValidation';
+import { useErrorProcessor } from './hooks/useErrorProcessor';
 import { useUploadCsv } from './hooks/useUploadCsv';
+import { ValidationErrorTable } from './ValidationErrorTable';
 
 type Props = {
     closeDialog: () => void;
@@ -84,27 +85,10 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         isValid,
     } = formik;
 
-    // custom logic to show both api and formik errors.
-    // No translation is possible for the backend as it needs to be refactored to send translation keys
-    const { csvValidationErrors, simpleErrors } = useMemo(() => {
-        const csvErrors = apiErrors?.error?.file?.csv_validation_errors || [];
-        const simple: string[] = [];
-
-        const formikError = errors.file;
-        if (formikError) {
-            simple.push(formikError);
-        }
-
-        const apiError = apiErrors.error;
-        if (apiError && !csvErrors.length) {
-            simple.push(apiError);
-        }
-
-        return {
-            csvValidationErrors: csvErrors,
-            simpleErrors: simple,
-        };
-    }, [apiErrors.error, errors.file]);
+    const { csvValidationErrors, simpleErrors } = useErrorProcessor(
+        apiErrors,
+        errors.file,
+    );
 
     const allowConfirm = isValid && Boolean(touched.file) && !isLoading;
     const Buttons = ({ closeDialog: close }) => {

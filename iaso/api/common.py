@@ -319,7 +319,12 @@ class EtlModelViewset(ModelViewSet):
     Use case: dashboard endpoints that will try to fetch all instances of a model
     """
 
-    pagination_class = EtlPaginator
+    results_key = "results"
+    # FIXME Contrary to name it remove result key if NOT paginated
+    remove_results_key_if_paginated = False
+
+    def pagination_class(self):
+        return EtlPaginator(self.get_results_key())
 
     def get_pagination_class(self):
         custom_pagination_class = getattr(self, "pagination_class", None)

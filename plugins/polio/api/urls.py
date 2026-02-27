@@ -5,6 +5,7 @@ from plugins.polio.api.calendar.views import CampaignCalendarViewSet, Integrated
 from plugins.polio.api.campaign_groups.views import CampaignGroupViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from plugins.polio.api.campaigns.views.campaigns import CampaignViewSet
+from plugins.polio.api.campaigns.views.campaigns_dashboards import CampaignsForDashboardsViewSet
 from plugins.polio.api.chronogram.views import ChronogramTaskViewSet, ChronogramTemplateTaskViewSet, ChronogramViewSet
 from plugins.polio.api.country_plan.views import CountryPlanViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
@@ -166,6 +167,11 @@ router.register(
 )
 router.register(
     r"polio/dashboards/campaigns",
+    CampaignsForDashboardsViewSet,
+    basename="dashboard_campaigns_v2",
+)
+router.register(
+    r"polio/dashboards/campaigns/legacy",
     CampaignDashboardViewSet,
     basename="dashboard_campaigns",
 )

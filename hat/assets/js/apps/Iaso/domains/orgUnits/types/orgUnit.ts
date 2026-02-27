@@ -103,6 +103,7 @@ export type OrgUnitParams = UrlParams & {
     searchActive?: string;
     searches: string;
     isClusterActive?: string;
+    fields: string;
 };
 
 export type OrgUnitsApi = {

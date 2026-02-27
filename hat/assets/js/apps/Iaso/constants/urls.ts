@@ -160,6 +160,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'searchActive',
             'searches',
             'isClusterActive',
+            'fields',
         ],
     },
     orgUnitDetails: {

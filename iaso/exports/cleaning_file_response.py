@@ -17,7 +17,8 @@ class CleaningFileResponse(FileResponse):
         finally:
             try:
                 self._file.close()
-            except Exception:
+            except Exception:  # noqa: S110
+                # todo : warn log ? and remove noqa
                 pass
             try:
                 os.remove(self._path)

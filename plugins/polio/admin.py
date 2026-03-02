@@ -1,3 +1,5 @@
+import logging
+
 import gspread.utils  # type: ignore
 
 from django import forms
@@ -6,7 +8,7 @@ from django.contrib.admin import widgets
 from django.db import models
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 from translated_fields import TranslatedFieldAdmin
 
 from iaso.admin import IasoJSONEditorWidget
@@ -43,6 +45,9 @@ from .models import (
     create_polio_notifications_async,
 )
 from .models.performance_thresholds import PerformanceThresholds
+
+
+log = logging.getLogger(__name__)
 
 
 class IntegratedCampaignsInline(admin.TabularInline):
@@ -131,36 +136,67 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
         # return HTML string which will be display in the form
         # for sheet in self.content['sheets']:
         html = ""
+        sections = []
 
         for sheet in obj.content["sheets"]:
-            html += f"<details open><summary><b>{sheet['title']}</b></summary><table>"
             try:
                 if not sheet["values"]:
-                    html += "Empty</table></details>"
+                    sections.append(
+                        format_html(
+                            "<details open><summary><b>{}</b></summary><table>Empty</table></details>",
+                            sheet["title"],
+                        )
+                    )
                     continue
 
                 values = gspread.utils.fill_gaps(sheet["values"])
 
-                html += "<tr><td></td>"
-                for col_num in range(len(values[0])):
-                    html += f"<td>{col_num}</td>"
-                html += "</tr>"
+                header = format_html_join(
+                    "",
+                    "<td>{}</td>",
+                    ((col_num,) for col_num in range(len(values[0]))),
+                )
 
-                for row_num, row in enumerate(values):
-                    html += f"<tr><td>{row_num}</td>"
+                rows = format_html_join(
+                    "",
+                    "<tr><td>{}</td>{}</tr>",
+                    (
+                        (
+                            row_num,
+                            format_html_join(
+                                "",
+                                "<td>{}</td>",
+                                ((col,) for col in row),
+                            ),
+                        )
+                        for row_num, row in enumerate(values)
+                    ),
+                )
 
-                    for col in row:
-                        html += f"<td>{col}</td>\n"
-                    html += "</tr>"
-
+                sections.append(
+                    format_html(
+                        "<details open><summary><b>{}</b></summary><table><tr><td></td>{}</tr>{}</table></details>",
+                        sheet["title"],
+                        header,
+                        rows,
+                    )
+                )
             except Exception as e:
-                print(e)
-                html += f"<error>render error: {e}</error>"
-                html += f"<pre>{sheet['values']}</pre>"
-            html += "</table></details>"
+                log.error(e)
+                sections.append(
+                    format_html(
+                        "<details open>"
+                        "<summary><b>{}</b></summary>"
+                        "<error>render error: {}</error>"
+                        "<pre>{}</pre>"
+                        "</details>",
+                        sheet.get("title", "unknown"),
+                        e,
+                        sheet.get("values"),
+                    )
+                )
 
-        # print(html)
-        return mark_safe(html)
+        return format_html("{}", format_html_join("", "{}", ((s,) for s in sections)))
 
 
 @admin.register(CampaignGroup)

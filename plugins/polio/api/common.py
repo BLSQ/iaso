@@ -142,7 +142,7 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
 
             logger.info("paginated_url: " + paginated_url)
 
-            response = requests.get(paginated_url, auth=(login, password))
+            response = requests.get(paginated_url, auth=(login, password), timeout=(3.05, 30))
 
             empty = response.status_code == 404
             if not empty:
@@ -226,7 +226,7 @@ class RoundSelection(str, Enum):
 
 
 class LQASStatus(str, Enum):
-    Pass = "1lqasOK"
+    Pass = "1lqasOK"  # noqa: S105
     Fail = "3lqasFail"
     InScope = "inScope"
 

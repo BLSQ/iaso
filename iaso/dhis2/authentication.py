@@ -31,6 +31,7 @@ def dhis2_callback(request, dhis2_slug):
             auth=HTTPBasicAuth(dhis2_slug, IASO_DHIS2_SECRET),
             headers={"Content-Type": "Accept: application/json"},
             params=payload,
+            timeout=(3.05, 30),
         )
 
         response.raise_for_status()
@@ -38,7 +39,9 @@ def dhis2_callback(request, dhis2_slug):
         if response.json()["access_token"]:
             access_token = response.json()["access_token"]
 
-            user_info = requests.get(DHIS2_SERVER_URL + "api/me", headers={"Authorization": f"Bearer {access_token}"})
+            user_info = requests.get(
+                DHIS2_SERVER_URL + "api/me", headers={"Authorization": f"Bearer {access_token}"}, timeout=(3.05, 30)
+            )
 
             user_dhis2_id = user_info.json()["id"]
 

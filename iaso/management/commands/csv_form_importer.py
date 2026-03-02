@@ -112,7 +112,8 @@ class Command(BaseCommand):
 
                                         data[m["xls_form_id"]] = int(value)
                                         # print(formula, value)
-                                    except Exception:
+                                    except Exception:  # noqa: S110
+                                        # todo : print warning ? and remove noqa
                                         pass
                                         # print("problems with values", v1, data[v1], v2, data[v2], e)
 
@@ -175,7 +176,8 @@ class Command(BaseCommand):
 
                                         data[m["xls_form_id"]] = value
                                         # print("value for %s %s %s" % (key, m['xls_form_id'], value, ))
-                                    except Exception:  # FIXME: too broad exception
+                                    except Exception:  # noqa: S110
+                                        # todo: too broad exception + print error?
                                         pass
                                 uuid = str(uuid4())
                                 data["instanceID"] = "uuid:%s" % uuid

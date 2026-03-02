@@ -179,7 +179,8 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
         if country_blocks:
             try:
                 queryset = queryset.filter(country__groups__in=country_blocks.split(","))
-            except:
+            except:  # noqa: S110
+                # todo : add warn log ? and remove noqa
                 pass
 
         current_order = request.GET.get("order")

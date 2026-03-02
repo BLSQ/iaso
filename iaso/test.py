@@ -160,7 +160,7 @@ class IasoTestCaseMixin:
 
     def load_fixture_with_jinja_template(self, path_to_fixtures: str, fixture_name: str, context: dict = {}) -> str:
         # Loads a fixture with Jinja2 templating support - context contains all variables
-        env = Environment(loader=FileSystemLoader(path_to_fixtures))
+        env = Environment(loader=FileSystemLoader(path_to_fixtures), autoescape=True)
         template = env.get_template(fixture_name)
         return template.render(context)
 

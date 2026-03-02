@@ -25,7 +25,7 @@ def get_powerbi_service_principal_token(tenant_id, client_id, secret_value):
         "client_id": client_id,
         "client_secret": secret_value,
     }
-    r = requests.post(url=SP_AUTH_URL.format(tenant_id=tenant_id), data=body)
+    r = requests.post(url=SP_AUTH_URL.format(tenant_id=tenant_id), data=body, timeout=(3.05, 30))
     r.raise_for_status()
     access_token = r.json()["access_token"]
     return access_token
@@ -35,7 +35,7 @@ def get_powerbi_report_token_with_sp(sp_access_token, group_id, report_id):
     body = {"accessLevel": "View"}
     url = "https://api.powerbi.com/v1.0/myorg/groups/%s/reports/%s/GenerateToken" % (group_id, report_id)
     headers = {"Content-Type": "application/json", "Authorization": "Bearer %s" % sp_access_token}
-    r = requests.post(url=url, json=body, headers=headers)
+    r = requests.post(url=url, json=body, headers=headers, timeout=(3.05, 30))
     r.raise_for_status()
     report_token = r.json()["token"]
     return report_token
@@ -136,11 +136,11 @@ def launch_dataset_refresh(group_id, data_set_id):
     url = "https://api.powerbi.com/v1.0/myorg/groups/%s/datasets/%s/refreshes" % (group_id, data_set_id)
     headers = {"Content-Type": "application/json", "Authorization": "Bearer %s" % sp_access_token}
 
-    r = requests.post(url=url, json=body, headers=headers)
+    r = requests.post(url=url, json=body, headers=headers, timeout=(3.05, 30))
     r.raise_for_status()
 
     if extra_sync_config:
         for extra_dataset_id in extra_sync_config:
             url = "https://api.powerbi.com/v1.0/myorg/groups/%s/datasets/%s/refreshes" % (group_id, extra_dataset_id)
-            r = requests.post(url=url, json=body, headers=headers)
+            r = requests.post(url=url, json=body, headers=headers, timeout=(3.05, 30))
             r.raise_for_status()

@@ -215,7 +215,7 @@ class TestCredentialSerializer(serializers.Serializer):
 
         # check the url authenticity throught the dhis2 api
         try:
-            response = requests.get(dhis2_system_info_api, auth=(dhis2_login, password)).json()
+            response = requests.get(dhis2_system_info_api, auth=(dhis2_login, password), timeout=(3.05, 30)).json()
             # dependending on the version the field url is not always the same
             if "contextPath" in response:
                 if response["contextPath"] != dhis2_url:

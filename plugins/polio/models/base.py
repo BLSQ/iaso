@@ -2119,7 +2119,8 @@ class NotificationXlsxImporter:
         try:
             # Find member by name.
             return Notification.Sources(source.lower().replace(" ", "_"))
-        except Exception:
+        except Exception:  # noqa : S110
+            # todo : add warn log here ? and remove noqa
             pass
         if source.upper().startswith("CONT"):
             return Notification.Sources["CONTACT"]

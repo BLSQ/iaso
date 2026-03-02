@@ -40,7 +40,7 @@ def generate_presigned_url_from_s3(object_name, expires_in=3600):
 
 def download_file(object_name):
     file_name = object_name.split("/")[-1]
-    destination_file_name = "/tmp/" + file_name
+    destination_file_name = os.path.join("/tmp/", file_name)  # noqa: S108
 
     boto3.client("s3", region_name=settings.AWS_S3_REGION_NAME).download_file(
         settings.AWS_STORAGE_BUCKET_NAME,

@@ -327,7 +327,9 @@ def enketo_form_list(request):
         logger.exception("Instance duplicate  uuid when editing")
         # Prioritize instance with a json content, and then the more recently updated
         i = Instance.objects.exclude(deleted=True).filter(uuid=form_id_str).order_by("json", "-updated_at").first()
-    assert i is not None
+
+    if i is None:
+        raise ValueError
 
     latest_form_version = i.form.latest_version
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
@@ -461,7 +463,8 @@ class EnketoSubmissionAPIView(APIView):
                     instance.convert_device()
                 except ValueError as error:
                     print(error)
-            except:
+            except:  # noqa: S110
+                # todo : log warn ? and remove noqa
                 pass
 
             used_files = collect_values(parse_to_structured_dict(xml))

@@ -60,7 +60,7 @@ def export_mobile_app_setup_for_user(
 
     # setup
     export_name = f"mobile-app-export-{uuid.uuid4()}"
-    tmp_dir = os.path.join("/tmp", export_name)
+    tmp_dir = os.path.join("/tmp", export_name)  # noqa : S108
     iaso_client = IasoClient(server_url=SERVER)
 
     app_info = _get_project_app_details(iaso_client, tmp_dir, project.app_id)
@@ -197,14 +197,13 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
         attachment_file = None
         # S3 urls contain a signature and don't work with additional auth headers
         if "s3.amazonaws" in url:
-            attachment_file = requests.get(url)
+            attachment_file = requests.get(url, timeout=(3.05, 30))
         else:
-            attachment_file = requests.get(url, headers=iaso_client.headers)
+            attachment_file = requests.get(url, headers=iaso_client.headers, timeout=(3.05, 30))
 
         logger.info("\tDOWNLOAD manifest")
         manifest_file = requests.get(
-            SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
-            headers=iaso_client.headers,
+            SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}", headers=iaso_client.headers, timeout=(3.05, 30)
         )
 
         with open(os.path.join(tmp_dir, "formattachments", str(form_id), filename), mode="wb") as f:
@@ -255,10 +254,10 @@ def _download_and_save_file(iaso_client, tmp_dir, folder_name, url, non_s3_url):
     # S3 urls contain a signature and don't work with additional auth headers
     if "s3.amazonaws" in url:
         logger.info(f"\tDOWNLOAD {url}")
-        response = requests.get(url)
+        response = requests.get(url, timeout=(3.05, 30))
     else:
         logger.info(f"\tDOWNLOAD {non_s3_url}")
-        response = requests.get(non_s3_url, headers=iaso_client.headers)
+        response = requests.get(non_s3_url, headers=iaso_client.headers, timeout=(3.05, 30))
 
     with open(os.path.join(tmp_dir, folder_name, filename), mode="wb") as f:
         f.write(response.content)

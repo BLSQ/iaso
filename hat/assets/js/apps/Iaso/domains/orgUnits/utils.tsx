@@ -2,16 +2,16 @@ import React, { useCallback } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
 
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
-import { baseUrls } from '../../constants/urls';
-import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
+import { baseUrls } from 'Iaso/constants/urls';
+import { orderOrgUnitsByDepth } from 'Iaso/utils/map/mapUtils';
 import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
 import MESSAGES from './messages.ts';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 
 export const getLatestOrgUnitLevelId = levels => {
     if (levels) {
         const levelsIds = levels.split(',');
-        const latestId = parseInt(levelsIds[levelsIds.length - 1], 10);
-        return latestId;
+        return parseInt(levelsIds[levelsIds.length - 1], 10);
     }
     return null;
 };
@@ -142,14 +142,14 @@ export const useGetStatusMessage = () => {
     );
     return getStatusMessage;
 };
-export const getOrgUnitGroups = orgUnit => (
-    <span>
+export const getOrgUnitGroups = (orgUnit: OrgUnit) => {
+    return <span>
         {orgUnit.groups &&
             orgUnit.groups.length > 0 &&
             orgUnit.groups.map(g => g.name).join(', ')}
         {(!orgUnit.groups || orgUnit.groups.length === 0) && textPlaceholder}
     </span>
-);
+};
 
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];

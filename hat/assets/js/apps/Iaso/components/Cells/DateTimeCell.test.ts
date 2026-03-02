@@ -1,27 +1,16 @@
-import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';
+import { textPlaceholder } from 'bluesquare-components';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
-import { apiDateFormats, getLocaleDateFormat } from '../../utils/dates.ts';
+import { apiDateFormats, getLocaleDateFormat } from 'Iaso/utils/dates';
 import {
     DateCell,
     DateTimeCell,
     DateTimeCellRfc,
     convertValueIfDate,
-} from './DateTimeCell.tsx';
+} from 'Iaso/components/Cells/DateTimeCell';
 
 const locales = Object.keys(LANGUAGE_CONFIGS);
-const setLocale = code => {
-    moment.locale(code);
-    moment.updateLocale(code, {
-        longDateFormat:
-            LANGUAGE_CONFIGS[code]?.dateFormats ||
-            LANGUAGE_CONFIGS.en?.dateFormats ||
-            {},
-        week: {
-            dow: 1,
-        },
-    });
-};
+import {setLocale} from '../../../../tests/helpers';
 
 describe('DateTimeCell', () => {
     beforeEach(() => {
@@ -74,7 +63,7 @@ describe('DateCell', () => {
             expect(DateCell(cellInfo)).to.equal(textPlaceholder);
         });
         it('should return the formatted date if value is a timestamp', () => {
-            const cellInfo = { value: 1627545600000 }; // timestamp for 2021-07-29
+            const cellInfo = { value: "1627545600000" }; // timestamp for 2021-07-29
             const expected = moment(cellInfo.value).format(
                 getLocaleDateFormat('L'),
             );

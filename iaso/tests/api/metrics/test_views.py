@@ -67,7 +67,7 @@ class MetricTypeAPITestCase(APITestCase):
                 "description": "Description for Metric Type 3",
                 "category": "Category C",
                 "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
-                "scale": "[1, 2, 3]",
+                "legend_config": {"domain": [1.0, 2.0, 3.0], "range": ["#A2CAEA", "#ACDF9B", "#F2B16E", "#A93A42"]},
                 "legend_type": MetricType.LegendType.THRESHOLD.value,
             },
         )
@@ -99,7 +99,7 @@ class MetricTypeAPITestCase(APITestCase):
                 "description": "Description for Metric Type 3",
                 "category": "Category C",
                 "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
-                "scale": "[1, 2, 3]",
+                "legend_config": {"domain": [1.0, 2.0, 3.0], "range": ["#A2CAEA", "#ACDF9B", "#F2B16E", "#A93A42"]},
                 "legend_type": MetricType.LegendType.THRESHOLD.value,
             },
         )
@@ -115,7 +115,10 @@ class MetricTypeAPITestCase(APITestCase):
                 "description": "Updated description for Metric Type 1",
                 "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
                 "category": "Category A",
-                "scale": "[1, 2, 3, 4]",
+                "legend_config": {
+                    "domain": [1.0, 2.0, 3.0, 4.0],
+                    "range": ["#A2CAEA", "#ACDF9B", "#F2B16E", "#A93A42"],
+                },
                 "legend_type": MetricType.LegendType.THRESHOLD.value,
             },
         )
@@ -135,7 +138,10 @@ class MetricTypeAPITestCase(APITestCase):
                 "description": "Updated description for Metric Type 1",
                 "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
                 "category": "Category A",
-                "scale": "[1, 2, 3, 4]",
+                "legend_config": {
+                    "domain": [1.0, 2.0, 3.0, 4.0],
+                    "range": ["#A2CAEA", "#ACDF9B", "#F2B16E", "#A93A42"],
+                },
                 "legend_type": MetricType.LegendType.THRESHOLD.value,
             },
         )

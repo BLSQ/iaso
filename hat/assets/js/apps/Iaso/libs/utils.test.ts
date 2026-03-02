@@ -1,4 +1,4 @@
-const { mapOptions } = require('./utils');
+import { mapOptions } from './utils';
 
 const optionsRequestResponse = {
     name: 'My DB super model',

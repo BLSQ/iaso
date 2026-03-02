@@ -202,3 +202,9 @@ iaso_3_9_18
 /temp
 iaso-enketo/
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

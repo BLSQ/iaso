@@ -17,6 +17,7 @@ import moment from 'moment';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useBulkDeleteAssignments } from 'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
@@ -112,6 +113,12 @@ export const PlanningForm: FunctionComponent<Props> = ({
         type: mode,
         onSuccess: onSaveSuccess,
     });
+    const { mutateAsync } = useBulkDeleteAssignments();
+    const deleteAssignments = useCallback(() => {
+        if (planning) {
+            mutateAsync({ planning: planning.id });
+        }
+    }, [mutateAsync, planning]);
     const {
         apiErrors,
         payload,
@@ -159,10 +166,13 @@ export const PlanningForm: FunctionComponent<Props> = ({
         onSubmit: save,
     });
     const isPublished = formik.values.publishingStatus === 'published';
-    const hasStarted =
+    const hasStarted = Boolean(
         formik.values.startDate &&
-        moment().isAfter(moment(formik.values.startDate), 'day');
-    const isEditingDisabled = Boolean(isPublished || hasStarted);
+        moment().isAfter(moment(formik.values.startDate, 'DD/MM/YYYY'), 'day'),
+    );
+    const isEditingDisabled = Boolean(
+        (isPublished || hasStarted) && mode === 'edit',
+    );
     const {
         values,
         setFieldValue,
@@ -265,7 +275,8 @@ export const PlanningForm: FunctionComponent<Props> = ({
 
     useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
-    const publishingStatusOptions = useGetPublishingStatusOptions();
+
+    const publishingStatusOptions = useGetPublishingStatusOptions(hasStarted);
     const canAssign = canAssignPlanning(planning);
     return (
         <FormikProvider value={formik}>
@@ -435,16 +446,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     value={values.publishingStatus}
                                     errors={getErrors('publishingStatus')}
                                     label={MESSAGES.publishingStatus}
-                                    options={useMemo(
-                                        () =>
-                                            publishingStatusOptions.map(
-                                                option => ({
-                                                    ...option,
-                                                    disabled: hasStarted,
-                                                }),
-                                            ),
-                                        [publishingStatusOptions, hasStarted],
-                                    )}
+                                    options={publishingStatusOptions}
                                     required
                                 />
                             </Box>
@@ -520,16 +522,66 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                 MESSAGES.duplicatePlanning,
                                             )}
                                         </LinkButton>
-                                        <LinkButton
-                                            disabled={!canAssign}
-                                            to={assignmentUrl}
-                                            variant="outlined"
-                                            startIcon={<Assignment />}
+                                        <Box
+                                            display="flex"
+                                            sx={{ flexWrap: 'nowrap' }}
                                         >
-                                            {formatMessage(
-                                                MESSAGES.assignments,
+                                            {Boolean(planning) && (
+                                                <DeleteDialog
+                                                    iconColor="error"
+                                                    titleMessage={
+                                                        MESSAGES.deleteAllAssignments
+                                                    }
+                                                    message={{
+                                                        ...MESSAGES.deleteAssignmentsWarning,
+                                                        values: {
+                                                            count: planning?.assignments_count,
+                                                        },
+                                                    }}
+                                                    onConfirm={
+                                                        deleteAssignments
+                                                    }
+                                                    keyName="delete-all-assignments"
+                                                    Trigger={({ onClick }) => (
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            onClick={onClick}
+                                                            disabled={
+                                                                planning?.assignments_count ===
+                                                                0
+                                                            }
+                                                            startIcon={
+                                                                <DeleteIcon />
+                                                            }
+                                                            sx={{
+                                                                marginRight:
+                                                                    theme =>
+                                                                        theme.spacing(
+                                                                            2,
+                                                                        ),
+                                                                whiteSpace:
+                                                                    'nowrap',
+                                                            }}
+                                                        >
+                                                            {formatMessage(
+                                                                MESSAGES.deleteAllAssignments,
+                                                            )}
+                                                        </Button>
+                                                    )}
+                                                />
                                             )}
-                                        </LinkButton>
+                                            <LinkButton
+                                                disabled={!canAssign}
+                                                to={assignmentUrl}
+                                                variant="outlined"
+                                                startIcon={<Assignment />}
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.assignments,
+                                                )}
+                                            </LinkButton>
+                                        </Box>
                                     </>
                                 )}
                             </Box>

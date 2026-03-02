@@ -10,6 +10,7 @@ export type FullArrayUpdate<T> = {
     value: T[];
 };
 
+// todo : refactor this when proper typescript checking has been implemented, the console.error part shouldn't happen.
 export const arrayReducer = <T>(
     state: T[],
     value: ArrayUpdate<T> | FullArrayUpdate<T>,

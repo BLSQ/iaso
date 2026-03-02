@@ -55,6 +55,7 @@ export const iasoFetch = async (
     const url =
         typeof resource === 'string' ? resource : (resource.url ?? resource);
     const method = init?.method ?? 'GET';
+    console.log('API', init);
     try {
         response = await fetch(resource, {
             ...init,

@@ -1,8 +1,8 @@
 import moment from 'moment';
-import { longDateFormats } from '../../../utils/dates';
+import { longDateFormats } from 'Iaso/utils/dates';
 import { formatValue } from '.';
 
-const setLocale = code => {
+const setLocale = (code: string) => {
     moment.locale(code);
     moment.updateLocale(code, {
         longDateFormat: longDateFormats[code],
@@ -11,8 +11,9 @@ const setLocale = code => {
         },
     });
 };
+
 describe('formatValue', () => {
-    before(() => {
+    beforeAll(() => {
         setLocale('en');
     });
     it('should leave number as is', () => {

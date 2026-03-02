@@ -114,6 +114,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search an org unit',
         id: 'iaso.assignment.searchOrgUnit',
     },
+    deleteAssignments: {
+        defaultMessage: 'Delete assignments',
+        id: 'iaso.assignment.deleteAssignments',
+    },
+    deleteAllAssignments: {
+        defaultMessage: 'Delete all assignments',
+        id: 'iaso.assignment.deleteAllAssignments',
+    },
+    deleteAssignmentsWarning: {
+        id: 'iaso.assignment.deleteAssignmentsWarning',
+        defaultMessage: 'Are you sure you want to delete {count} assignments?',
+    },
 });
 
 export default MESSAGES;

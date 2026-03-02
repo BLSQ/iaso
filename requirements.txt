@@ -71,6 +71,7 @@ names-generator==0.2.0 # https://github.com/glentner/names_generator
 xlsxwriter==3.1.9  # https://github.com/jmcnamara/XlsxWriter/tags
 beautifulsoup4==4.12.2  # https://pypi.org/project/beautifulsoup4/
 lxml==4.9.4  # https://github.com/lxml/lxml/tags
+defusedxml==0.7.1  # https://github.com/tiran/defusedxml
 
 # Importing tools.
 # ------------------------------------------------------------------------------

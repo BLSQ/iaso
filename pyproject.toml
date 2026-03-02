@@ -161,9 +161,9 @@ ignore = [
 ]
 
 "**/seed_test_data.py" = [
-    "S311",
-    "S106",
-    "S113"
+    "S311",  # suspicious-non-cryptographic-random-usage
+    "S106",  # hardcoded-password-func-arg
+    "S113",  # request-without-timeout
 ]
 
 "setuper/data/sample-credentials.py" = [
@@ -192,7 +192,7 @@ ignore = [
 ]
 
 "**/email_templates.py" = [
-    "S105"
+    "S105",  # hardcoded-password-string
 ]
 
 [tool.ruff.format]

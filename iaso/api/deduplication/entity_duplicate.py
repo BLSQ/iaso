@@ -6,6 +6,8 @@ from logging import getLogger
 from typing import Dict, Optional
 from uuid import UUID, uuid4
 
+import defusedxml.ElementTree as DefusedXMLET
+
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db.models import Q
@@ -245,7 +247,7 @@ def _xmlfile_to_element(file):
     raw_content = file.read().decode("utf-8")
     fixed_content = fix_emoji(raw_content).decode("utf-8")
 
-    return ET.fromstring(fixed_content)
+    return DefusedXMLET.fromstring(fixed_content)
 
 
 def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user: User):

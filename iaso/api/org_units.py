@@ -213,15 +213,20 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
         requested_fields = request.query_params.get("fields", None)
+        if requested_fields is None:
+            requested_fields = ",".join(OrgUnitSearchSerializer.Meta.default_fields)
         order = request.query_params.get("order", "name").split(",")
         # Annotate number of instance per org unit to sort by it
-        # order_by_instance_count = "instances_count" in order or "-instances_count" in order
+        order_by_instance_count = "instances_count" in order or "-instances_count" in order
         count_instances = any(
             [
                 is_export,
+                order_by_instance_count,
                 is_field_referenced("instances_count", requested_fields, order),
             ]
         )
+        if with_shapes or as_location:
+            count_instances = False
         count_per_form = csv_format or xlsx_format
         # add annotation(s) if needed
         queryset = annotate_query(queryset, count_instances, count_per_form, forms)
@@ -291,7 +296,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res = {
                     "count": paginator.count,
                     "counts": counts,
-                    "orgunits": serializer(page.object_list, many=True).data,
+                    "orgunits": serializer(
+                        page.object_list,
+                        many=True,
+                        context={"request": request},
+                    ).data,
                     "has_next": page.has_next(),
                     "has_previous": page.has_previous(),
                     "page": page_offset,

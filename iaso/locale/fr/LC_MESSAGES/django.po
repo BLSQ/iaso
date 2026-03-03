@@ -1167,3 +1167,31 @@ msgstr ""
 "Si vous n'avez pas demandé de compte sur %(account_name)s, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé. "
 "Cordialement, "
 "L'équipe %(domain)s."
+
+
+msgid "Invalid validation status : {validation_status}"
+msgstr "Statut de validation invalide : {validation_status}"
+
+msgid "User with {perm} cannot assign an OrgUnit outside of their own health pyramid. Trying to assign {org_unit_id}."
+msgstr "Un utilisateur disposant des permissions {perm} ne peut pas affecter une OrgUnit en dehors de sa propre pyramide de santé. Tentative d'affectation de {org_unit_id}."
+
+msgid "You must specify which projects are authorized for this user."
+msgstr "Vous devez préciser quels projets sont autorisés pour cet utilisateur."
+
+msgid "You cannot edit a user who has broader access to projects."
+msgstr "Vous ne pouvez pas modifier un utilisateur qui dispose d'un accès plus étendu aux projets."
+
+msgid "Some projects are outside your scope."
+msgstr "Certains projets ne relèvent pas de votre champ d'action'."
+
+msgid "Enter a valid phone number."
+msgstr "Veuillez saisir un numéro de téléphone valide."
+
+msgid "One or more user roles do not belong to the provided account."
+msgstr "Un ou plusieurs rôles d'utilisateur n'appartiennent pas au compte fourni."
+
+msgid "Password cannot be empty."
+msgstr "Le mot de passe ne peut pas être vide."
+
+msgid "Passwords must match."
+msgstr "Les mots de passe doivent correspondre."

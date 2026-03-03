@@ -70,8 +70,6 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
 
-    console.log(apiErrors, errors);
-
     const getErrors = useTranslatedErrors({
         errors,
         formatMessage,

@@ -108,8 +108,8 @@ hat/
 │               └── translations/
 │                   ├── en.json
 │                   ├── fr.json
-│                   ├── en.config.tsx
-│                   ├── fr.config.tsx
+│                   ├── en.config.js
+│                   ├── fr.config.js
 │                   └── ...
 plugins/
 └── your_plugin/
@@ -150,10 +150,10 @@ Translation files are JSON files with a flat structure of key-value pairs:
 
 ### Language Configuration Files
 
-Each language can have a configuration file (e.g., `en.config.tsx`, `fr.config.tsx`) that contains language-specific settings:
+Each language can have a configuration file (e.g., `en.config.js`, `fr.config.js`) that contains language-specific settings:
 
 ```javascript
-// en.config.tsx
+// en.config.js
 export default {
     label: 'English',
     dateFormats: {
@@ -262,13 +262,13 @@ If you need custom date formats or number formatting for your language, create a
 
 ```bash
 # Main application
-cp hat/assets/js/apps/Iaso/translations/en.config.tsx hat/assets/js/apps/Iaso/translations/es.config.tsx
+cp hat/assets/js/apps/Iaso/translations/en.config.js hat/assets/js/apps/Iaso/translations/es.config.js
 ```
 
 Then edit the file to customize the settings:
 
 ```javascript
-// es.config.tsx
+// es.config.js
 export default {
     label: 'Español',
     dateFormats: {

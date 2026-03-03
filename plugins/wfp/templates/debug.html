@@ -47,7 +47,7 @@
 </body>
 <h2>Beneficiary {{beneficiary.id}}</h2>
 {% for journey in beneficiary.journey_set.all %}
-<h3>Journey {{ journey.id }}</h3>
+<h3>Journey {{ journey.id }} <a href="/dashboard/forms/submission/instanceId/{{journey.instance_id}}">View submission</a></h4>
 <table>
     <tr>
         <th>admission_criteria</th>

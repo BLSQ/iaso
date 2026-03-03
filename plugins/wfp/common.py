@@ -72,15 +72,20 @@ class ETL:
             entities = entities.filter(updated_at__gte=updated_at)
         return entities.distinct().values_list("entity_id", flat=True)
 
-    def retrieve_entities(self, entity_ids):
+    def retrieve_entities(self, entity_ids, page_size=5000, page_number=1):
+        entity_ids = sorted(list(entity_ids))
+        paginator = Paginator(entity_ids, page_size)
+
+        current_page = paginator.get_page(page_number)
+        current_entity_ids = current_page.object_list
+
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code=self.entity_type)
-            .filter(entity__id__in=entity_ids)
+            .filter(entity__id__in=current_entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
-            .prefetch_related("entity_id", "form__form_id", "org_unit__id")
             .values(
                 "id",
                 "created_at",
@@ -96,7 +101,8 @@ class ETL:
             )
             .order_by("entity_id", "source_created_at", "created_at", "json__visit_date", "json___visit_date")
         )
-        return Paginator(beneficiaries, 5000)
+
+        return beneficiaries, current_page
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
@@ -595,7 +601,7 @@ class ETL:
 
         return list(
             filter(
-                lambda assistance: (assistance.get("type") and assistance.get("type") != ""),
+                lambda assistance: assistance.get("type") and assistance.get("type") != "",
                 given_assistance,
             )
         )

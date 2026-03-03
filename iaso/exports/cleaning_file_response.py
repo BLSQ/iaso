@@ -1,6 +1,10 @@
+import logging
 import os
 
 from django.http import FileResponse
+
+
+logger = logging.getLogger(__name__)
 
 
 # Since we are on a hold python and django version
@@ -17,9 +21,8 @@ class CleaningFileResponse(FileResponse):
         finally:
             try:
                 self._file.close()
-            except Exception:  # noqa: S110
-                # todo : warn log ? and remove noqa
-                pass
+            except Exception as e:
+                logger.warning("Unexpected exception caught, continuing execution: %s", e)
             try:
                 os.remove(self._path)
             except FileNotFoundError:

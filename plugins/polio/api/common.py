@@ -10,6 +10,7 @@ from typing import Optional
 import pandas as pd
 import requests
 
+from django.conf import settings
 from django.utils.timezone import now
 
 from plugins.polio.models import Round, URLCache
@@ -142,7 +143,7 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
 
             logger.info("paginated_url: " + paginated_url)
 
-            response = requests.get(paginated_url, auth=(login, password), timeout=(3.05, 30))
+            response = requests.get(paginated_url, auth=(login, password), timeout=settings.REQUEST_TIMEOUT.POLIO.value)
 
             empty = response.status_code == 404
             if not empty:

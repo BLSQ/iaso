@@ -1,4 +1,5 @@
 import json
+import logging
 
 from typing import List
 
@@ -11,6 +12,9 @@ from iaso.diffing import Differ
 from iaso.utils.dhis2 import generate_id_for_dhis_2
 
 from .comparisons import Comparison, Diff, as_field_types
+
+
+logger = logging.getLogger(__name__)
 
 
 def all_slices(iterables, size: int):
@@ -135,9 +139,8 @@ class Exporter:
                         error_dict = json.loads(exc.description).get("response", {})
                         for error_report in error_dict.get("errorReports", []):
                             errors.append(error_report.get("message", str(error_report)))
-                except:  # noqa: S110
-                    # todo : warn log ? and remove noqa
-                    pass
+                except Exception as e:
+                    logger.warning(f"Unexpected exception caught, continuing execution: {e}")
                 exc.message = format_error(f"Error when creating Org Unit {to_create.org_unit}", exc, errors)
                 exc.extra = {"payload": json.dumps(payload, indent=4), "response": exc.description}
                 raise exc

@@ -14,6 +14,7 @@ from allauth.socialaccount.providers.oauth2.views import (
     OAuth2LoginView,
     OAuth2View,
 )
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
@@ -114,7 +115,9 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         """
 
         # Call the userinfo url with the identifying token to get more data on the user.
-        extra_data_get = requests.get(self.profile_url, params={"access_token": token}, timeout=(3.05, 30))
+        extra_data_get = requests.get(
+            self.profile_url, params={"access_token": token}, timeout=settings.REQUEST_TIMEOUT.WFP_AUTH.value
+        )
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
 

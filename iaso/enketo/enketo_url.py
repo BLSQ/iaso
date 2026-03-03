@@ -83,7 +83,11 @@ def get_url_from_enketo(url, data):
         settings = enketo_settings()
 
         response = requests.post(
-            url, data=data, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True, timeout=(3.05, 30)
+            url,
+            data=data,
+            auth=(settings["ENKETO_API_TOKEN"], ""),
+            verify=True,
+            timeout=django_settings.REQUEST_TIMEOUT.ENKETO.value,
         )
         resp_content = response.content
 

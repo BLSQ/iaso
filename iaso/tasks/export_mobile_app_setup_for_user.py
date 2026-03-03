@@ -197,13 +197,17 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
         attachment_file = None
         # S3 urls contain a signature and don't work with additional auth headers
         if "s3.amazonaws" in url:
-            attachment_file = requests.get(url, timeout=(3.05, 30))
+            attachment_file = requests.get(url, timeout=settings.REQUEST_TIMEOUT.S3.value)
         else:
-            attachment_file = requests.get(url, headers=iaso_client.headers, timeout=(3.05, 30))
+            attachment_file = requests.get(
+                url, headers=iaso_client.headers, timeout=settings.REQUEST_TIMEOUT.DEFAULT.value
+            )
 
         logger.info("\tDOWNLOAD manifest")
         manifest_file = requests.get(
-            SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}", headers=iaso_client.headers, timeout=(3.05, 30)
+            SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
+            headers=iaso_client.headers,
+            timeout=settings.REQUEST_TIMEOUT.DEFAULT.value,
         )
 
         with open(os.path.join(tmp_dir, "formattachments", str(form_id), filename), mode="wb") as f:
@@ -252,12 +256,13 @@ def _download_and_save_file(iaso_client, tmp_dir, folder_name, url, non_s3_url):
     filename = _extract_filename_from_url(url)
     response = None
     # S3 urls contain a signature and don't work with additional auth headers
+    # todo : more strict url check
     if "s3.amazonaws" in url:
         logger.info(f"\tDOWNLOAD {url}")
-        response = requests.get(url, timeout=(3.05, 30))
+        response = requests.get(url, timeout=settings.REQUEST_TIMEOUT.S3.value)
     else:
         logger.info(f"\tDOWNLOAD {non_s3_url}")
-        response = requests.get(non_s3_url, headers=iaso_client.headers, timeout=(3.05, 30))
+        response = requests.get(non_s3_url, headers=iaso_client.headers, timeout=settings.REQUEST_TIMEOUT.DEFAULT.value)
 
     with open(os.path.join(tmp_dir, folder_name, filename), mode="wb") as f:
         f.write(response.content)

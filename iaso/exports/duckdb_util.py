@@ -1,4 +1,5 @@
 import os
+import tempfile
 import time
 
 from logging import getLogger
@@ -22,8 +23,7 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
     # initially was full_sql = sql % tuple(map(adapt_param, params)) but supporting all types is complicated
     dsn = connection.get_connection_params()
 
-    # todo : could we use a TempFile here instead ?
-    tmpdir = "/tmp/duckdb_tmp"  # noqa : S108
+    tmpdir = tempfile.mkdtemp(prefix="duckdb_tmp_")
     os.makedirs(tmpdir, exist_ok=True)
 
     with duckdb.connect() as duckdb_connection:

@@ -78,10 +78,9 @@ def compare_or_create_snapshot(parquet_path, snapshot_path, stable_columns=None,
     )
 
 
-# used to debug if the test fails => noqa
 def read_parquet(f):
     with duckdb.connect() as con:
-        result = con.execute(f"SELECT * FROM read_parquet('{f.name}')")  # noqa: S608
+        result = con.execute("SELECT * FROM read_parquet(?)", (f.name,))
         colnames = [d[0] for d in result.description]  # column names
         tuples = result.fetchall()
         rows = [dict(zip(colnames, row)) for row in tuples]

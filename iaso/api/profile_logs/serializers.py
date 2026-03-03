@@ -1,9 +1,11 @@
+import copy
+
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from hat.audit.models import Modification
-from iaso.models import OrgUnit
-from iaso.models.base import Profile
+from iaso.models import OrgUnit, Project
+from iaso.models.base import Profile, UserRole
 
 
 class NestedOrgUnitForListSerializer(serializers.ModelSerializer):

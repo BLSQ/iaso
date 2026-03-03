@@ -260,12 +260,7 @@ class SetupAccountSerializer(serializers.Serializer):
             profile = Profile.objects.get(user=user, account=account)
 
             # Send email invitation using existing logic with profile language
-            profile_viewset.send_email_invitation(
-                profile=profile,
-                email_subject=profile_viewset.get_subject_by_language(profile_viewset, profile.language),
-                email_message=profile_viewset.get_message_by_language(profile_viewset, profile.language),
-                email_html_message=profile_viewset.get_html_message_by_language(profile_viewset, profile.language),
-            )
+            profile_viewset.send_email_invitation(profile=profile, language=profile.language)
 
         validated_data["created_account_id"] = account.id
         return validated_data

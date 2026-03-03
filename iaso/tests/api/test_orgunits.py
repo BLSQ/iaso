@@ -859,6 +859,36 @@ class OrgUnitAPITestCase(APITestCase):
         parent_instances_count = response_parent.json()["instances_count"]
         self.assertEqual(parent_instances_count, 2)
 
+    def test_org_unit_performance_optimization_no_instances(self):
+        """Test if instances_count is NOT queried when not in 'fields'"""
+        self.client.force_authenticate(self.yoda)
+
+        # Request without 'instances_count'
+        url = "/api/orgunits/?fields=id,name,org_unit_type_name&limit=10"
+
+        response = self.client.get(url)
+
+        self.assertJSONResponse(response, 200)
+        data = response.json()["orgunits"]
+
+        self.assertNotIn("instances_count", data[0])
+
+    def test_org_unit_requested_instances_count_success(self):
+        """Verify that instances_count is correctly returned when requested"""
+        self.client.force_authenticate(self.yoda)
+
+        # Explicitly request instances_count
+        url = "/api/orgunits/?fields=id,name,instances_count&limit=10&order=id"
+
+        response = self.client.get(url)
+        self.assertJSONResponse(response, 200)
+
+        corruscant = next(ou for ou in response.json()["orgunits"] if ou["id"] == self.jedi_council_corruscant.id)
+
+        # Corruscant has: 1 reference + 1 non-reference + 3 study instances = 5 total
+        self.assertIn("instances_count", corruscant)
+        self.assertEqual(corruscant["instances_count"], 5)
+
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -2475,7 +2505,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         jedi_squad_endor_2_children.save()
 
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(5):
             response = self.client.get(
                 f"/api/orgunits/?&parent_id={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=true"
             )

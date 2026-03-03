@@ -225,7 +225,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 is_field_referenced("instances_count", requested_fields, order),
             ]
         )
-        if with_shapes or as_location:
+        if with_shapes or as_location or parquet_format:
             count_instances = False
         count_per_form = csv_format or xlsx_format
         # add annotation(s) if needed

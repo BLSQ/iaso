@@ -20,7 +20,7 @@ This guide covers the complete integration between Iaso and OpenHexa, including 
 OpenHexa is a data pipeline platform that integrates with Iaso to execute data processing tasks. The integration allows:
 
 - **Pipeline Management**: Create, configure, and run data pipelines
-- **Parameter Handling**: Dynamic parameter configuration through the Iaso UI
+- **Parameter Handling**: Dynamic parameter configuration through the Iaso UI, with optional **account-level default parameters** per pipeline so users do not have to fill them when launching
 - **Task Tracking**: Monitor pipeline execution status and results
 - **Result Storage**: Store pipeline outputs in Iaso's task system
 
@@ -51,7 +51,7 @@ instance = OpenHEXAInstance.objects.create(
 
 #### OpenHEXAWorkspace Model
 
-Links an Iaso account to an OpenHexa workspace:
+Links an Iaso account to an OpenHexa workspace and stores **per-account, per-pipeline configuration**. Parameters defined in `config` are used as defaults when launching a pipeline for that account, so users do not have to fill them each time.
 
 ```python
 from iaso.models.openhexa import OpenHEXAWorkspace
@@ -61,8 +61,18 @@ workspace = OpenHEXAWorkspace.objects.create(
     account=your_account,
     slug="your-workspace-slug",
     config={
-        "lqas_pipeline_code": "optional-pipeline-code"  # Optional configuration
-    }
+        "lqas_pipeline_code": "optional-pipeline-code",  # Optional
+        "pipelines": [
+            {
+                "id": "72250039-3b5c-4424-8c69-ee9ad5c67d2a",
+                "parameters": {
+                    "version": 79,
+                    "locality_type_id": 146,
+                    "health_area_type_id": 143,
+                },
+            },
+        ],
+    },
 )
 ```
 
@@ -70,7 +80,40 @@ workspace = OpenHEXAWorkspace.objects.create(
 - `openhexa_instance`: Foreign key to OpenHEXAInstance
 - `account`: Foreign key to the Iaso Account
 - `slug`: Workspace slug in OpenHexa
-- `config`: Optional JSON field for workspace-specific configuration
+- `config`: Optional JSON field for workspace-specific configuration (see [Workspace config structure](#workspace-config-structure-account-level-pipeline-parameters) below)
+
+#### Workspace config structure (account-level pipeline parameters)
+
+The `config` JSON defines **default parameters per pipeline per account**. When a user launches a pipeline, the frontend and API can merge these stored parameters with any user-provided values, so the same parameters are reused for every execution for that account.
+
+**Structure**:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `lqas_pipeline_code` | string (optional) | Optional pipeline code identifier (e.g. for LQAS sampling). Can be used by the frontend or other features. |
+| `pipelines` | array | List of pipeline configurations for this account |
+| `pipelines[].id` | string (UUID) | OpenHexa pipeline ID |
+| `pipelines[].parameters` | object | Default parameter key-value pairs for this pipeline (e.g. `version`, `locality_type_id`, org unit type IDs, etc.) |
+
+**Example**:
+
+```json
+{
+  "lqas_pipeline_code": "optional-pipeline-code",
+  "pipelines": [
+    {
+      "id": "72250039-3b5c-4424-8c69-ee9ad5c67d2a",
+      "parameters": {
+        "version": 79,
+        "locality_type_id": 146,
+        "health_area_type_id": 143
+      }
+    }
+  ]
+}
+```
+
+Parameters in `pipelines[].parameters` are passed as the pipeline’s `config` when launching via the API. Storing them in the workspace config allows admins to hardcode values per account and per pipeline so end users do not have to fill them when launching.
 
 
 ### 2. OpenHexa Workspace Setup
@@ -454,20 +497,36 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 
 **Endpoint**: `GET /api/openhexa/pipelines/config/`
 
-**Description**: Check if OpenHexa is configured for the current user's account.
+**Description**: Check if OpenHexa is configured for the current user's account and retrieve the **full workspace config** (including account-level pipeline parameters). The frontend uses this to pre-fill or hardcode parameters when launching pipelines so users do not have to enter them.
 
-**Response**:
+**Response** (when configured):
+
 ```json
 {
     "configured": true,
-    "lqas_pipeline_code": "optional-code"
+    "config": {
+        "lqas_pipeline_code": "optional-pipeline-code",
+        "pipelines": [
+            {
+                "id": "72250039-3b5c-4424-8c69-ee9ad5c67d2a",
+                "parameters": {
+                    "version": 79,
+                    "locality_type_id": 146,
+                    "health_area_type_id": 143
+                }
+            }
+        ]
+    }
 }
 ```
 
+When the workspace has no config stored, `config` is an empty object: `"config": {}`. The full `config` object is whatever is stored on the workspace (e.g. `lqas_pipeline_code`, `pipelines`, or any other keys).
+
 **Behavior**:
-- Returns `configured: false` if user has no profile or configuration is missing
-- Returns `configured: true` with optional fields if properly configured
+- Returns `configured: false` (and no `config` key) if user has no profile or configuration is missing
+- Returns `configured: true` and `config` (the full `OpenHEXAWorkspace.config` JSON) when properly configured
 - Does not return error for missing configuration (graceful degradation)
+- The frontend looks up the current pipeline by ID in `config.pipelines` to get `parameters` for that pipeline and uses them as defaults when launching
 
 ### 2. Pipeline List API
 
@@ -572,12 +631,13 @@ Iaso includes a simple frontend integration for OpenHexa pipelines that provides
 
 - **Pipeline List**: View all available OpenHexa pipelines at `/dashboard/pipelines/`
 - **Pipeline Details**: Configure and launch pipelines at `/dashboard/pipelines/{pipeline_id}/`
-- **Parameter Configuration**: Dynamic form generation based on pipeline parameters
+- **Parameter Configuration**: Dynamic form generation based on pipeline parameters, with **defaults from account config** when available
 - **Task Launching**: Submit pipeline configurations and monitor execution
 
 ### Key Features
 
 - **Dynamic Parameter Forms**: Automatically generates input fields based on pipeline parameter types
+- **Account-level default parameters**: The frontend calls `GET /api/openhexa/pipelines/config/` and reads `config.pipelines` to find the entry matching the current pipeline ID. The stored `parameters` are used to pre-fill the launch form (or to run without user input when all required parameters are defined per account). This allows hardcoding parameters per account and per pipeline so they remain the same for each execution.
 - **Real-time Status Updates**: Shows pipeline execution progress and results
 - **Parameter Validation**: Client-side validation for required parameters
 - **Error Handling**: Displays clear error messages for failed operations
@@ -609,14 +669,21 @@ instance, created = OpenHEXAInstance.objects.get_or_create(
 # Get the account
 account = Account.objects.get(id=42)
 
-# Create workspace for the account
+# Create workspace for the account (optionally with per-pipeline parameters)
 workspace, created = OpenHEXAWorkspace.objects.get_or_create(
     account=account,
     defaults={
         "openhexa_instance": instance,
         "slug": "your-workspace-slug",
-        "config": {}
-    }
+        "config": {
+            "pipelines": [
+                {
+                    "id": "your-pipeline-uuid",
+                    "parameters": {"version": 1, "locality_type_id": 123},
+                },
+            ],
+        },
+    },
 )
 ```
 

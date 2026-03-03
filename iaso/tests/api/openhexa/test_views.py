@@ -1188,6 +1188,8 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         data = response.json()
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
+        self.assertIn("config", data)
+        self.assertEqual(data["config"], {})
 
     def test_get_config_not_configured_missing_workspace(self):
         """Test config check when OpenHexa workspace doesn't exist."""
@@ -1251,10 +1253,11 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
     def test_get_config_with_extra_fields(self):
         """Test config check when workspace config has extra fields (should still work)."""
         # Update workspace config with extra fields
-        self.openhexa_workspace.config = {
+        workspace_config = {
             "extra_field": "extra_value",  # Extra field
             "another_field": "another_value",  # Another extra field
         }
+        self.openhexa_workspace.config = workspace_config
         self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
@@ -1263,13 +1266,14 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         data = response.json()
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
+        self.assertIn("config", data)
+        self.assertEqual(data["config"], workspace_config)
 
     def test_get_config_with_lqas_pipeline_code(self):
         """Test config check when workspace config includes lqas_pipeline_code."""
         # Update workspace config with lqas_pipeline_code
-        self.openhexa_workspace.config = {
-            "lqas_pipeline_code": "lqas-pipeline-123",
-        }
+        workspace_config = {"lqas_pipeline_code": "lqas-pipeline-123"}
+        self.openhexa_workspace.config = workspace_config
         self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
@@ -1278,8 +1282,9 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         data = response.json()
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
-        self.assertIn("lqas_pipeline_code", data)
-        self.assertEqual(data["lqas_pipeline_code"], "lqas-pipeline-123")
+        self.assertIn("config", data)
+        self.assertEqual(data["config"], workspace_config)
+        self.assertEqual(data["config"]["lqas_pipeline_code"], "lqas-pipeline-123")
 
     def test_get_config_without_lqas_pipeline_code(self):
         """Test config check when workspace config doesn't include lqas_pipeline_code."""
@@ -1290,14 +1295,14 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         data = response.json()
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
-        self.assertNotIn("lqas_pipeline_code", data)
+        self.assertIn("config", data)
+        self.assertEqual(data["config"], {})
 
     def test_get_config_with_empty_lqas_pipeline_code(self):
         """Test config check when workspace config has empty lqas_pipeline_code."""
         # Update workspace config with empty lqas_pipeline_code
-        self.openhexa_workspace.config = {
-            "lqas_pipeline_code": "",  # Empty value
-        }
+        workspace_config = {"lqas_pipeline_code": ""}
+        self.openhexa_workspace.config = workspace_config
         self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
@@ -1306,14 +1311,15 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         data = response.json()
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
-        self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if empty
+        self.assertIn("config", data)
+        self.assertEqual(data["config"], workspace_config)
+        self.assertEqual(data["config"]["lqas_pipeline_code"], "")
 
     def test_get_config_with_null_lqas_pipeline_code(self):
         """Test config check when workspace config has null lqas_pipeline_code."""
         # Update workspace config with null lqas_pipeline_code
-        self.openhexa_workspace.config = {
-            "lqas_pipeline_code": None,  # Null value
-        }
+        workspace_config = {"lqas_pipeline_code": None}
+        self.openhexa_workspace.config = workspace_config
         self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
@@ -1322,7 +1328,40 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         data = response.json()
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
-        self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if null
+        self.assertIn("config", data)
+        self.assertEqual(data["config"], workspace_config)
+        self.assertIsNone(data["config"]["lqas_pipeline_code"])
+
+    def test_get_config_returns_full_workspace_config(self):
+        """Test that config response includes the full workspace config (pipelines with id and parameters)."""
+        full_config = {
+            "pipelines": [
+                {
+                    "id": "72250039-3b5c-4424-8c69-ee9ad5c67d2a",
+                    "parameters": {
+                        "version": 79,
+                        "locality_type_id": 146,
+                        "health_area_type_id": 143,
+                    },
+                },
+            ],
+        }
+        self.openhexa_workspace.config = full_config
+        self.openhexa_workspace.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertTrue(data["configured"])
+        self.assertIn("config", data)
+        self.assertEqual(data["config"], full_config)
+        self.assertEqual(len(data["config"]["pipelines"]), 1)
+        pipeline = data["config"]["pipelines"][0]
+        self.assertEqual(pipeline["id"], "72250039-3b5c-4424-8c69-ee9ad5c67d2a")
+        self.assertEqual(pipeline["parameters"]["version"], 79)
+        self.assertEqual(pipeline["parameters"]["locality_type_id"], 146)
+        self.assertEqual(pipeline["parameters"]["health_area_type_id"], 143)
 
     def test_get_config_user_without_profile(self):
         """Test config check with user without iaso_profile."""

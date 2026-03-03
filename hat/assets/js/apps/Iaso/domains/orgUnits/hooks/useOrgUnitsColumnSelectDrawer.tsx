@@ -4,6 +4,8 @@ import { Option } from '../../../components/tables/ColumnSelectDrawer';
 import { OrgUnitParams } from '../types/orgUnit';
 import { DEFAULT_ORG_UNIT_COLUMNS } from './requests/useGetOrgUnits';
 
+const HIDDEN_COLUMNS = ['actions', 'selection'];
+
 export const useOrgUnitsColumnSelectDrawer = (
     columns: Column[],
     params: OrgUnitParams,
@@ -15,26 +17,29 @@ export const useOrgUnitsColumnSelectDrawer = (
     handleApplyOptions: () => void;
     isDisabled: boolean;
 } => {
+    const getCleanKeys = useCallback((fields?: string): string[] => {
+        const keys = fields ? fields.split(',') : DEFAULT_ORG_UNIT_COLUMNS;
+        return keys.filter(key => !HIDDEN_COLUMNS.includes(key));
+    }, []);
+
     const [visibleColumnsKeys, setVisibleColumnsKeys] = useState<string[]>(
-        params?.fields?.split(',') ?? DEFAULT_ORG_UNIT_COLUMNS,
+        getCleanKeys(params?.fields),
     );
 
     useEffect(() => {
-        setVisibleColumnsKeys(
-            params?.fields?.split(',') ?? DEFAULT_ORG_UNIT_COLUMNS,
-        );
-    }, [params.fields]);
+        setVisibleColumnsKeys(getCleanKeys(params?.fields));
+    }, [params.fields, getCleanKeys]);
 
     const activeFieldKeys = useMemo(() => {
-        return params?.fields?.split(',') ?? DEFAULT_ORG_UNIT_COLUMNS;
-    }, [params.fields]);
+        return getCleanKeys(params?.fields);
+    }, [params.fields, getCleanKeys]);
 
     const options = useMemo(() => {
         return columns
-            .filter(
-                column =>
-                    (column.id || column.accessor) && column.id !== 'actions',
-            )
+            .filter(column => {
+                const key = (column.id || column.accessor) as string;
+                return key && key !== 'actions' && key !== 'selection';
+            })
             .map(column => {
                 const key = (column.id || column.accessor) as string;
                 return {
@@ -58,13 +63,13 @@ export const useOrgUnitsColumnSelectDrawer = (
     }, [visibleColumnsKeys, activeFieldKeys]);
 
     const visibleColumns = useMemo(() => {
-        return columns.filter(
-            column =>
-                column.id === 'actions' ||
-                (column.id && activeFieldKeys.includes(column.id as string)) ||
-                (column.accessor &&
-                    activeFieldKeys.includes(column.accessor as string)),
-        );
+        return columns.filter(column => {
+            const key = (column.id || column.accessor) as string;
+            if (key === 'actions' || key === 'selection') {
+                return true;
+            }
+            return activeFieldKeys.includes(key);
+        });
     }, [columns, activeFieldKeys]);
 
     const redirectToReplace = useRedirectToReplace();

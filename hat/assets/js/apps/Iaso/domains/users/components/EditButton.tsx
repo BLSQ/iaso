@@ -5,38 +5,26 @@ import { Button } from '@mui/material';
 import { commonStyles, IntlMessage, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { makeStyles } from '@mui/styles';
+import { ButtonProps } from '@mui/material/Button/Button';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 type Props = {
-    onClick;
     message?: IntlMessage;
     id?: string;
-    dataTestId?: string;
-    size?: 'medium' | 'large' | 'small' | undefined;
-    variant?: 'text' | 'contained' | 'outlined';
-    disabled?: boolean;
-    color?:
-        | 'inherit'
-        | 'primary'
-        | 'secondary'
-        | 'success'
-        | 'error'
-        | 'info'
-        | 'warning';
-};
+} & Omit<ButtonProps, "children">;
 
 export const EditButton: FunctionComponent<Props> = ({
     onClick,
-    message = MESSAGES.create,
+    message = MESSAGES.edit,
     id = '',
-    dataTestId = '',
     size = 'medium',
     disabled = false,
     variant = 'contained',
     color = 'primary',
+    ...props
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -47,9 +35,9 @@ export const EditButton: FunctionComponent<Props> = ({
             color={color}
             onClick={onClick}
             id={id}
-            data-test={dataTestId}
             size={size}
             disabled={disabled}
+            {...props}
         >
             <Edit className={classes.buttonIcon} />
             {formatMessage(message)}

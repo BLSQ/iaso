@@ -328,13 +328,12 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-const EditUserButton = props => {
+type EditUserButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message">
+
+const EditUserButton = (props: EditUserButtonProps) => {
     return (
         <EditButton
-            message={{
-                id: 'test',
-                defaultMessage: 'Update user',
-            }}
+            message={MESSAGES.updateUser}
             {...props}
         />
     );

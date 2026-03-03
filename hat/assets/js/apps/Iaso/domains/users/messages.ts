@@ -554,6 +554,38 @@ const MESSAGES = defineMessages({
     passwordMatch: {
         id: "iaso.users.password.match",
         defaultMessage: "Passwords must match."
+    },
+    passwordLabel: {
+       id: "iaso.users.form.fields.password.label",
+       defaultMessage: "Enter new password"
+    },
+    confirmPasswordLabel: {
+        id: "iaso.users.form.fields.confirmPassword.label",
+        defaultMessage: "Confirm new password"
+    },
+    updatePasswordButtonLabel: {
+        defaultMessage: 'Update password',
+        id: 'iaso.users.dialog.updatePassword.triggerButton.label',
+    },
+    userNotFound: {
+        defaultMessage: 'User not found',
+        id: 'iaso.users.detail.404Message'
+    },
+    generalInfo: {
+        defaultMessage: 'General info',
+        id: 'iaso.users.detail.generalInfoBox.title'
+    },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.users.color'
+    },
+    locations: {
+        defaultMessage: 'Locations',
+        id: 'iaso.users.detail.locationsBox.title'
+    },
+    noResultsFound: {
+        defaultMessage: 'No results found.',
+        id: 'iaso.users.noResultsFound'
     }
 });
 

@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { FunctionComponent } from 'react';
 import {
     Grid,
     Container,
@@ -18,6 +17,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
+import Page404 from 'Iaso/components/errors/Page404';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
@@ -38,7 +38,6 @@ import * as Permission from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { DeleteButton } from './DeleteButton';
 import { PermissionTable } from './PermissionTable';
-import { useDelete } from 'Iaso/domains/entities/entityTypes/hooks/requests/entitiyTypes';
 import { baseUrls } from 'Iaso/constants/urls';
 
 type Props = {
@@ -57,8 +56,8 @@ const styles: SxStyles = {
     },
 };
 
-export const UserDetailsView: FunctionComponent<Props> = ({ userId }) => {
-    const { data: profile, isLoading: isLoading } = useGetProfile(userId);
+export const UserDetailsView = ({ userId }: Props) => {
+    const { data: profile, isLoading: isLoading, error: error } = useGetProfile(userId);
     const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -75,12 +74,14 @@ export const UserDetailsView: FunctionComponent<Props> = ({ userId }) => {
     const onDeleteProfile = useCallback(() => {
         deleteProfile(undefined, {
             onSuccess: () => {
-                redirectTo(baseUrls.users)
-            }
-        })
-    }, [deleteProfile])
+                redirectTo(baseUrls.users);
+            },
+        });
+    }, [deleteProfile]);
 
-    const generalIsLoading = savingProfile || isLoading;
+    if (!isLoading && error?.status === 404) {
+        return <Page404 customMessage={formatMessage(MESSAGES.userNotFound)} displayTopBar={false} />;
+    }
 
     return (
         <Container
@@ -88,6 +89,7 @@ export const UserDetailsView: FunctionComponent<Props> = ({ userId }) => {
             sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}
             maxWidth={'xl'}
         >
+            {isLoading ? <LoadingSpinner/> :
             <Stack spacing={2}>
                 <Box sx={{ px: 2 }}>
                     <Grid container>
@@ -97,36 +99,36 @@ export const UserDetailsView: FunctionComponent<Props> = ({ userId }) => {
                             sx={{ justifyContent: 'flex-end', display: 'flex' }}
                         >
                             <Stack direction={'row'} spacing={2}>
-                                <EditUserWithButtonDialog
-                                    initialData={profile}
-                                    titleMessage={MESSAGES.updateUser}
-                                    saveProfile={saveProfile}
-                                    canBypassProjectRestrictions={
-                                        canBypassProjectRestrictions
-                                    }
-                                />
-                                <EditPasswordUserWithButtonDialog
-                                    titleMessage={MESSAGES.updateUserPassword}
-                                    savePassword={savePassword}
-                                    userId={userId}
-                                />
-                                {currentUser.id.toString() !== userId &&
-                                    userHasOneOfPermissions(
-                                        [
-                                            Permission.USERS_ADMIN,
-                                            Permission.USERS_MANAGEMENT,
-                                        ],
-                                        currentUser,
-                                    ) && (
-                                        <DeleteDialog
-                                            titleMessage={
-                                                MESSAGES.deleteUserTitle
-                                            }
-                                            message={MESSAGES.deleteUserText}
-                                            onConfirm={onDeleteProfile}
-                                            Trigger={DeleteButton}
-                                        />
-                                    )}
+                                    <EditUserWithButtonDialog
+                                        initialData={profile}
+                                        titleMessage={formatMessage(MESSAGES.updateUser)}
+                                        saveProfile={saveProfile}
+                                        canBypassProjectRestrictions={
+                                            canBypassProjectRestrictions
+                                        }
+                                    />
+                                    <EditPasswordUserWithButtonDialog
+                                        titleMessage={MESSAGES.updateUserPassword}
+                                        savePassword={savePassword}
+                                        userId={userId}
+                                    />
+                                    {currentUser?.id?.toString() !== userId &&
+                                        userHasOneOfPermissions(
+                                            [
+                                                Permission.USERS_ADMIN,
+                                                Permission.USERS_MANAGEMENT,
+                                            ],
+                                            currentUser,
+                                        ) && (
+                                            <DeleteDialog
+                                                titleMessage={
+                                                    MESSAGES.deleteUserTitle
+                                                }
+                                                message={MESSAGES.deleteUserText}
+                                                onConfirm={onDeleteProfile}
+                                                Trigger={DeleteButton}
+                                            />
+                                        )}
                             </Stack>
                         </Grid>
                     </Grid>
@@ -134,107 +136,110 @@ export const UserDetailsView: FunctionComponent<Props> = ({ userId }) => {
                 <Box sx={{ px: 2 }}>
                     <Grid container spacing={4}>
                         <Grid item xs={12} md={6}>
-                            <WidgetPaper title={'General info'}>
-                                {generalIsLoading && (
-                                    <LoadingSpinner absolute />
-                                )}
+                            <WidgetPaper title={formatMessage(MESSAGES.generalInfo)} data-testid={"general-info-box"}>
+                                {savingProfile ? (
+                                        <Box sx={{my : 2}}>
+                                            <LoadingSpinner absolute={false} fixed={false}/>
+                                        </Box>
+                                    ) :
 
-                                <Table size="small">
-                                    <TableBody>
-                                        <Row
-                                            field={{
-                                                label: 'Username',
-                                                value: profile?.user_name,
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'First name',
-                                                value:
-                                                    profile?.first_name ||
-                                                    textPlaceholder,
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'Last name',
-                                                value:
-                                                    profile?.last_name ||
-                                                    textPlaceholder,
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'Email',
-                                                value: profile?.email ? (
-                                                    <a
-                                                        href={`mailto:${profile?.email}`}
-                                                    >
-                                                        {profile?.email}
-                                                    </a>
-                                                ) : (
-                                                    textPlaceholder
-                                                ),
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'Language',
-                                                value:
-                                                    profile?.language ||
-                                                    textPlaceholder,
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'Organization',
-                                                value:
-                                                    profile?.organization ||
-                                                    textPlaceholder,
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'Phone number',
-                                                value: profile?.phone_number ? (
-                                                    <a
-                                                        href={`tel:${profile?.phone_number}`}
-                                                    >
-                                                        {profile?.phone_number}
-                                                    </a>
-                                                ) : (
-                                                    textPlaceholder
-                                                ),
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'Home page',
-                                                value:
-                                                    profile?.home_page ||
-                                                    textPlaceholder,
-                                            }}
-                                        />
-                                        <Row
-                                            field={{
-                                                label: 'Color',
-                                                value: (
-                                                    <Box
-                                                        component="span"
-                                                        sx={{
-                                                            ...styles.badge,
-                                                            backgroundColor:
+                                    <Table size="small">
+                                        <TableBody>
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.userName),
+                                                    value: profile?.user_name || textPlaceholder,
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.firstName),
+                                                    value:
+                                                        profile?.first_name ||
+                                                        textPlaceholder,
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.lastName),
+                                                    value:
+                                                        profile?.last_name ||
+                                                        textPlaceholder,
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.email),
+                                                    value: profile?.email ? (
+                                                        <a
+                                                            href={`mailto:${profile?.email}`}
+                                                        >
+                                                            {profile?.email}
+                                                        </a>
+                                                    ) : (
+                                                        textPlaceholder
+                                                    ),
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.language),
+                                                    value:
+                                                        profile?.language ||
+                                                        textPlaceholder,
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.organization),
+                                                    value:
+                                                        profile?.organization ||
+                                                        textPlaceholder,
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.phoneNumber),
+                                                    value: profile?.phone_number ? (
+                                                        <a
+                                                            href={`tel:${profile?.phone_number}`}
+                                                        >
+                                                            {profile?.phone_number}
+                                                        </a>
+                                                    ) : (
+                                                        textPlaceholder
+                                                    ),
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.homePage),
+                                                    value:
+                                                        profile?.home_page ||
+                                                        textPlaceholder,
+                                                }}
+                                            />
+                                            <Row
+                                                field={{
+                                                    label: formatMessage(MESSAGES.color),
+                                                    value: profile?.color ? <Box
+                                                            component="span"
+                                                            data-testid={"user-color-badge"}
+                                                            sx={{
+                                                                ...styles.badge,
+                                                                backgroundColor:
                                                                 profile?.color,
-                                                        }}
-                                                        tabIndex={0}
-                                                    >
-                                                        {' '}
-                                                    </Box>
-                                                ),
-                                            }}
-                                        />
-                                    </TableBody>
-                                </Table>
+                                                            }}
+                                                            tabIndex={0}
+                                                        >
+                                                            {' '}
+                                                        </Box> : textPlaceholder
+
+                                                }}
+                                            />
+                                        </TableBody>
+                                    </Table>
+                                }
                             </WidgetPaper>
                         </Grid>
                     </Grid>
@@ -242,110 +247,112 @@ export const UserDetailsView: FunctionComponent<Props> = ({ userId }) => {
                 <Box sx={{ px: 2 }}>
                     <Grid container spacing={4}>
                         <Grid item xs={12} md={6}>
-                            <WidgetPaper title={'Projects'}>
-                                {generalIsLoading && <LoadingSpinner />}
-                                <List>
-                                    {profile?.projects?.length ? (
-                                        profile?.projects?.map(project => {
-                                            return (
-                                                <ListItem key={project.name}>
-                                                    <ProjectChip
-                                                        project={project}
-                                                    />
-                                                </ListItem>
-                                            );
-                                        })
+                            <WidgetPaper title={formatMessage(MESSAGES.projects)} data-testid={"projects-info-box"}>
+                                {savingProfile ? <LoadingSpinner absolute={false} fixed={false}/> :
+
+                                        profile?.projects?.length ? (
+                                            <List>
+                                                {profile?.projects?.map(project => {
+                                                return (
+                                                    <ListItem key={project.name}>
+                                                        <ProjectChip project={project}
+                                                        />
+                                                    </ListItem>
+                                                );
+                                            })}</List>
+                                        ) : (
+                                            <Alert
+                                                color={'info'}
+                                                severity={'info'}
+                                                sx={{ mx: 2, mb: 2 }}
+                                            >
+                                                {formatMessage(MESSAGES.noResultsFound)}
+                                            </Alert>
+                                        )
+                                }
+                            </WidgetPaper>
+                            <WidgetPaper title={formatMessage(MESSAGES.locations)} data-testid={'locations-info-box'}>
+                                {savingProfile ? <LoadingSpinner absolute={false} fixed={false}/> :
+                                    (profile?.org_units?.length ? (
+                                        <List>
+                                            {profile?.org_units?.map(
+                                                (orgUnit: OrgUnit) => (
+                                                    <ListItem
+                                                        key={`orgUnit-${orgUnit.id}`}
+                                                    >
+                                                        {orgUnit.name}
+                                                    </ListItem>
+                                                ),
+                                            )}
+                                        </List>
                                     ) : (
                                         <Alert
                                             color={'info'}
                                             severity={'info'}
                                             sx={{ mx: 2, mb: 2 }}
                                         >
-                                            No results found.
+                                            {formatMessage(MESSAGES.noResultsFound)}
                                         </Alert>
-                                    )}
-                                </List>
-                            </WidgetPaper>
-                            <WidgetPaper title={'Locations'}>
-                                {generalIsLoading && <LoadingSpinner />}
-                                {profile?.org_units?.length ? (
-                                    <List>
-                                        {profile?.org_units?.map(
-                                            (orgUnit: OrgUnit) => (
-                                                <ListItem
-                                                    key={`orgUnit-${orgUnit.id}`}
-                                                >
-                                                    {orgUnit.name}
-                                                </ListItem>
-                                            ),
-                                        )}
-                                    </List>
-                                ) : (
-                                    <Alert
-                                        color={'info'}
-                                        severity={'info'}
-                                        sx={{ mx: 2, mb: 2 }}
-                                    >
-                                        No results found.
-                                    </Alert>
-                                )}
+                                    ))}
                             </WidgetPaper>
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <WidgetPaper title={'User roles'}>
-                                {generalIsLoading && <LoadingSpinner />}
-                                {profile?.user_roles_permissions?.length ? (
-                                    <List>
-                                        {profile?.user_roles_permissions?.map(
-                                            userRole => {
-                                                return (
-                                                    <ListItem
-                                                        key={`user-role-${userRole.id}`}
-                                                    >
-                                                        <Chip
-                                                            color={'primary'}
-                                                            label={
-                                                                userRole.name
-                                                            }
-                                                        />
-                                                    </ListItem>
-                                                );
-                                            },
-                                        )}
-                                    </List>
-                                ) : (
-                                    <Alert
-                                        color={'info'}
-                                        severity={'info'}
-                                        sx={{ mx: 2, mb: 2 }}
-                                    >
-                                        No results found.
-                                    </Alert>
-                                )}
+                            <WidgetPaper title={formatMessage(MESSAGES.userRoles)} data-testid={'user-roles-info-box'}>
+                                {savingProfile ? <LoadingSpinner absolute={false} fixed={false}/> : (
+                                    profile?.user_roles_permissions?.length ? (
+                                        <List>
+                                            {profile?.user_roles_permissions?.map(
+                                                userRole => {
+                                                    return (
+                                                        <ListItem
+                                                            key={`user-role-${userRole.id}`}
+                                                        >
+                                                            <Chip
+                                                                color={'primary'}
+                                                                label={
+                                                                    userRole.name
+                                                                }
+                                                            />
+                                                        </ListItem>
+                                                    );
+                                                },
+                                            )}
+                                        </List>
+                                    ) : (
+                                        <Alert
+                                            color={'info'}
+                                            severity={'info'}
+                                            sx={{ mx: 2, mb: 2 }}
+                                        >
+                                            {formatMessage(MESSAGES.noResultsFound)}
+                                        </Alert>
+                                    ))}
                             </WidgetPaper>
                             <WidgetPaper
-                                title={'Permissions'}
+                                title={formatMessage(MESSAGES.permissions)}
                                 expandable={true}
+                                data-testid={'permissions-info-box'}
                             >
-                                {generalIsLoading && <LoadingSpinner />}
-                                {profile?.permissions?.length ? (
-                                    <PermissionTable
-                                        data={profile?.permissions}
-                                    />
-                                ) : (
-                                    <Alert
-                                        color={'info'}
-                                        severity={'info'}
-                                        sx={{ mx: 2, mb: 2 }}
-                                    >
-                                        No results found.
-                                    </Alert>
-                                )}
+                                {savingProfile ? <LoadingSpinner absolute={false} fixed={false}/> : (
+                                    profile?.permissions?.length ? (
+                                        <PermissionTable
+                                            data={profile?.permissions}
+                                        />
+                                    ) : (
+                                        <Alert
+                                            color={'info'}
+                                            severity={'info'}
+                                            sx={{ mx: 2, mb: 2 }}
+                                        >
+                                            {formatMessage(MESSAGES.noResultsFound)}
+                                        </Alert>
+                                    ))}
                             </WidgetPaper>
                         </Grid>
                     </Grid>
                 </Box>
             </Stack>
-        </Container>
+            }
+            </Container>
     );
 };

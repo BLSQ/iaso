@@ -107,10 +107,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
                         errors={getErrors('password')}
                         required
                         type="password"
-                        label={{
-                            defaultMessage: 'Password',
-                            id: 'iaso.users.dialog.updatePassword.fields.confirmPassword',
-                        }}
+                        label={formatMessage(MESSAGES.passwordLabel)}
                     />
                     <InputComponent
                         keyValue="confirm_password"
@@ -119,10 +116,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
                         errors={getErrors('confirm_password')}
                         required
                         type="password"
-                        label={{
-                            defaultMessage: 'Confirm password',
-                            id: 'iaso.users.dialog.updatePassword.fields.confirmPassword',
-                        }}
+                        label={formatMessage(MESSAGES.confirmPasswordLabel)}
                     />
                 </div>
             </ConfirmCancelModal>
@@ -130,13 +124,13 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-const PasswordEditButton = props => {
+type PasswordEditButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message">
+
+const PasswordEditButton = (props: PasswordEditButtonProps) => {
+
     return (
         <EditButton
-            message={{
-                defaultMessage: 'Update password',
-                id: 'iaso.users.dialog.updatePassword',
-            }}
+            message={MESSAGES.updatePasswordButtonLabel}
             {...props}
         />
     );

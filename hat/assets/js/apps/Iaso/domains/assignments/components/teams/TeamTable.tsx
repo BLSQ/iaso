@@ -14,7 +14,7 @@ import MESSAGES from 'Iaso/domains/assignments/messages';
 import { useSaveTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
 import { SubTeam, Team } from 'Iaso/domains/teams/types/team';
 import { User } from 'Iaso/domains/teams/types/team';
-import { useSaveProfile, useSaveProfileColor } from 'Iaso/domains/users/hooks/useSaveProfile';
+import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
 import { SxStyles } from 'Iaso/types/general';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import { AssignmentsResult } from '../../hooks/requests/useGetAssignments';

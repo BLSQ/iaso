@@ -3,6 +3,8 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { Profile } from 'Iaso/utils/usersUtils';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
+import { ProfileListResponseItem, ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+import { Pagination } from 'Iaso/types/general';
 
 export const useGetProfilesApiParams = params => {
     const apiParams = params
@@ -34,7 +36,11 @@ export const useGetProfilesApiParams = params => {
     };
 };
 
-export const useGetProfiles = params => {
+type ListResponse = Pagination & {
+    results: ProfileListResponseItem[]
+}
+
+export const useGetProfiles = (params): UseQueryResult<ListResponse, Error> => {
     const { url, apiParams } = useGetProfilesApiParams(params);
     return useSnackQuery(['profiles', apiParams], () => getRequest(url));
 };
@@ -47,7 +53,7 @@ const getProfile = async (
 
 export const useGetProfile = (
     profileId?: string,
-): UseQueryResult<Profile, Error> => {
+): UseQueryResult<ProfileRetrieveResponseItem, Error> => {
     const queryKey: any[] = ['userDetail', profileId];
     return useSnackQuery({
         queryKey,

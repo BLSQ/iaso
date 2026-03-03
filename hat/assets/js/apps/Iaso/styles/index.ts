@@ -51,7 +51,7 @@ export const getGlobalOverrides = theme => ({
     ...mapCustomControl,
     body: {
         height: '100vh',
-        // overflow: 'hidden',
+        overflow: 'hidden',
         lineHeight: 1,
         backgroundColor: 'white',
     },

@@ -58,7 +58,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Users: FunctionComponent = () => {
+export const Users = () => {
     const params = useParamsObject(baseUrls.users) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();

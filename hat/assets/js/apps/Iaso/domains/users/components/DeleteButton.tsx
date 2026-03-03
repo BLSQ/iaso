@@ -14,19 +14,17 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     message?: IntlMessage;
     id?: string;
-    dataTestId?: string;
 } & Omit<ButtonProps, 'children'>;
 
-export const DeleteButton: FunctionComponent<Props> = ({
+export const DeleteButton = ({
     message = MESSAGES.delete,
     id = '',
-    dataTestId = '',
     size = 'medium',
     disabled = false,
     variant = 'contained',
     color = 'error',
     ...props
-}) => {
+}: Props) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return (
@@ -35,7 +33,6 @@ export const DeleteButton: FunctionComponent<Props> = ({
             className={classes.button}
             color={color}
             id={id}
-            data-test={dataTestId}
             size={size}
             disabled={disabled}
             {...props}

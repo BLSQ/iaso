@@ -85,6 +85,39 @@ class EntityType(models.Model):
             "account": self.account.as_dict(),
         }
 
+    def get_list_view_fields(self) -> list:
+        """
+        Fetch the fields listed in `fields_list_view` from the reference form.
+
+        Return an array of field descriptions (see `Form.possile_fields`):
+        ```
+        [
+            {
+                "name": "last_name",
+                "type": "text",
+                "label": "Nom de famille"
+            },
+            ...
+        ]
+        ```
+        """
+
+        if not self.reference_form or not self.reference_form.possible_fields:
+            return []
+
+        selected_fields = set(self.fields_list_view or [])
+        if not selected_fields:
+            return []
+
+        fields = {}  # Used for deduplication by field name
+
+        for field_data in self.reference_form.possible_fields:
+            name = field_data.get("name")
+            if name in selected_fields:
+                fields[name] = field_data
+
+        return list(fields.values())
+
 
 class InvalidLimitDateError(ValidationError):
     pass

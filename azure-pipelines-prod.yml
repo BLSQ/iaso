@@ -34,9 +34,11 @@ steps:
     npm install -g npm@10.9.3
     node -v
     npm -v
-    npm ci --ignore-scripts
+    npm ci
     npm test -- --reporter xunit --reporter-option output=npm-test.xml
   displayName: 'npm install and run test'
+  env:
+    HUSKY: 0
 
 - task: PublishTestResults@2
   condition: succeededOrFailed()

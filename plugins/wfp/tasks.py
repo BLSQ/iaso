@@ -128,7 +128,7 @@ def etl_ssd(all_data=None):
     logger.info("Starting ETL for South Sudan")
     entity_type_U5_code = "ssd_under5"
     etl_u5 = ETL(entity_type_U5_code)
-    etl = ETL()
+
     child_account = etl_u5.account_related_to_entity_type()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
@@ -141,7 +141,7 @@ def etl_ssd(all_data=None):
     MonthlyStatistics.objects.filter(
         account=child_account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
     ).delete()
-    etl.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
+    etl_u5.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
 
     entity_type_pbwg_code = "ssd_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
@@ -156,7 +156,7 @@ def etl_ssd(all_data=None):
     MonthlyStatistics.objects.filter(
         account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
     ).delete()
-    etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
+    etl_pbwg.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
 
     Screening().run(child_account, last_success_task_date)
 
@@ -202,6 +202,54 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
         logger.info(
             f"----------------------------- No DHIS2 credentials found for {account} -----------------------------"
         )
+
+
+@shared_task()
+def etl_ssd_v2(all_data=None):
+    """ETL v2 for South Sudan Under-5 children.
+
+    This is a rewrite of the Under-5 part of etl_ssd with key fixes:
+    - Supports unlimited journeys per beneficiary (v1 limited to 2)
+    - Correctly tracks weight per journey
+    - Does not mutate source submission data
+    - Handles defaulters as journey-ending events
+    - Cleaner journey boundary detection
+    """
+    from django_celery_results.models import TaskResult
+
+    from .etl_v2.under5_ssd import Under5SSDV2
+
+    task_name = "plugins.wfp.tasks.etl_ssd_v2"
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
+
+    if last_success_task:
+        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+    else:
+        last_success_task_date = None
+
+    if all_data is not None:
+        last_success_task_date = None
+
+    logger.info("Starting ETL v2 for South Sudan Under-5")
+    entity_type_code = "ssd_under5"
+    etl_u5 = ETL(entity_type_code)
+
+    child_account = etl_u5.account_related_to_entity_type()
+    updated_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
+    Beneficiary.objects.filter(account=child_account, entity_id__in=updated_beneficiaries).delete()
+
+    Under5SSDV2().run(entity_type_code, updated_beneficiaries, task_name)
+
+    logger.info(f"Aggregating Children under 5 journey (v2) for {child_account} per org unit, admission and period")
+    org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
+    MonthlyStatistics.objects.filter(
+        account=child_account,
+        programme_type="U5",
+        org_unit_id__in=org_units_with_updated_data,
+    ).delete()
+    etl_u5.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
+
+    Screening().run(child_account, last_success_task_date)
 
 
 @shared_task()

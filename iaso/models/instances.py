@@ -33,6 +33,7 @@ from iaso.utils.jsonlogic import annotate_suffixed_json_fields, instance_jsonlog
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
+from .common import ValidationWorkflowEntity
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -414,7 +415,7 @@ class InMemoryTask:
         pass
 
 
-class Instance(models.Model):
+class Instance(ValidationWorkflowEntity):
     """A series of answers by an individual for a specific form
 
     Note that instances are called "Submissions" in the UI

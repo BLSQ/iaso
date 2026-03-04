@@ -1,5 +1,6 @@
 from typing import Optional
 
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 
 from iaso.models import Instance, ValidationStatus
@@ -8,12 +9,26 @@ from iaso.models.validation_workflow.validation_status import Status
 
 class ValidationWorkflowEngine:
     @staticmethod
-    def start(workflow_template, user, entity: Instance):
+    @transaction.atomic
+    def start(workflow_template, user, entity: Instance, parent_entity: Optional[Instance] = None):
         if entity and not workflow_template.is_entity_allowed(entity):
             raise ValueError("Invalid entity type")
 
         if entity.has_workflow(workflow_template):
             raise ValueError("Entity is already attached to a related workflow")
+
+        if parent_entity:
+            if not workflow_template.is_entity_allowed(parent_entity):
+                raise ValueError("Invalid parent entity type")
+
+            if not parent_entity.has_workflow(workflow_template):
+                raise ValueError("Invalid parent entity: no related workflow")
+
+            if parent_entity.get_validation_status(workflow_template) != "REJECTED":
+                raise ValueError("Invalid parent entity: workflow is in incorrect status")
+
+            entity.parent_instance_for_validation = parent_entity
+            entity.save()
 
         starting_node = workflow_template.get_starting_node()
 
@@ -28,6 +43,8 @@ class ValidationWorkflowEngine:
 
     @staticmethod
     def complete_node(validation_status: ValidationStatus, user, approved=False, comment: Optional[str] = ""):
+        ValidationWorkflowEngine._check_permissions_for_node(validation_status, user)
+
         if validation_status.status != Status.UNKNOWN:
             raise ValueError("Already completed")
 
@@ -43,6 +60,32 @@ class ValidationWorkflowEngine:
         if approved:
             for node in validation_status.node.next_nodes.all():
                 ValidationWorkflowEngine._activate_node(node, validation_status.instance, user)
+
+    @staticmethod
+    def _check_permissions_for_node(validation_status: ValidationStatus, user):
+        """
+        We check if the user has the permission to complete this node.
+        """
+        required_roles = validation_status.node.roles_required.all()
+
+        if not required_roles.exists():
+            return  # No perm required , anybody can do it
+
+        if user is None or getattr(user, "is_anonymous", True):  # not sure it'll happen IRL
+            raise PermissionDenied("User required")
+
+        if not hasattr(user, "iaso_profile"):  # not sure it'll happen IRL
+            raise PermissionDenied("User required")
+
+        if not user.iaso_profile:  # not sure it'll happen IRL
+            raise PermissionDenied("User required")
+
+        user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
+
+        required_roles_id = required_roles.values_list("pk", flat=True)
+
+        if not set(required_roles_id).issubset(set(user_role_ids)):
+            raise PermissionDenied("You do not have permission to complete this task")
 
     @staticmethod
     def _can_undo_node(validation_status: ValidationStatus):

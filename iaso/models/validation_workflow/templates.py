@@ -54,7 +54,7 @@ class ValidationNode(CreatedAndUpdatedModel):
     slug = AutoSlugField(populate_from="name")
     color = ColorField(blank=True, null=True)
     next_nodes = models.ManyToManyField("self", symmetrical=False, related_name="previous_nodes")
-    roles_allowed = models.ManyToManyField(UserRole, blank=True)
+    roles_required = models.ManyToManyField(UserRole, blank=True)
 
     def __str__(self):
         return self.name

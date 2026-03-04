@@ -8,9 +8,9 @@ from iaso.models.validation_workflow.templates import ValidationNode
 
 
 class Status(models.TextChoices):
-    ACCEPTED = "accepted", _("Accepted")
-    REJECTED = "rejected", _("Rejected")
-    UNKNOWN = "unknown", _("Unknown")
+    ACCEPTED = "accepted", "Accepted"
+    REJECTED = "rejected", "Rejected"
+    UNKNOWN = "unknown", "Unknown"
 
 
 class ValidationStatus(CreatedAndUpdatedModel):

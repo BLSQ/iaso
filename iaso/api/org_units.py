@@ -99,10 +99,17 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 def is_field_referenced(field_name, requested_fields, order):
     if not requested_fields:
-        return False
+        # no fields specified... do as if all fields are requested
+        return True
 
     fields_list = requested_fields.split(",")
-    return ":all" in fields_list or field_name in fields_list or field_name in order
+    return (
+        ":all" in fields_list
+        or field_name in fields_list
+        or field_name in order
+        or field_name in order
+        or f"-{field_name}" in order
+    )
 
 
 # noinspection PyMethodMayBeStatic
@@ -213,18 +220,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
         requested_fields = request.query_params.get("fields", None)
-        if requested_fields is None:
-            requested_fields = ",".join(OrgUnitSearchSerializer.Meta.default_fields)
+
         order = request.query_params.get("order", "name").split(",")
         # Annotate number of instance per org unit to sort by it
-        order_by_instance_count = "instances_count" in order or "-instances_count" in order
-        count_instances = any(
-            [
-                is_export,
-                order_by_instance_count,
-                is_field_referenced("instances_count", requested_fields, order),
-            ]
-        )
+        count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
+
         if with_shapes or as_location or parquet_format:
             count_instances = False
         count_per_form = csv_format or xlsx_format

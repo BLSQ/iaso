@@ -361,29 +361,31 @@ export default defineConfig([
             'react/require-default-props': 'off',
             'valid-typeof': 'warn',
         },
-        overrides: [
-            {
-                files: ['**/*.test.tsx', '**/*.test.ts'],
-                plugins: {
-                    vitest,
-                },
-                rules: {
-                    ...vitest.configs.recommended.rules,
-                },
-                globals: {
-                    ...vitest.environments.env.globals,
-                    ...globals.jest,
-                },
+    },
+    {
+        files: ['**/*.test.tsx', '**/*.test.ts'],
+        plugins: {
+            vitest,
+        },
+        rules: {
+            ...vitest.configs.recommended.rules,
+        },
+        languageOptions: {
+            globals: {
+                ...vitest.environments.env.globals,
+                ...globals.jest,
             },
-            {
-                files: ['playwright.config.ts', '**/playwright/**/*.test.ts'],
-                env: {
-                    node: true,
-                },
-                rules: {
-                    'no-process-env': 'off',
-                },
+        },
+    },
+    {
+        files: ['playwright.config.ts', '**/playwright/**/*.test.ts'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
             },
-        ],
+        },
+        rules: {
+            'no-process-env': 'off',
+        },
     },
 ]);

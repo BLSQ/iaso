@@ -34,7 +34,7 @@ steps:
     npm install -g npm@10.9.3
     node -v
     npm -v
-    npm ci
+    npm ci --ignore-scripts
     npm test -- --reporter xunit --reporter-option output=npm-test.xml
   displayName: 'npm install and run test'
 

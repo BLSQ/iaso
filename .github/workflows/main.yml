@@ -36,6 +36,8 @@ jobs:
               run: |
                   npm ci
                   npm test
+              env:
+                HUSKY: 0
             - name: Check Frontend (JS/React) translations
               run: |
                   python scripts/update_trads.py

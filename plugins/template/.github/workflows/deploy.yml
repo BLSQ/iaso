@@ -105,7 +105,8 @@ jobs:
             - name: npm ci
               run: |
                   npm ci
-
+              env:
+                HUSKY: 0
             - name: npm build
               run: |
                   rm -f hat/assets/webpack/*

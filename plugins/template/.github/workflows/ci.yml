@@ -45,6 +45,8 @@ jobs:
               run: |
                   npm ci
                   npm test
+              env:
+                HUSKY: 0
             - name: Check that no JS translation are missing
               run: |
                   python scripts/update_trads.py

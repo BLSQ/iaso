@@ -7,6 +7,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { GlobalStyles } from '@mui/material';
 import { getGlobalOverrides } from '../apps/Iaso/styles';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 export const setLocale = (code: string): void => {
     moment.locale(code);
@@ -21,15 +22,18 @@ export const setLocale = (code: string): void => {
     });
 };
 
+const queryClient = new QueryClient();
 
 function Wrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-        <GlobalStyles styles={getGlobalOverrides(theme)} />
-      {children}
-    </ThemeProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <GlobalStyles styles={getGlobalOverrides(theme)} />
+                {children}
+            </ThemeProvider>
+        </QueryClientProvider>
+    );
 }
 
 export function renderWithTheme(

@@ -9,6 +9,7 @@ import { faker } from '@faker-js/faker';
 import { randomLanguage } from '../../../../../__tests__/factories/language';
 import MESSAGES from 'Iaso/domains/users/messages';
 import * as Permission from 'Iaso/utils/permissions';
+import { Project } from 'Iaso/domains/projects/types/project';
 
 // mock utilities functions
 const mockRedirectTo = vi.fn();
@@ -106,7 +107,7 @@ vi.mock('Iaso/components/dialogs/EditUserDialog', () => ({
 }));
 
 vi.mock('Iaso/domains/projects/components/ProjectChip', () => ({
-    ProjectChip: ({ project }) => <div data-testid={'project-chip'}>
+    ProjectChip: ({ project }: {project: Project}) => <div data-testid={'project-chip'}>
         {project?.name}
     </div>,
 }));
@@ -134,23 +135,23 @@ const randomUser = {
 
 const getRandomProject = () => {
     return {
-        id: faker.string.numeric(),
+        id: faker.string.numeric(3),
         name: faker.word.noun(),
         color: faker.color.rgb({ format: 'hex' }),
-        app_id: faker.string.numeric(),
+        app_id: faker.string.numeric(3),
     };
 };
 
 const getRandomOrgUnit = () => {
     return {
-        id: faker.string.numeric(),
+        id: faker.string.numeric(3),
         name: faker.word.noun()
     };
 };
 
 const getRandomUserRole = () => {
     return {
-        id: faker.string.numeric(),
+        id: faker.string.numeric(3),
         name: faker.word.noun()
     }
 }
@@ -195,7 +196,7 @@ describe('UsersDetailView unit tests', () => {
         expect(screen.queryByTestId('edit-user-password-dialog')).toBeNull();
 
     });
-    it.for(
+    it.each(
         [
             {
                 label: 'general info',
@@ -246,6 +247,7 @@ describe('UsersDetailView unit tests', () => {
         expect(screen.getByText('General info')).toBeInTheDocument();
         expect(screen.queryByText(textPlaceholder)).toBeNull();
         Object.entries(randomUser).filter(([k, _]) => k !== 'color').forEach(([k, v]) => {
+            // @ts-ignore
             expect(screen.getByText(v), `Field ${k} with value ${v} should be in the document`).toBeInTheDocument();
         });
 

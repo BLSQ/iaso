@@ -363,7 +363,12 @@ export default defineConfig([
         },
         overrides: [
             {
-                files: ['**/*.test.tsx', '**/*.test.ts'],
+                files: [
+                    '**/*.test.tsx',
+                    '**/*.test.ts',
+                    '**/*.integration.test.tsx',
+                    '**/*.integration.test.ts',
+                ],
                 plugins: {
                     vitest,
                 },

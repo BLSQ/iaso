@@ -1,4 +1,3 @@
-import { Period } from './models';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_FINANCIAL_NOV,
@@ -9,15 +8,26 @@ import {
     PERIOD_TYPE_WEEK,
     PERIOD_TYPE_YEAR,
 } from './constants';
+import { Period } from './models';
 
-let periodString;
-let expectedPeriod;
-let period;
+let periodString: string;
+let expectedPeriod: {
+    periodType: string;
+    month: number;
+    day: number;
+    quarter: number;
+    semester: number;
+    year: number;
+    periodString: string;
+    week: undefined | number;
+};
+let period: Period;
 
-let month;
-const getMonthRange = m =>
+let month: number;
+
+const getMonthRange = (m: number) =>
     Array(m)
-        .fill()
+        .fill(undefined)
         .map((x, i) => i + 1);
 
 describe('Periods model', () => {
@@ -64,7 +74,7 @@ describe('Periods model', () => {
         expect(Period.getPeriodType('ZELDA')).to.eql(null);
     });
     describe('day string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '20200101';
             period = new Period(periodString);
             month = 1;
@@ -162,7 +172,7 @@ describe('Periods model', () => {
     });
 
     describe('monthly string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '202001';
             period = new Period(periodString);
             month = 1;
@@ -259,7 +269,7 @@ describe('Periods model', () => {
     });
 
     describe('quarterly string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '2020Q1';
             month = 3;
             period = new Period(periodString);
@@ -339,7 +349,7 @@ describe('Periods model', () => {
 
 
     describe('quarterly nov string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '2018NovQ1';
             period = new Period(periodString);
             expectedPeriod = {
@@ -408,7 +418,7 @@ describe('Periods model', () => {
 
 
     describe('financial nov string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '2018Nov';
             period = new Period(periodString);
             expectedPeriod = {
@@ -474,7 +484,7 @@ describe('Periods model', () => {
 
 
     describe('sixmonthly string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '2020S1';
             month = 6;
             period = new Period(periodString);
@@ -555,7 +565,7 @@ describe('Periods model', () => {
     });
 
     describe('yearly string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '2020';
             month = 12;
             period = new Period(periodString);
@@ -642,7 +652,7 @@ describe('Periods model', () => {
 
 
     describe('weekly string', () => {
-        before(() => {
+        beforeAll(() => {
             periodString = '2026W52';
             period = new Period(periodString);
             expectedPeriod = {
@@ -710,6 +720,6 @@ describe('Periods model', () => {
                 expect(Period.isAfter('2021W1', '2021W1')).to.eql(false);
             });
         });
-    });
+    })
 
 });

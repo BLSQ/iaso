@@ -7,17 +7,17 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { baseUrls } from '../../../constants/urls.ts';
-import { useFormState } from '../../../hooks/form';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useFormState } from 'Iaso/hooks/form';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
-} from '../../../utils/featureFlags';
-import * as Permission from '../../../utils/permissions.ts';
+} from 'Iaso/utils/featureFlags';
+import * as Permission from '../../../utils/permissions';
 import {
     useCheckUserHasWritePermissionOnOrgunit,
     useCurrentUser,
-} from '../../../utils/usersUtils.ts';
+} from 'Iaso/utils/usersUtils';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { userHasPermission } from '../../users/utils';
 import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';

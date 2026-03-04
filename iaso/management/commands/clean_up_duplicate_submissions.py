@@ -136,7 +136,8 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"{index}. Duplicate with uuid '{duplicate['uuid']}' has no content.")
                 # It doesn't matter which ones we delete, so let's keep the most recent one.
-                self._delete_instances(uuid=duplicate["uuid"], file_name=None, first_id=has_content.first().id)
+                first = Instance.objects.filter(uuid=duplicate["uuid"]).order_by("-created_at").first()
+                self._delete_instances(uuid=duplicate["uuid"], file_name=None, first_id=first.id)
                 no_content += 1
 
             self.stdout.write(self.style.SUCCESS("\n\n\nSummary:"))

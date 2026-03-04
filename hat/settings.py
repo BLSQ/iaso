@@ -822,6 +822,9 @@ for plugin_name in PLUGINS:
         if hasattr(plugin_settings, "WEBPACK_LOADER"):
             WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
 
+        if hasattr(plugin_settings, "DATABASES"):
+            DATABASES.update(plugin_settings.DATABASES)
+
     except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
         print(
             f"\tno plugin_settings.py file found for plugin {plugin_name}, appending plugins.{plugin_name} to INSTALLED_APPS"

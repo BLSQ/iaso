@@ -73,7 +73,6 @@ const parametersToRemove = [
     'connection_token',
     'sampling_name',
     'planning_id',
-    'version',
 ];
 
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
@@ -283,7 +282,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                 setAllowConfirm={setAllowConfirm}
                                 orgunitTypes={orgunitTypes}
                                 isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                                taskStatus={taskStatus}
+                                taskStatus={taskStatus ?? 'QUEUED'}
                                 taskId={taskId}
                             />
                         </Box>

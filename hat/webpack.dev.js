@@ -166,11 +166,14 @@ module.exports = {
                     eager: true,
                     requiredVersion: false,
                 },
-                'bluesquare-components': {
-                    singleton: true,
-                    eager: true,
-                    requiredVersion: false,
-                },
+                // Exclude from shared when LIVE_COMPONENTS so resolve.alias to local src works
+                ...(process.env.LIVE_COMPONENTS !== 'true' && {
+                    'bluesquare-components': {
+                        singleton: true,
+                        eager: true,
+                        requiredVersion: false,
+                    },
+                }),
             },
         }),
     ],
@@ -236,9 +239,49 @@ module.exports = {
             'IasoModules/translations/configs': combinedTranslationsPath,
             'IasoModules/language/configs': languageConfigsPath,
             ...(process.env.LIVE_COMPONENTS === 'true' && {
+                // Alias bluesquare-components to local source
                 'bluesquare-components': path.resolve(
                     __dirname,
                     '../../bluesquare-components/src/',
+                ),
+                // Force host's singleton deps so bluesquare-components src uses same instances
+                // (avoids duplicate react-router-dom → useNavigate outside Router context)
+                react: path.resolve(__dirname, '../node_modules/react'),
+                'react-dom': path.resolve(
+                    __dirname,
+                    '../node_modules/react-dom',
+                ),
+                'react-router': path.resolve(
+                    __dirname,
+                    '../node_modules/react-router',
+                ),
+                'react-router-dom': path.resolve(
+                    __dirname,
+                    '../node_modules/react-router-dom',
+                ),
+                'react-intl': path.resolve(
+                    __dirname,
+                    '../node_modules/react-intl',
+                ),
+                '@mui/material': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/material',
+                ),
+                '@mui/styles': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/styles',
+                ),
+                '@emotion/react': path.resolve(
+                    __dirname,
+                    '../node_modules/@emotion/react',
+                ),
+                '@emotion/styled': path.resolve(
+                    __dirname,
+                    '../node_modules/@emotion/styled',
+                ),
+                'react-query': path.resolve(
+                    __dirname,
+                    '../node_modules/react-query',
                 ),
             }),
         },

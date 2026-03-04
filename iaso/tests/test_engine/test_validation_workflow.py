@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
-from django.contrib.auth.models import Group
+
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Instance, ValidationNode, ValidationWorkflow, Account, Profile, UserRole
+from iaso.models import Account, Instance, Profile, UserRole, ValidationNode, ValidationWorkflow
 from iaso.models.validation_workflow.validation_status import Status
 
 
@@ -324,7 +324,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), AnonymousUser(), comment="LGTM", approved=True
+                self.instance.get_next_pending_states(self.workflow).first(),
+                AnonymousUser(),
+                comment="LGTM",
+                approved=True,
             )
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
@@ -340,8 +343,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), self.other_user, comment="LGTM",
-                approved=True
+                self.instance.get_next_pending_states(self.workflow).first(),
+                self.other_user,
+                comment="LGTM",
+                approved=True,
             )
 
         # check that there's no impact
@@ -370,8 +375,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), AnonymousUser(), comment="Nope",
-                approved=False
+                self.instance.get_next_pending_states(self.workflow).first(),
+                AnonymousUser(),
+                comment="Nope",
+                approved=False,
             )
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
@@ -387,8 +394,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), self.other_user, comment="Nope",
-                approved=False
+                self.instance.get_next_pending_states(self.workflow).first(),
+                self.other_user,
+                comment="Nope",
+                approved=False,
             )
 
         # check that there's no impact
@@ -426,6 +435,7 @@ class TestUndoFeature(TestCase):
         v
     [ node: manager approves ]
     """
+
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="noprofile", password="testpass")
         self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow")[0]
@@ -443,20 +453,16 @@ class TestUndoFeature(TestCase):
         """
         Shouldn't be possible as a notification might have been sent to the user already
         """
-        pass
 
     def test_try_undo_rejected_node(self):
         """
         Shouldn't be possible as a notification might have been sent to the user already
         """
-        pass
 
     def test_try_undo_rejected_last_node(self):
         """
         Shouldn't be possible as a notification might have been sent to the user already
         """
-        pass
-
 
 
 class TestRejectionTargetFeature(TestCase):
@@ -495,7 +501,10 @@ class TestResubmitFeature(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.parent_instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.parent_instance.get_next_pending_states(self.workflow).first(), self.user, approved=False, comment="Nope"
+            self.parent_instance.get_next_pending_states(self.workflow).first(),
+            self.user,
+            approved=False,
+            comment="Nope",
         )
 
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance, self.parent_instance)
@@ -503,9 +512,11 @@ class TestResubmitFeature(TestCase):
         self.instance.refresh_from_db()
         self.assertEqual(self.instance.parent_instance_for_validation, self.parent_instance)
 
-
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_states(self.workflow).first(), self.user, approved=False, comment="Nope for the second time"
+            self.instance.get_next_pending_states(self.workflow).first(),
+            self.user,
+            approved=False,
+            comment="Nope for the second time",
         )
 
         validations = self.instance.get_all_validation_statuses(self.workflow)
@@ -523,8 +534,10 @@ class TestResubmitFeature(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.parent_instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.parent_instance.get_next_pending_states(self.workflow).first(), self.user, approved=True,
-            comment="LGTM"
+            self.parent_instance.get_next_pending_states(self.workflow).first(),
+            self.user,
+            approved=True,
+            comment="LGTM",
         )
 
         with self.assertRaisesMessage(ValueError, "Invalid parent entity: workflow is in incorrect status"):

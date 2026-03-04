@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Case, When, IntegerField
+from django.db.models import Case, IntegerField, When
 
 
 class CreatedAndUpdatedModel(models.Model):
@@ -21,6 +21,7 @@ class ValidationWorkflowEntity(models.Model):
 
     def get_validation_status(self, workflow):
         from iaso.models.validation_workflow.validation_status import Status
+
         if self.validationstatus_set.filter(final=True, status=Status.ACCEPTED, node__workflow=workflow).exists():
             return "APPROVED"
 
@@ -35,6 +36,7 @@ class ValidationWorkflowEntity(models.Model):
 
     def get_next_pending_states(self, workflow):
         from iaso.models.validation_workflow.validation_status import Status
+
         return self.validationstatus_set.filter(status=Status.UNKNOWN, node__workflow=workflow)
 
     def _collect_instance_pks(self):
@@ -52,14 +54,16 @@ class ValidationWorkflowEntity(models.Model):
         Function to recursively get all validation statuses (including parent) and order them
         """
         from iaso.models import ValidationStatus
+
         instance_pks = self._collect_instance_pks()
 
         order = Case(
-            *[
-                When(instance_id=pk, then=pos)
-                for pos, pk in enumerate(instance_pks)
-            ],
+            *[When(instance_id=pk, then=pos) for pos, pk in enumerate(instance_pks)],
             output_field=IntegerField(),
         )
 
-        return ValidationStatus.objects.filter(node__workflow=workflow, instance_id__in=instance_pks).annotate(_order=order).order_by("-_order", "-created_at")
+        return (
+            ValidationStatus.objects.filter(node__workflow=workflow, instance_id__in=instance_pks)
+            .annotate(_order=order)
+            .order_by("-_order", "-created_at")
+        )

@@ -24,7 +24,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         allow_empty=True, allow_null=True, many=True, queryset=UserRole.objects.all(), required=False
     )
     projects = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, queryset=Project.objects.all(), required=False, many=True
+        allow_empty=True, allow_null=True, queryset=Project.objects.none(), required=False, many=True
     )
     org_units = serializers.PrimaryKeyRelatedField(
         allow_empty=True, allow_null=True, many=True, queryset=OrgUnit.objects.all(), required=False
@@ -69,6 +69,14 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
             "country_code",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            account = self._get_account()
+            self.fields['projects'].child_relation.queryset = Project.objects.filter(account=account)
+
     def _get_account(self):
         request = self.context["request"]
         current_profile = request.user.iaso_profile
@@ -85,26 +93,22 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         return value or None
 
     def validate_user_roles(self, data):
-        # should we raise an error if not unique ?
-        return set(data)
-
-    def _validate_user_roles(self, data):
-        # we get the account
         account = self._get_account()
-        user_roles = data.get("user_roles")
 
-        if not user_roles:
-            return
+        if not data:
+            return data
 
-        if UserRole.objects.filter(pk__in=[user_role.pk for user_role in user_roles]).exclude(account=account).exists():
+        data = set(data)
+
+        if UserRole.objects.filter(pk__in=[user_role.pk for user_role in data]).exclude(account=account).exists():
             raise serializers.ValidationError(
-                {"user_roles": _("One or more user roles do not belong to the provided account.")}
+                _("One or more user roles do not belong to the provided account.")
             )
+
+        return data
 
     def validate(self, data):
         self._validate_password_if_no_send_email(data)
-        self._validate_user_roles(data)
-        data["projects"] = self._validate_projects(data)
         data["user_permissions"] = self._validate_user_permissions(data)
         return data
 
@@ -128,15 +132,6 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         valid_permissions = [perm for perm in user_permissions if perm.codename in module_permission_codenames]
 
         return valid_permissions
-
-    def _validate_projects(self, data):
-        account = self._get_account()
-        projects = data.get("projects", None) or []
-
-        if not account and not projects:
-            return None
-
-        return Project.objects.filter(pk__in=[project.pk for project in projects], account=self._get_account())
 
     def set_user_password(self, user, password, send_email_invitation, email):
         if password:
@@ -190,21 +185,3 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         )
 
         return profile
-
-    def to_representation(self, instance):
-        """
-        Legacy compatibility : imho those fields shouldn't be there in the create response.
-        And if so, maybe it should be method/properties on the Profile itself?
-        """
-
-        data = super().to_representation(instance)
-
-        user = instance.user
-
-        data["user_name"] = user.username if user else None
-        data["email"] = user.email if user else None
-        data["first_name"] = user.first_name if user else None
-        data["last_name"] = user.last_name if user else None
-        data["is_superuser"] = user.is_superuser if user else False
-
-        return data

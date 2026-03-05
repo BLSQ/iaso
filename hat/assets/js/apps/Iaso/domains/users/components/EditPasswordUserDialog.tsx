@@ -8,7 +8,7 @@ import {
 import { FormikProvider, useFormik } from 'formik';
 import { MutateFunction } from 'react-query';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { EditButton } from 'Iaso/domains/users/components/EditButton';
+import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import MESSAGES from 'Iaso/domains/users/messages';
 import { SaveUserPasswordQuery } from 'Iaso/domains/users/types';
 import { useUserPasswordValidation } from 'Iaso/domains/users/validation';
@@ -88,7 +88,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
                 }}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                maxWidth="md"
+                maxWidth="sm"
                 open={isOpen}
                 closeDialog={closeDialog}
                 allowConfirm={isValid}
@@ -105,7 +105,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
                         errors={getErrors('password')}
                         required
                         type="password"
-                        label={formatMessage(MESSAGES.passwordLabel)}
+                        label={MESSAGES.passwordLabel}
                     />
                     <InputComponent
                         keyValue="confirm_password"
@@ -114,7 +114,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
                         errors={getErrors('confirm_password')}
                         required
                         type="password"
-                        label={formatMessage(MESSAGES.confirmPasswordLabel)}
+                        label={MESSAGES.confirmPasswordLabel}
                     />
                 </div>
             </ConfirmCancelModal>
@@ -122,13 +122,14 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-type PasswordEditButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message">
+type PasswordEditButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message" | "color">
 
 const PasswordEditButton = (props: PasswordEditButtonProps) => {
 
     return (
         <EditButton
             message={MESSAGES.updatePasswordButtonLabel}
+            color={"warning"}
             {...props}
         />
     );

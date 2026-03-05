@@ -3,22 +3,17 @@
 # ColorFieldSerializer
 # retrieve : do we really need such a huge payload ???
 # check number of queries and fine tune perf/optimize
-# Fix front end:
-# * Org units => [{"id": 1}] to [1]
-# * Check that we send booleans and not 1 or whatever
-# * standard pagination
-# * export actions have been moved to other endpoints
 from typing import Any, List, Union
 
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.models import Permission
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import Min, QuerySet
+from django.db.models import Min, QuerySet, Prefetch
 from django.db.transaction import atomic
 from django.http import Http404, HttpResponse, StreamingHttpResponse
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import translation
@@ -29,7 +24,6 @@ from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
@@ -40,6 +34,7 @@ from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.profiles.filters import ProfileListFilter
 from iaso.api.profiles.pagination import ProfilePagination
+from iaso.api.profiles.permissions import HasProfilePermission
 from iaso.api.profiles.policies import (
     GroupFromUserRolesPolicy,
     ManagedUsersPolicy,
@@ -55,57 +50,10 @@ from iaso.api.profiles.serializers import (
     ProfileUserFallbackRetrieveSerializer,
 )
 from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer, ProfileUpdatePasswordSerializer
-from iaso.models import OrgUnit, Profile, TenantUser
+from iaso.models import Profile, TenantUser, OrgUnit, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
-
-
-PK_ME = "me"
-
-
-class HasProfilePermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        pk = view.kwargs.get("pk")
-
-        if view.action in ("retrieve", "partial_update", "update") and pk == PK_ME:
-            return True
-
-        if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
-            return True
-
-        if request.user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
-            return self.has_permission_over_user(request, pk, view.action)
-
-        return view.action in ["retrieve", "list", "export_csv", "export_xlsx"]
-
-    # We could `return False` instead of raising exceptions,
-    # but it's better to be explicit about why the permission was denied.
-    @staticmethod
-    def has_permission_over_user(request, pk, view_action):
-        if view_action in ["retrieve", "list", "export_csv", "export_xlsx"]:
-            return True
-
-        if not pk:
-            new_user_org_units = request.data.get("org_units", [])
-            if len(new_user_org_units) == 0:
-                raise PermissionDenied(
-                    f"User with '{CORE_USERS_MANAGED_PERMISSION}' can not create a new user without a location."
-                )
-
-        if pk == request.user.id:
-            raise PermissionDenied(f"User with '{CORE_USERS_MANAGED_PERMISSION}' cannot edit their own permissions.")
-
-        org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
-
-        if org_units and pk and len(org_units) > 0:
-            profile = get_object_or_404(Profile.objects.filter(account=request.user.iaso_profile.account), pk=pk)
-            user_managed_org_units = profile.org_units.filter(id__in=org_units).all()
-            if not user_managed_org_units or len(user_managed_org_units) == 0:
-                raise PermissionDenied(
-                    "The user we are trying to modify is not part of any OrgUnit managed by the current user"
-                )
-        return True
-
+from iaso.api.profiles.constants import PK_ME
 
 class ProfilesViewSet(ModelViewSet):
     f"""Profiles API
@@ -166,12 +114,21 @@ class ProfilesViewSet(ModelViewSet):
                 # Adds a sortable field containing each user's alphabetically first role name,
                 # enabling consistent frontend sorting of users with multiple roles.
                 annotated_first_user_role=Min("user_roles__group__name")
-            ).prefetch_related(
-                "user",
-                "user_roles",
-                "user__tenant_user",
+            ).select_related("user", "user__tenant_user").prefetch_related(
+                Prefetch(
+                    "user_roles",
+                    queryset=UserRole.objects.select_related('group').order_by('group__name')
+                ),
+                Prefetch(
+                    "user__user_permissions",
+                    queryset=Permission.objects.filter(codename__startswith="iaso_").only('codename'),
+                    to_attr="iaso_permissions"
+                ),
                 "user__teams",
-                "org_units",
+                Prefetch(
+             "org_units",
+                    queryset=OrgUnit.objects.order_by("name")
+                ),
                 "org_units__version",
                 "org_units__version__data_source",
                 "org_units__parent",
@@ -293,13 +250,13 @@ class ProfilesViewSet(ModelViewSet):
         # run the advanced checks : authorization/policy validation
         OrgUnitPolicy.authorize_create(self.request.user, serializer.validated_data.get("org_units", None) or [])
         GroupFromUserRolesPolicy.authorize(
-            user=self.request.user, user_roles=serializer.validated_data.get("user_roles", None) or []
+            requester=self.request.user, user_roles=serializer.validated_data.get("user_roles", None) or []
         )
         UserPermissionsPolicy.authorize_create(
-            user=self.request.user, user_permissions=serializer.validated_data.get("user_permissions", None) or []
+            requester=self.request.user, user_permissions=serializer.validated_data.get("user_permissions", None) or []
         )
         ProjectsPolicy.authorize_create(
-            user=self.request.user, projects=serializer.validated_data.get("projects", None) or []
+            requester=self.request.user, projects=serializer.validated_data.get("projects", None) or []
         )
 
         # from super().create() to avoid calling again the serializer
@@ -376,19 +333,19 @@ class ProfilesViewSet(ModelViewSet):
 
         # run the advanced checks : authorization/policy validation
         UserPermissionsPolicy.authorize_update(
-            user=self.request.user, user_permissions=serializer.validated_data.get("user_permissions", None) or []
+            requester=self.request.user, user_permissions=serializer.validated_data.get("user_permissions", None) or []
         )
         ProjectsPolicy.authorize_update(
-            user=self.request.user,
+            requester=self.request.user,
             profile=instance,
             new_project_ids=serializer.validated_data.get("projects", None) or [],
         )
         GroupFromUserRolesPolicy.authorize(
-            user=self.request.user, user_roles=serializer.validated_data.get("user_roles", None) or []
+            requester=self.request.user, user_roles=serializer.validated_data.get("user_roles", None) or []
         )
         if "org_units" in serializer.validated_data and not getattr(serializer, "_org_units_unchanged", False):
             OrgUnitPolicy.authorize_update(
-                user=request.user,
+                requester=request.user,
                 profile=instance,
                 new_org_unit_ids={ou.id for ou in serializer.validated_data["org_units"]},
             )

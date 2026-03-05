@@ -5,12 +5,11 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Tab, Tabs } from '@mui/material';
 import {
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal,
+    makeFullModal, theme,
     useSafeIntl,
 } from 'bluesquare-components';
 
@@ -18,9 +17,9 @@ import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import { EditButton } from 'Iaso/domains/users/components/EditButton';
-import * as Permissions from '../../../utils/permissions';
-import { Profile, useCurrentUser } from '../../../utils/usersUtils';
+import { EditButton } from 'Iaso/components/Buttons/EditButton';
+import * as Permissions from 'Iaso/utils/permissions';
+import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
 import PermissionsAttribution from './PermissionsAttribution';
@@ -30,8 +29,9 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
+import { SxStyles } from 'Iaso/types/general';
 
-const useStyles = makeStyles(theme => ({
+const styles: SxStyles = {
     tabs: {
         marginBottom: theme.spacing(3),
     },
@@ -45,7 +45,7 @@ const useStyles = makeStyles(theme => ({
         zIndex: -10,
         opacity: 0,
     },
-}));
+}
 
 type Props = {
     titleMessage: IntlMessage;
@@ -72,7 +72,6 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const queryClient = useQueryClient();
-    const classes: Record<string, string> = useStyles();
 
     const {
         user,
@@ -89,18 +88,16 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
-            if (
-                user[key].value !== '' &&
-                user[key].value?.length !== 0 &&
-                user[key].value !== null
-            ) {
-                if (key === 'org_units') {
-                    currentUser[key] = user?.[key].value?.map(
-                        (orgUnit: OrgUnit) => orgUnit?.id,
-                    );
-                } else {
-                    currentUser[key] = user[key].value;
-                }
+            if (key === 'org_units') {
+                currentUser[key] = user?.[key].value?.map(
+                    (orgUnit: OrgUnit) => orgUnit?.id,
+                );
+            } else if(key === 'user_roles'){
+                currentUser[key] = user?.[key].value?.map(
+                    (userRole) => userRole?.id ?? userRole,
+                );
+            } else {
+                currentUser[key] = user[key].value;
             }
         });
 
@@ -133,7 +130,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     const userRolesPermissions = user?.user_roles_permissions.value ?? [];
 
     const isPhoneNumberUpdated =
-        user.phone_number.value !== initialData.phone_number && user.id?.value;
+        (user.phone_number.value ?? '') !== (initialData?.phone_number ?? '') && !!user.id?.value;
 
     const isUserWithoutPermissions =
         userPermissions.length === 0 &&
@@ -227,29 +224,21 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                 <Tabs
                     id="user-dialog-tabs"
                     value={tab}
-                    classes={{
-                        root: classes.tabs,
-                    }}
+                    sx={styles.tabs}
                     onChange={(_event, newtab) => setTab(newtab)}
                 >
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="infos"
                         label={formatMessage(MESSAGES.infos)}
                     />
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="permissions"
                         label={formatMessage(MESSAGES.permissions)}
                     />
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
@@ -264,17 +253,15 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                         />
                     ) : (
                         <Tab
-                            classes={{
-                                root: classes.tab,
-                            }}
+                            sx={styles.tabs}
                             value="orgUnitWriteTypes"
                             label={formatMessage(MESSAGES.orgUnitWriteTypes)}
                         />
                     )}
                 </Tabs>
-                <div className={classes.root} id="user-profile-dialog">
-                    <div
-                        className={tab === 'infos' ? '' : classes.hiddenOpacity}
+                <Box sx={styles.root} id="user-profile-dialog">
+                    <Box
+                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
                     >
                         <UsersInfos
                             setFieldValue={(key, value) =>
@@ -290,7 +277,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                             setEmail={setEmail}
                             withPassword={false}
                         />
-                    </div>
+                    </Box>
                     {tab === 'permissions' && (
                         <PermissionsAttribution
                             isSuperUser={initialData?.is_superuser ?? false}
@@ -322,7 +309,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                             }
                         />
                     )}
-                </div>
+                </Box>
             </ConfirmCancelModal>
         </>
     );

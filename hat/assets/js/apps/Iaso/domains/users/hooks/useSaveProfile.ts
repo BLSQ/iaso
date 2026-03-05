@@ -4,9 +4,13 @@ import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { DjangoError } from 'Iaso/types/general';
 import { User } from 'Iaso/utils/usersUtils';
 
+type UseSaveProfileParams = {
+    id?: number | string;
+    showSuccessSnackBar?: boolean;
+}
+
 export const useSaveProfile = (
-    id?: number | string | undefined,
-    showSuccessSnackBar = true,
+    { id, showSuccessSnackBar = true }: UseSaveProfileParams = {},
 ): UseMutationResult<User, DjangoError, User | Partial<User>> =>
     useSnackMutation({
         mutationFn: ({ id: userId, ...body }) =>

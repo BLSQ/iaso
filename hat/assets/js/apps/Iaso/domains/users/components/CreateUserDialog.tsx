@@ -5,13 +5,12 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Tab, Tabs } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal,
+    makeFullModal, theme,
     useSafeIntl,
 } from 'bluesquare-components';
 
@@ -29,8 +28,9 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
+import { SxStyles } from 'Iaso/types/general';
 
-const useStyles = makeStyles(theme => ({
+const styles: SxStyles = {
     tabs: {
         marginBottom: theme.spacing(3),
     },
@@ -44,7 +44,7 @@ const useStyles = makeStyles(theme => ({
         zIndex: -10,
         opacity: 0,
     },
-}));
+}
 
 type Props = {
     titleMessage: IntlMessage;
@@ -72,7 +72,6 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const queryClient = useQueryClient();
-    const classes: Record<string, string> = useStyles();
 
     const {
         user,
@@ -230,29 +229,21 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                 <Tabs
                     id="user-dialog-tabs"
                     value={tab}
-                    classes={{
-                        root: classes.tabs,
-                    }}
+                    sx={styles.tabs}
                     onChange={(_event, newtab) => setTab(newtab)}
                 >
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="infos"
                         label={formatMessage(MESSAGES.infos)}
                     />
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="permissions"
                         label={formatMessage(MESSAGES.permissions)}
                     />
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
@@ -267,17 +258,15 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                         />
                     ) : (
                         <Tab
-                            classes={{
-                                root: classes.tab,
-                            }}
+                            sx={styles.tabs}
                             value="orgUnitWriteTypes"
                             label={formatMessage(MESSAGES.orgUnitWriteTypes)}
                         />
                     )}
                 </Tabs>
-                <div className={classes.root} id="user-profile-dialog">
-                    <div
-                        className={tab === 'infos' ? '' : classes.hiddenOpacity}
+                <Box sx={styles.root} id="user-profile-dialog">
+                    <Box
+                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
                     >
                         <UsersInfos
                             setFieldValue={(key, value) =>
@@ -292,7 +281,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                             setPhoneNumber={setPhoneNumber}
                             setEmail={setEmail}
                         />
-                    </div>
+                    </Box>
                     {tab === 'permissions' && (
                         <PermissionsAttribution
                             isSuperUser={initialData?.is_superuser ?? false}
@@ -330,7 +319,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                             }
                         />
                     )}
-                </div>
+                </Box>
             </ConfirmCancelModal>
         </>
     );

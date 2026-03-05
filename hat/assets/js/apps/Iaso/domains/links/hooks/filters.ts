@@ -74,7 +74,7 @@ export const useGetProfilesOptions = (): UseQueryResult<
             cacheTime: 600000,
             staleTime: 600000,
             select: data =>
-                (data?.profiles ?? []).map(user => ({
+                (data?.results ?? []).map(user => ({
                     label: user.user_name,
                     value: user.user_id,
                 })),

@@ -36,12 +36,12 @@ class ProfileListSerializer(serializers.ModelSerializer):
     user_roles_editable_org_unit_type_ids = serializers.ReadOnlyField(
         source="get_user_roles_editable_org_unit_type_ids"
     )
-    user_roles = NestedUserRoleSerializer(source="get_ordered_user_roles", many=True, read_only=True)
+    user_roles = NestedUserRoleSerializer(many=True, read_only=True)
     projects = RelatedProjectSerializer(many=True, read_only=True)
     user_permissions = serializers.SerializerMethodField()
     is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
     is_superuser = serializers.BooleanField(source="user.is_superuser", read_only=True)
-    org_units = NestedOrgUnitSerializer(many=True, source="get_ordered_org_units")
+    org_units = NestedOrgUnitSerializer(many=True, read_only=True)
 
     class Meta:
         model = Profile
@@ -92,9 +92,9 @@ class ProfileListSerializer(serializers.ModelSerializer):
         try:
             editable_org_unit_type_ids = obj.annotated_editable_org_unit_types_ids
         except AttributeError:
-            editable_org_unit_type_ids = [out.pk for out in obj.editable_org_unit_types.all()]
+            editable_org_unit_type_ids = list(obj.editable_org_unit_types.values_list("id", flat=True))
 
         return editable_org_unit_type_ids
 
     def get_user_permissions(self, obj):
-        return list(obj.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True))
+        return [p.codename for p in getattr(obj.user, "iaso_permissions", [])]

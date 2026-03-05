@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users',
         id: 'iaso.label.users',
     },
+    userDetails: {
+        defaultMessage: 'User details',
+        id: 'iaso.label.userDetails'
+    },
     create: {
         defaultMessage: 'Create user',
         id: 'iaso.users.create',

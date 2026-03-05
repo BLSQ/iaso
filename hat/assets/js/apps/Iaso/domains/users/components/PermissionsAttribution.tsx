@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Box, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, SxProps, Typography, Theme } from '@mui/material';
 import {
     Column,
     LoadingSpinner,
@@ -25,14 +24,11 @@ const canAssignPermission = (user, permission): boolean => {
     return permission.codename !== Permissions.USERS_ADMIN;
 };
 
-const styles = theme => ({
-    admin: {
+const styles:  Record<string, SxProps<Theme>> = ({
+    admin: (theme) => ({
         color: theme.palette.success.main,
-    },
-    tableCellStyle: {
-        border: '1px solid grey',
-    },
-    tableStyle: {
+    }),
+    tableStyle: (theme) => ({
         '& .MuiTableHead-root': {
             position: 'sticky',
             top: 0,
@@ -43,10 +39,8 @@ const styles = theme => ({
             overflow: 'auto',
             border: `1px solid ${theme.palette.border.main}`,
         },
-    },
+    }),
 });
-
-const useStyles = makeStyles(styles);
 
 type Props = {
     isSuperUser: boolean;
@@ -59,6 +53,19 @@ type PermissionResult = {
     permissions: string[];
 };
 
+type UserPermission = {
+    id: number;
+    name: string;
+}
+
+const parseUserPermissions = (userPermissions?: (UserPermission | number)[]): string[] => {
+    // we do this because the response from the list api differs from the retrieve
+    // list returns [{id: .., name:..}] where retrieve returns a list of ids.
+    // as this is used in modal of list and view UI , it's kind of messy.
+    // once we fix the mismatches between list and view, we can refactor this
+    return userPermissions?.map((v: UserPermission | number) => typeof v === "object" && "id" in v ? v.id?.toString() : v?.toString()) ?? []
+}
+
 const PermissionsAttribution: React.FunctionComponent<Props> = ({
     isSuperUser = false,
     currentUser,
@@ -66,7 +73,6 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
     setFieldValue,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
     const { data, isLoading } = useSnackQuery<PermissionResult>({
         queryKey: ['grouped_permissions'],
         queryFn: () => getRequest('/api/permissions/grouped_permissions/'),
@@ -77,7 +83,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
 
     const setPermissions = useCallback(
         (codeName: string | string[], isChecked: boolean) => {
-            const newUserPerms = [...currentUser.user_permissions.value?.map((v: {id: number, name: string} | number) => typeof v === "object" && "id" in v ? v.id : v)];
+            const newUserPerms = [...parseUserPermissions(currentUser.user_permissions.value)];
             if (!isChecked) {
                 const permIndex = newUserPerms.indexOf(codeName);
                 newUserPerms.splice(permIndex, 1);
@@ -106,7 +112,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
         return permissions;
     }, [data?.permissions, loggedInUser]);
 
-    const userPermissions = currentUser.user_permissions.value?.map((v: {id: number, name: string} | number) => typeof v === "object" && "id" in v ? v.id : v);
+    const userPermissions = parseUserPermissions(currentUser.user_permissions.value);
     const { data: userRoles, isFetching } = useGetUserRolesDropDown();
     const permissionsData = useGetUserPermissions(
         allPermissions,
@@ -137,7 +143,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
                 <Typography
                     id="superuser-permission-message"
                     variant="body1"
-                    className={classes.admin}
+                    sx={styles.admin}
                 >
                     {formatMessage(MESSAGES.isSuperUser)}
                 </Typography>
@@ -149,7 +155,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
                         <InputComponent
                             keyValue="user_roles"
                             onChange={handleChangeUserRoles}
-                            value={currentUser.user_roles.value?.map((v: {id: number, name: string} | number) => typeof v === "object" && "id" in v ? v.id : v)}
+                            value={parseUserPermissions(currentUser.user_roles.value)}
                             type="select"
                             multi
                             label={MESSAGES.userRoles}
@@ -158,7 +164,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
                             clearable
                         />
                     </Box>
-                    <Box className={classes.tableStyle}>
+                    <Box sx={styles.tableStyle}>
                         <Table
                             columns={columns}
                             data={permissionsData}

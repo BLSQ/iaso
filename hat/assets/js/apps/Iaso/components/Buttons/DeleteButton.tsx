@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 import { ButtonProps } from '@mui/material/Button/Button';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, IntlMessage, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import MESSAGES from '../../domains/users/messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import Edit from '@mui/icons-material/Edit';
 import { Button } from '@mui/material';
 import { commonStyles, IntlMessage, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import MESSAGES from '../../domains/users/messages';
 import { makeStyles } from '@mui/styles';
 import { ButtonProps } from '@mui/material/Button/Button';
 

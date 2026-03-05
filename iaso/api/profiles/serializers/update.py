@@ -27,10 +27,10 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
 
     user_name = serializers.CharField(required=False, write_only=True)
 
-    country_code = serializers.CharField(write_only=True, required=False)
+    country_code = serializers.CharField(write_only=True, required=False, allow_blank=True, allow_null=True)
 
     projects = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, queryset=Project.objects.all(), required=False, many=True
+        allow_empty=True, allow_null=True, queryset=Project.objects.none(), required=False, many=True
     )
     user_permissions = serializers.SlugRelatedField(
         slug_field="codename", many=True, queryset=Permission.objects.all(), required=False
@@ -72,26 +72,34 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
             "projects",
             "user_roles",
         ]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        profile = self.instance
+        if profile is not None:
+            self.fields['projects'].child_relation.queryset = Project.objects.filter(account_id=profile.account_id)
 
     def validate_dhis2_id(self, value):
         return value or None
 
     def validate_user_roles(self, data):
-        return set(data)
+        account = self._get_account()
+        if not data:
+            return data
+
+        data= set(data)
+
+        if UserRole.objects.filter(pk__in=[user_role.pk for user_role in data]).exclude(account=account).exists():
+            raise serializers.ValidationError(
+                {"user_roles": _("One or more user roles do not belong to the provided account.")}
+            )
+
+        return data
 
     def _get_account(self):
         request = self.context["request"]
         current_profile = request.user.iaso_profile
         return current_profile.account
-
-    def _validate_projects(self, data):
-        profile = self.instance
-        projects = data.get("projects", None) or []
-
-        if not profile.account_id and not projects:
-            return None
-
-        return Project.objects.filter(pk__in=[project.pk for project in projects], account=profile.account_id)
 
     def _validate_user_permissions(self, data):
         account = self._get_account()
@@ -106,21 +114,7 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
 
         return valid_permissions
 
-    def _validate_user_roles(self, data):
-        account = self._get_account()
-        user_roles = data.get("user_roles")
-
-        if not user_roles:
-            return
-
-        if UserRole.objects.filter(pk__in=[user_role.pk for user_role in user_roles]).exclude(account=account).exists():
-            raise serializers.ValidationError(
-                {"user_roles": _("One or more user roles do not belong to the provided account.")}
-            )
-
     def validate(self, data):
-        self._validate_user_roles(data)
-        data["projects"] = self._validate_projects(data)
         data["user_permissions"] = self._validate_user_permissions(data)
         return data
 

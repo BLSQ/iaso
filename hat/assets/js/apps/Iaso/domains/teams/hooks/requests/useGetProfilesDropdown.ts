@@ -16,7 +16,7 @@ export const useGetProfilesDropdown = (): UseQueryResult<
         {
             select: data => {
                 return (
-                    data?.profiles?.map((profile: Profile) => {
+                    data?.results?.map((profile: Profile) => {
                         return {
                             value: profile.user_id,
                             label: getDisplayName(profile),

@@ -214,7 +214,7 @@ class EntityViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "list":
-            if self.request.accepted_renderer.format in ["csv", "xlsx"]:
+            if self.request.accepted_renderer.format in ("csv", "xlsx"):
                 return EntityExportSerializer
             return EntityListSerializer
         return EntitySerializer
@@ -227,7 +227,7 @@ class EntityViewSet(ModelViewSet):
     def get_renderer_context(self):
         context = super().get_renderer_context()
 
-        if self.request.accepted_renderer.format in ["csv", "xlsx"]:
+        if self.request.accepted_renderer.format in ("csv", "xlsx"):
             filename = f"entities-{now().strftime('%Y-%m-%d-%H-%M')}"
             context["export_filename"] = filename
             context["export_sheet_name"] = "Entities"

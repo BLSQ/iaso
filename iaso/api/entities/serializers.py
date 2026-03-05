@@ -161,8 +161,7 @@ class EntityListSerializer(serializers.ModelSerializer):
             "has_duplicates",
         ]
 
-    # TODO: check that this doesn't blow up if there are no org units
-    org_unit = EntityListNestedOrgUnitSerializer(source="attributes.org_unit")
+    org_unit = serializers.SerializerMethodField()
     attributes = serializers.PrimaryKeyRelatedField(read_only=True)
     longitude = serializers.SerializerMethodField()
     latitude = serializers.SerializerMethodField()
@@ -170,6 +169,9 @@ class EntityListSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     last_saved_instance = serializers.SerializerMethodField()
     has_duplicates = serializers.SerializerMethodField()
+
+    def get_org_unit(self, obj):
+        return obj.attributes and EntityListNestedOrgUnitSerializer(obj.attributes.org_unit).data
 
     def get_last_saved_instance(self, obj):
         return getattr(obj, "last_saved_instance", None)

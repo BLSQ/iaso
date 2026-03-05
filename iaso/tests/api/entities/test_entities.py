@@ -112,7 +112,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         response = self.client.get("/api/entities/", format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json().get("result")), 2)
 
     def test_retrieve_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
@@ -525,7 +525,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 2)
-        self.assertEqual([r["id"] for r in results], [entity1.id, entity2.id])
+        self.assertEqual(set(r["id"] for r in results), set((entity1.id, entity2.id)))
 
         # Search on only from date
         response = self.client.get(f"/api/entities/?dateFrom={date2_str}")

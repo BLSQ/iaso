@@ -99,8 +99,8 @@ class EntityFieldsSearchFilterBackend(filters.BaseFilterBackend):
 
 class EntityDateFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        date_from = request.query_params.get("dateFrom")
-        date_to = request.query_params.get("dateTo")
+        date_from = request.query_params.get("dateFrom", "")
+        date_to = request.query_params.get("dateTo", "")
 
         DATE_FORMAT = "%Y-%m-%d"
 
@@ -124,17 +124,6 @@ class EntityDateFilterBackend(filters.BaseFilterBackend):
                     )
                 )
             )
-
-            # TODO : check this might be expensive without an index
-            # compare the performance of both approaches
-            # instances_within_range = Instance.objects.annotate(
-            #     creation_timestamp=Coalesce("source_created_at", "created_at")
-            # ).filter(
-            #     entity=OuterRef("pk"),
-            #     creation_timestamp__date__gte=date_from,
-            #     creation_timestamp__date__lte=date_to,
-            # )
-            # queryset = queryset.filter(Exists(instances_within_range))
 
         return queryset
 

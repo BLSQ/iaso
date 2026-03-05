@@ -11,7 +11,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import Min, QuerySet, Prefetch
+from django.db.models import Min, Prefetch, QuerySet
 from django.db.transaction import atomic
 from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.template.loader import render_to_string
@@ -32,6 +32,7 @@ from hat.audit.models import PROFILE_API
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, ModelViewSet
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.profiles.constants import PK_ME
 from iaso.api.profiles.filters import ProfileListFilter
 from iaso.api.profiles.pagination import ProfilePagination
 from iaso.api.profiles.permissions import HasProfilePermission
@@ -50,10 +51,10 @@ from iaso.api.profiles.serializers import (
     ProfileUserFallbackRetrieveSerializer,
 )
 from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer, ProfileUpdatePasswordSerializer
-from iaso.models import Profile, TenantUser, OrgUnit, UserRole
+from iaso.models import OrgUnit, Profile, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
-from iaso.api.profiles.constants import PK_ME
+
 
 class ProfilesViewSet(ModelViewSet):
     f"""Profiles API
@@ -110,35 +111,33 @@ class ProfilesViewSet(ModelViewSet):
             if self.request.query_params.get("managedUsersOnly", "").lower() in ["true", "1"]:
                 qs = ManagedUsersPolicy.authorize_list(self.request.user, qs)
 
-            qs = qs.annotate(
-                # Adds a sortable field containing each user's alphabetically first role name,
-                # enabling consistent frontend sorting of users with multiple roles.
-                annotated_first_user_role=Min("user_roles__group__name")
-            ).select_related("user", "user__tenant_user").prefetch_related(
-                Prefetch(
-                    "user_roles",
-                    queryset=UserRole.objects.select_related('group').order_by('group__name')
-                ),
-                Prefetch(
-                    "user__user_permissions",
-                    queryset=Permission.objects.filter(codename__startswith="iaso_").only('codename'),
-                    to_attr="iaso_permissions"
-                ),
-                "user__teams",
-                Prefetch(
-             "org_units",
-                    queryset=OrgUnit.objects.order_by("name")
-                ),
-                "org_units__version",
-                "org_units__version__data_source",
-                "org_units__parent",
-                "org_units__parent__parent",
-                "org_units__parent__parent__parent",
-                "org_units__org_unit_type",
-                "org_units__parent__org_unit_type",
-                "org_units__parent__parent__org_unit_type",
-                "projects",
-                "editable_org_unit_types",
+            qs = (
+                qs.annotate(
+                    # Adds a sortable field containing each user's alphabetically first role name,
+                    # enabling consistent frontend sorting of users with multiple roles.
+                    annotated_first_user_role=Min("user_roles__group__name")
+                )
+                .select_related("user", "user__tenant_user")
+                .prefetch_related(
+                    Prefetch("user_roles", queryset=UserRole.objects.select_related("group").order_by("group__name")),
+                    Prefetch(
+                        "user__user_permissions",
+                        queryset=Permission.objects.filter(codename__startswith="iaso_").only("codename"),
+                        to_attr="iaso_permissions",
+                    ),
+                    "user__teams",
+                    Prefetch("org_units", queryset=OrgUnit.objects.order_by("name")),
+                    "org_units__version",
+                    "org_units__version__data_source",
+                    "org_units__parent",
+                    "org_units__parent__parent",
+                    "org_units__parent__parent__parent",
+                    "org_units__org_unit_type",
+                    "org_units__parent__org_unit_type",
+                    "org_units__parent__parent__org_unit_type",
+                    "projects",
+                    "editable_org_unit_types",
+                )
             )
         return qs
 

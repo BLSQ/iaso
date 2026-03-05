@@ -874,6 +874,7 @@
     "iaso.label.useOrgUnitLocation.message": "Don't forget to save",
     "iaso.label.useOrgUnitLocation.question": "Are you sure you want to use this location for the current org unit ?",
     "iaso.label.user": "User",
+    "iaso.label.userDetails": "User details",
     "iaso.label.userManual": "User manual",
     "iaso.label.userName": "User name",
     "iaso.label.userRoles": "User roles",

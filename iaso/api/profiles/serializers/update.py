@@ -72,12 +72,12 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
             "projects",
             "user_roles",
         ]
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         profile = self.instance
         if profile is not None:
-            self.fields['projects'].child_relation.queryset = Project.objects.filter(account_id=profile.account_id)
+            self.fields["projects"].child_relation.queryset = Project.objects.filter(account_id=profile.account_id)
 
     def validate_dhis2_id(self, value):
         return value or None
@@ -87,7 +87,7 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
         if not data:
             return data
 
-        data= set(data)
+        data = set(data)
 
         if UserRole.objects.filter(pk__in=[user_role.pk for user_role in data]).exclude(account=account).exists():
             raise serializers.ValidationError(

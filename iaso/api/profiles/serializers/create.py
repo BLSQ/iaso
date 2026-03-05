@@ -75,7 +75,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None)
         if user and user.is_authenticated:
             account = self._get_account()
-            self.fields['projects'].child_relation.queryset = Project.objects.filter(account=account)
+            self.fields["projects"].child_relation.queryset = Project.objects.filter(account=account)
 
     def _get_account(self):
         request = self.context["request"]
@@ -101,9 +101,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         data = set(data)
 
         if UserRole.objects.filter(pk__in=[user_role.pk for user_role in data]).exclude(account=account).exists():
-            raise serializers.ValidationError(
-                _("One or more user roles do not belong to the provided account.")
-            )
+            raise serializers.ValidationError(_("One or more user roles do not belong to the provided account."))
 
         return data
 

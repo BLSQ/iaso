@@ -5,7 +5,7 @@ import jsonschema
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
-from django.test import override_settings, tag
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 
@@ -573,7 +573,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(user_row[teams_idx], expected_teams_value)
 
-    
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""
         self.client.force_authenticate(self.jim)
@@ -581,7 +580,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 7)
 
-    
     def test_profile_list_superuser_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
@@ -589,7 +587,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 7)
 
-    
     def test_profile_list_user_manager_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
@@ -599,7 +596,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(len(response_data["results"]), 7)
         self.assertValidProfileListData(response_data, 7)
 
-    
     def test_profile_list_managed_user_only_superuser(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
@@ -607,7 +603,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 7)
 
-    
     def test_profile_list_managed_user_only_user_admin(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
@@ -615,7 +610,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 7)
 
-    
     def test_profile_list_managed_user_only_user_manager_no_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
@@ -623,7 +617,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 6)
 
-    
     def test_profile_list_managed_user_only_user_manager_with_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
@@ -633,7 +626,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 2)
 
-    
     def test_profile_list_managed_user_only_user_regular_user(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jane)
@@ -641,7 +633,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 0)
 
-    
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         data = {
@@ -654,7 +645,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 403)
 
-    
     def test_create_user_with_user_roles_and_permissions(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -678,7 +668,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(user.user_permissions.count(), 1)
         self.assertEqual(user.user_permissions.first().codename, "iaso_forms")
 
-    
     def test_create_user_with_not_allowed_user_roles(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -696,7 +685,6 @@ class ProfileAPITestCase(APITestCase):
             response_data, "user_roles", "One or more user roles do not belong to the provided account."
         )
 
-    
     def test_create_profile_duplicate_user(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -709,7 +697,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 400)
         self.assertEqual(response_data["user_name"], ["Username already exists for this account."])
 
-    
     def test_create_profile_duplicate_user_with_capital_letters(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -722,7 +709,6 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 400)
         self.assertEqual(response_data["user_name"], ["Username already exists for this account."])
 
-    
     def test_create_profile_then_delete(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -752,7 +738,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertQuerySetEqual(m.User.objects.filter(id=user_id), [])
         self.assertQuerySetEqual(m.Profile.objects.filter(id=profile_id), [])
 
-    
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -788,7 +773,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
-    
     def test_create_profile_with_color(self):
         self.client.force_authenticate(self.jim)
         color = "#123ABC"
@@ -923,7 +907,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(email.from_email, "sender@test.com")
         self.assertEqual(email.to, ["test@test.com"])
 
-    
     def test_create_profile_with_no_password_and_not_send_email(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -940,7 +923,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertHasError(result, "password", "This field is required.")
 
-    
     def test_create_profile_with_managed_geo_limit(self):
         self.client.force_authenticate(self.user_managed_geo_limit)
         data = {
@@ -973,7 +955,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
-    
     def test_create_profile_without_org_unit_with_managed_geo_limit(self):
         self.client.force_authenticate(self.user_managed_geo_limit)
         data = {
@@ -988,7 +969,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 403)
 
-    
     def test_create_user_is_atomic(self):
         project_1 = m.Project.objects.create(name="Project 1", app_id="project.1", account=self.account)
         project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
@@ -1023,14 +1003,12 @@ class ProfileAPITestCase(APITestCase):
         # If the creation is not successfully completed, no changes should be committed to the database.
         self.assertEqual(get_user_model().objects.filter(username=username).count(), 0)
 
-    
     def test_delete_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         response = self.client.delete(reverse("profiles-detail", kwargs={"pk": 1}))
 
         self.assertJSONResponse(response, 403)
 
-    
     def test_profile_error_dhis2_constraint(self):
         # Test for regression of IA-1249
         self.client.force_authenticate(self.jim)
@@ -1060,7 +1038,6 @@ class ProfileAPITestCase(APITestCase):
         profile2.refresh_from_db()
         self.assertEqual(profile2.dhis2_id, "test_dhis2_id")
 
-    
     def test_account_feature_flags_is_included(self):
         aff = m.AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")
         m.AccountFeatureFlag.objects.create(code="not-used", name="this is not used")
@@ -1089,7 +1066,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
-    
     def test_search_user_by_permissions(self):
         self.client.force_authenticate(self.jane)
 
@@ -1098,7 +1074,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(len(response_data["results"]), 1)
         self.assertEqual(response_data["results"][0]["user_name"], "jim")
 
-    
     def test_search_user_by_org_units(self):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
@@ -1111,7 +1086,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileListData(response_data, 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
-    
     def test_search_user_by_org_units_type(self):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
@@ -1124,7 +1098,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileListData(response.json(), 7)
         self.assertEqual(response.json()["results"][0]["user_name"], "janedoe")
 
-    
     def test_search_user_by_children_ou(self):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.child_org_unit])
@@ -1139,7 +1112,6 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
-    
     def test_search_user_by_parent_ou(self):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
@@ -1152,7 +1124,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileListData(response_data, 2)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
-    
     def test_list_by_ids(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-list"), {"ids": f"{self.jane.id},{self.jim.id}"})
@@ -1161,7 +1132,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
         self.assertEqual(response_data["results"][1]["user_name"], "jim")
 
-    
     def test_search_by_profile_ids(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get(
@@ -1173,7 +1143,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
         self.assertEqual(response_data["results"][1]["user_name"], "jim")
 
-    
     def test_search_by_dhis2_id(self):
         self.client.force_authenticate(self.jane)
         mydhis2_id = "mydhis2id"
@@ -1186,7 +1155,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileListData(response_data, 1)
         self.assertEqual(response_data["results"][0]["user_name"], "jim")
 
-    
     def test_search_by_teams(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get(reverse("profiles-list"), {"teams": f"{self.team1.pk},{self.team2.pk}"})
@@ -1196,7 +1164,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn("janedoe", user_names)
         self.assertIn("jim", user_names)
 
-    
     def test_user_with_managed_permission_can_update_profile_of_user_in_sub_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1212,7 +1179,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.pk}), data=data, format="json")
         self.assertJSONResponse(response, 200)
 
-    
     def test_user_with_managed_permission_without_location_can_update_profile_of_user_in_whole_pyramid(self):
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
@@ -1230,7 +1196,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(list(jum.org_units.values_list("id", flat=True)), [self.org_unit_from_parent_type.id])
 
-    
     def test_user_with_managed_permission_cannot_grant_user_admin_permission(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1247,7 +1212,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertJSONResponse(response, 403)
 
-    
     def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
         group = Group.objects.create(name="admin")
         group.permissions.set([Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename)])
@@ -1263,7 +1227,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertJSONResponse(response, 403)
 
-    
     def test_user_with_managed_permission_can_grant_user_roles(self):
         group = Group.objects.create(name="admin")
         group.permissions.set([Permission.objects.get(codename=CORE_FORMS_PERMISSION.codename)])
@@ -1279,7 +1242,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertJSONResponse(response, 200)
 
-    
     def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1292,7 +1254,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertJSONResponse(response, 200)
 
-    
     def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid_with_existing_ones_outside(
         self,
     ):
@@ -1307,7 +1268,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertJSONResponse(response, 200)
 
-    
     def test_user_with_managed_permission_cannot_assign_org_unit_outside_of_their_health_pyramid(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1320,7 +1280,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertJSONResponse(response, 403)
 
-    
     def test_user_with_managed_permission_cannot_update_profile_of_user_not_in_sub_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
@@ -1334,7 +1293,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(reverse("profiles-detail", kwargs={"pk": jum.id}), data=data, format="json")
         self.assertJSONResponse(response, 403)
 
-    
     def test_user_with_managed_permission_can_update_profile_if_not_themselves_in_sub_org_unit(self):
         self.jum.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
@@ -1412,7 +1370,6 @@ class ProfileAPITestCase(APITestCase):
         self.jum.refresh_from_db()
         self.assertEqual(self.jum.username, "new_user_name")
 
-    
     def test_user_with_managed_permission_cannot_create_users(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
@@ -1425,7 +1382,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertJSONResponse(response, 403)
 
-    
     def test_user_with_managed_permission_cannot_delete_users(self):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
@@ -1433,7 +1389,6 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.delete(reverse("profiles-detail", kwargs={"pk": jum.id}))
         self.assertJSONResponse(response, 403)
 
-    
     def test_user_with_managed_permission_cannot_update_from_unmanaged_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.child_org_unit.id])
         self.jum.iaso_profile.org_units.set([self.org_unit_from_sub_type.id])
@@ -1469,7 +1424,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()["phone_number"], "+32477123456")
 
-    
     def test_update_profile_color(self):
         self.client.force_authenticate(self.john)
         profile = Profile.objects.get(user=self.jim)
@@ -2153,7 +2107,6 @@ class ProfileAPITestCase(APITestCase):
         main_user.refresh_from_db()
         self.assertEqual(main_user.check_password("new_p4ssword"), True)
 
-    
     def test_list_profiles_sorted_by_annotated_first_user_role(self):
         """
         Test that profiles are properly sorted by their alphabetically first user role.
@@ -2286,7 +2239,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(bob.username, "bob")
         self.assertEqual(bob.first_name, "Bob Changed")
 
-    
     def test_update_profile_to_existing_username_should_fail(self):
         """Test that changing username to an existing one (case-insensitive) fails correctly."""
         self.client.force_authenticate(self.john)
@@ -2313,7 +2265,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(bob.username, "bob")
         self.assertEqual(bob.first_name, "Bob")
 
-    
     def test_update_profile_with_case_insensitive_username_should_succeed(self):
         """Test that updating profile without changing username succeeds even with case-insensitive matching usernames."""
         self.client.force_authenticate(self.john)
@@ -2353,7 +2304,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(alice_upper.username, "Alice")
         self.assertEqual(alice_upper.first_name, "Alice Upper Changed")
 
-    
     def test_update_username_to_existing_case_variation_should_fail(self):
         """Test that changing username to case variation of another user's username fails."""
         self.client.force_authenticate(self.john)
@@ -2388,7 +2338,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(alice_upper.username, "Alice")
         self.assertEqual(alice_upper.first_name, "Alice Upper")
 
-    
     def test_create_user_with_invitation_sets_random_password(self):
         """
         Test that creating a user with send_email_invitation=True sets a random password instead of an unusable one.

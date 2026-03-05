@@ -1,9 +1,11 @@
 from django.shortcuts import get_object_or_404
+from rest_framework import permissions
 from rest_framework.exceptions import PermissionDenied
+
 from iaso.api.profiles.constants import PK_ME
 from iaso.models import OrgUnit, Profile
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
-from rest_framework import permissions
+
 
 class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -37,11 +39,15 @@ class HasProfilePermission(permissions.BasePermission):
         if pk == request.user.id:
             raise PermissionDenied(f"User with '{CORE_USERS_MANAGED_PERMISSION}' cannot edit their own permissions.")
 
-        requester_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
+        requester_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
+            "id", flat=True
+        )
 
         if requester_org_units and pk and len(requester_org_units) > 0:
-            profile = get_object_or_404(Profile.objects.filter(account=request.user.iaso_profile.account).prefetch_related('org_units'), pk=pk)
-            user_managed_org_units = profile.org_units.filter(id__in=requester_org_units).only('id').all()
+            profile = get_object_or_404(
+                Profile.objects.filter(account=request.user.iaso_profile.account).prefetch_related("org_units"), pk=pk
+            )
+            user_managed_org_units = profile.org_units.filter(id__in=requester_org_units).only("id").all()
             if not user_managed_org_units or user_managed_org_units.count() == 0:
                 raise PermissionDenied(
                     "The user we are trying to modify is not part of any OrgUnit managed by the current user"

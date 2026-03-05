@@ -779,6 +779,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#workspace-config-structure-account-level-pipeline-parameters" class="md-nav__link">
+    Workspace config structure (account-level pipeline parameters)
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1226,7 +1233,7 @@
 <p>OpenHexa is a data pipeline platform that integrates with Iaso to execute data processing tasks. The integration allows:</p>
 <ul>
 <li><strong>Pipeline Management</strong>: Create, configure, and run data pipelines</li>
-<li><strong>Parameter Handling</strong>: Dynamic parameter configuration through the Iaso UI</li>
+<li><strong>Parameter Handling</strong>: Dynamic parameter configuration through the Iaso UI, with optional <strong>account-level default parameters</strong> per pipeline so users do not have to fill them when launching</li>
 <li><strong>Task Tracking</strong>: Monitor pipeline execution status and results</li>
 <li><strong>Result Storage</strong>: Store pipeline outputs in Iaso's task system</li>
 </ul>
@@ -1248,7 +1255,7 @@ instance = OpenHEXAInstance.objects.create(
 - <code>url</code>: GraphQL API endpoint (must contain 'graphql')
 - <code>token</code>: API authentication token</p>
 <h4 id="openhexaworkspace-model">OpenHEXAWorkspace Model<a class="headerlink" href="#openhexaworkspace-model" title="Permanent link">#</a></h4>
-<p>Links an Iaso account to an OpenHexa workspace:</p>
+<p>Links an Iaso account to an OpenHexa workspace and stores <strong>per-account, per-pipeline configuration</strong>. Parameters defined in <code>config</code> are used as defaults when launching a pipeline for that account, so users do not have to fill them each time.</p>
 <pre><code class="language-python">from iaso.models.openhexa import OpenHEXAWorkspace
 
 workspace = OpenHEXAWorkspace.objects.create(
@@ -1256,15 +1263,75 @@ workspace = OpenHEXAWorkspace.objects.create(
     account=your_account,
     slug=&quot;your-workspace-slug&quot;,
     config={
-        &quot;lqas_pipeline_code&quot;: &quot;optional-pipeline-code&quot;  # Optional configuration
-    }
+        &quot;lqas_pipeline_code&quot;: &quot;optional-pipeline-code&quot;,  # Optional
+        &quot;pipelines&quot;: [
+            {
+                &quot;id&quot;: &quot;72250039-3b5c-4424-8c69-ee9ad5c67d2a&quot;,
+                &quot;parameters&quot;: {
+                    &quot;version&quot;: 79,
+                    &quot;locality_type_id&quot;: 146,
+                    &quot;health_area_type_id&quot;: 143,
+                },
+            },
+        ],
+    },
 )
 </code></pre>
 <p><strong>Fields</strong>:
 - <code>openhexa_instance</code>: Foreign key to OpenHEXAInstance
 - <code>account</code>: Foreign key to the Iaso Account
 - <code>slug</code>: Workspace slug in OpenHexa
-- <code>config</code>: Optional JSON field for workspace-specific configuration</p>
+- <code>config</code>: Optional JSON field for workspace-specific configuration (see <a href="#workspace-config-structure-account-level-pipeline-parameters">Workspace config structure</a> below)</p>
+<h4 id="workspace-config-structure-account-level-pipeline-parameters">Workspace config structure (account-level pipeline parameters)<a class="headerlink" href="#workspace-config-structure-account-level-pipeline-parameters" title="Permanent link">#</a></h4>
+<p>The <code>config</code> JSON defines <strong>default parameters per pipeline per account</strong>. When a user launches a pipeline, the frontend and API can merge these stored parameters with any user-provided values, so the same parameters are reused for every execution for that account.</p>
+<p><strong>Structure</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lqas_pipeline_code</code></td>
+<td>string (optional)</td>
+<td>Optional pipeline code identifier (e.g. for LQAS sampling). Can be used by the frontend or other features.</td>
+</tr>
+<tr>
+<td><code>pipelines</code></td>
+<td>array</td>
+<td>List of pipeline configurations for this account</td>
+</tr>
+<tr>
+<td><code>pipelines[].id</code></td>
+<td>string (UUID)</td>
+<td>OpenHexa pipeline ID</td>
+</tr>
+<tr>
+<td><code>pipelines[].parameters</code></td>
+<td>object</td>
+<td>Default parameter key-value pairs for this pipeline (e.g. <code>version</code>, <code>locality_type_id</code>, org unit type IDs, etc.)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  &quot;lqas_pipeline_code&quot;: &quot;optional-pipeline-code&quot;,
+  &quot;pipelines&quot;: [
+    {
+      &quot;id&quot;: &quot;72250039-3b5c-4424-8c69-ee9ad5c67d2a&quot;,
+      &quot;parameters&quot;: {
+        &quot;version&quot;: 79,
+        &quot;locality_type_id&quot;: 146,
+        &quot;health_area_type_id&quot;: 143
+      }
+    }
+  ]
+}
+</code></pre>
+<p>Parameters in <code>pipelines[].parameters</code> are passed as the pipeline’s <code>config</code> when launching via the API. Storing them in the workspace config allows admins to hardcode values per account and per pipeline so end users do not have to fill them when launching.</p>
 <h3 id="2-openhexa-workspace-setup">2. OpenHexa Workspace Setup<a class="headerlink" href="#2-openhexa-workspace-setup" title="Permanent link">#</a></h3>
 <ol>
 <li>
@@ -1628,17 +1695,31 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 <h2 id="api-integration">API Integration<a class="headerlink" href="#api-integration" title="Permanent link">#</a></h2>
 <h3 id="1-configuration-check-api">1. Configuration Check API<a class="headerlink" href="#1-configuration-check-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/config/</code></p>
-<p><strong>Description</strong>: Check if OpenHexa is configured for the current user's account.</p>
-<p><strong>Response</strong>:</p>
+<p><strong>Description</strong>: Check if OpenHexa is configured for the current user's account and retrieve the <strong>full workspace config</strong> (including account-level pipeline parameters). The frontend uses this to pre-fill or hardcode parameters when launching pipelines so users do not have to enter them.</p>
+<p><strong>Response</strong> (when configured):</p>
 <pre><code class="language-json">{
     &quot;configured&quot;: true,
-    &quot;lqas_pipeline_code&quot;: &quot;optional-code&quot;
+    &quot;config&quot;: {
+        &quot;lqas_pipeline_code&quot;: &quot;optional-pipeline-code&quot;,
+        &quot;pipelines&quot;: [
+            {
+                &quot;id&quot;: &quot;72250039-3b5c-4424-8c69-ee9ad5c67d2a&quot;,
+                &quot;parameters&quot;: {
+                    &quot;version&quot;: 79,
+                    &quot;locality_type_id&quot;: 146,
+                    &quot;health_area_type_id&quot;: 143
+                }
+            }
+        ]
+    }
 }
 </code></pre>
+<p>When the workspace has no config stored, <code>config</code> is an empty object: <code>"config": {}</code>. The full <code>config</code> object is whatever is stored on the workspace (e.g. <code>lqas_pipeline_code</code>, <code>pipelines</code>, or any other keys).</p>
 <p><strong>Behavior</strong>:
-- Returns <code>configured: false</code> if user has no profile or configuration is missing
-- Returns <code>configured: true</code> with optional fields if properly configured
-- Does not return error for missing configuration (graceful degradation)</p>
+- Returns <code>configured: false</code> (and no <code>config</code> key) if user has no profile or configuration is missing
+- Returns <code>configured: true</code> and <code>config</code> (the full <code>OpenHEXAWorkspace.config</code> JSON) when properly configured
+- Does not return error for missing configuration (graceful degradation)
+- The frontend looks up the current pipeline by ID in <code>config.pipelines</code> to get <code>parameters</code> for that pipeline and uses them as defaults when launching</p>
 <h3 id="2-pipeline-list-api">2. Pipeline List API<a class="headerlink" href="#2-pipeline-list-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/</code></p>
 <p><strong>Response</strong>:</p>
@@ -1722,12 +1803,13 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 <ul>
 <li><strong>Pipeline List</strong>: View all available OpenHexa pipelines at <code>/dashboard/pipelines/</code></li>
 <li><strong>Pipeline Details</strong>: Configure and launch pipelines at <code>/dashboard/pipelines/{pipeline_id}/</code></li>
-<li><strong>Parameter Configuration</strong>: Dynamic form generation based on pipeline parameters</li>
+<li><strong>Parameter Configuration</strong>: Dynamic form generation based on pipeline parameters, with <strong>defaults from account config</strong> when available</li>
 <li><strong>Task Launching</strong>: Submit pipeline configurations and monitor execution</li>
 </ul>
 <h3 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Dynamic Parameter Forms</strong>: Automatically generates input fields based on pipeline parameter types</li>
+<li><strong>Account-level default parameters</strong>: The frontend calls <code>GET /api/openhexa/pipelines/config/</code> and reads <code>config.pipelines</code> to find the entry matching the current pipeline ID. The stored <code>parameters</code> are used to pre-fill the launch form (or to run without user input when all required parameters are defined per account). This allows hardcoding parameters per account and per pipeline so they remain the same for each execution.</li>
 <li><strong>Real-time Status Updates</strong>: Shows pipeline execution progress and results</li>
 <li><strong>Parameter Validation</strong>: Client-side validation for required parameters</li>
 <li><strong>Error Handling</strong>: Displays clear error messages for failed operations</li>
@@ -1752,14 +1834,21 @@ instance, created = OpenHEXAInstance.objects.get_or_create(
 # Get the account
 account = Account.objects.get(id=42)
 
-# Create workspace for the account
+# Create workspace for the account (optionally with per-pipeline parameters)
 workspace, created = OpenHEXAWorkspace.objects.get_or_create(
     account=account,
     defaults={
         &quot;openhexa_instance&quot;: instance,
         &quot;slug&quot;: &quot;your-workspace-slug&quot;,
-        &quot;config&quot;: {}
-    }
+        &quot;config&quot;: {
+            &quot;pipelines&quot;: [
+                {
+                    &quot;id&quot;: &quot;your-pipeline-uuid&quot;,
+                    &quot;parameters&quot;: {&quot;version&quot;: 1, &quot;locality_type_id&quot;: 123},
+                },
+            ],
+        },
+    },
 )
 </code></pre>
 <p><strong>Validation checklist</strong>:

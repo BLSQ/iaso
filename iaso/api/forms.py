@@ -307,7 +307,14 @@ class FormsViewSet(ModelViewSet):
 
         org_unit_type_ids = self.request.query_params.get("orgUnitTypeIds")
         if org_unit_type_ids:
-            queryset = queryset.filter(org_unit_types__id__in=org_unit_type_ids.split(","))
+            ids = org_unit_type_ids.split(",")
+            include_forms_without_org_unit_types = (
+                self.request.query_params.get("includeFormsWithoutOrgUnitTypes", "false") == "true"
+            )
+            if include_forms_without_org_unit_types:
+                queryset = queryset.filter(Q(org_unit_types__id__in=ids) | Q(org_unit_types__isnull=True))
+            else:
+                queryset = queryset.filter(org_unit_types__id__in=ids)
 
         projects_ids = self.request.query_params.get("projectsIds")
         if projects_ids:

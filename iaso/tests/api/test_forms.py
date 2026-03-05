@@ -173,7 +173,7 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         # Filter by org_unit type `jedi_council` and `jedi_academy`.
         response = self.client.get(
-            f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk}&{self.jedi_academy.pk}",
+            f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk},{self.jedi_academy.pk}",
             headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
@@ -185,6 +185,42 @@ class FormsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 0)
+
+    def test_forms_list_org_unit_type_ids_with_include_forms_without_org_unit_types(self):
+        """With orgUnitTypeIds + includeFormsWithoutOrgUnitTypes=true: returns matching forms + unrestricted forms."""
+        self.client.force_authenticate(self.yoda)
+        # form_1 has no org_unit_types (unrestricted), form_2 has jedi_council + jedi_academy
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk}&includeFormsWithoutOrgUnitTypes=true",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        form_names = {f["name"] for f in response.json()["forms"]}
+        self.assertEqual(form_names, {self.form_1.name, self.form_2.name})
+
+    def test_forms_list_org_unit_type_ids_with_include_unrestricted_when_no_match(self):
+        """With orgUnitTypeIds for non-matching type + includeFormsWithoutOrgUnitTypes=true: returns only unrestricted."""
+        self.client.force_authenticate(self.yoda)
+        # No form has sith_guild; form_1 has no types (unrestricted) so it applies to all
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.sith_guild.pk}&includeFormsWithoutOrgUnitTypes=true",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+        self.assertEqual(response.json()["forms"][0]["name"], self.form_1.name)
+
+    def test_forms_list_org_unit_type_ids_without_include_forms_without_org_unit_types(self):
+        """With orgUnitTypeIds only (default): includeFormsWithoutOrgUnitTypes has no effect, only matching forms."""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk}&includeFormsWithoutOrgUnitTypes=false",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+        self.assertEqual(response.json()["forms"][0]["name"], self.form_2.name)
 
     def test_forms_list_filtered_by_project(self):
         """GET /forms/ filtered by project"""

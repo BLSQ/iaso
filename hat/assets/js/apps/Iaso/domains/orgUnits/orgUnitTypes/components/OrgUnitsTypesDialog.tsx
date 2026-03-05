@@ -108,7 +108,12 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     const [allForms, setAllForms] = useState<FormDropdownOption[]>();
     const { data: dataForms } = useGetFormsDropdownOptions({
         extraFields: ['projects'],
+        params: {
+            includeFormsWithoutOrgUnitTypes: 'true',
+            orgUnitTypeIds: orgUnitType.id ? `${orgUnitType.id}` : undefined,
+        },
     });
+    console.log('orgUnitType', orgUnitType);
 
     const formStateUpdated = useRef(null);
     const projectsEmptyUpdated = useRef(null);

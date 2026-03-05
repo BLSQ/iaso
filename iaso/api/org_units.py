@@ -22,7 +22,7 @@ from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit import models as audit_models
-from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, is_field_referenced, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
@@ -30,7 +30,6 @@ from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.models.microplanning import Assignment
-from iaso.api.common import is_field_referenced
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,

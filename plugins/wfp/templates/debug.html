@@ -62,6 +62,13 @@
             <th>nutrition_programme</th>
             <td>{{journey.nutrition_programme}}</td>
         </tr>
+        {% if journey.physiology_status is not None %}
+        <tr>
+            <th>physiology_status</th>
+            <td>{{journey.physiology_status}}</td>
+        </tr>
+        {% endif %}
+
         <tr>
             <th>programme_type</th>
             <td>{{journey.programme_type}}</td>

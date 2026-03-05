@@ -1,5 +1,5 @@
-import moment from 'moment/moment';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
+import moment from 'moment/moment';
 
 export const setLocale = (code: string): void => {
     moment.locale(code);

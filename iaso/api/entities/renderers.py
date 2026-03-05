@@ -19,7 +19,6 @@ class LegacyExportContentNegotation(DefaultContentNegotiation):
     GET_PARAMETERS = ("csv", "xlsx")
 
     def select_renderer(self, request, renderers, format_suffix=None):
-
         query_formats = [f for f in self.GET_PARAMETERS if request.query_params.get(f)]
 
         for renderer in renderers:

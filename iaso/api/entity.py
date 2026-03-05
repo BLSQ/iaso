@@ -336,7 +336,6 @@ class EntityViewSet(ModelViewSet):
         return Response(EntitySerializer(entity, many=False).data)
 
     def list(self, request: Request, *args, **kwargs):
-
         # TODO: move this to a generic StreamingListModelMixin ?
 
         renderer = request.accepted_renderer

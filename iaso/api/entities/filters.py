@@ -15,7 +15,6 @@ from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 class EntityFormNameFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if form_name := request.query_params.get("form_name"):
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
 
@@ -24,7 +23,6 @@ class EntityFormNameFilterBackend(filters.BaseFilterBackend):
 
 class EntityTypeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if entity_type := request.query_params.get("entity_type"):
             queryset = queryset.filter(name=entity_type)
 
@@ -33,7 +31,6 @@ class EntityTypeFilterBackend(filters.BaseFilterBackend):
 
 class EntityTypeIdFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if entity_type_ids := request.query_params.get("entity_type_ids"):
             queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
 
@@ -42,7 +39,6 @@ class EntityTypeIdFilterBackend(filters.BaseFilterBackend):
 
 class EntityShowDeletedFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if show_deleted := request.query_params.get("show_deleted"):
             queryset = queryset.filter(deleted_at__isnull=True)
 
@@ -51,7 +47,6 @@ class EntityShowDeletedFilterBackend(filters.BaseFilterBackend):
 
 class EntityOrgUnitFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if org_unit_id := request.query_params.get("orgUnitId"):
             parent = OrgUnit.objects.get(id=org_unit_id)
             queryset = queryset.filter(attributes__org_unit__path__descendants=parent.path)
@@ -61,7 +56,6 @@ class EntityOrgUnitFilterBackend(filters.BaseFilterBackend):
 
 class EntityCreatedByFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if created_by_id := request.query_params.get("created_by_id"):
             queryset = queryset.filter(attributes__created_by_id=created_by_id)
 
@@ -70,7 +64,6 @@ class EntityCreatedByFilterBackend(filters.BaseFilterBackend):
 
 class EntityCreatedByTeamFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if created_by_team_id := request.query_params.get("created_by_team_id"):
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
 
@@ -79,7 +72,6 @@ class EntityCreatedByTeamFilterBackend(filters.BaseFilterBackend):
 
 class EntityGroupFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         if groups := request.query_params.get("groups"):
             queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
 
@@ -97,7 +89,6 @@ class EntityByUuidFilterBackend(filters.BaseFilterBackend):
 
 class EntityFieldsSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         # TODO: double-check this with changes to entities_jsonlogic_to_q
         if fields_search := request.query_params.get("fields_search"):
             q, _ = entities_jsonlogic_to_q(json.loads(fields_search))
@@ -150,7 +141,6 @@ class EntityDateFilterBackend(filters.BaseFilterBackend):
 
 class EntitySearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-
         search = request.query_params.get("search")
 
         if not search:
@@ -186,7 +176,6 @@ class EntityOrderingFilter(filters.OrderingFilter):
     # TODO: ordering by org unit doesn't seem to work
 
     def get_ordering(self, request, queryset, view):
-
         ordering = request.query_params.get("order_columns")
 
         if not ordering:

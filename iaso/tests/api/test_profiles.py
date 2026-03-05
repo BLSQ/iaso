@@ -1094,9 +1094,9 @@ class ProfileAPITestCase(APITestCase):
             reverse("profiles-list"), {"orgUnitTypes": self.parent_org_unit_type.pk, "limit": 100}
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertValidProfileListData(response.json(), 7)
-        self.assertEqual(response.json()["results"][0]["user_name"], "janedoe")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response_data, 2)
+        self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
 
     def test_search_user_by_children_ou(self):
         self.client.force_authenticate(self.jane)

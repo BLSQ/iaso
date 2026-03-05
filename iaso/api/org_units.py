@@ -30,6 +30,7 @@ from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.models.microplanning import Assignment
+from iaso.api.common import is_field_referenced
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,
@@ -44,7 +45,6 @@ from iaso.utils.gis import simplify_geom
 from ..plugins import is_polio_plugin_active
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 from .serializers import OrgUnitImportSerializer
-
 
 logger = logging.getLogger(__name__)
 
@@ -95,21 +95,6 @@ class HasOrgUnitPermission(permissions.BasePermission):
         account_ids = [p.account_id for p in projects]
 
         return user_account.id in account_ids
-
-
-def is_field_referenced(field_name, requested_fields, order):
-    if not requested_fields:
-        # no fields specified... do as if all fields are requested
-        return True
-
-    fields_list = requested_fields.split(",")
-    return (
-        ":all" in fields_list
-        or field_name in fields_list
-        or field_name in order
-        or field_name in order
-        or f"-{field_name}" in order
-    )
 
 
 # noinspection PyMethodMayBeStatic

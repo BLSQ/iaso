@@ -17,4 +17,3 @@ repos:
       files: ^hat/assets/js
       types_or: [ javascript, jsx, ts, tsx ]
       entry: npm run fix-lint
-      pass_filenames: false

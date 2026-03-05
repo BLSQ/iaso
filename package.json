@@ -6,7 +6,7 @@
     "license": "Apache-2.0",
     "scripts": {
         "show-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\"",
-        "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" --fix",
+        "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
         "export-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" -f html -o ./hat/assets/js/lintErrors.html",
         "test": "vitest --config vitest.config.ts --run",
         "test:watch": "vitest --config vitest.config.ts",
@@ -25,8 +25,7 @@
         "extract-iaso-en-messages": "formatjs extract  --format simple --out-file './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' './hat/assets/js/apps/Iaso/**/*.js'",
         "extract-iaso-fr-messages": "formatjs extract  --format simple --out-file './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' './hat/assets/js/apps/Iaso/**/*.js'",
         "scan-translations-en": "npm run extract-iaso-en-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/en.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' 'En'",
-        "scan-translations-fr": "npm run extract-iaso-fr-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' 'Fr'",
-        "prepare": "husky install"
+        "scan-translations-fr": "npm run extract-iaso-fr-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' 'Fr'"
     },
     "repository": {
         "type": "git",
@@ -152,10 +151,8 @@
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-webpack-plugin": "^5.0.1",
         "file-loader": "^6.2.0",
-        "husky": "^9.1.7",
         "jsdom": "^26.1.0",
         "json": "^11.0.0",
-        "lint-staged": "^16.3.2",
         "mini-css-extract-plugin": "^1.6.0",
         "mock-require": "^3.0.3",
         "nock": "^13.0.4",
@@ -175,8 +172,5 @@
     "overrides": {
         "canvg": "4.0.3",
         "jspdf": "4.0.0"
-    },
-    "lint-staged": {
-        "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
     }
 }

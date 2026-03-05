@@ -9,3 +9,12 @@ repos:
       args: [ --fix ]
     # Run the formatter.
     - id: ruff-format
+- repo: local
+  hooks:
+    - id: eslint
+      name: eslint
+      language: node
+      files: ^hat/assets/js
+      types_or: [ javascript, jsx, ts, tsx ]
+      entry: npm run fix-lint
+      pass_filenames: false

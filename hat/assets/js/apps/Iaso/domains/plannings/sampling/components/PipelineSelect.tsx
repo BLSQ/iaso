@@ -46,11 +46,11 @@ export const PipelineSelect: FunctionComponent<Props> = ({
     taskStatus,
     taskId,
 }) => {
-    const { data: config } = useGetPipelineConfig();
+    const { data: configData } = useGetPipelineConfig();
+    const config = configData?.config || {};
     const { formatMessage } = useSafeIntl();
     const { data, isFetching: isFetchingPipelineUuids } =
         useGetPipelinesDropdown();
-
     const lQAS_code = config?.lqas_pipeline_code;
     const pipelineUuidsOptions = useMemo(
         () =>

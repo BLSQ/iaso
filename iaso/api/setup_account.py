@@ -252,7 +252,6 @@ class SetupAccountSerializer(serializers.Serializer):
 
         # Send email invitation if requested
         if email_invitation and user.email:
-
             profile_viewset = ProfilesViewSet()
             profile_viewset.request = self.context.get("request")
 

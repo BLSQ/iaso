@@ -130,7 +130,9 @@ class ManagedUsersPolicy:
 
         if requester.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
             managed_org_units = (
-                OrgUnit.objects.hierarchy(requester.iaso_profile.org_units.all()).values_list("id", flat=True).distinct()
+                OrgUnit.objects.hierarchy(requester.iaso_profile.org_units.all())
+                .values_list("id", flat=True)
+                .distinct()
             )
 
             if managed_org_units:

@@ -41,6 +41,8 @@ class Command(BaseCommand):
             self._cleanup_based_on_uuid_only(duplicates)
 
             # Let's check one last time to see if everything went smoothly.
+            # We have to redo a new queryset not to hit the cache.
+            duplicates = Instance.objects.values("uuid").annotate(total=Count("uuid")).filter(total__gt=1)
             if duplicates.count() <= 0:
                 self.stdout.write(self.style.SUCCESS("No duplicate submissions found anymore!"))
             else:
@@ -140,15 +142,18 @@ class Command(BaseCommand):
                 self._delete_instances(uuid=duplicate["uuid"], file_name=None, first_id=first.id)
                 no_content += 1
 
-            self.stdout.write(self.style.SUCCESS("\n\n\nSummary:"))
-            self.stdout.write(self.style.SUCCESS(f" - Single instance with content corrected: {single_content}"))
-            self.stdout.write(self.style.SUCCESS(f" - Multiple instances with content corrected: {multiple_content}"))
-            self.stdout.write(self.style.SUCCESS(f" - No instances with no content: {no_content}"))
+        self.stdout.write(self.style.SUCCESS("\n\n\nSummary:"))
+        self.stdout.write(self.style.SUCCESS(f" - Single instance with content corrected: {single_content}"))
+        self.stdout.write(self.style.SUCCESS(f" - Multiple instances with content corrected: {multiple_content}"))
+        self.stdout.write(self.style.SUCCESS(f" - No instances with no content: {no_content}"))
 
     def _delete_instances(self, uuid: str, file_name: Union[str, None], first_id: str):
         to_delete = Instance.objects.filter(uuid=uuid).exclude(id=first_id)
         if file_name:
             to_delete = to_delete.filter(file_name=file_name)
         self.stdout.write(self.style.WARNING(f" - Deleting {to_delete.count()} instances and linked entities"))
-        Entity.objects.filter(attributes__in=to_delete).delete()
+        entities_to_delete = Entity.objects.filter(attributes__in=to_delete)
+        first_instance = Instance.objects.get(id=first_id)
+        Instance.objects.filter(entity__in=entities_to_delete).update(entity=first_instance.entity)
+        entities_to_delete.delete()
         to_delete.delete()

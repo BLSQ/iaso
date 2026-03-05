@@ -4,10 +4,13 @@ import io
 import json
 import uuid
 
+from datetime import timedelta
+
 import pytz
 import time_machine
 
 from django.core.files import File
+from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -192,8 +195,8 @@ class WebEntityAPITestCase(EntityAPITestCase):
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
-        # Case 2: search by entity name - make sure it's case-insensitive
-        response = self.client.get("/api/entities/?search=cLiEnT", format="json")
+        # Case 2: search by entity name - make sure it's case-insensitive and ignores white space
+        response = self.client.get("/api/entities/?search= cLiEnT &foo=bar", format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
@@ -232,13 +235,13 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(8):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0]["id"], entities[0].id)
-        self.assertTrue(result[0]["has_duplicates"])
+        target_result = next(item for item in result if item["id"] == entities[0].id)
+        self.assertTrue(target_result["has_duplicates"])
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):
@@ -303,7 +306,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # Test the extra columns in the CSV export
         response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         response_csv = response.getvalue().decode("utf-8")
         response_string = "".join(s for s in response_csv)
@@ -841,22 +844,22 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # export all entities type as csv
         response = self.client.get("/api/entities/?csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         # export all entities type as xlsx
         response = self.client.get("/api/entities/?xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
 
         # export specific entity type as xlsx
         response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
 
         # export specific entity type as csv
         response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         # Check the contents of the last CSV file
         response_csv = response.getvalue().decode("utf-8")
@@ -874,6 +877,25 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "",
         ]
         self.assertEqual(row_to_test, expected_row)
+
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
+    def test_entities_empty_export(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/entities/?csv=true/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
+
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+
+        self.assertEqual(response_string, "\ufeff")
+
+        response = self.client.get("/api/entities/?xlsx=true/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
+
+        response_xlsx = response.getvalue()
+        self.assertEqual(response_xlsx, b"")
 
     def test_handle_export_entity_type_empty_field_list(self):
         self.client.force_authenticate(self.yoda)
@@ -1279,3 +1301,75 @@ class WebEntityAPITestCase(EntityAPITestCase):
             inst.refresh_from_db()
             self.assertTrue(inst.deleted)
         self.assertEqual(m.EntityDuplicate.objects.count(), 1)  # only pending removed
+
+
+class WebEntityOrderingAPITestCase(EntityAPITestCase):
+    """Test custom ordering filter logic for the entity list api."""
+
+    def setUp(self):
+        super().setUp()
+
+        self.entity_type_2 = m.EntityType.objects.create(name="Type 2", account=self.yoda.iaso_profile.account)
+
+        inst_1 = m.Instance.objects.create(org_unit=self.ou_country, form=self.form_1, json={"age": 30})
+        inst_2 = m.Instance.objects.create(org_unit=self.ou_country, form=self.form_1, json={"age": 20})
+        inst_3 = m.Instance.objects.create(org_unit=self.ou_country, form=self.form_1, json={"age": 40})
+
+        base_time = now()
+
+        self.entity_1 = m.Entity.objects.create(
+            name="Zebra", entity_type=self.entity_type_2, attributes=inst_1, account=self.yoda.iaso_profile.account
+        )
+        self.entity_1.created_at = base_time - timedelta(days=2)  # Oldest
+        self.entity_1.save()
+
+        self.entity_2 = m.Entity.objects.create(
+            name="Monkey", entity_type=self.entity_type, attributes=inst_2, account=self.yoda.iaso_profile.account
+        )
+        self.entity_2.created_at = base_time - timedelta(days=1)  # Middle
+        self.entity_2.save()
+
+        self.entity_3 = m.Entity.objects.create(
+            name="Giraffe", entity_type=self.entity_type_2, attributes=inst_3, account=self.yoda.iaso_profile.account
+        )
+        self.entity_3.created_at = base_time  # Newest
+        self.entity_3.save()
+
+    def test_ordering_default(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/entities/", format="json")
+        self.assertEqual(response.status_code, 200)
+
+        result = response.json()["result"]
+
+        # -created_at should be the default
+        self.assertEqual(result[0]["id"], self.entity_3.id)
+        self.assertEqual(result[1]["id"], self.entity_2.id)
+        self.assertEqual(result[2]["id"], self.entity_1.id)
+
+    def test_ordering_by_standard_model_field(self):
+        self.client.force_authenticate(self.yoda)
+
+        # Test ascending
+        response = self.client.get("/api/entities/?order=name", format="json")
+        result = response.json()["result"]
+        self.assertEqual(result[0]["id"], self.entity_3.id)  # Giraffe
+        self.assertEqual(result[2]["id"], self.entity_1.id)  # Zebra
+
+        # Test descending
+        response = self.client.get("/api/entities/?order=-name", format="json")
+        result = response.json()["result"]
+        self.assertEqual(result[0]["id"], self.entity_1.id)  # Zebra
+        self.assertEqual(result[2]["id"], self.entity_3.id)  # Giraffe
+
+    def test_ordering_by_dynamic_json_attribute(self):
+        self.client.force_authenticate(self.yoda)
+
+        # Order by a key from the entity attributes json
+        response = self.client.get("/api/entities/?order=age", format="json")
+        result = response.json()["result"]
+
+        # Ages are 20 (entity 2), 30 (entity 1), 40 (entity 3)
+        self.assertEqual(result[0]["id"], self.entity_2.id)
+        self.assertEqual(result[1]["id"], self.entity_1.id)
+        self.assertEqual(result[2]["id"], self.entity_3.id)

@@ -80,7 +80,6 @@ class EntityGroupFilterBackend(filters.BaseFilterBackend):
 
 class EntityByUuidFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        # TODO: check if used?
         if uuid := request.query_params.get("by_uuid"):
             queryset = queryset.filter(uuid=uuid)
 
@@ -89,7 +88,6 @@ class EntityByUuidFilterBackend(filters.BaseFilterBackend):
 
 class EntityFieldsSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        # TODO: double-check this with changes to entities_jsonlogic_to_q
         if fields_search := request.query_params.get("fields_search"):
             q, _ = entities_jsonlogic_to_q(json.loads(fields_search))
             queryset = queryset.filter(q)
@@ -135,7 +133,7 @@ class EntitySearchFilterBackend(filters.BaseFilterBackend):
         if not search:
             return queryset
 
-        search = search.strip()  # TODO: check if necessary
+        search = search.strip()
         if search.startswith("ids:"):
             ids = re.findall("\d+", search)
             if not ids:
@@ -156,23 +154,19 @@ class EntitySearchFilterBackend(filters.BaseFilterBackend):
 
 
 class EntityOrderingFilter(filters.OrderingFilter):
-    """Extend the OrderingFilter to support sorting by the entity's attributes."""
-
-    # annotations = {
-    #     "last_saved_instance": lambda: Max(Coalesce("instances__source_created_at", "instances__created_at"))
-    # }
-    # TODO: check if we can annotate the last_saved_instance only if ordering by that field
-    # TODO: ordering by org unit doesn't seem to work
+    """Support sorting on the Entity's attributes."""
 
     def get_ordering(self, request, queryset, view):
-        ordering = request.query_params.get("order_columns")
+        # Accept either parameter, for legacy API compatibility
+        ordering = request.query_params.get("order_columns") or request.query_params.get("order")
 
         if not ordering:
             return super().get_ordering(request, queryset, view)
 
+        # Sort between model fields and attribute fields
+
         model_fields = {f.name for f in queryset.model._meta.get_fields()}
         model_fields.update(queryset.query.annotations.keys())
-        # model_fields.update(self.annotations.keys())
 
         final_ordering = []
 
@@ -182,28 +176,12 @@ class EntityOrderingFilter(filters.OrderingFilter):
                 continue
 
             field_name = field.lstrip("-")
+            base_field = field_name.split("__")[0]
 
-            if field_name in model_fields:
+            if base_field in model_fields:
                 final_ordering.append(field)
             else:
                 prefix = "-" if field.startswith("-") else ""
                 final_ordering.append(f"{prefix}attributes__json__{field_name}")
 
         return final_ordering
-
-    # def filter_queryset(self, request, queryset, view):
-    #     ordering = self.get_ordering(request, queryset, view)
-
-    #     if ordering:
-    #         # check which computed fields are actually being used
-    #         ordering_fields = {o.lstrip("-") for o in ordering}
-
-    #         # Apply annotations only for the computed fields present in ordering
-    #         for field, annotation_func in self.annotations.items():
-    #             if field in ordering_fields:
-    #                 kwargs = {field: annotation_func()}
-    #                 queryset = queryset.annotate(**kwargs)
-
-    #         return queryset.order_by(*ordering)
-
-    #     return queryset

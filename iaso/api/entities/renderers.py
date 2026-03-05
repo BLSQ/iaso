@@ -10,10 +10,10 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
 
 
 class LegacyExportContentNegotation(DefaultContentNegotiation):
-    """Support `csv` and `xlsx` GET parameters for content negotiation.
+    """Support `csv` and `xlsx` query parameters for content negotiation.
 
-    While DRF supports the `format` GET parameter by default, we support
-    those extra parameters for legacy API compatibility.
+    While DRF uses the `format` query parameter out of the box, we support
+    using `csv=true` or `xlsx=true` for legacy API compatibility.
     """
 
     GET_PARAMETERS = ("csv", "xlsx")
@@ -41,7 +41,15 @@ class BaseStreamingExportRenderer(BaseRenderer):
         return b"".join(self.stream(data, renderer_context))
 
     def stream(self, data_iterator, renderer_context=None):
-        """"""
+        """Alternative to render() for streamable data.
+
+        Implementers should take an iterable of serialized data (dicts) and return a
+        generator of bytestrings.
+
+        Then, use renderer with django.http.StreamingHttpResponse:
+        >>> response = StreamingHttpResponse(renderer.stream(data), content_type='text/csv')
+        >>> response['Content-Disposition'] = 'attachment; filename="file.csv"'
+        """
         raise NotImplementedError()
 
 
@@ -53,32 +61,44 @@ class Echo:
 
 
 class CSVStreamingRenderer(BaseStreamingExportRenderer):
-    """"""
+    """CSV renderer with streaming output support."""
 
     media_type = CONTENT_TYPE_CSV
     format = "csv"
 
     def stream(self, data_iterator, renderer_context=None):
-        """"""
-        # TODO: WIP
-        # TODO: use a dictwriter here to ensure the rows are stable
+        """Render the incoming iterable of dicts to csv.
 
-        def stream_data(data_iterator):
+        Will use the first row to determine the columns, make sure to pass
+        dictionaries with consistent keys and no nested data.
+        """
+
+        def stream_data(iterator):
             buffer = Echo()
-            writer = csv.writer(buffer)
 
-            first = True
-            for row in data_iterator:
-                if first:
-                    first = False
-                    yield writer.writerow(row.keys())
-                yield writer.writerow(row.values())
+            # UTF-8 BOM for Excel compatibility
+            yield "\ufeff".encode()
 
-        yield from stream_data(data_iterator)
+            try:
+                iterator = iter(iterator)
+                first_row = next(iterator)
+            except StopIteration:
+                return
+
+            headers = list(first_row.keys())
+            writer = csv.DictWriter(buffer, fieldnames=headers, extrasaction="ignore", restval="")
+
+            yield writer.writeheader().encode()
+            yield writer.writerow(first_row).encode()
+
+            for row in iterator:
+                yield writer.writerow(row).encode()
+
+        return stream_data(data_iterator)
 
 
 class XlsxStreamingRenderer(BaseStreamingExportRenderer):
-    """"""
+    """Xslx iterative renderer."""
 
     media_type = CONTENT_TYPE_XLSX
     format = "xlsx"
@@ -94,24 +114,29 @@ class XlsxStreamingRenderer(BaseStreamingExportRenderer):
             yield b""
             return
 
-        columns = first_row.keys()
-
-        # TODO: evaluate a better way of doing this
+        # For now, set all column widths to 20
+        # See BrowsableAPIRenderer's use of the style parameter on serializer fields as an improvement idea
+        columns = list(first_row.keys())
         column_descriptors = [{"title": column, "width": 20} for column in columns]
-        name = renderer_context and renderer_context.get("export_sheet_name", "export")
+        sheet_name = renderer_context and renderer_context.get("export_sheet_name", "export")
 
         def get_row(item, **kwargs):
             return [item[col] for col in columns]
 
         buffer = generate_xlsx(
-            sheet_name=name, columns=column_descriptors, queryset=chain([first_row], data_iterator), get_row=get_row
+            sheet_name=sheet_name,
+            columns=column_descriptors,
+            queryset=chain([first_row], data_iterator),
+            get_row=get_row,
         )
 
-        chunk_size = 8192
-        while True:
-            chunk = buffer.read(chunk_size)
-            if not chunk:
-                break
-            yield chunk
+        try:
+            chunk_size = 8192
+            while True:
+                chunk = buffer.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
 
-        buffer.close()
+        finally:
+            buffer.close()

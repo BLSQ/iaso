@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, Group, OrgUnit
+from iaso.models.deduplication import ValidationStatus
+from iaso.models.storage import StorageDevice
 
 
 class EntityExportSerializer(serializers.ModelSerializer):
@@ -57,11 +59,11 @@ class EntityExportSerializer(serializers.ModelSerializer):
             header = self.fields[field_name].label or field_name
             data[header] = value
 
-        if "entity_type_columns" not in self.context or not instance.attributes or not instance.attributes.json:
-            return data
+        if "entity_type_columns" in self.context:
+            json_data = instance.attributes and instance.attributes.json or {}
 
-        for column in self.context["entity_type_columns"]:
-            data[column["label"]] = instance.attributes.json.get(column["name"])
+            for column in self.context["entity_type_columns"]:
+                data[column["label"]] = json_data.get(column["name"], "")
 
         return data
 
@@ -138,7 +140,7 @@ class EntityListNestedOrgUnitSerializer(serializers.ModelSerializer):
 
 class EntityListSerializer(serializers.ModelSerializer):
     """
-    Entity serializer for the entities list api with support for dynamic extra columns.
+    Entity serializer with support for dynamic extra columns.
 
     These user-defined columns are set on the EntityType's `fields_list_view` field and
     map to attributes on the Instance's json.
@@ -201,3 +203,70 @@ class EntityListSerializer(serializers.ModelSerializer):
             data[column["name"]] = instance.attributes.json.get(column["name"])
 
         return data
+
+
+class EntitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entity
+        fields = [
+            "id",
+            "name",
+            "uuid",
+            "created_at",
+            "updated_at",
+            "attributes",
+            "entity_type",
+            "entity_type_name",
+            "instances",
+            "submitter",
+            "org_unit",
+            "duplicates",
+            "nfc_cards",
+        ]
+
+    entity_type_name = serializers.SerializerMethodField()
+    attributes = serializers.SerializerMethodField()
+    submitter = serializers.SerializerMethodField()
+    org_unit = serializers.SerializerMethodField()
+    duplicates = serializers.SerializerMethodField()
+    nfc_cards = serializers.SerializerMethodField()
+
+    def get_attributes(self, entity: Entity):
+        if entity.attributes:
+            return entity.attributes.as_dict()
+        return None
+
+    def get_org_unit(self, entity: Entity):
+        if entity.attributes and entity.attributes.org_unit:
+            return entity.attributes.org_unit.as_dict_for_entity()
+        return None
+
+    def get_submitter(self, entity: Entity):
+        try:
+            # TODO: investigate type issue on next line
+            submitter = entity.attributes.created_by.username  # type: ignore
+        except AttributeError:
+            submitter = None
+        return submitter
+
+    def get_duplicates(self, entity: Entity):
+        return _get_duplicates(entity)
+
+    def get_nfc_cards(self, entity: Entity):
+        nfc_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
+        return nfc_count
+
+    @staticmethod
+    def get_entity_type_name(obj: Entity):
+        return obj.entity_type.name if obj.entity_type else None
+
+
+def _get_duplicates(entity):
+    results = []
+    e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
+    e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
+    if e1qs.count() > 0:
+        results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
+    elif e2qs.count() > 0:
+        results = results + list(map(lambda x: x.entity1.id, e2qs.all()))
+    return results

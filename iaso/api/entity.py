@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from django.db.models import Max
 from django.db.models.functions import Coalesce
 from django.db.models.query import Prefetch
@@ -33,79 +35,12 @@ from iaso.api.entities.filters import (
     EntityTypeIdFilterBackend,
 )
 from iaso.api.entities.renderers import CSVStreamingRenderer, LegacyExportContentNegotation, XlsxStreamingRenderer
-from iaso.api.entities.serializers import EntityExportSerializer, EntityListSerializer
+from iaso.api.entities.serializers import EntityExportSerializer, EntityListSerializer, EntitySerializer
 from iaso.models import Entity, EntityType, Instance
-from iaso.models.deduplication import ValidationStatus
-from iaso.models.storage import StorageDevice
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
-# TODO: move to serializers
-class EntitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entity
-        fields = [
-            "id",
-            "name",
-            "uuid",
-            "created_at",
-            "updated_at",
-            "attributes",
-            "entity_type",
-            "entity_type_name",
-            "instances",
-            "submitter",
-            "org_unit",
-            "duplicates",
-            "nfc_cards",
-        ]
-
-    entity_type_name = serializers.SerializerMethodField()
-    attributes = serializers.SerializerMethodField()
-    submitter = serializers.SerializerMethodField()
-    org_unit = serializers.SerializerMethodField()
-    duplicates = serializers.SerializerMethodField()
-    nfc_cards = serializers.SerializerMethodField()
-
-    def get_attributes(self, entity: Entity):
-        if entity.attributes:
-            return entity.attributes.as_dict()
-        return None
-
-    def get_org_unit(self, entity: Entity):
-        if entity.attributes and entity.attributes.org_unit:
-            return entity.attributes.org_unit.as_dict_for_entity()
-        return None
-
-    def get_submitter(self, entity: Entity):
-        try:
-            # TODO: investigate type issue on next line
-            submitter = entity.attributes.created_by.username  # type: ignore
-        except AttributeError:
-            submitter = None
-        return submitter
-
-    def get_duplicates(self, entity: Entity):
-        return _get_duplicates(entity)
-
-    def get_nfc_cards(self, entity: Entity):
-        nfc_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
-        return nfc_count
-
-    @staticmethod
-    def get_entity_type_name(obj: Entity):
-        return obj.entity_type.name if obj.entity_type else None
-
-
-def _get_duplicates(entity):
-    results = []
-    e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
-    e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
-    if e1qs.count() > 0:
-        results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
-    elif e2qs.count() > 0:
-        results = results + list(map(lambda x: x.entity1.id, e2qs.all()))
-    return results
+logger = getLogger(__name__)
 
 
 class EntityLocationPaginator(pagination.PageNumberPagination):
@@ -160,7 +95,7 @@ class EntityListPaginator(pagination.PageNumberPagination):
 
 
 class EntityTypeColumnSerializer(serializers.Serializer):
-    """"""
+    """Serialize EntityType columns."""
 
     name = serializers.CharField()
     type = serializers.CharField()
@@ -237,7 +172,11 @@ class EntityViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = (
             Entity.objects.filter_for_user(self.request.user)
-            .select_related("entity_type")
+            .select_related(
+                "attributes__org_unit",
+                "attributes__created_by",
+                "entity_type",
+            )
             .annotate(last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at")))
             .with_duplicates()
             .prefetch_related(
@@ -257,7 +196,6 @@ class EntityViewSet(ModelViewSet):
 
     @property
     def pagination_class(self):
-        """Route through different Paginators for legacy API compatibility."""
         if self.request.query_params.get("asLocation"):
             return EntityLocationPaginator
         return EntityListPaginator
@@ -282,7 +220,7 @@ class EntityViewSet(ModelViewSet):
         if serializer.is_valid():
             return serializer.validated_data
 
-        # TODO: add warning here?
+        logger.warning(f"Invalid possible_fields in reference_form for EntityType {entity_type_id}")
         return []
 
     def create(self, request, *args, **kwargs):
@@ -336,40 +274,31 @@ class EntityViewSet(ModelViewSet):
         return Response(EntitySerializer(entity, many=False).data)
 
     def list(self, request: Request, *args, **kwargs):
-        # TODO: move this to a generic StreamingListModelMixin ?
-
         renderer = request.accepted_renderer
         if not getattr(renderer, "streaming", False):
             return super().list(request, *args, **kwargs)
 
+        # Handle streaming responses
+
         queryset = self.filter_queryset(self.get_queryset())
 
-        def _data_iterator(queryset, serializer_class):
-            # chunk_size is required for prefetch_related()
+        def data_iterator(queryset):
             context = self.get_serializer_context()
+            serializer_class = self.get_serializer_class()
+            # chunk_size is required for prefetch_related()
             for instance in queryset.iterator(chunk_size=2000):
                 yield serializer_class(instance, context=context).data
 
         renderer_context = self.get_renderer_context()
+
+        response = StreamingHttpResponse(
+            renderer.stream(data_iterator(queryset), renderer_context=renderer_context),
+            content_type=renderer.media_type,
+        )
+
         filename = renderer_context.get("export_filename", "export")
-
-        def streaming_data():
-            yield from renderer.stream(
-                _data_iterator(queryset, self.get_serializer_class()),
-                renderer_context=renderer_context,
-            )
-
-        response = StreamingHttpResponse(streaming_data(), content_type=renderer.media_type)
-
-        response["Content-Disposition"] = f"attachment; filename={filename}.{renderer.format}"
+        response["Content-Disposition"] = f'attachment; filename="{filename}.{renderer.format}"'
         return response
-
-        # TODO:
-        # - check for n+1 stuff (queryset iterator should be good django 4.1+)
-        # - ask for comments/notes
-        # - tests
-        # - make sure to mention to reviewer: ok to get rid of ?
-        #     file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
 
     def destroy(self, request, pk=None):
         entity = Entity.objects_include_deleted.get(pk=pk)

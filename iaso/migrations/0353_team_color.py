@@ -15,7 +15,7 @@ def assign_random_colors_to_teams(apps, schema_editor):
 
     teams = Team.objects.all()
     for team in teams:
-        team.color = random.choice(color_values)
+        team.color = random.choice(color_values)  # noqa: S311
 
     # Bulk update for efficiency
     Team.objects.bulk_update(teams, ["color"], batch_size=500)

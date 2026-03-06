@@ -43,12 +43,19 @@ class SupersetTokenViewSet(viewsets.ViewSet):
             "provider": "db",
             "refresh": True,
         }
-        response = requests.post(base_url + "/api/v1/security/login", json=payload, headers=headers)
+        response = requests.post(
+            base_url + "/api/v1/security/login",
+            json=payload,
+            headers=headers,
+            timeout=settings.REQUEST_TIMEOUT.SUPERSET.value,
+        )
         access_token = response.json()["access_token"]
         headers["Authorization"] = f"Bearer {access_token}"
 
         # Fetch CSRF token
-        response = requests.get(base_url + "/api/v1/security/csrf_token/", headers=headers)
+        response = requests.get(
+            base_url + "/api/v1/security/csrf_token/", headers=headers, timeout=settings.REQUEST_TIMEOUT.SUPERSET.value
+        )
         headers["X-CSRF-TOKEN"] = response.json()["result"]
         headers["Cookie"] = response.headers.get("Set-Cookie")
         headers["Referer"] = base_url
@@ -74,7 +81,12 @@ class SupersetTokenViewSet(viewsets.ViewSet):
             "rls": [],
         }
 
-        response = requests.post(base_url + "/api/v1/security/guest_token/", json=payload, headers=headers)
+        response = requests.post(
+            base_url + "/api/v1/security/guest_token/",
+            json=payload,
+            headers=headers,
+            timeout=settings.REQUEST_TIMEOUT.SUPERSET.value,
+        )
         guest_token = response.json()["token"]
 
         return Response({"token": guest_token}, status=status.HTTP_201_CREATED)

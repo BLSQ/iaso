@@ -201,9 +201,16 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
     def query_for_related_org_units(self, org_units):
-        ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
+        if not org_units:
+            # empty ltree array, valid SQL expression
+            return RawSQL("ARRAY[]::ltree[]", [])
 
-        return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
+        values = [str(org_unit.pk) for org_unit in org_units]
+        placeholders = ", ".join(["%s::ltree"] * len(values))
+
+        sql = f"ARRAY[{placeholders}]"
+
+        return RawSQL(sql, values)  # noqa: S611
 
     def filter_for_account(self, account):
         queryset: OrgUnitQuerySet = self.defer("geom")

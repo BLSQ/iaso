@@ -4,6 +4,7 @@ import os
 import uuid
 import zipfile
 
+from tempfile import NamedTemporaryFile
 from unittest import mock
 
 import pytz
@@ -143,10 +144,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Create the zip file: we create it on the fly to be able to clearly
         # see the contents in our repo. We then mock the file download method
         # to return the filepath to this zip.
-        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
     def test_success(self):
         self._create_zip_file()
@@ -352,14 +353,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Org unit doesn't exist. The job will fail, then verify that
         # nothing was created.
         INCORRECT_FILES_FOR_ZIP = ["instances.json"]
-        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(
-                zipf,
-                zip_fixture_dir(CATT_TABLET_DIR),
-                INCORRECT_FILES_FOR_ZIP,
-            )
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(
+                    zipf,
+                    zip_fixture_dir(CATT_TABLET_DIR),
+                    INCORRECT_FILES_FOR_ZIP,
+                )
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -419,10 +420,10 @@ class ProcessMobileBulkUploadTest(TestCase):
             json_body={"file": LABO_TABLET_DIR},
         )
 
-        labo_zip_path = f"/tmp/{LABO_TABLET_DIR}.zip"
-        with zipfile.ZipFile(labo_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(LABO_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        save_file_to_api_import(api_import, labo_zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(LABO_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+            save_file_to_api_import(api_import, tmp_zip.name)
 
         process_mobile_bulk_upload(
             api_import_id=api_import.id,
@@ -529,10 +530,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Instance.objects.count(), 3)
 
         # Only add data for Disasi to avoid confusion
-        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         for ent in [ent_disasi_A, ent_disasi_B, ent_disasi_C]:
             self.assertEqual(ent.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
@@ -617,10 +618,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Instance.objects.count(), 5)
 
         # Only add data for Disasi to avoid confusion
-        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         all_entities = [ent_disasi_A, ent_disasi_B, ent_disasi_C, ent_disasi_merged_1, ent_disasi_merged_2]
         for ent in all_entities:
@@ -689,10 +690,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         ent_deleted.save()
 
         # Only add data for Disasi to avoid confusion
-        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
@@ -720,10 +721,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         attrs.save()
 
         # Only add data for Disasi to avoid confusion
-        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
@@ -748,10 +749,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         ent2.save()
 
         # Only add data for Disasi to avoid confusion
-        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
@@ -775,10 +776,11 @@ class ProcessMobileBulkUploadTest(TestCase):
             "storageLogs.json",
             entity_uuid,  # the folder with XML submission
         ]
-        zip_path = f"/tmp/{entity_uuid}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir("storage_logs"), files_for_zip)
-        save_file_to_api_import(self.api_import, zip_path)
+
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir("storage_logs"), files_for_zip)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -823,10 +825,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(list(write_log.instances.all()), [instance])
 
     def test_change_requests(self):
-        zip_path = "/tmp/change_request.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(), ["changeRequests.json"])
-        save_file_to_api_import(self.api_import, zip_path)
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                add_to_zip(zipf, zip_fixture_dir(), ["changeRequests.json"])
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
 
@@ -852,8 +854,6 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ou_change_req.created_by, self.user)
 
     def test_instance_without_entity_creation(self):
-        zip_path = "/tmp/instance_without_entity.zip"
-
         # Create instances.json without entity references
         instance_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 10, tzinfo=pytz.UTC)
         instances_data = [
@@ -868,13 +868,14 @@ class ProcessMobileBulkUploadTest(TestCase):
             }
         ]
 
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            zipf.writestr("instances.json", json.dumps(instances_data))
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                zipf.writestr("instances.json", json.dumps(instances_data))
 
-            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
-                zipf.writestr("standalone-instance-uuid-1234/standalone_instance.xml", xml_file.read())
+                with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                    zipf.writestr("standalone-instance-uuid-1234/standalone_instance.xml", xml_file.read())
 
-        save_file_to_api_import(self.api_import, zip_path)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -904,8 +905,6 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertIsNone(instance.entity)
 
     def test_instance_without_entity_update_scenario(self):
-        zip_path = "/tmp/instance_without_entity_update.zip"
-
         # First create an instance without entity in the database directly
         with open("iaso/fixtures/instance_form_1_1.xml", "rb") as form_instance_file:
             instance = m.Instance.objects.create(
@@ -936,12 +935,13 @@ class ProcessMobileBulkUploadTest(TestCase):
             }
         ]
 
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            zipf.writestr("instances.json", json.dumps(updated_instances_data))
-            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
-                zipf.writestr("no-entity-instance-uuid/no_entity_instance_updated.xml", xml_file.read())
+        with NamedTemporaryFile(suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, "w", zipfile.ZIP_DEFLATED) as zipf:
+                zipf.writestr("instances.json", json.dumps(updated_instances_data))
+                with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                    zipf.writestr("no-entity-instance-uuid/no_entity_instance_updated.xml", xml_file.read())
 
-        save_file_to_api_import(self.api_import, zip_path)
+            save_file_to_api_import(self.api_import, tmp_zip.name)
 
         # This should work without AttributeError after our fix
         process_mobile_bulk_upload(

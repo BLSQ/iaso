@@ -50,6 +50,7 @@ select = [
     "T10", # flake8-print
     "UP",  # pyupgrade
     # Disabled rules.
+    "S", # flake8-bandit
     # "C90", # mccabe complexity
     # "G",   # flake8-logging-format
     # "PT",  # flake8-pytest-style
@@ -151,6 +152,47 @@ ignore = [
     "UP030",   # format-literals
     "UP031",   # printf-string-formatting
     "UP035",   # deprecated-import
+]
+
+[tool.ruff.lint.per-file-ignores]
+"setuper/**/*.py" = [
+    "S311",  # suspicious-non-cryptographic-random-usage
+    "S113",  # request-without-timeout
+]
+
+"**/seed_test_data.py" = [
+    "S311",  # suspicious-non-cryptographic-random-usage
+    "S106",  # hardcoded-password-func-arg
+    "S113",  # request-without-timeout
+]
+
+"setuper/data/sample-credentials.py" = [
+    "S105",  # hardcoded-password-string
+]
+
+"scripts/**/*.py" = [
+    "S113",  # request-without-timeout
+    "S603", # subprocess-without-shell-equals-true
+    "S605", # start-process-with-a-shell
+    "S607"# start-process-with-partial-path
+]
+
+"**/setuper_sandbox.py" = [
+    "S113",  # request-without-timeout
+    "S603", # subprocess-without-shell-equals-true
+    "S605", # start-process-with-a-shell
+    "S607"# start-process-with-partial-path
+]
+
+"**/tests/**.py" = [
+    "S101",  # assert
+    "S105",  # hardcoded-password-string
+    "S106",  # hardcoded-password-func-arg
+    "S311",  # suspicious-non-cryptographic-random-usage
+]
+
+"**/email_templates.py" = [
+    "S105",  # hardcoded-password-string
 ]
 
 [tool.ruff.format]

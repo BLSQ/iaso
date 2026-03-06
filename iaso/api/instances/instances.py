@@ -658,7 +658,8 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             # FIXME: what if instance.org_unit is None?
             top_level = user_orgunits.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()  # type: ignore
-        assert top_level, "No intersection found"  # should not happen
+        if not top_level:
+            raise ValueError("No intersection found")
 
         lock = InstanceLock.objects.create(locked_by=user, top_org_unit=top_level, instance=instance)
         return lock

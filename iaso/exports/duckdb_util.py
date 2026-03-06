@@ -1,4 +1,5 @@
 import os
+import tempfile
 import time
 
 from logging import getLogger
@@ -22,7 +23,7 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
     # initially was full_sql = sql % tuple(map(adapt_param, params)) but supporting all types is complicated
     dsn = connection.get_connection_params()
 
-    tmpdir = "/tmp/duckdb_tmp"
+    tmpdir = tempfile.mkdtemp(prefix="duckdb_tmp_")
     os.makedirs(tmpdir, exist_ok=True)
 
     with duckdb.connect() as duckdb_connection:
@@ -48,12 +49,13 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
             COPY (
                 SELECT {alias_stmt} FROM postgres_query('pg', $$ {full_sql} $$)
             ) TO '{output_file_path}' (FORMAT PARQUET, COMPRESSION 'ZSTD', ROW_GROUP_SIZE 10000)
-        """
+        """  # noqa: S608
 
-        duckdb_connection.execute(parquet_export_sql)
+        # todo : sanitize this?
+        duckdb_connection.execute(parquet_export_sql)  # noqa: S608
 
-        row_count = duckdb_connection.execute(f"SELECT COUNT(*) FROM '{output_file_path}'").fetchone()[0]
-        col_count = len(duckdb_connection.execute(f"DESCRIBE SELECT * FROM '{output_file_path}'").fetchall())
+        row_count = duckdb_connection.execute(f"SELECT COUNT(*) FROM '{output_file_path}'").fetchone()[0]  # noqa: S608
+        col_count = len(duckdb_connection.execute(f"DESCRIBE SELECT * FROM '{output_file_path}'").fetchall())  # noqa: S608
 
     duration = time.perf_counter() - start
     size_mb = os.path.getsize(output_file_path) / (1024 * 1024)

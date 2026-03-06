@@ -352,7 +352,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                     row_errors["password"] = f"Invalid password: {'; '.join(e.messages)}"
             else:
                 # Error: need either password or email
-                row_errors["password"] = "Either password or email required for user creation"
+                row_errors["password"] = "Either password or email required for user creation"  # noqa : S105
 
             # Validate OrgUnits
             org_unit_list = data.get("orgunit") or []

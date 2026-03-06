@@ -14,7 +14,8 @@ task_service = LazyService("BACKGROUND_TASK_SERVICE")
 
 def task_decorator(task_name=""):
     def inner_task(func):
-        assert func.__name__ == func.__qualname__, f"{func.__qualname__} is not a global"
+        if func.__name__ != func.__qualname__:
+            raise ValueError(f"{func.__qualname__} is not a global")
 
         @wraps(func)
         def wrapper(*args, **kwargs):

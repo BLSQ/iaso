@@ -77,7 +77,8 @@ def form_upload(request: HttpRequest) -> HttpResponse:
 
     try:
         i = process_instance_file(i, request.FILES["xml_submission_file"], user)
-    except:
+    except:  # noqa: S110
+        # todo : add log warning here ? and remove noqa
         pass
 
     for file_name in request.FILES:

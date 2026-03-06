@@ -10,7 +10,6 @@ from django.db import connection, models, transaction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
-from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 from lazy_services import LazyService
 
@@ -538,11 +537,26 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
     def http_requests(self, instance):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
+
+        logs = instance.export_logs.all()
+
+        if not logs:
+            return format_html("<span>no logs available.</span>")
+
         return format_html_join(
-            mark_safe("<br/><br/>"),
-            "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
-        ) or mark_safe("<span>no logs available.</span>")
+            "<br/><br/>",
+            "{} http status: {} url : {} <br/><ul><li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+            (
+                (
+                    line.id,
+                    line.http_status,
+                    line.url,
+                    line.sent,
+                    line.received,
+                )
+                for line in logs
+            ),
+        )
 
 
 @admin.action(description="Relaunch selected tasks")

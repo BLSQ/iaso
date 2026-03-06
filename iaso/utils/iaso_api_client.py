@@ -2,6 +2,8 @@ import time
 
 import requests
 
+from django.conf import settings
+
 
 class IasoClient:
     def __init__(self, server_url):
@@ -11,16 +13,22 @@ class IasoClient:
 
     def authenticate_with_username_and_password(self, username, password):
         credentials = {"username": username, "password": password}
-        r = requests.post(self.server_url + "/api/token/", json=credentials)
+        r = requests.post(
+            self.server_url + "/api/token/", json=credentials, timeout=settings.REQUEST_TIMEOUT.DEFAULT.value
+        )
         token = r.json().get("access")
         self.authenticate_with_token(token)
 
     def authenticate_with_token(self, token):
         self.headers["Authorization"] = "Bearer %s" % token
 
-    def post(self, url, json=None, data=None, files=None):
+    def post(self, url, json=None, data=None, files=None, timeout=None):
+        if timeout is None:
+            timeout = settings.REQUEST_TIMEOUT.DEFAULT.value
         self.log(url, json)
-        r = requests.post(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
+        r = requests.post(
+            self.server_url + url, json=json, data=data, headers=self.headers, files=files, timeout=timeout
+        )
         resp = None
         try:
             resp = r.json()
@@ -31,24 +39,14 @@ class IasoClient:
         self.log(resp)
         return resp
 
-    def patch(self, url, json=None, data=None, files=None):
-        self.log(url, json)
-        print(url, json)
-        r = requests.patch(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
-        resp = None
-        try:
-            resp = r.json()
-            r.raise_for_status()
-        except Exception as e:
-            print(resp, r)
-            raise e
-        self.log(resp)
-        return resp
-
-    def put(self, url, json=None, data=None, files=None):
+    def patch(self, url, json=None, data=None, files=None, timeout=None):
+        if timeout is None:
+            timeout = settings.REQUEST_TIMEOUT.DEFAULT.value
         self.log(url, json)
         print(url, json)
-        r = requests.put(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
+        r = requests.patch(
+            self.server_url + url, json=json, data=data, headers=self.headers, files=files, timeout=timeout
+        )
         resp = None
         try:
             resp = r.json()
@@ -59,8 +57,29 @@ class IasoClient:
         self.log(resp)
         return resp
 
-    def get(self, url, params=None):
-        r = requests.get(self.server_url + url, params=params, headers=self.headers)
+    def put(self, url, json=None, data=None, files=None, timeout=None):
+        if timeout is None:
+            timeout = settings.REQUEST_TIMEOUT.DEFAULT.value
+        self.log(url, json)
+        print(url, json)
+        r = requests.put(
+            self.server_url + url, json=json, data=data, headers=self.headers, files=files, timeout=timeout
+        )
+        resp = None
+        try:
+            resp = r.json()
+            r.raise_for_status()
+        except Exception as e:
+            print(resp, r)
+            raise e
+        self.log(resp)
+        return resp
+
+    def get(self, url, params=None, timeout=None):
+        if timeout is None:
+            timeout = settings.REQUEST_TIMEOUT.DEFAULT.value
+
+        r = requests.get(self.server_url + url, params=params, headers=self.headers, timeout=timeout)
         resp = None
         try:
             resp = r.json()

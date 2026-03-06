@@ -10,6 +10,7 @@ from typing import Optional
 import pandas as pd
 import requests
 
+from django.conf import settings
 from django.utils.timezone import now
 
 from plugins.polio.models import Round, URLCache
@@ -142,7 +143,7 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
 
             logger.info("paginated_url: " + paginated_url)
 
-            response = requests.get(paginated_url, auth=(login, password))
+            response = requests.get(paginated_url, auth=(login, password), timeout=settings.REQUEST_TIMEOUT.POLIO.value)
 
             empty = response.status_code == 404
             if not empty:
@@ -226,7 +227,7 @@ class RoundSelection(str, Enum):
 
 
 class LQASStatus(str, Enum):
-    Pass = "1lqasOK"
+    Pass = "1lqasOK"  # noqa: S105
     Fail = "3lqasFail"
     InScope = "inScope"
 

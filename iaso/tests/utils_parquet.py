@@ -24,7 +24,7 @@ class BaseAPITransactionTestCase(TransactionTestCase, IasoTestCaseMixin):
 
 def parquet_to_df(path):
     with duckdb.connect() as con:
-        df = con.execute(f"SELECT * FROM read_parquet('{path}')").fetchdf()
+        df = con.execute("SELECT * FROM read_parquet(?)", [path]).fetchdf()
 
     buffer = StringIO()
     df.to_csv(buffer, index=False)
@@ -78,10 +78,9 @@ def compare_or_create_snapshot(parquet_path, snapshot_path, stable_columns=None,
     )
 
 
-# used to debug if the test fails
 def read_parquet(f):
     with duckdb.connect() as con:
-        result = con.execute(f"SELECT * FROM read_parquet('{f.name}')")
+        result = con.execute("SELECT * FROM read_parquet(?)", (f.name,))
         colnames = [d[0] for d in result.description]  # column names
         tuples = result.fetchall()
         rows = [dict(zip(colnames, row)) for row in tuples]

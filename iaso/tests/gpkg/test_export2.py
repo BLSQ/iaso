@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import fiona
 
@@ -53,10 +54,11 @@ class GPKGExport(TestCase):
 
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
-        p = Path("/tmp/temporary_test.gpkg")
-        if p.exists():
-            p.unlink()
-        self.filename = str(p)
+        self._tmpdir = TemporaryDirectory()
+        self.filename = Path(self._tmpdir.name) / "temporary_test.gpkg"
+
+    def tearDown(self):
+        self._tmpdir.cleanup()
 
     def test_export_import(self):
         source_to_gpkg(self.filename, self.version)
@@ -67,7 +69,7 @@ class GPKGExport(TestCase):
         self.source.projects.add(new_project)
 
         import_gpkg_file(
-            "/tmp/temporary_test.gpkg",
+            self.filename,
             source_name=self.source_name,
             version_number=2,
             validation_status="new",
@@ -122,6 +124,7 @@ class GPKGExport(TestCase):
         m.OrgUnit.objects.create(name="ou4", version=self.version, org_unit_type=out3, geom=polygon)
         p = Point(x=1, y=3, z=3)
         m.OrgUnit.objects.create(name="ou5", version=self.version, org_unit_type=out3, location=p)
+
         source_to_gpkg(self.filename, self.version)
         new_project = m.Project.objects.create(name="Project 3", account=self.account, app_id="project_3")
 
@@ -129,7 +132,7 @@ class GPKGExport(TestCase):
         self.source.projects.add(new_project)
 
         import_gpkg_file(
-            "/tmp/temporary_test.gpkg",
+            self.filename,
             source_name=self.source_name,
             version_number=2,
             validation_status="new",

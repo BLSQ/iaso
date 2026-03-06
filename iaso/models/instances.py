@@ -561,7 +561,7 @@ class Instance(models.Model):
             if self.form.correlation_field and self.json:
                 identifier += self.json.get(self.form.correlation_field, None)
                 identifier = identifier.zfill(3)
-            random_number = random.choice("1234567890")
+            random_number = random.choice("1234567890")  # noqa: S311
             value = int(identifier + random_number)
             suffix = f"{value % 97:02d}"
             self.correlation_id = identifier + random_number + suffix
@@ -610,10 +610,11 @@ class Instance(models.Model):
             return self.json
         if self.file:
             # not converted yet, but we have a file, so we can convert it
+            # todo : more strict url check , cause there http://myhackerurl.com?x=amazonaws could be ok !
             if "amazonaws" in self.file.url:
                 for i in range(tries):
                     try:
-                        file = urlopen(self.file.url)
+                        file = urlopen(self.file.url)  # noqa: S310
                         break
                     except HTTPError as err:
                         if err.code == 503:  # Slow Down

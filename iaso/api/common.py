@@ -275,10 +275,11 @@ class ModelViewSet(BaseModelViewSet):
             ]
         }
         """
-        assert self.results_key is not None, (
-            "'%s' should either include a `results_key` attribute, "
-            "or override the `get_result_key()` method." % self.__class__.__name__
-        )
+        if self.results_key is None:
+            raise ValueError(
+                "'%s' should either include a `results_key` attribute, "
+                "or override the `get_result_key()` method." % self.__class__.__name__
+            )
 
         return self.results_key
 

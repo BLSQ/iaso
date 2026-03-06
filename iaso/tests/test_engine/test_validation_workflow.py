@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
-from django.contrib.auth.models import Group
+
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Instance, ValidationNode, ValidationWorkflow, Account, Profile, UserRole
+from iaso.models import Account, Instance, Profile, UserRole, ValidationNode, ValidationWorkflow
 from iaso.models.validation_workflow.validation_status import Status
 
 
@@ -324,7 +324,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), AnonymousUser(), comment="LGTM", approved=True
+                self.instance.get_next_pending_states(self.workflow).first(),
+                AnonymousUser(),
+                comment="LGTM",
+                approved=True,
             )
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
@@ -340,8 +343,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), self.other_user, comment="LGTM",
-                approved=True
+                self.instance.get_next_pending_states(self.workflow).first(),
+                self.other_user,
+                comment="LGTM",
+                approved=True,
             )
 
         # check that there's no impact
@@ -370,8 +375,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), AnonymousUser(), comment="Nope",
-                approved=False
+                self.instance.get_next_pending_states(self.workflow).first(),
+                AnonymousUser(),
+                comment="Nope",
+                approved=False,
             )
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
@@ -387,8 +394,10 @@ class TestPermissionCheck(TestCase):
 
         with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_states(self.workflow).first(), self.other_user, comment="Nope",
-                approved=False
+                self.instance.get_next_pending_states(self.workflow).first(),
+                self.other_user,
+                comment="Nope",
+                approved=False,
             )
 
         # check that there's no impact
@@ -426,8 +435,10 @@ class TestUndoFeature(TestCase):
         v
     [ node: manager approves ]
     """
+
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="noprofile", password="testpass")
+        self.other_user = get_user_model().objects.create_user(username="john.doe", password="testpass")
         self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow")[0]
         self.check_file_type_node = ValidationNode.objects.create(workflow=self.workflow, name="check_file_type")
         self.manager_approves_node = ValidationNode.objects.create(workflow=self.workflow, name="check_file_state")
@@ -437,30 +448,122 @@ class TestUndoFeature(TestCase):
         self.workflow.refresh_from_db()
 
     def test_try_undo_first_approved_node(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
+
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="LGTM", approved=True
+        )
+
+        with self.assertRaisesMessage(PermissionDenied, "Only user noprofile can undo this action"):
+            ValidationWorkflowEngine.undo_node(
+                self.check_file_type_node.validationstatus_set.get(instance=self.instance),
+                self.other_user,
+                self.instance,
+                self.workflow,
+            )
+
+        ValidationWorkflowEngine.undo_node(
+            self.check_file_type_node.validationstatus_set.get(instance=self.instance),
+            self.user,
+            self.instance,
+            self.workflow,
+        )
+
+        self.assertEqual(self.instance.get_next_pending_states(self.workflow).first().node, self.check_file_type_node)
+        self.assertEqual(self.instance.get_next_pending_states(self.workflow).first().status, Status.UNKNOWN)
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "PENDING")
+
+    def test_try_undo_first_approved_node_when_next_nodes_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
+
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="LGTM again", approved=True
+        )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
+
+        with self.assertRaisesMessage(ValueError, "Cannot undo node as next nodes have been completed"):
+            ValidationWorkflowEngine.undo_node(
+                self.check_file_type_node.validationstatus_set.get(instance=self.instance),
+                self.user,
+                self.instance,
+                self.workflow,
+            )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
+
+    def test_try_undo_first_approved_node_when_next_nodes_has_been_rejected(self):
+        ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
+
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="Nope", approved=False
+        )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
+
+        with self.assertRaisesMessage(ValueError, "Cannot undo node as next nodes have been completed"):
+            ValidationWorkflowEngine.undo_node(
+                self.check_file_type_node.validationstatus_set.get(instance=self.instance),
+                self.user,
+                self.instance,
+                self.workflow,
+            )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
     def test_try_undo_last_approved_node(self):
         """
         Shouldn't be possible as a notification might have been sent to the user already
         """
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
+
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="LGTM again", approved=True
+        )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
+
+        with self.assertRaisesMessage(ValueError, "Cannot undo final node"):
+            ValidationWorkflowEngine.undo_node(
+                self.manager_approves_node.validationstatus_set.get(instance=self.instance),
+                self.user,
+                self.instance,
+                self.workflow,
+            )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
 
     def test_try_undo_rejected_node(self):
         """
         Shouldn't be possible as a notification might have been sent to the user already
         """
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
-    def test_try_undo_rejected_last_node(self):
-        """
-        Shouldn't be possible as a notification might have been sent to the user already
-        """
-        pass
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.user, comment="Nope", approved=False
+        )
 
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
+        with self.assertRaisesMessage(ValueError, "Cannot undo rejected node"):
+            ValidationWorkflowEngine.undo_node(
+                self.check_file_type_node.validationstatus_set.get(instance=self.instance),
+                self.user,
+                self.instance,
+                self.workflow,
+            )
 
-class TestRejectionTargetFeature(TestCase):
-    pass
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
 
 class TestResubmitFeature(TestCase):
@@ -495,7 +598,10 @@ class TestResubmitFeature(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.parent_instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.parent_instance.get_next_pending_states(self.workflow).first(), self.user, approved=False, comment="Nope"
+            self.parent_instance.get_next_pending_states(self.workflow).first(),
+            self.user,
+            approved=False,
+            comment="Nope",
         )
 
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance, self.parent_instance)
@@ -503,9 +609,11 @@ class TestResubmitFeature(TestCase):
         self.instance.refresh_from_db()
         self.assertEqual(self.instance.parent_instance_for_validation, self.parent_instance)
 
-
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_states(self.workflow).first(), self.user, approved=False, comment="Nope for the second time"
+            self.instance.get_next_pending_states(self.workflow).first(),
+            self.user,
+            approved=False,
+            comment="Nope for the second time",
         )
 
         validations = self.instance.get_all_validation_statuses(self.workflow)
@@ -523,8 +631,10 @@ class TestResubmitFeature(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.parent_instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.parent_instance.get_next_pending_states(self.workflow).first(), self.user, approved=True,
-            comment="LGTM"
+            self.parent_instance.get_next_pending_states(self.workflow).first(),
+            self.user,
+            approved=True,
+            comment="LGTM",
         )
 
         with self.assertRaisesMessage(ValueError, "Invalid parent entity: workflow is in incorrect status"):
@@ -533,3 +643,130 @@ class TestResubmitFeature(TestCase):
         self.instance.refresh_from_db()
         self.assertIsNone(self.instance.parent_instance_for_validation)
         self.assertFalse(self.instance.validationstatus_set.exists())
+
+
+class TestByPassFeature(TestCase):
+    """
+    Purpose of this test is to show how to handle the fact that a node can be approved without the need of the previous ones.
+    E.g : a manager don't have to wait for employees to approve, he knows better.
+
+    However : it shouldn't be possible to bypass if an employee has rejected as the user might already have gotten the notification
+
+    Setup represents a longer linear workflow :
+    * Multiple nodes aka task (e.g check file type, check file name, etc)
+    * All with permission checks
+    * Only the last node is capable to approve without waiting for others
+
+    In summary:
+
+    [ node: check file type ]
+        |
+        |
+        v
+    [ node: check file name ]
+        |
+        |
+        v
+    [ node: manager approves ]
+    """
+
+    def setUp(self):
+        account = Account.objects.create(name="test")
+        group_1 = Group.objects.create(name="Seller")
+        group_2 = Group.objects.create(name="Assistant to the regional manager")
+        group_3 = Group.objects.create(name="Regional manager")
+        user_role_1 = UserRole.objects.create(group=group_1, account=account)
+        user_role_2 = UserRole.objects.create(group=group_2, account=account)
+        user_role_3 = UserRole.objects.create(group=group_3, account=account)
+
+        self.jim = get_user_model().objects.create_user(username="jim.halpert", password="testpass")
+        self.dwight = get_user_model().objects.create(username="dwight.schrute", password="testpass")
+        self.michael = get_user_model().objects.create(username="michael.scott", password="testpass")
+
+        profile_seller = Profile.objects.create(account=account, user=self.jim)
+        profile_seller.user_roles.set([user_role_1])
+
+        profile_assistant_to_the_regional_manager = Profile.objects.create(account=account, user=self.dwight)
+        profile_assistant_to_the_regional_manager.user_roles.add(user_role_2)
+
+        profile_regional_manager = Profile.objects.create(account=account, user=self.michael)
+        profile_regional_manager.user_roles.add(user_role_3)
+
+        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow")[0]
+        self.check_file_type_node = ValidationNode.objects.create(workflow=self.workflow, name="check_file_type")
+        self.check_file_type_node.roles_required.set([user_role_1])
+
+        self.check_file_name_node = ValidationNode.objects.create(workflow=self.workflow, name="check_file_state")
+        self.check_file_name_node.previous_nodes.add(self.check_file_type_node)
+        self.check_file_name_node.roles_required.set([user_role_2])
+
+        self.manager_approves_node = ValidationNode.objects.create(
+            workflow=self.workflow, name="check_file_state", can_skip_previous_nodes=True
+        )
+        self.manager_approves_node.previous_nodes.add(self.check_file_name_node)
+        self.manager_approves_node.roles_required.set([user_role_3])
+
+        self.instance = Instance.objects.create()
+        self.workflow.refresh_from_db()
+
+    def test_approve_last_node_if_nothing_else_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
+            ValidationWorkflowEngine.complete_node_by_passing(
+                self.manager_approves_node, self.dwight, self.instance, self.workflow
+            )
+
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node, self.michael, self.instance, self.workflow, comment="I'm the boss"
+        )
+        # check
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
+
+        self.check_file_type_node.refresh_from_db()
+        self.check_file_name_node.refresh_from_db()
+        self.manager_approves_node.refresh_from_db()
+
+        first_validation_status = self.check_file_name_node.validationstatus_set.first()
+        self.assertEqual(first_validation_status.status, Status.SKIPPED)
+        self.assertEqual(first_validation_status.updated_by, self.michael)
+        self.assertEqual(first_validation_status.comment, "")
+
+        second_validation_status = self.check_file_type_node.validationstatus_set.first()
+        self.assertEqual(second_validation_status.status, Status.SKIPPED)
+        self.assertEqual(second_validation_status.updated_by, self.michael)
+        self.assertEqual(second_validation_status.comment, "")
+
+        last_validation_status = self.manager_approves_node.validationstatus_set.first()
+        self.assertEqual(last_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(last_validation_status.updated_by, self.michael)
+        self.assertEqual(last_validation_status.comment, "I'm the boss")
+
+    def test_approve_last_node_when_first_node_has_been_approved(self):
+        pass
+
+    def test_approve_last_node_when_second_node_has_been_approved(self):
+        pass
+
+    def test_approve_last_node_when_first_node_has_been_rejected(self):
+        pass
+
+    def test_approve_last_node_when_second_node_has_been_rejected(self):
+        pass
+
+    def test_reject_last_node_if_nothing_else_has_been_approved(self):
+        pass
+
+    def test_reject_last_node_when_first_node_has_been_approved(self):
+        pass
+
+    def test_reject_last_node_when_second_node_has_been_approved(self):
+        pass
+
+    def test_reject_last_node_when_first_node_has_been_rejected(self):
+        pass
+
+    def test_reject_last_node_when_second_node_has_been_rejected(self):
+        pass
+
+    def test_undo_priority_approve(self):
+        pass

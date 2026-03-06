@@ -7,6 +7,7 @@ Each workflow is made of multiple states and steps (transitions) between those s
 from autoslug import AutoSlugField
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Q
 
 from iaso.models import Instance
 from iaso.models.base import UserRole
@@ -55,6 +56,7 @@ class ValidationNode(CreatedAndUpdatedModel):
     color = ColorField(blank=True, null=True)
     next_nodes = models.ManyToManyField("self", symmetrical=False, related_name="previous_nodes")
     roles_required = models.ManyToManyField(UserRole, blank=True)
+    can_skip_previous_nodes = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -64,3 +66,19 @@ class ValidationNode(CreatedAndUpdatedModel):
 
     def is_final_node(self):
         return not self.next_nodes.count()
+
+    def get_all_previous_nodes_for_bypass(self, instance):
+        visited = set()
+        stack = list(
+            self.previous_nodes.prefetch_related("validationstatus_set")
+            .filter(Q(validationstatus__status_in=["REJECTED", "UNKNOWN"]))
+            .filter(validationstatus__instance=instance)
+            .values_list("pk", flat=True)
+        )
+        while stack:
+            node = stack.pop()
+            if node.pk not in visited:
+                visited.add(node.pk)
+                stack.extend(node.get_all_previous_nodes_for_bypass(instance))
+
+        return ValidationNode.objects.filter(pk__in=visited)

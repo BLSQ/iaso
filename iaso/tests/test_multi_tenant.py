@@ -1,5 +1,6 @@
 import json
 
+from django.urls import reverse
 from rest_framework.test import APIClient
 
 from iaso.test import APITestCase
@@ -231,13 +232,13 @@ class MultiTenantTestCase(APITestCase):
         self.assertEqual(len(content["sources"]), 1)
 
     def test_profile_access(self):
-        response = self.raccoon_client.get("/api/profiles/", accept="application/json")
+        response = self.raccoon_client.get(reverse("profiles-list"), accept="application/json")
         content = json.loads(response.content)
-        self.assertEqual(content["profiles"][0]["user_name"], "raccoon")
+        self.assertEqual(content["results"][0]["user_name"], "raccoon")
 
-        response = self.yoda_client.get("/api/profiles/", accept="application/json")
+        response = self.yoda_client.get(reverse("profiles-list"), accept="application/json")
         content = json.loads(response.content)
-        self.assertEqual(len(content["profiles"]), 1)
+        self.assertEqual(len(content["results"]), 1)
 
     def test_version_access(self):
         response = APIClient().get("/api/sourceversions/", accept="application/json")

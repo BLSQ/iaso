@@ -5,21 +5,20 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Tab, Tabs } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal,
+    makeFullModal, theme,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
-import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permissions from '../../../utils/permissions';
-import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
 import PermissionsAttribution from './PermissionsAttribution';
@@ -29,8 +28,9 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
+import { SxStyles } from 'Iaso/types/general';
 
-const useStyles = makeStyles(theme => ({
+const styles: SxStyles = {
     tabs: {
         marginBottom: theme.spacing(3),
     },
@@ -44,12 +44,12 @@ const useStyles = makeStyles(theme => ({
         zIndex: -10,
         opacity: 0,
     },
-}));
+}
 
 type Props = {
     titleMessage: IntlMessage;
     initialData?: InitialUserData;
-    saveProfile: MutateFunction<Profile, any>;
+    createProfile: MutateFunction<Profile, any>;
     allowSendEmailInvitation?: boolean;
     isOpen: boolean;
     closeDialog: () => void;
@@ -58,11 +58,12 @@ type Props = {
 
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const defaultData: InitialUserData = {};
-const UserDialogComponent: FunctionComponent<Props> = ({
+
+const CreateUserDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
     initialData = defaultData,
-    saveProfile,
+    createProfile,
     allowSendEmailInvitation = false,
     closeDialog,
     canBypassProjectRestrictions,
@@ -71,7 +72,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const queryClient = useQueryClient();
-    const classes: Record<string, string> = useStyles();
 
     const {
         user,
@@ -81,16 +81,24 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         hasErrors,
         setEmail,
     } = useInitialUser(initialData);
-    const [tab, setTab] = useState('infos');
+
+    const [tab, setTab] = useState<string>('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
     const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
         useState<boolean>(false);
-    const saveUser = useCallback(() => {
+
+    const createUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
-            currentUser[key] = user[key].value;
+            if (
+                user[key].value !== '' &&
+                user[key].value?.length !== 0 &&
+                user[key].value !== null
+            )
+                currentUser[key] = user[key].value;
         });
-        saveProfile(currentUser, {
+
+        createProfile(currentUser, {
             onSuccess: () => {
                 if (currentUser.id === connectedUser.id) {
                     queryClient.invalidateQueries('currentUser');
@@ -110,7 +118,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         closeDialog,
         connectedUser.id,
         queryClient,
-        saveProfile,
+        createProfile,
         setFieldErrors,
         user,
     ]);
@@ -134,9 +142,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         ) {
             setOpenWarning(true);
         } else {
-            saveUser();
+            createUser();
         }
-    }, [isPhoneNumberUpdated, isUserWithoutPermissions, saveUser]);
+    }, [isPhoneNumberUpdated, isUserWithoutPermissions, createUser]);
 
     const warningTitleMessage = useMemo(() => {
         if (isPhoneNumberUpdated && isUserWithoutPermissions) {
@@ -183,23 +191,22 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
         );
     }, [allUserRolesPermissions.length, allUserUserRolesPermissions]);
-    const isNewUser = !user.id?.value;
+
     const allowConfirm =
         !hasErrors &&
         !(
             user.user_name.value === '' ||
-            (isNewUser &&
-                (((!user.password.value || user.password.value === '') &&
-                    !user.send_email_invitation.value) ||
-                    (user.send_email_invitation.value &&
-                        user.email?.value === '')))
+            ((!user.password.value || user.password.value === '') &&
+                !user.send_email_invitation.value) ||
+            (user.send_email_invitation.value && user.email?.value === '')
         );
+
     return (
         <>
             <WarningModal
                 open={openWarning}
                 closeDialog={() => setOpenWarning(false)}
-                onConfirm={saveUser}
+                onConfirm={createUser}
                 titleMessage={warningTitleMessage}
                 bodyMessage={warningBodyMessage}
             />
@@ -222,29 +229,21 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 <Tabs
                     id="user-dialog-tabs"
                     value={tab}
-                    classes={{
-                        root: classes.tabs,
-                    }}
+                    sx={styles.tabs}
                     onChange={(_event, newtab) => setTab(newtab)}
                 >
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="infos"
                         label={formatMessage(MESSAGES.infos)}
                     />
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="permissions"
                         label={formatMessage(MESSAGES.permissions)}
                     />
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
@@ -259,17 +258,15 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         />
                     ) : (
                         <Tab
-                            classes={{
-                                root: classes.tab,
-                            }}
+                            sx={styles.tabs}
                             value="orgUnitWriteTypes"
                             label={formatMessage(MESSAGES.orgUnitWriteTypes)}
                         />
                     )}
                 </Tabs>
-                <div className={classes.root} id="user-profile-dialog">
-                    <div
-                        className={tab === 'infos' ? '' : classes.hiddenOpacity}
+                <Box sx={styles.root} id="user-profile-dialog">
+                    <Box
+                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
                     >
                         <UsersInfos
                             setFieldValue={(key, value) =>
@@ -284,10 +281,10 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             setPhoneNumber={setPhoneNumber}
                             setEmail={setEmail}
                         />
-                    </div>
+                    </Box>
                     {tab === 'permissions' && (
                         <PermissionsAttribution
-                            isSuperUser={initialData?.is_superuser}
+                            isSuperUser={initialData?.is_superuser ?? false}
                             currentUser={user}
                             handleChange={permissions => {
                                 setFieldValue('user_permissions', permissions);
@@ -300,7 +297,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>
-                                setFieldValue('org_units', ouList)
+                                setFieldValue(
+                                    'org_units',
+                                    ouList.map(
+                                        (ouListItem: OrgUnit): number =>
+                                            ouListItem.id,
+                                    ),
+                                )
                             }
                             currentUser={user}
                         />
@@ -316,13 +319,12 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             }
                         />
                     )}
-                </div>
+                </Box>
             </ConfirmCancelModal>
         </>
     );
 };
 
-const modalWithButton = makeFullModal(UserDialogComponent, AddButton);
-const modalWithIcon = makeFullModal(UserDialogComponent, EditIconButton);
+const modalWithButton = makeFullModal(CreateUserDialogComponent, AddButton);
 
-export { modalWithButton as AddUsersDialog, modalWithIcon as EditUsersDialog };
+export { modalWithButton as CreateUserDialog };

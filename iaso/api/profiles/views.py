@@ -1,5 +1,4 @@
 # todo : what's left to fix imho :
-# mix of camelCase and snake_case in query Params : fix that
 # ColorFieldSerializer
 # retrieve : do we really need such a huge payload ???
 # check number of queries and fine tune perf/optimize
@@ -21,15 +20,16 @@ from django.utils.crypto import get_random_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from django_filters.rest_framework import DjangoFilterBackend
+from djangorestframework_camel_case.parser import CamelCaseJSONParser
+from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
 from rest_framework import permissions, status
 from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, ModelViewSet
+from iaso.api.filters import CamelCaseDjangoFilterBackend, CamelCaseOrderingFilter
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.profiles.constants import PK_ME
@@ -82,10 +82,14 @@ class ProfilesViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
 
-    filter_backends = [OrderingFilter, DjangoFilterBackend]
+    filter_backends = [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = ["id", "user__username", "annotated_first_user_role"]
+
+    renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
+
+    parser_classes = [CamelCaseJSONParser]
 
     def get_serializer_class(self):
         if self.action == "retrieve":

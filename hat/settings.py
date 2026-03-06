@@ -260,6 +260,10 @@ if DEBUG:
         "querycount.middleware.QueryCountMiddleware",
     ]
 
+MIDDLEWARE += [
+    "iaso.middleware.CustomCamelCaseMiddleWare",
+]
+
 ROOT_URLCONF = "hat.urls"
 
 # Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
@@ -459,10 +463,17 @@ REST_FRAMEWORK = {
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
-        "rest_framework.renderers.JSONRenderer",
-        "rest_framework.renderers.BrowsableAPIRenderer",
+        "rest_framework.renderers.JSONRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseJSONRenderer
+        "rest_framework.renderers.BrowsableAPIRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer
         "rest_framework_csv.renderers.CSVRenderer",
     ),
+    # in the future:
+    # 'DEFAULT_PARSER_CLASSES': (
+    #     'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    # ),
+    "JSON_UNDERSCOREIZE": {
+        "no_underscore_before_number": True,
+    },
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
 }
 

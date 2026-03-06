@@ -3,6 +3,7 @@ import importlib
 import io
 import typing
 
+from cgi import parse_header
 from unittest import mock
 
 import numpy as np
@@ -13,7 +14,7 @@ from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
@@ -206,9 +207,9 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertEqual(expected_content_type, response["Content-Type"])
 
         if expected_attachment_filename is not None:
-            self.assertEqual(
-                response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
-            )
+            value, params = parse_header(response.get("Content-Disposition"))
+            self.assertEqual(value, "attachment")
+            self.assertEqual(params.get("filename"), expected_attachment_filename)
 
         content = response.getvalue()
 
@@ -217,7 +218,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             # we need to force the reading of the whole content stream - some errors might be hidden in the generator
             self.assertIsInstance(list(content), list)
         else:
-            self.assertIsInstance(response, HttpResponse)
+            self.assertIsInstance(response, (HttpResponse, FileResponse))
         return content
 
     def assertCsvFileResponse(
@@ -308,11 +309,11 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         has_problems: bool,
         check_auth_header: bool = False,
         exception_contains_string: str = None,
+        exception_contains_code: str = None,
     ):
         """Make sure that a APIImport has been correctly generated"""
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
-        assert last_api_import is not None
         self.assertIsNotNone(last_api_import)
         self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, request_body)
@@ -326,8 +327,10 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
 
         if has_problems is False:
             self.assertEqual(last_api_import.exception, "")
-        elif exception_contains_string is not None:
+        if exception_contains_string is not None:
             self.assertTrue(exception_contains_string in last_api_import.exception)
+        if exception_contains_code is not None:
+            self.assertTrue(exception_contains_code in last_api_import.exception)
 
     def assertValidProjectData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)

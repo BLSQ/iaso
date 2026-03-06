@@ -1,6 +1,6 @@
+import * as Sentry from '@sentry/browser';
 import moment from 'moment';
 
-import * as Sentry from '@sentry/browser';
 import { PostArg } from '../types/general';
 import { Nullable, Optional } from '../types/utils';
 import { FETCHING_ABORTED } from './constants';
@@ -53,8 +53,9 @@ export const iasoFetch = async (
 ): Promise<Response> => {
     let response;
     const url =
-        typeof resource === 'string' ? resource : resource.url ?? resource;
+        typeof resource === 'string' ? resource : (resource.url ?? resource);
     const method = init?.method ?? 'GET';
+    console.log('API', init);
     try {
         response = await fetch(resource, {
             ...init,

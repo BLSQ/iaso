@@ -17,6 +17,8 @@ const POLIO_COUNTRY_PLAN_READ_ONLY_PERMISSION =
 const POLIO_COUNTRY_PLAN_NON_ADMIN_PERMISSION =
     'iaso_polio_country_plan_non_admin';
 const POLIO_COUNTRY_PLAN_ADMIN_PERMISSION = 'iaso_polio_country_plan_admin';
+const POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION =
+    'iaso_polio_perf_threshold_write';
 const NOTIFICATION = 'iaso_polio_notifications';
 const CHRONOGRAM = 'iaso_polio_chronogram';
 const CHRONOGRAM_RESTRICTED_WRITE = 'iaso_polio_chronogram_restricted_write';
@@ -45,4 +47,5 @@ export {
     STOCK_EARMARKS_NONADMIN,
     STOCK_EARMARKS_ADMIN,
     STOCK_EARMARKS_READ_ONLY,
+    POLIO_PERFORMANCE_THRESHOLD_WRITE_PERMISSION,
 };

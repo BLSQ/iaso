@@ -48,6 +48,10 @@ from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 
+REGULAR = "regular"
+PREVENTIVE = "is_preventive"
+PLANNED = "is_planned"
+ON_HOLD = "on_hold"
 DOSES_PER_VIAL_CONFIG_SLUG = "vaccine_doses_per_vial"
 
 VIRUSES = [
@@ -1672,6 +1676,7 @@ class IncidentReport(ModelWithFile):
         PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("remove from Physical Inventory")
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
+        MISSING_DROPPERS = "missing_droppers", _("Missing droppers")
 
     file = models.FileField(
         null=True, blank=True, storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/"
@@ -2481,6 +2486,7 @@ class VaccineStockCalculator:
                 report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.MISSING_DROPPERS
             ):
                 base_result = {
                     "date": report.date_of_incident_report,
@@ -2649,6 +2655,7 @@ class VaccineStockCalculator:
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.MISSING_DROPPERS
             ):
                 base_result = {
                     "date": report.date_of_incident_report,

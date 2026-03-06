@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState, useMemo, useContext } from 'react';
 import { MapContainer } from 'react-leaflet';
 
+import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { CustomTileLayer } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
 import { Tile } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
@@ -24,7 +25,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
     side,
     currentUrl,
 }) => {
-    const { bounds, setBounds } = useContext(LqasAfroOverviewContext);
+    const { bounds } = useContext(LqasAfroOverviewContext);
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const defaultCenter = useMemo(
         () =>
@@ -52,12 +53,12 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
             style={{
                 height: '65vh',
             }}
-            // @ts-ignore
             center={defaultCenter}
-            zoom={defaultZoom}
+            zoom={Number(defaultZoom)}
             zoomControl={false}
             scrollWheelZoom={false}
         >
+            <CloseTooltipOnMoveStart />
             <LqasAfroMapLegend displayedShape={displayedShape} />
             <CustomTileLayer
                 currentTile={currentTile}

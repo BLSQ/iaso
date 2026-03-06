@@ -10,6 +10,26 @@ class MetricType(models.Model):
         LINEAR = "linear", _("Linear")
         ORDINAL = "ordinal", _("Ordinal")
 
+    class MetricTypeOrigin(models.TextChoices):
+        OPENHEXA = "openhexa", _("OpenHexa")
+        CUSTOM = "custom", _("Custom")
+        OTHER = "other", _("Other")
+
+    LEGEND_CONFIG_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "domain": {
+                "type": "array",
+                "items": {"type": ["number", "string"]},
+            },
+            "range": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        "required": ["domain", "range"],
+    }
+
     class Meta:
         ordering = ["id"]  # force ordering in order of creation (for demo)
         unique_together = [
@@ -33,6 +53,13 @@ class MetricType(models.Model):
     legend_config = models.JSONField(blank=True, default=dict)
     # This is meant to flag metric types that are used for system purposes (like population)
     is_utility = models.BooleanField(default=False)
+    # Define if it was from OpenHexa, create from the interface or other method
+    origin = models.CharField(
+        max_length=50,
+        choices=MetricTypeOrigin.choices,
+        default=MetricTypeOrigin.OPENHEXA,
+        blank=False,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -45,7 +72,7 @@ class MetricValue(models.Model):
     class Meta:
         unique_together = [["metric_type", "org_unit", "year"]]
 
-    metric_type = models.ForeignKey(MetricType, on_delete=models.PROTECT)
+    metric_type = models.ForeignKey(MetricType, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, null=True, blank=True, on_delete=models.PROTECT)
     year = models.IntegerField(null=True, blank=True)
     value = models.FloatField(null=True, blank=True)

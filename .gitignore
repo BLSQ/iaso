@@ -156,12 +156,6 @@ docker/enketo/start.sh
 temp.json
 *.mp4
 
-cypress/screenshots/
-cypress/videos/
-**/cypress/screenshots/
-**/cypress/videos/
-**/cypress/integration/1-getting-started
-**/cypress/integration/2-advanced-examples
 
 mockLQASData.json
 mockImData.json
@@ -208,3 +202,12 @@ iaso_3_9_18
 /temp
 iaso-enketo/
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# eslint
+.eslintcache

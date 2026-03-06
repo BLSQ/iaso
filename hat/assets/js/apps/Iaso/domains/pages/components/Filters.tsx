@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { UserRolesSelect } from 'Iaso/components/filters/UserRolesSelect';
 import InputComponent from '../../../components/forms/InputComponent';
 import { SearchButton } from '../../../components/SearchButton';
 import { useFilterState } from '../../../hooks/useFilterState';
@@ -12,6 +13,9 @@ type Params = {
     page: string;
     pageSize: string;
     search?: string;
+    needs_authentication?: string;
+    userId?: string;
+    userRoleIds?: string;
 };
 
 type Props = { params: Params };
@@ -63,7 +67,17 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Box>
             </Grid>
-            <Grid container item xs={12} md={3} justifyContent="flex-end">
+            <Grid item xs={12} sm={6} md={3}>
+                <Box mt={2}>
+                    <UserRolesSelect
+                        keyValue="userRoleIds"
+                        label={MESSAGES.userRoles}
+                        filterUserRoles={filters.userRoleIds}
+                        handleChange={handleChange}
+                    />
+                </Box>
+            </Grid>
+            <Grid container item xs={12} justifyContent="flex-end">
                 <Box mt={2}>
                     <SearchButton
                         onSearch={handleSearch}

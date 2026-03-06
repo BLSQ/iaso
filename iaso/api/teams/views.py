@@ -57,7 +57,11 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return self.queryset.none()
-        return self.queryset.filter_for_user(user).select_related("project").prefetch_related("users", "sub_teams")
+        return (
+            self.queryset.filter_for_user(user)
+            .select_related("project")
+            .prefetch_related("users", "users__iaso_profile", "sub_teams")
+        )
 
     @action(
         detail=False,

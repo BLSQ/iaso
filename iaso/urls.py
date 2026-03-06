@@ -29,6 +29,7 @@ from .api.colors import colors_list
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
+from .api.custom_translations import CustomTranslationsViewSet
 from .api.data_source_versions_synchronization.views import DataSourceVersionsSynchronizationViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
@@ -65,7 +66,12 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
-from .api.microplanning.views import AssignmentViewSet, PlanningSamplingResultViewSet, PlanningViewSet
+from .api.microplanning.views import (
+    AssignmentViewSet,
+    PlanningOrgunitsViewSet,
+    PlanningSamplingResultViewSet,
+    PlanningViewSet,
+)
 from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
@@ -164,6 +170,7 @@ router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesp
 router.register(r"datasources/sync", DataSourceVersionsSynchronizationViewSet, basename="datasources_synchronization")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
+router.register(r"custom_translations", CustomTranslationsViewSet, basename="custom_translations")
 router.register(r"apitoken", APITokenViewSet, basename="apitoken")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")
@@ -211,6 +218,7 @@ router.register(r"teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
+router.register(r"microplanning/orgunits", PlanningOrgunitsViewSet, basename="planning-orgunits")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")

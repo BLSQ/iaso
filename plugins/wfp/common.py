@@ -1,15 +1,31 @@
 import json
 import logging
+import traceback
 
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
 
-from dateutil.relativedelta import *
+import sentry_sdk
+
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, F, IntegerField, Q, Sum, Value, When
-from django.db.models.functions import Concat, Extract
+from django.db.models import (
+    Case,
+    CharField,
+    DateField,
+    F,
+    FloatField,
+    IntegerField,
+    Q,
+    Sum,
+    Value,
+    When,
+)
+from django.db.models.expressions import Func
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast, Concat, Extract, Substr
 
 from iaso.models import *
 from iaso.models.base import Instance
@@ -22,12 +38,13 @@ logger = logging.getLogger(__name__)
 
 
 class ETL:
-    def __init__(self, types=None):
-        self.types = types
+    def __init__(self, entity_type=None):
+        self.entity_type = entity_type
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
         MonthlyStatistics.objects.all().delete()
+        ScreeningData.objects.all().delete()
 
         print("EXISTING BENEFICIARY DELETED", beneficiary[1]["wfp.Beneficiary"])
         print("EXISTING STEPS DELETED", beneficiary[1]["wfp.Step"])
@@ -35,30 +52,35 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.prefetch_related("account").filter(code__in=self.types).first()
+        entity_type = EntityType.objects.select_related("account").filter(code=self.entity_type).first()
         account = entity_type.account
         return account
 
-    def get_updated_entity_ids(self, updated_at=None):
-        entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+    def get_updated_data(self, updated_at=None):
+        entities = Instance.objects.filter(entity__entity_type__code=self.entity_type)
         if updated_at is not None:
             entities = entities.filter(updated_at__gte=updated_at)
-        entities = entities.values("entity_id").distinct()
-        beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
-        return list(set(beneficiary_ids))
+        return entities
+
+    def get_org_unit_ids_with_updated_data(self, updated_at=None):
+        entities = self.get_updated_data(updated_at)
+        return entities.distinct().values_list("org_unit_id", flat=True)
+
+    def get_updated_entity_ids(self, updated_at=None):
+        entities = self.get_updated_data(updated_at)
+        if updated_at is not None:
+            entities = entities.filter(updated_at__gte=updated_at)
+        return entities.distinct().values_list("entity_id", flat=True)
 
     def retrieve_entities(self, entity_ids):
-        steps_id = ETL().steps_to_exclude()
         beneficiaries = (
-            Instance.objects.filter(entity__entity_type__code__in=self.types)
+            Instance.objects.filter(entity__entity_type__code=self.entity_type)
             .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
-            .exclude(id__in=steps_id)
-            .select_related("entity")
-            .prefetch_related("entity", "form", "org_unit")
+            .prefetch_related("entity_id", "form__form_id", "org_unit__id")
             .values(
                 "id",
                 "created_at",
@@ -72,34 +94,13 @@ class ETL:
                 "entity__deleted_at",
                 "source_created_at",
             )
-            .order_by(
-                "entity_id",
-                "source_created_at",
-            )
+            .order_by("entity_id", "source_created_at", "created_at", "json__visit_date", "json___visit_date")
         )
         return Paginator(beneficiaries, 5000)
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
         return list(map(lambda x: x["entity_id"], existing_beneficiaries))
-
-    def instances_to_exclude(self):
-        journey = Journey.objects.values("instance_id").distinct()
-        return list(map(lambda x: x["instance_id"], journey))
-
-    def visits_to_exclude(self):
-        instances_id = self.instances_to_exclude()
-        visits = Visit.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
-        visits_id = list(map(lambda x: x["instance_id"], visits))
-        [instances_id.append(visit_id) for visit_id in visits_id if visit_id not in instances_id]
-        return instances_id
-
-    def steps_to_exclude(self):
-        instances_id = self.visits_to_exclude()
-        steps = Step.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
-        steps_id = list(map(lambda x: x["instance_id"], steps))
-        [instances_id.append(step_id) for step_id in steps_id if step_id not in instances_id]
-        return instances_id
 
     def program_mapper(self, visit):
         program = None
@@ -511,7 +512,7 @@ class ETL:
             quantity = step.get("quantity", 0)
             ration_type = ""
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
-                quantity = step.get("_total_number_of_sachets", 0)
+                quantity = step.get("_total_number_of_sachets")
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
 
@@ -570,9 +571,21 @@ class ETL:
             ):
                 quantity = 0
                 ration_size = step.get("ration_size", step.get("ration_limit"))
-            else:
-                if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
+            elif step.get("ration_type") in ["rusf", "rutf"]:
+                if (
+                    step.get("_total_number_of_sachets") == ""
+                    or step.get("_total_number_of_sachets") == "."
+                    or (
+                        step.get("_total_number_of_sachets_rutf") is not None
+                        and (
+                            step.get("_total_number_of_sachets_rutf") == ""
+                            or step.get("_total_number_of_sachets_rutf") == "."
+                        )
+                    )
+                ):
                     quantity = 0
+                else:
+                    quantity = step.get("_total_number_of_sachets", step.get("_total_number_of_sachets_rutf", quantity))
             assistance = {
                 "type": step.get("ration_type", step.get("ration")),
                 "quantity": quantity,
@@ -594,9 +607,9 @@ class ETL:
                 visit = visits[index]
                 for sub_step in step:
                     current_step = None
-                    given_assistance = ETL().map_assistance_step(sub_step, [])
+                    given_assistance = self.map_assistance_step(sub_step, [])
                     for assistance in given_assistance:
-                        current_step = ETL().assistance_to_step(
+                        current_step = self.assistance_to_step(
                             assistance,
                             visit,
                             sub_step["instance_id"],
@@ -621,7 +634,7 @@ class ETL:
                 whz_color = "Green"
             visit.whz_color = whz_color
             visit.journey = journey
-            visit.org_unit_id = current_visit["org_unit_id"]
+            visit.org_unit_id = current_visit.get("org_unit_id", None)
             visit.instance_id = current_visit.get("instance_id", None)
             saved_visits.append(visit)
             visit_number += 1
@@ -698,7 +711,7 @@ class ETL:
                 if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
-                current_journey = ETL().journey_Formatter(
+                current_journey = self.journey_Formatter(
                     visit,
                     admission_form,
                     anthropometric_visit_forms,
@@ -773,8 +786,7 @@ class ETL:
 
     def save_monthly_journey(self, monthly_journey, account):
         monthly_Statistic = MonthlyStatistics()
-        org_unit_id = monthly_journey.get("org_unit")
-        monthly_Statistic.org_unit_id = org_unit_id
+        monthly_Statistic.org_unit_id = monthly_journey.get("org_unit")
         monthly_Statistic.gender = monthly_journey.get("gender")
         monthly_Statistic.month = monthly_journey.get("month")
         monthly_Statistic.year = monthly_journey.get("year")
@@ -807,7 +819,7 @@ class ETL:
 
         return monthly_Statistic
 
-    def journey_with_visit_and_steps_per_visit(self, account, programme):
+    def journey_with_visit_and_steps_per_visit(self, account, programme, org_unit_with_updated_data=None):
         aggregated_journeys = []
         journeys = (
             Step.objects.select_related(
@@ -820,7 +832,14 @@ class ETL:
                 visit__journey__programme_type=programme,
                 visit__journey__beneficiary__account=account,
             )
-            .values(
+            .exclude(visit__date__isnull=True)
+        )
+
+        if org_unit_with_updated_data is not None and len(org_unit_with_updated_data) > 0:
+            journeys = journeys.filter(visit__org_unit__id__in=org_unit_with_updated_data)
+
+        journeys = (
+            journeys.values(
                 "visit__journey__admission_type",
                 "assistance_type",
                 "instance_id",
@@ -973,13 +992,15 @@ class ETL:
             return f"{year}0{month}"
         return f"{year}{month}"
 
-    def aggregating_data_to_push_to_dhis2(self, account):
+    def aggregating_data_to_push_to_dhis2(self, account, org_unit_ids=None):
         monthlyStatistics = (
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
             .values()
             .filter(account=account)
-            .filter(org_unit_id__in=[758, 622, 43])
+            .filter(org_unit__source_ref__isnull=False)
         )
+        if org_unit_ids is not None and len(org_unit_ids) > 0:
+            monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
         # Reading the dhis2 datalement mapper json file
@@ -1004,7 +1025,7 @@ class ETL:
         dataValues = []
         for program_type, journey_by_program in journeys:
             dataElement = dataElements.get(program_type)
-            journey = None
+            journey = []
             categories = []
             sub_categories = []
             if program_type == "U5":
@@ -1065,3 +1086,118 @@ class ETL:
             }.values()
         )
         return dataValues
+
+    def get_screening_data(self, form_ids, account, updated_at):
+        instances = Instance.objects.filter(project__account=account, json__isnull=False, form__form_id__in=form_ids)
+        if updated_at:
+            instances = instances.filter(updated_at__gte=updated_at)
+        instances = (
+            instances.exclude(deleted=True)
+            .annotate(
+                week_monday=Cast(
+                    Func(
+                        Concat(
+                            Cast(Substr("period", 1, 4), CharField()),
+                            Value(" "),
+                            Cast(Substr("period", 6), CharField()),
+                            Value(" 1"),
+                        ),
+                        Value("IYYY IW ID"),
+                        function="TO_DATE",
+                    ),
+                    output_field=DateField(),
+                ),
+                year=Cast(Substr("period", 1, 4), IntegerField()),
+                week=Cast(Substr("period", 6), IntegerField()),
+                date=Concat(
+                    Extract("created_at", "year"),
+                    Value("-"),
+                    Extract("created_at", "month"),
+                    Value("-"),
+                    Extract("created_at", "day"),
+                    output_field=CharField(),
+                ),
+                json_u5_male_green=Cast(KeyTextTransform("u5_male_green", "json"), output_field=FloatField()),
+                json_u5_female_green=Cast(KeyTextTransform("u5_female_green", "json"), output_field=FloatField()),
+                json_u5_male_yellow=Cast(KeyTextTransform("u5_male_yellow", "json"), output_field=FloatField()),
+                json_u5_female_yellow=Cast(KeyTextTransform("u5_female_yellow", "json"), output_field=FloatField()),
+                json_u5_male_red=Cast(KeyTextTransform("u5_male_red", "json"), output_field=FloatField()),
+                json_u5_female_red=Cast(KeyTextTransform("u5_female_red", "json"), output_field=FloatField()),
+                json_pregnant_w_muac_gt_23=Cast(
+                    KeyTextTransform("pregnant_w_muac_gt_23", "json"), output_field=FloatField()
+                ),
+                json_pregnant_w_muac_lte_23=Cast(
+                    KeyTextTransform("pregnant_w_muac_lte_23", "json"), output_field=FloatField()
+                ),
+                json_lactating_w_muac_gt_23=Cast(
+                    KeyTextTransform("lactating_w_muac_gt_23", "json"), output_field=FloatField()
+                ),
+                json_lactating_w_muac_lte_23=Cast(
+                    KeyTextTransform("lactating_w_muac_lte_23", "json"), output_field=FloatField()
+                ),
+            )
+            .annotate(
+                yearMonth=Concat(
+                    Extract("week_monday", "year"),
+                    Func(
+                        Cast(Extract("week_monday", "month"), CharField()),
+                        Value(2),
+                        Value("0"),
+                        function="LPAD",
+                    ),
+                    output_field=CharField(),
+                ),
+            )
+            .prefetch_related("org_unit__parent")
+            .values("yearMonth", "org_unit__parent")
+            .annotate(
+                org_unit=F("org_unit__parent"),
+                year=Cast(Substr("yearMonth", 1, 4), IntegerField()),
+                month=Cast(Substr("yearMonth", 5, 2), IntegerField()),
+                new_period=F("yearMonth"),
+                u5_male_green=Sum("json_u5_male_green"),
+                u5_female_green=Sum("json_u5_female_green"),
+                u5_male_yellow=Sum("json_u5_male_yellow"),
+                u5_female_yellow=Sum("json_u5_female_yellow"),
+                u5_male_red=Sum("json_u5_male_red"),
+                u5_female_red=Sum("json_u5_female_red"),
+                pregnant_w_muac_gt_23=Sum("json_pregnant_w_muac_gt_23"),
+                pregnant_w_muac_lte_23=Sum("json_pregnant_w_muac_lte_23"),
+                lactating_w_muac_gt_23=Sum("json_lactating_w_muac_gt_23"),
+                lactating_w_muac_lte_23=Sum("json_lactating_w_muac_lte_23"),
+            )
+            .order_by("new_period", "org_unit")
+        )
+        return Paginator(instances, 15000)
+
+    def missing_entities_in_analytics_tables(self, account, entity_type, user):
+        entities = (
+            Entity.objects.filter_for_user(user)
+            .filter(
+                account_id=account, entity_type_id=entity_type, deleted_at__isnull=True, beneficiary__id__isnull=True
+            )
+            .annotate(beneficiary_id=F("beneficiary__id"), entity_id=F("id"), profile=F("attributes__json"))
+            .values("entity_id", "uuid", "deleted_at", "beneficiary_id", "profile")
+        )
+        return entities
+
+    def save_analytics_data(
+        self, all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task: Task
+    ):
+        task.save()
+        try:
+            Beneficiary.objects.bulk_create(all_beneficiaries)
+            Journey.objects.bulk_create(all_journeys)
+            Visit.objects.bulk_create(all_visits)
+            Step.objects.bulk_create(all_steps)
+            status = "SUCCESS"
+        except Exception as err:
+            sentry_sdk.capture_exception(err)
+            task.result = {
+                "message": str(err),
+                "error": traceback.format_exc(),
+            }
+            status = "ERRORED"
+            TaskLog.objects.create(task=task, message=f"{err} for {account} on beneficiary {current_entity_id}")
+        task.status = status
+        task.save()

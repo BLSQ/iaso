@@ -40,11 +40,11 @@ class MobileOrgUnitAPITestCase(APITestCase):
             account=account,
             needs_authentication=True,
         )
-        project2 = Project.objects.create(
+        cls.project2 = project2 = Project.objects.create(
             name="Nameks",
             app_id="dragon.ball.nameks",
             account=account,
-            needs_authentication=True,
+            needs_authentication=False,
         )
         cls.user = user = cls.create_user_with_profile(
             username="user", account=account, permissions=[CORE_ORG_UNITS_PERMISSION]
@@ -527,3 +527,97 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},-1,{self.goten.id}"})
         self.assertEqual(response.status_code, 404)
+
+    def test_create_org_unit_not_authenticated_project_requires_authentication(self):
+        count_before = OrgUnit.objects.count()
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+            data=[
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                }
+            ],
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(OrgUnit.objects.count(), count_before)
+        self.assertFalse(OrgUnit.objects.filter(name="My OrgUnit").exists())
+
+    def test_create_org_unit_authenticated_project_requires_authentication(self):
+        count_before = OrgUnit.objects.count()
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+            data=[
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                }
+            ],
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(OrgUnit.objects.count(), count_before + 1)
+        self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
+
+    def test_create_org_unit_not_authenticated_project_doesnt_require_authentication(self):
+        count_before = OrgUnit.objects.count()
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project2.app_id}",
+            data=[
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                }
+            ],
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(OrgUnit.objects.count(), count_before + 1)
+        self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
+
+    def test_safe_api_import(self):
+        self.client.force_authenticate(self.user)
+        uuid = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f3"
+        name = "Hopital Sous Fifre"
+        unit_body = [
+            {
+                "id": uuid,
+                "latitude": 0,
+                "created_at": 1565194077699,
+                "updated_at": 1565194077800,
+                "longitude": 0,
+                "accuracy": 0,
+                "altitude": 0,
+                "time": 0,
+                "name": name,
+            }
+        ]
+        # No app id - An APIImport record with has_problem set to True should be created
+        response = self.client.post("/api/mobile/orgunits/", data=unit_body, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
+        )
+
+        # Wrong app id - An APIImport record with has_problem set to True should be created
+        response = self.client.post("/api/mobile/orgunits/?app_id=1234", data=unit_body, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+            exception_contains_code="404",
+        )

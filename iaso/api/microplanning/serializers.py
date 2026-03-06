@@ -126,6 +126,8 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
 
 
 class PlanningReadSerializer(serializers.ModelSerializer):
+    assignments_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Planning
         fields = [
@@ -138,12 +140,16 @@ class PlanningReadSerializer(serializers.ModelSerializer):
             "ended_at",
             "pipeline_uuids",
             "selected_sampling_result",
+            "assignments_count",
             "team_details",
             "org_unit_details",
             "project_details",
             "target_org_unit_type_details",
         ]
         read_only_fields = fields
+
+    def get_assignments_count(self, obj):
+        return getattr(obj, "assignments_count", 0)
 
     selected_sampling_result = NestedPlanningSamplingResultSerializer(read_only=True)
     team_details = NestedTeamSerializer(source="team", read_only=True)
@@ -217,6 +223,17 @@ class PlanningSamplingResultListSerializer(serializers.Serializer):
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
 
 
+class PlanningOrgUnitListSerializer(serializers.Serializer):
+    planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+
+
 class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
     planning_id = serializers.PrimaryKeyRelatedField(
         queryset=Planning.objects.none(),
@@ -273,7 +290,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         users_in_account = User.objects.filter(iaso_profile__account=account)
 
         self.fields["user"].queryset = users_in_account
-        self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["planning"].queryset = Planning.objects.filter_for_user(user).select_related("org_unit")
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
 
@@ -300,7 +317,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
         org_units_available: OrgUnitQuerySet = self.fields["org_unit"].queryset
         org_units_available = org_units_available.descendants(planning.org_unit)
-        if org_unit not in org_units_available:
+        if not org_units_available.filter(pk=org_unit.pk).exists():
             raise serializers.ValidationError({"org_unit": "OrgUnit is not in planning scope"})
         # TODO More complex check possible:
         # - Team or user should be under the root planning team
@@ -352,18 +369,28 @@ class BulkAssignmentSerializer(serializers.Serializer):
 
 
 class BulkDeleteAssignmentSerializer(serializers.Serializer):
-    """Bulk soft delete all assignments for a specific planning.
+    """Bulk soft delete all assignments for a specific user and/or planning.
 
     Marks all assignments linked to the specified planning as deleted using the deleted_at field.
     Audit the modification.
     """
 
     planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.none(), write_only=True, required=False, allow_null=True
+    )
+    team = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.none(), write_only=True, required=False, allow_null=True
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
         self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["user"].queryset = User.objects.select_related("iaso_profile__account").filter(
+            iaso_profile__account__id=user.iaso_profile.account.id
+        )
+        self.fields["team"].queryset = Team.objects.filter_for_user(user)
 
 
 # noinspection PyMethodMayBeStatic
@@ -408,3 +435,35 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
             # TODO: investigate type error on next line
             r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
         return r
+
+
+class PlanningOrgUnitSerializer(serializers.ModelSerializer):
+    geo_json = serializers.SerializerMethodField()
+    has_geo_json = serializers.SerializerMethodField()
+    latitude = serializers.FloatField(source="location.y", read_only=True)
+    longitude = serializers.FloatField(source="location.x", read_only=True)
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude", "org_unit_type_id"]
+        read_only_fields = ["id", "name", "geo_json", "has_geo_json", "latitude", "longitude", "org_unit_type_id"]
+
+    def get_geo_json(self, org_unit: OrgUnit):
+        if not self.get_has_geo_json(org_unit):
+            return None
+
+        # Fakes the format of geojson_queryset() so that data can be passed to leaflet
+        return {
+            "type": "FeatureCollection",
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            "features": [
+                {
+                    "type": "Feature",
+                    "id": org_unit.id,
+                    "geometry": org_unit.geo_json,
+                }
+            ],
+        }
+
+    def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
+        return hasattr(org_unit, "geo_json") and org_unit.geo_json is not None

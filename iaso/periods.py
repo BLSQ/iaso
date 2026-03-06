@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import List, Optional, Tuple
 
 
@@ -9,6 +9,7 @@ PERIOD_TYPE_QUARTER_NOV = "QUARTER_NOV"
 PERIOD_TYPE_SIX_MONTH = "SIX_MONTH"
 PERIOD_TYPE_YEAR = "YEAR"
 PERIOD_TYPE_FINANCIAL_NOV = "FINANCIAL_NOV"
+PERIOD_TYPE_WEEK = "WEEK"
 
 
 def detect(dhis2_period: str):
@@ -26,6 +27,9 @@ def detect(dhis2_period: str):
 
     if "S" in dhis2_period:  # 2018S1
         return PERIOD_TYPE_SIX_MONTH
+
+    if "W" in dhis2_period:  # 2023W12
+        return PERIOD_TYPE_WEEK
 
     if len(dhis2_period) == 6:  # 201812
         return PERIOD_TYPE_MONTH
@@ -56,6 +60,8 @@ class Period:
             return FinancialNovPeriod(period_string)
         if period_type == PERIOD_TYPE_DAY:
             return DayPeriod(period_string)
+        if period_type == PERIOD_TYPE_WEEK:
+            return WeekPeriod(period_string)
         raise ValueError(f"unsupported period type: {period_type}")
 
     @staticmethod
@@ -369,3 +375,40 @@ class DayPeriod(Period):
     def start_date(self):
         year, month, day = int(self.value[:4]), int(self.value[4:6]), int(self.value[6:])
         return date(year=year, month=month, day=day)
+
+
+class WeekPeriod(Period):
+    LOWER_BOUND = "2000W01"
+    HIGHER_BOUND = "2030W53"
+
+    @staticmethod
+    def from_parts(year, week):
+        return WeekPeriod(f"{year}W{week}")
+
+    @property
+    def parts(self):
+        year, week = self.value.split("W")
+        week = int(week)
+        year = int(year)
+        return year, week
+
+    def next_period(self):
+        # Rule: Use fromisocalendar to find the next Monday
+        # This automatically handles 52 vs 53 week years
+        year, week = self.parts
+        # Create a date for the Monday of current week, then add 7 days
+        current_monday = date.fromisocalendar(year, week, 1)
+        next_monday = current_monday + timedelta(weeks=1)
+
+        # Extract the new ISO year and week
+        n_year, n_week, _ = next_monday.isocalendar()
+        return WeekPeriod.from_parts(n_year, n_week)
+
+    def gen_sub_periods(self):
+        return []
+
+    def start_date(self):
+        # Simplified: date.fromisocalendar is the standard way to get
+        # the Monday (day 1) of an ISO year and week.
+        year, week = self.parts
+        return date.fromisocalendar(year, week, 1)

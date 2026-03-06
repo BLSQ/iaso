@@ -1,0 +1,20 @@
+meta {
+  name: Get form versions
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{HOST}}/api/formversions/?form_id={{form_id}}&fields=descriptor
+  body: json
+  auth: inherit
+}
+
+params:query {
+  form_id: {{form_id}}
+  fields: descriptor
+}
+
+vars:pre-request {
+  form_id: 
+}

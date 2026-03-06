@@ -48,6 +48,8 @@ class StockKeepingUnitListFilter(django_filters.rest_framework.FilterSet):
 
 class StockItemListFilter(django_filters.rest_framework.FilterSet):
     skus = django_filters.CharFilter(method="filter_skus", label=_("SKUs - SKU IDs (comma-separated)"))
+    sku_id = django_filters.NumberFilter(field_name="sku_id", label=_("SKU ID"))
+    org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
 
     class Meta:
         model = StockItem
@@ -61,6 +63,9 @@ class StockItemListFilter(django_filters.rest_framework.FilterSet):
 
 class StockLegderItemListFilter(django_filters.rest_framework.FilterSet):
     skus = django_filters.CharFilter(method="filter_skus", label=_("SKUs - SKU IDs (comma-separated)"))
+    submission_id = django_filters.NumberFilter(field_name="submission_id", label=_("Submission ID"))
+    org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
+    sku_id = django_filters.NumberFilter(field_name="sku_id", label=_("SKU ID"))
     question = django_filters.CharFilter(lookup_expr="icontains")
     created_at_after = django_filters.DateFilter(
         field_name="created_at", lookup_expr="gte", input_formats=settings.API_DATE_INPUT_FORMATS
@@ -83,6 +88,9 @@ class StockLegderItemListFilter(django_filters.rest_framework.FilterSet):
 
 class StockItemRuleListFilter(django_filters.rest_framework.FilterSet):
     skus = django_filters.CharFilter(method="filter_skus", label=_("SKUs - SKU IDs (comma-separated)"))
+    form_id = django_filters.NumberFilter(field_name="form_id", label=_("Form ID"))
+    version_id = django_filters.NumberFilter(field_name="version_id", label=_("Form Version ID"))
+    sku_id = django_filters.NumberFilter(field_name="sku_id", label=_("SKU ID"))
 
     class Meta:
         model = StockItemRule

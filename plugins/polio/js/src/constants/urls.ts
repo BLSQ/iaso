@@ -98,6 +98,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...campaignParams,
             'orgUnitGroups',
             'periodType',
+            'showIntegrated',
         ],
     },
     vaccineRepository: {

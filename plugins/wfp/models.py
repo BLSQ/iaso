@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models import Account, OrgUnit
+from iaso.models import Account, Entity, OrgUnit
 from plugins.wfp.models import *
 
 
@@ -66,7 +66,7 @@ RATION_SIZE = [
 class Beneficiary(models.Model):
     birth_date = models.DateField()
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True, db_index=True)
-    entity_id = models.IntegerField(null=True, blank=True, db_index=True)
+    entity = models.ForeignKey(Entity, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     guidelines = models.CharField(max_length=8, null=True, blank=True)
 
@@ -91,7 +91,7 @@ class Journey(models.Model):
         db_index=True,
     )
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True, db_index=True)
-    initial_weight = models.FloatField(default=0)
+    initial_weight = models.FloatField(null=True, blank=True)
     discharge_weight = models.FloatField(null=True, blank=True)
     weight_gain = models.FloatField(default=0)
     weight_loss = models.FloatField(default=0)
@@ -167,3 +167,22 @@ class Dhis2SyncResults(models.Model):
     response = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class ScreeningData(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True, db_index=True)
+    date = models.DateTimeField(null=True, blank=True, db_index=True)
+    month = models.CharField(max_length=8, null=True, blank=True)
+    year = models.CharField(max_length=6, null=True, blank=True)
+    period = models.CharField(max_length=8, null=True, blank=True)
+    u5_male_green = models.FloatField(null=True)
+    u5_female_green = models.FloatField(null=True)
+    u5_male_yellow = models.FloatField(null=True)
+    u5_female_yellow = models.FloatField(null=True)
+    u5_male_red = models.FloatField(null=True)
+    u5_female_red = models.FloatField(null=True)
+    pregnant_w_muac_gt_23 = models.FloatField(null=True)
+    pregnant_w_muac_lte_23 = models.FloatField(null=True)
+    lactating_w_muac_gt_23 = models.FloatField(null=True)
+    lactating_w_muac_lte_23 = models.FloatField(null=True)

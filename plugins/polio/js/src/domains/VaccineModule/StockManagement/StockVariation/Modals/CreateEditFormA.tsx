@@ -14,6 +14,8 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -26,12 +28,9 @@ import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import MESSAGES from '../../messages';
-import { useFormAValidation } from './validation';
-import InputComponent from 'Iaso/components/forms/InputComponent';
-import { DropdownOptions } from 'Iaso/types/utils';
 import { DosesPerVialDropdown } from '../../types';
 import { useAvailablePresentations } from './dropdownOptions';
-import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
+import { useFormAValidation } from './validation';
 
 type Props = {
     formA?: any;

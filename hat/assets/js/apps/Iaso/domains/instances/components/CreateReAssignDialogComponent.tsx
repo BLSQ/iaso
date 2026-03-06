@@ -14,7 +14,7 @@ import { isValidPeriod } from '../../periods/utils';
 import { ReassignInstancePayload } from '../hooks/useReassignInstance';
 import MESSAGES from '../messages';
 
-type Props = {
+type CreateReAssignDialogProps = {
     titleMessage: any;
     confirmMessage: any;
     cancelMessage: any;
@@ -39,7 +39,9 @@ type Props = {
     closeDialog: () => void;
 };
 
-export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
+export const CreateReAssignDialogComponent: FunctionComponent<
+    CreateReAssignDialogProps
+> = ({
     titleMessage,
     confirmMessage = MESSAGES.ok,
     cancelMessage = MESSAGES.cancel,
@@ -107,7 +109,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
             open={isOpen}
             confirmMessage={confirmMessage}
             cancelMessage={cancelMessage}
-            maxWidth="xs"
+            maxWidth="sm"
             allowConfirm={allowConfirm}
             closeDialog={closeDialog}
             onClose={closeDialog}
@@ -164,4 +166,4 @@ export const ReAssignDialog = makeFullModal(
     UpdateIcon,
 );
 
-export { CreateReAssignDialog };
+export { CreateReAssignDialog, CreateReAssignDialogProps };

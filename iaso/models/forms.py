@@ -137,6 +137,7 @@ class Form(SoftDeletableModel):
         (periods.PERIOD_TYPE_SIX_MONTH, _("Six-month")),
         (periods.PERIOD_TYPE_YEAR, _("Year")),
         (periods.PERIOD_TYPE_FINANCIAL_NOV, _("Financial Nov")),
+        (periods.PERIOD_TYPE_WEEK, _("WEEK")),
     )
 
     CHANGE_REQUEST_MODE = (

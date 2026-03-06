@@ -192,7 +192,9 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
-        csv_data = self.assertCsvFileResponse(response, expected_name=self.EXPECTED_FILE_NAME, return_as_str=True)
+        csv_data = self.assertCsvFileResponse(
+            response, expected_name=self.EXPECTED_FILE_NAME, return_as_str=True, streaming=True
+        )
 
         # Prepare values for each variable in the Jinja template
         context_group_ids = {

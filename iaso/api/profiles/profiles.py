@@ -12,12 +12,14 @@ from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpRe
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
 from phonenumbers import NumberParseException
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, serializers, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
@@ -26,11 +28,20 @@ from hat.audit.models import PROFILE_API
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.profiles.email_templates import (
+    CREATE_PASSWORD_HTML_MESSAGE_EN,
+    CREATE_PASSWORD_HTML_MESSAGE_FR,
+    CREATE_PASSWORD_MESSAGE_EN,
+    CREATE_PASSWORD_MESSAGE_FR,
+    EMAIL_SUBJECT_EN,
+    EMAIL_SUBJECT_FR,
+)
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request, search_by_ids_refs
+from iaso.utils.colors import COLOR_FORMAT_ERROR, DEFAULT_COLOR, validate_hex_color
 
 
 PK_ME = "me"
@@ -180,6 +191,16 @@ class ProfileError(ValidationError):
         self.field = field
 
 
+class ProfileColorUpdateSerializer(serializers.Serializer):
+    color = serializers.CharField()
+
+    def validate_color(self, value: str) -> str:
+        try:
+            return validate_hex_color(value)
+        except ValueError:
+            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
+
+
 class ProfilesViewSet(viewsets.ViewSet):
     f"""Profiles API
 
@@ -285,6 +306,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             "user",
             "user_roles",
             "user__tenant_user",
+            "user__teams",
             "org_units",
             "org_units__version",
             "org_units__version__data_source",
@@ -356,9 +378,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
 
         user_who_logs_in = new_user or tenant_main_user
-        if password != "":
-            user_who_logs_in.set_password(password)
-            user_who_logs_in.save()
+
+        user_who_logs_in.save()
 
         user = new_user or tenant_account_user
 
@@ -376,6 +397,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, user.profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, user.profile)
+            color = self.validate_color(request)
         except ProfileError as error:
             # Delete profile if error since we're creating a new user
             user.profile.delete()
@@ -394,6 +416,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
+            color=color,
         )
 
         dhis2_id = request.data.get("dhis2_id", None)
@@ -439,6 +462,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
+            color = self.validate_color(request)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -455,10 +479,32 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
             editable_org_unit_types=editable_org_unit_types,
+            color=color,
         )
 
         audit_logger.log_modification(
             instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
+
+        return Response(profile.as_dict())
+
+    @action(detail=True, methods=["PATCH"])
+    def update_color(self, request, pk=None):
+        """
+        TODO: Remove this action once the profile PATCH is refactored to avoid
+        overwriting other fields when they are not provided.
+        """
+        serializer = ProfileColorUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile = get_object_or_404(self.get_queryset(), id=pk)
+        audit_logger = ProfileAuditLogger()
+        old_data = audit_logger.serialize_instance(profile)
+
+        profile.color = serializer.validated_data["color"]
+        profile.save(update_fields=["color"])
+
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=PROFILE_API
         )
 
         return Response(profile.as_dict())
@@ -499,6 +545,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles,
         user_roles_groups,
         projects,
+        color,
         org_units,
         user_permissions,
         editable_org_unit_types,
@@ -509,7 +556,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         else:
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")
-            user.username = request.data.get("user_name")
+            user_name = request.data.get("user_name")
+            if user_name:
+                user.username = user_name
             user.email = request.data.get("email", "")
             self.update_password(user, request)
 
@@ -526,12 +575,22 @@ class ProfilesViewSet(viewsets.ViewSet):
         if profile.dhis2_id == "":
             profile.dhis2_id = None
 
+        resolved_color = color if color is not None else profile.color or DEFAULT_COLOR
+        profile.color = resolved_color
+
         profile.user_roles.set(user_roles)
         profile.projects.set(projects)
         profile.org_units.set(org_units)
         profile.editable_org_unit_types.set(editable_org_unit_types)
         profile.save()
         return profile
+
+    def validate_color(self, request) -> str:
+        color = request.data.get("color", None)
+        try:
+            return validate_hex_color(color)
+        except ValueError:
+            raise ProfileError(field="color", detail=COLOR_FORMAT_ERROR)
 
     @staticmethod
     def list_export(
@@ -561,6 +620,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                     for item in profile.user_roles.all().order_by("id")
                 ),
                 ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
+                ",".join(item.name for item in profile.user.teams.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
                 ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
@@ -591,8 +651,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")
-        if not username:
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
+        # Skip validation if username not provided or did not change (case-insensitive)
+        if not username or user.username == username:
+            return
 
         existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
         if existing_user:
@@ -732,10 +793,20 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def update_password(user, request):
-        password = request.data.get("password", "")
-        if password != "":
+        password = request.data.get("password")
+        send_email_invitation = request.data.get("send_email_invitation")
+
+        if password:
             user.set_password(password)
             user.save()
+        elif send_email_invitation and user.email:
+            random_password = get_random_string(32)
+            user.set_password(random_password)
+            user.save()
+        else:
+            user.set_unusable_password()
+            user.save()
+
         if password and request.user == user:
             # update session hash if you changed your own password, so you don't get logged out
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
@@ -782,89 +853,12 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def get_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
+        return CREATE_PASSWORD_MESSAGE_FR if language == "fr" else CREATE_PASSWORD_MESSAGE_EN
 
     @staticmethod
     def get_html_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_HTML_MESSAGE_EN
+        return CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else CREATE_PASSWORD_HTML_MESSAGE_EN
 
     @staticmethod
     def get_subject_by_language(self, language="en"):
-        return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
-
-    CREATE_PASSWORD_MESSAGE_EN = """Hello,
-
-You have been invited to access IASO - {protocol}://{domain}.
-
-Username: {userName} 
-
-Please click on the link below to create your password:
-
-{url}
-
-If clicking the link above doesn't work, please copy and paste the URL in a new browser
-window instead.
-
-If you did not request an account on {account_name}, you can ignore this e-mail - no password will be created.
-
-Sincerely,
-The {domain} Team.
-    """
-
-    CREATE_PASSWORD_HTML_MESSAGE_EN = """<p>Hello,<br><br>
-
-You have been invited to access IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
-
-Username: <strong>{{userName}}</strong><br><br>
-
-Please click on the link below to create your password:<br><br>
-
-<a href="{{url}}" target="_blank">{{url}}</a><br><br>
-
-If clicking the link above doesn't work, please copy and paste the URL in a new browser<br>
-window instead.<br><br>
-
-If you did not request an account on {{account_name}}, you can ignore this e-mail - no password will be created.<br><br>
-
-Sincerely,<br>
-The {{domain}} Team.</p>
-    """
-
-    CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
-
-Vous avez été invité à accéder à l'IASO - {protocol}://{domain}.
-
-Nom d'utilisateur: {userName}
-
-Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :
-
-{url}
-
-Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.
-
-Si vous n'avez pas demandé de compte sur {account_name}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
-
-Cordialement,
-L'équipe {domain}.
-    """
-
-    CREATE_PASSWORD_HTML_MESSAGE_FR = """<p>Bonjour,<br><br>
-
-Vous avez été invité à accéder à l'IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
-
-Nom d'utilisateur: <strong>{{userName}}</strong><br><br>
-
-Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :<br><br>
-
-<a href="{{url}}" target="_blank">{{url}}</a><br><br>
-
-Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.<br><br>
-
-Si vous n'avez pas demandé de compte sur {{account_name}}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.<br><br>
-
-Cordialement,<br>
-L'équipe {{domain}}.</p>
-    """
-
-    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {domain}"
-    EMAIL_SUBJECT_EN = "Set up a password for your new account on {domain}"
+        return EMAIL_SUBJECT_FR if language == "fr" else EMAIL_SUBJECT_EN

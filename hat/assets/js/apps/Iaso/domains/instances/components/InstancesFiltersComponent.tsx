@@ -12,12 +12,12 @@ import {
     AsyncSelect,
 } from 'bluesquare-components';
 
+import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
-import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction';
-import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { Popper } from '../../forms/fields/components/Popper';
 import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
 import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace';
@@ -34,7 +34,6 @@ import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPla
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { INSTANCE_STATUSES } from '../constants';
 
-import { useGetForms } from '../hooks';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown';
 import MESSAGES from '../messages';
@@ -90,7 +89,7 @@ const InstancesFiltersComponent = ({
     formDetails,
     tableColumns,
     tab,
-}) => {
+}: Props) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
@@ -181,7 +180,7 @@ const InstancesFiltersComponent = ({
     ]);
 
     const handleFormChange = useCallback(
-        (key, value) => {
+        (key: string, value: any) => {
             // checking only as value can be null or false
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);

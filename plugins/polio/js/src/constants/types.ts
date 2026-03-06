@@ -1,5 +1,5 @@
-import { Pagination } from 'bluesquare-components';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { Pagination } from 'Iaso/types/general';
 import {
     DropdownOptionsWithOriginal,
     Nullable,
@@ -231,6 +231,7 @@ type CalendarRound = {
     started_at: string;
     target_population: Nullable<number>;
     vaccine_names: string;
+    is_planned: boolean;
 };
 
 export type CalendarSubActivity = {
@@ -264,6 +265,8 @@ export type CalendarCampaign = {
     top_level_org_unit_id: number;
     top_level_org_unit_name: string;
     vaccines: string;
+    layout?: 'top' | 'middle' | 'bottom';
+    first_round_started_at: DateAsString;
 };
 
 export type Campaign = {

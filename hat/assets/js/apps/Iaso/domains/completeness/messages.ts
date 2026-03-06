@@ -129,6 +129,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.periodType.six_month',
         defaultMessage: 'Semester',
     },
+    week: {
+        id: 'iaso.label.periodType.week',
+        defaultMessage: 'Week',
+    }
 });
 
 export default MESSAGES;

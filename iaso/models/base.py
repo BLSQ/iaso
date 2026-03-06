@@ -20,9 +20,11 @@ from phonenumbers.phonenumberutil import region_code_for_number
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit
 from iaso.modules import MODULES, IasoModule
+from iaso.utils.colors import DEFAULT_COLOR
 
 from .. import periods
 from ..permissions.base import IasoPermission
+from ..utils.models.color import ColorField
 from .instances import Instance
 from .project import Project
 
@@ -147,7 +149,6 @@ class Account(models.Model):
             "user_manual_path": self.user_manual_path or settings.USER_MANUAL_PATH,
             "forum_path": self.forum_path or settings.FORUM_PATH,
             "analytics_script": self.analytics_script,
-            "custom_translations": self.custom_translations,
         }
 
     def as_small_dict(self):
@@ -162,7 +163,6 @@ class Account(models.Model):
             "forum_path": self.forum_path or settings.FORUM_PATH,
             "analytics_script": self.analytics_script,
             "modules": self.modules,
-            "custom_translations": self.custom_translations,
         }
 
     def __str__(self):
@@ -578,6 +578,7 @@ class Profile(models.Model):
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
     phone_number = PhoneNumberField(blank=True)
+    color = ColorField(blank=True, default=DEFAULT_COLOR)
     # Each user can have restricted write access to OrgUnits, based on their type.
     # By default, empty `editable_org_unit_types` means access to everything.
     editable_org_unit_types = models.ManyToManyField(
@@ -607,9 +608,11 @@ class Profile(models.Model):
 
     def as_dict(self, small=False):
         user_roles = self.user_roles.all().order_by("group__name")
-        user_group_permissions = list(
-            map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
-        )
+        user_group_permissions = [
+            permission.split(".")[1]
+            for permission in self.user.get_group_permissions()
+            if permission.split(".")[1].startswith("iaso_")
+        ]
         user_permissions = list(
             self.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
         )
@@ -651,6 +654,7 @@ class Profile(models.Model):
             "other_accounts": [account.as_dict() for account in other_accounts],
             "editable_org_unit_type_ids": editable_org_unit_type_ids,
             "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+            "color": self.color or DEFAULT_COLOR,
         }
 
         if small:
@@ -686,6 +690,7 @@ class Profile(models.Model):
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
             "editable_org_unit_type_ids": editable_org_unit_type_ids,
             "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+            "color": self.color or DEFAULT_COLOR,
         }
 
     def has_a_team(self):

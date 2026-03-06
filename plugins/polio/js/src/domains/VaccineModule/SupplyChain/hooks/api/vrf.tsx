@@ -166,16 +166,7 @@ export const useCampaignDropDowns = ({
             .filter(
                 c => c.separate_scopes_per_round || (c.scopes ?? []).length > 0,
             )
-            // filter out on hold campaign, except selected campaign to avoid UI bug
-            .filter(
-                c => !c.on_hold || c.obr_name === selectedCampaign?.obr_name,
-            )
-            // filter out campaign with all rounds on hold, except selected campaign to avoid UI bug
-            .filter(
-                c =>
-                    !c.rounds.every(rnd => rnd.on_hold) ||
-                    c.obr_name === selectedCampaign?.obr_name,
-            )
+
             .map(c => ({
                 label: c.obr_name,
                 value: c.obr_name,
@@ -198,12 +189,6 @@ export const useCampaignDropDowns = ({
                               (round?.scopes ?? []).length > 0) ||
                           (!selectedCampaign?.separate_scopes_per_round &&
                               (selectedCampaign?.scopes ?? []).length > 0),
-                  )
-                  // filter out rounds on_hold, except selected round to avoid UI bug
-                  .filter(
-                      round =>
-                          !round.on_hold ||
-                          (rndsParams ?? []).includes(round.number),
                   )
                   .map(round => ({
                       label: `Round ${round.number}`,
@@ -262,18 +247,9 @@ const createFormDataRequest = (
         formData.append(key, converted_value);
     });
 
-    const init: Record<string, unknown> = {
-        method,
-        body: formData,
-        signal,
-        headers: {
-            'Accept-Language': moment.locale(),
-        },
-    };
-
     if (Object.keys(fileData).length > 0) {
         Object.entries(fileData).forEach(([key, value]) => {
-            if (key === 'files' && Array.isArray(value) && value.length > 0) {
+            if (key === 'files' && Array.isArray(value)) {
                 formData.append('file', value[0]); // Use 'file' key
             } else if (Array.isArray(value)) {
                 value.forEach((blob, index) => {
@@ -283,6 +259,26 @@ const createFormDataRequest = (
                 formData.append(key, value);
             }
         });
+    }
+    const isFileDeleted =
+        Array.isArray(fileData?.files) && fileData?.files?.length === 0;
+    const body = isFileDeleted
+        ? JSON.stringify({ ...data, file: null })
+        : formData;
+
+    const init: Record<string, unknown> = {
+        method,
+        body,
+        signal,
+        headers: {
+            'Accept-Language': moment.locale(),
+        },
+    };
+    if (isFileDeleted) {
+        init.headers = {
+            ...(init.headers as Record<string, string>),
+            'Content-Type': 'application/json',
+        };
     }
 
     return iasoFetch(url, init).then(response => response.json());

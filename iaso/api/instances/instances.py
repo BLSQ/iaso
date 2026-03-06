@@ -41,7 +41,7 @@ from iaso.api.common import (
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
-from iaso.api.instances.serializers import FileTypeSerializer
+from iaso.api.instances.serializers import FileTypeSerializer, InstanceImportAccuracySerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSerializer
@@ -146,11 +146,11 @@ class HasInstanceBulkPermission(permissions.BasePermission):
 class OrgUnitNestedSerializer(OrgUnitSerializer):
     class Meta:
         model = OrgUnit
-
         fields = [
             "id",
             "name",
         ]
+        ref_name = "OrgUnitNestedSerializerForInstances"
 
 
 class InstanceFileSerializer(serializers.Serializer):
@@ -1030,6 +1030,11 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[id]
 
 
 def import_data(instances, user, app_id):
+    """
+    This function creates empty instances (without files) and should be called first when uploading new instances.
+    Sometimes, due to some network issues, this function might not properly be called and the instances are created by
+    the second endpoint (POST /sync/form_upload/).
+    """
     project = Project.objects.get_for_user_and_app_id(user, app_id)
 
     for instance_data in instances:
@@ -1040,7 +1045,7 @@ def import_data(instances, user, app_id):
 
         # Get or create instance based on file_name - this "get or create" logic is important:
         # it is possible (although it won't happen often) that the instance has already been created by the
-        # POST /sync/ endpoint.
+        # POST /sync/form_upload/ endpoint.
         file_name = ntpath.basename(instance_data.get("file", None))
         instance, _ = Instance.objects.get_or_create(file_name=file_name)
 
@@ -1048,7 +1053,11 @@ def import_data(instances, user, app_id):
         instance.project = project
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
-        instance.accuracy = instance_data.get("accuracy", None)
+        accuracy_raw = instance_data.get("accuracy", None)
+        if accuracy_raw is not None:
+            accuracy_serializer = InstanceImportAccuracySerializer(data={"accuracy": accuracy_raw})
+            accuracy_serializer.is_valid(raise_exception=True)
+            instance.accuracy = accuracy_serializer.validated_data.get("accuracy")
 
         tentative_org_unit_id = instance_data.get("orgUnitId", None)
         if str(tentative_org_unit_id).isdigit():

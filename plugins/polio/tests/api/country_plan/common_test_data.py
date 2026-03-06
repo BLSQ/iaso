@@ -85,6 +85,7 @@ class CountryPlanAPIBase(APITestCase):
             date=datetime.date(2025, 10, 10),
             status="draft",
             vaccine="bOPV",
+            physical_inventory=datetime.date(2025, 9, 11),
         )
 
         cls.dashboard_2 = p.CountryPlan.objects.create(

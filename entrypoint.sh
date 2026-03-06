@@ -41,24 +41,24 @@ case "$1" in
   "test" )
     export TESTING=true
     # Linting tasks first
-    flake8 ./hat
+    ruff check ./hat
     npm run lint
     # Then tests
     ./scripts/wait_for_dbs.sh
     # Run python tests and pass on any args to e.g. run individual tests
     ./manage.py test --exclude-tag selenium "${@:2}"
-    npm run mocha
+    npm run test
   ;;
   "test_lint" )
     export TESTING=true
-    flake8 ./hat -v
+    ruff check -v ./hat
     npm run lint
   ;;
   "test_js" )
     npm run test
   ;;
-  "mocha" )
-    npm run mocha
+  "vitest" )
+    npm run test
   ;;
   "gen_docs" )
     ./scripts/gen_docs.sh

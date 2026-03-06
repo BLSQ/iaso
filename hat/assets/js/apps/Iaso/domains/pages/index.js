@@ -40,6 +40,7 @@ const Pages = () => {
             search: params.search,
             needs_authentication: params.needs_authentication,
             userId: params.userId,
+            userRoleIds: params.userRoleIds,
         };
     }, [params]);
 

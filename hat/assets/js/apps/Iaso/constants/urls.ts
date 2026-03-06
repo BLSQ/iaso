@@ -467,6 +467,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'search',
             'needs_authentication',
             'userId',
+            'userRoleIds',
             ...paginationPathParams,
         ],
     },
@@ -487,16 +488,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     assignments: {
         url: 'planning/assignments',
-        params: [
-            'accountId',
-            'planningId',
-            'team',
-            'baseOrgunitType',
-            'parentOrgunitType',
-            'tab',
-            'order',
-            'search',
-        ],
+        params: ['accountId', 'planningId'],
     },
     teams: {
         url: 'settings/users/teams',

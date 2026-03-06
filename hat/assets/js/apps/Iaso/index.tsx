@@ -1,11 +1,12 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+
 import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from 'bluesquare-components';
 import { SnackbarProvider } from 'notistack';
 import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 import './libs/polyfills';
@@ -45,6 +46,7 @@ declare global {
             themeConfig: ThemeConfig,
             userHomePage: string,
         ) => void;
+        __TANSTACK_QUERY_CLIENT__: QueryClient;
     }
 }
 
@@ -57,6 +59,7 @@ const IasoApp: React.FC<{
     const { plugins, pluginHomePage, pluginTheme } =
         usePlugins(enabledPluginsName);
     const usedTheme = pluginTheme || getOverriddenTheme(theme, themeConfig);
+    window.__TANSTACK_QUERY_CLIENT__ = queryClient;
     return ReactDOM.createPortal(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>

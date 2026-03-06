@@ -45,7 +45,7 @@ export type NumberInputOptions = {
     max?: number;
     decimalScale?: number;
     decimalSeparator?: '.' | ',';
-    thousandSeparator?: '.' | ',';
+    thousandSeparator?: '.' | ',' | ' ';
     thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
 };
 
@@ -99,7 +99,7 @@ export type InputComponentProps = {
         max?: number;
         decimalScale?: number;
         decimalSeparator?: '.' | ',';
-        thousandSeparator?: '.' | ',';
+        thousandSeparator?: '.' | ',' | ' ';
     };
     phoneInputOptions?: PhoneInputOptions;
     setFieldError?: (keyValue: string, message: string) => void;
@@ -182,10 +182,15 @@ const InputComponent: React.FC<InputComponentProps> = ({
     };
     const inputValue =
         value === null || typeof value === 'undefined' ? '' : value;
-    const labelText =
-        typeof labelString === 'string'
-            ? labelString
-            : formatMessage(label || MESSAGES[keyValue]);
+    let labelText = '';
+    if (labelString && typeof labelString === 'string') {
+        labelText = labelString;
+    } else if (label) {
+        labelText = formatMessage(label);
+    } else if (MESSAGES[keyValue]) {
+        labelText = formatMessage(MESSAGES[keyValue]);
+    }
+
     const renderInput = () => {
         switch (type) {
             case 'email':

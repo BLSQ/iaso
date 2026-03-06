@@ -364,7 +364,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 return ""
             return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
 
-        for change_request in filtered_org_unit_changes_requests:
+        for change_request in filtered_org_unit_changes_requests.iterator(chunk_size=20):
             # Basic row data - all data is already prefetched
             row = [
                 change_request.id,

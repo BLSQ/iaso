@@ -71,7 +71,7 @@ jobs:
         # the specification of botocore is due to a deployment problem with 1.21 to remove later
         run: |
            cp .elasticbeanstalk/config.github.yml .elasticbeanstalk/config.yml
-           pip install awsebcli==3.20.5 botocore==1.29.81 boto3==1.26.81
+           pip install awsebcli==3.26 botocore==1.42.44 boto3==1.42.44
       - name: Environment info
         run: |
           node --version

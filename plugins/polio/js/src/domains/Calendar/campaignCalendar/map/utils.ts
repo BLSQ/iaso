@@ -28,7 +28,7 @@ type ShapeQueryArgs = {
     loadingCampaigns: boolean;
     groupId: string;
     campaign: MappedCampaign;
-    vaccine: string;
+    vaccine?: string;
     round?: CalendarRound;
 };
 
@@ -57,6 +57,8 @@ export const getShapeQuery = ({
             round,
         }),
         enabled: !loadingCampaigns,
+        staleTime: Infinity,
+        cacheTime: Infinity,
     };
 };
 
@@ -139,7 +141,7 @@ export const makeQueriesForCampaigns = (
     campaigns: MappedCampaign[],
     loadingCampaigns: boolean,
 ): Query[] => {
-    const queries = [];
+    const queries: Query[] = [];
     if (!campaigns || campaigns.length === 0) return queries;
     campaigns.forEach(campaign => {
         if (campaign.separateScopesPerRound) {
@@ -152,7 +154,7 @@ export const makeQueriesForCampaigns = (
                             campaign,
                             vaccine: scope.vaccine,
                             round,
-                        }) as never,
+                        }),
                     );
                 });
             });

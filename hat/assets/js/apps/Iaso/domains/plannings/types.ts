@@ -1,4 +1,5 @@
 import { UrlParams } from 'bluesquare-components';
+import { GeoJson } from 'Iaso/components/maps/types';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 
 export type PublishingStatus = 'all' | 'draft' | 'published';
@@ -48,6 +49,7 @@ export type Planning = {
     pipeline_uuids: string[];
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
     selected_sampling_result?: SamplingResult;
+    assignments_count: number;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 
@@ -90,4 +92,13 @@ export type SamplingResult = {
     created_at: string;
     created_by: number;
     created_by_details: UserDetails;
+};
+export type PlanningOrgUnits = {
+    id: number;
+    name: string;
+    geo_json: GeoJson;
+    has_geo_json: boolean;
+    latitude: number;
+    longitude: number;
+    org_unit_type_id: number;
 };

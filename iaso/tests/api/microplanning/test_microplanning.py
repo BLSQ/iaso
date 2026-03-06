@@ -3,8 +3,10 @@ import uuid
 from unittest import mock
 
 from django.contrib.auth.models import User
+from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.db import IntegrityError
 from django.utils.timezone import now
+from rest_framework import status
 
 from hat.audit.models import Modification
 from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningWriteSerializer
@@ -55,6 +57,8 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
 
+    maxDiff = None
+
     def test_query_id(self):
         self.client.force_authenticate(self.user)
         id = self.planning.id
@@ -70,7 +74,7 @@ class PlanningTestCase(APITestCase):
                     "id": self.team1.id,
                     "name": self.team1.name,
                     "deleted_at": self.team1.deleted_at,
-                    "color": self.team1.color,
+                    "color": self.team1.color.upper(),
                 },
                 "project_details": {
                     "id": self.planning.project.id,
@@ -90,9 +94,28 @@ class PlanningTestCase(APITestCase):
                 "pipeline_uuids": [],
                 "target_org_unit_type_details": None,
                 "selected_sampling_result": None,
+                "assignments_count": 0,
             },
             r,
         )
+
+    def test_query_id_includes_assignments_count(self):
+        """Test that planning detail response includes assignments_count."""
+        self.client.force_authenticate(self.user)
+        # Planning has no assignments by default
+        response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertIn("assignments_count", r)
+        self.assertEqual(r["assignments_count"], 0)
+
+        # Create assignments
+        Assignment.objects.create(planning=self.planning, user=self.user, org_unit=self.org_unit)
+        child_ou = OrgUnit.objects.create(version=self.org_unit.version, name="child", parent=self.org_unit)
+        Assignment.objects.create(planning=self.planning, user=self.user, org_unit=child_ou)
+
+        response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["assignments_count"], 2)
 
     def test_serializer(self):
         user = User.objects.get(username="test")
@@ -196,7 +219,6 @@ class PlanningTestCase(APITestCase):
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        print(r)
         self.assertIsNotNone(r["started_at"])
         self.assertEqual(r["started_at"][0], "publishedWithoutStartDate")
 
@@ -221,7 +243,6 @@ class PlanningTestCase(APITestCase):
         }
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        print(r)
         self.assertIsNotNone(r["ended_at"])
         self.assertEqual(r["ended_at"][0], "publishedWithoutEndDate")
 
@@ -870,6 +891,243 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(r["target_org_unit_type_details"]["id"], target_type.id)
         self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
 
+    def test_planning_orgunits_children_requires_planning_id(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/microplanning/orgunits/children/", format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
+
+    def test_planning_orgunits_children_missing_scope_raises_error(self):
+        """A planning without sampling group or target org unit type should error."""
+        self.client.force_authenticate(self.user)
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-missing-scope",
+            team=self.team1,
+            org_unit=self.org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+
+        response = self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
+        self.assertEqual(r["planning"][0], "Planning is missing sampling group or target org unit scope")
+
+    def test_planning_orgunits_children_with_target_org_unit_type(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-ou",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits",
+            team=self.team1,
+            org_unit=root,
+            target_org_unit_type=child_type,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+
+        response = self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        ids = [ou["id"] for ou in r]
+        self.assertEqual(ids, [child.id])
+        self.assertTrue(r[0]["has_geo_json"])
+
+    def test_planning_orgunits_children_with_sampling_group(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type sampling")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type sampling")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-sampling",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        sampled_ou = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="sampled-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-sampling",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+
+        group = Group.objects.create(name="sampling-group", source_version=self.org_unit.version)
+        group.org_units.add(sampled_ou)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=planning,
+            pipeline_id="pipeline-geo",
+            pipeline_version="v1",
+            group=group,
+            parameters={"foo": "bar"},
+            created_by=self.user,
+        )
+        planning.selected_sampling_result = sampling
+        planning.save()
+
+        response = self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        ids = [ou["id"] for ou in r]
+        self.assertEqual(ids, [sampled_ou.id])
+        self.assertTrue(r[0]["has_geo_json"])
+
+    def test_planning_orgunits_root_requires_planning_id(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/microplanning/orgunits/root/", format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
+
+    def test_planning_orgunits_root_missing_scope_doesnt_raise_error(self):
+        """A planning without sampling group or target org unit type should error."""
+        self.client.force_authenticate(self.user)
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-missing-scope",
+            team=self.team1,
+            org_unit=self.org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+
+        response = self.client.get(f"/api/microplanning/orgunits/root/?planning={planning.id}", format="json")
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(r["id"], self.org_unit.id)
+
+    def test_planning_orgunits_root_with_target_org_unit_type(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-ou",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits",
+            team=self.team1,
+            org_unit=root,
+            target_org_unit_type=child_type,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+
+        response = self.client.get(f"/api/microplanning/orgunits/root/?planning={planning.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["id"], root.id)
+        self.assertTrue(r["has_geo_json"])
+
+    def test_planning_orgunits_root_with_sampling_group(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type sampling")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type sampling")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-sampling",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        sampled_ou = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="sampled-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-sampling",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+
+        group = Group.objects.create(name="sampling-group", source_version=self.org_unit.version)
+        group.org_units.add(sampled_ou)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=planning,
+            pipeline_id="pipeline-geo",
+            pipeline_version="v1",
+            group=group,
+            parameters={"foo": "bar"},
+            created_by=self.user,
+        )
+        planning.selected_sampling_result = sampling
+        planning.save()
+
+        response = self.client.get(f"/api/microplanning/orgunits/root/?planning={planning.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["id"], root.id)
+        self.assertTrue(r["has_geo_json"])
+
 
 class AssignmentAPITestCase(APITestCase):
     fixtures = ["user.yaml"]
@@ -1076,10 +1334,10 @@ class AssignmentAPITestCase(APITestCase):
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
 
         # Get the assignment for this specific planning and org_unit
+        deleted_assignment.refresh_from_db()
         restored_assignment = Assignment.objects.filter(
             planning=self.planning, org_unit=self.child2, deleted_at__isnull=True
         ).first()
-
         self.assertJSONResponse(response, 200)
         # The serializer creates a new assignment, not restore the old one
         self.assertNotEqual(restored_assignment.id, deleted_assignment.id)
@@ -1088,7 +1346,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(restored_assignment.org_unit, self.child2)
         self.assertEqual(restored_assignment.team, self.team1)
 
-    def test_bulk_delete_assignments(self):
+    def test_bulk_delete_assignments_whole_planning(self):
         """Test successful bulk delete of all assignments for a planning"""
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
@@ -1127,6 +1385,127 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(all_assignments.count(), 4)
         for assignment in all_assignments:
             self.assertIsNotNone(assignment.deleted_at)
+
+    def test_bulk_delete_assignments_for_team(self):
+        """Test successful bulk delete of assignments for a specific team"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        initial_assignment = Assignment.objects.get(planning=self.planning, org_unit=self.child1)
+        initial_assignment.team = self.team1
+        initial_assignment.save()
+
+        team2 = Team.objects.create(project=self.project1, name="team2", manager=self.user)
+
+        data_team1 = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id, self.child3.id],
+            "team": self.team1.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team1, format="json")
+
+        data_team2 = {
+            "planning": self.planning.id,
+            "org_units": [self.child4.id, self.child5.id],
+            "team": team2.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_team2, format="json")
+
+        # Expect 5 assignments total (1 from setUp + 2 from team1 + 2 from team2)
+        assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(assignments.count(), 5)
+
+        # Expect 3 assignments for team 1 (1 from setUp + 2 from bulk create)
+        team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1, deleted_at__isnull=True)
+        self.assertEqual(team1_assignments.count(), 3)
+
+        # Expect 2 assignments for team 2
+        team2_assignments = Assignment.objects.filter(planning=self.planning, team=team2, deleted_at__isnull=True)
+        self.assertEqual(team2_assignments.count(), 2)
+
+        # Bulk delete assignments for team1
+        delete_data = {"planning": self.planning.id, "team": self.team1.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        result = self.assertJSONResponse(response, 200)
+        self.assertEqual(result["deleted_count"], 3)
+        self.assertEqual(result["planning_id"], self.planning.id)
+        self.assertIn("Successfully deleted 3 assignments", result["message"])
+
+        # Team1 assignments are (soft) deleted
+        team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1, deleted_at__isnull=True)
+        self.assertEqual(team1_assignments.count(), 0)
+        all_team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1)
+        self.assertEqual(all_team1_assignments.count(), 3)
+        for assignment in all_team1_assignments:
+            self.assertIsNotNone(assignment.deleted_at)
+
+        # Team2 assignments are not (soft) deleted
+        team2_assignments = Assignment.objects.filter(planning=self.planning, team=team2, deleted_at__isnull=True)
+        self.assertEqual(team2_assignments.count(), 2)
+
+    def test_bulk_delete_assignments_for_user(self):
+        """Test successful bulk delete of assignments for a specific user"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        user2 = self.create_user_with_profile(username="user2", account=self.account)
+
+        data_user1 = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id, self.child3.id],
+            "user": self.user.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user1, format="json")
+
+        data_user2 = {
+            "planning": self.planning.id,
+            "org_units": [self.child4.id, self.child5.id],
+            "user": user2.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data_user2, format="json")
+
+        # 5 assignments total (1 from setUp + 2 from user1 + 2 from user2)
+        assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(assignments.count(), 5)
+
+        # 3 assignments for user 1 (1 from setUp + 2 from bulk create)
+        user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user, deleted_at__isnull=True)
+        self.assertEqual(user1_assignments.count(), 3)
+
+        # 2 assignments for user 2
+        user2_assignments = Assignment.objects.filter(planning=self.planning, user=user2, deleted_at__isnull=True)
+        self.assertEqual(user2_assignments.count(), 2)
+
+        # Bulk delete assignments for user1
+        delete_data = {"planning": self.planning.id, "user": self.user.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        result = self.assertJSONResponse(response, 200)
+        self.assertEqual(result["deleted_count"], 3)
+        self.assertEqual(result["planning_id"], self.planning.id)
+        self.assertEqual(result["user"], self.user.id)
+        self.assertIn("Successfully deleted 3 assignments", result["message"])
+
+        # Verify user1 assignments are soft deleted
+        user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user, deleted_at__isnull=True)
+        self.assertEqual(user1_assignments.count(), 0)
+        all_user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user)
+        self.assertEqual(all_user1_assignments.count(), 3)
+        for assignment in all_user1_assignments:
+            self.assertIsNotNone(assignment.deleted_at)
+
+        # Verify user2 assignments are NOT deleted
+        user2_assignments = Assignment.objects.filter(planning=self.planning, user=user2, deleted_at__isnull=True)
+        self.assertEqual(user2_assignments.count(), 2)
 
     def test_bulk_delete_assignments_no_assignments(self):
         """Test bulk delete when no assignments exist for the planning"""

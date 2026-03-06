@@ -1,8 +1,8 @@
-from django.http import HttpResponse
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.exports.cleaning_file_response import CleaningFileResponse
 from iaso.models import DataSource, SourceVersion
 from iaso.permissions.core_permissions import (
     CORE_LINKS_PERMISSION,
@@ -12,7 +12,7 @@ from iaso.permissions.core_permissions import (
     CORE_SOURCE_PERMISSION,
 )
 
-from .common import CONTENT_TYPE_CSV, HasPermission, ModelViewSet
+from .common import HasPermission, ModelViewSet
 from .source_versions_serializers import DiffSerializer, ExportSerializer
 from .tasks.serializers import TaskSerializer
 
@@ -170,10 +170,9 @@ class SourceVersionViewSet(ModelViewSet):
             data=request.data if request.method == "POST" else request.query_params
         )
         serializer.is_valid(raise_exception=True)
-        # FIXME: FileResponse don't work, no idea why, not a priority
         filename = "comparison.csv"
-        response = HttpResponse(serializer.generate_csv(), content_type=CONTENT_TYPE_CSV)
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        tmp = serializer.generate_csv()
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename)
         return response
 
     @action(methods=["POST"], detail=False, serializer_class=ExportSerializer)

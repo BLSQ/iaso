@@ -43,9 +43,9 @@ export const UsersSelect: FunctionComponent<Props> = ({
     }, [data]);
     const handleChange = useCallback(
         (newValue: string): void => {
-            const fieldValue: number[] | undefined = newValue
+            const fieldValue: number[] = newValue
                 ? newValue.split(',').map(val => parseInt(val, 10))
-                : undefined;
+                : [];
             if (field && form) {
                 form.setFieldValue(field.name, fieldValue);
             }

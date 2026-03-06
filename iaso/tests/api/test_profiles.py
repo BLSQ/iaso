@@ -19,6 +19,7 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_MANAGED_PERMISSION,
 )
 from iaso.test import APITestCase
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 name_and_id_schema = {
@@ -321,7 +322,7 @@ class ProfileAPITestCase(APITestCase):
         """GET /profiles/ with auth (user has read only permissions)"""
 
         self.client.force_authenticate(self.jane)
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(13):
             response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
         profile_url = "/api/profiles/%s/" % self.jane.iaso_profile.id
@@ -354,7 +355,7 @@ class ProfileAPITestCase(APITestCase):
 
         expected_csv = "".join(
             [
-                "user_profile_id,",
+                "user_profile_id,"
                 "username,"
                 "password,"
                 "email,"
@@ -368,18 +369,19 @@ class ProfileAPITestCase(APITestCase):
                 "permissions,"
                 "user_roles,"
                 "projects,"
+                "teams,"
                 "phone_number,"
-                "editable_org_unit_types\r\n",
+                "editable_org_unit_types\r\n"
             ]
         )
 
-        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
-        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
-        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
-        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,\r\n"
-        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,,,,,,,,iaso_forms,,,{self.team1.name},,\r\n"
+        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,,\r\n'
+        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,{self.team2.name},,\r\n'
+        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,,\r\n"
+        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,,\r\n"
+        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,,{self.sub_unit_type.pk}\r\n"
+        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -409,6 +411,7 @@ class ProfileAPITestCase(APITestCase):
                 "permissions",
                 "user_roles",
                 "projects",
+                "teams",
                 "phone_number",
                 "editable_org_unit_types",
             ],
@@ -471,6 +474,7 @@ class ProfileAPITestCase(APITestCase):
                     6: f"{self.user_role_name},{self.user_role_another_account_name}",
                 },
                 "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
+                "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "editable_org_unit_types": {
                     0: None,
@@ -483,6 +487,29 @@ class ProfileAPITestCase(APITestCase):
                 },
             },
         )
+
+    def test_profile_list_export_as_csv_multiple_teams(self):
+        self.maxDiff = None
+        multi_user = self.create_user_with_profile(username="multiteam", account=self.account)
+
+        multi_user.teams.set([self.team1, self.team2])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?csv=true")
+        self.assertEqual(response.status_code, 200)
+
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+
+        username_idx = header.index("username")
+        teams_idx = header.index("teams")
+        user_row = next(row for row in csv_rows if row[username_idx] == "multiteam")
+
+        teams = sorted([self.team1, self.team2], key=lambda x: x.id)
+        expected_teams_value = f"{teams[0].name},{teams[1].name}"
+
+        self.assertEqual(user_row[teams_idx], expected_teams_value)
 
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""
@@ -552,6 +579,12 @@ class ProfileAPITestCase(APITestCase):
 
         for profile_data in list_data["profiles"]:
             self.assertValidProfileData(profile_data)
+
+    def test_profile_me_includes_color(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/me/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["color"], DEFAULT_COLOR)
 
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
@@ -706,6 +739,27 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
+    def test_create_profile_with_color(self):
+        self.client.force_authenticate(self.jim)
+        color = "#123ABC"
+        data = {
+            "user_name": "color_user",
+            "password": "unittest_password",
+            "first_name": "color_first_name",
+            "last_name": "color_last_name",
+            "email": "color@example.com",
+            "color": color,
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(response_data["color"], color)
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        self.assertEqual(profile.color, color)
+
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
         self.client.force_authenticate(self.jim)
@@ -835,6 +889,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertHasField(project_data, "first_name", str)
         self.assertHasField(project_data, "last_name", str)
         self.assertHasField(project_data, "email", str)
+        self.assertHasField(project_data, "color", str)
 
     def test_delete_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
@@ -1247,6 +1302,52 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
+
+    def test_update_profile_color(self):
+        self.client.force_authenticate(self.john)
+        profile = Profile.objects.get(user=self.jim)
+        new_color = "#ABCDEF"
+        data = {
+            "user_name": profile.user.username,
+            "first_name": profile.user.first_name,
+            "last_name": profile.user.last_name,
+            "color": new_color,
+        }
+        response = self.client.patch(f"/api/profiles/{profile.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        profile.refresh_from_db()
+        self.assertEqual(profile.color, new_color)
+        self.assertEqual(response.json()["color"], new_color)
+
+    def test_update_profile_color_action(self):
+        self.client.force_authenticate(self.john)
+        profile = Profile.objects.get(user=self.jim)
+        original_first_name = profile.user.first_name
+        original_last_name = profile.user.last_name
+        original_email = profile.user.email
+        new_color = "#A1B2C3"
+        data = {"color": new_color}
+
+        response = self.client.patch(f"/api/profiles/{profile.id}/update_color/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        profile.refresh_from_db()
+        profile.user.refresh_from_db()
+        self.assertEqual(profile.color, new_color)
+        self.assertEqual(response.json()["color"], new_color)
+        self.assertEqual(profile.user.first_name, original_first_name)
+        self.assertEqual(profile.user.last_name, original_last_name)
+        self.assertEqual(profile.user.email, original_email)
+
+    def test_update_profile_color_action_invalid_color(self):
+        self.client.force_authenticate(self.john)
+        profile = Profile.objects.get(user=self.jim)
+        data = {"color": "invalid"}
+
+        response = self.client.patch(f"/api/profiles/{profile.id}/update_color/", data=data, format="json")
+
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("color", result)
 
     def test_update_user_with_malformed_phone_number(self):
         user = self.jam
@@ -2042,3 +2143,178 @@ class ProfileAPITestCase(APITestCase):
             expected_order,
             f"Users not sorted correctly by first role. Expected: {expected_order}, got: {actual_order}",
         )
+
+    def test_update_profile_without_changing_username_should_succeed(self):
+        """Test that updating profile without changing username succeeds."""
+        self.client.force_authenticate(self.john)
+
+        alice = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice", last_name="Smith"
+        )
+        bob = self.create_user_with_profile(username="bob", account=self.account, first_name="Bob", last_name="Smith")
+
+        alice_profile = Profile.objects.get(user=alice)
+        data = {
+            "user_name": alice.username,
+            "first_name": "Alice Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice.refresh_from_db()
+        self.assertEqual(alice.username, "alice")
+        self.assertEqual(alice.first_name, "Alice Changed")
+
+        bob_profile = Profile.objects.get(user=bob)
+        data = {
+            "first_name": "Bob Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{bob_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        bob.refresh_from_db()
+        self.assertEqual(bob.username, "bob")
+        self.assertEqual(bob.first_name, "Bob Changed")
+
+    def test_update_profile_to_existing_username_should_fail(self):
+        """Test that changing username to an existing one (case-insensitive) fails correctly."""
+        self.client.force_authenticate(self.john)
+
+        alice = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice", last_name="Smith"
+        )
+        bob = self.create_user_with_profile(username="bob", account=self.account, first_name="Bob", last_name="Wilson")
+
+        # Try to change bob's username to "Alice"
+        bob_profile = Profile.objects.get(user=bob)
+        data = {
+            "user_name": "Alice",
+            "first_name": "Bob Updated",
+        }
+        response = self.client.patch(f"/api/profiles/{bob_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["errorKey"], "user_name")
+
+        bob.refresh_from_db()
+        self.assertEqual(bob.username, "bob")
+        self.assertEqual(bob.first_name, "Bob")
+
+    def test_update_profile_with_case_insensitive_username_should_succeed(self):
+        """Test that updating profile without changing username succeeds even with case-insensitive matching usernames."""
+        self.client.force_authenticate(self.john)
+
+        alice_lower = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice Lower", last_name="alice lower"
+        )
+        alice_upper = self.create_user_with_profile(
+            username="Alice", account=self.account, first_name="Alice Upper", last_name="alice upper"
+        )
+
+        alice_lower_profile = Profile.objects.get(user=alice_lower)
+        data = {
+            "user_name": alice_lower.username,
+            "first_name": "Alice Lower Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_lower_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice_lower.refresh_from_db()
+        self.assertEqual(alice_lower.username, "alice")
+        self.assertEqual(alice_lower.first_name, "Alice Lower Changed")
+
+        alice_upper_profile = Profile.objects.get(user=alice_upper)
+        data = {
+            "user_name": alice_upper.username,
+            "first_name": "Alice Upper Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_upper_profile.id}/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        alice_upper.refresh_from_db()
+        self.assertEqual(alice_upper.username, "Alice")
+        self.assertEqual(alice_upper.first_name, "Alice Upper Changed")
+
+    def test_update_username_to_existing_case_variation_should_fail(self):
+        """Test that changing username to case variation of another user's username fails."""
+        self.client.force_authenticate(self.john)
+
+        alice_lower = self.create_user_with_profile(
+            username="alice", account=self.account, first_name="Alice Lower", last_name="Smith"
+        )
+        alice_upper = self.create_user_with_profile(
+            username="Alice", account=self.account, first_name="Alice Upper", last_name="Jones"
+        )
+
+        alice_lower_profile = Profile.objects.get(user=alice_lower)
+        data = {
+            "user_name": "Alice",
+            "first_name": "Alice Changed",
+        }
+        response = self.client.patch(f"/api/profiles/{alice_lower_profile.id}/", data=data, format="json")
+
+        # Should fail because another user already has "Alice"
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["errorKey"], "user_name")
+
+        # Ensure original username wasn't changed
+        alice_lower.refresh_from_db()
+        self.assertEqual(alice_lower.username, "alice")
+        self.assertEqual(alice_lower.first_name, "Alice Lower")
+
+        # Ensure other username wasn't changed
+        alice_upper.refresh_from_db()
+        self.assertEqual(alice_upper.username, "Alice")
+        self.assertEqual(alice_upper.first_name, "Alice Upper")
+
+    def test_create_user_with_invitation_sets_random_password(self):
+        """Test that creating a user with send_email_invitation=True sets a random password instead of an unusable one."""
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "invited_user_empty_password",
+            "password": "",
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
+            "email": "invited1@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        user = get_user_model().objects.get(username="invited_user_empty_password")
+        self.assertTrue(user.has_usable_password(), "Invited user should have a usable password")
+
+        data = {
+            "user_name": "invited_user_missing_password",
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
+            "email": "invited2@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        user = get_user_model().objects.get(username="invited_user_missing_password")
+        self.assertTrue(user.has_usable_password())
+
+        data = {
+            "user_name": "invited_user_password_is_none",
+            "password": None,
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
+            "email": "invited3@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        user = get_user_model().objects.get(username="invited_user_password_is_none")
+        self.assertTrue(user.has_usable_password())
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(mail.outbox[0].to, ["invited1@test.com"])
+        self.assertEqual(mail.outbox[1].to, ["invited2@test.com"])
+        self.assertEqual(mail.outbox[2].to, ["invited3@test.com"])

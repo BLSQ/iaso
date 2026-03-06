@@ -29,12 +29,12 @@ import { Vaccine } from '../../../../../constants/types';
 import { useSaveIncident } from '../../hooks/api';
 import { useGetMovementDescription } from '../../hooks/useGetMovementDescription';
 import MESSAGES from '../../messages';
+import { DosesPerVialDropdown } from '../../types';
 import {
     useAvailablePresentations,
     useIncidentOptions,
 } from './dropdownOptions';
 import { useIncidentValidation } from './validation';
-import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     incident?: any;
@@ -118,6 +118,7 @@ const makeIncidentReportConfig = (
     vaccine_expired: 'plainMovement',
     unreadable_label: 'plainMovement',
     vvm_reached_discard_point: 'plainMovement',
+    missing_droppers: 'plainMovement',
     physical_inventory_add: 'inventoryAdd',
     physical_inventory_remove: 'inventoryRemove',
 });

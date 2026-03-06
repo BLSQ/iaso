@@ -1,8 +1,10 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
+from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
 
-from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, Step, Visit
-from .tasks import create_index_on_instance_uuid
+from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
+from .tasks import clean_up_duplicate_instances, clean_up_duplicate_instances_dry_run, create_index_on_instance_uuid
 
 
 @admin.action(description="Create indexes on UUID field (non-blocking)")
@@ -18,11 +20,86 @@ def create_uuid_index_action(modeladmin, request: HttpRequest, queryset):
     )
 
 
+@admin.action(description="Clean-up duplicate instances (non-blocking)")
+def clean_up_duplicates_action(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    clean_up_duplicate_instances.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+@admin.action(description="DRY-RUN: Clean-up duplicate instances (non-blocking)")
+def clean_up_duplicates_action_dry_run(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    clean_up_duplicate_instances_dry_run.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+class ProgrammeType(SimpleListFilter):
+    title = "Programme type"
+    parameter_name = "programme_type"
+
+    def lookups(self, request, modeladmin):
+        return Journey._meta.get_field("programme_type").choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(journey__programme_type=self.value()).distinct()
+        return queryset
+
+
+class Year(SimpleListFilter):
+    title = "Year"
+    parameter_name = "year"
+
+    def lookups(self, request, modeladmin):
+        years = (
+            modeladmin.model.objects.annotate(year=ExtractYear("date"))
+            .values_list("year", flat=True)
+            .distinct()
+            .order_by("-year")
+        )
+        return [(year, year) for year in years if year]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(date__year=self.value())
+
+
+class Month(SimpleListFilter):
+    title = "Month"
+    parameter_name = "month"
+
+    def lookups(self, request, modeladmin):
+        months = (
+            modeladmin.model.objects.annotate(month=ExtractMonth("date"))
+            .values_list("month", flat=True)
+            .distinct()
+            .order_by("month")
+        )
+        return [(month, month) for month in months if month]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(date__month=self.value())
+
+
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender", "account", "guidelines")
+    list_filter = ("birth_date", "gender", "account", "guidelines", ProgrammeType)
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
-    actions = [create_uuid_index_action]
+    actions = [create_uuid_index_action, clean_up_duplicates_action, clean_up_duplicates_action_dry_run]
 
 
 @admin.register(Journey)
@@ -76,8 +153,11 @@ class VisitAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",
+        Year,
+        Month,
         "number",
         "journey__programme_type",
+        "journey__nutrition_programme",
         "journey__beneficiary__account",
     )
     search_fields = ("journey__beneficiary__account__name", "org_unit__id", "org_unit__name", "number")
@@ -153,7 +233,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
 
 
 @admin.register(Dhis2SyncResults)
-class Dhis2SyncResults(admin.ModelAdmin):
+class Dhis2SyncResultsAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit_dhis2_id",
@@ -172,10 +252,46 @@ class Dhis2SyncResults(admin.ModelAdmin):
     search_fields = (
         "account__name",
         "org_unit_dhis2_id",
-        "org_unit__id",
+        "org_unit_id",
         "data_set_id",
         "period",
         "year__icontains",
+        "month__icontains",
+        "year__icontains",
+    )
+
+
+@admin.register(ScreeningData)
+class ScreeningDataAdmin(admin.ModelAdmin):
+    list_filter = (
+        "account",
+        "month",
+        "year",
+        "period",
+    )
+    list_display = (
+        "id",
+        "org_unit",
+        "account",
+        "month",
+        "year",
+        "period",
+        "u5_male_green",
+        "u5_female_green",
+        "u5_male_yellow",
+        "u5_female_yellow",
+        "u5_male_red",
+        "u5_female_red",
+        "pregnant_w_muac_gt_23",
+        "pregnant_w_muac_lte_23",
+        "lactating_w_muac_gt_23",
+        "lactating_w_muac_lte_23",
+    )
+    search_fields = (
+        "account__name",
+        "org_unit__id",
+        "org_unit__name",
+        "period",
         "month__icontains",
         "year__icontains",
     )

@@ -1,0 +1,27 @@
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{API_TOKEN}}
+}
+
+script:pre-request {
+  const token = bru.getEnvVar("API_TOKEN")
+  if (token != null && token.length > 0) {
+    return
+  }
+  
+  if (req.getUrl().endsWith("/api/token/")) {
+    return
+  }
+  
+  const response = await bru.runRequest("login/Token");
+  
+}
+
+script:post-response {
+  if (res.status == 401) {
+    bru.setEnvVar("API_TOKEN", "")
+  }
+}

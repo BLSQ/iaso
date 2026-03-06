@@ -1,9 +1,10 @@
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
 from rest_framework import permissions, serializers
 
-from iaso.api.common import ModelViewSet
-from iaso.models import Page, User
+from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
+from iaso.models import Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION, CORE_PAGES_PERMISSION
 
 
@@ -14,10 +15,19 @@ class PagesSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
+        account = request.user.iaso_profile.account
         users = validated_data.pop("users")
-        page = Page.objects.create(**validated_data, account=request.user.iaso_profile.account)
-        page.users.set(users)
+        user_roles = validated_data.pop("user_roles", [])
 
+        # Validate user_roles belong to user's account
+        if user_roles:
+            invalid_roles = [role for role in user_roles if role.account != account]
+            if invalid_roles:
+                raise serializers.ValidationError({"user_roles": "User roles must belong to your account."})
+
+        page = Page.objects.create(**validated_data, account=account)
+        page.users.set(users)
+        page.user_roles.set(user_roles)
         return page
 
 
@@ -38,6 +48,7 @@ class PageFilter(FilterSet):
         field_name="needs_authentication", label=_("Limit on authentication required or not")
     )
     userId = CharFilter(field_name="users__id", lookup_expr="exact", label=_("User ID"))
+    userRoleIds = CharFilter(method="filter_by_user_roles", label=_("User Role IDs"))
 
     class Meta:
         model = Page
@@ -45,6 +56,13 @@ class PageFilter(FilterSet):
 
     def filter_by_name_or_slug(self, queryset, _, value):
         return queryset.filter(name__icontains=value) | queryset.filter(slug__icontains=value)
+
+    def filter_by_user_roles(self, queryset, _, value):
+        """Filter pages by user role IDs (comma-separated string)."""
+        role_ids = parse_comma_separated_numeric_values(value, "userRoleIds")
+        if role_ids:
+            return queryset.filter(user_roles__id__in=role_ids)
+        return queryset
 
 
 class PagesViewSet(ModelViewSet):
@@ -64,12 +82,20 @@ class PagesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
+        user_groups = user.groups.all()
 
-        users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
-        queryset = Page.objects.filter(users__in=users)
-        if user.has_perm(CORE_PAGES_PERMISSION.full_name()) and not user.has_perm(
-            CORE_PAGE_WRITE_PERMISSION.full_name()
-        ):
-            queryset = queryset.filter(users=user)
+        if user.has_perm(CORE_PAGE_WRITE_PERMISSION.full_name()):
+            # WRITE users see pages from their account
+            queryset = Page.objects.filter(account=user.iaso_profile.account)
+
+        elif user.has_perm(CORE_PAGES_PERMISSION.full_name()):
+            # READ-ONLY users see only pages they can access
+            queryset = (
+                Page.objects.filter(account=user.iaso_profile.account)
+                .filter(Q(users=user) | Q(user_roles__group__in=user_groups))
+                .distinct()
+            )
+        else:
+            queryset = Page.objects.none()
 
         return queryset.order_by(*order).distinct()

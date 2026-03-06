@@ -5,6 +5,7 @@ import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import vitest from '@vitest/eslint-plugin';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import formatjs from 'eslint-plugin-formatjs';
 import importPlugin from 'eslint-plugin-import';
@@ -26,7 +27,6 @@ export default defineConfig([
         extends: fixupConfigRules(
             compat.extends(
                 'plugin:react-hooks/recommended',
-                'plugin:cypress/recommended',
                 'plugin:react/recommended',
                 'plugin:react/jsx-runtime',
                 'prettier',
@@ -45,17 +45,6 @@ export default defineConfig([
             globals: {
                 ...globals.browser,
                 ...globals.commonjs,
-                // Cypress globals
-                Cypress: 'readonly',
-                cy: 'readonly',
-                describe: 'readonly',
-                it: 'readonly',
-                before: 'readonly',
-                beforeEach: 'readonly',
-                after: 'readonly',
-                afterEach: 'readonly',
-                context: 'readonly',
-                expect: 'readonly',
                 ...globals.node,
                 after: 'readonly',
                 afterEach: 'readonly',
@@ -228,8 +217,6 @@ export default defineConfig([
                 before: 'readonly',
                 beforeEach: 'readonly',
                 context: 'readonly',
-                cy: 'readonly',
-                Cypress: 'readonly',
                 describe: 'readonly',
                 expect: 'readonly',
                 it: 'readonly',
@@ -260,7 +247,6 @@ export default defineConfig([
                 node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
             },
         },
-
         rules: {
             'import/extensions': [
                 'error',
@@ -374,6 +360,32 @@ export default defineConfig([
             'react/prop-types': 'off',
             'react/require-default-props': 'off',
             'valid-typeof': 'warn',
+        },
+    },
+    {
+        files: ['**/*.test.tsx', '**/*.test.ts'],
+        plugins: {
+            vitest,
+        },
+        rules: {
+            ...vitest.configs.recommended.rules,
+        },
+        languageOptions: {
+            globals: {
+                ...vitest.environments.env.globals,
+                ...globals.jest,
+            },
+        },
+    },
+    {
+        files: ['playwright.config.ts', '**/playwright/**/*.test.ts'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+            },
+        },
+        rules: {
+            'no-process-env': 'off',
         },
     },
 ]);

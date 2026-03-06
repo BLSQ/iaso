@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from hat.audit import models as audit_models
 from iaso import models as m
 from iaso.test import TestCase
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 class ModificationModelTestCase(TestCase):
@@ -82,6 +83,7 @@ class ModificationModelTestCase(TestCase):
                 "country_code": None,
                 "editable_org_unit_type_ids": [],
                 "user_roles_editable_org_unit_type_ids": [],
+                "color": DEFAULT_COLOR,
             },
             "created_at": self.DT,
             "org_unit_change_request_id": None,

@@ -125,8 +125,9 @@ class EntityQuerySet(models.QuerySet):
         if json_content:
             try:
                 json_logic = json.loads(json_content)
-                q = jsonlogic_to_q(jsonlogic=json_logic, field_prefix="attributes__json__")  # type: ignore
-                queryset = annotate_suffixed_json_fields(queryset, json_logic, "attributes__json").filter(q)
+                q, _ = jsonlogic_to_q(jsonlogic=json_logic, field_prefix="attributes__json__")  # type: ignore
+                queryset, _ = annotate_suffixed_json_fields(queryset, json_logic, "attributes__json")
+                queryset = queryset.filter(q)
             except ValidationError:
                 raise InvalidJsonContentError(f"Invalid Json Content {json_content}")
 
@@ -148,14 +149,14 @@ class EntityQuerySet(models.QuerySet):
             raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
-        self = self.filter(account=profile.account)
+        queryset = self.filter(account=profile.account)
 
         # we give all entities having an instance linked to the one of the org units allowed for the current user
         if profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-            self = self._filter_entities_with_instances(org_units_qs=orgunits)
+            queryset = queryset._filter_entities_with_instances(org_units_qs=orgunits)
 
-        return self
+        return queryset
 
     def filter_for_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]):
         if not user or not user.is_authenticated:

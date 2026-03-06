@@ -145,6 +145,12 @@ CORE_MOBILE_APP_OFFLINE_SETUP_PERMISSION = CorePermission(
 CORE_MODULES_PERMISSION = CorePermission(
     codename="iaso_modules", label=_("modules"), module=MODULE_DEFAULT, ui_group=PERMISSION_GROUP_ADMIN
 )
+CORE_METRIC_TYPES_PERMISSION = CorePermission(
+    codename="iaso_metric_types",
+    label=_("Metric types"),
+    module=MODULE_DEFAULT,
+    ui_group=PERMISSION_GROUP_ADMIN,
+)
 CORE_ORG_UNITS_PERMISSION = CorePermission(
     codename="iaso_org_units",
     label=_("Unités d'organisations"),

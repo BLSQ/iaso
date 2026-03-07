@@ -23,6 +23,7 @@ from datetime import date, datetime, timedelta
 import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
+from django.core.paginator import Paginator
 
 from iaso.models import EntityType, TaskLog
 from iaso.models.base import Instance
@@ -630,12 +631,17 @@ class ETLV2:
         return entity_type.account
 
     @staticmethod
-    def _retrieve_submissions(entity_type_code, entity_ids=None, page_size=5000):
-        """Retrieve all Instance records for the given entity type.
-
-        Returns a values queryset ordered by entity_id then chronologically.
+    def _retrieve_submissions(entity_type_code, entity_ids, page_size=5000, page_number=1):
+        """Retrieve Instance records for the given entity type,
+           paginated by entity_id batches to avoid memory overhead.
+        Returns a (queryset, page_object) tuple.
         """
         entity_ids = sorted(list(entity_ids))
+        paginator = Paginator(entity_ids, page_size)
+
+        current_page = paginator.get_page(page_number)
+        current_page_entity_ids = current_page.object_list
+
         query_set = (
             Instance.objects.filter(
                 entity__entity_type__code=entity_type_code,
@@ -645,8 +651,8 @@ class ETLV2:
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
         )
-        if entity_ids is not None:
-            query_set = query_set.filter(entity_id__in=entity_ids)
+        if current_page_entity_ids is not None:
+            query_set = query_set.filter(entity_id__in=current_page_entity_ids)
 
         query_set = query_set.values(
             "id",
@@ -657,7 +663,7 @@ class ETLV2:
             "source_created_at",
             "created_at",
         ).order_by("entity_id", "source_created_at", "created_at")
-        return query_set
+        return query_set, current_page
 
     # ------------------------------------------------------------------
     # Entity processing

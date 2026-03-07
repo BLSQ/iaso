@@ -87,9 +87,19 @@ class ProfilesViewSet(ModelViewSet):
     ordering = ["id"]  # default ordering
     ordering_fields = ["id", "user__username", "annotated_first_user_role"]
 
-    renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
+    # renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
+    #
+    # parser_classes = [CamelCaseJSONParser]
 
-    parser_classes = [CamelCaseJSONParser]
+    def get_parsers(self):
+        if self.kwargs.get("version", "") == "v2":
+            return [CamelCaseJSONParser()]
+        return super().get_parsers()
+
+    def get_renderers(self):
+        if self.kwargs.get("version", "") == "v2":
+            return [CamelCaseJSONRenderer(), CamelCaseBrowsableAPIRenderer()]
+        return super().get_renderers()
 
     def get_serializer_class(self):
         if self.action == "retrieve":

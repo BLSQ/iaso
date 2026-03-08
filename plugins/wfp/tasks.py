@@ -86,7 +86,9 @@ def etl_ng(all_data=None):
     )
     org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
     MonthlyStatistics.objects.filter(
-        account=account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
+        account=account,
+        programme_type="U5",
+        org_unit_id__in=org_units_with_updated_data,
     ).delete()
     etl.journey_with_visit_and_steps_per_visit(account, "U5", org_units_with_updated_data)
     entity_type_pbwg_code = "nigeria_pbwg"
@@ -99,7 +101,9 @@ def etl_ng(all_data=None):
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
     MonthlyStatistics.objects.filter(
-        account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
+        account=pbwg_account,
+        programme_type="PLW",
+        org_unit_id__in=org_units_with_updated_data,
     ).delete()
     etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
 
@@ -109,7 +113,8 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
     from django_celery_results.models import TaskResult
 
     last_success_task = TaskResult.objects.filter(
-        task_name="plugins.wfp.tasks.ssd_aggregate_and_push_data_to_dhis2", status="SUCCESS"
+        task_name="plugins.wfp.tasks.ssd_aggregate_and_push_data_to_dhis2",
+        status="SUCCESS",
     ).first()
     if last_success_task:
         last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
@@ -214,6 +219,8 @@ def etl_ethiopia(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
 
+    from .management.commands.south_sudan.Pbwg import Pbwg
+
     task_name = "plugins.wfp.tasks.etl_ethiopia"
     last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
 
@@ -243,7 +250,9 @@ def etl_ethiopia(all_data=None):
     )
     org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
     MonthlyStatistics.objects.filter(
-        account=child_account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
+        account=child_account,
+        programme_type="U5",
+        org_unit_id__in=org_units_with_updated_data,
     ).delete()
     etl.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
 
@@ -252,12 +261,14 @@ def etl_ethiopia(all_data=None):
     pbwg_account = etl_pbwg.account_related_to_entity_type()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
+    Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
 
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
     MonthlyStatistics.objects.filter(
-        account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
+        account=pbwg_account,
+        programme_type="PLW",
+        org_unit_id__in=org_units_with_updated_data,
     ).delete()
     etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)

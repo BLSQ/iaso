@@ -2471,3 +2471,55 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(mail.outbox[0].to, ["invited1@test.com"])
         self.assertEqual(mail.outbox[1].to, ["invited2@test.com"])
         self.assertEqual(mail.outbox[2].to, ["invited3@test.com"])
+
+    def test_search_parameters_v1(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
+
+        response = self.client.get(reverse("profiles-list", kwargs={"version": "v1"}), {"limit": 100})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["count"], 7)
+
+        response = self.client.get(
+            reverse("profiles-list", kwargs={"version": "v1"}),
+            {"org_unit_types": self.parent_org_unit_type.pk, "limit": 100},
+        )
+
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["count"], 2)
+        self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
+
+        response = self.client.get(
+            reverse("profiles-list", kwargs={"version": "v1"}),
+            {"orgUnitTypes": self.parent_org_unit_type.pk, "limit": 100},
+        )
+
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["count"], 7)
+        self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
+
+    def test_search_parameters_default(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
+
+        response = self.client.get(reverse("profiles-list"), {"limit": 100})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["count"], 7)
+
+        response = self.client.get(
+            reverse("profiles-list"),
+            {"org_unit_types": self.parent_org_unit_type.pk, "limit": 100},
+        )
+
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["count"], 2)
+        self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
+
+        response = self.client.get(
+            reverse("profiles-list"),
+            {"orgUnitTypes": self.parent_org_unit_type.pk, "limit": 100},
+        )
+
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["count"], 7)
+        self.assertEqual(response_data["results"][0]["user_name"], "janedoe")

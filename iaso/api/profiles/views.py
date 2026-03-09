@@ -1,7 +1,3 @@
-# todo : what's left to fix imho :
-# ColorFieldSerializer
-# retrieve : do we really need such a huge payload ???
-# check number of queries and fine tune perf/optimize
 from typing import Any, List, Union
 
 from django.conf import settings
@@ -20,10 +16,12 @@ from django.utils.crypto import get_random_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from django_filters.rest_framework import DjangoFilterBackend
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
 from rest_framework import permissions, status
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -82,14 +80,15 @@ class ProfilesViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
 
-    filter_backends = [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = ["id", "user__username", "annotated_first_user_role"]
 
-    # renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
-    #
-    # parser_classes = [CamelCaseJSONParser]
+    @property
+    def filter_backends(self):
+        if self.kwargs.get("version", "") == "v2":
+            return [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
+        return [OrderingFilter, DjangoFilterBackend]
 
     def get_parsers(self):
         if self.kwargs.get("version", "") == "v2":

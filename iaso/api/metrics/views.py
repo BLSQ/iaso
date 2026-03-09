@@ -25,9 +25,6 @@ from .serializers import (
 )
 
 
-# TODO for both viewsets: permission_classes
-
-
 class MetricTypeViewSet(viewsets.ModelViewSet):
     serializer_class = MetricTypeSerializer
     ordering_fields = ["id", "name"]

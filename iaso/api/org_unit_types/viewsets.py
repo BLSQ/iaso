@@ -9,6 +9,7 @@ from iaso.api.permission_checks import (
 )
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_TYPES_PERMISSION
 
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
@@ -23,6 +24,20 @@ from .serializers import (
 DEFAULT_ORDER = "name"
 
 
+class HasOrgUnitTypeWritePermission(permissions.BasePermission):
+    """
+    Write (POST, PUT, PATCH, DELETE): CORE_ORG_UNITS_TYPES_PERMISSION, or staff/superuser.
+    Read: not restricted (handled by IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired).
+    """
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.has_perm(CORE_ORG_UNITS_TYPES_PERMISSION.full_name())
+
+
 class OrgUnitTypeViewSet(ModelViewSet):
     """Org unit types API (deprecated)
 
@@ -30,12 +45,16 @@ class OrgUnitTypeViewSet(ModelViewSet):
     application
 
     Confusingly in this version  `sub_unit_types` map to allow_creating_sub_unit_types.
-    This API is open to anonymous users.
+    Read: any authenticated user. Write: CORE_ORG_UNITS_TYPES_PERMISSION (staff/superuser bypass).
 
     GET /api/orgunittypes/
     """
 
-    permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired]
+    permission_classes = [
+        AuthenticationEnforcedPermission,
+        IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+        HasOrgUnitTypeWritePermission,
+    ]
     serializer_class = OrgUnitTypeSerializerV1
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
@@ -79,12 +98,17 @@ class OrgUnitTypeViewSet(ModelViewSet):
 class OrgUnitTypeViewSetV2(ModelViewSet):
     """Org unit types API
 
-    This API is open to anonymous users.
+    Read: any authenticated user. Write: CORE_ORG_UNITS_TYPES_PERMISSION (staff/superuser bypass).
 
     GET /api/v2/orgunittypes/
     """
 
-    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [
+        AuthenticationEnforcedPermission,
+        permissions.IsAuthenticated,  # V2 requires auth for all operations (read: any connected user)
+        IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+        HasOrgUnitTypeWritePermission,
+    ]
     serializer_class = OrgUnitTypeSerializerV2
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
@@ -117,7 +141,6 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         return queryset.order_by("depth").distinct().order_by(*orders)
 
     @action(
-        permission_classes=[AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
         detail=False,
         methods=["GET"],
         serializer_class=OrgUnitTypesDropdownSerializer,
@@ -139,7 +162,6 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         return Response(serializer.data)
 
     @action(
-        permission_classes=[IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
         detail=True,
         methods=["GET"],
         serializer_class=OrgUnitTypeHierarchySerializer,

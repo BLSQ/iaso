@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from iaso import models as m
 from iaso.api.org_unit_types.serializers import validate_reference_forms
 from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -57,7 +57,11 @@ class OrgUnitTypesAPITestCase(APITestCase):
         wha = m.Account.objects.create(name="Worldwide Health Aid", default_version=cls.version_2)
         cls.wrong_project = wrong_project = m.Project.objects.create(name="End No Diseases", account=wha)
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
+        cls.jane = cls.create_user_with_profile(
+            username="janedoe",
+            account=ghi,
+            permissions=[CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION],
+        )
         cls.reference_form = reference_form = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
@@ -87,11 +91,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
         wrong_project.save()
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
-        """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
+        """GET /orgunittypes/ without auth: 401"""
 
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 200)
-        self.assertValidOrgUnitTypeListData(response.json(), 0)
+        self.assertJSONResponse(response, 401)
 
     def test_org_unit_types_list_with_auth(self):
         """GET /orgunittypes/ with auth but empty app id should return list of org unit types"""
@@ -180,10 +183,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
             self.assertNotIn("units_count", org_unit_type)
 
     def test_org_unit_types_retrieve_without_auth_or_app_id(self):
-        """GET /orgunittypes/<org_unit_type_id>/ without auth or app id should result in a 200 empty response"""
+        """GET /orgunittypes/<org_unit_type_id>/ without auth: 401"""
 
         response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, 401)
 
     def test_org_unit_types_retrieve_ok(self):
         """GET /orgunittypes/<org_unit_type_id>/ happy path"""
@@ -214,6 +217,38 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         response = self.client.post(self.BASE_URL, data={}, format="json")
         self.assertJSONResponse(response, 401)
+
+    def test_org_unit_type_create_without_permission_forbidden(self):
+        """POST /orgunittypes/ with auth but without CORE_ORG_UNITS_TYPES_PERMISSION: 403"""
+
+        read_only_user = self.create_user_with_profile(
+            username="readonly", account=self.ead.account, permissions=[CORE_FORMS_PERMISSION]
+        )
+        self.client.force_authenticate(read_only_user)
+        response = self.client.post(
+            self.BASE_URL,
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "project_ids": [self.ead.id],
+                "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
+                "reference_forms_ids": [],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 403)
+
+    def test_org_unit_type_read_without_write_permission_ok(self):
+        """GET /orgunittypes/ with auth but without CORE_ORG_UNITS_TYPES_PERMISSION: 200 (read allowed)"""
+
+        read_only_user = self.create_user_with_profile(
+            username="readonly2", account=self.ead.account, permissions=[CORE_FORMS_PERMISSION]
+        )
+        self.client.force_authenticate(read_only_user)
+        response = self.client.get(self.BASE_URL)
+        self.assertJSONResponse(response, 200)
 
     def test_org_unit_type_create_invalid(self):
         """POST /orgunittypes/ without project ids: invalid"""
@@ -644,11 +679,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertIn("error", response_data)
 
     def test_org_unit_type_hierarchy_without_auth(self):
-        """Test GET /orgunittypes/{id}/hierarchy/ without authentication"""
+        """Test GET /orgunittypes/{id}/hierarchy/ without auth: 401"""
 
         response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/hierarchy/")
-        # Without authentication, the queryset is filtered and returns empty, so 404 is expected
-        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+        self.assertJSONResponse(response, 401)
 
     def test_org_unit_type_hierarchy_multiple_children(self):
         """Test hierarchy with multiple children at same level"""

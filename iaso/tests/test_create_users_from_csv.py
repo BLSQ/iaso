@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 
 from unittest.mock import patch
 
@@ -977,11 +978,11 @@ class BulkCreateCsvTestCase(APITestCase):
                     "file": csv_file,
                     "default_profile_language": "fr",
                     "default_organization": "UNICEF",
-                    "default_permissions": [iaso_forms_perm.id],
-                    "default_user_roles": [manager_role.id],
-                    "default_projects": [self.project.id],
-                    "default_org_units": [self.org_unit1.id, self.org_unit2.id],
-                    "default_teams": [bulk_team.id],
+                    "default_permissions": json.dumps([iaso_forms_perm.id]),
+                    "default_user_roles": json.dumps([manager_role.id]),
+                    "default_projects": json.dumps([self.project.id]),
+                    "default_org_units": json.dumps([self.org_unit1.id, self.org_unit2.id]),
+                    "default_teams": json.dumps([bulk_team.id]),
                 },
                 format="multipart",
             )

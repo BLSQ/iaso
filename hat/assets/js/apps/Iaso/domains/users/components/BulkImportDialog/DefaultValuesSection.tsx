@@ -23,7 +23,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
     const [selectedOrgUnits, setSelectedOrgUnits] = useState<OrgUnit[]>([]);
 
     const { data: permissionsData, isLoading: isLoadingPermissions } =
-        useGetPermissionsDropDown();
+        useGetPermissionsDropDown({ outputValueField: 'id' });
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, true);
     const { data: userRolesData, isLoading: isLoadingUserRoles } =

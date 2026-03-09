@@ -47,11 +47,11 @@ BULK_CREATE_USER_COLUMNS_LIST = [
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
-    default_permissions = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_projects = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_user_roles = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_org_units = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_teams = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_permissions = serializers.JSONField(write_only=True, required=False)
+    default_projects = serializers.JSONField(write_only=True, required=False)
+    default_user_roles = serializers.JSONField(write_only=True, required=False)
+    default_org_units = serializers.JSONField(write_only=True, required=False)
+    default_teams = serializers.JSONField(write_only=True, required=False)
 
     class Meta:
         model = BulkCreateUserCsvFile

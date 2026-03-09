@@ -15,8 +15,8 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
-import { FileUploadButtons } from '../../../../components/Buttons/FileUploadButtons';
-import { useApiErrorValidation } from '../../../../libs/validation';
+import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
+import { useApiErrorValidation } from 'Iaso/libs/validation';
 import MESSAGES from '../../messages';
 import { BulkImportDefaults } from '../../types';
 import { BulkImportButton } from './BulkImportButton';
@@ -122,6 +122,9 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         >
             <Box mt={2}>
                 <FilesUpload
+                    accept={{
+                        'text/csv': ['.csv'],
+                    }}
                     files={values.file ?? []}
                     onFilesSelect={files => {
                         setFieldTouched('file', true);

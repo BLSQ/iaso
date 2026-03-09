@@ -367,7 +367,7 @@ export default defineConfig([
             '**/*.test.tsx',
             '**/*.test.ts',
             '**/*.integration.test.tsx',
-            '**/*.integration.test.ts'
+            '**/*.integration.test.ts',
         ],
         plugins: {
             vitest,

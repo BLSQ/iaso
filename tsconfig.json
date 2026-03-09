@@ -29,6 +29,8 @@
         "hat/assets/js/apps/Iaso/**/*",
         "hat/assets/js/apps/Iaso/*",
         "plugins/**/js/**/*",
-        "hat/assets/js/__tests__/integration/**/*"
+        "hat/assets/js/__tests__/integration/**/*",
+        "hat/assets/js/__tests__/factories/**/*",
+        "hat/assets/js/__tests__/factories/*"
     ]
 }

@@ -238,7 +238,7 @@ export const useGetUsersDropDown = (
             select: data => {
                 if (!data) return [];
                 if (team) {
-                    return data.profiles
+                    return data?.results
                         ?.filter((profile: Profile) => {
                             return Boolean(
                                 team.users_details.find(
@@ -248,14 +248,14 @@ export const useGetUsersDropDown = (
                                 ),
                             );
                         })
-                        .map((profile: Profile) => {
+                        ?.map((profile: Profile) => {
                             return {
                                 value: profile.user_id,
                                 label: getDisplayName(profile),
                             };
                         });
                 }
-                return data.profiles.map((profile: Profile) => {
+                return data?.results?.map((profile: Profile) => {
                     return {
                         value: profile.user_id,
                         label: getDisplayName(profile),

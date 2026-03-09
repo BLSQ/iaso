@@ -31,7 +31,6 @@ export const Details: FunctionComponent = () => {
     const { planningId } = params;
     const { data: config } = useGetPipelineConfig();
     const hasPipelineConfig = config?.configured;
-
     const titleMessage = useFormatTitle(params.mode as PageMode);
 
     const { data: planning } = useGetPlanningDetails(planningId);

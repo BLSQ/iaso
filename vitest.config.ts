@@ -26,19 +26,24 @@ export default defineConfig({
         tsconfigPaths()
     ],
     test: {
+        dir: './hat/assets/js/',
         globals: true,
         environment: 'jsdom',
-        include: ['./hat/assets/js/**/*.test.{ts,tsx}'],
+        include: [
+            '**/*.test.{ts,tsx}',
+            '__tests__/integration/**/*.integration.test.{ts,tsx}'
+        ],
         setupFiles: ['./hat/assets/js/tests/setup.ts'],
         exclude: [...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**'],
         coverage: {
             provider: 'v8',
-            include: ['./hat/assets/js/apps/**'],
+            include: ['apps/**'],
             reporter: ['text', 'json', 'html'],
         },
     },
     resolve: {
         alias: {
+            'Iaso': path.resolve(LIB_PATH, 'assets', 'js', 'apps', 'Iaso'),
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,
             'IasoModules/translations/configs': combinedTranslationsPath,

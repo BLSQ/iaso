@@ -105,7 +105,6 @@ jobs:
             - name: npm ci
               run: |
                   npm ci
-
             - name: npm build
               run: |
                   rm -f hat/assets/webpack/*

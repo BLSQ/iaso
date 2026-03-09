@@ -1,13 +1,13 @@
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
-import { makeUrlWithParams } from '../../../libs/utils';
 import { DropdownOptions } from '../../../types/utils';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
+import getDisplayName, { Profile } from '../../../utils/usersUtils';
+import { getRequest } from '../../../libs/Api';
+import { makeUrlWithParams } from '../../../libs/utils';
 
 export const useGetProfilesDropdown = (
-    ids: string,
+    ids?: string,
 ): UseQueryResult<DropdownOptions<number>, Error> => {
     return useSnackQuery({
         queryKey: ['profiles', ids],
@@ -21,7 +21,7 @@ export const useGetProfilesDropdown = (
         options: {
             select: data => {
                 return (
-                    data?.profiles?.map((profile: Profile) => {
+                    data?.results?.map((profile: Profile) => {
                         return {
                             value: profile.user_id,
                             label: getDisplayName(profile),

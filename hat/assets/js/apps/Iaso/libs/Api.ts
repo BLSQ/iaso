@@ -55,7 +55,7 @@ export const iasoFetch = async (
     const url =
         typeof resource === 'string' ? resource : (resource.url ?? resource);
     const method = init?.method ?? 'GET';
-    console.log('API', init);
+
     try {
         response = await fetch(resource, {
             ...init,
@@ -257,7 +257,10 @@ export const putRequest = (
             'Accept-Language': moment.locale(),
         },
         signal,
-    }).then(response => response.json());
+    }).then(response => {
+        if (response.status === 204) return;
+        return response.json();
+    });
 
 export const optionsRequest = async (
     url: string,

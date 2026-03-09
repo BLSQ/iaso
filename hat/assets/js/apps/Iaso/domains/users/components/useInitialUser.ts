@@ -104,7 +104,11 @@ export const useInitialUser = (
                 errors: [],
             },
             has_multiple_accounts: {
-                value: get(initialData, 'other_accounts', []).length > 0,
+                value: get(initialData, 'other_accounts', [])?.length > 0,
+                errors: [],
+            },
+            color: {
+                value: get(initialData, "color", ""),
                 errors: [],
             },
         };

@@ -1,0 +1,46 @@
+// todo : should be in bluesquare-component
+import React, { FunctionComponent } from 'react';
+import Edit from '@mui/icons-material/Edit';
+import { Button } from '@mui/material';
+import { commonStyles, IntlMessage, useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../../domains/users/messages';
+import { makeStyles } from '@mui/styles';
+import { ButtonProps } from '@mui/material/Button/Button';
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+}));
+
+type Props = {
+    message?: IntlMessage;
+    id?: string;
+} & Omit<ButtonProps, "children">;
+
+export const EditButton: FunctionComponent<Props> = ({
+    onClick,
+    message = MESSAGES.edit,
+    id = '',
+    size = 'medium',
+    disabled = false,
+    variant = 'contained',
+    color = 'primary',
+    ...props
+}) => {
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    return (
+        <Button
+            variant={variant}
+            className={classes.button}
+            color={color}
+            onClick={onClick}
+            id={id}
+            size={size}
+            disabled={disabled}
+            {...props}
+        >
+            <Edit className={classes.buttonIcon} />
+            {formatMessage(message)}
+        </Button>
+    );
+};

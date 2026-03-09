@@ -6,15 +6,15 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { useSidebar } from '../../domains/app/contexts/SideBarContext';
-import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext';
-import { LangSwitch } from '../../domains/home/components/LangSwitch';
-import { useFindCustomComponent } from '../../plugins/hooks/customComponents';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { CurrentUserInfos } from './CurrentUser/index.tsx';
-import { HomePageButton } from './HomePageButton.tsx';
-import { LogoutButton } from './LogoutButton.tsx';
+import { CurrentUserInfos } from 'Iaso/components/nav/CurrentUser';
 import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
+import { HomePageButton } from 'Iaso/components/nav/HomePageButton';
+import { LogoutButton } from 'Iaso/components/nav/LogoutButton';
+import { useSidebar } from 'Iaso/domains/app/contexts/SideBarContext';
+import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
+import { LangSwitch } from 'Iaso/domains/home/components/LangSwitch';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 const styles = theme => ({
     menuButton: {
@@ -158,11 +158,16 @@ const TopBar: FunctionComponent<Props> = ({
                                 <HomePageButton />
                             </Box>
 
-                            {(currentUser.is_staff === true && currentUser.is_superuser === true) && (
-                                <Box display="flex" justifyContent="center" pl={1}>
-                                    <DjangoAdminPanelButton />
-                                </Box>
-                            )}
+                            {currentUser.isStaff === true &&
+                                currentUser.isSuperuser === true && (
+                                    <Box
+                                        display="flex"
+                                        justifyContent="center"
+                                        pl={1}
+                                    >
+                                        <DjangoAdminPanelButton />
+                                    </Box>
+                                )}
 
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />

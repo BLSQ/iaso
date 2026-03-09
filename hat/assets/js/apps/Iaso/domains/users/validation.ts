@@ -19,10 +19,10 @@ export const useUserPasswordValidation = (
                 password: string()
                     .required('requiredField')
                     .test(apiValidator('password')),
-                confirm_password: string()
+                confirmPassword: string()
                     .required('requiredField')
                     .oneOf([ref('password')], 'passwordMatch')
-                    .test(apiValidator('confirm_password')),
+                    .test(apiValidator('confirmPassword')),
             }),
         [apiValidator],
     );

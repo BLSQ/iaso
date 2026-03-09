@@ -6,9 +6,9 @@ import {
     Column,
 } from 'bluesquare-components';
 
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasOneOfPermissions } from '../../users/utils';
 import { DescendantsCell } from '../components/DescendantsCell';
 import { ItselfCell } from '../components/ItselfCell';

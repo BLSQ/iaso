@@ -24,7 +24,7 @@ const UsersLocations: FunctionComponent<Props> = ({
             titleMessage={MESSAGES.chooseLocation}
             onConfirm={onConfirm}
             multiselect
-            initialSelection={currentUser.org_units.value}
+            initialSelection={currentUser.orgUnits.value}
         />
     );
 };

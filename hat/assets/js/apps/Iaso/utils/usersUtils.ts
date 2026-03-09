@@ -1,5 +1,9 @@
 import { LangOptions, textPlaceholder } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import {
+    ProfileListResponseItem,
+    ProfileRetrieveResponseItem,
+} from 'Iaso/domains/users/types';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
 import { userHasPermission } from '../domains/users/utils';
@@ -91,31 +95,46 @@ export type User = {
 };
 
 export const getDisplayName = (
-    user: Partial<User> | Partial<Profile>,
+    user:
+        | Partial<ProfileRetrieveResponseItem>
+        | (Partial<ProfileListResponseItem> &
+              Partial<
+                  Pick<
+                      User,
+                      'user_name' | 'username' | 'first_name' | 'last_name'
+                  >
+              >),
 ): string => {
     if (!user) {
         return textPlaceholder;
     }
     // Some endpoint have user_name and some username (without the _, fun)
-    const userName = user.user_name ?? user?.username;
-    if (!user.first_name && !user.last_name) {
+    // todo : for legacy compatibility, we kept username, user_name, first_name, last_name.. will be removed later.
+    const userName =
+        user.userName ?? (user as any).user_name ?? (user as any)?.username;
+    const firstName = user?.firstName ?? (user as any).first_name;
+    const lastName = user?.lastName ?? (user as any)?.last_name;
+
+    if (!firstName && !lastName) {
         return userName || '';
     }
-    return `${userName} (${user.first_name ? `${user.first_name}` : ''}${
-        user.first_name && user.last_name ? ' ' : ''
-    }${user.last_name ? `${user.last_name}` : ''}) `;
+
+    return `${userName} (${firstName ? `${firstName}` : ''}${
+        firstName && lastName ? ' ' : ''
+    }${lastName ? `${lastName}` : ''})`;
 };
 
 export default getDisplayName;
 
-export const useCurrentUser = (): User => {
+export const useCurrentUser = (): ProfileRetrieveResponseItem => {
     const queryClient = useQueryClient();
-    const currentUser = queryClient.getQueryData<User>('currentUser');
-    return currentUser as User;
+    const currentUser =
+        queryClient.getQueryData<ProfileRetrieveResponseItem>('currentUser');
+    return currentUser as ProfileRetrieveResponseItem;
 };
 
 export const useIsLoggedIn = (): boolean => {
-    const currentUser: User = useCurrentUser();
+    const currentUser: ProfileRetrieveResponseItem = useCurrentUser();
     return Boolean(currentUser);
 };
 
@@ -132,8 +151,8 @@ export const useCheckUserHasWriteTypePermission = (): ((
         if (!currentUser) return false;
 
         const editableTypeIds = [
-            ...(currentUser.editable_org_unit_type_ids ?? []),
-            ...(currentUser.user_roles_editable_org_unit_type_ids ?? []),
+            ...(currentUser.editableOrgUnitTypeIds ?? []),
+            ...(currentUser.userRolesEditableOrgUnitTypeIds ?? []),
         ];
 
         return (

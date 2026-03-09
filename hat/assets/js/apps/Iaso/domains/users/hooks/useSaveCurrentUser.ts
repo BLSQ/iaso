@@ -6,7 +6,7 @@ export const useSaveCurrentUser = (
     showSuccessSnackBar = true,
 ): UseMutationResult<any> =>
     useSnackMutation({
-        mutationFn: body => patchRequest(`/api/profiles/me/`, body),
+        mutationFn: body => patchRequest(`/api/v2/profiles/me/`, body),
         showSuccessSnackBar,
         invalidateQueryKey: 'usersHistoryList',
     });

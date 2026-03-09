@@ -9,8 +9,8 @@ import {
     Typography,
 } from '@mui/material';
 
-import { useSwitchAccount } from '../../hooks/useSwitchAccount';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useSwitchAccount } from 'Iaso/hooks/useSwitchAccount';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 type Props = {
     color?: 'inherit' | 'primary' | 'secondary';
@@ -61,7 +61,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
         prevOpen.current = open;
     }, [open]);
     const menuListKeyDownHandler = React.useCallback(handleListKeyDown, []);
-    if (!currentUser?.other_accounts?.length) {
+    if (!currentUser?.otherAccounts?.length) {
         return (
             <Typography
                 variant="body2"
@@ -121,20 +121,22 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                                     aria-labelledby="account-button"
                                     onKeyDown={menuListKeyDownHandler}
                                 >
-                                    {currentUser?.other_accounts?.map(account => (
-                                        <MenuItem
-                                            key={account.id}
-                                            selected={
-                                                account.id ===
-                                                currentUser.account.id
-                                            }
-                                            onClick={() =>
-                                                switchAccount(account.id)
-                                            }
-                                        >
-                                            {account.name}
-                                        </MenuItem>
-                                    ))}
+                                    {currentUser?.otherAccounts?.map(
+                                        account => (
+                                            <MenuItem
+                                                key={account.id}
+                                                selected={
+                                                    account.id ===
+                                                    currentUser.account.id
+                                                }
+                                                onClick={() =>
+                                                    switchAccount(account.id)
+                                                }
+                                            >
+                                                {account.name}
+                                            </MenuItem>
+                                        ),
+                                    )}
                                 </MenuList>
                             </ClickAwayListener>
                         </Paper>

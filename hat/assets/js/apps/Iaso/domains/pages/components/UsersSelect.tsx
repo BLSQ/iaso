@@ -1,7 +1,7 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Chip } from '@mui/material';
 import { Select } from 'bluesquare-components';
 import { FieldInputProps, FormikProps } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProfiles } from '../../users/hooks/useGetProfiles';
@@ -27,17 +27,17 @@ export const UsersSelect: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
     const value = useMemo(() => {
         if (isNewPage && (!field?.value || field?.value?.length === 0)) {
-            return [currentUser.user_id];
+            return [currentUser.userId];
         }
         return field?.value;
-    }, [currentUser.user_id, field?.value, isNewPage]);
+    }, [currentUser.userId, field?.value, isNewPage]);
     const { data, isFetching: isFetchingProfiles } = useGetProfiles({
         managedUsersOnly: 'true',
     });
     const profilesList = useMemo(() => {
         if (!data) return [];
-        return data.profiles.map(p => ({
-            value: p.user_id,
+        return data.results.map(p => ({
+            value: p.userId,
             label: getDisplayName(p),
         }));
     }, [data]);
@@ -72,13 +72,14 @@ export const UsersSelect: FunctionComponent<Props> = ({
                     const tagProps = getTagProps({
                         index,
                     });
-                    const isCurrentUser = option.value === currentUser.user_id;
+                    const isCurrentUser = option.value === currentUser.userId;
                     // disable delete for current user
                     tagProps.onDelete = isCurrentUser
                         ? undefined
                         : tagProps.onDelete;
                     return (
                         <Chip
+                            key={index}
                             disabled
                             color={isCurrentUser ? 'primary' : 'secondary'}
                             label={option?.label ? option.label : ''}

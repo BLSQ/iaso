@@ -1,5 +1,6 @@
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
 import { getLocaleDateFormat } from '../../utils/dates';
 import {
     hasFeatureFlag,
@@ -215,7 +216,7 @@ function getISOWeek(date: Date): number {
 export const getPrettyPeriod = (
     period: string,
     formatMessage: any,
-    currentUser: any,
+    currentUser: ProfileRetrieveResponseItem,
 ) => {
     if (!period) return textPlaceholder;
     const periodClass = new Period(period);

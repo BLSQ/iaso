@@ -1,3 +1,5 @@
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+
 export const EDIT_GEO_JSON_RIGHT = 'ALLOW_SHAPE_EDITION';
 export const EDIT_CATCHMENT_RIGHT = 'ALLOW_CATCHMENT_EDITION';
 export const SHOW_PAGES = 'SHOW_PAGES';
@@ -17,5 +19,7 @@ export const ENTITY_DUPLICATES_SOFT_DELETE = 'ENTITY_DUPLICATES_SOFT_DELETE';
  * @param {featureKey} featureKey
  * @return {Boolean}
  */
-export const hasFeatureFlag = (currentUser, featureKey) =>
-    Boolean(currentUser?.account?.feature_flags?.includes(featureKey));
+export const hasFeatureFlag = (
+    currentUser: ProfileRetrieveResponseItem,
+    featureKey: string,
+): boolean => Boolean(currentUser?.account?.featureFlags?.includes(featureKey));

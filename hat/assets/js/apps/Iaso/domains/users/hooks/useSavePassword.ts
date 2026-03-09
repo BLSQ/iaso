@@ -1,17 +1,16 @@
 import { UseMutationResult } from 'react-query';
+import { SaveUserPasswordQuery } from 'Iaso/domains/users/types';
 import { putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { DjangoError } from 'Iaso/types/general';
-import { User } from 'Iaso/utils/usersUtils';
-
 
 export const useSavePassword = (
     id: number | string | undefined,
     showSuccessSnackBar = true,
-): UseMutationResult<User, DjangoError, User | Partial<User>> =>
+): UseMutationResult<void, DjangoError, SaveUserPasswordQuery> =>
     useSnackMutation({
         mutationFn: body =>
-            putRequest(`/api/profiles/${id}/update-password/`, body),
+            putRequest(`/api/v2/profiles/${id}/update-password/`, body),
         invalidateQueryKey: [],
         showSuccessSnackBar,
     });

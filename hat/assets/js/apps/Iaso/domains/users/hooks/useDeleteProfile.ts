@@ -4,7 +4,7 @@ import MESSAGES from '../messages';
 
 export const useDeleteProfile = (userId: string | number | undefined) =>
     useSnackMutation(
-        body => deleteRequest(`/api/profiles/${userId ?? body?.id}/`),
+        body => deleteRequest(`/api/v2/profiles/${userId ?? body?.id}/`),
         MESSAGES.deleteSuccess,
         MESSAGES.deleteError,
         ['profiles', 'usersHistoryList'],

@@ -7,7 +7,7 @@ const getTeams = (): Promise<any> => {
 };
 
 export const useUserHasTeam = (
-    userId?: number,
+    userId?: number | string,
 ): UseQueryResult<boolean, Error> => {
     return useSnackQuery({
         queryKey: ['getUserTeam', userId],

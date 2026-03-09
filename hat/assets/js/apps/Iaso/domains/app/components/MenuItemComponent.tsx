@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Link } from 'react-router-dom';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import {
     ListItemIcon,
     ListItem,
@@ -10,15 +11,14 @@ import {
     Box,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
 import {
     commonStyles,
     theme as muiTheme,
     useSafeIntl,
 } from 'bluesquare-components';
+import { Link } from 'react-router-dom';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

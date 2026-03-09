@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useMemo,
-    useCallback,
-} from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -129,12 +124,12 @@ export const Users = () => {
         canBypassProjectRestrictions,
     });
 
-    const exportCsvURL = makeUrlWithParams(`/api/profiles/export-csv/`, {
+    const exportCsvURL = makeUrlWithParams(`/api/v2/profiles/export-csv/`, {
         ...apiParams?.apiParams,
         managedUsersOnly: apiParams?.apiParams?.managedUsersOnly ?? 'true',
     });
 
-    const exportXlsxURL = makeUrlWithParams(`/api/profiles/export-xlsx/`, {
+    const exportXlsxURL = makeUrlWithParams(`/api/v2/profiles/export-xlsx/`, {
         ...apiParams?.apiParams,
         managedUsersOnly: apiParams?.apiParams?.managedUsersOnly ?? 'true',
     });
@@ -196,7 +191,7 @@ export const Users = () => {
                 <TableWithDeepLink
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
-                    defaultSorted={[{ id: 'user__username', desc: false }]}
+                    // defaultSorted={[{ id: 'user__username', desc: false }]}
                     columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}

@@ -1,15 +1,15 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Box, Popover, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
+import { getDefaultSourceVersion } from 'Iaso/domains/dataSources/utils';
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
 import MESSAGES from '../../../domains/app/components/messages';
-import { getDefaultSourceVersion } from '../../../domains/dataSources/utils';
-import { User } from '../../../utils/usersUtils';
 import { AccountSwitch } from '../AccountSwitch';
 
 type Props = {
-    currentUser: User;
+    currentUser: ProfileRetrieveResponseItem;
     version: string;
 };
 
@@ -39,10 +39,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const CurrentUserInfos: FunctionComponent<Props> = ({
-    currentUser,
-    version,
-}) => {
+export const CurrentUserInfos = ({ currentUser, version }: Props) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
@@ -67,7 +64,7 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
                 onMouseEnter={handlePopoverOpen}
                 onMouseLeave={handlePopoverClose}
             >
-                {currentUser?.user_name}
+                {currentUser?.userName}
             </Box>
             {currentUser.account && (
                 <>
@@ -102,7 +99,7 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
                         <span>
                             {`${
                                 (defaultSourceVersion.source &&
-                                    defaultSourceVersion.source.name) ||
+                                    defaultSourceVersion.source?.name) ||
                                 '-'
                             }`}
                         </span>
@@ -115,8 +112,8 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
                         <span>
                             {`${
                                 defaultSourceVersion.version &&
-                                defaultSourceVersion.version.number >= 0
-                                    ? defaultSourceVersion.version.number
+                                defaultSourceVersion.version?.number >= 0
+                                    ? defaultSourceVersion.version?.number
                                     : '-'
                             }`}
                         </span>

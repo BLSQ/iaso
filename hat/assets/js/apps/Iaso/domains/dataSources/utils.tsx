@@ -5,7 +5,8 @@ import {
 } from '@mui/icons-material';
 import { Chip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { userHasAccessToModule } from '../users/utils.js';
 import MESSAGES from './messages';
 
@@ -16,20 +17,20 @@ import MESSAGES from './messages';
  * @return {Object}
  */
 
-export const getDefaultSourceVersion = user => {
+export const getDefaultSourceVersion = (user: ProfileRetrieveResponseItem) => {
     const sourceVersion = {
         source: undefined,
         version: undefined,
     };
     if (user && user.account) {
-        if (user.account.default_version) {
-            sourceVersion.version = user.account.default_version;
+        if (user.account.defaultVersion) {
+            sourceVersion.version = user.account.defaultVersion;
         }
         if (
-            user.account.default_version &&
-            user.account.default_version.data_source
+            user.account.defaultVersion &&
+            user.account.defaultVersion.dataSource
         ) {
-            sourceVersion.source = user.account.default_version.data_source;
+            sourceVersion.source = user.account.defaultVersion.dataSource;
         }
     }
     return sourceVersion;
@@ -266,8 +267,10 @@ export const getLabelsAndValues = (dataSource, formatMessage) => {
     };
 
     const fields = [];
+    // todo
     const hasDhis2Module = userHasAccessToModule(
         'DHIS2_MAPPING',
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         useCurrentUser(),
     );
     if (!hasDhis2Module) {

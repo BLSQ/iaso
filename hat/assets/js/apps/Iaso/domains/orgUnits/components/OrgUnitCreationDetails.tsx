@@ -68,7 +68,7 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.source)}
                             value={
                                 orgUnit.source ??
-                                account.default_version?.data_source.name
+                                account.defaultVersion?.dataSource.name
                             }
                             dataTestId="source"
                         />
@@ -76,7 +76,7 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.sourceVersion)}
                             value={
                                 orgUnit.version ??
-                                account.default_version?.number
+                                account.defaultVersion?.number
                             }
                             dataTestId="source"
                         />

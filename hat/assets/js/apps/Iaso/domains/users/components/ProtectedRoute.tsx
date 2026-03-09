@@ -1,13 +1,13 @@
 import React, { useEffect, FunctionComponent, ReactNode } from 'react';
 import * as Sentry from '@sentry/browser';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import SidebarMenu from '../../app/components/SidebarMenuComponent';
-import { getFirstAllowedUrl, userHasOneOfPermissions } from '../utils';
 import PageError from '../../../components/errors/PageError';
 import PageNoPerms from '../../../components/errors/PageNoPerms';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import SidebarMenu from '../../app/components/SidebarMenuComponent';
+import { getFirstAllowedUrl, userHasOneOfPermissions } from '../utils';
 import { WrongAccountModal } from './WrongAccountModal';
 
 type Props = {
@@ -78,7 +78,7 @@ const ProtectedRoute: FunctionComponent<Props> = ({
         if (currentUser && Sentry?.setUser) {
             Sentry.setUser({
                 id: currentUser.id,
-                username: currentUser.user_name,
+                username: currentUser.userName,
                 email: currentUser.email,
                 account: currentUser.account?.name,
             });

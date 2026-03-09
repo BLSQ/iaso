@@ -40,7 +40,7 @@ export const usePutCountryMutation = (): UseMutationResult =>
 
 export const useGetProfiles = () =>
     useSnackQuery(['polio', 'profiles'], async () =>
-        getRequest('/api/profiles'),
+        getRequest('/api/v2/profiles'),
     );
 
 export const useCountryUsersGroup = countryId => {

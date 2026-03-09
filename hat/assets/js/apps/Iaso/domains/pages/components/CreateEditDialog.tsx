@@ -1,6 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
 import {
     Button,
     Box,
@@ -10,21 +8,23 @@ import {
     DialogActions,
     Grid,
 } from '@mui/material';
-import isEqual from 'lodash/isEqual';
-import { get, merge } from 'lodash';
-import { Field, FormikProvider, useFormik } from 'formik';
-import * as yup from 'yup';
 import Typography from '@mui/material/Typography';
-import Form from './Form';
-import TextInput from './TextInput';
-import Rte from './Rte';
-import RadioInput from './RadioInput';
-import { UsersSelect } from './UsersSelect';
-import { UserRolesSelect } from './UserRolesSelect';
+import { makeStyles } from '@mui/styles';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { get, merge } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import * as yup from 'yup';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { useSavePage } from '../hooks/useSavePage';
 import { PAGES_TYPES, IFRAME, TEXT, RAW, SUPERSET } from '../constants';
+import { useSavePage } from '../hooks/useSavePage';
 import MESSAGES from '../messages';
+import Form from './Form';
+import RadioInput from './RadioInput';
+import Rte from './Rte';
+import TextInput from './TextInput';
+import { UserRolesSelect } from './UserRolesSelect';
+import { UsersSelect } from './UsersSelect';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -55,7 +55,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
     const handleSubmit = (values, helpers) => {
         const tempValues = { ...values };
-        const users = values.users || [currentUser.user_id];
+        const users = values.users || [currentUser.userId];
         tempValues.users = users;
         savePage(tempValues, {
             onSuccess: () => {

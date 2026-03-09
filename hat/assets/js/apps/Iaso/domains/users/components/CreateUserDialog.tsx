@@ -10,13 +10,15 @@ import {
     AddButton,
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal, theme,
+    makeFullModal,
+    theme,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { SxStyles } from 'Iaso/types/general';
 import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permissions from '../../../utils/permissions';
 import MESSAGES from '../messages';
@@ -28,7 +30,6 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
     tabs: {
@@ -44,7 +45,7 @@ const styles: SxStyles = {
         zIndex: -10,
         opacity: 0,
     },
-}
+};
 
 type Props = {
     titleMessage: IntlMessage;
@@ -94,8 +95,19 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                 user[key].value !== '' &&
                 user[key].value?.length !== 0 &&
                 user[key].value !== null
-            )
-                currentUser[key] = user[key].value;
+            ) {
+                if (key === 'orgUnits') {
+                    currentUser[key] = user?.[key].value?.map(
+                        (orgUnit: OrgUnit) => orgUnit?.id,
+                    );
+                } else if (key === 'userRoles') {
+                    currentUser[key] = user?.[key].value?.map(
+                        userRole => userRole?.id ?? userRole,
+                    );
+                } else {
+                    currentUser[key] = user[key].value;
+                }
+            }
         });
 
         createProfile(currentUser, {
@@ -123,16 +135,16 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
         user,
     ]);
 
-    const userPermissions = user?.user_permissions.value ?? [];
-    const userRolesPermissions = user?.user_roles_permissions.value ?? [];
+    const userPermissions = user?.userPermissions.value ?? [];
+    const userRolesPermissions = user?.userRolesPermissions.value ?? [];
 
     const isPhoneNumberUpdated =
-        user.phone_number.value !== initialData.phone_number && user.id?.value;
+        user.phoneNumber.value !== initialData.phoneNumber && user.id?.value;
 
     const isUserWithoutPermissions =
         userPermissions.length === 0 &&
         userRolesPermissions.length === 0 &&
-        !initialData?.is_superuser;
+        !initialData?.isSuperuser;
 
     const onConfirm = useCallback(() => {
         if (
@@ -174,18 +186,17 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
 
     const allUserRolesPermissions = useMemo(
-        () =>
-            user.user_roles_permissions.value.flatMap(role => role.permissions),
-        [user.user_roles_permissions.value],
+        () => user.userRolesPermissions.value.flatMap(role => role.permissions),
+        [user.userRolesPermissions.value],
     );
 
     const allUserUserRolesPermissions = useMemo(() => {
-        const allUserPermissions = user.user_permissions.value;
+        const allUserPermissions = user.userPermissions.value;
 
         return [
             ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
         ];
-    }, [allUserRolesPermissions, user.user_permissions.value]);
+    }, [allUserRolesPermissions, user.userPermissions.value]);
     useEffect(() => {
         setHasNoOrgUnitManagementWrite(
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
@@ -195,10 +206,10 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
     const allowConfirm =
         !hasErrors &&
         !(
-            user.user_name.value === '' ||
+            user.userName.value === '' ||
             ((!user.password.value || user.password.value === '') &&
-                !user.send_email_invitation.value) ||
-            (user.send_email_invitation.value && user.email?.value === '')
+                !user.sendEmailInvitation.value) ||
+            (user.sendEmailInvitation.value && user.email?.value === '')
         );
 
     return (
@@ -265,9 +276,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                     )}
                 </Tabs>
                 <Box sx={styles.root} id="user-profile-dialog">
-                    <Box
-                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
-                    >
+                    <Box sx={tab === 'infos' ? null : styles.hiddenOpacity}>
                         <UsersInfos
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -284,10 +293,10 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                     </Box>
                     {tab === 'permissions' && (
                         <PermissionsAttribution
-                            isSuperUser={initialData?.is_superuser ?? false}
+                            isSuperUser={initialData?.isSuperuser ?? false}
                             currentUser={user}
                             handleChange={permissions => {
-                                setFieldValue('user_permissions', permissions);
+                                setFieldValue('userPermissions', permissions);
                             }}
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -297,13 +306,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>
-                                setFieldValue(
-                                    'org_units',
-                                    ouList.map(
-                                        (ouListItem: OrgUnit): number =>
-                                            ouListItem.id,
-                                    ),
-                                )
+                                setFieldValue('orgUnits', ouList)
                             }
                             currentUser={user}
                         />
@@ -313,7 +316,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             handleChange={(ouTypesIds: number[]) =>
                                 setFieldValue(
-                                    'editable_org_unit_type_ids',
+                                    'editableOrgUnitTypeIds',
                                     ouTypesIds,
                                 )
                             }

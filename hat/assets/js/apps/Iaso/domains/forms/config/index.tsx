@@ -5,12 +5,13 @@ import {
     IconButton,
     useSafeIntl,
 } from 'bluesquare-components';
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
+import { baseUrls } from 'Iaso/constants/urls';
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
-import { baseUrls } from '../../../constants/urls';
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser, User } from '../../../utils/usersUtils';
 import {
     userHasAccessToModule,
     userHasOneOfPermissions,
@@ -18,9 +19,9 @@ import {
 } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
+import { useDeleteForm } from '../hooks/useDeleteForm';
 import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
-import { useDeleteForm } from '../hooks/useDeleteForm';
 
 export const baseUrl = baseUrls.forms;
 
@@ -117,7 +118,7 @@ export const useFormVersionsTableColumns = ({
     );
 };
 
-const getActionsColWidth = (user: User): number => {
+const getActionsColWidth = (user: ProfileRetrieveResponseItem): number => {
     const baseWidth = 50;
     let width = baseWidth * 2;
     if (
@@ -152,8 +153,7 @@ export const useFormsTableColumns = ({
 
     const { formatMessage } = useSafeIntl();
 
-    const { mutateAsync: deleteForm } = useDeleteForm({ params, count }); 
-
+    const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -233,7 +233,14 @@ export const useFormsTableColumns = ({
             });
         }
         return cols;
-    }, [formatMessage, user, showDeleted, orgUnitId, hasDhis2Module, deleteForm]);
+    }, [
+        formatMessage,
+        user,
+        showDeleted,
+        orgUnitId,
+        hasDhis2Module,
+        deleteForm,
+    ]);
 };
 
 export const requiredFields = [

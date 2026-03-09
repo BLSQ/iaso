@@ -35,6 +35,7 @@ import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import EntitySvg from '../components/svg/Entity';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -62,11 +63,12 @@ import { useCurrentUser } from '../utils/usersUtils';
 import MESSAGES from './messages';
 import * as paths from './routes';
 import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
+
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
-    currentUser,
+    currentUser: ProfileRetrieveResponseItem,
     orgUnitExtraPath?: string,
 ): MenuItems => {
     const entitiesListEntry: MenuItem = {
@@ -178,7 +180,7 @@ const menuItems = (
             icon: props => <ImportantDevicesRoundedIcon {...props} />,
         },
     ];
-    if (currentUser.is_staff || currentUser.is_superuser) {
+    if (currentUser.isStaff || currentUser.isSuperuser) {
         settingsSubMenu.push({
             label: formatMessage(MESSAGES.accountSetup),
             key: 'setupAccount',
@@ -463,12 +465,12 @@ export const useMenuItems = (): MenuItems => {
     }
     if (
         hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) &&
-        currentUser?.account?.default_version?.data_source.url
+        currentUser?.account?.defaultVersion?.dataSource.url
     ) {
         basicItems.push({
             label: formatMessage(MESSAGES.dhis2),
             key: 'dhis2',
-            url: currentUser.account.default_version.data_source.url,
+            url: currentUser.account.defaultVersion.dataSource.url,
             icon: props => <DHIS2Svg {...props} />,
         });
     }

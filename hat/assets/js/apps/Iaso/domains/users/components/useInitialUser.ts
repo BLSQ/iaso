@@ -23,16 +23,16 @@ export const useInitialUser = (
     const initialUser: UserDialogData = useMemo(() => {
         return {
             id: { value: get(initialData, 'id', null), errors: [] },
-            user_name: {
-                value: get(initialData, 'user_name', ''),
+            userName: {
+                value: get(initialData, 'userName', ''),
                 errors: [],
             },
-            first_name: {
-                value: get(initialData, 'first_name', ''),
+            firstName: {
+                value: get(initialData, 'firstName', ''),
                 errors: [],
             },
-            last_name: {
-                value: get(initialData, 'last_name', ''),
+            lastName: {
+                value: get(initialData, 'lastName', ''),
                 errors: [],
             },
             email: { value: get(initialData, 'email', ''), errors: [] },
@@ -41,40 +41,40 @@ export const useInitialUser = (
                 value: get(initialData, 'permissions', []),
                 errors: [],
             },
-            org_units: {
-                value: get(initialData, 'org_units', []),
+            orgUnits: {
+                value: get(initialData, 'orgUnits', []),
                 errors: [],
             },
             language: {
                 value: get(initialData, 'language', ''),
                 errors: [],
             },
-            home_page: {
-                value: get(initialData, 'home_page', ''),
+            homePage: {
+                value: get(initialData, 'homePage', ''),
                 errors: [],
             },
             organization: {
                 value: get(initialData, 'organization', undefined),
                 errors: [],
             },
-            dhis2_id: {
-                value: get(initialData, 'dhis2_id', ''),
+            dhis2Id: {
+                value: get(initialData, 'dhis2Id', ''),
                 errors: [],
             },
-            user_roles: {
-                value: get(initialData, 'user_roles', []),
+            userRoles: {
+                value: get(initialData, 'userRoles', []),
                 errors: [],
             },
-            user_roles_permissions: {
-                value: get(initialData, 'user_roles_permissions', []),
+            userRolesPermissions: {
+                value: get(initialData, 'userRolesPermissions', []),
                 errors: [],
             },
-            user_permissions: {
-                value: get(initialData, 'user_permissions', []),
+            userPermissions: {
+                value: get(initialData, 'userPermissions', []),
                 errors: [],
             },
-            send_email_invitation: {
-                value: get(initialData, 'send_email_invitation', false),
+            sendEmailInvitation: {
+                value: get(initialData, 'sendEmailInvitation', false),
                 errors: [],
             },
             projects: {
@@ -83,32 +83,28 @@ export const useInitialUser = (
                 ),
                 errors: [],
             },
-            phone_number: {
-                value: get(initialData, 'phone_number', ''),
+            phoneNumber: {
+                value: get(initialData, 'phoneNumber', ''),
                 errors: [],
             },
-            country_code: {
-                value: get(initialData, 'country_code', ''),
+            countryCode: {
+                value: get(initialData, 'countryCode', ''),
                 errors: [],
             },
-            editable_org_unit_type_ids: {
-                value: get(initialData, 'editable_org_unit_type_ids', []),
+            editableOrgUnitTypeIds: {
+                value: get(initialData, 'editableOrgUnitTypeIds', []),
                 errors: [],
             },
-            user_roles_editable_org_unit_type_ids: {
-                value: get(
-                    initialData,
-                    'user_roles_editable_org_unit_type_ids',
-                    [],
-                ),
+            userRolesEditableOrgUnitTypeIds: {
+                value: get(initialData, 'userRolesEditableOrgUnitTypeIds', []),
                 errors: [],
             },
-            has_multiple_accounts: {
-                value: get(initialData, 'other_accounts', [])?.length > 0,
+            hasMultipleAccounts: {
+                value: get(initialData, 'otherAccounts', [])?.length > 0,
                 errors: [],
             },
             color: {
-                value: get(initialData, "color", ""),
+                value: get(initialData, 'color', ''),
                 errors: [],
             },
         };
@@ -137,22 +133,22 @@ export const useInitialUser = (
                 value: fieldValue,
                 errors: [],
             };
-            if (fieldName === 'send_email_invitation' && fieldValue) {
+            if (fieldName === 'sendEmailInvitation' && fieldValue) {
                 newUser.password = {
                     value: null,
                     errors: [],
                 };
             }
-            if (fieldName === 'user_roles') {
-                let user_roles_editable_org_unit_type_ids: any = [];
+            if (fieldName === 'userRoles') {
+                let userRolesEditableOrgUnitTypeIds: any = [];
                 const userRolesPermissions: UserRole[] = (userRoles || [])
                     .filter(userRole => fieldValue.includes(userRole.value))
                     .map(userRole => {
-                        user_roles_editable_org_unit_type_ids = [
+                        userRolesEditableOrgUnitTypeIds = [
                             ...new Set([
-                                ...user_roles_editable_org_unit_type_ids,
-                                ...(userRole.original
-                                    ?.editable_org_unit_type_ids ?? []),
+                                ...userRolesEditableOrgUnitTypeIds,
+                                ...(userRole.original?.editableOrgUnitTypeIds ??
+                                    []),
                             ]),
                         ];
                         const role = {
@@ -161,12 +157,12 @@ export const useInitialUser = (
                         };
                         return role;
                     });
-                newUser.user_roles_permissions = {
+                newUser.userRolesPermissions = {
                     value: userRolesPermissions,
                     errors: [],
                 };
-                newUser.user_roles_editable_org_unit_type_ids = {
-                    value: user_roles_editable_org_unit_type_ids,
+                newUser.userRolesEditableOrgUnitTypeIds = {
+                    value: userRolesEditableOrgUnitTypeIds,
                     errors: [],
                 };
             }
@@ -180,8 +176,8 @@ export const useInitialUser = (
         (phoneNumber, countryCode) => {
             setUser({
                 ...user,
-                phone_number: { value: phoneNumber, errors: [] },
-                country_code: { value: countryCode, errors: [] },
+                phoneNumber: { value: phoneNumber, errors: [] },
+                countryCode: { value: countryCode, errors: [] },
             });
         },
         [user],

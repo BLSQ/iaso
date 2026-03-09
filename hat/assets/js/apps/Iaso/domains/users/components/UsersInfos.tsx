@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Alert, Box, Grid } from '@mui/material';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
@@ -33,7 +33,7 @@ type Props = {
     withPassword?: boolean;
 };
 
-export const UsersInfos: FunctionComponent<Props> = ({
+export const UsersInfos = ({
     setFieldValue,
     currentUser,
     initialData,
@@ -42,7 +42,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
     setPhoneNumber,
     setEmail,
     withPassword = true,
-}) => {
+}: Props) => {
     const loggedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
 
@@ -51,8 +51,8 @@ export const UsersInfos: FunctionComponent<Props> = ({
     const sendUserIEmailnvitationLabel = isEmailAdressExist
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
-    const isMultiAccountUser = currentUser.has_multiple_accounts.value;
-    const passwordDisabled = currentUser.send_email_invitation.value;
+    const isMultiAccountUser = currentUser.hasMultipleAccounts.value;
+    const passwordDisabled = currentUser.sendEmailInvitation.value;
 
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
@@ -97,31 +97,31 @@ export const UsersInfos: FunctionComponent<Props> = ({
             <Grid container spacing={2}>
                 <Grid item sm={12} md={6}>
                     <InputComponent
-                        keyValue="user_name"
+                        keyValue="userName"
                         onChange={(key, value) =>
                             setFieldValue(key, value.trim())
                         }
-                        value={currentUser.user_name.value}
-                        errors={currentUser.user_name.errors}
+                        value={currentUser.userName.value}
+                        errors={currentUser.userName.errors}
                         type="text"
                         label={MESSAGES.userName}
                         required
                         disabled={isMultiAccountUser}
                     />
                     <InputComponent
-                        keyValue="first_name"
+                        keyValue="firstName"
                         onChange={(key, value) => setFieldValue(key, value)}
-                        value={currentUser.first_name?.value}
-                        errors={currentUser.first_name?.errors}
+                        value={currentUser.firstName?.value}
+                        errors={currentUser.firstName?.errors}
                         type="text"
                         label={MESSAGES.firstName}
                         disabled={isMultiAccountUser}
                     />
                     <InputComponent
-                        keyValue="last_name"
+                        keyValue="lastName"
                         onChange={(key, value) => setFieldValue(key, value)}
-                        value={currentUser.last_name?.value}
-                        errors={currentUser.last_name?.errors}
+                        value={currentUser.lastName?.value}
+                        errors={currentUser.lastName?.errors}
                         type="text"
                         label={MESSAGES.lastName}
                         disabled={isMultiAccountUser}
@@ -138,9 +138,9 @@ export const UsersInfos: FunctionComponent<Props> = ({
 
                     {allowSendEmailInvitation && withPassword && (
                         <InputComponent
-                            keyValue="send_email_invitation"
+                            keyValue="sendEmailInvitation"
                             onChange={(key, value) => setFieldValue(key, value)}
-                            value={currentUser.send_email_invitation.value}
+                            value={currentUser.sendEmailInvitation.value}
                             type="checkbox"
                             disabled={sendUserEmailInvitation}
                             label={sendUserIEmailnvitationLabel}
@@ -171,22 +171,22 @@ export const UsersInfos: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid item sm={12} md={6}>
                     <InputComponent
-                        keyValue="phone_number"
+                        keyValue="phoneNumber"
                         onChange={handlePhoneNumberChange}
-                        value={currentUser.phone_number?.value}
+                        value={currentUser.phoneNumber?.value}
                         type="phone"
                         phoneInputOptions={{
                             country:
-                                currentUser.country_code?.value ?? undefined,
+                                currentUser.countryCode?.value ?? undefined,
                         }}
                         label={MESSAGES.phoneNumber}
                     />
                     {userHasAccessToModule('DHIS2_MAPPING', loggedUser) && (
                         <InputComponent
-                            keyValue="dhis2_id"
+                            keyValue="dhis2Id"
                             onChange={(key, value) => setFieldValue(key, value)}
-                            value={currentUser.dhis2_id?.value}
-                            errors={currentUser.dhis2_id?.errors}
+                            value={currentUser.dhis2Id?.value}
+                            errors={currentUser.dhis2Id?.errors}
                             type="text"
                             label={MESSAGES.dhis2_id}
                         />
@@ -204,10 +204,10 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         infos={formatMessage(MESSAGES.homePageInfos)}
                     >
                         <InputComponent
-                            keyValue="home_page"
+                            keyValue="homePage"
                             onChange={(key, value) => setFieldValue(key, value)}
-                            value={currentUser.home_page?.value}
-                            errors={currentUser.home_page?.errors}
+                            value={currentUser.homePage?.value}
+                            errors={currentUser.homePage?.errors}
                             type="text"
                             label={MESSAGES.homePage}
                         />

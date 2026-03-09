@@ -1,7 +1,7 @@
-import { User } from '../../utils/usersUtils';
-import { Project } from '../projects/types/project';
-import { UserRole } from '../userRoles/types/userRoles';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { User } from 'Iaso/utils/usersUtils';
+import { Project } from '../projects/types/project';
+import { UserRole as TypeUserRole } from '../userRoles/types/userRoles';
 
 export type ValueAndErrors<T> = {
     value: T;
@@ -20,7 +20,7 @@ export type UserDialogData = {
     org_units?: ValueAndErrors<number[]>;
     permissions: ValueAndErrors<string[]>;
     user_permissions: ValueAndErrors<string[]>;
-    user_roles_permissions: ValueAndErrors<UserRole[]>;
+    user_roles_permissions: ValueAndErrors<TypeUserRole[]>;
     language: ValueAndErrors<string | null>;
     password: ValueAndErrors<string | null>;
     phone_number: ValueAndErrors<string | null>;
@@ -33,157 +33,142 @@ export type UserDialogData = {
     color: ValueAndErrors<string | undefined>;
 };
 
-export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };
+export type InitialUserData = Partial<ProfileRetrieveResponseItem>;
 
 export type UserDisplayData = Pick<
     User,
     'id' | 'username' | 'user_name' | 'first_name' | 'last_name'
 >;
 
-export type Profile = {
-    id: string;
-    first_name: string;
-    user_name?: string;
-    username?: string;
-    last_name: string;
-    email: string;
-    language?: null | undefined | string;
-    user_id: number;
-    color?: string;
-    phone_number?: string | null;
-    country_code?: string | null;
-    projects?: Project[];
-};
-
 export type SaveUserPasswordQuery = {
-    password: string,
-    confirm_password: string
-}
+    password: string;
+    confirmPassword: string;
+};
 
 type UserRole = {
     id: number | string;
     name: string;
-}
+};
 
-type NestedProject = {
+export type NestedProject = {
     id: string | number;
     name: string;
     color?: string;
-}
+};
+
+export type ExtendedNestedProject = NestedProject & {
+    appId: string | number;
+};
 
 type NestedOrgUnit = {
     name: string;
-    short_name: string;
+    shortName: string;
     id: string | number;
     source: string;
-    source_id: number;
-
-    source_ref: null;
-    parent_id: null;
-    org_unit_type_id: null;
-    org_unit_type_name: null;
-    org_unit_type_depth: null;
-    created_at: null;
-    updated_at: null;
+    sourceId: number;
+    sourceRef: null;
+    parentId: null;
+    orgUnitTypeId: null;
+    orgUnitTypeName: null;
+    orgUnitTypeDepth: null;
+    createdAt: null;
+    updatedAt: null;
     aliases: null;
-    validation_status: null;
+    validationStatus: null;
     latitude: null;
     longitude: null;
     altitude: null;
-    has_geo_json: null;
+    hasGeoJson: null;
     version: null;
-    opening_date: null;
-    closed_date: null;
-}
-
+    openingDate: null;
+    closedDate: null;
+};
 
 type UserRolePermission = {
-    id: string  | number;
+    id: string | number;
     name: string;
-    group_id: number;
+    groupId: number;
     permissions: string[];
-    created_at: number;
-    updated_at: number;
-}
+    createdAt: number;
+    updatedAt: number;
+};
 
 type DataSource = {
     name: string;
     description?: string;
     id: number | string;
     url: string;
-    tree_config_status_fields: string[]
-    created_at: number;
-    updated_at: number;
-}
+    treeConfigStatusFields: string[];
+    createdAt: number;
+    updatedAt: number;
+};
 
 type DefaultVersion = {
-    data_source: DataSource
+    dataSource: DataSource;
     number: number;
     description?: string;
     id: string | number;
-    created_at: number;
-    updated_at: number;
-}
+    createdAt: number;
+    updatedAt: number;
+};
+
 type Account = {
     name: string;
     id: string | number;
-    created_at: number;
-    updated_at: number;
-    default_version?: DefaultVersion
-    feature_flags?: string[];
-    user_manual_path: string;
-    forum_path: string;
-    analytics_script?: string;
-}
+    createdAt: number;
+    updatedAt: number;
+    defaultVersion?: DefaultVersion;
+    featureFlags?: string[];
+    userManualPath: string;
+    forumPath: string;
+    analyticsScript?: string;
+};
 
 export type ProfileListResponseItem = {
     id: number | string;
-    first_name: string;
-    user_name: string;
-    last_name: string;
+    firstName: string;
+    userName: string;
+    lastName: string;
     email: string;
     language?: string;
-    user_id: number | string;
-    phone_number: string;
-    country_code?: string;
-    editable_org_unit_type_ids: string[] | number[];
-    user_roles_editable_org_unit_type_ids: string[] | number[];
-    user_roles: UserRole[];
+    userId: number | string;
+    phoneNumber: string;
+    countryCode?: string;
+    editableOrgUnitTypeIds: string[] | number[];
+    userRolesEditableOrgUnitTypeIds: string[] | number[];
+    userRoles: UserRole[];
     color: string;
     projects: NestedProject[];
-    user_permissions: string[];
-    is_staff: boolean;
-    is_superuser: boolean;
-    org_units: NestedOrgUnit[]
-}
-
+    userPermissions: string[];
+    isStaff: boolean;
+    isSuperuser: boolean;
+    orgUnits: NestedOrgUnit[];
+};
 
 export type ProfileRetrieveResponseItem = {
-
     id: number | string;
-    first_name: string;
-    user_name: string;
-    last_name: string;
+    firstName: string;
+    userName: string;
+    lastName: string;
     email: string;
-    permissions: string[],
-    user_permissions: string[],
-    is_staff: boolean;
-    is_superuser: boolean;
-    user_roles: string[] | number[]
-    user_roles_permissions: UserRolePermission[];
+    permissions: string[];
+    userPermissions: string[];
+    isStaff: boolean;
+    isSuperuser: boolean;
+    userRoles: string[] | number[];
+    userRolesPermissions: UserRolePermission[];
     language?: string;
     organization?: string;
-    user_id: string | number;
-    dhis2_id?: string;
-    home_page?: string;
-    projects: Array<NestedProject & {app_id: string | number}>;
-    phone_number?: string;
-    country_code?: string;
-    other_account: Account[];
-    editable_org_unit_type_ids: string[] | number[];
-    user_roles_editable_org_unit_type_ids: string[] | number[];
-    account: Account & {modules: string[]};
-    org_units: OrgUnit[];
+    userId: string | number;
+    dhis2Id?: string;
+    homePage?: string;
+    projects: ExtendedNestedProject[];
+    phoneNumber?: string;
+    countryCode?: string;
+    otherAccounts: Account[];
+    editableOrgUnitTypeIds: string[] | number[];
+    userRolesEditableOrgUnitTypeIds: string[] | number[];
+    account: Account & { modules: string[] };
+    orgUnits: OrgUnit[];
     color: string;
-
-}
+};

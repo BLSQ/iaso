@@ -9,19 +9,20 @@ import { useGetTeamsDropdown } from '../../../../../../../hat/assets/js/apps/Ias
 import MESSAGES from '../../../constants/messages';
 import { usePutCountryMutation } from './requests';
 import { User } from 'Iaso/utils/usersUtils';
+import { ProfileListResponseItem } from 'Iaso/domains/users/types';
 
-const makeDropDownListItem = user => {
+const makeDropDownListItem = (user: ProfileListResponseItem) => {
     const userName =
-        user.first_name && user.last_name
-            ? `${user.first_name} ${user.last_name}`
-            : user.user_name;
+        user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : user.userName;
     return {
-        value: user.user_id,
+        value: user.userId,
         label: `${userName} - ${user.email}`,
     };
 };
 
-const makeDropDownList = allUsers => {
+const makeDropDownList = (allUsers: ProfileListResponseItem[]) => {
     return allUsers
         .filter(user => Boolean(user.email))
         .map(makeDropDownListItem)
@@ -45,7 +46,7 @@ type Props = {
     allLanguages: Record<string, any>[];
     countryName: string;
     language?: string;
-    allUsers?: User[];
+    allUsers?: ProfileListResponseItem[];
     teams?: Record<string, any>[];
 };
 

@@ -24,7 +24,7 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
         });
 
     const userRolesOrgUnitTypeRestrictions =
-        currentUser.user_roles_editable_org_unit_type_ids.value.length > 0;
+        currentUser.userRolesEditableOrgUnitTypeIds.value.length > 0;
 
     return (
         <Box>
@@ -53,12 +53,12 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
                 <InputComponent
                     multi
                     clearable
-                    keyValue="editable_org_unit_type_ids"
+                    keyValue="editableOrgUnitTypeIds"
                     onChange={(_, value) =>
                         handleChange(commaSeparatedIdsToArray(value))
                     }
                     loading={isLoadingOrgUitTypes}
-                    value={currentUser.editable_org_unit_type_ids?.value ?? []}
+                    value={currentUser.editableOrgUnitTypeIds?.value ?? []}
                     type="select"
                     options={orgUnitTypes}
                     label={MESSAGES.orgUnitWriteTypes}

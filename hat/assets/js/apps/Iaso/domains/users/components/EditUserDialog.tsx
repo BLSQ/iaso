@@ -9,15 +9,17 @@ import { Box, Tab, Tabs } from '@mui/material';
 import {
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal, theme,
+    makeFullModal,
+    theme,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
+import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import { EditButton } from 'Iaso/components/Buttons/EditButton';
+import { SxStyles } from 'Iaso/types/general';
 import * as Permissions from 'Iaso/utils/permissions';
 import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
@@ -29,7 +31,6 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
     tabs: {
@@ -45,7 +46,7 @@ const styles: SxStyles = {
         zIndex: -10,
         opacity: 0,
     },
-}
+};
 
 type Props = {
     titleMessage: IntlMessage;
@@ -59,6 +60,7 @@ type Props = {
 
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const defaultData: InitialUserData = {};
+
 const EditUserDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
@@ -88,13 +90,13 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
-            if (key === 'org_units') {
+            if (key === 'orgUnits') {
                 currentUser[key] = user?.[key].value?.map(
                     (orgUnit: OrgUnit) => orgUnit?.id,
                 );
-            } else if(key === 'user_roles'){
+            } else if (key === 'userRoles') {
                 currentUser[key] = user?.[key].value?.map(
-                    (userRole) => userRole?.id ?? userRole,
+                    userRole => userRole?.id ?? userRole,
                 );
             } else {
                 currentUser[key] = user[key].value;
@@ -126,16 +128,17 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
         user,
     ]);
 
-    const userPermissions = user?.user_permissions.value ?? [];
-    const userRolesPermissions = user?.user_roles_permissions.value ?? [];
+    const userPermissions = user?.userPermissions.value ?? [];
+    const userRolesPermissions = user?.userRolesPermissions.value ?? [];
 
     const isPhoneNumberUpdated =
-        (user.phone_number.value ?? '') !== (initialData?.phone_number ?? '') && !!user.id?.value;
+        (user.phoneNumber.value ?? '') !== (initialData?.phoneNumber ?? '') &&
+        !!user.id?.value;
 
     const isUserWithoutPermissions =
         userPermissions.length === 0 &&
         userRolesPermissions.length === 0 &&
-        !initialData?.is_superuser;
+        !initialData?.isSuperuser;
 
     const onConfirm = useCallback(() => {
         if (
@@ -177,18 +180,17 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
 
     const allUserRolesPermissions = useMemo(
-        () =>
-            user.user_roles_permissions.value.flatMap(role => role.permissions),
-        [user.user_roles_permissions.value],
+        () => user.userRolesPermissions.value.flatMap(role => role.permissions),
+        [user.userRolesPermissions.value],
     );
 
     const allUserUserRolesPermissions = useMemo(() => {
-        const allUserPermissions = user.user_permissions.value;
+        const allUserPermissions = user.userPermissions.value;
 
         return [
             ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
         ];
-    }, [allUserRolesPermissions, user.user_permissions.value]);
+    }, [allUserRolesPermissions, user.userPermissions.value]);
     useEffect(() => {
         setHasNoOrgUnitManagementWrite(
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
@@ -260,9 +262,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                     )}
                 </Tabs>
                 <Box sx={styles.root} id="user-profile-dialog">
-                    <Box
-                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
-                    >
+                    <Box sx={tab === 'infos' ? null : styles.hiddenOpacity}>
                         <UsersInfos
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -280,10 +280,10 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                     </Box>
                     {tab === 'permissions' && (
                         <PermissionsAttribution
-                            isSuperUser={initialData?.is_superuser ?? false}
+                            isSuperUser={initialData?.isSuperuser ?? false}
                             currentUser={user}
                             handleChange={permissions => {
-                                setFieldValue('user_permissions', permissions);
+                                setFieldValue('userPermissions', permissions);
                             }}
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -293,7 +293,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>
-                                setFieldValue('org_units', ouList)
+                                setFieldValue('orgUnits', ouList)
                             }
                             currentUser={user}
                         />
@@ -303,7 +303,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             handleChange={(ouTypesIds: number[]) =>
                                 setFieldValue(
-                                    'editable_org_unit_type_ids',
+                                    'editableOrgUnitTypeIds',
                                     ouTypesIds,
                                 )
                             }
@@ -315,15 +315,13 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-type EditUserButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message">
+type EditUserButtonProps = Omit<
+    React.ComponentProps<typeof EditButton>,
+    'message'
+>;
 
 const EditUserButton = (props: EditUserButtonProps) => {
-    return (
-        <EditButton
-            message={MESSAGES.updateUser}
-            {...props}
-        />
-    );
+    return <EditButton message={MESSAGES.updateUser} {...props} />;
 };
 const modalWithButton = makeFullModal(EditUserDialogComponent, EditUserButton);
 const modalWithIcon = makeFullModal(EditUserDialogComponent, EditIconButton);

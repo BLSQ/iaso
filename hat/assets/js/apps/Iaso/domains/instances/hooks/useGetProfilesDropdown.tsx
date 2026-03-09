@@ -1,10 +1,11 @@
 import { UseQueryResult } from 'react-query';
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { DropdownOptions } from '../../../types/utils';
+import { ProfileListResponseItem } from 'Iaso/domains/users/types';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
+import getDisplayName from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
-import { getRequest } from '../../../libs/Api';
-import { makeUrlWithParams } from '../../../libs/utils';
 
 export const useGetProfilesDropdown = (
     ids?: string,
@@ -15,15 +16,15 @@ export const useGetProfilesDropdown = (
             if (ids === undefined || ids.length < 1) {
                 return [];
             }
-            return getRequest(makeUrlWithParams('/api/profiles/', { ids }));
+            return getRequest(makeUrlWithParams('/api/v2/profiles/', { ids }));
         },
         snackErrorMsg: MESSAGES.error,
         options: {
             select: data => {
                 return (
-                    data?.results?.map((profile: Profile) => {
+                    data?.results?.map((profile: ProfileListResponseItem) => {
                         return {
-                            value: profile.user_id,
+                            value: profile.userId,
                             label: getDisplayName(profile),
                         };
                     }) ?? []

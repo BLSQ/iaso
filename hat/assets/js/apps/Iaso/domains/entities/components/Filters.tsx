@@ -107,8 +107,8 @@ const Filters: FunctionComponent<Props> = ({
         filters?.submitterTeamId ? parseInt(filters.submitterTeamId, 10) : 0,
     );
     const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
-    const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
-    const sourceVersionId = currentUser?.account?.default_version?.id;
+    const dataSourceId = currentUser?.account?.defaultVersion?.dataSource?.id;
+    const sourceVersionId = currentUser?.account?.defaultVersion?.id;
     const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
         dataSourceId,
         sourceVersionId,

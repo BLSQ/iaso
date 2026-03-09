@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { ProductFruits } from 'react-product-fruits';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 const ProductFruitsComponent = () => {
     const currentUser = useCurrentUser();

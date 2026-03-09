@@ -85,7 +85,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const defaultVersion = useMemo(
-        () => currentUser?.account?.default_version,
+        () => currentUser?.account?.defaultVersion,
         [currentUser],
     );
     const defaultSource = useMemo(

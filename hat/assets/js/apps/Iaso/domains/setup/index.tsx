@@ -57,7 +57,7 @@ export const SetupAccount: FunctionComponent = () => {
     const [isSaved, setIsSaved] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const isAdmin = currentUser.is_superuser || currentUser.is_staff;
+    const isAdmin = currentUser.isSuperuser || currentUser.isStaff;
 
     const { mutateAsync: saveAccount, isLoading } = useSaveAccount();
     const {

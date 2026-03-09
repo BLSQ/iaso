@@ -2,20 +2,21 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
 import moment from 'moment';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { ParamsWithAccountId } from 'Iaso/routing/hooks/useParamsObject';
-import { apiDateFormat } from 'Iaso/utils/dates';
+import { ProfileListResponseItem } from 'Iaso/domains/users/types';
 import {
     deleteRequest,
     getRequest,
     patchRequest,
     postRequest,
-} from '../../../libs/Api';
-import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
+} from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 
-import { makeUrlWithParams } from '../../../libs/utils';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
+import { ParamsWithAccountId } from 'Iaso/routing/hooks/useParamsObject';
 
-import { DropdownOptions } from '../../../types/utils';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
+import { DropdownOptions } from 'Iaso/types/utils';
+import { apiDateFormat } from 'Iaso/utils/dates';
+import getDisplayName from '../../../utils/usersUtils';
 import { PaginatedInstances } from '../../instances/types/instance';
 import { Team } from '../../teams/types/team';
 import { Location } from '../components/ListMap';
@@ -232,35 +233,37 @@ export const useGetUsersDropDown = (
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
     return useSnackQuery(
         ['profiles', team],
-        () => getRequest('/api/profiles/'),
+        () => getRequest('/api/v2/profiles/'),
         MESSAGES.projectsError,
         {
             select: data => {
                 if (!data) return [];
                 if (team) {
                     return data?.results
-                        ?.filter((profile: Profile) => {
+                        ?.filter((profile: ProfileListResponseItem) => {
                             return Boolean(
                                 team.users_details.find(
                                     userProfile =>
                                         userProfile.username ===
-                                        profile.user_name,
+                                        profile.userName,
                                 ),
                             );
                         })
-                        ?.map((profile: Profile) => {
+                        ?.map((profile: ProfileListResponseItem) => {
                             return {
-                                value: profile.user_id,
+                                value: profile.userId,
                                 label: getDisplayName(profile),
                             };
                         });
                 }
-                return data?.results?.map((profile: Profile) => {
-                    return {
-                        value: profile.user_id,
-                        label: getDisplayName(profile),
-                    };
-                });
+                return data?.results?.map(
+                    (profile: ProfileListResponseItem) => {
+                        return {
+                            value: profile.userId,
+                            label: getDisplayName(profile),
+                        };
+                    },
+                );
             },
         },
     );

@@ -1,12 +1,12 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
 import { screen } from '@testing-library/react';
-import { randomLanguage } from '../../factories/language';
-import { renderWithTheme } from '../../../tests/helpers';
 import { IntlProvider } from 'react-intl';
-import MESSAGES from "Iaso/domains/users/messages";
-import { Details } from "Iaso/domains/users/details";
+import { Details } from 'Iaso/domains/users/details';
+import MESSAGES from 'Iaso/domains/users/messages';
 import PERMISSIONS_MESSAGES from 'Iaso/domains/users/permissionsMessages';
+import { renderWithTheme } from '../../../tests/helpers';
+import { randomLanguage } from '../../factories/language';
 
 // mocking hooks
 vi.mock('bluesquare-components', async () => {
@@ -46,7 +46,6 @@ vi.mock('Iaso/utils/usersUtils', async () => {
         ...actual,
         useCurrentUser: mockCurrentUser,
     };
-
 });
 
 const mockSavePassword = vi.fn();
@@ -74,7 +73,6 @@ vi.mock('Iaso/domains/users/hooks/useSaveProfile', () => ({
     },
 }));
 
-
 vi.mock('Iaso/domains/users/hooks/useDeleteProfile', () => ({
     useDeleteProfile: () => {
         return {
@@ -83,7 +81,6 @@ vi.mock('Iaso/domains/users/hooks/useDeleteProfile', () => ({
         };
     },
 }));
-
 
 // fake data
 
@@ -120,23 +117,10 @@ const randomUser = {
     phone_number: faker.phone.number(),
     home_page: faker.internet.url(),
     color: faker.color.rgb({ format: 'hex' }),
-    projects: [
-        getRandomProject(),
-        getRandomProject(),
-    ],
-    org_units: [
-        getRandomOrgUnit(),
-        getRandomOrgUnit(),
-    ],
-    user_roles_permissions: [
-        getRandomUserRole(),
-        getRandomUserRole(),
-    ],
-    permissions: [
-        'iaso_completeness',
-        'iaso_mappings'
-    ],
-
+    projects: [getRandomProject(), getRandomProject()],
+    orgUnits: [getRandomOrgUnit(), getRandomOrgUnit()],
+    userRolesPermissions: [getRandomUserRole(), getRandomUserRole()],
+    permissions: ['iaso_completeness', 'iaso_mappings'],
 };
 
 // actual tests
@@ -163,68 +147,67 @@ describe('User detail view integration test', () => {
             </IntlProvider>,
         );
 
-        expect(screen.getByText(MESSAGES.generalInfo.defaultMessage)).toBeInTheDocument();
-        expect(screen.getByText(MESSAGES.projects.defaultMessage)).toBeInTheDocument();
-        expect(screen.getByText(MESSAGES.locations.defaultMessage)).toBeInTheDocument();
-        expect(screen.queryAllByText(MESSAGES.permissions.defaultMessage)).not.toBeNull();
-        expect(screen.getByText(MESSAGES.user_roles.defaultMessage)).toBeInTheDocument();
+        expect(
+            screen.getByText(MESSAGES.generalInfo.defaultMessage),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(MESSAGES.projects.defaultMessage),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(MESSAGES.locations.defaultMessage),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryAllByText(MESSAGES.permissions.defaultMessage),
+        ).not.toBeNull();
+        expect(
+            screen.getByText(MESSAGES.user_roles.defaultMessage),
+        ).toBeInTheDocument();
 
-        randomUser.projects.forEach(({name}) => {
-            expect(screen.getByText(name)).toBeInTheDocument()
-        })
+        randomUser.projects.forEach(({ name }) => {
+            expect(screen.getByText(name)).toBeInTheDocument();
+        });
 
-        randomUser.org_units.forEach(({name}) => {
-            expect(screen.getByText(name)).toBeInTheDocument()
-        })
+        randomUser.orgUnits.forEach(({ name }) => {
+            expect(screen.getByText(name)).toBeInTheDocument();
+        });
 
-        randomUser.user_roles_permissions.forEach(({name}) => {
-            expect(screen.getByText(name)).toBeInTheDocument()
-        })
+        randomUser.userRolesPermissions.forEach(({ name }) => {
+            expect(screen.getByText(name)).toBeInTheDocument();
+        });
 
         randomUser.permissions.forEach((perm: string) => {
             // @ts-ignore
-            expect(screen.getByText(PERMISSIONS_MESSAGES?.[perm]?.defaultMessage)).toBeInTheDocument()
-        })
-
-
+            expect(
+                screen.getByText(PERMISSIONS_MESSAGES?.[perm]?.defaultMessage),
+            ).toBeInTheDocument();
+        });
     });
-    it('deletes user and redirects to user list', async () => {
-
-    });
-    it('has all the initial fields filled in when updating the user', async () => {
-
-    });
-    it('reloads the data upon successful edit', async () => {
-
-    });
-    it('doesn\'t reload the page upon successful password modification', async () => {
-
-    });
-    it('displays the user data', async () => {
-
-    });
+    // eslint-disable-next-line vitest/expect-expect
+    it('deletes user and redirects to user list', async () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it('has all the initial fields filled in when updating the user', async () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it('reloads the data upon successful edit', async () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it("doesn't reload the page upon successful password modification", async () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it('displays the user data', async () => {});
 });
 
 describe('User list integration test', () => {
-    it('has all the initial fields filled in when updating the user', async () => {
-
-    });
-    it('reloads the data upon successful edit', async () => {
-
-    });
-    it('deletes user and reload data', async () => {
-
-    });
-    it('reloads data upon successful create', async () => {
-
-    });
+    // eslint-disable-next-line vitest/expect-expect
+    it('has all the initial fields filled in when updating the user', async () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it('reloads the data upon successful edit', async () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it('deletes user and reload data', async () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it('reloads data upon successful create', async () => {});
 });
 
 describe('User general integration test', () => {
-    it('allows going to a user detail view from the list view by clicking on the icon', () => {
-
-    });
-    it('allows going back to the user list from user detail view', () => {
-
-    });
+    // eslint-disable-next-line vitest/expect-expect
+    it('allows going to a user detail view from the list view by clicking on the icon', () => {});
+    // eslint-disable-next-line vitest/expect-expect
+    it('allows going back to the user list from user detail view', () => {});
 });

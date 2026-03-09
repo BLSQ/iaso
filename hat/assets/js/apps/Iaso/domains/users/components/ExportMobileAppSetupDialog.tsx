@@ -5,7 +5,6 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { MutateFunction } from 'react-query';
 import { Alert, Box, Button, Typography } from '@mui/material';
 import LinearProgress, {
     LinearProgressProps,
@@ -17,14 +16,15 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { MutateFunction } from 'react-query';
 
 import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
+import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { useTaskMonitor } from 'Iaso/hooks/taskMonitor';
 import { getRequest } from 'Iaso/libs/Api';
-import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { Project, User } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../messages';
 import { SxStyles } from '../../../types/general';
+import MESSAGES from '../messages';
 
 const styles: SxStyles = {
     progressWrapper: {
@@ -77,13 +77,13 @@ function LinearProgressWithLabel(
     );
 }
 
-const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
+const ExportMobileAppSetupDialogComponent = ({
     titleMessage,
     isOpen,
     selectedUser,
     onCreateExport,
     closeDialog,
-}) => {
+}: DialogProps) => {
     const { formatMessage } = useSafeIntl();
 
     const [selectedProject, setSelectedProject] = useState<Project>(
@@ -97,8 +97,8 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
     const fullUserName = useMemo(
         () =>
             [
-                `${selectedUser.first_name} ${selectedUser.last_name}`,
-                selectedUser.user_name,
+                `${selectedUser.firstName} ${selectedUser.lastName}`,
+                selectedUser.userName,
                 selectedUser.email,
             ]
                 .filter(item => item?.trim() !== '')
@@ -118,7 +118,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
 
     const onConfirm = useCallback(() => {
         onCreateExport({
-            userId: selectedUser.user_id,
+            userId: selectedUser.userId,
             projectId: selectedProject.id,
             password,
         })

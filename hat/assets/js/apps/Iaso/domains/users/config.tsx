@@ -1,19 +1,23 @@
 import React, { useMemo } from 'react';
-import { IconButton, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import {
+    IconButton,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 
+import { baseUrls } from 'Iaso/constants/urls';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import * as Permission from '../../utils/permissions.ts';
 import { ProjectChips } from '../projects/components/ProjectChips';
+import { EditUserWithIconDialog } from './components/EditUserDialog.tsx';
 import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import PermissionCheckBoxes from './components/PermissionCheckBoxes.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import { UserRolePermissions } from './components/UserRolePermissions.tsx';
-import { EditUserWithIconDialog } from './components/EditUserDialog.tsx';
 import MESSAGES from './messages.ts';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
 import { userHasOneOfPermissions } from './utils';
-import { baseUrls } from 'Iaso/constants/urls';
 
 export const useUsersTableColumns = ({
     deleteProfile,
@@ -37,25 +41,25 @@ export const useUsersTableColumns = ({
                 Header: formatMessage(MESSAGES.userName),
                 id: 'user__username',
                 sortable: false,
-                accessor: 'user_name',
+                accessor: 'userName',
             },
             {
                 Header: formatMessage(MESSAGES.firstName),
                 id: 'user__first_name',
                 sortable: false,
-                accessor: 'first_name',
+                accessor: 'firstName',
             },
             {
                 Header: formatMessage(MESSAGES.lastName),
                 id: 'user__last_name',
                 sortable: false,
-                accessor: 'last_name',
+                accessor: 'lastName',
             },
             {
                 Header: formatMessage(MESSAGES.phoneNumber),
-                id: 'phone_number',
+                id: 'phoneNumber',
                 sortable: false,
-                accessor: 'phone_number',
+                accessor: 'phoneNumber',
                 Cell: settings =>
                     settings.value ? (
                         <a href={`tel:${settings.value}`}>{settings.value}</a>
@@ -79,12 +83,11 @@ export const useUsersTableColumns = ({
             },
             {
                 Header: formatMessage(MESSAGES.userRoles),
-                id: 'annotated_first_user_role',
-                accessor: 'user_roles',
+                id: 'annotatedFirstUserRole',
+                accessor: 'userRoles',
                 Cell: settings =>
-                    settings.value
-                        ?.map(user_role => user_role.name)
-                        .join(', ') || textPlaceholder,
+                    settings.value?.map(userRole => userRole.name).join(', ') ||
+                    textPlaceholder,
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -138,7 +141,6 @@ export const useUsersTableColumns = ({
                                 onCreateExport={exportMobileSetup}
                             />
                         </DisplayIfUserHasPerm>
-
                     </section>
                 ),
             },
@@ -207,7 +209,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
             },
         ];
 
-        currentUser.user_roles_permissions.value.forEach(role => {
+        currentUser.userRolesPermissions.value.forEach(role => {
             columns.push({
                 Header: role.name,
                 id: role.id.toString(),
@@ -228,9 +230,5 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
             });
         });
         return columns;
-    }, [
-        currentUser.user_roles_permissions.value,
-        formatMessage,
-        setPermissions,
-    ]);
+    }, [currentUser.userRolesPermissions.value, formatMessage, setPermissions]);
 };

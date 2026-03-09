@@ -7,8 +7,8 @@ import {
 } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { MutateFunction } from 'react-query';
-import InputComponent from 'Iaso/components/forms/InputComponent';
 import { EditButton } from 'Iaso/components/Buttons/EditButton';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from 'Iaso/domains/users/messages';
 import { SaveUserPasswordQuery } from 'Iaso/domains/users/types';
 import { useUserPasswordValidation } from 'Iaso/domains/users/validation';
@@ -54,7 +54,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
         validationSchema: schema,
     });
 
-    const onChange = (keyValue, value) => {
+    const onChange = (keyValue: string, value: any) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
@@ -108,9 +108,9 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
                         label={MESSAGES.passwordLabel}
                     />
                     <InputComponent
-                        keyValue="confirm_password"
+                        keyValue="confirmPassword"
                         onChange={onChange}
-                        value={values.confirm_password}
+                        value={values.confirmPassword}
                         errors={getErrors('confirm_password')}
                         required
                         type="password"
@@ -122,14 +122,16 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-type PasswordEditButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message" | "color">
+type PasswordEditButtonProps = Omit<
+    React.ComponentProps<typeof EditButton>,
+    'message' | 'color'
+>;
 
 const PasswordEditButton = (props: PasswordEditButtonProps) => {
-
     return (
         <EditButton
             message={MESSAGES.updatePasswordButtonLabel}
-            color={"warning"}
+            color={'warning'}
             {...props}
         />
     );

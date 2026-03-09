@@ -25,8 +25,8 @@ import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
-import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useSourceVersionIds } from '../hooks/utils/useSourceVersionIds';
 import MESSAGES from '../messages';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
@@ -111,8 +111,8 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         () => decodeSearch(decodeURI(params.searches)),
         [params.searches],
     );
-    const defaultVersion = currentUser?.account?.default_version;
-    const defaultDataSource = defaultVersion?.data_source;
+    const defaultVersion = currentUser?.account?.defaultVersion;
+    const defaultDataSource = defaultVersion?.dataSource;
     const dataSourceIds = defaultDataSource?.id
         ? `${defaultDataSource.id}`
         : undefined;

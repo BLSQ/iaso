@@ -1,19 +1,19 @@
 import { LangOptions } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
-import { User } from 'Iaso/utils/usersUtils';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { useLocale } from '../../app/contexts/LocaleContext';
 
 export const useGetCurrentUser = (
     enabled: boolean,
     showError = true,
-): UseQueryResult<User, Error> => {
+): UseQueryResult<ProfileRetrieveResponseItem, Error> => {
     const queryKey: any[] = ['currentUser'];
     const { setLocale, locale } = useLocale();
     return useSnackQuery({
         queryKey,
-        queryFn: () => getRequest('/api/profiles/me/'),
+        queryFn: () => getRequest('/api/v2/profiles/me/'),
         dispatchOnError: showError,
         options: {
             onError: () => {

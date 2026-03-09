@@ -10,7 +10,7 @@ export const userHasPermission = (permission, user) => {
         return false;
     }
     if (!user.permissions || !Array.isArray(user.permissions)) return false;
-    if (user.is_superuser || user.permissions.find(p => p === permission)) {
+    if (user.isSuperuser || user.permissions.find(p => p === permission)) {
         return true;
     }
     return false;

@@ -8,15 +8,7 @@ import MESSAGES from '../../../constants/messages';
 import { LinkWithAlias } from '../types';
 
 export const COMMENT_CHAR_LIMIT = 50;
-export const getProfileFromId = (
-    userId: number,
-    profiles: Profile[],
-): Profile => {
-    return (
-        profiles.find((profile: Profile) => profile.user_id === userId) ??
-        ({} as Profile)
-    );
-};
+
 export const formatComment = (comment: Optional<string>): Nullable<string> => {
     if (!comment) return null;
     if (comment.length > COMMENT_CHAR_LIMIT)

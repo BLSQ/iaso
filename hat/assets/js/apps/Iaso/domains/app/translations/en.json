@@ -1175,6 +1175,8 @@
     "iaso.permissions.iaso_entity_type_write": "Entity types management",
     "iaso.permissions.iaso_forms_stats": "Form statistics",
     "iaso.permissions.iaso_forms_stats_tooltip": "See statistics of number forms submissions",
+    "iaso.permissions.iaso_metric_types": "Metric types management",
+    "iaso.permissions.iaso_metric_types_tooltip": "Manage metric types: create, update and delete metric types",
     "iaso.permissions.iaso_org_unit_change_request": "Org unit change request - Read and Write",
     "iaso.permissions.iaso_org_unit_change_request_approve": "Org unit change request - Approve",
     "iaso.permissions.iaso_org_unit_change_request_configurations": "Org unit change request configurations",

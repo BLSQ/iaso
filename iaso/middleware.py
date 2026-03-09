@@ -11,6 +11,6 @@ class CustomCamelCaseMiddleWare(CamelCaseMiddleWare):
         except Resolver404:
             pass
 
-        if route.startswith("/api/profiles"):
+        if route.startswith("/api/v2/profiles"):
             return super().__call__(request)
         return self.get_response(request)

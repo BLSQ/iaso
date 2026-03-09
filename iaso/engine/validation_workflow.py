@@ -75,9 +75,9 @@ class ValidationWorkflowEngine:
             validation_status.save()
             return
 
-        while instance.get_next_pending_states(workflow).first().node != node:
+        while instance.get_next_pending_states(workflow).exclude(pk=validation_status.pk).count():
             ValidationWorkflowEngine.complete_node(
-                instance.get_next_pending_states(workflow).first(), user, skipped=True
+                instance.get_next_pending_states(workflow).first(), user, skipped=True, skipped_from_parent=node
             )
 
         ValidationWorkflowEngine.complete_node(validation_status, user, comment=comment, approved=True)
@@ -89,6 +89,7 @@ class ValidationWorkflowEngine:
         approved=False,
         comment: Optional[str] = "",
         skipped: Optional[bool] = False,
+        skipped_from_parent: Optional[ValidationNode] = None,
     ):
         if not skipped:
             ValidationWorkflowEngine._check_permissions_for_node(validation_status, user)
@@ -113,6 +114,9 @@ class ValidationWorkflowEngine:
 
         if approved:
             for node in validation_status.node.next_nodes.all():
+                ValidationWorkflowEngine._activate_node(node, validation_status.instance, user)
+        elif skipped:
+            for node in validation_status.node.next_nodes.exclude(pk=skipped_from_parent.pk).all():
                 ValidationWorkflowEngine._activate_node(node, validation_status.instance, user)
 
     @staticmethod
@@ -152,6 +156,9 @@ class ValidationWorkflowEngine:
         if validation_status.status == Status.REJECTED:
             raise ValueError("Cannot undo rejected node")
 
+        if validation_status.status != Status.ACCEPTED:
+            raise ValueError("Cannot undo node that isn't accepted")
+
         if validation_status.updated_by != user:
             raise PermissionDenied(f"Only user {validation_status.updated_by.username} can undo this action")
 
@@ -165,9 +172,6 @@ class ValidationWorkflowEngine:
         validation_status: ValidationStatus, user, instance: ValidationWorkflowEntity, workflow: ValidationWorkflow
     ):
         ValidationWorkflowEngine._can_undo_node(validation_status, user)
-
-        if validation_status.status != Status.ACCEPTED:
-            raise ValueError("Cannot undo node that isn't accepted")
 
         instance.get_next_pending_states(workflow).delete()
 

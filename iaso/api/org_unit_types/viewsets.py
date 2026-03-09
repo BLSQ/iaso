@@ -105,8 +105,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
     permission_classes = [
         AuthenticationEnforcedPermission,
-        permissions.IsAuthenticated,  # V2 requires auth for all operations (read: any connected user)
-        IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+        permissions.IsAuthenticatedOrReadOnly,
         HasOrgUnitTypeWritePermission,
     ]
     serializer_class = OrgUnitTypeSerializerV2

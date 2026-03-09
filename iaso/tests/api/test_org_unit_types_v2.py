@@ -91,10 +91,11 @@ class OrgUnitTypesAPITestCase(APITestCase):
         wrong_project.save()
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
-        """GET /orgunittypes/ without auth: 401"""
+        """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitTypeListData(response.json(), 0)
 
     def test_org_unit_types_list_with_auth(self):
         """GET /orgunittypes/ with auth but empty app id should return list of org unit types"""
@@ -183,10 +184,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
             self.assertNotIn("units_count", org_unit_type)
 
     def test_org_unit_types_retrieve_without_auth_or_app_id(self):
-        """GET /orgunittypes/<org_unit_type_id>/ without auth: 401"""
+        """GET /orgunittypes/<org_unit_type_id>/ without auth or app id should result in 404"""
 
         response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, 404)
 
     def test_org_unit_types_retrieve_ok(self):
         """GET /orgunittypes/<org_unit_type_id>/ happy path"""
@@ -679,10 +680,11 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertIn("error", response_data)
 
     def test_org_unit_type_hierarchy_without_auth(self):
-        """Test GET /orgunittypes/{id}/hierarchy/ without auth: 401"""
+        """Test GET /orgunittypes/{id}/hierarchy/ without authentication"""
 
         response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/hierarchy/")
-        self.assertJSONResponse(response, 401)
+        # Without authentication, the queryset is filtered and returns empty, so 404 is expected
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_org_unit_type_hierarchy_multiple_children(self):
         """Test hierarchy with multiple children at same level"""

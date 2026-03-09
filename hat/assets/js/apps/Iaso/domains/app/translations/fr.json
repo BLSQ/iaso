@@ -1175,6 +1175,8 @@
     "iaso.permissions.iaso_entity_type_write": "Gestion des types d'entités",
     "iaso.permissions.iaso_forms_stats": "Statistiques pour les formulaires",
     "iaso.permissions.iaso_forms_stats_tooltip": "Voir les statistiques sur le nombre de soumissions de formulaires",
+    "iaso.permissions.iaso_metric_types": "Gestion des types d'indicateurs",
+    "iaso.permissions.iaso_metric_types_tooltip": "Permet de créer, modifier et supprimer des types d'indicateurs",
     "iaso.permissions.iaso_org_unit_change_request": "Demande de changement d’unité d’organisation - Lecture et écriture",
     "iaso.permissions.iaso_org_unit_change_request_approve": "Demande de changement d’unité d’organisation - Approbation",
     "iaso.permissions.iaso_org_unit_change_request_configurations": "Configurations de demande de changement d’unité d’organisation",

@@ -20,6 +20,32 @@ export type Result = Pagination & {
     counts: Count[];
 };
 
+export const DEFAULT_ORG_UNIT_COLUMNS = [
+    'id',
+    'projects',
+    'name',
+    'org_unit_type_name',
+    'source',
+    'validation_status',
+    'created_at',
+    'updated_at',
+    'actions',
+];
+
+export const NON_SELECTABLE_COLUMNS = ['actions', 'selection'];
+
+const getCleanFields = (fields?: string | string[]): string | undefined => {
+    const fieldsArray = Array.isArray(fields)
+        ? fields
+        : (fields?.split(',') ?? DEFAULT_ORG_UNIT_COLUMNS);
+
+    const filtered = fieldsArray.filter(
+        f => f && !NON_SELECTABLE_COLUMNS.includes(f),
+    );
+
+    return filtered.length > 0 ? filtered.join(',') : undefined;
+};
+
 type Props = {
     params: ApiParams;
     callback?: () => void;
@@ -41,9 +67,13 @@ export const useGetOrgUnits = ({
     enabled = false,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
-    const queryString = new URLSearchParams(params);
+    const apiParams = {
+        ...params,
+        fields: getCleanFields(params.fields),
+    };
+    const queryString = new URLSearchParams(apiParams);
     return useSnackQuery({
-        queryKey: ['orgunits', params],
+        queryKey: ['orgunits', apiParams],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
             enabled,

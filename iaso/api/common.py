@@ -489,3 +489,16 @@ class DropdownOptionsListViewSet(ViewSet):
         status_choices = self.get_status_choices()
         serializer = self.serializer(status_choices, many=True)
         return Response(serializer.data)
+
+
+def is_field_referenced(field_name, requested_fields, order):
+    """
+    Checks if a field is needed for the response, either because it was
+    explicitly requested or because it's being used for sorting.
+    if no fields specified... do as if all fields are requested
+    """
+    if not requested_fields:
+        return True
+
+    fields_list = requested_fields.split(",")
+    return ":all" in fields_list or field_name in fields_list or field_name in order or f"-{field_name}" in order

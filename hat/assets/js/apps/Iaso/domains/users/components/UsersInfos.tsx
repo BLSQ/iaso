@@ -2,6 +2,7 @@ import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Alert, Box, Grid } from '@mui/material';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import InputComponent from '../../../components/forms/InputComponent';
 import { SxStyles } from '../../../types/general';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -29,6 +30,7 @@ type Props = {
     canBypassProjectRestrictions: boolean;
     setPhoneNumber: (phoneNumber: string, countryCode: string) => void;
     setEmail: (email: string) => void;
+    withPassword?: boolean;
 };
 
 export const UsersInfos: FunctionComponent<Props> = ({
@@ -39,6 +41,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
     canBypassProjectRestrictions,
     setPhoneNumber,
     setEmail,
+    withPassword = true,
 }) => {
     const loggedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -133,7 +136,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         disabled={isMultiAccountUser}
                     />
 
-                    {allowSendEmailInvitation && (
+                    {allowSendEmailInvitation && withPassword && (
                         <InputComponent
                             keyValue="send_email_invitation"
                             onChange={(key, value) => setFieldValue(key, value)}
@@ -143,24 +146,28 @@ export const UsersInfos: FunctionComponent<Props> = ({
                             label={sendUserIEmailnvitationLabel}
                         />
                     )}
-                    <Box sx={passwordDisabled ? styles.passwordDisabled : {}}>
-                        <InputComponent
-                            keyValue="password"
-                            onChange={(key, value) =>
-                                setFieldValue(key, value.trim())
-                            }
-                            value={currentUser.password.value}
-                            errors={currentUser.password.errors}
-                            type="password"
-                            label={
-                                initialData
-                                    ? isInitialDataEmpty
-                                    : MESSAGES.password
-                            }
-                            required={!initialData}
-                            disabled={passwordDisabled}
-                        />
-                    </Box>
+                    {withPassword && (
+                        <Box
+                            sx={passwordDisabled ? styles.passwordDisabled : {}}
+                        >
+                            <InputComponent
+                                keyValue="password"
+                                onChange={(key, value) =>
+                                    setFieldValue(key, value.trim())
+                                }
+                                value={currentUser.password.value}
+                                errors={currentUser.password.errors}
+                                type="password"
+                                label={
+                                    initialData
+                                        ? isInitialDataEmpty
+                                        : MESSAGES.password
+                                }
+                                required={!initialData}
+                                disabled={passwordDisabled}
+                            />
+                        </Box>
+                    )}
                 </Grid>
                 <Grid item sm={12} md={6}>
                     <InputComponent
@@ -238,6 +245,14 @@ export const UsersInfos: FunctionComponent<Props> = ({
                             };
                         })}
                     />
+                    <Box sx={{ pt: 2, pb: 2 }}>
+                        <ColorPicker
+                            currentColor={currentUser?.color?.value}
+                            onChangeColor={(color: string): void =>
+                                setFieldValue('color', color)
+                            }
+                        />
+                    </Box>
                 </Grid>
             </Grid>
         </form>

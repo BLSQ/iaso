@@ -8,9 +8,6 @@ class AggregatedJourney:
         visit_admission_types = []
         for admission_type, visit_admission_type in visit_by_admission_type:
             visit_types = list(visit_admission_type)
-            beneficiary_by_admission_types = set(
-                visit_type["visit__journey__beneficiary__entity_id"] for visit_type in visit_types
-            )
             row["dhis2_id"] = visit_types[0]["visit__org_unit__source_ref"]
             row["admission_type"] = admission_type
             row["beneficiary_with_admission_type"] = len(visit_types)
@@ -39,7 +36,6 @@ class AggregatedJourney:
                 row["admission_criteria"] = admission_criteria
                 all_visits_by_criteria = list(visit_admission_criteria)
                 row["programme_type"] = all_visits_by_criteria[0]["visit__journey__programme_type"]
-                all_visits_by_ration_size = groupby(all_visits_by_criteria, key=itemgetter("ration_size"))
 
                 for visit in all_visits_by_criteria:
                     row["whz_score_2"] = row["whz_score_2"] + visit.get("whz_score_2", 0)
@@ -48,7 +44,8 @@ class AggregatedJourney:
                     row["oedema"] = row["oedema"] + visit.get("oedema", 0)
 
                 journey_by_exit_types = groupby(
-                    list(all_visits_by_criteria), key=itemgetter("visit__journey__exit_type")
+                    list(all_visits_by_criteria),
+                    key=itemgetter("visit__journey__exit_type"),
                 )
 
                 for exit_type, journey_by_exit_type in journey_by_exit_types:
@@ -108,8 +105,21 @@ class AggregatedJourney:
 
     def aggregated_rows(self, journeys):
         row = {}
-        row["total_beneficiary"] = self.aggregate_by_field_name(journeys, "beneficiary_with_admission_type")
+        row["total_beneficiary_new_case"] = self.aggregate_by_field_name(journeys, "total_beneficiary_new_case")
+        row["total_beneficiary_relapse"] = self.aggregate_by_field_name(journeys, "total_beneficiary_relapse")
+        row["total_beneficiary_returned_defaulter"] = self.aggregate_by_field_name(
+            journeys, "total_beneficiary_returned_defaulter"
+        )
+        row["total_beneficiary_returned_referral"] = self.aggregate_by_field_name(
+            journeys, "total_beneficiary_returned_referral"
+        )
         row["total_with_exit_type"] = self.aggregate_by_field_name(journeys, "beneficiary_with_exit_type")
+        row["total_with_exit_type_cured"] = self.aggregate_by_field_name(journeys, "total_with_exit_type_cured")
+        row["total_with_exit_type_death"] = self.aggregate_by_field_name(journeys, "total_with_exit_type_death")
+        row["total_with_exit_type_defaulter"] = self.aggregate_by_field_name(journeys, "total_with_exit_type_defaulter")
+        row["total_with_exit_type_non_respondent"] = self.aggregate_by_field_name(
+            journeys, "total_with_exit_type_non_respondent"
+        )
         row["muac_under_11_5"] = self.aggregate_by_field_name(journeys, "muac_under_11_5")
         row["muac_11_5_12_4"] = self.aggregate_by_field_name(journeys, "muac_11_5_12_4")
         row["muac_above_12_5"] = self.aggregate_by_field_name(journeys, "muac_above_12_5")
@@ -119,7 +129,13 @@ class AggregatedJourney:
         row["whz_score_2"] = self.aggregate_by_field_name(journeys, "whz_score_2")
         row["whz_score_3"] = self.aggregate_by_field_name(journeys, "whz_score_3")
         row["oedema"] = self.aggregate_by_field_name(journeys, "oedema")
-        row["admission_sc_itp_otp"] = self.aggregate_by_field_name(journeys, "admission_sc_itp_otp")
-        row["transfer_from_other_tsfp"] = self.aggregate_by_field_name(journeys, "transfer_from_other_tsfp")
+        row["total_beneficiary_admission_sc_itp_otp"] = self.aggregate_by_field_name(
+            journeys, "total_beneficiary_admission_sc_itp_otp"
+        )
+        row["transfer_from_other_tsfp"] = self.aggregate_by_field_name(
+            journeys, "total_beneficiary_transfer_from_other_tsfp"
+        )
         row["transfer_sc_itp_otp"] = self.aggregate_by_field_name(journeys, "transfer_sc_itp_otp")
+        row["transfer_in_from_other_tsfp"] = self.aggregate_by_field_name(journeys, "transfer_in_from_other_tsfp")
+
         return row

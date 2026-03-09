@@ -593,6 +593,15 @@ class Profile(models.Model):
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
+    def get_ordered_user_roles(self):
+        return self.user_roles.all().order_by("group__name")
+
+    def get_ordered_projects(self):
+        return self.projects.all().order_by("name")
+
+    def get_ordered_org_units(self):
+        return self.org_units.all().order_by("name")
+
     def get_hierarchy_for_user(self):
         return OrgUnit.objects.filter_for_user_and_app_id(self.user)
 
@@ -607,7 +616,7 @@ class Profile(models.Model):
             )
 
     def as_dict(self, small=False):
-        user_roles = self.user_roles.all().order_by("group__name")
+        user_roles = self.get_ordered_user_roles()
         user_group_permissions = [
             permission.split(".")[1]
             for permission in self.user.get_group_permissions()
@@ -828,6 +837,9 @@ class UserRole(models.Model):
         if str.startswith(prefix):
             return str[len(prefix) :]
         return str
+
+    def get_iaso_permissions(self):
+        return self.group.permissions.filter(codename__startswith="iaso_")
 
     def as_dict(self):
         return {

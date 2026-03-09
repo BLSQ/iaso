@@ -842,6 +842,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Allows to view and edit global settings',
     },
+    iaso_metric_types: {
+        id: 'iaso.permissions.iaso_metric_types',
+        defaultMessage: 'Metric types management',
+    },
+    iaso_metric_types_tooltip: {
+        id: 'iaso.permissions.iaso_metric_types_tooltip',
+        defaultMessage:
+            'Manage metric types: create, update and delete metric types',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

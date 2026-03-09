@@ -53,6 +53,7 @@ import Tasks from '../domains/tasks';
 import { Teams } from '../domains/teams';
 import { UserRoles } from '../domains/userRoles';
 import { Users } from '../domains/users';
+import { Details as UserDetails } from "../domains/users/details";
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
@@ -249,6 +250,13 @@ export const usersPath = {
     routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
+};
+
+export const userDetailsPath = {
+    baseUrl: baseUrls.userDetails,
+    routerUrl: `${baseUrls.userDetails}/*`,
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+    element: <UserDetails />,
 };
 
 export const usersHistoryPath = {
@@ -517,6 +525,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    userDetailsPath,
     usersHistoryPath,
     userRolesPath,
     projectsPath,

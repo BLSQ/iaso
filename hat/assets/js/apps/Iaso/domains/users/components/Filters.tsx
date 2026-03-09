@@ -63,7 +63,7 @@ const Filters: FunctionComponent<Props> = ({
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: userRoles, isFetching: isFetchingUserRoles } =
-        useGetUserRolesDropDown({});
+        useGetUserRolesDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();

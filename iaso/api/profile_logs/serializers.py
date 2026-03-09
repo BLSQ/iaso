@@ -1,56 +1,11 @@
 import copy
 
-import django_filters
-
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.db.models import Q
-from django.db.models.query import QuerySet
-from django.utils.translation import gettext_lazy as _
-from rest_framework import filters, serializers
+from django.contrib.auth import get_user_model
+from rest_framework import serializers
 
 from hat.audit.models import Modification
-from iaso.api.common import HasPermission, ModelViewSet, Paginator, parse_comma_separated_numeric_values
+from iaso.models import OrgUnit, Project
 from iaso.models.base import Profile, UserRole
-from iaso.models.org_unit import OrgUnit
-from iaso.models.project import Project
-from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION
-
-
-class ProfileLogsListPagination(Paginator):
-    page_size = 20
-
-
-class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
-    class Meta:
-        model = Modification
-        fields = []
-
-    # using CharFilter as NumberFilter errors for some reason
-    user_ids = django_filters.CharFilter(method="filter_user_ids", label=_("User IDs"))
-    modified_by = django_filters.CharFilter(method="filter_modified_by", label=_("Modified by"))
-    org_unit_id = django_filters.CharFilter(method="filter_org_unit_id", label=_("Location"))
-    created_at = django_filters.DateFromToRangeFilter()
-
-    def filter_user_ids(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        user_ids = [user_id for user_id in parse_comma_separated_numeric_values(value, name)]
-        # There's always a new_value, even on delete
-        return queryset.filter(new_value__0__fields__user__in=user_ids)
-
-    def filter_modified_by(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        user_ids = parse_comma_separated_numeric_values(value, name)
-        return queryset.filter(user__id__in=user_ids)
-
-    def filter_org_unit_id(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        return queryset.filter(
-            Q(past_value__0__fields__org_units__contains=int(value))
-            | Q(new_value__0__fields__org_units__contains=int(value))
-        )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.form.fields["created_at"].fields[0].input_formats = settings.API_DATE_INPUT_FORMATS
-        self.form.fields["created_at"].fields[-1].input_formats = settings.API_DATE_INPUT_FORMATS
 
 
 class NestedOrgUnitForListSerializer(serializers.ModelSerializer):
@@ -63,7 +18,7 @@ class NestedUserForListSerializer(serializers.ModelSerializer):
     user_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ["user_id", "username", "first_name", "last_name"]
 
     def get_user_id(self, user):
@@ -187,47 +142,3 @@ class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
         new_value_copy[0]["fields"]["user_roles"] = user_roles
 
         return new_value_copy
-
-
-class ProfileLogsViewset(ModelViewSet):
-    permission_classes = [HasPermission(CORE_USERS_ADMIN_PERMISSION)]
-    filter_backends = [
-        filters.OrderingFilter,
-        django_filters.rest_framework.DjangoFilterBackend,
-    ]
-    filterset_class = ProfileLogsListFilter
-    pagination_class = ProfileLogsListPagination
-    ordering_fields = ["created_at"]
-
-    http_method_names = ["get"]
-
-    def get_queryset(self):
-        order = self.request.query_params.get("order", "-created_at")
-        request_user = self.request.user
-
-        queryset = (
-            Modification.objects.select_related("user")
-            .filter(content_type__app_label="iaso")
-            .filter(content_type__model="profile")
-            .filter(user__iaso_profile__account=request_user.iaso_profile.account)
-        )
-
-        if "created_at" in order:
-            queryset = queryset.order_by(order)
-        elif order == "modified_by":
-            queryset = queryset.order_by("user__username")
-        elif order == "-modified_by":
-            queryset = queryset.order_by("-user__username")
-        elif order == "user":
-            queryset = queryset.order_by("new_value__0__fields__user__username")
-        elif order == "-user":
-            queryset = queryset.order_by("-new_value__0__fields__user__username")
-
-        return queryset
-
-    def get_serializer_class(self):
-        if hasattr(self, "action") and self.action == "list":
-            return ProfileLogListSerializer
-        if hasattr(self, "action") and self.action == "retrieve":
-            return ProfileLogRetrieveSerializer
-        return super().get_serializer_class()

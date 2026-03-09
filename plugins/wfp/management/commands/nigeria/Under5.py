@@ -3,6 +3,8 @@ import logging
 from itertools import groupby
 from operator import itemgetter
 
+from django.core.paginator import Paginator
+
 from iaso.models import *
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
@@ -128,15 +130,26 @@ class NG_Under5:
     def run(self, type, updated_beneficiaries, task_name):
         etl_type = ETL(type)
         account = etl_type.account_related_to_entity_type()
-        beneficiaries = etl_type.retrieve_entities(updated_beneficiaries)
-        pages = beneficiaries.page_range
 
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")
+        page_size = 5000
+        paginator = Paginator(updated_beneficiaries, page_size)
+        pages = paginator.page_range
+
+        logger.info(
+            f"Processing {len(updated_beneficiaries)} entities Child Under 5 across {paginator.num_pages} pages for {account}"
+        )
 
         etl = ETL()
         current_entity_id = None
         for page in pages:
-            entities = sorted(list(beneficiaries.page(page).object_list), key=itemgetter("entity_id"))
+            beneficiaries, page_info = etl_type.retrieve_entities(
+                updated_beneficiaries, page_size=page_size, page_number=page
+            )
+            entities = sorted(
+                list(beneficiaries),
+                key=itemgetter("entity_id"),
+            )
+
             existing_beneficiaries = etl.existing_beneficiaries()
             instances = self.group_visit_by_entity(entities)
             all_steps = []
@@ -189,6 +202,7 @@ class NG_Under5:
             etl.save_analytics_data(
                 all_beneficiaries, all_journeys, all_visits, all_steps, account, current_entity_id, task
             )
+            logger.info(f"Finished Page {page}")
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}

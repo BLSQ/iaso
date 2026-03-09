@@ -791,7 +791,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["color"], color.upper())
 
         profile = m.Profile.objects.get(pk=response_data["id"])
-        self.assertEqual(profile.color, color)
+        self.assertEqual(profile.color, color.upper())
 
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):

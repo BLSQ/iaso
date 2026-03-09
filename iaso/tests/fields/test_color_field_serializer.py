@@ -15,13 +15,23 @@ class TestColorFieldSerializer(APITestCase):
             self.assertTrue(serializer.is_valid())
 
     def test_invalid_colors(self):
-        invalid_colors = ["FF00AA", "#FF00A", "#GGHHII", "#12345G", "123456", "#1234567", ""]
+        invalid_colors = ["FF00AA", "#FF00A", "#GGHHII", "#12345G", "123456"]
         for color in invalid_colors:
             with self.subTest(f"Testing invalid color {color}"):
                 serializer = self.TestSerializer(data={"color": color})
                 self.assertFalse(serializer.is_valid())
                 self.assertIn("color", serializer.errors)
                 self.assertIn("Color must be a valid hex code", serializer.errors["color"][0])
+
+        serializer = self.TestSerializer(data={"color": "#1234567"})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("color", serializer.errors)
+        self.assertIn("Ensure this field has no more than 7 characters.", serializer.errors["color"][0])
+
+        serializer = self.TestSerializer(data={"color": ""})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("color", serializer.errors)
+        self.assertIn("This field may not be blank.", serializer.errors["color"][0])
 
     def test_max_length_enforced(self):
         serializer = self.TestSerializer(data={"color": "#1234567"})

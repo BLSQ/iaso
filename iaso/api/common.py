@@ -513,9 +513,11 @@ class ModelSerializer(serializers.ModelSerializer):
         resolved_mapping = {}
 
         for model_field_class, serializer_field in mapping.items():
+            # Dynamically import from string path to avoid circular import in settings
             if isinstance(serializer_field, str):
-                # Dynamically import from string path to avoid circular import in settings
                 serializer_field = import_string(serializer_field)
+            if isinstance(model_field_class, str):
+                model_field_class = import_string(model_field_class)
             resolved_mapping[model_field_class] = serializer_field
 
         return {**serializers.ModelSerializer.serializer_field_mapping, **resolved_mapping}

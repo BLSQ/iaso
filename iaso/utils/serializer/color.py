@@ -10,7 +10,6 @@ class ColorFieldSerializer(serializers.CharField):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("max_length", 7)
-        kwargs.setdefault("upper", True)
         super().__init__(*args, **kwargs)
         validator = RegexValidator(regex=HEX_COLOR_REGEX, message=self.error_messages["invalid_format"])
         self.validators.append(validator)

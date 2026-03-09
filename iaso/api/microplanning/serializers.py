@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from iaso.api.common import (
     DateTimestampField,
+    ModelSerializer,
     TimestampField,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
@@ -12,7 +13,7 @@ from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
 
 
-class NestedProjectSerializer(serializers.ModelSerializer):
+class NestedProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]

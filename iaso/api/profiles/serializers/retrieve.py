@@ -3,17 +3,17 @@ from django.contrib.auth import get_user_model
 from phonenumbers.phonenumberutil import region_code_for_number
 from rest_framework import serializers
 
-from iaso.api.common import TimestampField
+from iaso.api.common import ModelSerializer, TimestampField
 from iaso.models import Account, DataSource, OrgUnit, Profile, Project, SourceVersion, UserRole
 
 
-class RelatedProjectSerializer(serializers.ModelSerializer):
+class RelatedProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "app_id", "color"]
 
 
-class NestedDataSourceSerializer(serializers.ModelSerializer):
+class NestedDataSourceSerializer(ModelSerializer):
     """
     Mimic DataSource as_dict method
     I removed the versions as it doesn't make any sense to have it in there (this nested serializer is used in the related version serializer)
@@ -42,7 +42,7 @@ class NestedDataSourceSerializer(serializers.ModelSerializer):
     #     return [v.as_dict_without_data_source() for v in versions]
 
 
-class NestedDefaultVersionSerializer(serializers.ModelSerializer):
+class NestedDefaultVersionSerializer(ModelSerializer):
     """
     Mimic SourceVersion as_dict method
     """
@@ -60,7 +60,7 @@ class NestedDefaultVersionExtendedSerializer(NestedDefaultVersionSerializer):
     pass
 
 
-class NestedAccountSerializer(serializers.ModelSerializer):
+class NestedAccountSerializer(ModelSerializer):
     """
     Mimic account as_dict method
     """
@@ -92,7 +92,7 @@ class NestedAccountExtendedSerializer(NestedAccountSerializer):
         fields = NestedAccountSerializer.Meta.fields + ["modules"]
 
 
-class NestedUserRoleSerializer(serializers.ModelSerializer):
+class NestedUserRoleSerializer(ModelSerializer):
     """
     Mimic UserRole as_dict method
     """
@@ -113,7 +113,7 @@ class NestedUserRoleSerializer(serializers.ModelSerializer):
         return tail if sep else obj.group.name
 
 
-class NestedProjectSerializer(serializers.ModelSerializer):
+class NestedProjectSerializer(ModelSerializer):
     """
     Mimics project as_dict method
     """
@@ -123,7 +123,7 @@ class NestedProjectSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "app_id", "color"]
 
 
-class NestedOrgUnitSerializer(serializers.ModelSerializer):
+class NestedOrgUnitSerializer(ModelSerializer):
     source = serializers.CharField(source="version.data_source.name", read_only=True)
     source_id = serializers.IntegerField(source="version.data_source_id", read_only=True)
 
@@ -190,7 +190,7 @@ class NestedOrgUnitSerializer(serializers.ModelSerializer):
         return obj.closed_date.strftime("%d/%m/%Y") if obj.closed_date else None
 
 
-class ProfileUserFallbackRetrieveSerializer(serializers.ModelSerializer):
+class ProfileUserFallbackRetrieveSerializer(ModelSerializer):
     user_id = serializers.ReadOnlyField(source="id")
     projects = serializers.SerializerMethodField()
     account = serializers.SerializerMethodField()
@@ -219,7 +219,7 @@ class ProfileUserFallbackRetrieveSerializer(serializers.ModelSerializer):
         return None
 
 
-class ProfileRetrieveSerializer(serializers.ModelSerializer):
+class ProfileRetrieveSerializer(ModelSerializer):
     first_name = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()

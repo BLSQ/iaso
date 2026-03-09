@@ -3,12 +3,12 @@ from django.contrib.auth.models import Permission
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from iaso.api.common import ModelSerializer
 from iaso.api.profiles.serializers.common import CountryAwarePhoneNumberField
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
-from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
 
 
-class BaseProfileUpdateSerializer(serializers.ModelSerializer):
+class BaseProfileUpdateSerializer(ModelSerializer):
     class Meta:
         model = Profile
         fields = ["language", "home_page"]
@@ -117,13 +117,6 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     def validate(self, data):
         data["user_permissions"] = self._validate_user_permissions(data)
         return data
-
-    def validate_color(self, value):
-        # todo : we should make a ColorFieldSerializer for this
-        try:
-            return validate_hex_color(value)
-        except ValueError:
-            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
     def validate_org_units(self, org_units):
         profile = self.instance

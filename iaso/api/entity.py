@@ -19,21 +19,7 @@ from iaso.api.common import (
     HasPermission,
     ModelViewSet,
 )
-from iaso.api.entities.filters import (
-    EntityByUuidFilterBackend,
-    EntityCreatedByFilterBackend,
-    EntityCreatedByTeamFilterBackend,
-    EntityDateFilterBackend,
-    EntityFieldsSearchFilterBackend,
-    EntityFormNameFilterBackend,
-    EntityGroupFilterBackend,
-    EntityOrderingFilter,
-    EntityOrgUnitFilterBackend,
-    EntitySearchFilterBackend,
-    EntityShowDeletedFilterBackend,
-    EntityTypeFilterBackend,
-    EntityTypeIdFilterBackend,
-)
+from iaso.api.entities.filters import EntityDateFilterBackend, EntityFilterSet, EntityOrderingFilter
 from iaso.api.entities.renderers import CSVStreamingRenderer, LegacyExportContentNegotation, XlsxStreamingRenderer
 from iaso.api.entities.serializers import EntityExportSerializer, EntityListSerializer, EntitySerializer
 from iaso.models import Entity, EntityType, Instance
@@ -124,19 +110,9 @@ class EntityViewSet(ModelViewSet):
         EntityOrderingFilter,
         DjangoFilterBackend,
         DeletionFilterBackend,
-        EntityFormNameFilterBackend,
-        EntityTypeFilterBackend,
-        EntityTypeIdFilterBackend,
-        EntityShowDeletedFilterBackend,
-        EntityOrgUnitFilterBackend,
-        EntityCreatedByFilterBackend,
-        EntityCreatedByTeamFilterBackend,
-        EntityGroupFilterBackend,
-        EntityByUuidFilterBackend,
-        EntityFieldsSearchFilterBackend,
         EntityDateFilterBackend,
-        EntitySearchFilterBackend,
     ]
+    filterset_class = EntityFilterSet
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_PERMISSION)]  # type: ignore
     content_negotiation_class = LegacyExportContentNegotation
     renderer_classes = (

@@ -5,94 +5,74 @@ from datetime import datetime
 
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
+from django_filters.rest_framework import BaseInFilter, BooleanFilter, CharFilter, FilterSet, UUIDFilter
 from rest_framework import filters
 from rest_framework.exceptions import ValidationError
 
-from iaso.models import Instance, OrgUnit
+from iaso.models import Entity, Instance, OrgUnit
 from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 
-class EntityFormNameFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if form_name := request.query_params.get("form_name"):
-            queryset = queryset.filter(attributes__form__name__icontains=form_name)
+class CharInFilter(BaseInFilter, CharFilter):
+    pass
 
+
+class EntityFilterSet(FilterSet):
+    form_name = CharFilter(field_name="attributes__form__name", lookup_expr="icontains")
+    by_uuid = UUIDFilter(field_name="uuid")
+    created_by_id = CharFilter(field_name="attributes__created_by_id")
+    created_by_team_id = CharFilter(field_name="attributes__created_by__teams__id")
+
+    entity_type_ids = CharInFilter(field_name="entity_type_id", lookup_expr="in")
+    groups = CharInFilter(field_name="attributes__org_unit__groups", lookup_expr="in")
+
+    show_deleted = BooleanFilter(method="filter_show_deleted")
+    orgUnitId = CharFilter(method="filter_org_unit")
+    fields_search = CharFilter(method="filter_fields_search")
+    search = CharFilter(method="filter_search")
+
+    class Meta:
+        model = Entity
+        fields = []
+
+    def filter_show_deleted(self, queryset, name, value):
+        if value:
+            return queryset.filter(deleted_at__isnull=True)
         return queryset
 
+    def filter_org_unit(self, queryset, name, value):
+        try:
+            parent = OrgUnit.objects.get(id=value)
+            return queryset.filter(attributes__org_unit__path__descendants=parent.path)
+        except OrgUnit.DoesNotExist:
+            return queryset.none()
 
-class EntityTypeFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if entity_type := request.query_params.get("entity_type"):
-            queryset = queryset.filter(name=entity_type)
+    def filter_fields_search(self, queryset, name, value):
+        try:
+            q, _ = entities_jsonlogic_to_q(json.loads(value))
+            return queryset.filter(q)
+        except (ValueError, json.JSONDecodeError):
+            raise ValidationError("Invalid JSON in fields_search")
 
-        return queryset
+    def filter_search(self, queryset, name, value):
+        search = value.strip()
+        if search.startswith("ids:"):
+            ids = re.findall(r"\d+", search)
+            if not ids:
+                raise ValidationError(f"Failed parsing ids in search '{search}'")
+            return queryset.filter(id__in=ids)
 
+        if search.startswith("uuids:"):
+            uuids_re = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+            uuids = re.findall(uuids_re, search)
+            if not uuids:
+                raise ValidationError(f"Failed parsing uuids in search '{search}'")
+            return queryset.filter(uuid__in=uuids)
 
-class EntityTypeIdFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if entity_type_ids := request.query_params.get("entity_type_ids"):
-            queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
-
-        return queryset
-
-
-class EntityShowDeletedFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if show_deleted := request.query_params.get("show_deleted"):
-            queryset = queryset.filter(deleted_at__isnull=True)
-
-        return queryset
-
-
-class EntityOrgUnitFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if org_unit_id := request.query_params.get("orgUnitId"):
-            parent = OrgUnit.objects.get(id=org_unit_id)
-            queryset = queryset.filter(attributes__org_unit__path__descendants=parent.path)
-
-        return queryset
-
-
-class EntityCreatedByFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if created_by_id := request.query_params.get("created_by_id"):
-            queryset = queryset.filter(attributes__created_by_id=created_by_id)
-
-        return queryset
-
-
-class EntityCreatedByTeamFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if created_by_team_id := request.query_params.get("created_by_team_id"):
-            queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
-
-        return queryset
-
-
-class EntityGroupFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if groups := request.query_params.get("groups"):
-            queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
-
-        return queryset
-
-
-class EntityByUuidFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if uuid := request.query_params.get("by_uuid"):
-            queryset = queryset.filter(uuid=uuid)
-
-        return queryset
-
-
-class EntityFieldsSearchFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        if fields_search := request.query_params.get("fields_search"):
-            q, _ = entities_jsonlogic_to_q(json.loads(fields_search))
-            queryset = queryset.filter(q)
-
-        return queryset
+        return queryset.filter(
+            Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
+        )
 
 
 class EntityDateFilterBackend(filters.BaseFilterBackend):
@@ -121,33 +101,6 @@ class EntityDateFilterBackend(filters.BaseFilterBackend):
                         | Q(source_created_at__isnull=True, created_at__range=(start, end))
                     )
                 )
-            )
-
-        return queryset
-
-
-class EntitySearchFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        search = request.query_params.get("search")
-
-        if not search:
-            return queryset
-
-        search = search.strip()
-        if search.startswith("ids:"):
-            ids = re.findall("\d+", search)
-            if not ids:
-                raise ValidationError(f"Failed parsing ids in search '{search}'")
-            queryset = queryset.filter(id__in=ids)
-        elif search.startswith("uuids:"):
-            uuids_re = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-            uuids = re.findall(uuids_re, search)
-            if not uuids:
-                raise ValidationError(f"Failed parsing uuids in search '{search}'")
-            queryset = queryset.filter(uuid__in=uuids)
-        else:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
             )
 
         return queryset

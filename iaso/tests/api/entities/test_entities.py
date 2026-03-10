@@ -252,7 +252,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # We expect the intersection of the form's possible_fields
         # and the entity type's field_list_view to show up as columns
-        # in the export. Other propreties should be ignored.
+        # in the export. Other properties should be ignored.
 
         possible_fields = [
             {"name": "first_name", "type": "text", "label": "First Name"},
@@ -308,11 +308,26 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
-        response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        data = list(csv.reader(io.StringIO(response_string), delimiter=","))
-        row_to_test = data[len(data) - 1]
+        # utf-8-sig automatically strips the \ufeff BOM
+        response_csv = response.getvalue().decode("utf-8-sig")
+        data = list(csv.reader(io.StringIO(response_csv), delimiter=","))
 
+        expected_headers = [
+            "ID",
+            "UUID",
+            "Entity Type",
+            "Creation Date",
+            "HC",
+            "HC ID",
+            "Last Update",
+            # dynamic columns:
+            "First Name",
+            "Middle Name",
+            "Last Name",
+        ]
+        self.assertEqual(data[0], expected_headers)
+
+        row_to_test = data[-1]
         expected_row = [
             str(entity.id),
             str(entity.uuid),

@@ -30,15 +30,16 @@ class EntityListPaginator(pagination.PageNumberPagination):
     # large default page_size for legacy API compatibility
     # not specifying a limit used to return everything
     page_size = 10000
+    _view = None
 
     def paginate_queryset(self, queryset, request, view=None):
         """Store a reference to the view to access later."""
 
-        self.view = view
+        self._view = view
         return super().paginate_queryset(queryset, request, view)
 
     def get_paginated_response(self, data):
-        columns = getattr(self.view, "entity_type_columns", [])
+        columns = getattr(self._view, "entity_type_columns", [])
         return Response(
             {
                 "count": self.page.paginator.count,

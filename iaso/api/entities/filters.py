@@ -5,17 +5,14 @@ from datetime import datetime
 
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
-from django_filters.rest_framework import BaseInFilter, BooleanFilter, CharFilter, FilterSet, UUIDFilter
+from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet, UUIDFilter
 from rest_framework import filters
 from rest_framework.exceptions import ValidationError
 
+from iaso.api.common import CharInFilter
 from iaso.models import Entity, Instance, OrgUnit
 from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
-
-
-class CharInFilter(BaseInFilter, CharFilter):
-    pass
 
 
 class EntityFilterSet(FilterSet):
@@ -27,7 +24,7 @@ class EntityFilterSet(FilterSet):
     entity_type_ids = CharInFilter(field_name="entity_type_id", lookup_expr="in")
     groups = CharInFilter(field_name="attributes__org_unit__groups", lookup_expr="in")
 
-    show_deleted = BooleanFilter(method="filter_show_deleted")
+    show_deleted = BooleanFilter(field_name="deleted_at", lookup_expr="isnull", exclude=True)
     orgUnitId = CharFilter(method="filter_org_unit")
     fields_search = CharFilter(method="filter_fields_search")
     search = CharFilter(method="filter_search")
@@ -35,11 +32,6 @@ class EntityFilterSet(FilterSet):
     class Meta:
         model = Entity
         fields = []
-
-    def filter_show_deleted(self, queryset, name, value):
-        if value:
-            return queryset.filter(deleted_at__isnull=True)
-        return queryset
 
     def filter_org_unit(self, queryset, name, value):
         try:

@@ -114,8 +114,8 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.get("/api/entities/", format="json")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json().get("result")), 2)
+        res_json = self.assertJSONResponse(response, 200)
+        self.assertValidListData(list_data=res_json, expected_length=2, results_key="result")
 
     def test_retrieve_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
@@ -196,7 +196,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 2: search by entity name - make sure it's case-insensitive and ignores white space
-        response = self.client.get("/api/entities/?search= cLiEnT &foo=bar", format="json")
+        response = self.client.get("/api/entities/", data={"search": " cLiEnT "}, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]

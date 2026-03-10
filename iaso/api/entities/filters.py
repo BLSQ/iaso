@@ -56,22 +56,21 @@ class EntityFilterSet(FilterSet):
             raise ValidationError("Invalid JSON in fields_search")
 
     def filter_search(self, queryset, name, value):
-        search = value.strip()
-        if search.startswith("ids:"):
-            ids = re.findall(r"\d+", search)
+        if value.startswith("ids:"):
+            ids = re.findall(r"\d+", value)
             if not ids:
-                raise ValidationError(f"Failed parsing ids in search '{search}'")
+                raise ValidationError(f"Failed parsing ids in search '{value}'")
             return queryset.filter(id__in=ids)
 
-        if search.startswith("uuids:"):
+        if value.startswith("uuids:"):
             uuids_re = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-            uuids = re.findall(uuids_re, search)
+            uuids = re.findall(uuids_re, value)
             if not uuids:
-                raise ValidationError(f"Failed parsing uuids in search '{search}'")
+                raise ValidationError(f"Failed parsing uuids in search '{value}'")
             return queryset.filter(uuid__in=uuids)
 
         return queryset.filter(
-            Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
+            Q(name__icontains=value) | Q(uuid__icontains=value) | Q(attributes__json__icontains=value)
         )
 
 

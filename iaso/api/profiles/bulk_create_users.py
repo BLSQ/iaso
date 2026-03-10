@@ -6,7 +6,6 @@ import phonenumbers
 
 from django.conf import settings
 from django.contrib.auth.models import Permission, User
-from django.contrib.auth.password_validation import validate_password
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
@@ -344,13 +343,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
             if not password and email:
                 # Email invitation mode - no password validation
                 pass
-            elif password:
-                try:
-                    temp_user = User(username=username)
-                    validate_password(password, temp_user)
-                except ValidationError as e:
-                    row_errors["password"] = f"Invalid password: {'; '.join(e.messages)}"
-            else:
+            elif not password and not email:
                 # Error: need either password or email
                 row_errors["password"] = "Either password or email required for user creation"
 

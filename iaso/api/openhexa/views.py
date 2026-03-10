@@ -325,10 +325,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             # If we reach here, config is valid
             response_data = {"configured": True}
-
-            # Get optional lqas_pipeline_code parameter from workspace config if configured
-            if workspace.config and workspace.config.get("lqas_pipeline_code"):
-                response_data["lqas_pipeline_code"] = workspace.config["lqas_pipeline_code"]
+            response_data["config"] = workspace.config or {}
 
             return Response(response_data)
 

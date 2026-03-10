@@ -252,7 +252,9 @@ const InstancesFiltersComponent = ({
 
     const joinValuesBeforeHandleFormChange = useCallback(
         (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
+            console.log(newValue, keyValue)
+            const joined = newValue?.map((r: {label: string, value: number}) => r.value)?.join(',');
+            console.log(joined)
             handleFormChange(keyValue, joined);
         },
         [handleFormChange],

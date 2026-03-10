@@ -12,10 +12,10 @@ import {
     TooltipProps,
 } from '@mui/material';
 
-import { TwitterPicker } from 'react-color';
+import { TwitterPicker, ColorResult } from 'react-color';
 import { FormattedMessage, defineMessages } from 'react-intl';
 import { useGetColors } from 'Iaso/hooks/useGetColors';
-import { SxStyles } from '../../types/general';
+import { SxStyles } from 'Iaso/types/general';
 
 const MESSAGES = defineMessages({
     color: {
@@ -43,7 +43,7 @@ const styles: SxStyles = {
         '& .twitter-picker': {
             width: '420px !important',
             boxShadow: 'none !important',
-            '& div div:nth-last-child(2), & div div:nth-last-child(3)': {
+            '& div div:nth-last-of-type(2), & div div:nth-last-of-type(3)': {
                 display: 'none !important',
             },
         },
@@ -54,7 +54,7 @@ const styles: SxStyles = {
 };
 
 type Props = {
-    currentColor: string;
+    currentColor?: string;
     onChangeColor: (color: string) => void;
     displayLabel?: boolean;
     placement?: TooltipProps['placement'];
@@ -76,7 +76,7 @@ export const ColorPicker: FunctionComponent<Props> = ({
     };
 
     const handleChangeColor = useCallback(
-        newColor => {
+        (newColor: ColorResult) => {
             setOpen(false);
             onChangeColor(newColor.hex);
         },
@@ -88,13 +88,15 @@ export const ColorPicker: FunctionComponent<Props> = ({
             setOpen(false);
         }
     }, [open]);
+
     const displayedColors = useMemo(
         () =>
             (colors ? colors : (apiColors ?? [])).filter(
-                color => color.toLowerCase() !== currentColor.toLowerCase(),
+                color => color.toLowerCase() !== currentColor?.toLowerCase(),
             ),
         [colors, apiColors, currentColor],
     );
+
     return (
         <Box>
             <Box display="flex" alignItems="center">

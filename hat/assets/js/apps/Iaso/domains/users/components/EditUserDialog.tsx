@@ -1,0 +1,332 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
+import { Box, Tab, Tabs } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    IntlMessage,
+    makeFullModal, theme,
+    useSafeIntl,
+} from 'bluesquare-components';
+
+import { MutateFunction, useQueryClient } from 'react-query';
+
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { EditButton } from 'Iaso/components/Buttons/EditButton';
+import * as Permissions from 'Iaso/utils/permissions';
+import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
+import MESSAGES from '../messages';
+import { InitialUserData } from '../types';
+import PermissionsAttribution from './PermissionsAttribution';
+import { useInitialUser } from './useInitialUser';
+import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
+import UsersDialogTabDisabled from './UsersDialogTabDisabled';
+import { UsersInfos } from './UsersInfos';
+import UsersLocations from './UsersLocations';
+import { WarningModal } from './WarningModal/WarningModal';
+import { SxStyles } from 'Iaso/types/general';
+
+const styles: SxStyles = {
+    tabs: {
+        marginBottom: theme.spacing(3),
+    },
+    root: {
+        position: 'relative',
+    },
+    hiddenOpacity: {
+        position: 'fixed',
+        top: 0,
+        left: -5000,
+        zIndex: -10,
+        opacity: 0,
+    },
+}
+
+type Props = {
+    titleMessage: IntlMessage;
+    initialData?: InitialUserData;
+    saveProfile: MutateFunction<Profile, any>;
+    allowSendEmailInvitation?: boolean;
+    isOpen: boolean;
+    closeDialog: () => void;
+    canBypassProjectRestrictions: boolean;
+};
+
+// Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
+const defaultData: InitialUserData = {};
+const EditUserDialogComponent: FunctionComponent<Props> = ({
+    titleMessage,
+    isOpen,
+    initialData = defaultData,
+    saveProfile,
+    allowSendEmailInvitation = false,
+    closeDialog,
+    canBypassProjectRestrictions,
+}) => {
+    const connectedUser = useCurrentUser();
+    const { formatMessage } = useSafeIntl();
+
+    const queryClient = useQueryClient();
+
+    const {
+        user,
+        setFieldValue,
+        setFieldErrors,
+        setPhoneNumber,
+        hasErrors,
+        setEmail,
+    } = useInitialUser(initialData);
+    const [tab, setTab] = useState('infos');
+    const [openWarning, setOpenWarning] = useState<boolean>(false);
+    const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
+        useState<boolean>(false);
+    const saveUser = useCallback(() => {
+        const currentUser: any = {};
+        Object.keys(user).forEach(key => {
+            if (key === 'org_units') {
+                currentUser[key] = user?.[key].value?.map(
+                    (orgUnit: OrgUnit) => orgUnit?.id,
+                );
+            } else if(key === 'user_roles'){
+                currentUser[key] = user?.[key].value?.map(
+                    (userRole) => userRole?.id ?? userRole,
+                );
+            } else {
+                currentUser[key] = user[key].value;
+            }
+        });
+
+        saveProfile(currentUser, {
+            onSuccess: () => {
+                if (currentUser.id === connectedUser.id) {
+                    queryClient.invalidateQueries('currentUser');
+                }
+                closeDialog();
+            },
+            onError: error => {
+                if (error.status === 400) {
+                    setFieldErrors(
+                        error.details.errorKey,
+                        error.details.errorMessage,
+                    );
+                }
+            },
+        });
+    }, [
+        closeDialog,
+        connectedUser.id,
+        queryClient,
+        saveProfile,
+        setFieldErrors,
+        user,
+    ]);
+
+    const userPermissions = user?.user_permissions.value ?? [];
+    const userRolesPermissions = user?.user_roles_permissions.value ?? [];
+
+    const isPhoneNumberUpdated =
+        (user.phone_number.value ?? '') !== (initialData?.phone_number ?? '') && !!user.id?.value;
+
+    const isUserWithoutPermissions =
+        userPermissions.length === 0 &&
+        userRolesPermissions.length === 0 &&
+        !initialData?.is_superuser;
+
+    const onConfirm = useCallback(() => {
+        if (
+            // If user is not new user and phone number is changed
+            isPhoneNumberUpdated ||
+            isUserWithoutPermissions
+        ) {
+            setOpenWarning(true);
+        } else {
+            saveUser();
+        }
+    }, [isPhoneNumberUpdated, isUserWithoutPermissions, saveUser]);
+
+    const warningTitleMessage = useMemo(() => {
+        if (isPhoneNumberUpdated && isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.permAndPhoneWarningTitle);
+        }
+        if (isPhoneNumberUpdated) {
+            return formatMessage(MESSAGES.phoneNumberWarning);
+        }
+        if (isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.createUserWithoutPerm);
+        }
+        return '';
+    }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
+    const warningBodyMessage = useMemo(() => {
+        if (isPhoneNumberUpdated && isUserWithoutPermissions) {
+            return `1/ ${formatMessage(MESSAGES.phoneNumberWarningMessage)}
+            2/ ${formatMessage(MESSAGES.warningModalMessage)}`;
+        }
+        if (isPhoneNumberUpdated) {
+            return formatMessage(MESSAGES.phoneNumberWarningMessage);
+        }
+        if (isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.warningModalMessage);
+        }
+        return '';
+    }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
+    const allUserRolesPermissions = useMemo(
+        () =>
+            user.user_roles_permissions.value.flatMap(role => role.permissions),
+        [user.user_roles_permissions.value],
+    );
+
+    const allUserUserRolesPermissions = useMemo(() => {
+        const allUserPermissions = user.user_permissions.value;
+
+        return [
+            ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
+        ];
+    }, [allUserRolesPermissions, user.user_permissions.value]);
+    useEffect(() => {
+        setHasNoOrgUnitManagementWrite(
+            !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
+        );
+    }, [allUserRolesPermissions.length, allUserUserRolesPermissions]);
+    const allowConfirm = !hasErrors;
+
+    return (
+        <>
+            <WarningModal
+                open={openWarning}
+                closeDialog={() => setOpenWarning(false)}
+                onConfirm={saveUser}
+                titleMessage={warningTitleMessage}
+                bodyMessage={warningBodyMessage}
+            />
+
+            <ConfirmCancelModal
+                titleMessage={titleMessage}
+                onConfirm={onConfirm}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.save}
+                maxWidth="md"
+                open={isOpen}
+                closeDialog={closeDialog}
+                allowConfirm={allowConfirm}
+                onClose={() => null}
+                onCancel={closeDialog}
+                id="user-dialog"
+                dataTestId="user-dialog"
+                closeOnConfirm={false}
+            >
+                <Tabs
+                    id="user-dialog-tabs"
+                    value={tab}
+                    sx={styles.tabs}
+                    onChange={(_event, newtab) => setTab(newtab)}
+                >
+                    <Tab
+                        sx={styles.tabs}
+                        value="infos"
+                        label={formatMessage(MESSAGES.infos)}
+                    />
+                    <Tab
+                        sx={styles.tabs}
+                        value="permissions"
+                        label={formatMessage(MESSAGES.permissions)}
+                    />
+                    <Tab
+                        sx={styles.tabs}
+                        value="locations"
+                        label={formatMessage(MESSAGES.location)}
+                    />
+                    {hasNoOrgUnitManagementWrite ? (
+                        <UsersDialogTabDisabled
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                            disabled
+                            tooltipMessage={formatMessage(
+                                MESSAGES.OrgUnitTypeWriteDisableTooltip,
+                                { type: formatMessage(MESSAGES.user) },
+                            )}
+                        />
+                    ) : (
+                        <Tab
+                            sx={styles.tabs}
+                            value="orgUnitWriteTypes"
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                        />
+                    )}
+                </Tabs>
+                <Box sx={styles.root} id="user-profile-dialog">
+                    <Box
+                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
+                    >
+                        <UsersInfos
+                            setFieldValue={(key, value) =>
+                                setFieldValue(key, value)
+                            }
+                            initialData={initialData}
+                            currentUser={user}
+                            allowSendEmailInvitation={allowSendEmailInvitation}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
+                            setPhoneNumber={setPhoneNumber}
+                            setEmail={setEmail}
+                            withPassword={false}
+                        />
+                    </Box>
+                    {tab === 'permissions' && (
+                        <PermissionsAttribution
+                            isSuperUser={initialData?.is_superuser ?? false}
+                            currentUser={user}
+                            handleChange={permissions => {
+                                setFieldValue('user_permissions', permissions);
+                            }}
+                            setFieldValue={(key, value) =>
+                                setFieldValue(key, value)
+                            }
+                        />
+                    )}
+                    {tab === 'locations' && (
+                        <UsersLocations
+                            handleChange={ouList =>
+                                setFieldValue('org_units', ouList)
+                            }
+                            currentUser={user}
+                        />
+                    )}
+                    {tab === 'orgUnitWriteTypes' && (
+                        <UserOrgUnitWriteTypes
+                            currentUser={user}
+                            handleChange={(ouTypesIds: number[]) =>
+                                setFieldValue(
+                                    'editable_org_unit_type_ids',
+                                    ouTypesIds,
+                                )
+                            }
+                        />
+                    )}
+                </Box>
+            </ConfirmCancelModal>
+        </>
+    );
+};
+
+type EditUserButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message">
+
+const EditUserButton = (props: EditUserButtonProps) => {
+    return (
+        <EditButton
+            message={MESSAGES.updateUser}
+            {...props}
+        />
+    );
+};
+const modalWithButton = makeFullModal(EditUserDialogComponent, EditUserButton);
+const modalWithIcon = makeFullModal(EditUserDialogComponent, EditIconButton);
+
+export { modalWithButton as EditUserWithButtonDialog };
+export { modalWithIcon as EditUserWithIconDialog };

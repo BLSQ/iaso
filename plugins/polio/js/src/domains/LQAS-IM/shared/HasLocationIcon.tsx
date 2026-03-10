@@ -3,7 +3,7 @@ import LocationDisabledIcon from '@mui/icons-material/LocationDisabled';
 import { Tooltip, Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import ShapeSvg from '../../../../../../../hat/assets/js/apps/Iaso/components/svg/ShapeSvgComponent';
+import ShapeSvg from 'Iaso/components/svg/ShapeSvgComponent';
 import { Shape } from '../../../constants/types';
 
 const MESSAGES = defineMessages({

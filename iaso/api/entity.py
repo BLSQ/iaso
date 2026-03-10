@@ -162,10 +162,7 @@ class EntityViewSet(ModelViewSet):
                 "attributes__org_unit__org_unit_type",
                 "attributes__org_unit__parent",
                 "attributes__org_unit__version__data_source",
-                Prefetch(
-                    "instances",
-                    queryset=Instance.objects.only("id", "entity_id", "source_created_at", "created_at"),
-                ),
+                "instances",
             )
         )
         return queryset

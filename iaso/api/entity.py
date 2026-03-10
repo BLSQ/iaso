@@ -2,7 +2,6 @@ from logging import getLogger
 
 from django.db.models import Max
 from django.db.models.functions import Coalesce
-from django.db.models.query import Prefetch
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property

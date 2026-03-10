@@ -209,7 +209,10 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     onConfirm={orgUnitsList => {
                         setSelectedOrgUnits(orgUnitsList || []);
                         const orgUnitIds = orgUnitsList
-                            ? orgUnitsList.map((ou: OrgUnit) => ou.id)
+                            ? // Treeview's org unit id is a string and not the `number`expected by `OrgUnit`
+                              orgUnitsList.map((ou: OrgUnit | { id: string }) =>
+                                  parseInt(ou.id as string, 10),
+                              )
                             : [];
                         onChange({
                             ...defaults,

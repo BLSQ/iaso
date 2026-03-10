@@ -1,7 +1,7 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Chip } from '@mui/material';
 import { Select } from 'bluesquare-components';
 import { FieldInputProps, FormikProps } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProfiles } from '../../users/hooks/useGetProfiles';
@@ -36,7 +36,7 @@ export const UsersSelect: FunctionComponent<Props> = ({
     });
     const profilesList = useMemo(() => {
         if (!data) return [];
-        return data.profiles.map(p => ({
+        return data.results.map(p => ({
             value: p.user_id,
             label: getDisplayName(p),
         }));

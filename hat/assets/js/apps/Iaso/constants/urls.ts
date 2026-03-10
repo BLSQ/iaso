@@ -160,6 +160,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'searchActive',
             'searches',
             'isClusterActive',
+            'fields',
         ],
     },
     orgUnitDetails: {
@@ -321,6 +322,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'teamsIds',
             ...paginationPathParams,
         ],
+    },
+    userDetails: {
+        url: 'settings/users/management/details',
+        params: ['accountId', 'userId'],
     },
     usersHistory: {
         url: 'settings/users/history',
@@ -678,6 +683,7 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
+    userDetails: string;
     usersHistory: string;
     userRoles: string;
     projects: string;

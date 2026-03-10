@@ -14,6 +14,7 @@ from rest_framework.request import Request
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
+from iaso.api.common import is_field_referenced
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
@@ -236,23 +237,6 @@ class FormSerializer(DynamicFieldsModelSerializer):
         form = super(FormSerializer, self).create(validated_data)
         log_modification(None, form, FORM_API, user=self.context["request"].user)
         return form
-
-
-# empty fields then do return true assume it's give me all the fields like the forms page list
-# if specified fields contains :all or field_name then do return True
-# else False
-def is_field_referenced(field_name, requested_fields, order):
-    result = False
-
-    if (
-        not requested_fields
-        or ":all" in requested_fields.split(",")
-        or field_name in requested_fields.split(",")
-        or field_name in order
-    ):
-        result = True
-
-    return result
 
 
 class FormsViewSet(ModelViewSet):

@@ -62,6 +62,7 @@ const MODULES = 'iaso_modules';
 const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 const PAYMENTS = 'iaso_payments';
 const STOCK_MANAGEMENT = 'iaso_stock_management';
+const METRIC_TYPES = 'iaso_metric_types';
 
 export {
     COMPLETENESS,
@@ -76,6 +77,7 @@ export {
     FORMS_STATS,
     LINKS,
     MAPPINGS,
+    METRIC_TYPES,
     MOBILE_APP_OFFLINE_SETUP,
     MODULES,
     ORG_UNITS,

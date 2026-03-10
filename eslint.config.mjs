@@ -5,6 +5,7 @@ import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import vitest from '@vitest/eslint-plugin';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import formatjs from 'eslint-plugin-formatjs';
 import importPlugin from 'eslint-plugin-import';
@@ -246,7 +247,6 @@ export default defineConfig([
                 node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
             },
         },
-
         rules: {
             'import/extensions': [
                 'error',
@@ -360,6 +360,37 @@ export default defineConfig([
             'react/prop-types': 'off',
             'react/require-default-props': 'off',
             'valid-typeof': 'warn',
+        },
+    },
+    {
+        files: [
+            '**/*.test.tsx',
+            '**/*.test.ts',
+            '**/*.integration.test.tsx',
+            '**/*.integration.test.ts'
+        ],
+        plugins: {
+            vitest,
+        },
+        rules: {
+            ...vitest.configs.recommended.rules,
+        },
+        languageOptions: {
+            globals: {
+                ...vitest.environments.env.globals,
+                ...globals.jest,
+            },
+        },
+    },
+    {
+        files: ['playwright.config.ts', '**/playwright/**/*.test.ts'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+            },
+        },
+        rules: {
+            'no-process-env': 'off',
         },
     },
 ]);

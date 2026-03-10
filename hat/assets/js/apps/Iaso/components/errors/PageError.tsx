@@ -23,20 +23,24 @@ type Props = {
     errorCode: string;
     displayMenuButton?: boolean;
     customMessage?: string;
+    displayTopBar?: boolean;
 };
 
 const PageError: FunctionComponent<Props> = ({
     errorCode,
     displayMenuButton = true,
     customMessage,
+    displayTopBar = true
 }) => {
     const classes = useStyles();
     return (
         <>
-            <TopBar
-                displayBackButton={false}
-                displayMenuButton={displayMenuButton}
-            />
+            {displayTopBar &&
+                <TopBar
+                    displayBackButton={false}
+                    displayMenuButton={displayMenuButton}
+                />
+            }
             <Box mt={5}>
                 <Container maxWidth="md">
                     {/* p prop is unknonw. Check it doesn't break the page before removing */}

@@ -22,6 +22,7 @@ djangorestframework_simplejwt==5.3.1  # https://github.com/jazzband/djangorestfr
 drf-yasg==1.21.7  # https://github.com/axnsan12/drf-yasg/tags
 pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 nested-multipart-parser==1.5.0 # https://github.com/remigermain/nested-multipart-parser
+djangorestframework-camel-case==1.4.2 # https://github.com/vbabiy/djangorestframework-camel-case
 
 # Redis.
 # ------------------------------------------------------------------------------

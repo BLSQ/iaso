@@ -10,7 +10,6 @@ import {
     ConfirmCancelModal,
     IntlMessage,
     makeFullModal,
-    theme,
     useSafeIntl,
 } from 'bluesquare-components';
 
@@ -34,7 +33,7 @@ import { WarningModal } from './WarningModal/WarningModal';
 
 const styles: SxStyles = {
     tabs: {
-        marginBottom: theme.spacing(3),
+        marginBottom: theme => theme.spacing(1),
     },
     root: {
         position: 'relative',

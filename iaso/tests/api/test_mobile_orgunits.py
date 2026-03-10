@@ -1,3 +1,5 @@
+import datetime
+
 import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
@@ -412,9 +414,16 @@ class MobileOrgUnitAPITestCase(APITestCase):
             form=form2, org_unit=self.raditz, json={"key": "bar"}, form_version=form_version2
         )
         instance_file1 = InstanceFile.objects.create(instance=instance2, file="test1.jpg")
+        # Instance 3. Form is soft-deleted
+        form3 = Form.objects.create(name="Form 3", deleted_at=datetime.datetime.now())
+        form_version3 = FormVersion.objects.create(form=form3, version_id=9)
+        instance3 = Instance.objects.create(
+            form=form3, org_unit=self.raditz, json={"key": "foobar"}, form_version=form_version3
+        )
         # Mark instances as reference instances.
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance1, form=form1)
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
+        OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance3, form=form3)
 
         self.client.force_authenticate(self.user)
 

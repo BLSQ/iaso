@@ -271,6 +271,7 @@ def annotate_query(queryset, count_instances, count_per_form, forms):
             instances_count=Count(
                 "instance",
                 filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
+                distinct=True,
             )
         )
 

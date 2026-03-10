@@ -1,10 +1,13 @@
 import { UseQueryResult } from 'react-query';
+import {
+    ProfileListResponseItem,
+    ProfileRetrieveResponseItem,
+} from 'Iaso/domains/users/types';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { Profile } from 'Iaso/utils/usersUtils';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
-import { ProfileListResponseItem, ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
 import { Pagination } from 'Iaso/types/general';
+import { Profile } from 'Iaso/utils/usersUtils';
 
 export const useGetProfilesApiParams = params => {
     const apiParams = params
@@ -13,13 +16,13 @@ export const useGetProfilesApiParams = params => {
               order: params.order,
               page: params.page,
               search: params.search,
-              orgUnitTypes: params.orgUnitTypes,
+              org_unit_types: params.orgUnitTypes,
               location: params.location,
               permissions: params.permissions,
               ouParent: params.ouParent,
               ouChildren: params.ouChildren,
               projects: params.projectsIds,
-              userRoles: params.userRoles,
+              user_roles: params.userRoles,
               teams: params.teamsIds,
               managedUsersOnly: params.managedUsersOnly,
           }
@@ -37,17 +40,15 @@ export const useGetProfilesApiParams = params => {
 };
 
 type ListResponse = Pagination & {
-    results: ProfileListResponseItem[]
-}
+    results: ProfileListResponseItem[];
+};
 
 export const useGetProfiles = (params): UseQueryResult<ListResponse, Error> => {
     const { url, apiParams } = useGetProfilesApiParams(params);
     return useSnackQuery(['profiles', apiParams], () => getRequest(url));
 };
 
-const getProfile = async (
-    profileId?: string,
-): Promise<Profile> => {
+const getProfile = async (profileId?: string): Promise<Profile> => {
     return getRequest(`/api/profiles/${profileId}/`);
 };
 

@@ -2,10 +2,10 @@
 import React, { FunctionComponent } from 'react';
 import Edit from '@mui/icons-material/Edit';
 import { Button } from '@mui/material';
+import { ButtonProps } from '@mui/material/Button/Button';
+import { makeStyles } from '@mui/styles';
 import { commonStyles, IntlMessage, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../domains/users/messages';
-import { makeStyles } from '@mui/styles';
-import { ButtonProps } from '@mui/material/Button/Button';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     message?: IntlMessage;
     id?: string;
-} & Omit<ButtonProps, "children">;
+} & Omit<ButtonProps, 'children'>;
 
 export const EditButton: FunctionComponent<Props> = ({
     onClick,
@@ -28,6 +28,7 @@ export const EditButton: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+
     return (
         <Button
             variant={variant}

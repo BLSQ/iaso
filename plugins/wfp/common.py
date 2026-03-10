@@ -72,15 +72,20 @@ class ETL:
             entities = entities.filter(updated_at__gte=updated_at)
         return entities.distinct().values_list("entity_id", flat=True)
 
-    def retrieve_entities(self, entity_ids):
+    def retrieve_entities(self, entity_ids, page_size=5000, page_number=1):
+        entity_ids = sorted(list(entity_ids))
+        paginator = Paginator(entity_ids, page_size)
+
+        current_page = paginator.get_page(page_number)
+        current_entity_ids = current_page.object_list
+
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code=self.entity_type)
-            .filter(entity__id__in=entity_ids)
+            .filter(entity__id__in=current_entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
-            .prefetch_related("entity_id", "form__form_id", "org_unit__id")
             .values(
                 "id",
                 "created_at",
@@ -94,9 +99,10 @@ class ETL:
                 "entity__deleted_at",
                 "source_created_at",
             )
-            .order_by("entity_id", "source_created_at", "created_at", "json__visit_date", "json___visit_date")
+            .order_by("entity_id", "source_created_at", "created_at", "json__visit_date")
         )
-        return Paginator(beneficiaries, 5000)
+
+        return beneficiaries, current_page
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
@@ -356,7 +362,7 @@ class ETL:
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
-    def journey_Formatter(
+    def journey_formatter(
         self,
         visit,
         anthropometric_visit_form,
@@ -369,7 +375,9 @@ class ETL:
         default_admission_form = None
         if visit["form_id"] in anthropometric_visit_form:
             default_admission_form = visit["form_id"]
-            current_journey["instance_id"] = visit.get("instance_id", None)
+            current_journey["instance_id"] = visit.get(
+                "instance_id", None
+            )  # martin: why does a journey have an instance_id (it's the start instance?)
             current_journey["start_date"] = visits[0].get("date", visit.get("start_date", None))
             current_journey["initial_weight"] = visit.get("initial_weight", None)
             current_journey["muac_size"] = visit.get("muac", visit.get("muac_size"))
@@ -588,14 +596,14 @@ class ETL:
                     quantity = step.get("_total_number_of_sachets", step.get("_total_number_of_sachets_rutf", quantity))
             assistance = {
                 "type": step.get("ration_type", step.get("ration")),
-                "quantity": quantity,
+                "quantity": step.get("quantity", quantity),
                 "ration_size": ration_size,
             }
             given_assistance.append(assistance)
 
         return list(
             filter(
-                lambda assistance: (assistance.get("type") and assistance.get("type") != ""),
+                lambda assistance: assistance.get("type") and assistance.get("type") != "",
                 given_assistance,
             )
         )
@@ -702,7 +710,7 @@ class ETL:
         return calculated_date
 
     def entity_journey_mapper(self, visits, anthropometric_visit_forms, admission_form, current_journey):
-        journey = []
+        journeys = []
         new_journey_after_transfer = {}
         for index, visit in enumerate(visits):
             if visit:
@@ -711,7 +719,7 @@ class ETL:
                 if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
-                current_journey = self.journey_Formatter(
+                current_journey = self.journey_formatter(
                     visit,
                     admission_form,
                     anthropometric_visit_forms,
@@ -722,7 +730,9 @@ class ETL:
             current_journey["steps"].append(visit)
             if current_journey.get("exit_type") == "transfer_to_tsfp":
                 new_journey_after_transfer["programme_type"] = "TSFP"
-                new_journey_after_transfer["nutrition_programme"] = "TSFP"
+                new_journey_after_transfer["nutrition_programme"] = (
+                    "TSFP"  # Martin: it seems to me that this common method is used across multiple ETL, including ones where TSFP is not an option
+                )
                 new_journey_after_transfer["admission_type"] = "referred_from_otp_sam"
             elif current_journey.get("exit_type") == "transfer_to_otp":
                 new_journey_after_transfer["programme_type"] = "OTP"
@@ -733,12 +743,14 @@ class ETL:
             new_journey_after_transfer["visits"] = [visit]
             new_journey_after_transfer["start_date"] = current_journey.get("end_date")
             new_journey_after_transfer["initial_weight"] = current_journey.get("discharge_weight")
-        journey.append(current_journey)
+        journeys.append(current_journey)
         if new_journey_after_transfer.get("programme_type") is not None:
             if current_journey.get("nutrition_programme") == "BSFP":
                 new_journey_after_transfer["admission_type"] = "referred_from_BSFP"
-            journey.append(new_journey_after_transfer)
-        return journey
+            journeys.append(
+                new_journey_after_transfer
+            )  # martin: it seems to me that it's impossible to have more than 2 journeys per beneficiaries with this method which sounds wrong (I checked, and on staging, it's the case, there are never more than 2 journeys for a beneficiary). I don't see where defaulters are handled either
+        return journeys
 
     def compute_gained_weight(self, initial_weight, current_weight, duration):
         weight_gain = 0
@@ -753,9 +765,13 @@ class ETL:
                 if duration == 0:
                     weight_gain = 0
                 elif duration > 0 and current_weight > 0 and initial_weight > 0:
-                    weight_gain = round((weight_difference / (initial_weight * float(duration))), 4)
+                    weight_gain = round(
+                        (weight_difference / (initial_weight * float(duration))), 4
+                    )  # Martin: I don't understand this
             elif weight_difference < 0:
-                weight_loss = abs(weight_difference)
+                weight_loss = abs(
+                    weight_difference
+                )  # Martin: I don't get why weight loss is not computed as weight gain
         return {
             "initial_weight": (
                 float(initial_weight) if initial_weight is not None and initial_weight != "" else initial_weight
@@ -860,6 +876,7 @@ class ETL:
                 "visit__journey__beneficiary__account",
                 "visit__muac_size",
                 "visit__whz_color",
+                "visit__org_unit_id",
                 year=Extract("visit__date", "year"),
                 month=Extract("visit__date", "month"),
                 period=Concat(
@@ -993,14 +1010,137 @@ class ETL:
         return f"{year}{month}"
 
     def aggregating_data_to_push_to_dhis2(self, account, org_unit_ids=None):
+        # org_unit_ids = ["744"]
+
         monthlyStatistics = (
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
-            .values()
+            .values(
+                "gender",
+                "org_unit_id",
+                "dhis2_id",
+                "period",
+                "programme_type",
+                "nutrition_programme",
+                "admission_type",
+                "admission_criteria",
+                "exit_type",
+            )
+            .annotate(
+                new_case=Case(
+                    When(admission_type="new_case", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                relapse=Case(
+                    When(admission_type="relapse", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                returned_defaulter=Case(
+                    When(admission_type="returned_defaulter", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                returned_referral=Case(
+                    When(admission_type="returned_referral", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                transfer_from_other_tsfp=Case(
+                    When(admission_type="transfer_from_other_tsfp", then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                referred_from_otp_sam=Case(
+                    When(
+                        Q(admission_type="referred_from_sc")
+                        | Q(admission_type="referred_from_otp_sam")
+                        | Q(admission_type="referred_from_otp_sam")
+                        | Q(admission_type="admission_sc_itp_otp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                transfer_sc_itp_otp=Case(
+                    When(
+                        Q(exit_type="transfer_to_sc_itp")
+                        | Q(exit_type="transferred_to_otp")
+                        | Q(exit_type="transfer_sc_itp_otp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                transfer_in_from_other_tsfp=Case(
+                    When(
+                        Q(exit_type="transfer_from_other_tsfp") | Q(exit_type="transfer_to_tsfp"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                cured=Case(
+                    When(
+                        Q(exit_type="cured"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                death=Case(
+                    When(
+                        Q(exit_type="death"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                defaulter=Case(
+                    When(
+                        Q(exit_type="defaulter"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                non_respondent=Case(
+                    When(
+                        Q(exit_type="non_respondent"),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+            )
+            .annotate(
+                muac_11_5_12_4=Sum(Cast("muac_11_5_12_4", FloatField())),
+                muac_above_12_5=Sum(Cast("muac_above_12_5", FloatField())),
+                muac_above_23=Sum(Cast("muac_above_23", FloatField())),
+                muac_under_11_5=Sum(Cast("muac_under_11_5", FloatField())),
+                muac_under_23=Sum(Cast("muac_under_23", FloatField())),
+                oedema=Sum(Cast("oedema", FloatField())),
+                whz_score_2=Sum(Cast("whz_score_2", FloatField())),
+                whz_score_3=Sum(Cast("whz_score_3", FloatField())),
+                whz_score_3_2=Sum(Cast("whz_score_3_2", FloatField())),
+                total_beneficiary_admission_sc_itp_otp=Sum(Cast("referred_from_otp_sam", FloatField())),
+                transfer_to_otp=Sum(Cast("transfer_sc_itp_otp", FloatField())),
+                total_beneficiary_transfer_from_other_tsfp=Sum(Cast("transfer_from_other_tsfp", FloatField())),
+                transfer_to_tsfp=Sum(Cast("transfer_in_from_other_tsfp", FloatField())),
+                total_beneficiary_new_case=Sum(Cast("new_case", FloatField())),
+                total_beneficiary_relapse=Sum(Cast("relapse", FloatField())),
+                total_beneficiary_returned_referral=Sum(Cast("returned_referral", FloatField())),
+                total_beneficiary_returned_defaulter=Sum(Cast("returned_defaulter", FloatField())),
+                total_with_exit_type_defaulter=Sum(Cast("defaulter", FloatField())),
+                total_with_exit_type_cured=Sum(Cast("cured", FloatField())),
+            )
             .filter(account=account)
             .filter(org_unit__source_ref__isnull=False)
         )
+
         if org_unit_ids is not None and len(org_unit_ids) > 0:
             monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
+
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
         # Reading the dhis2 datalement mapper json file
@@ -1034,34 +1174,37 @@ class ETL:
                     "muac_under_11_5",
                     "muac_11_5_12_4",
                     "muac_above_12_5",
-                    "total_beneficiary",
                     "whz_score_3",
-                    "total_with_exit_type",
                     "transfer_sc_itp_otp",
+                    "admission_sc_itp_otp",
                 ]
                 journey = groupby(list(journey_by_program), key=itemgetter("gender"))
             elif program_type == "PLW":
                 categories = ["screening_reporting", "tsfp_reporting", "bsfp_reporting"]
-                sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23", "total_with_exit_type"]
+                sub_categories = [
+                    "muac_under_23",
+                    "muac_above_23",
+                    "admission_sc_itp_otp",
+                ]
                 journey = groupby(list(journey_by_program), key=itemgetter("nutrition_programme"))
 
             for main_category, journey_by_category in journey:
                 journey_by_categories = list(journey_by_category)
                 admission_type = journey_by_categories[0]["admission_type"] if len(journey_by_categories) > 0 else ""
-                admission_criteria = (
-                    journey_by_categories[0]["admission_criteria"] if len(journey_by_categories) > 0 else ""
-                )
                 exit_type = journey_by_categories[0]["exit_type"] if len(journey_by_categories) > 0 else ""
                 journey_by_gender_and_nutrition_program = groupby(
                     journey_by_categories, key=itemgetter("nutrition_programme")
                 )
                 rows = AggregatedJourney().aggregated_rows(journey_by_categories)
-
-                for nutrition_programme, journey_program in journey_by_gender_and_nutrition_program:
+                for nutrition_programme in journey_by_gender_and_nutrition_program:
                     for category in categories:
                         dataElement_by_category = dataElement.get(category)
                         dataElement_by_sub_category = dataElement_by_category
-                        if nutrition_programme == "TSFP":
+                        if (
+                            nutrition_programme == "TSFP"
+                            or nutrition_programme == "pregnant"
+                            or nutrition_programme == "breastfeeding"
+                        ):
                             dataElement_by_sub_category = dataElement.get("tsfp_reporting")
                         elif nutrition_programme == "OTP":
                             dataElement_by_sub_category = dataElement.get("otp_reporting")
@@ -1075,9 +1218,9 @@ class ETL:
                                     if dataElement_by_main_category is not None:
                                         dataValue = dataElement_by_main_category.get(sub_category)
                                         if sub_category == exit_type:
-                                            rows[sub_category] = rows["total_with_exit_type"]
+                                            rows[sub_category] = rows[f"total_with_exit_type_{sub_category}"]
                                         elif sub_category == admission_type:
-                                            rows[sub_category] = rows["total_beneficiary"]
+                                            rows[sub_category] = rows[f"total_beneficiary_{sub_category}"]
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": rows[sub_category]})
         dataValues = list(
@@ -1123,6 +1266,8 @@ class ETL:
                 json_u5_female_yellow=Cast(KeyTextTransform("u5_female_yellow", "json"), output_field=FloatField()),
                 json_u5_male_red=Cast(KeyTextTransform("u5_male_red", "json"), output_field=FloatField()),
                 json_u5_female_red=Cast(KeyTextTransform("u5_female_red", "json"), output_field=FloatField()),
+                json_u5_male_oedema=Cast(KeyTextTransform("u5_male_oedema", "json"), output_field=FloatField()),
+                json_u5_female_oedema=Cast(KeyTextTransform("u5_female_oedema", "json"), output_field=FloatField()),
                 json_pregnant_w_muac_gt_23=Cast(
                     KeyTextTransform("pregnant_w_muac_gt_23", "json"), output_field=FloatField()
                 ),

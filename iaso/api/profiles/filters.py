@@ -21,7 +21,7 @@ class ProfileListFilter(django_filters.rest_framework.FilterSet):
     permissions = django_filters.BaseInFilter(
         field_name="user__user_permissions__codename", lookup_expr="in", distinct=True
     )
-    orgUnitTypes = django_filters.CharFilter(method="filter_org_unit_type")
+    org_unit_types = django_filters.CharFilter(method="filter_org_unit_type")
     search = django_filters.CharFilter(method="filter_search")
 
     location = django_filters.CharFilter(method="filter_location")

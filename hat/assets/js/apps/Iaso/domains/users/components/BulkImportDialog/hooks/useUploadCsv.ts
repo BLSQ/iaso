@@ -2,23 +2,32 @@ import { UseMutationResult } from 'react-query';
 import { postRequest } from '../../../../../libs/Api';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
 import MESSAGES from '../../../messages';
+import { BulkImportPayload } from '../../../types';
 
-type Values = {
-    file: File[];
-};
+const uploadCsv = (values: BulkImportPayload) => {
+    const { file, ...defaultValues } = values;
 
-const uploadCsv = (values: Values) => {
+    // Only send default values if they have actual values
+    const cleanDefaults = Object.entries(defaultValues).reduce(
+        (acc, [key, value]) => {
+            if (value && (Array.isArray(value) ? value.length > 0 : true)) {
+                acc[key] = value;
+            }
+            return acc;
+        },
+        {} as Record<string, any>,
+    );
+
     return postRequest({
         url: '/api/bulkcreateuser/',
-        fileData: { file: values.file },
-        data: values,
+        fileData: { file },
+        data: cleanDefaults,
     });
 };
 
-// TODO add messages
 export const useUploadCsv = (): UseMutationResult => {
     return useSnackMutation<any, any, any, any>({
-        mutationFn: file => uploadCsv(file),
+        mutationFn: (payload: BulkImportPayload) => uploadCsv(payload),
         invalidateQueryKey: 'profiles',
         snackErrorMsg: MESSAGES.uploadError,
         snackSuccessMessage: MESSAGES.uploadSuccess,

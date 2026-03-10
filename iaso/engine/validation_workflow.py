@@ -58,9 +58,12 @@ class ValidationWorkflowEngine:
         approved: Optional[bool] = False,
         comment: Optional[str] = "",
     ):
-        # this will need to be adapted in case of more complex graph, there the assumption is made that it's linear
+        # this function will need to be adapted in case of more complex graph, there the assumption is made that it's linear
         if not node.can_skip_previous_nodes:
             raise ValueError("Skipping previous nodes is not possible")
+
+        if instance.get_validation_status(workflow) == "REJECTED":
+            raise ValueError("Already rejected, cannot skip")
 
         validation_status, created = ValidationStatus.objects.get_or_create(node=node, instance=instance)
         validation_status.updated_by = user
@@ -69,10 +72,8 @@ class ValidationWorkflowEngine:
             raise ValueError("Already completed")
 
         if not created:
-            validation_status.status = Status.ACCEPTED if approved else Status.REJECTED
-            validation_status.comment = comment
-            validation_status.approved = approved
-            validation_status.save()
+            # it means previous node (linear assumption) has already been approved
+            ValidationWorkflowEngine.complete_node(validation_status, user, approved=approved, comment=comment)
             return
 
         while instance.get_next_pending_states(workflow).exclude(pk=validation_status.pk).count():
@@ -80,7 +81,7 @@ class ValidationWorkflowEngine:
                 instance.get_next_pending_states(workflow).first(), user, skipped=True, skipped_from_parent=node
             )
 
-        ValidationWorkflowEngine.complete_node(validation_status, user, comment=comment, approved=True)
+        ValidationWorkflowEngine.complete_node(validation_status, user, comment=comment, approved=approved)
 
     @staticmethod
     def complete_node(

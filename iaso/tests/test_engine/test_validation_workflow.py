@@ -717,7 +717,12 @@ class TestByPassFeature(TestCase):
             )
 
         ValidationWorkflowEngine.complete_node_by_passing(
-            self.manager_approves_node, self.michael, self.instance, self.workflow, comment="I'm the boss"
+            self.manager_approves_node,
+            self.michael,
+            self.instance,
+            self.workflow,
+            comment="I'm the boss",
+            approved=True,
         )
         # check
         self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
@@ -726,12 +731,12 @@ class TestByPassFeature(TestCase):
         self.check_file_name_node.refresh_from_db()
         self.manager_approves_node.refresh_from_db()
 
-        first_validation_status = self.check_file_name_node.validationstatus_set.first()
+        first_validation_status = self.check_file_type_node.validationstatus_set.first()
         self.assertEqual(first_validation_status.status, Status.SKIPPED)
         self.assertEqual(first_validation_status.updated_by, self.michael)
         self.assertEqual(first_validation_status.comment, "")
 
-        second_validation_status = self.check_file_type_node.validationstatus_set.first()
+        second_validation_status = self.check_file_name_node.validationstatus_set.first()
         self.assertEqual(second_validation_status.status, Status.SKIPPED)
         self.assertEqual(second_validation_status.updated_by, self.michael)
         self.assertEqual(second_validation_status.comment, "")
@@ -742,31 +747,171 @@ class TestByPassFeature(TestCase):
         self.assertEqual(last_validation_status.comment, "I'm the boss")
 
     def test_approve_last_node_when_first_node_has_been_approved(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+
+        with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
+            ValidationWorkflowEngine.complete_node_by_passing(
+                self.manager_approves_node, self.dwight, self.instance, self.workflow
+            )
+
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node,
+            self.michael,
+            self.instance,
+            self.workflow,
+            comment="I'm the boss",
+            approved=True,
+        )
+        # check
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
+
+        self.check_file_type_node.refresh_from_db()
+        self.check_file_name_node.refresh_from_db()
+        self.manager_approves_node.refresh_from_db()
+
+        first_validation_status = self.check_file_type_node.validationstatus_set.first()
+        self.assertEqual(first_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(first_validation_status.updated_by, self.jim)
+        self.assertEqual(first_validation_status.comment, "LGTM")
+
+        second_validation_status = self.check_file_name_node.validationstatus_set.first()
+        self.assertEqual(second_validation_status.status, Status.SKIPPED)
+        self.assertEqual(second_validation_status.updated_by, self.michael)
+        self.assertEqual(second_validation_status.comment, "")
+
+        last_validation_status = self.manager_approves_node.validationstatus_set.first()
+        self.assertEqual(last_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(last_validation_status.updated_by, self.michael)
+        self.assertEqual(last_validation_status.comment, "I'm the boss")
 
     def test_approve_last_node_when_second_node_has_been_approved(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(),
+            self.dwight,
+            comment="LGTM again",
+            approved=True,
+        )
+
+        with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
+            ValidationWorkflowEngine.complete_node_by_passing(
+                self.manager_approves_node, self.dwight, self.instance, self.workflow
+            )
+
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node,
+            self.michael,
+            self.instance,
+            self.workflow,
+            comment="I'm the boss",
+            approved=True,
+        )
+
+        # check
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "APPROVED")
+
+        self.check_file_type_node.refresh_from_db()
+        self.check_file_name_node.refresh_from_db()
+        self.manager_approves_node.refresh_from_db()
+
+        first_validation_status = self.check_file_type_node.validationstatus_set.first()
+        self.assertEqual(first_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(first_validation_status.updated_by, self.jim)
+        self.assertEqual(first_validation_status.comment, "LGTM")
+
+        second_validation_status = self.check_file_name_node.validationstatus_set.first()
+        self.assertEqual(second_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(second_validation_status.updated_by, self.dwight)
+        self.assertEqual(second_validation_status.comment, "LGTM again")
+
+        last_validation_status = self.manager_approves_node.validationstatus_set.first()
+        self.assertEqual(last_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(last_validation_status.updated_by, self.michael)
+        self.assertEqual(last_validation_status.comment, "I'm the boss")
 
     def test_approve_last_node_when_first_node_has_been_rejected(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="Nope", approved=False
+        )
+
+        with self.assertRaisesMessage(ValueError, "Already rejected, cannot skip"):
+            ValidationWorkflowEngine.complete_node_by_passing(
+                self.manager_approves_node,
+                self.michael,
+                self.instance,
+                self.workflow,
+                comment="I'm the boss",
+                approved=True,
+            )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
     def test_approve_last_node_when_second_node_has_been_rejected(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.dwight, comment="Nope", approved=False
+        )
+
+        with self.assertRaisesMessage(ValueError, "Already rejected, cannot skip"):
+            ValidationWorkflowEngine.complete_node_by_passing(
+                self.manager_approves_node,
+                self.michael,
+                self.instance,
+                self.workflow,
+                comment="I'm the boss",
+                approved=True,
+            )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
     def test_reject_last_node_if_nothing_else_has_been_approved(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node, self.michael, self.instance, self.workflow, comment="Nope", approved=False
+        )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
     def test_reject_last_node_when_first_node_has_been_approved(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node, self.michael, self.instance, self.workflow, comment="Nope", approved=False
+        )
+
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
     def test_reject_last_node_when_second_node_has_been_approved(self):
-        pass
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(),
+            self.dwight,
+            comment="LGTM again",
+            approved=True,
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node, self.michael, self.instance, self.workflow, comment="Nope", approved=False
+        )
 
-    def test_reject_last_node_when_first_node_has_been_rejected(self):
-        pass
+        self.assertEqual(self.instance.get_validation_status(workflow=self.workflow), "REJECTED")
 
-    def test_reject_last_node_when_second_node_has_been_rejected(self):
-        pass
 
-    def test_undo_priority_approve(self):
-        pass
+class TestUndoFeatureForSkipNodes(TestCase):
+    # todo
+    pass

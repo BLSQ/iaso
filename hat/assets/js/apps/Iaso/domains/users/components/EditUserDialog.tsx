@@ -9,15 +9,17 @@ import { Box, Tab, Tabs } from '@mui/material';
 import {
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal, theme,
+    makeFullModal,
+    theme,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
+import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import { EditButton } from 'Iaso/components/Buttons/EditButton';
+import { SxStyles } from 'Iaso/types/general';
 import * as Permissions from 'Iaso/utils/permissions';
 import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
@@ -29,7 +31,6 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
     tabs: {
@@ -45,7 +46,7 @@ const styles: SxStyles = {
         zIndex: -10,
         opacity: 0,
     },
-}
+};
 
 type Props = {
     titleMessage: IntlMessage;
@@ -92,9 +93,9 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                 currentUser[key] = user?.[key].value?.map(
                     (orgUnit: OrgUnit) => orgUnit?.id,
                 );
-            } else if(key === 'user_roles'){
+            } else if (key === 'user_roles') {
                 currentUser[key] = user?.[key].value?.map(
-                    (userRole) => userRole?.id ?? userRole,
+                    userRole => userRole?.id ?? userRole,
                 );
             } else {
                 currentUser[key] = user[key].value;
@@ -130,7 +131,8 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     const userRolesPermissions = user?.user_roles_permissions.value ?? [];
 
     const isPhoneNumberUpdated =
-        (user.phone_number.value ?? '') !== (initialData?.phone_number ?? '') && !!user.id?.value;
+        (user.phone_number.value ?? '') !== (initialData?.phone_number ?? '') &&
+        !!user.id?.value;
 
     const isUserWithoutPermissions =
         userPermissions.length === 0 &&
@@ -260,9 +262,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                     )}
                 </Tabs>
                 <Box sx={styles.root} id="user-profile-dialog">
-                    <Box
-                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
-                    >
+                    <Box sx={tab === 'infos' ? null : styles.hiddenOpacity}>
                         <UsersInfos
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -315,15 +315,13 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-type EditUserButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message">
+type EditUserButtonProps = Omit<
+    React.ComponentProps<typeof EditButton>,
+    'message'
+>;
 
 const EditUserButton = (props: EditUserButtonProps) => {
-    return (
-        <EditButton
-            message={MESSAGES.updateUser}
-            {...props}
-        />
-    );
+    return <EditButton message={MESSAGES.updateUser} {...props} />;
 };
 const modalWithButton = makeFullModal(EditUserDialogComponent, EditUserButton);
 const modalWithIcon = makeFullModal(EditUserDialogComponent, EditIconButton);

@@ -7,8 +7,8 @@ import {
 } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { MutateFunction } from 'react-query';
-import InputComponent from 'Iaso/components/forms/InputComponent';
 import { EditButton } from 'Iaso/components/Buttons/EditButton';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from 'Iaso/domains/users/messages';
 import { SaveUserPasswordQuery } from 'Iaso/domains/users/types';
 import { useUserPasswordValidation } from 'Iaso/domains/users/validation';
@@ -122,15 +122,23 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
     );
 };
 
-type PasswordEditButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message" | "color">
+type PasswordEditButtonProps = Omit<
+    React.ComponentProps<typeof EditButton>,
+    'message' | 'color'
+>;
 
 const PasswordEditButton = (props: PasswordEditButtonProps) => {
-
+    const extendedProps = {
+        ...props,
+        sx: {
+            color: 'white',
+        },
+    };
     return (
         <EditButton
             message={MESSAGES.updatePasswordButtonLabel}
-            color={"warning"}
-            {...props}
+            color={'warning'}
+            {...extendedProps}
         />
     );
 };

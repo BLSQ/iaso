@@ -124,7 +124,7 @@ const PdfItem: FunctionComponent<PdfItemProps> = ({
 }) => {
     return (
         <PdfPreview
-            pdfUrl={filePath}
+            pdf={filePath}
             OpenButtonComponent={OpenButtonComponent}
             buttonProps={{
                 label: getDisplayName(filePath),

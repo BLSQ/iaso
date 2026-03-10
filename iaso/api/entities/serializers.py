@@ -32,20 +32,11 @@ class EntityExportSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(label="ID")
     uuid = serializers.UUIDField(label="UUID")
-    entity_type_name = serializers.SerializerMethodField(label="Entity Type")
+    entity_type_name = serializers.CharField(label="Entity Type", source="entity_type.name", default="", read_only=True)
     created_at = serializers.DateTimeField(format=EXPORTS_DATETIME_FORMAT, label="Creation Date")
-    org_unit_name = serializers.SerializerMethodField(label="HC")
-    org_unit_id = serializers.SerializerMethodField(label="HC ID")
+    org_unit_name = serializers.CharField(label="HC", source="attributes.org_unit.name", default="", read_only=True)
+    org_unit_id = serializers.CharField(label="HC ID", source="attributes.org_unit.id", default="", read_only=True)
     last_saved_instance = serializers.SerializerMethodField(label="Last Update")
-
-    def get_org_unit_id(self, obj):
-        return obj.attributes and obj.attributes.org_unit and obj.attributes.org_unit.id or ""
-
-    def get_org_unit_name(self, obj):
-        return obj.attributes and obj.attributes.org_unit and obj.attributes.org_unit.name or ""
-
-    def get_entity_type_name(self, obj):
-        return obj.entity_type and obj.entity_type.name or ""
 
     def get_last_saved_instance(self, obj):
         if timestamp := getattr(obj, "last_saved_instance", None):
@@ -107,40 +98,16 @@ class EntityListNestedOrgUnitSerializer(serializers.ModelSerializer):
 
     short_name = serializers.CharField(source="name")
     groups = NestedGroupSerializer(many=True, read_only=True)
-    has_geo_json = serializers.SerializerMethodField()
-    org_unit_type = serializers.SerializerMethodField()
     org_unit_type_id = serializers.PrimaryKeyRelatedField(source="org_unit_type", read_only=True)
-    org_unit_type_depth = serializers.SerializerMethodField()
-    parent_name = serializers.SerializerMethodField()
-    longitude = serializers.SerializerMethodField()
-    latitude = serializers.SerializerMethodField()
-    altitude = serializers.SerializerMethodField()
-    source_id = serializers.SerializerMethodField()
-    source_name = serializers.SerializerMethodField()
-
-    def get_org_unit_type(self, obj):
-        return obj.org_unit_type and obj.org_unit_type.name
-
-    def get_org_unit_type_depth(self, obj):
-        return obj.org_unit_type and obj.org_unit_type.depth
-
-    def get_parent_name(self, obj):
-        return obj.parent and obj.parent.name
-
-    def get_longitude(self, obj):
-        return obj.location and obj.location.x
-
-    def get_latitude(self, obj):
-        return obj.location and obj.location.y
-
-    def get_altitude(self, obj):
-        return obj.location and obj.location.z
-
-    def get_source_id(self, obj):
-        return obj.version and obj.version.data_source and obj.version.data_source.id
-
-    def get_source_name(self, obj):
-        return obj.version and obj.version.data_source and obj.version.data_source.name
+    org_unit_type = serializers.CharField(source="org_unit_type.name", default=None, read_only=True)
+    org_unit_type_depth = serializers.IntegerField(source="org_unit_type.depth", default=None, read_only=True)
+    parent_name = serializers.CharField(source="parent.name", default=None, read_only=True)
+    longitude = serializers.FloatField(source="location.x", default=None, read_only=True)
+    latitude = serializers.FloatField(source="location.y", default=None, read_only=True)
+    altitude = serializers.FloatField(source="location.z", default=None, read_only=True)
+    source_id = serializers.IntegerField(source="version.data_source.id", default=None, read_only=True)
+    source_name = serializers.CharField(source="version.data_source.name", default=None, read_only=True)
+    has_geo_json = serializers.SerializerMethodField()
 
     def get_has_geo_json(self, obj):
         return bool(obj.simplified_geom)
@@ -171,17 +138,14 @@ class EntityListSerializer(serializers.ModelSerializer):
             "has_duplicates",
         ]
 
-    org_unit = serializers.SerializerMethodField()
+    org_unit = EntityListNestedOrgUnitSerializer(source="attributes.org_unit", default=None, read_only=True)
     attributes = serializers.PrimaryKeyRelatedField(read_only=True)
-    longitude = serializers.SerializerMethodField()
-    latitude = serializers.SerializerMethodField()
-    entity_type = serializers.SerializerMethodField()
+    longitude = serializers.FloatField(source="attributes.location.x", default=None, read_only=True)
+    latitude = serializers.FloatField(source="attributes.location.y", default=None, read_only=True)
+    entity_type = serializers.CharField(source="entity_type.name", default=None, read_only=True)
     name = serializers.SerializerMethodField()
     last_saved_instance = serializers.SerializerMethodField()
     has_duplicates = serializers.SerializerMethodField()
-
-    def get_org_unit(self, obj):
-        return obj.attributes and EntityListNestedOrgUnitSerializer(obj.attributes.org_unit).data
 
     def get_last_saved_instance(self, obj):
         return getattr(obj, "last_saved_instance", None)
@@ -191,15 +155,6 @@ class EntityListSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.attributes and obj.attributes.json and obj.attributes.json.get("name")
-
-    def get_longitude(self, obj):
-        return obj.attributes and obj.attributes.location and obj.attributes.location.x
-
-    def get_latitude(self, obj):
-        return obj.attributes and obj.attributes.location and obj.attributes.location.y
-
-    def get_entity_type(self, obj):
-        return obj.entity_type and obj.entity_type.name
 
     def to_representation(self, instance):
         """Handle entity_type_columns from the serializer context."""

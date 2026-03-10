@@ -1,17 +1,18 @@
 from phonenumbers import region_code_for_number
 from rest_framework import serializers
 
+from iaso.api.common import ModelSerializer
 from iaso.api.profiles.serializers.retrieve import NestedOrgUnitSerializer
 from iaso.models import Profile, Project, UserRole
 
 
-class RelatedProjectSerializer(serializers.ModelSerializer):
+class RelatedProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
 
 
-class NestedUserRoleSerializer(serializers.ModelSerializer):
+class NestedUserRoleSerializer(ModelSerializer):
     name = serializers.SerializerMethodField()
 
     class Meta:
@@ -23,7 +24,7 @@ class NestedUserRoleSerializer(serializers.ModelSerializer):
         return tail if sep else obj.group.name
 
 
-class ProfileListSerializer(serializers.ModelSerializer):
+class ProfileListSerializer(ModelSerializer):
     first_name = serializers.SerializerMethodField(read_only=True)
     user_name = serializers.SerializerMethodField(read_only=True)
     last_name = serializers.SerializerMethodField(read_only=True)

@@ -477,6 +477,10 @@ REST_FRAMEWORK = {
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
 }
 
+REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {
+    "iaso.utils.models.color.ColorField": "iaso.utils.serializer.color.ColorFieldSerializer"
+}
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),

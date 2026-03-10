@@ -41,7 +41,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
                     "id": self.team_1.id,
                     "name": self.team_1.name,
                     "deleted_at": None,
-                    "color": COLOR_CHOICES[0][0],
+                    "color": COLOR_CHOICES[0][0].upper(),
                 },
                 "org_unit_details": {
                     "id": self.org_unit_parent.id,

@@ -3,13 +3,13 @@ from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from iaso.api.common import ModelSerializer
 from iaso.api.profiles.serializers.common import CountryAwarePhoneNumberField
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
-from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
 
 
-class ProfileCreateSerializer(serializers.ModelSerializer):
+class ProfileCreateSerializer(ModelSerializer):
     # output only
     id = serializers.IntegerField(read_only=True)
 
@@ -81,13 +81,6 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         current_profile = request.user.iaso_profile
         return current_profile.account
-
-    def validate_color(self, value):
-        # todo : we should make a ColorFieldSerializer for this
-        try:
-            return validate_hex_color(value)
-        except ValueError:
-            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
     def validate_dhis2_id(self, value):
         return value or None

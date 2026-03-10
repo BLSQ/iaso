@@ -800,7 +800,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_create_profile_with_color(self):
         self.client.force_authenticate(self.jim)
-        color = "#123ABC"
+        color = "#123abc"
         data = {
             "userName": "color_user",
             "password": "unittest_password",
@@ -813,10 +813,10 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
 
-        self.assertEqual(response_data["color"], color)
+        self.assertEqual(response_data["color"], color.upper())
 
         profile = m.Profile.objects.get(pk=response_data["id"])
-        self.assertEqual(profile.color, color)
+        self.assertEqual(profile.color, color.upper())
 
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):

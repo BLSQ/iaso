@@ -6,7 +6,6 @@ import phonenumbers
 
 from django.conf import settings
 from django.contrib.auth.models import Permission, User
-from django.contrib.auth.password_validation import validate_password
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
@@ -47,11 +46,11 @@ BULK_CREATE_USER_COLUMNS_LIST = [
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
-    default_permissions = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_projects = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_user_roles = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_org_units = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_teams = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_permissions = serializers.JSONField(write_only=True, required=False)
+    default_projects = serializers.JSONField(write_only=True, required=False)
+    default_user_roles = serializers.JSONField(write_only=True, required=False)
+    default_org_units = serializers.JSONField(write_only=True, required=False)
+    default_teams = serializers.JSONField(write_only=True, required=False)
 
     class Meta:
         model = BulkCreateUserCsvFile
@@ -344,13 +343,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
             if not password and email:
                 # Email invitation mode - no password validation
                 pass
-            elif password:
-                try:
-                    temp_user = User(username=username)
-                    validate_password(password, temp_user)
-                except ValidationError as e:
-                    row_errors["password"] = f"Invalid password: {'; '.join(e.messages)}"
-            else:
+            elif not password and not email:
                 # Error: need either password or email
                 row_errors["password"] = "Either password or email required for user creation"
 

@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import pagination, permissions, renderers, serializers
+from rest_framework import permissions, renderers, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -19,72 +19,19 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.api.entities.filters import EntityDateFilterBackend, EntityFilterSet, EntityOrderingFilter
+from iaso.api.entities.pagination import EntityListPaginator, EntityLocationPaginator
 from iaso.api.entities.renderers import CSVStreamingRenderer, LegacyExportContentNegotation, XlsxStreamingRenderer
-from iaso.api.entities.serializers import EntityExportSerializer, EntityListSerializer, EntitySerializer
+from iaso.api.entities.serializers import (
+    EntityExportSerializer,
+    EntityListSerializer,
+    EntitySerializer,
+    EntityTypeColumnSerializer,
+)
 from iaso.models import Entity, EntityType, Instance
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
 logger = getLogger(__name__)
-
-
-class EntityLocationPaginator(pagination.PageNumberPagination):
-    """Paginator for entities `asLocation`.
-
-    Note: this might be unnecessary but maintained for strict
-    legacy API compatibility.
-    """
-
-    page_size_query_param = "limit"
-
-    def get_paginated_response(self, data):
-        return Response(
-            {
-                "result": data,
-                "limit": self.page.paginator.per_page,
-            }
-        )
-
-
-class EntityListPaginator(pagination.PageNumberPagination):
-    """Paginator for the entities list.
-
-    Similar to a default paginator but adds the "columns" attribute from the view's context.
-    """
-
-    page_size_query_param = "limit"
-    # large default page_size for legacy API compatibility
-    # not specifying a limit used to return everything
-    page_size = 10000
-
-    def paginate_queryset(self, queryset, request, view=None):
-        """Store a reference to the view to access later."""
-
-        self.view = view
-        return super().paginate_queryset(queryset, request, view)
-
-    def get_paginated_response(self, data):
-        columns = getattr(self.view, "entity_type_columns", [])
-        return Response(
-            {
-                "count": self.page.paginator.count,
-                "result": data,
-                "has_next": self.page.has_next(),
-                "has_previous": self.page.has_previous(),
-                "page": self.page.number,
-                "pages": self.page.paginator.num_pages,
-                "limit": self.page.paginator.per_page,
-                "columns": columns,
-            }
-        )
-
-
-class EntityTypeColumnSerializer(serializers.Serializer):
-    """Serialize EntityType columns."""
-
-    name = serializers.CharField()
-    type = serializers.CharField()
-    label = serializers.CharField()
 
 
 class EntityViewSet(ModelViewSet):

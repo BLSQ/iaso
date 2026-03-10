@@ -6,6 +6,14 @@ from iaso.models.deduplication import ValidationStatus
 from iaso.models.storage import StorageDevice
 
 
+class EntityTypeColumnSerializer(serializers.Serializer):
+    """Serialize EntityType columns."""
+
+    name = serializers.CharField()
+    type = serializers.CharField()
+    label = serializers.CharField()
+
+
 class EntityExportSerializer(serializers.ModelSerializer):
     """Entity serializer for csv/xlsx exports."""
 

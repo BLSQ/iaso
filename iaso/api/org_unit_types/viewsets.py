@@ -3,13 +3,13 @@ from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.api.org_unit_types.permissions import HasOrgUnitTypeWritePermission
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
 )
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
-from iaso.permissions.core_permissions import CORE_ORG_UNITS_TYPES_PERMISSION
 
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
@@ -22,20 +22,6 @@ from .serializers import (
 
 
 DEFAULT_ORDER = "name"
-
-
-class HasOrgUnitTypeWritePermission(permissions.BasePermission):
-    """
-    Write (POST, PUT, PATCH, DELETE): CORE_ORG_UNITS_TYPES_PERMISSION, or staff/superuser.
-    Read: not restricted (handled by IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired).
-    """
-
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if not request.user or not request.user.is_authenticated:
-            return False
-        return request.user.has_perm(CORE_ORG_UNITS_TYPES_PERMISSION.full_name())
 
 
 class OrgUnitTypeViewSet(ModelViewSet):

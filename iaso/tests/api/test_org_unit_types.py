@@ -4,7 +4,7 @@ from django.test import override_settings
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -21,8 +21,16 @@ class OrgUnitTypesAPITestCase(APITestCase):
         )
         cls.esd = m.Project.objects.create(name="End Some Diseases", app_id="esd", account=wha)
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
-        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=[CORE_FORMS_PERMISSION])
+        cls.jane = cls.create_user_with_profile(
+            username="janedoe",
+            account=ghi,
+            permissions=[CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION],
+        )
+        cls.john = cls.create_user_with_profile(
+            username="johndoe",
+            account=wha,
+            permissions=[CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION],
+        )
         cls.reference_form = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
@@ -110,6 +118,37 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         response = self.client.post("/api/orgunittypes/", data={}, format="json")
         self.assertJSONResponse(response, 401)
+
+    def test_org_unit_type_create_without_permission_forbidden(self):
+        """POST /orgunittypes/ with auth but without CORE_ORG_UNITS_TYPES_PERMISSION: 403"""
+
+        read_only_user = self.create_user_with_profile(
+            username="readonly", account=self.ead.account, permissions=[CORE_FORMS_PERMISSION]
+        )
+        self.client.force_authenticate(read_only_user)
+        response = self.client.post(
+            "/api/orgunittypes/",
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "project_ids": [self.ead.id],
+                "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 403)
+
+    def test_org_unit_type_read_without_write_permission_ok(self):
+        """GET /orgunittypes/ with auth but without CORE_ORG_UNITS_TYPES_PERMISSION: 200 (read allowed)"""
+
+        read_only_user = self.create_user_with_profile(
+            username="readonly2", account=self.ead.account, permissions=[CORE_FORMS_PERMISSION]
+        )
+        self.client.force_authenticate(read_only_user)
+        response = self.client.get("/api/orgunittypes/")
+        self.assertJSONResponse(response, 200)
 
     def test_org_unit_type_create_invalid(self):
         """POST /orgunittypes/ without project ids: invalid"""

@@ -655,7 +655,7 @@ class TestByPassFeature(TestCase):
     Setup represents a longer linear workflow :
     * Multiple nodes aka task (e.g check file type, check file name, etc)
     * All with permission checks
-    * Only the last node is capable to approve without waiting for others
+    * Only the last node is capable to approve/reject without waiting for others
 
     In summary:
 
@@ -913,5 +913,249 @@ class TestByPassFeature(TestCase):
 
 
 class TestUndoFeatureForSkipNodes(TestCase):
-    # todo
-    pass
+    """
+    Purpose of this test is to combine the skip validation and the undo feature
+
+    Setup represents a longer linear workflow :
+    * Multiple nodes aka task (e.g check file type, check file name, etc)
+    * All with permission checks
+    * Only the last two nodes are capable to approve/reject without waiting for others
+
+    In summary:
+
+    [ node: check file type ]
+        |
+        |
+        v
+    [ node: check file name ]
+        |
+        |
+        v
+    [ node: manager approves ]
+        |
+        |
+        v
+    [ node: big boss approves ]
+
+    """
+
+    def setUp(self):
+        self.jim = get_user_model().objects.create_user(username="jim.halpert", password="testpass")
+        self.dwight = get_user_model().objects.create(username="dwight.schrute", password="testpass")
+        self.michael = get_user_model().objects.create(username="michael.scott", password="testpass")
+        self.david = get_user_model().objects.create(username="david.wallace", password="testpass")
+
+        self.workflow = ValidationWorkflow.objects.get_or_create(name="test workflow")[0]
+        self.check_file_type_node = ValidationNode.objects.create(workflow=self.workflow, name="check_file_type")
+
+        self.check_file_name_node = ValidationNode.objects.create(workflow=self.workflow, name="check_file_state")
+        self.check_file_name_node.previous_nodes.add(self.check_file_type_node)
+
+        self.manager_approves_node = ValidationNode.objects.create(
+            workflow=self.workflow, name="manager_approves_node", can_skip_previous_nodes=True
+        )
+        self.manager_approves_node.previous_nodes.add(self.check_file_name_node)
+
+        self.big_boss_approves_node = ValidationNode.objects.create(
+            workflow=self.workflow, name="big_boss_approves_node", can_skip_previous_nodes=True
+        )
+        self.big_boss_approves_node.previous_nodes.add(self.manager_approves_node)
+
+        self.instance = Instance.objects.create()
+        self.workflow.refresh_from_db()
+
+    def test_undo_last_approved_node_when_first_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.big_boss_approves_node,
+            self.david,
+            self.instance,
+            self.workflow,
+            comment="Bypass michael",
+            approved=True,
+        )
+
+        with self.assertRaisesMessage(ValueError, "Cannot undo final node"):
+            ValidationWorkflowEngine.undo_node(
+                self.big_boss_approves_node.validationstatus_set.first(), self.david, self.instance, self.workflow
+            )
+
+        self.assertEqual(self.instance.get_validation_status(self.workflow), "APPROVED")
+
+    def test_undo_last_approved_node_when_second_node_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.dwight, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.big_boss_approves_node,
+            self.david,
+            self.instance,
+            self.workflow,
+            comment="Bypass michael",
+            approved=True,
+        )
+
+        with self.assertRaisesMessage(ValueError, "Cannot undo final node"):
+            ValidationWorkflowEngine.undo_node(
+                self.big_boss_approves_node.validationstatus_set.first(), self.david, self.instance, self.workflow
+            )
+
+        self.assertEqual(self.instance.get_validation_status(self.workflow), "APPROVED")
+
+    def test_undo_last_rejected_node_when_first_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.big_boss_approves_node,
+            self.david,
+            self.instance,
+            self.workflow,
+            comment="Bypass michael",
+            approved=False,
+        )
+
+        with self.assertRaisesMessage(ValueError, "Cannot undo rejected node"):
+            ValidationWorkflowEngine.undo_node(
+                self.big_boss_approves_node.validationstatus_set.first(), self.david, self.instance, self.workflow
+            )
+
+        self.assertEqual(self.instance.get_validation_status(self.workflow), "REJECTED")
+
+    def test_undo_last_rejected_node_when_second_node_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.dwight, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.big_boss_approves_node,
+            self.david,
+            self.instance,
+            self.workflow,
+            comment="Bypass michael",
+            approved=False,
+        )
+
+        with self.assertRaisesMessage(ValueError, "Cannot undo rejected node"):
+            ValidationWorkflowEngine.undo_node(
+                self.big_boss_approves_node.validationstatus_set.first(), self.david, self.instance, self.workflow
+            )
+
+        self.assertEqual(self.instance.get_validation_status(self.workflow), "REJECTED")
+
+    def test_undo_manager_approved_node_when_first_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node,
+            self.michael,
+            self.instance,
+            self.workflow,
+            comment="I'm the boss",
+            approved=True,
+        )
+
+        self.assertEqual(self.instance.get_validation_status(self.workflow), "PENDING")
+
+        self.assertTrue(self.big_boss_approves_node.validationstatus_set.exists())
+        self.assertEqual(self.big_boss_approves_node.validationstatus_set.count(), 1)
+        self.assertEqual(self.big_boss_approves_node.validationstatus_set.first().status, Status.UNKNOWN)
+
+        # second node
+        self.assertEqual(self.check_file_name_node.validationstatus_set.first().status, Status.SKIPPED)
+
+        # first node
+        first_node_validation_status = self.check_file_type_node.validationstatus_set.first()
+        self.assertEqual(first_node_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(first_node_validation_status.updated_by, self.jim)
+        self.assertEqual(first_node_validation_status.comment, "LGTM")
+
+        # third node
+        self.assertTrue(self.manager_approves_node.validationstatus_set.exists())
+        self.assertEqual(self.manager_approves_node.validationstatus_set.first().status, Status.ACCEPTED)
+
+        ValidationWorkflowEngine.undo_node(
+            self.manager_approves_node.validationstatus_set.first(), self.michael, self.instance, self.workflow
+        )
+
+        # check afterward
+        self.assertEqual(self.instance.get_validation_status(self.workflow), "PENDING")
+
+        # check nodes
+
+        # second node
+        self.assertEqual(self.instance.get_next_pending_states(self.workflow).first().node, self.check_file_name_node)
+        self.assertEqual(self.instance.get_next_pending_states(self.workflow).first().status, Status.UNKNOWN)
+
+        # first node
+        first_node_validation_status = self.check_file_type_node.validationstatus_set.first()
+        self.assertEqual(first_node_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(first_node_validation_status.updated_by, self.jim)
+        self.assertEqual(first_node_validation_status.comment, "LGTM")
+
+        # third node
+        self.assertFalse(self.manager_approves_node.validationstatus_set.exists())
+
+        # fourth node
+        self.assertFalse(self.big_boss_approves_node.validationstatus_set.exists())
+
+    def test_undo_manager_approved_node_when_second_node_has_been_approved(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(), self.jim, comment="LGTM", approved=True
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_states(self.workflow).first(),
+            self.dwight,
+            comment="LGTM again",
+            approved=True,
+        )
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node,
+            self.michael,
+            self.instance,
+            self.workflow,
+            comment="I'm the boss",
+            approved=True,
+        )
+
+        ValidationWorkflowEngine.undo_node(
+            self.manager_approves_node.validationstatus_set.first(), self.michael, self.instance, self.workflow
+        )
+
+        # check afterward
+        self.assertEqual(self.instance.get_validation_status(self.workflow), "PENDING")
+
+        # check nodes
+
+        # second node
+        second_node_validation_status = self.check_file_name_node.validationstatus_set.first()
+        self.assertEqual(second_node_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(second_node_validation_status.updated_by, self.dwight)
+        self.assertEqual(second_node_validation_status.comment, "LGTM again")
+
+        # first node
+        first_node_validation_status = self.check_file_type_node.validationstatus_set.first()
+        self.assertEqual(first_node_validation_status.status, Status.ACCEPTED)
+        self.assertEqual(first_node_validation_status.updated_by, self.jim)
+        self.assertEqual(first_node_validation_status.comment, "LGTM")
+
+        # third node
+        self.assertEqual(self.instance.get_next_pending_states(self.workflow).first().node, self.manager_approves_node)
+        self.assertEqual(self.instance.get_next_pending_states(self.workflow).first().status, Status.UNKNOWN)
+
+        # fourth node
+        self.assertFalse(self.big_boss_approves_node.validationstatus_set.exists())

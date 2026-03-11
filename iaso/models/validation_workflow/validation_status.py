@@ -31,10 +31,9 @@ class ValidationStatus(CreatedAndUpdatedModel):
     final = models.BooleanField(default=False)
 
     def get_next_states(self):
-        return ValidationStatus.objects.filter(node__pk__in=self.node.next_nodes.values_list("pk", flat=True))
-
-    def get_next_related_validation_statuses(self):
-        return ValidationStatus.objects.filter(node__pk__in=self.node.next_nodes.values_list("pk", flat=True))
+        return ValidationStatus.objects.filter(
+            node__pk__in=self.node.next_nodes.values_list("pk", flat=True), instance=self.instance
+        )
 
     class Meta:
         ordering = ["-created_at"]

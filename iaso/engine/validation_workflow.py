@@ -76,9 +76,14 @@ class ValidationWorkflowEngine:
             ValidationWorkflowEngine.complete_node(validation_status, user, approved=approved, comment=comment)
             return
 
-        while instance.get_next_pending_states(workflow).exclude(pk=validation_status.pk).count():
+        forbidden_pk = [validation_status.pk]
+        forbidden_pk += list(validation_status.get_next_states().values_list("pk", flat=True))
+        while instance.get_next_pending_states(workflow).exclude(pk__in=forbidden_pk).count():
             ValidationWorkflowEngine.complete_node(
-                instance.get_next_pending_states(workflow).first(), user, skipped=True, skipped_from_parent=node
+                instance.get_next_pending_states(workflow).exclude(pk__in=forbidden_pk).first(),
+                user,
+                skipped=True,
+                skipped_from_parent=node,
             )
 
         ValidationWorkflowEngine.complete_node(validation_status, user, comment=comment, approved=approved)
@@ -168,7 +173,6 @@ class ValidationWorkflowEngine:
             raise ValueError("Cannot undo node as next nodes have been completed")
 
     @staticmethod
-    @transaction.atomic
     def undo_node(
         validation_status: ValidationStatus, user, instance: ValidationWorkflowEntity, workflow: ValidationWorkflow
     ):
@@ -180,3 +184,26 @@ class ValidationWorkflowEngine:
         validation_status.status = Status.UNKNOWN
         validation_status.comment = ""
         validation_status.save()
+
+        if validation_status.node.can_skip_previous_nodes:
+            # there, it might be that previous nodes have been skipped and hence must be reverted
+            if instance.validationstatus_set.filter(node__workflow=workflow, status=Status.SKIPPED).exists():
+                validation_status.status = Status.ACCEPTED
+                validation_status.save()
+                for skipped_validation_node in validation_status.node.get_all_previous_nodes_with_validation_status(
+                    instance
+                ).filter(validationstatus__status=Status.SKIPPED):
+                    for skipped_validation_status in skipped_validation_node.validationstatus_set.all():
+                        skipped_validation_status.delete()
+
+                # it might happen after that there is no next pending state
+                # e.g APPROVED => SKIPPED => APPROVED WITH PASS could become APPROVED
+                if not instance.get_next_pending_states(workflow).exists():
+                    next_validation = instance.validationstatus_set.filter(
+                        status=Status.ACCEPTED, node__workflow=workflow
+                    ).last()
+                    if next_validation:
+                        for node in next_validation.node.next_nodes.all():
+                            ValidationWorkflowEngine._activate_node(node, validation_status.instance, user)
+
+                validation_status.delete()

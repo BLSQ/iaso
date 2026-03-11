@@ -67,18 +67,30 @@ class ValidationNode(CreatedAndUpdatedModel):
     def is_final_node(self):
         return not self.next_nodes.count()
 
+    def get_all_previous_nodes_with_validation_status(self, instance):
+        visited = set()
+        stack = list(
+            self.previous_nodes.prefetch_related("validationstatus_set").filter(validationstatus__instance=instance)
+        )
+        while stack:
+            node = stack.pop()
+            if node.pk not in visited:
+                visited.add(node.pk)
+                stack.extend(node.get_all_previous_nodes_with_validation_status(instance))
+
+        return ValidationNode.objects.filter(pk__in=visited)
+
     def get_all_previous_nodes_for_bypass(self, instance):
         visited = set()
         stack = list(
             self.previous_nodes.prefetch_related("validationstatus_set")
             .filter(Q(validationstatus__status_in=["REJECTED", "UNKNOWN"]))
             .filter(validationstatus__instance=instance)
-            .values_list("pk", flat=True)
         )
         while stack:
             node = stack.pop()
             if node.pk not in visited:
-                visited.add(node.pk)
+                visited.add(node)
                 stack.extend(node.get_all_previous_nodes_for_bypass(instance))
 
         return ValidationNode.objects.filter(pk__in=visited)

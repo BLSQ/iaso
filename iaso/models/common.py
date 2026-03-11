@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Case, IntegerField, When
+from django.utils.translation import gettext_lazy as _
 
 
 class CreatedAndUpdatedModel(models.Model):
@@ -10,60 +11,70 @@ class CreatedAndUpdatedModel(models.Model):
         abstract = True
 
 
-class ValidationWorkflowEntity(models.Model):
-    parent_instance_for_validation = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)
+class ValidationWorkflowArtefactStatus(models.TextChoices):
+    APPROVED = "APPROVED", _("Approved")
+    REJECTED = "REJECTED", _("Rejected")
+    PENDING = "PENDING", _("Pending")
+
+
+class ValidationWorkflowArtefact(models.Model):
+    parent_artefact_for_validation = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)
 
     class Meta:
         abstract = True
 
     def has_workflow(self, workflow):
-        return self.validationstatus_set.filter(node__workflow=workflow).exists()
+        return self.validationnode_set.filter(node__workflow=workflow).exists()
 
-    def get_validation_status(self, workflow):
-        from iaso.models.validation_workflow.validation_status import Status
+    def get_general_validation_status(self, workflow):
+        from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
-        if self.validationstatus_set.filter(final=True, status=Status.ACCEPTED, node__workflow=workflow).exists():
-            return "APPROVED"
+        if self.validationnode_set.filter(
+            final=True, status=ValidationNodeStatus.ACCEPTED, node__workflow=workflow
+        ).exists():
+            return ValidationWorkflowArtefactStatus.APPROVED
 
-        if self.validationstatus_set.filter(status=Status.REJECTED, node__workflow=workflow).exists():
-            return "REJECTED"
-        if self.validationstatus_set.filter(status=Status.UNKNOWN, node__workflow=workflow).exists():
-            return "PENDING"
-        if self.validationstatus_set.filter(final=False, status=Status.ACCEPTED, node__workflow=workflow).exists():
-            return "PENDING"
+        if self.validationnode_set.filter(status=ValidationNodeStatus.REJECTED, node__workflow=workflow).exists():
+            return ValidationWorkflowArtefactStatus.REJECTED
+        if self.validationnode_set.filter(status=ValidationNodeStatus.UNKNOWN, node__workflow=workflow).exists():
+            return ValidationWorkflowArtefactStatus.PENDING
+        if self.validationnode_set.filter(
+            final=False, status=ValidationNodeStatus.ACCEPTED, node__workflow=workflow
+        ).exists():
+            return ValidationWorkflowArtefactStatus.PENDING
 
         raise ValueError
 
-    def get_next_pending_states(self, workflow):
-        from iaso.models.validation_workflow.validation_status import Status
+    def get_next_pending_nodes(self, workflow):
+        from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
-        return self.validationstatus_set.filter(status=Status.UNKNOWN, node__workflow=workflow)
+        return self.validationnode_set.filter(status=ValidationNodeStatus.UNKNOWN, node__workflow=workflow)
 
-    def _collect_instance_pks(self):
+    def _collect_artefact_pks(self):
         pks = []
 
-        if self.parent_instance_for_validation:
-            pks.extend(self.parent_instance_for_validation._collect_instance_pks())
+        if self.parent_artefact_for_validation:
+            pks.extend(self.parent_artefact_for_validation._collect_artefact_pks())
 
         pks.append(self.pk)
 
         return pks
 
-    def get_all_validation_statuses(self, workflow):
+    def get_all_validation_nodes(self, workflow):
         """
-        Function to recursively get all validation statuses (including parent) and order them
+        Function to recursively get all validation nodes (including parent) and order them
         """
-        from iaso.models import ValidationStatus
+        from iaso.models import ValidationNode
 
-        instance_pks = self._collect_instance_pks()
+        artefact_pks = self._collect_artefact_pks()
 
         order = Case(
-            *[When(instance_id=pk, then=pos) for pos, pk in enumerate(instance_pks)],
+            *[When(instance_id=pk, then=pos) for pos, pk in enumerate(artefact_pks)],
             output_field=IntegerField(),
         )
 
         return (
-            ValidationStatus.objects.filter(node__workflow=workflow, instance_id__in=instance_pks)
+            ValidationNode.objects.filter(node__workflow=workflow, instance_id__in=artefact_pks)
             .annotate(_order=order)
             .order_by("-_order", "-created_at")
         )

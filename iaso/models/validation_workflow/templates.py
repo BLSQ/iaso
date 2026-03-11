@@ -1,13 +1,12 @@
 """
 Those models define a static definition of a workflow. (See it as a hardcoded graph template).
 
-Each workflow is made of multiple states and steps (transitions) between those states.
+Each workflow is made of multiple nodes or tasks.
 """
 
 from autoslug import AutoSlugField
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Q
 
 from iaso.models import Instance
 from iaso.models.base import UserRole
@@ -22,7 +21,10 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     """
 
     name = models.CharField(max_length=256)
-    slug = AutoSlugField(populate_from="name", unique=True, always_update=True)
+    slug = AutoSlugField(populate_from="name", unique=True, always_update=True, unique_with="account_id")
+
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+
     description = models.TextField(blank=True, max_length=1024)
 
     created_by = models.ForeignKey(
@@ -32,45 +34,49 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_updated_set"
     )
 
+    form = models.ForeignKey("Form", null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_form")
+
     def __str__(self):
         return self.name
 
-    @staticmethod
-    def is_entity_allowed(instance):
-        return isinstance(instance, Instance)
+    class Meta:
+        unique_together = ("account_id", "slug")
+
+    def is_artifact_allowed(self, instance):
+        return isinstance(instance, Instance) and instance.form_id == self.form_id
 
     def get_starting_node(self):
-        return self.nodes.exclude(
-            id__in=self.nodes.filter(next_nodes__isnull=False).values_list("next_nodes", flat=True)
-        ).first()
+        return self.node_templates.get(previous_node_templates__isnull=True)
 
 
-class ValidationNode(CreatedAndUpdatedModel):
+class ValidationNodeTemplate(CreatedAndUpdatedModel):
     """
-    Represents a node in the workflow aka a Task to do in order to continue the validation.
+    Static definition of a node in the workflow (aka a Task) to do in order to continue the validation.
     """
 
-    workflow = models.ForeignKey(ValidationWorkflow, on_delete=models.CASCADE, related_name="nodes")
+    workflow = models.ForeignKey(ValidationWorkflow, on_delete=models.CASCADE, related_name="node_templates")
     name = models.CharField(max_length=256)
     slug = AutoSlugField(populate_from="name")
     color = ColorField(blank=True, null=True)
-    next_nodes = models.ManyToManyField("self", symmetrical=False, related_name="previous_nodes")
+    next_node_templates = models.ManyToManyField("self", symmetrical=False, related_name="previous_node_templates")
     roles_required = models.ManyToManyField(UserRole, blank=True)
     can_skip_previous_nodes = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
 
-    def get_validation_statuses(self):
-        return self.validationstatus_set.all()
+    def get_validation_nodes(self):
+        return self.validationnode_set.all()
 
     def is_final_node(self):
-        return not self.next_nodes.count()
+        return not self.next_node_templates.count()
 
     def get_all_previous_nodes_with_validation_status(self, instance):
         visited = set()
         stack = list(
-            self.previous_nodes.prefetch_related("validationstatus_set").filter(validationstatus__instance=instance)
+            self.previous_node_templates.prefetch_related("validationnode_set").filter(
+                validationnode__instance=instance
+            )
         )
         while stack:
             node = stack.pop()
@@ -78,14 +84,16 @@ class ValidationNode(CreatedAndUpdatedModel):
                 visited.add(node.pk)
                 stack.extend(node.get_all_previous_nodes_with_validation_status(instance))
 
-        return ValidationNode.objects.filter(pk__in=visited)
+        return ValidationNodeTemplate.objects.filter(pk__in=visited)
 
     def get_all_previous_nodes_for_bypass(self, instance):
+        from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+
         visited = set()
         stack = list(
-            self.previous_nodes.prefetch_related("validationstatus_set")
-            .filter(Q(validationstatus__status_in=["REJECTED", "UNKNOWN"]))
-            .filter(validationstatus__instance=instance)
+            self.previous_node_templates.prefetch_related("validationnode_set")
+            .filter(validationnode__status_in=[ValidationNodeStatus.REJECTED, ValidationNodeStatus.UNKNOWN])
+            .filter(validationnode__instance=instance)
         )
         while stack:
             node = stack.pop()
@@ -93,4 +101,4 @@ class ValidationNode(CreatedAndUpdatedModel):
                 visited.add(node)
                 stack.extend(node.get_all_previous_nodes_for_bypass(instance))
 
-        return ValidationNode.objects.filter(pk__in=visited)
+        return ValidationNodeTemplate.objects.filter(pk__in=visited)

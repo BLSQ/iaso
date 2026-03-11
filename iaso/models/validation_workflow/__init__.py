@@ -1,5 +1,5 @@
-from .templates import ValidationNode, ValidationWorkflow
-from .validation_status import ValidationStatus
+from .templates import ValidationNodeTemplate, ValidationWorkflow
+from .validation_node import ValidationNode
 
 
-__all__ = ["ValidationWorkflow", "ValidationNode", "ValidationStatus"]
+__all__ = ["ValidationWorkflow", "ValidationNodeTemplate", "ValidationNode"]

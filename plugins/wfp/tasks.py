@@ -8,6 +8,7 @@ from iaso.management.commands import unique_indexes
 from iaso.management.commands.clean_up_duplicate_submissions import DRY_RUN_ARG
 from iaso.models.base import ExternalCredentials
 from plugins.wfp.common import ETL
+from plugins.wfp.aggregate_journeys import AggregatedJourney
 
 from .management.commands.ethiopia.Under5 import ET_Under5
 from .management.commands.nigeria.Pbwg import NG_PBWG
@@ -186,6 +187,8 @@ def etl_ssd(all_data=None):
     """
     from django_celery_results.models import TaskResult
 
+    from plugins.wfp.common_v2 import ETLV2
+
     from .management.commands.south_sudan.Pbwg import Pbwg
     from .management.commands.south_sudan.Under5 import Under5
 
@@ -217,7 +220,7 @@ def etl_ssd(all_data=None):
         programme_type="U5",
         org_unit_id__in=org_units_with_updated_data,
     ).delete()
-    etl_u5.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
+    Under5().aggregate_monthly_data_by_org_unit(child_account, org_units_with_updated_data, task_name)
 
     entity_type_pbwg_code = "ssd_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
@@ -233,7 +236,7 @@ def etl_ssd(all_data=None):
         programme_type="PLW",
         org_unit_id__in=org_units_with_updated_data,
     ).delete()
-    etl_pbwg.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
+    Pbwg().aggregate_monthly_data_by_org_unit(pbwg_account,org_units_with_updated_data, task_name)
 
     Screening().run(child_account, last_success_task_date)
 

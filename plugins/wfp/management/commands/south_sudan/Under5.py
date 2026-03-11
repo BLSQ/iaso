@@ -119,3 +119,28 @@ class Under5:
                 current_entity_id,
                 task,
             )
+
+    def aggregate_monthly_data_by_org_unit(self, account, org_units_with_updated_data, task_name=None):
+        page_size = self.PAGE_SIZE
+        paginator = Paginator(org_units_with_updated_data, page_size)
+        pages = paginator.page_range
+
+        logger.info(
+            f"Processing monthly data for {len(org_units_with_updated_data)} org units on {self.PROGRAMME_TYPE} across {paginator.num_pages} pages for {account}"
+        )
+        for page in pages:
+            rows, page_info = ETLV2._retrieve_aggregated_journeys_data(
+                account,
+                self.PROGRAMME_TYPE,
+                org_units_with_updated_data,
+                page_size,
+                page,
+            )
+            org_unit_ids = page_info.object_list
+            logger.info(f"Processing data for {len(org_unit_ids)} org unit on page {page} for {account}")
+
+            if rows is None:
+                continue
+
+            records = ETLV2._process_monthly_data(self.PROGRAMME_TYPE, rows, account)
+            logger.info(f"Processed {len(records)} records for {len(org_unit_ids)} org units.")

@@ -46,6 +46,7 @@ type ApiParams = {
     groups?: string;
     tab: string;
     fields_search?: string;
+    cursor?: string;
 };
 
 type GetAPiParams = {
@@ -55,6 +56,7 @@ type GetAPiParams = {
 export const useGetEntitiesApiParams = (
     params: Params,
     asLocation = false,
+    cursorPagination = false,
 ): GetAPiParams => {
     const apiParams: ApiParams = {
         order_columns: params.order || 'id',
@@ -75,6 +77,9 @@ export const useGetEntitiesApiParams = (
         tab: params.tab || 'list',
         fields_search: params.fieldsSearch,
     };
+    if (cursorPagination) {
+        apiParams.cursor = params.cursor || 'null';
+    }
     if (asLocation) {
         apiParams.asLocation = 'true';
         apiParams.limit = params.locationLimit || '1000';
@@ -90,7 +95,7 @@ export const useGetEntitiesPaginated = (
     params: Params,
     isEnabled: boolean,
 ): UseQueryResult<PaginatedEntities, Error> => {
-    const { url, apiParams } = useGetEntitiesApiParams(params);
+    const { url, apiParams } = useGetEntitiesApiParams(params, false, true);
     return useSnackQuery({
         queryKey: ['entities', apiParams],
         queryFn: () => getRequest(url),
@@ -129,6 +134,31 @@ export const useGetEntitiesLocations = (
                         ...entity,
                     },
                 })) || [],
+        },
+    });
+};
+
+export const useGetEntitiesCount = (
+    params: Params,
+    hasCursor: boolean,
+): UseQueryResult<{ count: number }, Error> => {
+    // strip attributes that shouldn't affect the count cache or api
+    const { cursor, page, pageSize, order, ...countParams } = params;
+
+    const { url, apiParams } = useGetEntitiesApiParams(
+        countParams,
+        false,
+        true,
+    );
+    const countUrl = url.replace('/entities/', '/entities/count/');
+
+    return useSnackQuery({
+        queryKey: ['entities-count', countParams],
+        queryFn: () => getRequest(countUrl),
+        options: {
+            enabled: hasCursor && apiParams.tab === 'list',
+            staleTime: 1000 * 60 * 5,
+            cacheTime: 1000 * 60 * 10,
         },
     });
 };

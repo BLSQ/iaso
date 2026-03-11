@@ -19,7 +19,7 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.api.entities.filters import EntityDateFilterBackend, EntityFilterSet, EntityOrderingFilter
-from iaso.api.entities.pagination import EntityListPaginator, EntityLocationPaginator
+from iaso.api.entities.pagination import EntityCursorPagination, EntityListPaginator, EntityLocationPaginator
 from iaso.api.entities.renderers import CSVStreamingRenderer, LegacyExportContentNegotation, XlsxStreamingRenderer
 from iaso.api.entities.serializers import (
     EntityExportSerializer,
@@ -91,10 +91,20 @@ class EntityViewSet(ModelViewSet):
 
         return context
 
+    @property
+    def pagination_class(self):
+        if self.request.query_params.get("asLocation"):
+            return EntityLocationPaginator
+        if self.request.query_params.get("cursor"):
+            return EntityCursorPagination
+        return EntityListPaginator
+
     def get_queryset(self):
+        queryset = Entity.objects.filter_for_user(self.request.user)
+        if self.action == "count":
+            return queryset
         queryset = (
-            Entity.objects.filter_for_user(self.request.user)
-            .select_related(
+            queryset.select_related(
                 "attributes__org_unit",
                 "attributes__created_by",
                 "entity_type",
@@ -112,12 +122,6 @@ class EntityViewSet(ModelViewSet):
             )
         )
         return queryset
-
-    @property
-    def pagination_class(self):
-        if self.request.query_params.get("asLocation"):
-            return EntityLocationPaginator
-        return EntityListPaginator
 
     @cached_property
     def entity_type_columns(self):
@@ -218,6 +222,12 @@ class EntityViewSet(ModelViewSet):
         filename = renderer_context.get("export_filename", "export")
         response["Content-Disposition"] = f'attachment; filename="{filename}.{renderer.format}"'
         return response
+
+    @action(detail=False)
+    def count(self, request):
+        """Result count based on a stripped-down query for cursor pagination."""
+        queryset = self.filter_queryset(self.get_queryset()).order_by().values("id")
+        return Response({"count": queryset.count()})
 
     def destroy(self, request, pk=None):
         entity = Entity.objects_include_deleted.get(pk=pk)

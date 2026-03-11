@@ -24,10 +24,20 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
+from django.db.models import (
+    CharField,
+    Count,
+    F,
+    FloatField,
+    Q,
+    Value,
+)
+from django.db.models.expressions import Func
+from django.db.models.functions import Cast, Concat, Extract, ExtractMonth, ExtractYear
 
 from iaso.models import EntityType, TaskLog
 from iaso.models.base import Instance
-from plugins.wfp.models import Beneficiary, Journey, Step, Visit
+from plugins.wfp.models import Beneficiary, Journey, MonthlyStatistics, Step, Visit
 
 
 logger = logging.getLogger(__name__)
@@ -1178,3 +1188,162 @@ class ETLV2:
             )
         task.status = status
         task.save()
+
+    # --------------------------------------------------------------------------------------------------------
+    # Aggragating beneficiary journeys data by org unit and period(month and year extracted from visite date)
+    # --------------------------------------------------------------------------------------------------------
+    @staticmethod
+    def _retrieve_aggregated_journeys_data(
+        account, program_type, org_unit_with_updated_data, page_size=5000, page_number=1
+    ):
+
+        org_units = sorted(list(org_unit_with_updated_data))
+        paginator = Paginator(org_units, page_size)
+
+        current_page = paginator.get_page(page_number)
+        current_page_org_units = current_page.object_list
+
+        queryset = Visit.objects.filter(
+            date__isnull=False,
+            journey__programme_type=program_type,
+            journey__beneficiary__account=account,
+        )
+
+        if current_page_org_units is not None:
+            queryset = queryset.filter(org_unit_id__in=current_page_org_units)
+
+        queryset = queryset.annotate(
+            period=Concat(
+                Extract("journey__visit__date", "year"),
+                Func(
+                    Cast(Extract("journey__visit__date", "month"), CharField()),
+                    Value(2),
+                    Value("0"),
+                    function="LPAD",
+                ),
+                output_field=CharField(),
+            ),
+            dhis2_id=F("org_unit__source_ref"),
+            muac_numeric=Cast("muac_size", output_field=FloatField()),
+            nutrition_programme=F("journey__nutrition_programme"),
+            programme_type=F("journey__programme_type"),
+        )
+        if program_type == "U5":
+            queryset = queryset.annotate(gender=F("journey__beneficiary__gender"))
+            queryset = queryset.values(
+                "period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme", "gender"
+            )
+        if program_type == "PLW":
+            queryset = queryset.annotate(physiology_status=F("journey__physiology_status"))
+            queryset = queryset.values(
+                "period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme", "physiology_status"
+            )
+
+        queryset = queryset.annotate(
+            year=ExtractYear("journey__visit__date"),
+            month=ExtractMonth("journey__visit__date"),
+            muac_under_11_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=11.5), distinct=True),
+            muac_11_5_12_4=Count("journey__beneficiary_id", filter=Q(muac_numeric__range=(11.5, 12.4)), distinct=True),
+            muac_above_12_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=12.5), distinct=True),
+            whz_score_2=Count("journey__beneficiary_id", filter=Q(whz_color="Green"), distinct=True),
+            whz_score_3=Count("journey__beneficiary_id", filter=Q(whz_color="Red"), distinct=True),
+            whz_score_3_2=Count("journey__beneficiary_id", filter=Q(whz_color="Yellow"), distinct=True),
+            oedema=Count(
+                "journey__beneficiary_id", filter=Q(journey__admission_criteria="oedema"), distinct=True
+            ),
+            admission_type_new_case=Count(
+                "journey__beneficiary_id", filter=Q(journey__admission_type="new_case"), distinct=True
+            ),
+            admission_type_relapse=Count(
+                "journey__beneficiary_id", filter=Q(journey__admission_type="relapse"), distinct=True
+            ),
+            admission_type_returned_defaulter=Count(
+                "journey__beneficiary_id", filter=Q(journey__admission_type="returned_defaulter"), distinct=True
+            ),
+            admission_type_returned_referral=Count(
+                "journey__beneficiary_id", filter=Q(journey__admission_type="returned_referral"), distinct=True
+            ),
+            admission_type_transfer_from_other_tsfp=Count(
+                "journey__beneficiary_id", filter=Q(journey__admission_type="transfer_from_other_tsfp"), distinct=True
+            ),
+            admission_type_admission_sc_itp_otp=Count(
+                "journey__beneficiary_id",
+                filter=Q(journey__admission_type__in=["referred_from_sc", "referred_from_otp_sam"]),
+                distinct=True,
+            ),
+            admission_type_transfer_sc_itp_otp=Count(
+                "journey__beneficiary_id",
+                filter=Q(journey__exit_type__in=["transfer_to_sc_itp", "transferred_to_otp"]),
+                distinct=True,
+            ),
+            exit_type_transfer_in_from_other_tsfp=Count(
+                "journey__beneficiary_id",
+                filter=Q(journey__exit_type__in=["transfer_from_other_tsfp", "transfer_to_tsfp"]),
+                distinct=True,
+            ),
+            exit_type_cured=Count("journey__beneficiary_id", filter=Q(journey__exit_type="cured"), distinct=True),
+            exit_type_death=Count("journey__beneficiary_id", filter=Q(journey__exit_type="death"), distinct=True),
+            exit_type_defaulter=Count(
+                "journey__beneficiary_id", filter=Q(journey__exit_type="defaulter"), distinct=True
+            ),
+            exit_type_non_respondent=Count(
+                "journey__beneficiary_id", filter=Q(journey__exit_type="non_respondent"), distinct=True
+            ),
+            muac_under_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=23), distinct=True),
+            muac_above_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=23), distinct=True),
+            pregnant=Count("journey__beneficiary_id", filter=Q(journey__physiology_status="pregnant"), distinct=True),
+            breastfeeding=Count(
+                "journey__beneficiary_id", filter=Q(journey__physiology_status="breastfeeding"), distinct=True
+            ),
+            number_visits=Count("id", distinct=True),
+        ).order_by("org_unit_id")
+        return queryset, current_page
+
+    # ------------------------------------------------------------------
+    # Recording aggregated monthly data by org unit and program type (U5 or PLW)
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _process_monthly_data(program_type, aggregated_data, account):
+        all_journeys = []
+        for row in aggregated_data:
+            journey_by_org_unit_period = MonthlyStatistics(
+                account=account,
+                programme_type=program_type,
+                org_unit_id=row["org_unit_id"],
+                dhis2_id=row["dhis2_id"],
+                month=row["month"],
+                year=row["year"],
+                period=row["period"],
+                gender=row.get("gender"),
+                physiology_status=row.get("physiology_status"),
+                nutrition_programme=row["nutrition_programme"],
+                # --- Clinical Indicators ---
+                oedema=row["oedema"],
+                muac_under_11_5=row["muac_under_11_5"],
+                muac_11_5_12_4=row["muac_11_5_12_4"],
+                muac_above_12_5=row["muac_above_12_5"],
+                muac_under_23=row["muac_under_23"],
+                muac_above_23=row["muac_above_23"],
+                whz_score_2=row["whz_score_2"],
+                whz_score_3=row["whz_score_3"],
+                whz_score_3_2=row["whz_score_3_2"],
+                # --- Admissions ---
+                admission_type_new_case=row["admission_type_new_case"],
+                admission_type_relapse=row["admission_type_relapse"],
+                admission_type_returned_defaulter=row["admission_type_returned_defaulter"],
+                admission_type_returned_referral=row["admission_type_returned_referral"],
+                admission_type_transfer_from_other_tsfp=row["admission_type_transfer_from_other_tsfp"],
+                admission_type_admission_sc_itp_otp=row["admission_type_admission_sc_itp_otp"],
+                admission_type_transfer_sc_itp_otp=row["admission_type_transfer_sc_itp_otp"],
+                exit_type_transfer_in_from_other_tsfp=row["exit_type_transfer_in_from_other_tsfp"],
+                # --- Exits ---
+                exit_type_cured=row["exit_type_cured"],
+                exit_type_death=row["exit_type_death"],
+                exit_type_defaulter=row["exit_type_defaulter"],
+                exit_type_non_respondent=row["exit_type_non_respondent"],
+                pregnant=row["pregnant"],
+                breastfeeding=row["breastfeeding"],
+                number_visits=row["number_visits"],
+            )
+            all_journeys.append(journey_by_org_unit_period)
+        return MonthlyStatistics.objects.bulk_create(all_journeys)

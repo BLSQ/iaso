@@ -56,11 +56,15 @@ class ValidationNodeTemplate(CreatedAndUpdatedModel):
 
     workflow = models.ForeignKey(ValidationWorkflow, on_delete=models.CASCADE, related_name="node_templates")
     name = models.CharField(max_length=256)
-    slug = AutoSlugField(populate_from="name")
+    slug = AutoSlugField(populate_from="name", unique=True, always_update=True, unique_with="workflow_id")
+
     color = ColorField(blank=True, null=True)
     next_node_templates = models.ManyToManyField("self", symmetrical=False, related_name="previous_node_templates")
     roles_required = models.ManyToManyField(UserRole, blank=True)
     can_skip_previous_nodes = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("workflow_id", "name")
 
     def __str__(self):
         return self.name

@@ -750,7 +750,7 @@ class TestByPassFeature(TestCase):
         self.check_file_name_node.roles_required.set([user_role_2])
 
         self.manager_approves_node = ValidationNodeTemplate.objects.create(
-            workflow=self.workflow, name="check_file_node", can_skip_previous_nodes=True
+            workflow=self.workflow, name="manager_approves_node", can_skip_previous_nodes=True
         )
         self.manager_approves_node.previous_node_templates.add(self.check_file_name_node)
         self.manager_approves_node.roles_required.set([user_role_3])

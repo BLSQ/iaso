@@ -94,9 +94,28 @@ class PlanningTestCase(APITestCase):
                 "pipeline_uuids": [],
                 "target_org_unit_type_details": None,
                 "selected_sampling_result": None,
+                "assignments_count": 0,
             },
             r,
         )
+
+    def test_query_id_includes_assignments_count(self):
+        """Test that planning detail response includes assignments_count."""
+        self.client.force_authenticate(self.user)
+        # Planning has no assignments by default
+        response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertIn("assignments_count", r)
+        self.assertEqual(r["assignments_count"], 0)
+
+        # Create assignments
+        Assignment.objects.create(planning=self.planning, user=self.user, org_unit=self.org_unit)
+        child_ou = OrgUnit.objects.create(version=self.org_unit.version, name="child", parent=self.org_unit)
+        Assignment.objects.create(planning=self.planning, user=self.user, org_unit=child_ou)
+
+        response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["assignments_count"], 2)
 
     def test_serializer(self):
         user = User.objects.get(username="test")

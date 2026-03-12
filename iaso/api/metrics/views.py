@@ -14,6 +14,7 @@ from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
 from iaso.models import MetricType, MetricValue
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
+from .permissions import MetricsPermissions
 from .serializers import (
     ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
@@ -24,13 +25,11 @@ from .serializers import (
 )
 
 
-# TODO for both viewsets: permission_classes
-
-
 class MetricTypeViewSet(viewsets.ModelViewSet):
     serializer_class = MetricTypeSerializer
     ordering_fields = ["id", "name"]
     http_method_names = ["get", "options", "post", "patch", "delete"]
+    permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
         return MetricType.objects.filter(account=self.request.user.iaso_profile.account, is_utility=False)
@@ -81,6 +80,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, ValueFilterBackend]
     filterset_fields = ["metric_type_id", "org_unit_id"]
     http_method_names = ["get", "options", "post"]
+    permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
@@ -144,6 +144,7 @@ class MetricOrgUnitsViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, ValueAndTypeFilterBackend]
     filterset_fields = ["metric_type_id"]
     http_method_names = ["get", "options"]
+    permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)

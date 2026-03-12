@@ -3,6 +3,7 @@ import React, {
     useCallback,
     useEffect,
     useState,
+    useMemo,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -29,6 +30,7 @@ import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
 import { Planning } from '../../plannings/types';
+import { useGetPipelineAccountConfig } from '../hooks/useGetPipelineAccountConfig';
 import MESSAGES from '../messages';
 import { PipelineInfos } from './components/PipelineInfos';
 import { PipelineSelect } from './components/PipelineSelect';
@@ -65,6 +67,15 @@ const styles: SxStyles = {
     },
 };
 
+const parametersToRemove = [
+    'task_id',
+    'pipeline_id',
+    'connection_host',
+    'connection_token',
+    'sampling_name',
+    'planning_id',
+];
+
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
     disabled = false,
@@ -89,11 +100,15 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
 
     const { formatMessage } = useSafeIntl();
 
+    const accountConfig = useGetPipelineAccountConfig(selectedPipelineId);
+    const pipelineParameters = accountConfig?.parameters;
+    const pipelineParametersKeys = pipelineParameters
+        ? Object.keys(pipelineParameters)
+        : [];
     const { data: pipeline, isFetching: isFetchingPipeline } =
         useGetPipelineDetails(selectedPipelineId, [
-            'task_id',
-            'pipeline_id',
-            'planning_id',
+            ...pipelineParametersKeys,
+            ...parametersToRemove,
         ]);
     const {
         mutate: launchTask,
@@ -127,9 +142,16 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             ...parameterValues,
             planning_id: planning.id,
             pipeline_id: selectedPipelineId,
+            ...pipelineParameters,
         };
         launchTask(parameters);
-    }, [launchTask, parameterValues, planning.id, selectedPipelineId]);
+    }, [
+        launchTask,
+        parameterValues,
+        planning.id,
+        selectedPipelineId,
+        pipelineParameters,
+    ]);
     const handleChangePipeline = (_, value) => {
         setSelectedPipelineId(value);
         setParameterValues(undefined);
@@ -151,18 +173,15 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             setIsSubmitting(false);
         }
     }, [isSubmitting, isLaunchingTask]);
+    const title = useMemo(() => {
+        if (disabled) return disabledMessage;
+        if (isCreateSamplingDisabled)
+            return formatMessage(MESSAGES.planningAlreadyPublished);
+        return undefined;
+    }, [disabled, disabledMessage, formatMessage, isCreateSamplingDisabled]);
     return (
         <>
-            <Tooltip
-                title={
-                    // eslint-disable-next-line no-nested-ternary
-                    disabled
-                        ? disabledMessage
-                        : isCreateSamplingDisabled
-                          ? formatMessage(MESSAGES.planningAlreadyPublished)
-                          : ''
-                }
-            >
+            <Tooltip title={title}>
                 <Box>
                     <Button
                         variant="outlined"
@@ -279,7 +298,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                 setAllowConfirm={setAllowConfirm}
                                 orgunitTypes={orgunitTypes}
                                 isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-                                taskStatus={taskStatus}
+                                taskStatus={taskStatus ?? 'QUEUED'}
                                 taskId={taskId}
                             />
                         </Box>

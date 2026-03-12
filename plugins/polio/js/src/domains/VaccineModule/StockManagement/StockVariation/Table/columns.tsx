@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import { Box, Tooltip } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
@@ -15,7 +17,6 @@ import {
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
 import { REGULAR, USED } from '../../constants';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import {
     useDeleteDestruction,
     useDeleteEarmarked,
@@ -27,7 +28,6 @@ import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditEarmarked } from '../Modals/CreateEditEarmarked';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
-import { Box, Tooltip } from '@mui/material';
 import { CampaignNameWithWarning } from './CampaignNameWithWarning';
 
 export const useFormATableColumns = (
@@ -114,7 +114,7 @@ export const useFormATableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.file}
+                                pdf={settings.row.original.file}
                                 scanResult={settings.row.original.scan_result}
                                 scanTimestamp={
                                     settings.row.original.scan_timestamp
@@ -226,7 +226,7 @@ export const useDestructionTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.file}
+                                pdf={settings.row.original.file}
                                 scanResult={settings.row.original.scan_result}
                                 scanTimestamp={
                                     settings.row.original.scan_timestamp
@@ -357,7 +357,7 @@ export const useIncidentTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.file}
+                                pdf={settings.row.original.file}
                                 scanResult={settings.row.original.scan_result}
                                 scanTimestamp={
                                     settings.row.original.scan_timestamp

@@ -1,5 +1,6 @@
 from iaso.gpkg.import_gpkg import import_gpkg_file
 from iaso.models import Account, DataSource, Project
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_TYPES_PERMISSION
 from iaso.test import APITestCase
 from setuper.pyramid import update_org_unit_sub_type
 
@@ -8,7 +9,9 @@ class OrgUnitImportFromGPKG(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = Account.objects.create(name="a")
-        cls.user_test = cls.create_user_with_profile(username="test", account=cls.account)
+        cls.user_test = cls.create_user_with_profile(
+            username="test", account=cls.account, permissions=[CORE_ORG_UNITS_TYPES_PERMISSION]
+        )
         cls.project = Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
 
     def test_minimal_import_with_sub_org_unit_type(self):

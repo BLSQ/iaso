@@ -1,3 +1,5 @@
+import os
+
 from datetime import date
 from enum import Enum
 from tempfile import NamedTemporaryFile
@@ -370,6 +372,17 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
         self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.file:
+            ret["file"] = {
+                "path": instance.file.url,
+                "name": os.path.basename(instance.file.name),
+            }
+        else:
+            ret["file"] = None
+        return ret
+
 
 class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
     def validate(self, data):
@@ -474,6 +487,17 @@ class IncidentReportSerializer(ModelWithFileSerializer):
         self.scan_file_if_exists(validated_data)
         return super().update(instance, validated_data)
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.file:
+            ret["file"] = {
+                "path": instance.file.url,
+                "name": os.path.basename(instance.file.name),
+            }
+        else:
+            ret["file"] = None
+        return ret
+
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
@@ -512,6 +536,17 @@ class DestructionReportSerializer(ModelWithFileSerializer):
     def update(self, instance, validated_data):
         self.scan_file_if_exists(validated_data)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.file:
+            ret["file"] = {
+                "path": instance.file.url,
+                "name": os.path.basename(instance.file.name),
+            }
+        else:
+            ret["file"] = None
+        return ret
 
 
 class DestructionReportViewSet(VaccineStockSubitemBase):

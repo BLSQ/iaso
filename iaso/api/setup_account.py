@@ -12,6 +12,7 @@ from rest_framework.viewsets import GenericViewSet
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS
 from iaso.api.common import IsAdminOrSuperUser
+from iaso.api.profiles.views import ProfilesViewSet
 from iaso.models import (
     Account,
     AccountFeatureFlag,
@@ -251,8 +252,6 @@ class SetupAccountSerializer(serializers.Serializer):
 
         # Send email invitation if requested
         if email_invitation and user.email:
-            from iaso.api.profiles.profiles import ProfilesViewSet
-
             profile_viewset = ProfilesViewSet()
             profile_viewset.request = self.context.get("request")
 
@@ -260,12 +259,7 @@ class SetupAccountSerializer(serializers.Serializer):
             profile = Profile.objects.get(user=user, account=account)
 
             # Send email invitation using existing logic with profile language
-            profile_viewset.send_email_invitation(
-                profile=profile,
-                email_subject=profile_viewset.get_subject_by_language(profile_viewset, profile.language),
-                email_message=profile_viewset.get_message_by_language(profile_viewset, profile.language),
-                email_html_message=profile_viewset.get_html_message_by_language(profile_viewset, profile.language),
-            )
+            profile_viewset.send_email_invitation(profile=profile, language=profile.language)
 
         validated_data["created_account_id"] = account.id
         return validated_data

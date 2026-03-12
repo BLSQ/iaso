@@ -122,6 +122,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Delete all assignments',
         id: 'iaso.assignment.deleteAllAssignments',
     },
+    deleteAssignmentsWarning: {
+        id: 'iaso.assignment.deleteAssignmentsWarning',
+        defaultMessage: 'Are you sure you want to delete {count} assignments?',
+    },
 });
 
 export default MESSAGES;

@@ -1,10 +1,13 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.db.models import JSONField
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
 
+from iaso.admin.base import IasoJSONEditorWidget
+
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
-from .tasks import create_index_on_instance_uuid
+from .tasks import clean_up_duplicate_instances, clean_up_duplicate_instances_dry_run, create_index_on_instance_uuid
 
 
 @admin.action(description="Create indexes on UUID field (non-blocking)")
@@ -13,6 +16,32 @@ def create_uuid_index_action(modeladmin, request: HttpRequest, queryset):
     Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
     """
     create_index_on_instance_uuid.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+@admin.action(description="Clean-up duplicate instances (non-blocking)")
+def clean_up_duplicates_action(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    clean_up_duplicate_instances.delay()
+
+    modeladmin.message_user(
+        request,
+        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+    )
+
+
+@admin.action(description="DRY-RUN: Clean-up duplicate instances (non-blocking)")
+def clean_up_duplicates_action_dry_run(modeladmin, request: HttpRequest, queryset):
+    """
+    Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
+    """
+    clean_up_duplicate_instances_dry_run.delay()
 
     modeladmin.message_user(
         request,
@@ -73,7 +102,7 @@ class Month(SimpleListFilter):
 class BeneficiaryAdmin(admin.ModelAdmin):
     list_filter = ("birth_date", "gender", "account", "guidelines", ProgrammeType)
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
-    actions = [create_uuid_index_action]
+    actions = [create_uuid_index_action, clean_up_duplicates_action, clean_up_duplicates_action_dry_run]
 
 
 @admin.register(Journey)
@@ -85,6 +114,7 @@ class JourneyAdmin(admin.ModelAdmin):
         "whz_score",
         "admission_type",
         "nutrition_programme",
+        "physiology_status",
         "programme_type",
         "initial_weight",
         "discharge_weight",
@@ -102,6 +132,7 @@ class JourneyAdmin(admin.ModelAdmin):
         "admission_criteria",
         "admission_type",
         "nutrition_programme",
+        "physiology_status",
         "beneficiary__gender",
         "programme_type",
         "start_date",
@@ -208,6 +239,9 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
 
 @admin.register(Dhis2SyncResults)
 class Dhis2SyncResultsAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        JSONField: {"widget": IasoJSONEditorWidget},
+    }
     list_display = (
         "id",
         "org_unit_dhis2_id",
@@ -217,6 +251,7 @@ class Dhis2SyncResultsAdmin(admin.ModelAdmin):
         "month",
         "year",
         "response",
+        "json",
         "account",
         "status",
         "created_at",

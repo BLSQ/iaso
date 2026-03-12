@@ -49,6 +49,7 @@ export type Planning = {
     pipeline_uuids: string[];
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
     selected_sampling_result?: SamplingResult;
+    assignments_count: number;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 
@@ -99,4 +100,5 @@ export type PlanningOrgUnits = {
     has_geo_json: boolean;
     latitude: number;
     longitude: number;
+    org_unit_type_id: number;
 };

@@ -36,11 +36,12 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
                     "group_id": None,
                     "task_id": None,
                 },
+                "assignments_count": 0,
                 "team_details": {
                     "id": self.team_1.id,
                     "name": self.team_1.name,
                     "deleted_at": None,
-                    "color": COLOR_CHOICES[0][0],
+                    "color": COLOR_CHOICES[0][0].upper(),
                 },
                 "org_unit_details": {
                     "id": self.org_unit_parent.id,
@@ -98,6 +99,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
         self.assertEqual(feature["id"], self.org_unit_parent.id)
         self.assertEqual(feature["geometry"], org_unit.geo_json)
         self.assertTrue(serializer.data["has_geo_json"])
+        self.assertEqual(serializer.data["org_unit_type_id"], self.org_unit_type_parent.id)
 
     def test_planning_org_unit_serializer_without_geo_json(self):
         self.org_unit_parent.simplified_geom = None
@@ -108,6 +110,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
 
         self.assertIsNone(serializer.data["geo_json"])
         self.assertFalse(serializer.data["has_geo_json"])
+        self.assertEqual(serializer.data["org_unit_type_id"], self.org_unit_type_parent.id)
 
 
 class AssignmentSerializesTestCase(PlanningSerializersTestBase):

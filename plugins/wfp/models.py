@@ -27,6 +27,8 @@ NUTRITION_PROGRAMMES = [
     ("OTP", _("OTP")),
     ("OTP - Under 6", _("OTP - Under 6")),
     ("BSFP", _("BSFP")),
+]
+PHYSIOLOGY_STATUS = [
     ("breastfeeding", _("Breastfeeding")),
     ("pregnant", _("Pregnant")),
 ]
@@ -90,6 +92,7 @@ class Journey(models.Model):
         blank=True,
         db_index=True,
     )
+    physiology_status = models.CharField(max_length=255, choices=PHYSIOLOGY_STATUS, null=True, blank=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True, db_index=True)
     initial_weight = models.FloatField(null=True, blank=True)
     discharge_weight = models.FloatField(null=True, blank=True)
@@ -134,6 +137,7 @@ class MonthlyStatistics(models.Model):
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
     exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True)
     nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
+    physiology_status = models.CharField(max_length=255, choices=PHYSIOLOGY_STATUS, null=True, blank=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
     number_visits = models.IntegerField(default=0)
     given_sachet_rusf = models.FloatField(null=True, blank=True)
@@ -165,6 +169,7 @@ class Dhis2SyncResults(models.Model):
     month = models.CharField(max_length=8, null=True, blank=True)
     year = models.CharField(max_length=6, null=True, blank=True)
     response = models.JSONField()
+    json = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -182,6 +187,8 @@ class ScreeningData(models.Model):
     u5_female_yellow = models.FloatField(null=True)
     u5_male_red = models.FloatField(null=True)
     u5_female_red = models.FloatField(null=True)
+    u5_male_oedema = models.FloatField(null=True)
+    u5_female_oedema = models.FloatField(null=True)
     pregnant_w_muac_gt_23 = models.FloatField(null=True)
     pregnant_w_muac_lte_23 = models.FloatField(null=True)
     lactating_w_muac_gt_23 = models.FloatField(null=True)

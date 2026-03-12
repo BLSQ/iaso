@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users',
         id: 'iaso.label.users',
     },
+    userDetails: {
+        defaultMessage: 'User details',
+        id: 'iaso.label.userDetails',
+    },
     create: {
         defaultMessage: 'Create user',
         id: 'iaso.users.create',
@@ -61,7 +65,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.search',
     },
-
     searchParams: {
         id: 'iaso.users.searchParams',
         defaultMessage:
@@ -99,6 +102,10 @@ const MESSAGES = defineMessages({
     updateUser: {
         defaultMessage: 'Update user',
         id: 'iaso.users.update',
+    },
+    updateUserPassword: {
+        defaultMessage: 'Update password',
+        id: 'iaso.users.updatePassword',
     },
     deleteUserTitle: {
         id: 'iaso.users.dialog.deleteUserTitle',
@@ -544,6 +551,79 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.bulkImportDialogDescription',
         defaultMessage:
             'Please check the file encoding. It must be in UTF-8 format to be read by Iaso.',
+    viewUser: {
+        id: 'iaso.users.viewUser',
+        defaultMessage: 'View user details',
+    },
+    delete: {
+        id: 'iaso.users.delete',
+        defaultMessage: 'Delete',
+    },
+    passwordMatch: {
+        id: 'iaso.users.password.match',
+        defaultMessage: 'Passwords must match.',
+    },
+    passwordLabel: {
+        id: 'iaso.users.form.fields.password.label',
+        defaultMessage: 'Enter new password',
+    },
+    confirmPasswordLabel: {
+        id: 'iaso.users.form.fields.confirmPassword.label',
+        defaultMessage: 'Confirm new password',
+    },
+    updatePasswordButtonLabel: {
+        defaultMessage: 'Update password',
+        id: 'iaso.users.dialog.updatePassword.triggerButton.label',
+    },
+    userNotFound: {
+        defaultMessage: 'User not found',
+        id: 'iaso.users.detail.404Message',
+    },
+    generalInfo: {
+        defaultMessage: 'General info',
+        id: 'iaso.users.detail.generalInfoBox.title',
+    },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.users.color',
+    },
+    locations: {
+        defaultMessage: 'Locations',
+        id: 'iaso.users.detail.locationsBox.title',
+    },
+    noResultsFound: {
+        defaultMessage: 'No results found.',
+        id: 'iaso.users.noResultsFound',
+    },
+    setDefaultValues: {
+        id: 'iaso.users.bulk.setDefaultValues',
+        defaultMessage: 'Set default values for missing fields',
+    },
+    defaultsInfo: {
+        id: 'iaso.users.bulk.defaultsInfo',
+        defaultMessage:
+            'Defaults apply only when CSV field is empty. CSV values take priority.',
+    },
+    validationFailed: {
+        id: 'iaso.users.bulk.validationFailed',
+        defaultMessage: 'Validation Failed - No Users Created',
+    },
+    fixErrorsAndRetry: {
+        id: 'iaso.users.bulk.fixErrorsAndRetry',
+        defaultMessage:
+            'Fix the {count} error(s) in your CSV file and upload again.',
+    },
+    row: {
+        id: 'iaso.users.bulk.row',
+        defaultMessage: 'Row',
+    },
+    field: {
+        id: 'iaso.users.bulk.field',
+        defaultMessage: 'Field',
+    },
+    errorMessage: {
+        id: 'iaso.users.bulk.errorMessage',
+        defaultMessage: 'Error',
     },
 });
 

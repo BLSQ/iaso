@@ -32,7 +32,7 @@ if (!pdfjs.GlobalWorkerOptions.workerSrc) {
 }
 
 type PdfPreviewProps = {
-    pdfUrl?: string;
+    pdf?: string | { path: string; name: string };
     OpenButtonComponent?: ComponentType<{
         onClick: () => void;
         disabled: boolean;
@@ -92,8 +92,33 @@ const styles: SxStyles = {
     },
 };
 
+export const getPdfPath = (
+    pdf?: string | { path: string; name: string },
+): string => {
+    if (typeof pdf === 'string') {
+        return pdf;
+    }
+    if (typeof pdf === 'object' && pdf && 'path' in pdf && 'name' in pdf) {
+        return pdf.path;
+    }
+    return '';
+};
+
+export const getLinkDownLoad = (
+    pdf?: string | { path: string; name: string },
+): string => {
+    if (typeof pdf === 'string') {
+        const urlParts = pdf.split('/');
+        return urlParts[urlParts.length - 1] || 'document.pdf';
+    }
+    if (typeof pdf === 'object' && pdf && 'path' in pdf && 'name' in pdf) {
+        return pdf.name;
+    }
+    return '';
+};
+
 export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
-    pdfUrl,
+    pdf,
     OpenButtonComponent,
     buttonProps,
     scanResult,
@@ -117,19 +142,20 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
     const handleClose = () => {
         setOpen(false);
     };
-
+    const pdfUrl = getPdfPath(pdf);
     const isFileSafeToDisplayAndDownload =
         !scanResult || scanResult !== fileScanResultInfected;
 
     const handleDownload = useCallback(() => {
-        if (pdfUrl && isFileSafeToDisplayAndDownload) {
+        if (pdf && isFileSafeToDisplayAndDownload) {
             const link = document.createElement('a');
             link.href = pdfUrl;
-            const urlParts = pdfUrl.split('/');
-            link.download = urlParts[urlParts.length - 1] || 'document.pdf';
-            link.click();
+            link.download = getLinkDownLoad(pdf);
+            if (link.download) {
+                link.click();
+            }
         }
-    }, [isFileSafeToDisplayAndDownload, pdfUrl]);
+    }, [isFileSafeToDisplayAndDownload, pdf, pdfUrl]);
 
     const onDocumentLoadSuccess = ({
         numPages: nextNumPages,
@@ -153,7 +179,7 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
         <>
             <OpenButton
                 onClick={handleOpen}
-                disabled={!pdfUrl}
+                disabled={!pdf}
                 coloredIcon={coloredScanResultIcon}
                 scanResult={scanResult}
                 {...buttonProps}

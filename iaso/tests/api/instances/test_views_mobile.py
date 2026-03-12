@@ -48,6 +48,7 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
             project=cls.project,
             created_by=cls.user,
             export_id="Vzhn0nceudr",
+            json={"foo": "bar"},
         )
         cls.instance_2 = cls.create_form_instance(
             form=cls.form,
@@ -55,6 +56,7 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
             org_unit=cls.org_unit,
             project=cls.project,
             created_by=cls.user,
+            json={"bar": "foo"},
         )
 
         cls.project.unit_types.add(cls.org_unit_type)
@@ -65,41 +67,57 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
     def test_attachments_permission_denied_when_anonymous(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
         instance = self.form.instances.first()
-        response = self.client.get(f"/api/mobile/instances/{instance.pk}/attachments/")
+        response = self.client.get(f"/api/mobile/instances/{instance.uuid}/attachments/")
         self.assertJSONResponse(response, 401)
 
     def test_get_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
         self.client.force_authenticate(self.user)
-        instance = self.form.instances.first()
-        response = self.client.get(f"/api/mobile/instances/{instance.pk}/")
-        self.assertJSONResponse(response, 403)
+        instance = self.instance_1
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
+        with self.assertNumQueries(8):
+            # 1. SELECT FROM "auth_permission"
+            # 2. SELECT FROM "auth_permission"
+            # 3. SELECT "iaso_orgunit"
+            # 4. SELECT "iaso_project"
+            # 5. SELECT "iaso_instance"
+            # 6. SELECT "iaso_instancefile"
+            # 7. SELECT "iaso_orgunit"
+            # 8. SELECT "iaso_form"
+            response = self.client.get(f"/api/mobile/instances/{instance.uuid}/")
+        self.assertJSONResponse(response, 200)
+        data = response.json()
+        self.assertEqual(data["json"], {"foo": "bar"})
+        self.assertEqual(len(data["instance_files"]), 2)
+        self.assertTrue(data["instance_files"][0]["file"].endswith("test1.jpg"))
+        self.assertTrue(data["instance_files"][1]["file"].endswith("test2.pdf"))
 
     def test_list_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/mobile/instances/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 405)
 
     def test_delete_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
         self.client.force_authenticate(self.user)
         instance = self.form.instances.first()
-        response = self.client.delete(f"/api/mobile/instances/{instance.pk}/")
-        self.assertJSONResponse(response, 403)
+        response = self.client.delete(f"/api/mobile/instances/{instance.uuid}/")
+        self.assertJSONResponse(response, 405)
 
     def test_post_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
         self.client.force_authenticate(self.user)
         response = self.client.post("/api/mobile/instances/", data={})
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 405)
 
     def test_patch_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
         self.client.force_authenticate(self.user)
         instance = self.form.instances.first()
-        response = self.client.patch(f"/api/mobile/instances/{instance.pk}/", data={})
-        self.assertJSONResponse(response, 403)
+        response = self.client.patch(f"/api/mobile/instances/{instance.uuid}/", data={})
+        self.assertJSONResponse(response, 405)
 
     def test_wrong_id_passed(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
@@ -113,21 +131,44 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
         instance = self.instance_1
         m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
         m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
-        response = self.client.get(f"/api/mobile/instances/{instance.pk}/attachments/")
+        with self.assertNumQueries(10):
+            # 1. SELECT FROM "auth_permission"
+            # 2. SELECT FROM "auth_permission"
+            # 3. SELECT "iaso_orgunit"
+            # 4. SELECT "iaso_project"
+            # 5. SELECT "iaso_instance"
+            # 6. SELECT "iaso_orgunit"
+            # 7. SELECT "iaso_instance"
+            # 8. SELECT "iaso_instancefile"
+            # 9. SELECT "iaso_orgunit"
+            # 10. SELECT "iaso_form"
+            response = self.client.get(f"/api/mobile/instances/{instance.pk}/attachments/")
         self.assertJSONResponse(response, 200)
         data = response.json()["attachments"]
         self.assertEqual(len(data), 2)
         self.assertTrue(data[0]["file"].endswith("test1.jpg"))
         self.assertTrue(data[1]["file"].endswith("test2.pdf"))
 
-        response = self.client.get(f"/api/mobile/instances/{instance.uuid}/attachments/")
+        with self.assertNumQueries(5):
+            # 1. SELECT "iaso_orgunit"
+            # 2. SELECT "iaso_instance"
+            # 3. SELECT "iaso_instancefile"
+            # 4. SELECT "iaso_orgunit"
+            # 5. SELECT "iaso_form"
+            response = self.client.get(f"/api/mobile/instances/{instance.uuid}/attachments/")
         self.assertJSONResponse(response, 200)
         data = response.json()["attachments"]
         self.assertEqual(len(data), 2)
         self.assertTrue(data[0]["file"].endswith("test1.jpg"))
         self.assertTrue(data[1]["file"].endswith("test2.pdf"))
 
-        response = self.client.get(f"/api/mobile/instances/{self.instance_2.pk}/attachments/")
+        with self.assertNumQueries(5):
+            # 1. SELECT "iaso_orgunit"
+            # 2. SELECT "iaso_instance"
+            # 3. SELECT "iaso_instancefile"
+            # 4. SELECT "iaso_orgunit"
+            # 5. SELECT "iaso_form"
+            response = self.client.get(f"/api/mobile/instances/{self.instance_2.pk}/attachments/")
         self.assertJSONResponse(response, 200)
         data = response.json()["attachments"]
         self.assertEqual(len(data), 0)
@@ -138,7 +179,18 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
         instance = self.instance_1
         m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
         m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
-        response = self.client.get(f"/api/mobile/instances/{instance.pk}/attachments/", data={IMAGE_ONLY: True})
+        with self.assertNumQueries(10):
+            # 1. SELECT FROM "auth_permission"
+            # 2. SELECT FROM "auth_permission"
+            # 3. SELECT "iaso_orgunit"
+            # 4. SELECT "iaso_project"
+            # 5. SELECT "iaso_instance"
+            # 6. SELECT "iaso_orgunit"
+            # 7. SELECT "iaso_instance"
+            # 8. SELECT "iaso_instancefile"
+            # 9. SELECT "iaso_orgunit"
+            # 10. SELECT "iaso_form"
+            response = self.client.get(f"/api/mobile/instances/{instance.uuid}/attachments/", data={IMAGE_ONLY: True})
         self.assertJSONResponse(response, 200)
         data = response.json()["attachments"]
         self.assertEqual(len(data), 1)

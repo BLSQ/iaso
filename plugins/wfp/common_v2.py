@@ -29,11 +29,11 @@ from django.db.models import (
     Count,
     F,
     FloatField,
+    Func,
     Q,
     Value,
 )
-from django.db.models.expressions import Func
-from django.db.models.functions import Cast, Concat, Extract, ExtractMonth, ExtractYear
+from django.db.models.functions import Cast, Concat, ExtractMonth, ExtractYear
 
 from iaso.models import EntityType, TaskLog
 from iaso.models.base import Instance
@@ -1199,7 +1199,6 @@ class ETLV2:
 
         org_units = sorted(list(org_unit_with_updated_data))
         paginator = Paginator(org_units, page_size)
-
         current_page = paginator.get_page(page_number)
         current_page_org_units = current_page.object_list
 
@@ -1212,11 +1211,14 @@ class ETLV2:
         if current_page_org_units is not None:
             queryset = queryset.filter(org_unit_id__in=current_page_org_units)
 
+        # Fields for Group By
+        fields = ["period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme"]
+
         queryset = queryset.annotate(
             period=Concat(
-                Extract("journey__visit__date", "year"),
+                ExtractYear("journey__visit__date"),
                 Func(
-                    Cast(Extract("journey__visit__date", "month"), CharField()),
+                    Cast(ExtractMonth("journey__visit__date"), CharField()),
                     Value(2),
                     Value("0"),
                     function="LPAD",
@@ -1230,73 +1232,79 @@ class ETLV2:
         )
         if program_type == "U5":
             queryset = queryset.annotate(gender=F("journey__beneficiary__gender"))
-            queryset = queryset.values(
-                "period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme", "gender"
-            )
-        if program_type == "PLW":
-            queryset = queryset.annotate(physiology_status=F("journey__physiology_status"))
-            queryset = queryset.values(
-                "period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme", "physiology_status"
-            )
+            fields.append("gender")
 
-        queryset = queryset.annotate(
-            year=ExtractYear("journey__visit__date"),
-            month=ExtractMonth("journey__visit__date"),
-            muac_under_11_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=11.5), distinct=True),
-            muac_11_5_12_4=Count("journey__beneficiary_id", filter=Q(muac_numeric__range=(11.5, 12.4)), distinct=True),
-            muac_above_12_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=12.5), distinct=True),
-            whz_score_2=Count("journey__beneficiary_id", filter=Q(whz_color="Green"), distinct=True),
-            whz_score_3=Count("journey__beneficiary_id", filter=Q(whz_color="Red"), distinct=True),
-            whz_score_3_2=Count("journey__beneficiary_id", filter=Q(whz_color="Yellow"), distinct=True),
-            oedema=Count(
-                "journey__beneficiary_id", filter=Q(journey__admission_criteria="oedema"), distinct=True
-            ),
-            admission_type_new_case=Count(
-                "journey__beneficiary_id", filter=Q(journey__admission_type="new_case"), distinct=True
-            ),
-            admission_type_relapse=Count(
-                "journey__beneficiary_id", filter=Q(journey__admission_type="relapse"), distinct=True
-            ),
-            admission_type_returned_defaulter=Count(
-                "journey__beneficiary_id", filter=Q(journey__admission_type="returned_defaulter"), distinct=True
-            ),
-            admission_type_returned_referral=Count(
-                "journey__beneficiary_id", filter=Q(journey__admission_type="returned_referral"), distinct=True
-            ),
-            admission_type_transfer_from_other_tsfp=Count(
-                "journey__beneficiary_id", filter=Q(journey__admission_type="transfer_from_other_tsfp"), distinct=True
-            ),
-            admission_type_admission_sc_itp_otp=Count(
-                "journey__beneficiary_id",
-                filter=Q(journey__admission_type__in=["referred_from_sc", "referred_from_otp_sam"]),
-                distinct=True,
-            ),
-            admission_type_transfer_sc_itp_otp=Count(
-                "journey__beneficiary_id",
-                filter=Q(journey__exit_type__in=["transfer_to_sc_itp", "transferred_to_otp"]),
-                distinct=True,
-            ),
-            exit_type_transfer_in_from_other_tsfp=Count(
-                "journey__beneficiary_id",
-                filter=Q(journey__exit_type__in=["transfer_from_other_tsfp", "transfer_to_tsfp"]),
-                distinct=True,
-            ),
-            exit_type_cured=Count("journey__beneficiary_id", filter=Q(journey__exit_type="cured"), distinct=True),
-            exit_type_death=Count("journey__beneficiary_id", filter=Q(journey__exit_type="death"), distinct=True),
-            exit_type_defaulter=Count(
-                "journey__beneficiary_id", filter=Q(journey__exit_type="defaulter"), distinct=True
-            ),
-            exit_type_non_respondent=Count(
-                "journey__beneficiary_id", filter=Q(journey__exit_type="non_respondent"), distinct=True
-            ),
-            muac_under_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=23), distinct=True),
-            muac_above_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=23), distinct=True),
-            pregnant=Count("journey__beneficiary_id", filter=Q(journey__physiology_status="pregnant"), distinct=True),
-            breastfeeding=Count(
-                "journey__beneficiary_id", filter=Q(journey__physiology_status="breastfeeding"), distinct=True
-            ),
-            number_visits=Count("id", distinct=True),
-        ).order_by("org_unit_id")
+        elif program_type == "PLW":
+            queryset = queryset.annotate(physiology_status=F("journey__physiology_status"))
+            fields.append("physiology_status")
+
+        queryset = (
+            queryset.values(*fields)
+            .annotate(
+                year=ExtractYear("journey__visit__date"),
+                month=ExtractMonth("journey__visit__date"),
+                muac_under_11_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=11.5), distinct=True),
+                muac_11_5_12_4=Count(
+                    "journey__beneficiary_id", filter=Q(muac_numeric__range=(11.5, 12.4)), distinct=True
+                ),
+                muac_above_12_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=12.5), distinct=True),
+                muac_under_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=23), distinct=True),
+                muac_above_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=23), distinct=True),
+                whz_score_2=Count("journey__beneficiary_id", filter=Q(whz_color="Green"), distinct=True),
+                whz_score_3=Count("journey__beneficiary_id", filter=Q(whz_color="Red"), distinct=True),
+                whz_score_3_2=Count("journey__beneficiary_id", filter=Q(whz_color="Yellow"), distinct=True),
+                oedema=Count("journey__beneficiary_id", filter=Q(journey__admission_criteria="oedema"), distinct=True),
+                admission_type_new_case=Count(
+                    "journey__beneficiary_id", filter=Q(journey__admission_type="new_case"), distinct=True
+                ),
+                admission_type_relapse=Count(
+                    "journey__beneficiary_id", filter=Q(journey__admission_type="relapse"), distinct=True
+                ),
+                admission_type_returned_defaulter=Count(
+                    "journey__beneficiary_id", filter=Q(journey__admission_type="returned_defaulter"), distinct=True
+                ),
+                admission_type_returned_referral=Count(
+                    "journey__beneficiary_id", filter=Q(journey__admission_type="returned_referral"), distinct=True
+                ),
+                admission_type_transfer_from_other_tsfp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="transfer_from_other_tsfp"),
+                    distinct=True,
+                ),
+                admission_type_admission_sc_itp_otp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type__in=["referred_from_sc", "referred_from_otp_sam"]),
+                    distinct=True,
+                ),
+                admission_type_transfer_sc_itp_otp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type__in=["transfer_to_sc_itp", "transferred_to_otp"]),
+                    distinct=True,
+                ),
+                exit_type_transfer_in_from_other_tsfp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type__in=["transfer_from_other_tsfp", "transfer_to_tsfp"]),
+                    distinct=True,
+                ),
+                exit_type_cured=Count("journey__beneficiary_id", filter=Q(journey__exit_type="cured"), distinct=True),
+                exit_type_death=Count("journey__beneficiary_id", filter=Q(journey__exit_type="death"), distinct=True),
+                exit_type_defaulter=Count(
+                    "journey__beneficiary_id", filter=Q(journey__exit_type="defaulter"), distinct=True
+                ),
+                exit_type_non_respondent=Count(
+                    "journey__beneficiary_id", filter=Q(journey__exit_type="non_respondent"), distinct=True
+                ),
+                pregnant=Count(
+                    "journey__beneficiary_id", filter=Q(journey__physiology_status="pregnant"), distinct=True
+                ),
+                breastfeeding=Count(
+                    "journey__beneficiary_id", filter=Q(journey__physiology_status="breastfeeding"), distinct=True
+                ),
+                number_visits=Count("id", distinct=True),
+            )
+            .order_by("org_unit_id")
+        )
+
         return queryset, current_page
 
     # ------------------------------------------------------------------

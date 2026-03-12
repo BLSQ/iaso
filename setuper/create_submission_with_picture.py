@@ -51,7 +51,11 @@ def create_submission_with_picture(account_name, iaso_client):
     limit = form["number_of_org_units"]
     orgunits = iaso_client.get(
         "/api/orgunits/",
-        params={"limit": limit, "orgUnitTypeId": form["org_unit_type_id"]},
+        params={
+            "limit": limit,
+            "orgUnitTypeId": form["org_unit_type_id"],
+            "fields": "id,longitude,latitude,altitude,org_unit_type_name",
+        },
     )["orgunits"]
     current_datetime = int(datetime.now().timestamp())
 

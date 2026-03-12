@@ -72,6 +72,11 @@ class Beneficiary(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     guidelines = models.CharField(max_length=8, null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["account", "id"]),
+        ]
+
 
 class Journey(models.Model):
     beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, null=True, blank=True)
@@ -104,6 +109,12 @@ class Journey(models.Model):
     exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True, db_index=True)
     instance_id = models.IntegerField(null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["programme_type", "beneficiary", "nutrition_programme"]),
+            models.Index(fields=["physiology_status"]),
+        ]
+
 
 class Visit(models.Model):
     date = models.DateTimeField(null=True, blank=True, db_index=True)
@@ -115,6 +126,12 @@ class Visit(models.Model):
     oedema = models.FloatField(null=True)
     entry_point = models.TextField(null=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["org_unit", "date", "journey"]),
+            models.Index(fields=["muac_size", "whz_color"]),
+        ]
 
 
 class Step(models.Model):

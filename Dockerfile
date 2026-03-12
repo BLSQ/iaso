@@ -26,7 +26,7 @@ COPY tsconfig.json babel-register.js ./
 RUN npm run webpack-prod
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
-# Full Bullseye image to compile C extensions 
+# Full Bullseye image to compile C extensions
 # Only the resulting /venv is carried forward.
 FROM python:3.9-bullseye AS pybuilder
 
@@ -100,6 +100,9 @@ COPY --chown=appuser:appuser README.md manage.py entrypoint.sh tsconfig.json bab
 # test data and notebooks
 COPY --chown=appuser:appuser testdata ./testdata
 COPY --chown=appuser:appuser notebooks /opt/notebooks
+
+# Create dir for uploaded files
+RUN mkdir media && chown appuser:appuser media
 
 # Collect static files, compile translations
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic --noinput && \

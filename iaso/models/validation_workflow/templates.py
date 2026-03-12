@@ -34,8 +34,6 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_updated_set"
     )
 
-    form = models.ForeignKey("Form", null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_form")
-
     def __str__(self):
         return self.name
 
@@ -43,7 +41,9 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         unique_together = ("account_id", "slug")
 
     def is_artifact_allowed(self, instance):
-        return isinstance(instance, Instance) and instance.form_id == self.form_id
+        if self.form_set.count():
+            return isinstance(instance, Instance) and self.form_set.filter(pk=instance.form_id).exists()
+        return isinstance(instance, Instance)
 
     def get_starting_node(self):
         return self.node_templates.get(previous_node_templates__isnull=True)

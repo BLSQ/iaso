@@ -42,8 +42,11 @@ class TestValidationWorkflow(TestCase):
 
     def test_is_artifact_allowed(self):
         form = Form.objects.create()
-        workflow = ValidationWorkflow.objects.create(
-            name="test", account=Account.objects.create(name="test"), form=form
+        workflow = ValidationWorkflow.objects.create(name="test", account=Account.objects.create(name="test"))
+        workflow.form_set.set([form])
+
+        another_workflow = ValidationWorkflow.objects.create(
+            name="another-test", account=Account.objects.create(name="test2")
         )
 
         another_form = Form.objects.create()
@@ -54,3 +57,6 @@ class TestValidationWorkflow(TestCase):
         self.assertTrue(workflow.is_artifact_allowed(instance))
 
         self.assertFalse(workflow.is_artifact_allowed(another_instance))
+
+        self.assertTrue(another_workflow.is_artifact_allowed(instance))
+        self.assertTrue(another_workflow.is_artifact_allowed(another_instance))

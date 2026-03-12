@@ -1235,27 +1235,57 @@ class ETLV2:
         fields = ["period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme", "year", "month"]
 
         if program_type == "U5":
-            queryset = queryset.annotate(gender=F("journey__beneficiary__gender"))
+            queryset = queryset.annotate(
+                gender=F("journey__beneficiary__gender"),
+            )
             fields.append("gender")
 
         elif program_type == "PLW":
-            queryset = queryset.annotate(physiology_status=F("journey__physiology_status"))
+            queryset = queryset.annotate(
+                physiology_status=F("journey__physiology_status"),
+            )
             fields.append("physiology_status")
 
         queryset = (
             queryset.values(*fields)
             .annotate(
-                muac_under_11_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=11.5), distinct=True),
-                muac_11_5_12_4=Count(
-                    "journey__beneficiary_id", filter=Q(muac_numeric__range=(11.5, 12.4)), distinct=True
+                muac_under_11_5=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", muac_numeric__lt=11.5),
+                    distinct=True,
                 ),
-                muac_above_12_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=12.5), distinct=True),
-                muac_under_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=23), distinct=True),
-                muac_above_23=Count("journey__beneficiary_id", filter=Q(muac_numeric__gte=23), distinct=True),
+                muac_11_5_12_4=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", muac_numeric__range=(11.5, 12.4)),
+                    distinct=True,
+                ),
+                muac_above_12_5=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", muac_numeric__gte=12.5),
+                    distinct=True,
+                ),
+                muac_under_23=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="PLW", muac_numeric__lt=23),
+                    distinct=True,
+                ),
+                muac_above_23=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="PLW", muac_numeric__gte=23),
+                    distinct=True,
+                ),
                 whz_score_2=Count("journey__beneficiary_id", filter=Q(whz_color="Green"), distinct=True),
-                whz_score_3=Count("journey__beneficiary_id", filter=Q(whz_color="Red"), distinct=True),
-                whz_score_3_2=Count("journey__beneficiary_id", filter=Q(whz_color="Yellow"), distinct=True),
-                oedema=Count("journey__beneficiary_id", filter=Q(journey__admission_criteria="oedema"), distinct=True),
+                whz_score_3=Count(
+                    "journey__beneficiary_id", filter=Q(journey__programme_type="U5", whz_color="Red"), distinct=True
+                ),
+                whz_score_3_2=Count(
+                    "journey__beneficiary_id", filter=Q(journey__programme_type="U5", whz_color="Yellow"), distinct=True
+                ),
+                oedema=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", journey__admission_criteria="oedema"),
+                    distinct=True,
+                ),
                 admission_type_new_case=Count(
                     "journey__beneficiary_id", filter=Q(journey__admission_type="new_case"), distinct=True
                 ),
@@ -1328,14 +1358,14 @@ class ETLV2:
                 nutrition_programme=row["nutrition_programme"],
                 # --- Clinical Indicators ---
                 oedema=row["oedema"],
-                muac_under_11_5=row["muac_under_11_5"],
-                muac_11_5_12_4=row["muac_11_5_12_4"],
-                muac_above_12_5=row["muac_above_12_5"],
-                muac_under_23=row["muac_under_23"],
-                muac_above_23=row["muac_above_23"],
-                whz_score_2=row["whz_score_2"],
-                whz_score_3=row["whz_score_3"],
-                whz_score_3_2=row["whz_score_3_2"],
+                muac_under_11_5=row.get("muac_under_11_5"),
+                muac_11_5_12_4=row.get("muac_11_5_12_4"),
+                muac_above_12_5=row.get("muac_above_12_5"),
+                muac_under_23=row.get("muac_under_23"),
+                muac_above_23=row.get("muac_above_23"),
+                whz_score_2=row.get("whz_score_2"),
+                whz_score_3=row.get("whz_score_3"),
+                whz_score_3_2=row.get("whz_score_3_2"),
                 # --- Admissions ---
                 admission_type_new_case=row["admission_type_new_case"],
                 admission_type_relapse=row["admission_type_relapse"],

@@ -1206,30 +1206,34 @@ class ETLV2:
             date__isnull=False,
             journey__programme_type=program_type,
             journey__beneficiary__account=account,
-        )
+        ).select_related("journey", "org_unit")
 
         if current_page_org_units is not None:
             queryset = queryset.filter(org_unit_id__in=current_page_org_units)
 
-        # Fields for Group By
-        fields = ["period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme"]
-
         queryset = queryset.annotate(
+            year=ExtractYear("journey__visit__date"),
+            month=ExtractMonth("journey__visit__date"),
+            muac_numeric=Cast("muac_size", output_field=FloatField()),
+            dhis2_id=F("org_unit__source_ref"),
+            nutrition_programme=F("journey__nutrition_programme"),
+            programme_type=F("journey__programme_type"),
+        ).annotate(
             period=Concat(
-                ExtractYear("journey__visit__date"),
+                F("year"),
                 Func(
-                    Cast(ExtractMonth("journey__visit__date"), CharField()),
+                    Cast(F("month"), CharField()),
                     Value(2),
                     Value("0"),
                     function="LPAD",
                 ),
                 output_field=CharField(),
-            ),
-            dhis2_id=F("org_unit__source_ref"),
-            muac_numeric=Cast("muac_size", output_field=FloatField()),
-            nutrition_programme=F("journey__nutrition_programme"),
-            programme_type=F("journey__programme_type"),
+            )
         )
+
+        # Fields for Group By
+        fields = ["period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme", "year", "month"]
+
         if program_type == "U5":
             queryset = queryset.annotate(gender=F("journey__beneficiary__gender"))
             fields.append("gender")
@@ -1241,8 +1245,6 @@ class ETLV2:
         queryset = (
             queryset.values(*fields)
             .annotate(
-                year=ExtractYear("journey__visit__date"),
-                month=ExtractMonth("journey__visit__date"),
                 muac_under_11_5=Count("journey__beneficiary_id", filter=Q(muac_numeric__lt=11.5), distinct=True),
                 muac_11_5_12_4=Count(
                     "journey__beneficiary_id", filter=Q(muac_numeric__range=(11.5, 12.4)), distinct=True
@@ -1304,7 +1306,6 @@ class ETLV2:
             )
             .order_by("org_unit_id")
         )
-
         return queryset, current_page
 
     # ------------------------------------------------------------------

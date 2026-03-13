@@ -1677,6 +1677,7 @@
     "iaso.users.bulk.setDefaultValues": "Définir des valeurs par défaut pour les champs manquants",
     "iaso.users.bulk.validationFailed": "Échec de la validation - Aucun utilisateur créé",
     "iaso.users.bulkChangeCount": "Vous allez modifier {count} utilisateur(s)",
+    "iaso.users.bulkImportDialogDescription": "Merci de vérifier l'encodage du fichier. Celui-ci doit être au format utf-8 pour pouvoir être lu par Iaso",
     "iaso.users.color": "Couleur",
     "iaso.users.create": "Créer un utilisateur",
     "iaso.users.delete": "Supprimer",

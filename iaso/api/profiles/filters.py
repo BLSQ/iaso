@@ -49,6 +49,7 @@ class ProfileListFilter(django_filters.rest_framework.FilterSet):
             | Q(user__tenant_user__main_user__username__icontains=value)
             | Q(user__first_name__icontains=value)
             | Q(user__last_name__icontains=value)
+            | Q(organization__icontains=value)
         ).distinct()
 
     def filter_location(self, queryset, name, value):

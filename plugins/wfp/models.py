@@ -27,6 +27,7 @@ NUTRITION_PROGRAMMES = [
     ("OTP", _("OTP")),
     ("OTP - Under 6", _("OTP - Under 6")),
     ("BSFP", _("BSFP")),
+    ("Not Eligible", _("Not Eligible")),
 ]
 PHYSIOLOGY_STATUS = [
     ("breastfeeding", _("Breastfeeding")),
@@ -155,29 +156,29 @@ class MonthlyStatistics(models.Model):
     admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
     nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
-    oedema = models.FloatField(null=True)
-    muac_under_11_5 = models.FloatField(null=True)  # MUAC < 11.5cm
-    muac_11_5_12_4 = models.FloatField(null=True)  # MUAC between 11.5 and 12.4 cm
-    muac_above_12_5 = models.FloatField(null=True)  # MUAC > 12.5 cm
-    muac_under_23 = models.FloatField(null=True)  # MUAC < 23 cm for PBWG
-    muac_above_23 = models.FloatField(null=True)  # MUAC > 23 cm for PBWG
-    whz_score_2 = models.FloatField(null=True)  # WHZ greater than -2 (green)
-    whz_score_3 = models.FloatField(null=True)  # WHZ less than -3 (red)
-    whz_score_3_2 = models.FloatField(null=True)  # WHZ between -2 and -3 (yellow)
-    admission_type_new_case = models.FloatField(null=True)
-    admission_type_relapse = models.FloatField(null=True)
-    admission_type_returned_defaulter = models.FloatField(null=True)
-    admission_type_returned_referral = models.FloatField(null=True)
-    admission_type_transfer_from_other_tsfp = models.FloatField(null=True)
-    admission_type_admission_sc_itp_otp = models.FloatField(null=True)
-    admission_type_transfer_sc_itp_otp = models.FloatField(null=True)
-    exit_type_transfer_in_from_other_tsfp = models.FloatField(null=True)
-    exit_type_cured = models.FloatField(null=True)
-    exit_type_death = models.FloatField(null=True)
-    exit_type_defaulter = models.FloatField(null=True)
-    exit_type_non_respondent = models.FloatField(null=True)
-    pregnant = models.FloatField(null=True)
-    breastfeeding = models.FloatField(null=True)
+    oedema = models.IntegerField(null=True)
+    muac_under_11_5 = models.IntegerField(null=True)  # MUAC < 11.5cm
+    muac_11_5_12_4 = models.IntegerField(null=True)  # MUAC between 11.5 and 12.4 cm
+    muac_above_12_5 = models.IntegerField(null=True)  # MUAC > 12.5 cm
+    muac_under_23 = models.IntegerField(null=True)  # MUAC < 23 cm for PBWG
+    muac_above_23 = models.IntegerField(null=True)  # MUAC > 23 cm for PBWG
+    whz_score_2 = models.IntegerField(null=True)  # WHZ greater than -2 (green)
+    whz_score_3 = models.IntegerField(null=True)  # WHZ less than -3 (red)
+    whz_score_3_2 = models.IntegerField(null=True)  # WHZ between -2 and -3 (yellow)
+    admission_type_new_case = models.IntegerField(null=True)
+    admission_type_relapse = models.IntegerField(null=True)
+    admission_type_returned_defaulter = models.IntegerField(null=True)
+    admission_type_returned_referral = models.IntegerField(null=True)
+    admission_type_transfer_from_other_tsfp = models.IntegerField(null=True)
+    admission_type_admission_sc_itp_otp = models.IntegerField(null=True)
+    admission_type_transfer_sc_itp_otp = models.IntegerField(null=True)
+    exit_type_transfer_in_from_other_tsfp = models.IntegerField(null=True)
+    exit_type_cured = models.IntegerField(null=True)
+    exit_type_death = models.IntegerField(null=True)
+    exit_type_defaulter = models.IntegerField(null=True)
+    exit_type_non_respondent = models.IntegerField(null=True)
+    pregnant = models.IntegerField(null=True)
+    breastfeeding = models.IntegerField(null=True)
     number_visits = models.IntegerField(null=True)
 
 

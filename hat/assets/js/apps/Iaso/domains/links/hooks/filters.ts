@@ -1,6 +1,6 @@
-import { UseQueryResult } from 'react-query';
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
@@ -67,17 +67,12 @@ export const useGetProfilesOptions = (): UseQueryResult<
     DropdownOptions<number>[]
 > => {
     return useSnackQuery({
-        queryKey: ['profiles', 'dropdown'],
-        queryFn: () => getRequest('/api/profiles/'),
+        queryKey: ['profilesDropdown'],
+        queryFn: () => getRequest('/api/profiles/dropdown/'),
         options: {
             keepPreviousData: true,
             cacheTime: 600000,
             staleTime: 600000,
-            select: data =>
-                (data?.results ?? []).map(user => ({
-                    label: user.user_name,
-                    value: user.user_id,
-                })),
         },
     });
 };
@@ -112,7 +107,7 @@ export const useSourceVersionOptions = ({ sources, source }) => {
     const versionsList = currentSource?.versions ?? [];
     const disabled = Boolean(
         !currentSource ||
-            (currentSource && currentSource.versions.length === 0),
+        (currentSource && currentSource.versions.length === 0),
     );
     const options = versionsList.map(v => ({
         label: `${formatMessage(MESSAGES.version)} ${v.number}`,

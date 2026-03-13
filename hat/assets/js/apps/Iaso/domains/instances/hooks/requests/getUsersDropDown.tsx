@@ -1,16 +1,13 @@
-import { makeUrlWithParams } from '../../../../libs/utils';
-import { getRequest } from '../../../../libs/Api';
-import getDisplayName from '../../../../utils/usersUtils';
-import { ProfileListResponseItem } from 'Iaso/domains/users/types';
+import { getRequest } from 'Iaso/libs/Api';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
 
-export const getUsersDropDown = async (query: string): Promise<any[]> => {
-    const url = makeUrlWithParams(`/api/profiles/`, { search: query });
-    return getRequest(url).then(data =>
-        data.results.map((user: ProfileListResponseItem) => {
-            return {
-                value: user.user_id,
-                label: getDisplayName(user),
-            };
-        }),
-    );
+export const getUsersDropDown = async (
+    query: string,
+): Promise<DropdownOptions<number>[]> => {
+    const url = makeUrlWithParams(`/api/profiles/dropdown/`, {
+        search: query,
+        limit: 100,
+    });
+    return getRequest(url).then(data => data.results);
 };

@@ -4,14 +4,38 @@ services:
         tty: true
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: docker/django/Dockerfile
         image: iaso
         ports:
             - '8081:8081'
+        volumes: &hat_volumes
+            - ./manage.py:/opt/app/manage.py
+            - ./hat:/opt/app/hat
+            - ./iaso:/opt/app/iaso
+            - ./setuper:/opt/app/setuper
+            - ./beanstalk_worker:/opt/app/beanstalk_worker
+            - ./django_sql_dashboard_export:/opt/app/django_sql_dashboard_export
+            - ./media:/opt/app/media
+            - ./plugins:/opt/app/plugins
+            - ./scripts:/opt/app/scripts
+            - ./entrypoint.sh:/opt/app/entrypoint.sh
+            - ./README.md:/opt/app/README.md
+            - ./tsconfig.json:/opt/app/tsconfig.json
+            - ./babel-register.js:/opt/app/babel-register.js
+            - ./mypy.ini:/opt/app/mypy.ini
+            - ./pyproject.toml:/opt/app/pyproject.toml
+            - ./htmlcov:/opt/app/htmlcov
+            # test data
+            - ./testdata:/opt/app/testdata
+            # jupyter notebooks
+            - ./notebooks:/opt/notebooks
+            # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
+            - ../bluesquare-components:/opt/bluesquare-components
+            # Optional Used to load dev snt-malaria-budgeting Python package.
+            - ../snt-malaria-budgeting:/opt/snt-malaria-budgeting
         links: &hat_links
             - db
         environment: &hat_environment
-            DISABLE_SSL_REDIRECT: true
             APP_TITLE:
             AUTHENTICATION_ENFORCED: ${AUTHENTICATION_ENFORCED:-false}
             AWS_ACCESS_KEY_ID:
@@ -90,11 +114,28 @@ services:
         logging: *iaso_logging
         ports:
             - '5433:5432'
+        volumes:
+            - ../pgdata-iaso-16:/var/lib/postgresql/data
         environment:
             POSTGRES_DB: ${RDS_DB_NAME}
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
 
+    # the webpack dev server
+    webpack:
+        image: iaso-webpack
+        platform: linux/amd64
+        build:
+            context: .
+            dockerfile: docker/webpack/Dockerfile
+        depends_on:
+            - iaso
+        ports:
+            - '3000:3000'
+        volumes: *hat_volumes
+        environment: *hat_environment
+        logging: *iaso_logging
+        command: start_webpack
 
     # celery worker for wfp plugin
     redis:

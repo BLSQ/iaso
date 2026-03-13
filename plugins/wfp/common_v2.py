@@ -24,7 +24,18 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, Count, F, FloatField, Func, Q, Sum, Value, When
+from django.db.models import (
+    Case,
+    CharField,
+    Count,
+    F,
+    FloatField,
+    Func,
+    Q,
+    Sum,
+    Value,
+    When,
+)
 from django.db.models.functions import Cast, Concat, ExtractMonth, ExtractYear
 
 from iaso.models import EntityType, TaskLog
@@ -1130,7 +1141,7 @@ class ETLV2:
             number=visit_number,
             muac_size=extract_muac(anthro_data),
             whz_color=extract_whz_color(anthro_data),
-            oedema=extract_oedema(anthro_data),
+            oedema=(1 if extract_admission_criteria(anthro_data) == "oedema" else extract_oedema(anthro_data)),
             org_unit_id=anthro_sub.get("org_unit_id"),
             instance_id=anthro_sub["id"],
             entry_point=extract_visit_entry_point(anthro_data),
@@ -1235,7 +1246,15 @@ class ETLV2:
         )
 
         # Fields for Group By
-        fields = ["period", "org_unit_id", "dhis2_id", "programme_type", "nutrition_programme", "year", "month"]
+        fields = [
+            "period",
+            "org_unit_id",
+            "dhis2_id",
+            "programme_type",
+            "nutrition_programme",
+            "year",
+            "month",
+        ]
 
         if program_type == "U5":
             queryset = queryset.annotate(
@@ -1277,29 +1296,48 @@ class ETLV2:
                     filter=Q(journey__programme_type="PLW", muac_numeric__gte=23),
                     distinct=True,
                 ),
-                whz_score_2=Count("journey__beneficiary_id", filter=Q(whz_color="Green"), distinct=True),
+                whz_score_2=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(whz_color="Green"),
+                    distinct=True,
+                ),
                 whz_score_3=Count(
-                    "journey__beneficiary_id", filter=Q(journey__programme_type="U5", whz_color="Red"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", whz_color="Red"),
+                    distinct=True,
                 ),
                 whz_score_3_2=Count(
-                    "journey__beneficiary_id", filter=Q(journey__programme_type="U5", whz_color="Yellow"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", whz_color="Yellow"),
+                    distinct=True,
                 ),
                 oedema=Count(
                     "journey__beneficiary_id",
-                    filter=Q(journey__programme_type="U5", journey__admission_criteria="oedema"),
+                    filter=Q(
+                        journey__programme_type="U5",
+                        journey__admission_criteria="oedema",
+                    ),
                     distinct=True,
                 ),
                 admission_type_new_case=Count(
-                    "journey__beneficiary_id", filter=Q(journey__admission_type="new_case"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="new_case"),
+                    distinct=True,
                 ),
                 admission_type_relapse=Count(
-                    "journey__beneficiary_id", filter=Q(journey__admission_type="relapse"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="relapse"),
+                    distinct=True,
                 ),
                 admission_type_returned_defaulter=Count(
-                    "journey__beneficiary_id", filter=Q(journey__admission_type="returned_defaulter"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="returned_defaulter"),
+                    distinct=True,
                 ),
                 admission_type_returned_referral=Count(
-                    "journey__beneficiary_id", filter=Q(journey__admission_type="returned_referral"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="returned_referral"),
+                    distinct=True,
                 ),
                 admission_type_transfer_from_other_tsfp=Count(
                     "journey__beneficiary_id",
@@ -1308,32 +1346,63 @@ class ETLV2:
                 ),
                 admission_type_admission_sc_itp_otp=Count(
                     "journey__beneficiary_id",
-                    filter=Q(journey__admission_type__in=["referred_from_sc", "referred_from_otp_sam"]),
+                    filter=Q(
+                        journey__admission_type__in=[
+                            "referred_from_sc",
+                            "referred_from_otp_sam",
+                        ]
+                    ),
                     distinct=True,
                 ),
                 admission_type_transfer_sc_itp_otp=Count(
                     "journey__beneficiary_id",
-                    filter=Q(journey__exit_type__in=["transfer_to_sc_itp", "transferred_to_otp"]),
+                    filter=Q(
+                        journey__exit_type__in=[
+                            "transfer_to_sc_itp",
+                            "transferred_to_otp",
+                        ]
+                    ),
                     distinct=True,
                 ),
                 exit_type_transfer_in_from_other_tsfp=Count(
                     "journey__beneficiary_id",
-                    filter=Q(journey__exit_type__in=["transfer_from_other_tsfp", "transfer_to_tsfp"]),
+                    filter=Q(
+                        journey__exit_type__in=[
+                            "transfer_from_other_tsfp",
+                            "transfer_to_tsfp",
+                        ]
+                    ),
                     distinct=True,
                 ),
-                exit_type_cured=Count("journey__beneficiary_id", filter=Q(journey__exit_type="cured"), distinct=True),
-                exit_type_death=Count("journey__beneficiary_id", filter=Q(journey__exit_type="death"), distinct=True),
+                exit_type_cured=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="cured"),
+                    distinct=True,
+                ),
+                exit_type_death=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="death"),
+                    distinct=True,
+                ),
                 exit_type_defaulter=Count(
-                    "journey__beneficiary_id", filter=Q(journey__exit_type="defaulter"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="defaulter"),
+                    distinct=True,
                 ),
                 exit_type_non_respondent=Count(
-                    "journey__beneficiary_id", filter=Q(journey__exit_type="non_respondent"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="non_respondent"),
+                    distinct=True,
                 ),
                 pregnant=Count(
-                    "journey__beneficiary_id", filter=Q(journey__physiology_status="pregnant"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__physiology_status="pregnant"),
+                    distinct=True,
                 ),
                 breastfeeding=Count(
-                    "journey__beneficiary_id", filter=Q(journey__physiology_status="breastfeeding"), distinct=True
+                    "journey__beneficiary_id",
+                    filter=Q(journey__physiology_status="breastfeeding"),
+                    distinct=True,
                 ),
                 number_visits=Count("id", distinct=True),
             )
@@ -1392,10 +1461,18 @@ class ETLV2:
 
     @staticmethod
     def group_data_to_push_to_dhis2(account, org_unit_ids):
-        monthlyStatistics = MonthlyStatistics.objects.prefetch_related("account", "org_unit")
+        monthlyStatistics = MonthlyStatistics.objects.prefetch_related("account", "org_unit").filter(account=account)
 
         if org_unit_ids is not None and len(org_unit_ids) > 0:
             monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
+
+        monthlyStatistics = monthlyStatistics.annotate(
+            grouping_label=Case(
+                When(programme_type="U5", then=F("gender")),
+                When(programme_type="PLW", then=F("physiology_status")),
+                default=Value("Unknown"),
+            )
+        )
 
         monthlyStatistics = (
             monthlyStatistics.values(
@@ -1403,13 +1480,10 @@ class ETLV2:
                 "org_unit__id",
                 "year",
                 "month",
+                "period",
                 "nutrition_programme",
                 "dhis2_id",
-                grouping_label=Case(
-                    When(programme_type="U5", then=F("gender")),
-                    When(programme_type="PLW", then=F("physiology_status")),
-                    default=Value("Unknown"),
-                ),
+                "grouping_label",
             )
             .annotate(
                 new_case=Sum("admission_type_new_case"),
@@ -1417,7 +1491,9 @@ class ETLV2:
                 returned_defaulter=Sum("admission_type_returned_defaulter"),
                 returned_referral=Sum("admission_type_returned_referral"),
                 transfer_to_tsfp=Sum("admission_type_transfer_from_other_tsfp"),
-                transfer_to_otp=Sum("admission_type_admission_sc_itp_otp"),
+                admission_sc_itp_otp=Sum("admission_type_admission_sc_itp_otp"),
+                transfer_sc_itp_otp=Sum("admission_type_transfer_sc_itp_otp"),
+                transfer_from_other_tsfp=Sum("exit_type_transfer_in_from_other_tsfp"),
                 muac_under_11_5=Sum("muac_under_11_5"),
                 muac_11_5_12_4=Sum("muac_11_5_12_4"),
                 muac_above_12_5=Sum("muac_above_12_5"),
@@ -1435,9 +1511,13 @@ class ETLV2:
                 pregnant=Sum("pregnant"),
                 breastfeeding=Sum("breastfeeding"),
             )
-            .filter(account=account, grouping_label__isnull=False, dhis2_id__isnull=False)
-            .exclude(Q(nutrition_programme__isnull=True) | Q(nutrition_programme=""))
-            .order_by("org_unit", "year", "month")
+            .filter(grouping_label__isnull=False, dhis2_id__isnull=False)
+            .exclude(
+                Q(nutrition_programme__isnull=True)
+                | Q(nutrition_programme="")
+                | Q(nutrition_programme="Not Eligible")
+                | Q(nutrition_programme="OTP - Under 6")
+            )
+            .order_by("org_unit", "year", "month", "period")
         )
-
         return monthlyStatistics

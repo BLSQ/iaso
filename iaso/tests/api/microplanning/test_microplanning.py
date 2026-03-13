@@ -92,7 +92,7 @@ class PlanningTestCase(APITestCase):
                 "started_at": "2025-01-01",
                 "ended_at": "2025-01-10",
                 "pipeline_uuids": [],
-                "target_org_unit_type_details": None,
+                "target_org_unit_type_details": [],
                 "selected_sampling_result": None,
                 "assignments_count": 0,
             },
@@ -425,7 +425,7 @@ class PlanningTestCase(APITestCase):
             "team": self.team1.id,
             "project": self.project1.id,
             "forms": [self.form1.id],
-            "target_org_unit_type": org_unit_type.id,
+            "target_org_unit_types": [org_unit_type.id],
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
@@ -433,17 +433,18 @@ class PlanningTestCase(APITestCase):
         r = response.json()
 
         self.assertIsNotNone(r["target_org_unit_type_details"])
-        self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
-        self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
+        self.assertEqual(len(r["target_org_unit_type_details"]), 1)
+        self.assertEqual(r["target_org_unit_type_details"][0]["id"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"][0]["name"], "Health Post")
 
         planning = Planning.objects.get(id=r["id"])
-        self.assertEqual(planning.target_org_unit_type, org_unit_type)
+        self.assertIn(org_unit_type, planning.target_org_unit_types.all())
 
         response = self.client.get(f"/api/microplanning/plannings/{planning.id}/", format="json")
         self.assertEqual(response.status_code, 200)
         r = response.json()
-        self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
-        self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
+        self.assertEqual(r["target_org_unit_type_details"][0]["id"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"][0]["name"], "Health Post")
 
     def test_planning_serializer_with_target_org_unit_type(self):
         """Test PlanningSerializer with target_org_unit_type field."""
@@ -470,12 +471,12 @@ class PlanningTestCase(APITestCase):
                 "team": self.team1.id,
                 "project": self.project1.id,
                 "forms": [self.form1.id],
-                "target_org_unit_type": org_unit_type.id,
+                "target_org_unit_types": [org_unit_type.id],
             },
         )
         self.assertTrue(serializer.is_valid(), serializer.errors)
         planning = serializer.save()
-        self.assertEqual(planning.target_org_unit_type, org_unit_type)
+        self.assertIn(org_unit_type, planning.target_org_unit_types.all())
 
     def test_planning_api_patch_with_target_org_unit_type(self):
         """Test updating planning with target_org_unit_type via API."""
@@ -502,17 +503,17 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
 
         data = {
-            "target_org_unit_type": org_unit_type.id,
+            "target_org_unit_types": [org_unit_type.id],
         }
 
         response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         r = response.json()
-        self.assertEqual(r["target_org_unit_type_details"]["id"], org_unit_type.id)
-        self.assertEqual(r["target_org_unit_type_details"]["name"], "Clinic")
+        self.assertEqual(r["target_org_unit_type_details"][0]["id"], org_unit_type.id)
+        self.assertEqual(r["target_org_unit_type_details"][0]["name"], "Clinic")
 
         planning.refresh_from_db()
-        self.assertEqual(planning.target_org_unit_type, org_unit_type)
+        self.assertIn(org_unit_type, planning.target_org_unit_types.all())
 
     def test_planning_with_target_org_unit_type_wrong_project(self):
         """Test that creating planning with target_org_unit_type from wrong project fails."""
@@ -530,13 +531,13 @@ class PlanningTestCase(APITestCase):
             "team": self.team1.id,
             "project": self.project1.id,
             "forms": [self.form1.id],
-            "target_org_unit_type": org_unit_type.id,
+            "target_org_unit_types": [org_unit_type.id],
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        self.assertIn("target_org_unit_type", r)
-        self.assertEqual(r["target_org_unit_type"][0], "planningAndTargetOrgUnitType")
+        self.assertIn("target_org_unit_types", r)
+        self.assertEqual(r["target_org_unit_types"][0], "planningAndTargetOrgUnitType")
 
     def test_planning_sampling_results_list(self):
         self.client.force_authenticate(self.user)
@@ -801,11 +802,11 @@ class PlanningTestCase(APITestCase):
                 "team": self.team1.id,
                 "project": self.project1.id,
                 "forms": [self.form1.id],
-                "target_org_unit_type": org_unit_type.id,
+                "target_org_unit_types": [org_unit_type.id],
             },
         )
         self.assertFalse(serializer.is_valid())
-        self.assertIn("target_org_unit_type", serializer.errors)
+        self.assertIn("target_org_unit_types", serializer.errors)
 
     def test_planning_patch_target_org_unit_type_wrong_project(self):
         """Test that patching planning with target_org_unit_type from wrong project fails."""
@@ -818,13 +819,13 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
 
         data = {
-            "target_org_unit_type": org_unit_type.id,
+            "target_org_unit_types": [org_unit_type.id],
         }
 
         response = self.client.patch(f"/api/microplanning/plannings/{self.planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        self.assertIn("target_org_unit_type", r)
-        self.assertEqual(r["target_org_unit_type"][0], "planningAndTargetOrgUnitType")
+        self.assertIn("target_org_unit_types", r)
+        self.assertEqual(r["target_org_unit_types"][0], "planningAndTargetOrgUnitType")
 
     def test_planning_target_org_unit_type_no_descendants(self):
         """Test that creating planning with target_org_unit_type but no descendant org units fails."""
@@ -848,13 +849,13 @@ class PlanningTestCase(APITestCase):
             "team": self.team1.id,
             "project": self.project1.id,
             "forms": [self.form1.id],
-            "target_org_unit_type": org_unit_type_no_descendants.id,
+            "target_org_unit_types": [org_unit_type_no_descendants.id],
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
         r = self.assertJSONResponse(response, 400)
-        self.assertIn("target_org_unit_type", r)
-        self.assertEqual(r["target_org_unit_type"][0], "noOrgUnitsOfTypeInHierarchy")
+        self.assertIn("target_org_unit_types", r)
+        self.assertEqual(r["target_org_unit_types"][0], "noOrgUnitsOfTypeInHierarchy")
 
     def test_planning_target_org_unit_type_with_valid_descendants(self):
         """Test that creating planning with target_org_unit_type and valid descendants succeeds."""
@@ -882,14 +883,15 @@ class PlanningTestCase(APITestCase):
             "team": self.team1.id,
             "project": self.project1.id,
             "forms": [self.form1.id],
-            "target_org_unit_type": target_type.id,
+            "target_org_unit_types": [target_type.id],
         }
 
         response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         r = response.json()
-        self.assertEqual(r["target_org_unit_type_details"]["id"], target_type.id)
-        self.assertEqual(r["target_org_unit_type_details"]["name"], "Health Post")
+        self.assertEqual(len(r["target_org_unit_type_details"]), 1)
+        self.assertEqual(r["target_org_unit_type_details"][0]["id"], target_type.id)
+        self.assertEqual(r["target_org_unit_type_details"][0]["name"], "Health Post")
 
     def test_planning_orgunits_children_requires_planning_id(self):
         self.client.force_authenticate(self.user)
@@ -946,10 +948,10 @@ class PlanningTestCase(APITestCase):
             name="planning-orgunits",
             team=self.team1,
             org_unit=root,
-            target_org_unit_type=child_type,
             started_at="2025-01-01",
             ended_at="2025-01-02",
         )
+        planning.target_org_unit_types.set([child_type])
 
         response = self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json")
         r = self.assertJSONResponse(response, 200)

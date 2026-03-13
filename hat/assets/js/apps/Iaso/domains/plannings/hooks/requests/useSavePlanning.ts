@@ -21,7 +21,7 @@ export type SavePlanningQuery = {
     project: number;
     publishingStatus: 'published' | 'draft';
     pipelineUuids: string[];
-    targetOrgUnitType: number;
+    targetOrgUnitTypes: number[];
     selected_sampling_result_id?: number | null;
 };
 
@@ -33,7 +33,7 @@ const convertToApi = data => {
         startDate,
         publishingStatus,
         pipelineUuids,
-        targetOrgUnitType,
+        targetOrgUnitTypes,
         ...converted
     } = data;
     if (selectedTeam !== undefined) {
@@ -57,8 +57,8 @@ const convertToApi = data => {
     if (pipelineUuids !== undefined) {
         converted.pipeline_uuids = pipelineUuids;
     }
-    if (targetOrgUnitType !== undefined) {
-        converted.target_org_unit_type = targetOrgUnitType;
+    if (targetOrgUnitTypes !== undefined) {
+        converted.target_org_unit_types = targetOrgUnitTypes;
     }
 
     if (converted.selected_sampling_result_id !== undefined) {
@@ -76,6 +76,7 @@ export const convertAPIErrorsToState = data => {
         started_at,
         published_at,
         pipeline_uuids,
+        target_org_unit_types,
         ...converted
     } = data;
     if (team !== undefined) {
@@ -96,6 +97,9 @@ export const convertAPIErrorsToState = data => {
     }
     if (pipeline_uuids !== undefined) {
         converted.pipelineUuids = pipeline_uuids;
+    }
+    if (target_org_unit_types !== undefined) {
+        converted.targetOrgUnitTypes = target_org_unit_types;
     }
 
     return converted;

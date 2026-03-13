@@ -109,7 +109,7 @@ export const useColumns = (
         if (entityTypeIds.length !== 1) {
             columns.unshift({
                 Header: formatMessage(MESSAGES.type),
-                id: 'entity_type',
+                id: 'entity_type__name',
                 accessor: 'entity_type',
             });
         }

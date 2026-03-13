@@ -281,6 +281,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.searchToSeeEntities',
         defaultMessage: 'Click "Search" button to see entities',
     },
+    results: {
+        id: 'iaso.label.resultsLower',
+        defaultMessage: 'result(s)',
+    }
 });
 
 export default MESSAGES;

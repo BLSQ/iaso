@@ -416,8 +416,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'locationLimit',
             'groups',
             'fieldsSearch',
-            ...paginationPathParams,
             'isSearchActive',
+            // pagination params
+            'order',
+            'pageSize',
+            'cursor',
         ],
     },
     entityDetails: {

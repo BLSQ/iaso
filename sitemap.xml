@@ -241,6 +241,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_tranlations/use_translations.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/how_to/vscode_workspace/vscode_workspace.html</loc>
+        <lastmod>2026-03-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>
         <lastmod>2026-03-13</lastmod>
         <changefreq>daily</changefreq>
@@ -777,6 +785,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_tranlations/use_translations.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/dev/how_to/vscode_workspace/vscode_workspace.html</loc>
+        <lastmod>2026-03-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>
         <lastmod>2026-03-13</lastmod>
         <changefreq>daily</changefreq>
@@ -1311,6 +1327,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/use_tranlations/use_translations.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_tranlations/use_translations.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_tranlations/use_translations.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/dev/how_to/vscode_workspace/vscode_workspace.html</loc>
+        <lastmod>2026-03-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/vscode_workspace/vscode_workspace.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>

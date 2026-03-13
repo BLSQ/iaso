@@ -2523,3 +2523,26 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["count"], 7)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
+
+    def test_search_users_by_organization(self):
+        self.jane.iaso_profile.organization = "Some organization"
+        self.jane.iaso_profile.save()
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(reverse("profiles-list", kwargs={"version": "v2"}), {"limit": 100})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response_data, 7)
+
+        for parameter in ["so", "some org", "Some organization"]:
+            with self.subTest(f"Searching with {parameter}"):
+                response = self.client.get(
+                    reverse("profiles-list", kwargs={"version": "v2"}), {"limit": 100, "search": parameter}
+                )
+                response_data = self.assertJSONResponse(response, 200)
+                self.assertValidProfileListData(response_data, 1)
+
+        response = self.client.get(
+            reverse("profiles-list", kwargs={"version": "v2"}), {"limit": 100, "search": "wrong search"}
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response_data, 0)

@@ -154,7 +154,7 @@ class JourneyAdmin(admin.ModelAdmin):
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "number", "muac_size", "whz_color", "org_unit", "journey")
+    list_display = ("id", "date", "number", "entry_point", "muac_size", "whz_color", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",

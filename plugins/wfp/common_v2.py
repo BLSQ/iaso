@@ -24,15 +24,7 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
-from django.db.models import (
-    CharField,
-    Count,
-    F,
-    FloatField,
-    Func,
-    Q,
-    Value,
-)
+from django.db.models import Case, CharField, Count, F, FloatField, Func, Q, Sum, Value, When
 from django.db.models.functions import Cast, Concat, ExtractMonth, ExtractYear
 
 from iaso.models import EntityType, TaskLog
@@ -305,6 +297,16 @@ def extract_visit_date(submission):
 def extract_muac(data):
     """Extract MUAC measurement from form data."""
     return _first_of(data, "muac", "muac_size")
+
+
+def extract_visit_entry_point(submission):
+    """Extract the entry point for a beneficiary to know if she/he has been refered from community health worker."""
+    return (
+        submission.get("who_referred_green")
+        or submission.get("entry_point")
+        or submission.get("who_referred_severe")
+        or submission.get("_who_referred")
+    )
 
 
 def extract_whz_color(data):
@@ -1131,6 +1133,7 @@ class ETLV2:
             oedema=extract_oedema(anthro_data),
             org_unit_id=anthro_sub.get("org_unit_id"),
             instance_id=anthro_sub["id"],
+            entry_point=extract_visit_entry_point(anthro_data),
         )
 
         steps = []
@@ -1190,7 +1193,7 @@ class ETLV2:
         task.save()
 
     # --------------------------------------------------------------------------------------------------------
-    # Aggragating beneficiary journeys data by org unit and period(month and year extracted from visite date)
+    # Aggregating beneficiary journeys data by org unit and period(month and year extracted from visite date)
     # --------------------------------------------------------------------------------------------------------
     @staticmethod
     def _retrieve_aggregated_journeys_data(

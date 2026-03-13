@@ -15,7 +15,6 @@ services:
             driver: 'json-file'
             options:
                 max-size: '5k'
-        command: start_dev
 
     db:
         # https://registry.hub.docker.com/r/postgis/postgis

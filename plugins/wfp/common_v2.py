@@ -1389,3 +1389,55 @@ class ETLV2:
             )
             all_journeys.append(journey_by_org_unit_period)
         return MonthlyStatistics.objects.bulk_create(all_journeys)
+
+    @staticmethod
+    def group_data_to_push_to_dhis2(account, org_unit_ids):
+        monthlyStatistics = MonthlyStatistics.objects.prefetch_related("account", "org_unit")
+
+        if org_unit_ids is not None and len(org_unit_ids) > 0:
+            monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
+
+        monthlyStatistics = (
+            monthlyStatistics.values(
+                "org_unit__name",
+                "org_unit__id",
+                "year",
+                "month",
+                "nutrition_programme",
+                "dhis2_id",
+                grouping_label=Case(
+                    When(programme_type="U5", then=F("gender")),
+                    When(programme_type="PLW", then=F("physiology_status")),
+                    default=Value("Unknown"),
+                ),
+            )
+            .annotate(
+                new_case=Sum("admission_type_new_case"),
+                relapse=Sum("admission_type_relapse"),
+                returned_defaulter=Sum("admission_type_returned_defaulter"),
+                returned_referral=Sum("admission_type_returned_referral"),
+                transfer_to_tsfp=Sum("admission_type_transfer_from_other_tsfp"),
+                transfer_to_otp=Sum("admission_type_admission_sc_itp_otp"),
+                muac_under_11_5=Sum("muac_under_11_5"),
+                muac_11_5_12_4=Sum("muac_11_5_12_4"),
+                muac_above_12_5=Sum("muac_above_12_5"),
+                muac_under_23=Sum("muac_under_23"),
+                muac_above_23=Sum("muac_above_23"),
+                whz_score_2=Sum("whz_score_2"),
+                whz_score_3=Sum("whz_score_3"),
+                whz_score_3_2=Sum("whz_score_3_2"),
+                oedema=Sum("oedema"),
+                cured=Sum("exit_type_cured"),
+                death=Sum("exit_type_death"),
+                defaulter=Sum("exit_type_defaulter"),
+                non_respondent=Sum("exit_type_non_respondent"),
+                transfer_in_from_other_tsfp=Sum("exit_type_transfer_in_from_other_tsfp"),
+                pregnant=Sum("pregnant"),
+                breastfeeding=Sum("breastfeeding"),
+            )
+            .filter(account=account, grouping_label__isnull=False, dhis2_id__isnull=False)
+            .exclude(Q(nutrition_programme__isnull=True) | Q(nutrition_programme=""))
+            .order_by("org_unit", "year", "month")
+        )
+
+        return monthlyStatistics

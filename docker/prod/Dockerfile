@@ -100,6 +100,7 @@ COPY --chown=appuser:appuser README.md manage.py entrypoint.sh tsconfig.json bab
 # test data and notebooks
 COPY --chown=appuser:appuser testdata ./testdata
 COPY --chown=appuser:appuser notebooks /opt/notebooks
+COPY --chown=appuser:appuser .env /opt/app/.env
 
 # Create dir for uploaded files
 RUN mkdir media && chown appuser:appuser media
@@ -107,6 +108,8 @@ RUN mkdir media && chown appuser:appuser media
 # Collect static files, compile translations
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic --noinput && \
     SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
+
+RUN chown -R appuser:appuser ./static
 
 USER appuser
 

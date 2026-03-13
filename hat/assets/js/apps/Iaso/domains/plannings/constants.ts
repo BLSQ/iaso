@@ -5,21 +5,19 @@ export const publishingStatuses = ['all', 'published', 'draft'];
 
 export const endpoint = '/api/microplanning/plannings/';
 
-export const useGetPublishingStatusOptions = (hasStarted: boolean) => {
+export const useGetPublishingStatusOptions = () => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
             {
                 label: formatMessage(MESSAGES.published),
                 value: 'published',
-                disabled: hasStarted,
             },
             {
                 label: formatMessage(MESSAGES.draft),
                 value: 'draft',
-                disabled: hasStarted,
             },
         ],
-        [formatMessage, hasStarted],
+        [formatMessage],
     );
 };

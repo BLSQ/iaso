@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-06 12:36+0000\n"
+"POT-Creation-Date: 2026-03-11 17:08+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -561,7 +561,7 @@ msgstr "Exporté"
 msgid "Errored"
 msgstr "En erreur"
 
-#: iaso/models/base.py
+#: iaso/models/base.py iaso/models/validation_workflow/validation_node.py
 msgid "Skipped"
 msgstr "Ignoré"
 
@@ -584,6 +584,20 @@ msgstr "MULTIPLE"
 #: iaso/models/comment.py
 msgid "content type"
 msgstr "type de contenu"
+
+#: iaso/models/common.py iaso/models/org_unit.py
+msgid "Approved"
+msgstr "Approuvé"
+
+#: iaso/models/common.py iaso/models/org_unit.py iaso/models/payments.py
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Rejected"
+msgstr "Rejeté"
+
+#: iaso/models/common.py iaso/models/deduplication.py iaso/models/payments.py
+#: iaso/utils/virus_scan/model.py
+msgid "Pending"
+msgstr "En attente"
 
 #: iaso/models/data_source.py
 msgid ""
@@ -641,11 +655,6 @@ msgstr "Synchronisation de source de données"
 #: iaso/models/deduplication.py
 msgid "Levenshtein"
 msgstr "Levenshtein"
-
-#: iaso/models/deduplication.py iaso/models/payments.py
-#: iaso/utils/virus_scan/model.py
-msgid "Pending"
-msgstr "En attente"
 
 #: iaso/models/deduplication.py
 msgid "Validated"
@@ -857,14 +866,6 @@ msgstr "Modification d'unité organisationnelle"
 msgid "New"
 msgstr "Nouveau"
 
-#: iaso/models/org_unit.py iaso/models/payments.py
-msgid "Rejected"
-msgstr "Rejeté"
-
-#: iaso/models/org_unit.py
-msgid "Approved"
-msgstr "Approuvé"
-
 #: iaso/models/org_unit.py
 msgid "Org unit change request"
 msgstr "Demande de modification d'unité organisationnelle"
@@ -912,6 +913,14 @@ msgstr "Payé"
 #: iaso/models/payments.py
 msgid "Partially Paid"
 msgstr "Partiellement payé"
+
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Accepted"
+msgstr "Accepté"
+
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Unknown"
+msgstr "Inconnu"
 
 #: iaso/permissions/core_permissions.py
 msgid "Attributions"

@@ -71,7 +71,7 @@ export const CountryNotificationsConfigTable: FunctionComponent<Props> = ({
                         language={settings.row.original.language}
                         users={settings.row.original.users}
                         teams={settings.row.original.teams}
-                        allUsers={allUsers?.profiles}
+                        allUsers={allUsers?.results}
                         allLanguages={allLanguages}
                         renderTrigger={({ openDialog }) => (
                             <IconButton

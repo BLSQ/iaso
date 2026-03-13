@@ -1,29 +1,16 @@
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { DropdownOptions } from '../../../../types/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { DropdownOptions } from 'Iaso/types/utils';
 import MESSAGES from '../../messages';
-import getDisplayName, { Profile } from '../../../../utils/usersUtils';
 
 export const useGetProfilesDropdown = (): UseQueryResult<
     DropdownOptions<number>,
     Error
 > => {
     return useSnackQuery(
-        ['profiles'],
-        () => getRequest('/api/profiles/'),
+        ['profilesDropdown'],
+        () => getRequest('/api/profiles/dropdown/'),
         MESSAGES.projectsError,
-        {
-            select: data => {
-                return (
-                    data?.results?.map((profile: Profile) => {
-                        return {
-                            value: profile.user_id,
-                            label: getDisplayName(profile),
-                        };
-                    }) ?? []
-                );
-            },
-        },
     );
 };

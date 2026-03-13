@@ -172,10 +172,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
         validationSchema: schema,
         onSubmit: save,
     });
-    const isPublished = formik.values.publishingStatus === 'published';
+    const isPublished = publishingStatus === 'published';
     const hasStarted = Boolean(
-        formik.values.startDate &&
-        moment().isAfter(moment(formik.values.startDate, 'DD/MM/YYYY'), 'day'),
+        startDate && moment().isAfter(moment(startDate, 'DD/MM/YYYY'), 'day'),
     );
 
     const isEditingDisabled = Boolean(

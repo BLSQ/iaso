@@ -1,12 +1,16 @@
+from django.db.models import Prefetch
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
 
 from iaso.api.common import ModelViewSet
 from iaso.api.instances.instances import HasInstancePermission, InstanceFileSerializer
 from iaso.api.instances.serializers import FileTypeSerializer
+from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import (
     Instance,
+    InstanceFile,
     InstanceQuerySet,
 )
 
@@ -26,15 +30,22 @@ class InstancesMobileViewSet(ModelViewSet):
     GET /api/mobile/instances/<id>/attachments
     """
 
-    permission_classes = [DenyAll]
+    permission_classes = [HasInstancePermission]
     http_method_names = ["get"]
     lookup_field = "uuid"
+    serializer_class = ReferenceInstancesSerializer
 
     def get_queryset(self):
         request = self.request
         queryset: InstanceQuerySet = Instance.objects
         queryset = queryset.filter_for_user(request.user).filter_on_user_projects(user=request.user)
+        queryset = queryset.prefetch_related(
+            Prefetch("instancefile_set", queryset=InstanceFile.objects_with_file_extensions.all())
+        )
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        raise MethodNotAllowed("GET")
 
     @action(["GET"], detail=True, permission_classes=[HasInstancePermission])
     def attachments(self, request, uuid):

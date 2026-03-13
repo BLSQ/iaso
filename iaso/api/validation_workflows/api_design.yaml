@@ -363,12 +363,15 @@ paths:
                       $ref: '#/components/schemas/InstanceValidationWorkflowRetrieve'
 
 
-  /validation-workflows/{validationWorkflowSlug}/instance/{instanceId}/node-templates/{nodeTemplateSlug}/complete:
+  /validation-workflows/instance/{instanceId}/validation-node/{nodeId}/complete:
     post:
       parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-        - $ref: '#/components/parameters/nodeTemplateSlugParam'
         - $ref: '#/components/parameters/instanceIdParam'
+        - name: nodeId
+          in: path
+          schema:
+            type: number
+          required: true
 
       tags:
         - Validation nodes
@@ -392,8 +395,15 @@ paths:
         "204":
           description: "ok"
 
-  /validation-workflows/{validationWorkflowSlug}/instance/{instanceId}/validation-node/{ValidationNodeUuid}/undo:
+  /validation-workflows/instance/{instanceId}/validation-node/{nodeId}/undo:
     post:
+      parameters:
+        - $ref: '#/components/parameters/instanceIdParam'
+        - name: nodeId
+          in: path
+          schema:
+            type: number
+          required: true
       tags:
         - Validation nodes
       x-permissions-required:
@@ -630,11 +640,17 @@ components:
               userRoles:
                 type: array
                 items:
-                  type: number
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
               name:
                 type: string
-              slug:
-                type: string
+              id:
+                type: number
+
         history:
           type: array
           items:

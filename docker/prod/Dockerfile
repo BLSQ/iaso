@@ -95,12 +95,7 @@ COPY --chown=appuser:appuser beanstalk_worker ./beanstalk_worker
 COPY --chown=appuser:appuser django_sql_dashboard_export ./django_sql_dashboard_export
 COPY --chown=appuser:appuser plugins ./plugins
 COPY --chown=appuser:appuser scripts ./scripts
-COPY --chown=appuser:appuser README.md manage.py entrypoint.sh tsconfig.json babel-register.js mypy.ini pyproject.toml ./
-
-# test data and notebooks
-COPY --chown=appuser:appuser testdata ./testdata
-COPY --chown=appuser:appuser notebooks /opt/notebooks
-COPY --chown=appuser:appuser .env /opt/app/.env
+COPY --chown=appuser:appuser README.md manage.py entrypoint.sh tsconfig.json babel-register.js pyproject.toml ./
 
 # Create dir for uploaded files
 RUN mkdir media && chown appuser:appuser media

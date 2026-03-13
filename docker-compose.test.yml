@@ -1,0 +1,30 @@
+services:
+    iaso:
+        stdin_open: true
+        tty: true
+        build:
+            context: .
+            dockerfile: docker/prod/Dockerfile
+        image: iaso
+        ports:
+            - '8081:8081'
+        links: &hat_links
+            - db
+        env_file: ".env"
+        logging: &iaso_logging
+            driver: 'json-file'
+            options:
+                max-size: '5k'
+
+    db:
+        # https://registry.hub.docker.com/r/postgis/postgis
+        # Pinning specific minor versions of PostgreSQL and PostGIS is not easy.
+        # https://github.com/postgis/docker-postgis/issues/396
+        image: postgis/postgis:16-3.5
+        logging: *iaso_logging
+        ports:
+            - '5433:5432'
+        environment:
+            POSTGRES_DB: ${RDS_DB_NAME}
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres

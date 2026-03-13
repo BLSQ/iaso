@@ -1327,6 +1327,8 @@
     "iaso.permissions.users_management": "Gestion des utilisateurs - Limite géographique",
     "iaso.permissions.workflows": "Workflows",
     "iaso.planning.label.planningAlreadyPublished": "Planning déjà publié",
+    "iaso.planning.label.planningWarningMessage": "Modifier les dates ou le statut du planning peut impacter la collecte de données",
+    "iaso.planning.label.planningWarningTitle": "Adapter les dates ou le statut du planning",
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Dupliquer planning",
     "iaso.plannings.label.orgUnitsCount": "Nombre d'unités d'org.",

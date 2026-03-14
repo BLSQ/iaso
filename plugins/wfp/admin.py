@@ -154,7 +154,7 @@ class JourneyAdmin(admin.ModelAdmin):
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "number", "muac_size", "whz_color", "org_unit", "journey")
+    list_display = ("id", "date", "number", "entry_point", "oedema","muac_size", "whz_color", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",
@@ -186,11 +186,11 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "month",
         "year",
         "gender",
+        "physiology_status",
         "admission_criteria",
         "admission_type",
         "nutrition_programme",
         "programme_type",
-        "exit_type",
     )
     list_display = (
         "id",
@@ -201,27 +201,35 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "year",
         "period",
         "gender",
+        "physiology_status",
         "admission_criteria",
         "admission_type",
-        "beneficiary_with_admission_type",
         "nutrition_programme",
         "programme_type",
         "muac_under_11_5",
         "muac_11_5_12_4",
         "muac_above_12_5",
+        "muac_under_23",
+        "muac_above_23",
+        "oedema",
         "whz_score_3_2",
         "whz_score_2",
         "whz_score_3",
-        "oedema",
-        "muac_under_23",
-        "muac_above_23",
-        "exit_type",
-        "beneficiary_with_exit_type",
+        "admission_type_new_case",
+        "admission_type_admission_sc_itp_otp",
+        "admission_type_relapse",
+        "admission_type_returned_defaulter",
+        "admission_type_returned_referral",
+        "admission_type_transfer_from_other_tsfp",
+        "admission_type_transfer_sc_itp_otp",
+        "exit_type_cured",
+        "exit_type_death",
+        "exit_type_defaulter",
+        "exit_type_non_respondent",
+        "exit_type_transfer_in_from_other_tsfp",
+        "pregnant",
+        "breastfeeding",
         "number_visits",
-        "given_sachet_rusf",
-        "given_sachet_rutf",
-        "given_quantity_csb",
-        "given_ration_cbt",
     )
     search_fields = (
         "account__name",

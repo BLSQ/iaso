@@ -24,10 +24,23 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
+from django.db.models import (
+    Case,
+    CharField,
+    Count,
+    F,
+    FloatField,
+    Func,
+    Q,
+    Sum,
+    Value,
+    When,
+)
+from django.db.models.functions import Cast, Concat, ExtractMonth, ExtractYear
 
 from iaso.models import EntityType, TaskLog
 from iaso.models.base import Instance
-from plugins.wfp.models import Beneficiary, Journey, Step, Visit
+from plugins.wfp.models import Beneficiary, Journey, MonthlyStatistics, Step, Visit
 
 
 logger = logging.getLogger(__name__)
@@ -297,18 +310,25 @@ def extract_muac(data):
     return _first_of(data, "muac", "muac_size")
 
 
+def extract_visit_entry_point(submission):
+    """Extract the entry point for a beneficiary to know if she/he has been refered from community health worker."""
+    return (
+        submission.get("who_referred_green")
+        or submission.get("entry_point")
+        or submission.get("who_referred_severe")
+        or submission.get("_who_referred")
+    )
+
+
 def extract_whz_color(data):
     """Extract WHZ color from form data and normalize to full word."""
     raw = _first_of(data, "_Xwhz_color", "_Xfinal_color_result")
     return {"Y": "Yellow", "R": "Red", "G": "Green"}.get(raw, raw)
 
 
-def extract_oedema(data):
-    """Extract oedema indicator from form data."""
-    val = data.get("oedema")
-    if val is not None:
-        return _safe_float(val)
-    return None
+def is_oedema_visit(data):
+    """Check if the visit has oedema as criteria from form data."""
+    return int(extract_admission_criteria(data) == "oedema")
 
 
 def calculate_birth_date(data):
@@ -1118,9 +1138,10 @@ class ETLV2:
             number=visit_number,
             muac_size=extract_muac(anthro_data),
             whz_color=extract_whz_color(anthro_data),
-            oedema=extract_oedema(anthro_data),
+            oedema=is_oedema_visit(anthro_data),
             org_unit_id=anthro_sub.get("org_unit_id"),
             instance_id=anthro_sub["id"],
+            entry_point=extract_visit_entry_point(anthro_data),
         )
 
         steps = []
@@ -1178,3 +1199,328 @@ class ETLV2:
             )
         task.status = status
         task.save()
+
+    # --------------------------------------------------------------------------------------------------------
+    # Aggregating beneficiary journeys data by org unit and period(month and year extracted from visite date)
+    # --------------------------------------------------------------------------------------------------------
+    @staticmethod
+    def _retrieve_aggregated_journeys_data(
+        account, program_type, org_unit_with_updated_data, page_size=5000, page_number=1
+    ):
+
+        org_units = sorted(list(org_unit_with_updated_data))
+        paginator = Paginator(org_units, page_size)
+        current_page = paginator.get_page(page_number)
+        current_page_org_units = current_page.object_list
+
+        queryset = Visit.objects.filter(
+            date__isnull=False,
+            journey__programme_type=program_type,
+            journey__beneficiary__account=account,
+        ).select_related("journey", "org_unit")
+
+        if current_page_org_units is not None:
+            queryset = queryset.filter(org_unit_id__in=current_page_org_units)
+
+        queryset = queryset.annotate(
+            year=ExtractYear("journey__visit__date"),
+            month=ExtractMonth("journey__visit__date"),
+            muac_numeric=Cast("muac_size", output_field=FloatField()),
+            dhis2_id=F("org_unit__source_ref"),
+            nutrition_programme=F("journey__nutrition_programme"),
+            programme_type=F("journey__programme_type"),
+        ).annotate(
+            period=Concat(
+                F("year"),
+                Func(
+                    Cast(F("month"), CharField()),
+                    Value(2),
+                    Value("0"),
+                    function="LPAD",
+                ),
+                output_field=CharField(),
+            )
+        )
+
+        # Fields for Group By
+        fields = [
+            "period",
+            "org_unit_id",
+            "dhis2_id",
+            "programme_type",
+            "nutrition_programme",
+            "year",
+            "month",
+        ]
+
+        if program_type == "U5":
+            queryset = queryset.annotate(
+                gender=F("journey__beneficiary__gender"),
+            )
+            fields.append("gender")
+
+        elif program_type == "PLW":
+            queryset = queryset.annotate(
+                physiology_status=F("journey__physiology_status"),
+            )
+            fields.append("physiology_status")
+
+        queryset = (
+            queryset.values(*fields)
+            .annotate(
+                muac_under_11_5=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", muac_numeric__lt=11.5),
+                    distinct=True,
+                ),
+                muac_11_5_12_4=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", muac_numeric__range=(11.5, 12.4)),
+                    distinct=True,
+                ),
+                muac_above_12_5=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", muac_numeric__gte=12.5),
+                    distinct=True,
+                ),
+                muac_under_23=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="PLW", muac_numeric__lt=23),
+                    distinct=True,
+                ),
+                muac_above_23=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="PLW", muac_numeric__gte=23),
+                    distinct=True,
+                ),
+                whz_score_2=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(whz_color="Green"),
+                    distinct=True,
+                ),
+                whz_score_3=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", whz_color="Red"),
+                    distinct=True,
+                ),
+                whz_score_3_2=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__programme_type="U5", whz_color="Yellow"),
+                    distinct=True,
+                ),
+                oedema=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(
+                        journey__programme_type="U5",
+                        journey__admission_criteria="oedema",
+                    ),
+                    distinct=True,
+                ),
+                admission_type_new_case=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="new_case"),
+                    distinct=True,
+                ),
+                admission_type_relapse=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="relapse"),
+                    distinct=True,
+                ),
+                admission_type_returned_defaulter=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="returned_defaulter"),
+                    distinct=True,
+                ),
+                admission_type_returned_referral=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="returned_referral"),
+                    distinct=True,
+                ),
+                admission_type_transfer_from_other_tsfp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__admission_type="transfer_from_other_tsfp"),
+                    distinct=True,
+                ),
+                admission_type_admission_sc_itp_otp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(
+                        journey__admission_type__in=[
+                            "referred_from_sc",
+                            "referred_from_otp_sam",
+                        ]
+                    ),
+                    distinct=True,
+                ),
+                admission_type_transfer_sc_itp_otp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(
+                        journey__exit_type__in=[
+                            "transfer_to_sc_itp",
+                            "transferred_to_otp",
+                        ]
+                    ),
+                    distinct=True,
+                ),
+                exit_type_transfer_in_from_other_tsfp=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(
+                        journey__exit_type__in=[
+                            "transfer_from_other_tsfp",
+                            "transfer_to_tsfp",
+                        ]
+                    ),
+                    distinct=True,
+                ),
+                exit_type_cured=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="cured"),
+                    distinct=True,
+                ),
+                exit_type_death=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="death"),
+                    distinct=True,
+                ),
+                exit_type_defaulter=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="defaulter"),
+                    distinct=True,
+                ),
+                exit_type_non_respondent=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__exit_type="non_respondent"),
+                    distinct=True,
+                ),
+                pregnant=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__physiology_status="pregnant"),
+                    distinct=True,
+                ),
+                breastfeeding=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(journey__physiology_status="breastfeeding"),
+                    distinct=True,
+                ),
+                number_visits=Count("id", distinct=True),
+            )
+            .order_by("org_unit_id")
+        )
+        return queryset, current_page
+
+    # ------------------------------------------------------------------
+    # Recording aggregated monthly data by org unit and program type (U5 or PLW)
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _process_monthly_data(program_type, aggregated_data, account):
+        all_journeys = []
+        for row in aggregated_data:
+            journey_by_org_unit_period = MonthlyStatistics(
+                account=account,
+                programme_type=program_type,
+                org_unit_id=row["org_unit_id"],
+                dhis2_id=row["dhis2_id"],
+                month=row["month"],
+                year=row["year"],
+                period=row["period"],
+                gender=row.get("gender"),
+                physiology_status=row.get("physiology_status"),
+                nutrition_programme=row["nutrition_programme"],
+                # --- Clinical Indicators ---
+                oedema=row["oedema"],
+                muac_under_11_5=row.get("muac_under_11_5"),
+                muac_11_5_12_4=row.get("muac_11_5_12_4"),
+                muac_above_12_5=row.get("muac_above_12_5"),
+                muac_under_23=row.get("muac_under_23"),
+                muac_above_23=row.get("muac_above_23"),
+                whz_score_2=row.get("whz_score_2"),
+                whz_score_3=row.get("whz_score_3"),
+                whz_score_3_2=row.get("whz_score_3_2"),
+                # --- Admissions ---
+                admission_type_new_case=row["admission_type_new_case"],
+                admission_type_relapse=row["admission_type_relapse"],
+                admission_type_returned_defaulter=row["admission_type_returned_defaulter"],
+                admission_type_returned_referral=row["admission_type_returned_referral"],
+                admission_type_transfer_from_other_tsfp=row["admission_type_transfer_from_other_tsfp"],
+                admission_type_admission_sc_itp_otp=row["admission_type_admission_sc_itp_otp"],
+                admission_type_transfer_sc_itp_otp=row["admission_type_transfer_sc_itp_otp"],
+                exit_type_transfer_in_from_other_tsfp=row["exit_type_transfer_in_from_other_tsfp"],
+                # --- Exits ---
+                exit_type_cured=row["exit_type_cured"],
+                exit_type_death=row["exit_type_death"],
+                exit_type_defaulter=row["exit_type_defaulter"],
+                exit_type_non_respondent=row["exit_type_non_respondent"],
+                pregnant=row["pregnant"],
+                breastfeeding=row["breastfeeding"],
+                number_visits=row["number_visits"],
+            )
+            all_journeys.append(journey_by_org_unit_period)
+        return MonthlyStatistics.objects.bulk_create(all_journeys)
+
+    @staticmethod
+    def group_data_to_push_to_dhis2(account, org_unit_ids, page_size=5000, page_number=1):
+        monthlyStatistics = MonthlyStatistics.objects.prefetch_related("account", "org_unit").filter(account=account)
+
+        org_unit_ids = sorted(list(org_unit_ids))
+        paginator = Paginator(org_unit_ids, page_size)
+        current_page = paginator.get_page(page_number)
+        current_page_org_units = current_page.object_list
+
+        if current_page_org_units is not None and len(current_page_org_units) > 0:
+            monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=current_page_org_units)
+
+        monthlyStatistics = monthlyStatistics.annotate(
+            target_group=Case(
+                When(programme_type="U5", then=F("gender")),
+                When(programme_type="PLW", then=F("physiology_status")),
+                default=Value("Unknown"),
+            )
+        )
+
+        monthlyStatistics = (
+            monthlyStatistics.values(
+                "org_unit__name",
+                "org_unit__id",
+                "year",
+                "month",
+                "period",
+                "nutrition_programme",
+                "dhis2_id",
+                "target_group",
+            )
+            .annotate(
+                orgUnitId=F("org_unit__id"),
+                new_case=Sum("admission_type_new_case"),
+                relapse=Sum("admission_type_relapse"),
+                returned_defaulter=Sum("admission_type_returned_defaulter"),
+                returned_referral=Sum("admission_type_returned_referral"),
+                transfer_to_tsfp=Sum("admission_type_transfer_from_other_tsfp"),
+                admission_sc_itp_otp=Sum("admission_type_admission_sc_itp_otp"),
+                transfer_sc_itp_otp=Sum("admission_type_transfer_sc_itp_otp"),
+                transfer_from_other_tsfp=Sum("exit_type_transfer_in_from_other_tsfp"),
+                muac_under_11_5=Sum("muac_under_11_5"),
+                muac_11_5_12_4=Sum("muac_11_5_12_4"),
+                muac_above_12_5=Sum("muac_above_12_5"),
+                muac_under_23=Sum("muac_under_23"),
+                muac_above_23=Sum("muac_above_23"),
+                whz_score_2=Sum("whz_score_2"),
+                whz_score_3=Sum("whz_score_3"),
+                whz_score_3_2=Sum("whz_score_3_2"),
+                oedema=Sum("oedema"),
+                cured=Sum("exit_type_cured"),
+                death=Sum("exit_type_death"),
+                defaulter=Sum("exit_type_defaulter"),
+                non_respondent=Sum("exit_type_non_respondent"),
+                transfer_in_from_other_tsfp=Sum("exit_type_transfer_in_from_other_tsfp"),
+                pregnant=Sum("pregnant"),
+                breastfeeding=Sum("breastfeeding"),
+            )
+            .filter(target_group__isnull=False, dhis2_id__isnull=False)
+            .exclude(
+                Q(nutrition_programme__isnull=True)
+                | Q(nutrition_programme="")
+                | Q(nutrition_programme="Not Eligible")
+                | Q(nutrition_programme="OTP - Under 6")
+            )
+            .order_by("org_unit", "year", "month", "period")
+        )
+        return monthlyStatistics, current_page

@@ -326,12 +326,9 @@ def extract_whz_color(data):
     return {"Y": "Yellow", "R": "Red", "G": "Green"}.get(raw, raw)
 
 
-def extract_oedema(data):
-    """Extract oedema indicator from form data."""
-    val = data.get("oedema")
-    if val is not None:
-        return _safe_float(val)
-    return None
+def is_oedema_visit(data):
+    """Check if the visit has oedema as criteria from form data."""
+    return int(extract_admission_criteria(data) == "oedema")
 
 
 def calculate_birth_date(data):
@@ -1141,7 +1138,7 @@ class ETLV2:
             number=visit_number,
             muac_size=extract_muac(anthro_data),
             whz_color=extract_whz_color(anthro_data),
-            oedema=(1 if extract_admission_criteria(anthro_data) == "oedema" else extract_oedema(anthro_data)),
+            oedema=is_oedema_visit(anthro_data),
             org_unit_id=anthro_sub.get("org_unit_id"),
             instance_id=anthro_sub["id"],
             entry_point=extract_visit_entry_point(anthro_data),

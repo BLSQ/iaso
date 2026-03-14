@@ -1460,14 +1460,19 @@ class ETLV2:
         return MonthlyStatistics.objects.bulk_create(all_journeys)
 
     @staticmethod
-    def group_data_to_push_to_dhis2(account, org_unit_ids):
+    def group_data_to_push_to_dhis2(account, org_unit_ids, page_size=5000, page_number=1):
         monthlyStatistics = MonthlyStatistics.objects.prefetch_related("account", "org_unit").filter(account=account)
 
-        if org_unit_ids is not None and len(org_unit_ids) > 0:
-            monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=org_unit_ids)
+        org_unit_ids = sorted(list(org_unit_ids))
+        paginator = Paginator(org_unit_ids, page_size)
+        current_page = paginator.get_page(page_number)
+        current_page_org_units = current_page.object_list
+
+        if current_page_org_units is not None and len(current_page_org_units) > 0:
+            monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=current_page_org_units)
 
         monthlyStatistics = monthlyStatistics.annotate(
-            grouping_label=Case(
+            target_group=Case(
                 When(programme_type="U5", then=F("gender")),
                 When(programme_type="PLW", then=F("physiology_status")),
                 default=Value("Unknown"),
@@ -1483,9 +1488,10 @@ class ETLV2:
                 "period",
                 "nutrition_programme",
                 "dhis2_id",
-                "grouping_label",
+                "target_group",
             )
             .annotate(
+                orgUnitId=F("org_unit__id"),
                 new_case=Sum("admission_type_new_case"),
                 relapse=Sum("admission_type_relapse"),
                 returned_defaulter=Sum("admission_type_returned_defaulter"),
@@ -1511,7 +1517,7 @@ class ETLV2:
                 pregnant=Sum("pregnant"),
                 breastfeeding=Sum("breastfeeding"),
             )
-            .filter(grouping_label__isnull=False, dhis2_id__isnull=False)
+            .filter(target_group__isnull=False, dhis2_id__isnull=False)
             .exclude(
                 Q(nutrition_programme__isnull=True)
                 | Q(nutrition_programme="")
@@ -1520,4 +1526,4 @@ class ETLV2:
             )
             .order_by("org_unit", "year", "month", "period")
         )
-        return monthlyStatistics
+        return monthlyStatistics, current_page

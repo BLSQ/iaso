@@ -7,8 +7,8 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
-from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project, Task
-from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
+from iaso.models import EntityType, Form, Group, OrgUnit, OrgUnitType, Project, Task
+from iaso.models.microplanning import Assignment, Mission, MissionForm, MissionType, Planning, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
 
@@ -39,6 +39,181 @@ class NestedOrgUnitTypeSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
+class NestedFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Form
+        fields = ["id", "name"]
+        ref_name = "MicroplanningNestedForm"
+
+
+class NestedEntityTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityType
+        fields = ["id", "name"]
+        ref_name = "MicroplanningNestedEntityType"
+
+
+class MissionFormSerializer(serializers.ModelSerializer):
+    form = NestedFormSerializer(read_only=True)
+
+    class Meta:
+        model = MissionForm
+        fields = ["id", "form", "min_cardinality", "max_cardinality"]
+        read_only_fields = ["id"]
+
+
+class MissionFormWriteSerializer(serializers.Serializer):
+    form_id = serializers.PrimaryKeyRelatedField(queryset=Form.objects.all(), source="form")
+    min_cardinality = serializers.IntegerField(default=1, min_value=0)
+    max_cardinality = serializers.IntegerField(required=False, allow_null=True, min_value=0)
+
+    def validate(self, attrs):
+        min_val = attrs.get("min_cardinality", 0)
+        max_val = attrs.get("max_cardinality")
+        if max_val is not None and min_val > max_val:
+            raise serializers.ValidationError({"min_cardinality": "min must be ≤ max"})
+        return attrs
+
+
+class MissionReadSerializer(serializers.ModelSerializer):
+    mission_forms = MissionFormSerializer(many=True, read_only=True)
+    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
+    entity_type = NestedEntityTypeSerializer(read_only=True)
+
+    class Meta:
+        model = Mission
+        fields = [
+            "id",
+            "name",
+            "account",
+            "mission_type",
+            "mission_forms",
+            "org_unit_type",
+            "org_unit_min_cardinality",
+            "org_unit_max_cardinality",
+            "entity_type",
+            "entity_min_cardinality",
+            "entity_max_cardinality",
+            "created_by",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class MissionWriteSerializer(serializers.ModelSerializer):
+    mission_forms = MissionFormWriteSerializer(many=True, required=False)
+
+    class Meta:
+        model = Mission
+        fields = [
+            "id",
+            "name",
+            "mission_type",
+            "mission_forms",
+            "org_unit_type",
+            "org_unit_min_cardinality",
+            "org_unit_max_cardinality",
+            "entity_type",
+            "entity_min_cardinality",
+            "entity_max_cardinality",
+        ]
+        read_only_fields = ["id"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context["request"].user
+        account = user.iaso_profile.account
+        self.fields["org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
+        self.fields["entity_type"].queryset = EntityType.objects.filter(account=account)
+
+    def _validate_cardinality(self, attrs, errors, prefix):
+        min_val = attrs.get(f"{prefix}_min_cardinality")
+        max_val = attrs.get(f"{prefix}_max_cardinality")
+        if min_val is not None and max_val is not None and min_val > max_val:
+            errors[f"{prefix}_min_cardinality"] = "min must be ≤ max"
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        user = self.context["request"].user
+        validated_data["account"] = user.iaso_profile.account
+        validated_data["created_by"] = user
+        errors = {}
+        mission_type = validated_data.get("mission_type")
+
+        if mission_type == MissionType.FORM_FILLING:
+            if not validated_data.get("mission_forms"):
+                errors["mission_forms"] = "At least one form is required for FORM_FILLING missions."
+
+        elif mission_type == MissionType.ORG_UNIT_AND_FORM:
+            if not validated_data.get("org_unit_type"):
+                errors["org_unit_type"] = "Required for ORG_UNIT_AND_FORM missions."
+            self._validate_cardinality(validated_data, errors, "org_unit")
+
+        elif mission_type == MissionType.ENTITY_AND_FORM:
+            if not validated_data.get("entity_type"):
+                errors["entity_type"] = "Required for ENTITY_AND_FORM missions."
+            self._validate_cardinality(validated_data, errors, "entity")
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return validated_data
+
+    def _save_mission_forms(self, mission, mission_forms_data):
+        mission.mission_forms.all().delete()
+        for mf_data in mission_forms_data:
+            MissionForm.objects.create(
+                mission=mission,
+                form=mf_data["form"],
+                min_cardinality=mf_data.get("min_cardinality", 1),
+                max_cardinality=mf_data.get("max_cardinality"),
+            )
+
+    def create(self, validated_data):
+        mission_forms_data = validated_data.pop("mission_forms", [])
+        mission = super().create(validated_data)
+        self._save_mission_forms(mission, mission_forms_data)
+        return mission
+
+    def update(self, instance, validated_data):
+        mission_forms_data = validated_data.pop("mission_forms", None)
+        mission = super().update(instance, validated_data)
+        if mission_forms_data is not None:
+            self._save_mission_forms(mission, mission_forms_data)
+        return mission
+
+
+class AuditMissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mission
+        fields = "__all__"
+
+
+class NestedMissionSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for embedding in PlanningReadSerializer."""
+
+    mission_forms = MissionFormSerializer(many=True, read_only=True)
+    org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
+    entity_type = NestedEntityTypeSerializer(read_only=True)
+
+    class Meta:
+        model = Mission
+        fields = [
+            "id",
+            "name",
+            "mission_type",
+            "mission_forms",
+            "org_unit_type",
+            "org_unit_min_cardinality",
+            "org_unit_max_cardinality",
+            "entity_type",
+            "entity_min_cardinality",
+            "entity_max_cardinality",
+        ]
+        read_only_fields = fields
+
+
 class NestedPlanningSamplingResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlanningSamplingResult
@@ -63,7 +238,7 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         self.fields["project"].queryset = account.project_set.all()
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
+        self.fields["missions"].child_relation.queryset = Mission.objects.filter_for_user(user)
         self.fields["target_org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
 
     def validate(self, attrs):
@@ -91,10 +266,13 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         if team.project != project:
             validation_errors["team"] = "planningAndTeams"
 
-        forms = validated_data.get("forms", list(self.instance.forms.all()) if self.instance else None)
-        project_forms = project.forms.all()
-        if forms and not all(f in project_forms for f in forms):
-            validation_errors["forms"] = "planningAndForms"
+        missions = validated_data.get("missions", list(self.instance.missions.all()) if self.instance else None)
+        if missions:
+            account = project.account
+            for mission in missions:
+                if mission.account != account:
+                    validation_errors["missions"] = "missionNotInAccount"
+                    break
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:
@@ -128,13 +306,14 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
 
 class PlanningReadSerializer(serializers.ModelSerializer):
     assignments_count = serializers.SerializerMethodField()
+    missions = NestedMissionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Planning
         fields = [
             "id",
             "name",
-            "forms",
+            "missions",
             "description",
             "published_at",
             "started_at",
@@ -423,18 +602,22 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
     def get_assignments(self, planning: Planning):
         user = self.context["request"].user
         r = []
-        planning_form_set = set(planning.forms.values_list("id", flat=True))
+        # Derive form_ids from missions for backward compatibility
+        planning_form_ids = set()
+        for mission in planning.missions.prefetch_related("mission_forms").all():
+            planning_form_ids.update(mission.mission_forms.values_list("form_id", flat=True))
+
         forms_per_ou_type = {}
         for out in OrgUnitType.objects.filter(projects__account=user.iaso_profile.account):
             out_set = set(out.form_set.values_list("id", flat=True))
-            intersection = out_set.intersection(planning_form_set)
-            forms_per_ou_type[out.id] = (
-                intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
-            )
+            intersection = out_set.intersection(planning_form_ids)
+            forms_per_ou_type[out.id] = intersection
 
         for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user).prefetch_related("org_unit"):
             # TODO: investigate type error on next line
-            r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
+            r.append(
+                {"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type.get(a.org_unit.org_unit_type_id, set())}
+            )  # type: ignore
         return r
 
 

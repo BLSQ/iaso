@@ -11,7 +11,7 @@ from rest_framework import status
 from hat.audit.models import Modification
 from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningWriteSerializer
 from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, SourceVersion, Task
-from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
+from iaso.models.microplanning import Assignment, Mission, MissionForm, MissionType, Planning, PlanningSamplingResult
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase
@@ -41,6 +41,18 @@ class PlanningTestCase(APITestCase):
         cls.form2 = Form.objects.create(name="form2")
         cls.form1.projects.add(project1)
         cls.form2.projects.add(project1)
+        cls.mission1 = Mission.objects.create(
+            name="mission1",
+            account=account,
+            mission_type=MissionType.FORM_FILLING,
+        )
+        MissionForm.objects.create(mission=cls.mission1, form=cls.form1, min_cardinality=1, max_cardinality=1)
+        cls.mission2 = Mission.objects.create(
+            name="mission2",
+            account=account,
+            mission_type=MissionType.FORM_FILLING,
+        )
+        MissionForm.objects.create(mission=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1)
         cls.planning = Planning.objects.create(
             project=project1,
             name="planning1",
@@ -86,7 +98,7 @@ class PlanningTestCase(APITestCase):
                     "name": self.org_unit.name,
                     "org_unit_type": self.org_unit.org_unit_type,
                 },
-                "forms": [],
+                "missions": [],
                 "description": "",
                 "published_at": None,
                 "started_at": "2025-01-01",
@@ -126,7 +138,7 @@ class PlanningTestCase(APITestCase):
             data={
                 "name": "My Planning",
                 "org_unit": org_unit.id,
-                "forms": [self.form1.id, self.form2.id],
+                "missions": [self.mission1.id, self.mission2.id],
                 "team": self.team1.id,
                 "team_details": {"id": self.team1.id, "name": self.team1.name},
                 "project": self.project1.id,
@@ -141,7 +153,7 @@ class PlanningTestCase(APITestCase):
             data={
                 "name": "My Planning",
                 "org_unit": org_unit.id,
-                "forms": [self.form1.id, self.form2.id],
+                "missions": [self.mission1.id, self.mission2.id],
                 "team": self.team1.id,
                 "project": self.project1.id,
                 "project_details": {"id": self.project1.id, "name": self.project1.name},
@@ -155,7 +167,7 @@ class PlanningTestCase(APITestCase):
             data={
                 "name": "My Planning",
                 "org_unit": org_unit.id,
-                "forms": [self.form1.id, self.form2.id],
+                "missions": [self.mission1.id, self.mission2.id],
                 "team": self.other_team.id,
                 "project": self.project1.id,
                 "project_details": {"id": self.project1.id, "name": self.project1.name},
@@ -179,7 +191,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
         data = {
             "name": "My Planning",
-            "forms": [self.form1.id, self.form2.id],
+            "missions": [self.mission1.id, self.mission2.id],
             "team": self.team1.id,
             "team_details": {"id": self.team1.id, "name": self.team1.name},
             "started_at": "2022-02-02",
@@ -192,11 +204,11 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(Modification.objects.all().count(), 1)
         planning.refresh_from_db()
         self.assertEqual(planning.name, "My Planning")
-        self.assertQuerySetEqual(planning.forms.all(), [self.form1, self.form2], ordered=False)
+        self.assertQuerySetEqual(planning.missions.all(), [self.mission1, self.mission2], ordered=False)
 
         mod = Modification.objects.last()
-        self.assertEqual(mod.past_value[0]["forms"], [])
-        self.assertEqual(mod.new_value[0]["forms"], [self.form1.id, self.form2.id])
+        self.assertEqual(mod.past_value[0]["missions"], [])
+        self.assertEqual(sorted(mod.new_value[0]["missions"]), sorted([self.mission1.id, self.mission2.id]))
 
     def test_patch_api__throw_error_if_published_and_no_started_date(self):
         planning = Planning.objects.create(
@@ -211,7 +223,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
         data = {
             "name": "My Planning",
-            "forms": [self.form1.id, self.form2.id],
+            "missions": [self.mission1.id, self.mission2.id],
             "team": self.team1.id,
             "team_details": {"id": self.team1.id, "name": self.team1.name},
             "published_at": "2022-02-02",
@@ -235,7 +247,7 @@ class PlanningTestCase(APITestCase):
         self.client.force_authenticate(user_with_perms)
         data = {
             "name": "My Planning",
-            "forms": [self.form1.id, self.form2.id],
+            "missions": [self.mission1.id, self.mission2.id],
             "team": self.team1.id,
             "team_details": {"id": self.team1.id, "name": self.team1.name},
             "published_at": "2022-02-02",
@@ -254,7 +266,7 @@ class PlanningTestCase(APITestCase):
         data = {
             "name": "My Planning",
             "org_unit": self.org_unit.id,
-            "forms": [self.form1.id, self.form2.id],
+            "missions": [self.mission1.id, self.mission2.id],
             "team": self.team1.id,
             "team_details": {"id": self.team1.id, "name": self.team1.name},
             "project": self.project1.id,
@@ -282,7 +294,7 @@ class PlanningTestCase(APITestCase):
                 "org_unit": self.org_unit.id,
                 "team": self.team1.id,
                 "project": self.project1.id,
-                "forms": [self.form1.id, self.form2.id],
+                "missions": [self.mission1.id, self.mission2.id],
                 "pipeline_uuids": valid_uuids,
             },
         )
@@ -307,7 +319,7 @@ class PlanningTestCase(APITestCase):
                 "org_unit": self.org_unit.id,
                 "team": self.team1.id,
                 "project": self.project1.id,
-                "forms": [self.form1.id, self.form2.id],
+                "missions": [self.mission1.id, self.mission2.id],
                 "pipeline_uuids": ["invalid-uuid", "not-a-uuid"],
             },
         )
@@ -328,7 +340,7 @@ class PlanningTestCase(APITestCase):
                 "org_unit": self.org_unit.id,
                 "team": self.team1.id,
                 "project": self.project1.id,
-                "forms": [self.form1.id, self.form2.id],
+                "missions": [self.mission1.id, self.mission2.id],
                 "pipeline_uuids": "not-a-list",
             },
         )
@@ -364,7 +376,7 @@ class PlanningTestCase(APITestCase):
             "org_unit": self.org_unit.id,
             "team": self.team1.id,
             "project": self.project1.id,
-            "forms": [self.form1.id, self.form2.id],
+            "missions": [self.mission1.id, self.mission2.id],
             "pipeline_uuids": test_uuids,
         }
 
@@ -424,7 +436,7 @@ class PlanningTestCase(APITestCase):
             "org_unit": root_org_unit.id,
             "team": self.team1.id,
             "project": self.project1.id,
-            "forms": [self.form1.id],
+            "missions": [self.mission1.id],
             "target_org_unit_type": org_unit_type.id,
         }
 
@@ -469,7 +481,7 @@ class PlanningTestCase(APITestCase):
                 "org_unit": root_org_unit.id,
                 "team": self.team1.id,
                 "project": self.project1.id,
-                "forms": [self.form1.id],
+                "missions": [self.mission1.id],
                 "target_org_unit_type": org_unit_type.id,
             },
         )
@@ -529,7 +541,7 @@ class PlanningTestCase(APITestCase):
             "org_unit": self.org_unit.id,
             "team": self.team1.id,
             "project": self.project1.id,
-            "forms": [self.form1.id],
+            "missions": [self.mission1.id],
             "target_org_unit_type": org_unit_type.id,
         }
 
@@ -800,7 +812,7 @@ class PlanningTestCase(APITestCase):
                 "org_unit": self.org_unit.id,
                 "team": self.team1.id,
                 "project": self.project1.id,
-                "forms": [self.form1.id],
+                "missions": [self.mission1.id],
                 "target_org_unit_type": org_unit_type.id,
             },
         )
@@ -847,7 +859,7 @@ class PlanningTestCase(APITestCase):
             "org_unit": root_org_unit.id,
             "team": self.team1.id,
             "project": self.project1.id,
-            "forms": [self.form1.id],
+            "missions": [self.mission1.id],
             "target_org_unit_type": org_unit_type_no_descendants.id,
         }
 
@@ -881,7 +893,7 @@ class PlanningTestCase(APITestCase):
             "org_unit": root_org_unit.id,
             "team": self.team1.id,
             "project": self.project1.id,
-            "forms": [self.form1.id],
+            "missions": [self.mission1.id],
             "target_org_unit_type": target_type.id,
         }
 

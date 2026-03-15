@@ -10,7 +10,7 @@ from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
 from .instances import Instance, InstanceFile, InstanceLock, InstanceQuerySet
 from .metric import MetricType, MetricValue
-from .microplanning import Planning
+from .microplanning import Mission, MissionForm, Planning
 from .openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitReferenceInstance, OrgUnitType
 from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
@@ -68,6 +68,8 @@ __all__ = [
     "KilledException",
     "MetricType",
     "MetricValue",
+    "Mission",
+    "MissionForm",
     "OpenHEXAInstance",
     "OpenHEXAWorkspace",
     "OrgUnit",

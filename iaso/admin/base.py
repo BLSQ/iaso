@@ -94,7 +94,7 @@ from ..models import (
 )
 from ..models.data_store import JsonDataStore
 from ..models.form_ai import TemporaryForm
-from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
+from ..models.microplanning import Assignment, Mission, MissionForm, Planning, PlanningSamplingResult
 from ..models.team import Team
 from ..models.validation_workflow import ValidationNode
 from ..utils.gis import convert_2d_point_to_3d
@@ -697,6 +697,23 @@ class EntityTypeAdmin(admin.ModelAdmin):
     )
 
 
+class MissionFormInline(admin.TabularInline):
+    model = MissionForm
+    extra = 1
+    raw_id_fields = ("form",)
+
+
+@admin.register(Mission)
+@admin_attr_decorator
+class MissionAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "mission_type", "account", "org_unit_type", "entity_type")
+    list_filter = ("mission_type", "account")
+    search_fields = ("name",)
+    raw_id_fields = ("org_unit_type", "entity_type", "created_by")
+    readonly_fields = ("created_at", "updated_at")
+    inlines = [MissionFormInline]
+
+
 @admin.register(Planning)
 @admin_attr_decorator
 class PlanningAdmin(admin.ModelAdmin):
@@ -721,7 +738,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "name",
                     "description",
                     "project",
-                    "forms",
+                    "missions",
                     "org_unit",
                     "team",
                     "started_at",

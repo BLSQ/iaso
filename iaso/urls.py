@@ -80,6 +80,7 @@ from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
 from .api.microplanning.views import (
     AssignmentViewSet,
+    MissionViewSet,
     PlanningOrgunitsViewSet,
     PlanningSamplingResultViewSet,
     PlanningViewSet,
@@ -231,6 +232,7 @@ router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entitydup
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
+router.register(r"microplanning/missions", MissionViewSet, basename="missions")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
     r"orgunits",
     PlanningOrgunitsViewSet,

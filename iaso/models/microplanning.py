@@ -3,6 +3,8 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 
+from iaso.models.base import Account
+from iaso.models.entity import EntityType
 from iaso.models.forms import Form
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
@@ -35,6 +37,69 @@ class PlanningSamplingResult(models.Model):
         verbose_name_plural = "Sampling Results"
 
 
+class MissionType(models.TextChoices):
+    FORM_FILLING = "FORM_FILLING", "Form Filling"
+    ORG_UNIT_AND_FORM = "ORG_UNIT_AND_FORM", "Org Unit and Form"
+    ENTITY_AND_FORM = "ENTITY_AND_FORM", "Entity and Form"
+
+
+class MissionQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User):
+        return self.filter(account=user.iaso_profile.account)
+
+
+class Mission(SoftDeletableModel):
+    objects = MissionQuerySet.as_manager()
+
+    class Meta:
+        ordering = ("name",)
+
+    name = models.CharField(max_length=200)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="missions")
+    mission_type = models.CharField(max_length=30, choices=MissionType.choices)
+
+    # Forms to fill, with per-form cardinality via through model
+    forms = models.ManyToManyField(Form, blank=True, through="MissionForm", related_name="missions")
+
+    # For ORG_UNIT_AND_FORM
+    org_unit_type = models.ForeignKey(
+        OrgUnitType, on_delete=models.PROTECT, null=True, blank=True, related_name="missions"
+    )
+    org_unit_min_cardinality = models.PositiveIntegerField(null=True, blank=True)
+    org_unit_max_cardinality = models.PositiveIntegerField(null=True, blank=True)
+
+    # For ENTITY_AND_FORM
+    entity_type = models.ForeignKey(
+        EntityType, on_delete=models.PROTECT, null=True, blank=True, related_name="missions"
+    )
+    entity_min_cardinality = models.PositiveIntegerField(null=True, blank=True)
+    entity_max_cardinality = models.PositiveIntegerField(null=True, blank=True)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class MissionForm(models.Model):
+    """Through model: each form in a mission has its own cardinality."""
+
+    class Meta:
+        ordering = ("id",)
+        unique_together = [("mission", "form")]
+
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE, related_name="mission_forms")
+    form = models.ForeignKey(Form, on_delete=models.PROTECT, related_name="mission_forms")
+    min_cardinality = models.PositiveIntegerField(
+        default=1, help_text="Minimum number of times this form should be filled"
+    )
+    max_cardinality = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Maximum number of times this form can be filled (null = unlimited)"
+    )
+
+
 class PlanningQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         return self.filter(project__account=user.iaso_profile.account)
@@ -51,7 +116,7 @@ class Planning(SoftDeletableModel):
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    forms = models.ManyToManyField(Form, related_name="plannings")
+    missions = models.ManyToManyField(Mission, blank=True, related_name="plannings")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
     target_org_unit_type = models.ForeignKey(

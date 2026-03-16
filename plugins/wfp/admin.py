@@ -154,7 +154,7 @@ class JourneyAdmin(admin.ModelAdmin):
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "number", "entry_point", "oedema","muac_size", "whz_color", "org_unit", "journey")
+    list_display = ("id", "date", "number", "entry_point", "oedema", "muac_size", "whz_color", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",
@@ -215,6 +215,11 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "whz_score_3_2",
         "whz_score_2",
         "whz_score_3",
+        "community_health_worker_muac_under_11_5",
+        "community_health_worker_muac_11_5_12_4",
+        "community_health_worker_oedema",
+        "community_health_worker_muac_under_23",
+        "community_health_worker_muac_above_23",
         "admission_type_new_case",
         "admission_type_admission_sc_itp_otp",
         "admission_type_relapse",

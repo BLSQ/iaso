@@ -124,14 +124,14 @@ class Visit(models.Model):
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
     muac_size = models.CharField(max_length=10, null=True, db_index=True)
     whz_color = models.CharField(max_length=10, null=True, db_index=True)
-    oedema = models.FloatField(null=True)
+    oedema = models.IntegerField(null=True)
     entry_point = models.TextField(null=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
     class Meta:
         indexes = [
             models.Index(fields=["org_unit", "date", "journey"]),
-            models.Index(fields=["muac_size", "whz_color"]),
+            models.Index(fields=["muac_size", "whz_color","oedema"]),
         ]
 
 
@@ -165,6 +165,11 @@ class MonthlyStatistics(models.Model):
     whz_score_2 = models.IntegerField(null=True)  # WHZ greater than -2 (green)
     whz_score_3 = models.IntegerField(null=True)  # WHZ less than -3 (red)
     whz_score_3_2 = models.IntegerField(null=True)  # WHZ between -2 and -3 (yellow)
+    community_health_worker_muac_under_11_5 = models.IntegerField(null=True)
+    community_health_worker_muac_11_5_12_4 = models.IntegerField(null=True)
+    community_health_worker_oedema = models.IntegerField(null=True)
+    community_health_worker_muac_under_23 = models.IntegerField(null=True)
+    community_health_worker_muac_above_23 = models.IntegerField(null=True)
     admission_type_new_case = models.IntegerField(null=True)
     admission_type_relapse = models.IntegerField(null=True)
     admission_type_returned_defaulter = models.IntegerField(null=True)

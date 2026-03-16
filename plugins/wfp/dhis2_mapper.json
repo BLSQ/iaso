@@ -386,5 +386,47 @@
                 "categoryOptionCombo": "XsjPXECqmLy"
             }
         }
+    },
+    "community_health_worker": {
+        "Male": {
+            "community_health_worker_muac_under_11_5": {
+                "dataElement": "bv1zhOHlETS",
+                "categoryOptionCombo": "kMd7Ez58tmn"
+            },
+            "community_health_worker_muac_11_5_12_4": {
+                "dataElement": "bv1zhOHlETS",
+                "categoryOptionCombo": "lcS9Ye2NYqP"
+            },
+            "community_health_worker_oedema": {
+                "dataElement": "CzQksV9Wipk",
+                "categoryOptionCombo": "OUXxVEWIxuM"
+            }
+        },
+        "Female": {
+            "community_health_worker_muac_under_11_5": {
+                "dataElement": "bv1zhOHlETS",
+                "categoryOptionCombo": "wyHzkga86Vd"
+            },
+            "community_health_worker_muac_11_5_12_4": {
+                "dataElement": "bv1zhOHlETS",
+                "categoryOptionCombo": "fiyKPmny0Vi"
+            },
+            "community_health_worker_oedema": {
+                "dataElement": "CzQksV9Wipk",
+                "categoryOptionCombo": "qvjvq1hK7Lc"
+            }
+        },
+        "pregnant": {
+            "muac_under_23": {
+                "dataElement": "bEEy3eKKM7Q",
+                "categoryOptionCombo": "wegLiifhZWx"
+            }
+        },
+        "breastfeeding": {
+            "muac_under_23": {
+                "dataElement": "bEEy3eKKM7Q",
+                "categoryOptionCombo": "xdEOX113CTu"
+            }
+        }
     }
 }

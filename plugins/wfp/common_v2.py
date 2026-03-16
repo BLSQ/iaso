@@ -1308,12 +1308,38 @@ class ETLV2:
                     filter=Q(journey__programme_type="U5", whz_color="Yellow"),
                     distinct=True,
                 ),
-                oedema=Count(
+                oedema_cases=Count(
                     "journey__beneficiary_id",
                     filter=Q(
                         journey__programme_type="U5",
                         journey__admission_criteria="oedema",
                     ),
+                    distinct=True,
+                ),
+                community_health_worker_muac_under_11_5=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(
+                        entry_point="community_health_worker", journey__programme_type="U5", muac_numeric__lt=11.5
+                    ),
+                    distinct=True,
+                ),
+                community_health_worker_muac_11_5_12_4=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(
+                        entry_point="community_health_worker",
+                        journey__programme_type="U5",
+                        muac_numeric__range=(11.5, 12.4),
+                    ),
+                    distinct=True,
+                ),
+                community_health_worker_oedema=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(entry_point="community_health_worker", journey__programme_type="U5", oedema=1),
+                    distinct=True,
+                ),
+                community_health_worker_muac_under_23=Count(
+                    "journey__beneficiary_id",
+                    filter=Q(entry_point="community_health_worker", journey__programme_type="PLW", muac_numeric__lt=23),
                     distinct=True,
                 ),
                 admission_type_new_case=Count(
@@ -1426,7 +1452,7 @@ class ETLV2:
                 physiology_status=row.get("physiology_status"),
                 nutrition_programme=row["nutrition_programme"],
                 # --- Clinical Indicators ---
-                oedema=row["oedema"],
+                oedema=row["oedema_cases"],
                 muac_under_11_5=row.get("muac_under_11_5"),
                 muac_11_5_12_4=row.get("muac_11_5_12_4"),
                 muac_above_12_5=row.get("muac_above_12_5"),
@@ -1435,6 +1461,11 @@ class ETLV2:
                 whz_score_2=row.get("whz_score_2"),
                 whz_score_3=row.get("whz_score_3"),
                 whz_score_3_2=row.get("whz_score_3_2"),
+                community_health_worker_muac_under_11_5=row.get("community_health_worker_muac_under_11_5"),
+                community_health_worker_muac_11_5_12_4=row.get("community_health_worker_muac_11_5_12_4"),
+                community_health_worker_oedema=row.get("community_health_worker_oedema"),
+                community_health_worker_muac_under_23=row.get("community_health_worker_muac_under_23"),
+                community_health_worker_muac_above_23=row.get("community_health_worker_muac_above_23"),
                 # --- Admissions ---
                 admission_type_new_case=row["admission_type_new_case"],
                 admission_type_relapse=row["admission_type_relapse"],
@@ -1506,6 +1537,11 @@ class ETLV2:
                 whz_score_3=Sum("whz_score_3"),
                 whz_score_3_2=Sum("whz_score_3_2"),
                 oedema=Sum("oedema"),
+                community_health_worker_muac_under_11_5=Sum("community_health_worker_muac_under_11_5"),
+                community_health_worker_muac_11_5_12_4=Sum("community_health_worker_muac_11_5_12_4"),
+                community_health_worker_oedema=Sum("community_health_worker_oedema"),
+                community_health_worker_muac_under_23=Sum("community_health_worker_muac_under_23"),
+                community_health_worker_muac_above_23=Sum("community_health_worker_muac_above_23"),
                 cured=Sum("exit_type_cured"),
                 death=Sum("exit_type_death"),
                 defaulter=Sum("exit_type_defaulter"),

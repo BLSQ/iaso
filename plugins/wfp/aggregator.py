@@ -35,6 +35,11 @@ FIELDS = [
     "death",
     "defaulter",
     "non_respondent",
+    "community_health_worker_muac_under_11_5",
+    "community_health_worker_muac_11_5_12_4",
+    "community_health_worker_oedema",
+    "community_health_worker_muac_under_23",
+    "community_health_worker_muac_above_23",
 ]
 PAGE_SIZE = 5000
 

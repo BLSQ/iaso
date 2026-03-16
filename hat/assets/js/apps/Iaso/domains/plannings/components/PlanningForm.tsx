@@ -163,7 +163,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
             forms,
             project,
             description,
-            publishingStatus',
+            publishingStatus,
             pipelineUuids,
             targetOrgUnitType,
         },
@@ -305,7 +305,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                 onClose={() => {}}
                 onCancel={() => {}}
                 closeDialog={() => setDisplayWarning(false)}
-                titleMessage={formatMessage(MESSAGES.plaanningWarningTitle)}
+                titleMessage={formatMessage(MESSAGES.planningWarningTitle)}
             >
                 {formatMessage(MESSAGES.planningWarningMessage)}
             </ConfirmCancelModal>{' '}

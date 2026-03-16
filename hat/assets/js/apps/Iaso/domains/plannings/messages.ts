@@ -351,7 +351,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Confirm',
         id: 'iaso.label.confirm',
     },
-    plaanningWarningTitle: {
+    planningWarningTitle: {
         defaultMessage: 'Adapt planning dates or status',
         id: 'iaso.planning.label.planningWarningTitle',
     },

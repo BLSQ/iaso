@@ -546,6 +546,7 @@
     "iaso.label.compareDuplicates": "Comparer les doublons",
     "iaso.label.config": "Admin",
     "iaso.label.configuration": "Configuration",
+    "iaso.label.configureInstancesValidation": "Configurer la validation des soumissions",
     "iaso.label.confirm": "Valider",
     "iaso.label.confirmApplyFormGpsToOrgUnit": "Appliquer directement les GPS de la soumission à l'unité d'org.",
     "iaso.label.copyToClipboard": "Copier dans le presse-papiers",

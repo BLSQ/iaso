@@ -1,4 +1,6 @@
 import React, { ReactElement } from 'react';
+
+import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
@@ -53,7 +55,7 @@ import Tasks from '../domains/tasks';
 import { Teams } from '../domains/teams';
 import { UserRoles } from '../domains/userRoles';
 import { Users } from '../domains/users';
-import { Details as UserDetails } from "../domains/users/details";
+import { Details as UserDetails } from '../domains/users/details';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
@@ -131,6 +133,12 @@ export const instancesPath = {
     routerUrl: `${baseUrls.instances}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <Instances />,
+};
+export const instancesValidationPath = {
+    baseUrl: baseUrls.instanceValidation,
+    routerUrl: `${baseUrls.instanceValidation}/*`,
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
+    element: <SubmissionValidation />,
 };
 
 export const instanceDetailPath = {
@@ -516,6 +524,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    instancesValidationPath,
     compareInstanceLogsPath,
     compareInstancesPath,
     orgUnitsPath,

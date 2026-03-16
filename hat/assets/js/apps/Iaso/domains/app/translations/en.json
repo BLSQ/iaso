@@ -545,6 +545,7 @@
     "iaso.label.compareDuplicates": "Compare duplicates",
     "iaso.label.config": "Admin",
     "iaso.label.configuration": "Configuration",
+    "iaso.label.configureInstancesValidation": "Configure validation of submissions",
     "iaso.label.confirm": "Confirm",
     "iaso.label.confirmApplyFormGpsToOrgUnit": "Apply directly gps from form to org unit",
     "iaso.label.copyToClipboard": "Copy to clipboard",

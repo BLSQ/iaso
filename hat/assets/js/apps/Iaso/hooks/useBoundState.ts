@@ -1,8 +1,8 @@
-import isEqual from 'lodash/isEqual';
 import { useEffect, useState } from 'react';
+import isEqual from 'lodash/isEqual';
 // TODO: maybe put this one outside of the domain to use it somewhere else
 
-export const useBoundState = <T extends unknown>(
+export const useBoundState = <T>(
     initialValue: T,
     boundValue: T,
 ): [T, (newValue: T) => void] => {

@@ -1,13 +1,13 @@
 from django.db.models import Prefetch
 from rest_framework.decorators import action
-from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.permissions import BasePermission
+from rest_framework.viewsets import GenericViewSet
 
-from iaso.api.common import ModelViewSet
-from iaso.api.instances.instances import HasInstancePermission, InstanceFileSerializer
-from iaso.api.instances.serializers import FileTypeSerializer
-from iaso.api.mobile.org_units import ReferenceInstancesSerializer
+from iaso.api.common import Paginator
+from iaso.api.instances.instances import HasInstancePermission
+from iaso.api.instances.serializers import FileTypeSerializer, InstanceFileSerializer, MobileInstancesSerializer
 from iaso.models import (
     Instance,
     InstanceFile,
@@ -24,16 +24,19 @@ class DenyAll(BasePermission):
         return False
 
 
-class InstancesMobileViewSet(ModelViewSet):
+class InstancesMobileViewSet(GenericViewSet, RetrieveModelMixin):
     """Mobile Instances API
 
+    GET /api/mobile/instances/<id>/
     GET /api/mobile/instances/<id>/attachments
     """
 
     permission_classes = [HasInstancePermission]
     http_method_names = ["get"]
     lookup_field = "uuid"
-    serializer_class = ReferenceInstancesSerializer
+    lookup_url_kwarg = "uuid"
+    serializer_class = MobileInstancesSerializer
+    pagination_class = Paginator
 
     def get_queryset(self):
         request = self.request
@@ -44,15 +47,16 @@ class InstancesMobileViewSet(ModelViewSet):
         )
         return queryset
 
-    def list(self, request, *args, **kwargs):
-        raise MethodNotAllowed("GET")
-
-    @action(["GET"], detail=True, permission_classes=[HasInstancePermission])
-    def attachments(self, request, uuid):
+    def get_object(self):
+        uuid = self.kwargs.get(self.lookup_field)
         try:
-            instance = self.get_queryset().get(uuid=uuid)
+            return self.get_queryset().get(uuid=uuid)
         except Instance.DoesNotExist:
-            instance = get_object_or_404(self.get_queryset(), pk=uuid)
+            return get_object_or_404(self.get_queryset(), pk=uuid)
+
+    @action(["GET"], detail=True)
+    def attachments(self, request, uuid):
+        instance = self.get_object()
 
         file_type_serializer = FileTypeSerializer(data=request.query_params)
         file_type_serializer.is_valid(raise_exception=True)

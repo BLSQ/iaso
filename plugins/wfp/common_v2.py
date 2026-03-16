@@ -1610,7 +1610,7 @@ class ETLV2:
             key = (monthlyStatistic["org_unit__id"], monthlyStatistic["period"])
             screening = screening_data.get(key, {})
             screening_values = {}
-            refered_from_community_health_worker = {}
+            community_health_worker_values = {}
             target_group = monthlyStatistic["target_group"]
             if target_group == "Male":
                 screening_values = {
@@ -1618,7 +1618,7 @@ class ETLV2:
                     "u5_male_yellow": screening.get("u5_male_yellow"),
                     "u5_male_red": screening.get("u5_male_red"),
                 }
-                refered_from_community_health_worker = {
+                community_health_worker_values = {
                     "muac_under_11_5": monthlyStatistic["community_health_worker_muac_under_11_5_male"],
                     "muac_11_5_12_4": monthlyStatistic["community_health_worker_muac_11_5_12_4_male"],
                     "oedema": monthlyStatistic["community_health_worker_oedema_male"],
@@ -1629,7 +1629,7 @@ class ETLV2:
                     "u5_female_yellow": screening.get("u5_female_yellow"),
                     "u5_female_red": screening.get("u5_female_red"),
                 }
-                refered_from_community_health_worker = {
+                community_health_worker_values = {
                     "muac_under_11_5": monthlyStatistic.get("community_health_worker_muac_under_11_5_female"),
                     "muac_11_5_12_4": monthlyStatistic.get("community_health_worker_muac_11_5_12_4_female"),
                     "oedema": monthlyStatistic.get("community_health_worker_oedema_female"),
@@ -1639,7 +1639,7 @@ class ETLV2:
                     "muac_lte_23": screening.get("pregnant_muac_lte_23"),
                     "muac_gt_23": screening.get("pregnant_w_muac_gt_23"),
                 }
-                refered_from_community_health_worker = {
+                community_health_worker_values = {
                     "muac_under_23": monthlyStatistic.get("community_health_worker_muac_under_23_pregnant"),
                 }
 
@@ -1648,11 +1648,11 @@ class ETLV2:
                     "muac_lte_23": screening.get("lactating_muac_lte_23"),
                     "muac_gt_23": screening.get("lactating_w_muac_gt_23"),
                 }
-                refered_from_community_health_worker = {
+                community_health_worker_values = {
                     "muac_under_23": monthlyStatistic.get("community_health_worker_muac_under_23_breastfeeding"),
                 }
             monthlyStatistic["screening_reporting"] = {f"{target_group}": screening_values}
-            monthlyStatistic["community_health_worker"] = {f"{target_group}": refered_from_community_health_worker}
+            monthlyStatistic["community_health_worker"] = {f"{target_group}": community_health_worker_values}
 
             merged_data.append(monthlyStatistic)
         return merged_data, current_page

@@ -89,7 +89,7 @@ class Aggregator:
             logger.info(f"Processed {len(records)} records for {len(org_unit_ids)} org units.")
 
     @staticmethod
-    def _group_data_by_org_unit_period(rows):
+    def _aggregate_data_by_org_unit_and_period(rows):
         """Groups flat rows into {(dhis2_org_unit_id, period): {nutrition_programme: [entries]}}"""
         groups = defaultdict(lambda: defaultdict(list))
         for row in rows:
@@ -120,16 +120,21 @@ class Aggregator:
         """Extracts valid data values based on the dhis2 mapper file."""
         data_values = []
         target_group = entry.get("target_group")
-        group_map = mapper.get(program_name, {}).get(target_group, {})
         all_fields = DEFAULT_FIELDS + SCREENING_FIELDS + HEALTH_WORKERS_FIELDS
         for field in all_fields:
-            data_value = entry.get(field)
-
             if field in HEALTH_WORKERS_FIELDS:
-                group_map = mapper.get("community_health_worker", {}).get(target_group, {})
+                prog = "community_health_worker"
             elif field in SCREENING_FIELDS:
-                group_map = mapper.get("screening_reporting", {}).get(target_group, {})
-            mapping_template = group_map.get(field)
+                prog = "screening_reporting"
+            else:
+                prog = program_name
+
+            mapping_template = mapper.get(prog, {}).get(target_group, {}).get(field)
+
+            if prog == program_name:
+                data_value = entry.get(field)
+            else:
+                data_value = entry.get(prog, {}).get(target_group, {}).get(field)
 
             if data_value is not None and mapping_template:
                 data_values.append({**mapping_template, "value": data_value})
@@ -150,9 +155,9 @@ class Aggregator:
             )
             logger.info(f"Processing push data for {len(page_info.object_list)} org unit on page {page} for {account}")
 
-            grouped_data = self._group_data_by_org_unit_period(monthly_data)
+            aggregated_data = self._aggregate_data_by_org_unit_and_period(monthly_data)
             data_sets = []
-            for (dhis2_id, period), programs in grouped_data.items():
+            for (dhis2_id, period), programs in aggregated_data.items():
                 data_set = self._build_dhis2_payload(dhis2_id, period, programs, mapper_config)
                 data_sets.append(data_set)
             if len(data_sets) == 0:

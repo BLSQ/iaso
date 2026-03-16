@@ -12,7 +12,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Q
 from django.http import FileResponse
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -925,7 +925,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 source=f"{PROFILE_API_BULK}_create",
             )
 
-    @swagger_auto_schema(request_body=no_body)
+    @extend_schema(request=None)
     @action(detail=False, methods=["get"], url_path="getsample")
     def download_sample_csv(self, request):
         return FileResponse(open("iaso/api/fixtures/sample_bulk_user_creation.csv", "rb"))

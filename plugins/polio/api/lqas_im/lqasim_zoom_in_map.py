@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from django.contrib.gis.geos import Polygon
 from django.db.models import Q, Subquery
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 from rest_framework.response import Response
 
@@ -60,7 +60,7 @@ def get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_b
     return latest_active_campaign, latest_active_campaign_rounds, round_numbers
 
 
-@swagger_auto_schema(tags=["lqaszoomin"])
+@extend_schema(tags=["lqaszoomin"])
 class LQASIMZoominMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -206,7 +206,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         return Response({"results": results})
 
 
-@swagger_auto_schema(tags=["lqaszoominbackground"])
+@extend_schema(tags=["lqaszoominbackground"])
 class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

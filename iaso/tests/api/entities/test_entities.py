@@ -1764,3 +1764,20 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         data_p2 = self.assertJSONResponse(res_p2, 200)
 
         self.assertTrue(len(data_p2["result"]) > 0)
+
+    def test_count_endpoint(self):
+        self.client.force_authenticate(self.yoda)
+
+        # Test the unfiltered count
+        response = self.client.get("/api/entities/count/", format="json")
+        data = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(data["count"], 4)
+
+        # Test with filters
+        response_filtered = self.client.get(
+            "/api/entities/count/", data={"entity_type_ids": self.entity_type_2.id}, format="json"
+        )
+        data_filtered = self.assertJSONResponse(response_filtered, 200)
+
+        self.assertEqual(data_filtered["count"], 2)

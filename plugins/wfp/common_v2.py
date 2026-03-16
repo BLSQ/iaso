@@ -24,18 +24,7 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
-from django.db.models import (
-    Case,
-    CharField,
-    Count,
-    F,
-    FloatField,
-    Func,
-    Q,
-    Sum,
-    Value,
-    When,
-)
+from django.db.models import Case, CharField, Count, F, FloatField, Func, Q, Sum, Value, When
 from django.db.models.functions import Cast, Concat, ExtractMonth, ExtractYear
 
 from iaso.models import EntityType, TaskLog

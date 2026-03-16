@@ -131,7 +131,7 @@ class Visit(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=["org_unit", "date", "journey"]),
-            models.Index(fields=["muac_size", "whz_color","oedema"]),
+            models.Index(fields=["muac_size", "whz_color", "oedema"]),
         ]
 
 

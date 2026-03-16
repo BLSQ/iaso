@@ -770,6 +770,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.searchToSeeSubmissions',
         defaultMessage: 'Click "Search" button to see submissions',
     },
+    configureInstancesValidation: {
+        id: 'iaso.label.configureInstancesValidation',
+        defaultMessage: 'Configure validation of submissions',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    updated_by: {
+        id: 'iaso.label.updated_by',
+        defaultMessage: 'Updated by',
+    },
 });
 
 export default MESSAGES;

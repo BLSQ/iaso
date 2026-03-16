@@ -87,7 +87,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
     instances: {
-        url: 'forms/submissions',
+        url: 'forms/submissions/list',
         params: [
             'accountId',
             'formIds',
@@ -119,6 +119,16 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'sentDateTo',
             'projectIds',
             'isSearchActive',
+        ],
+    },
+    instanceValidation: {
+        url: 'forms/submissions/validation',
+        params: [
+            'accountId',
+            'formIds',
+            'search',
+            'showDeleted',
+            ...paginationPathParams,
         ],
     },
     instanceDetail: {
@@ -625,7 +635,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
 export const extractUrls = (
     config: Record<string, RouteConfig>,
 ): Record<string, string> => {
-    const result = {};
+    const result: Record<string, string> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.url;
     });
@@ -636,7 +646,7 @@ export const extractUrls = (
 export const extractParams = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.params;
     });
@@ -647,7 +657,7 @@ export const extractParams = (
 export const extractParamsConfig = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.values(config).forEach(value => {
         result[value.url] = value.params;
     });
@@ -665,6 +675,7 @@ type IasoBaseUrls = {
     pipelineList: string;
     formsStats: string;
     instances: string;
+    instanceValidation: string;
     instanceDetail: string;
     compareInstanceLogs: string;
     compareInstances: string;

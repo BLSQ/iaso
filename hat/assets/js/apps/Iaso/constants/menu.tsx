@@ -58,7 +58,7 @@ import {
     SHOW_DHIS2_LINK,
     SHOW_PAGES,
 } from '../utils/featureFlags';
-import { useCurrentUser } from '../utils/usersUtils';
+import { useCurrentUser, User } from '../utils/usersUtils';
 import MESSAGES from './messages';
 import * as paths from './routes';
 import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
@@ -66,7 +66,7 @@ import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
-    currentUser,
+    currentUser: User,
     orgUnitExtraPath?: string,
 ): MenuItems => {
     const entitiesListEntry: MenuItem = {
@@ -200,10 +200,23 @@ const menuItems = (
                 },
                 {
                     label: formatMessage(MESSAGES.submissionsTitle),
-                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
-                    permissions: paths.instancesPath.permissions,
                     key: 'submissions',
                     icon: props => <Input {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.list),
+                            extraPath: `/tab/list/mapResults/${locationLimitMax}`,
+                            permissions: paths.instancesPath.permissions,
+                            key: 'list',
+                            icon: props => <FormatListBulleted {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.validation),
+                            permissions: paths.instancesPath.permissions,
+                            key: 'validation',
+                            icon: props => <RuleIcon {...props} />,
+                        },
+                    ],
                 },
 
                 {

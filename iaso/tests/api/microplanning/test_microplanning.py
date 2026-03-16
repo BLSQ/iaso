@@ -1067,10 +1067,10 @@ class PlanningTestCase(APITestCase):
             name="planning-orgunits",
             team=self.team1,
             org_unit=root,
-            target_org_unit_type=child_type,
             started_at="2025-01-01",
             ended_at="2025-01-02",
         )
+        planning.target_org_unit_types.set([child_type])
 
         response = self.client.get(f"/api/microplanning/orgunits/root/?planning={planning.id}", format="json")
         r = self.assertJSONResponse(response, 200)

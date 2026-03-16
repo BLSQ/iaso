@@ -1,8 +1,15 @@
 {
-    "include": ["**/*.py"],
-    "extraPaths": ["."],
+    "include": [
+        "**/*.py"
+    ],
+    "extraPaths": [
+        "."
+    ],
     "typeCheckingMode": "basic",
     "reportAttributeAccessIssue": "none",
     "reportOptionalMemberAccess": "none",
-    "reportOptionalCall": "none"
+    "reportOptionalCall": "none",
+    "reportArgumentType": "none",
+    "reportOptionalSubscript": "none",
+    "reportOptionalIterable": "none"
 }

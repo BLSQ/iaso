@@ -34,6 +34,7 @@ import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistor
 import InstanceFileContent from './components/InstanceFileContent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import SpeedDialInstance from './components/SpeedDialInstance';
+import { InstanceValidation } from './components/ValidationWorkflow/InstanceValidation';
 import { INSTANCE_METAS_FIELDS } from './constants';
 import {
     ReassignInstancePayload,
@@ -214,6 +215,9 @@ const InstanceDetails: FunctionComponent = () => {
                                         </Grid>
                                     </Grid>
                                 )}
+                            </WidgetPaper>
+                            <WidgetPaper title="Validation" id="validation">
+                                <InstanceValidation id={currentInstance.id} />
                             </WidgetPaper>
                             <WidgetPaper
                                 title={formatMessage(MESSAGES.location)}

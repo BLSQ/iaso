@@ -1,3 +1,5 @@
+import { User } from 'Iaso/utils/usersUtils';
+
 /**
  * check if user has the permission
  *
@@ -123,4 +125,17 @@ export const userHasAccessToModule = (module, user) => {
     }
 
     return false;
+};
+
+export const userHasRole = (user: User, userRoleId: number): boolean => {
+    return user.is_superuser || user.user_roles.includes(userRoleId);
+};
+export const userHasOneOfRoles = (
+    user: User,
+    userRoleIds: number[],
+): boolean => {
+    return (
+        user.is_superuser ||
+        user.user_roles.some(role => userRoleIds.includes(role))
+    );
 };

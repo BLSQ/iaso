@@ -41,6 +41,8 @@ class EntityViewSet(ModelViewSet):
 
     list entity by entity type: /api/entities/?entity_type_id=ids
 
+    list entities with cursor pagination: /api/entities/?cursor=null
+
     details =/api/entities/<id>
 
     export entity list: /api/entities/?xlsx=true

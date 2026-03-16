@@ -131,7 +131,6 @@ export const useSavePlanning = ({
     onSuccess,
     showSuccessSnackBar,
 }: UseSavePlanningArgs): UseMutationResult => {
-    const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation({
         mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
         invalidateQueryKey: [
@@ -142,7 +141,6 @@ export const useSavePlanning = ({
             'planningRootOrgUnit',
             'planningChildrenOrgUnits',
         ],
-        ignoreErrorCodes,
         options: { onSuccess },
         showSuccessSnackBar,
     });
@@ -151,13 +149,11 @@ export const useSavePlanning = ({
             return postPlanning(data);
         },
         invalidateQueryKey: ['planningsList', 'planningDetails'],
-        ignoreErrorCodes,
         options: { onSuccess },
     });
     const copyPlanning = useSnackMutation({
         mutationFn: (data: SavePlanningQuery) => duplicatePlanning(data),
         invalidateQueryKey: ['planningsList', 'planningDetails'],
-        ignoreErrorCodes,
         options: { onSuccess },
     });
 

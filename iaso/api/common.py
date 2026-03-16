@@ -15,7 +15,7 @@ from django.http import HttpResponse
 from django.utils.module_loading import import_string
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _
-from django_filters import BaseInFilter, CharFilter
+from django_filters import BaseInFilter, CharFilter, NumberFilter
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, ValidationError
@@ -530,4 +530,13 @@ class CharInFilter(BaseInFilter, CharFilter):
 
     Usage (in a FilterSet):
     >>> filter_name = CharInFilter(field_name="model_field_name", lookup_expr="in")
+    """
+
+
+class NumberInFilter(BaseInFilter, NumberFilter):
+    """
+    Filter that checks if the model field is in a list of comma-separated numbers.
+
+    Usage (in a FilterSet):
+    >>> filter_name = NumberInFilter(field_name="model_field_name", lookup_expr="in")
     """

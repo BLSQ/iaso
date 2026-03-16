@@ -13,7 +13,28 @@ from .management.commands.south_sudan.Dhis2 import Dhis2
 logger = logging.getLogger(__name__)
 
 DATA_SET_ID = "m2GaBFDJDeV"
-FIELDS = [
+SCREENING_FIELDS = [
+    "u5_male_green",
+    "u5_male_yellow",
+    "u5_male_red",
+    "u5_female_green",
+    "u5_female_yellow",
+    "u5_female_red",
+    "muac_lte_23",
+    "muac_gt_23",
+]
+HEALTH_WORKERS_FIELDS = [
+    "community_health_worker_muac_under_11_5_male",
+    "community_health_worker_muac_under_11_5_female",
+    "community_health_worker_muac_11_5_12_4_male",
+    "community_health_worker_muac_11_5_12_4_female",
+    "community_health_worker_oedema_male",
+    "community_health_worker_oedema_female",
+    "community_health_worker_muac_under_23_pregnant",
+    "community_health_worker_muac_under_23_breastfeeding",
+]
+
+DEFAULT_FIELDS = [
     "oedema",
     "muac_under_11_5",
     "muac_11_5_12_4",
@@ -35,12 +56,8 @@ FIELDS = [
     "death",
     "defaulter",
     "non_respondent",
-    "community_health_worker_muac_under_11_5",
-    "community_health_worker_muac_11_5_12_4",
-    "community_health_worker_oedema",
-    "community_health_worker_muac_under_23",
-    "community_health_worker_muac_above_23",
 ]
+
 PAGE_SIZE = 5000
 
 
@@ -73,7 +90,7 @@ class Aggregator:
 
     @staticmethod
     def _group_data_by_org_unit_period(rows):
-        """Groups flat rows into {(dhis2_org_unit_id, period): {program_name: [entries]}}"""
+        """Groups flat rows into {(dhis2_org_unit_id, period): {nutrition_programme: [entries]}}"""
         groups = defaultdict(lambda: defaultdict(list))
         for row in rows:
             key = (row["dhis2_id"], row["period"])
@@ -104,9 +121,14 @@ class Aggregator:
         data_values = []
         target_group = entry.get("target_group")
         group_map = mapper.get(program_name, {}).get(target_group, {})
-
-        for field in FIELDS:
+        all_fields = DEFAULT_FIELDS + SCREENING_FIELDS + HEALTH_WORKERS_FIELDS
+        for field in all_fields:
             data_value = entry.get(field)
+
+            if field in HEALTH_WORKERS_FIELDS:
+                group_map = mapper.get("community_health_worker", {}).get(target_group, {})
+            elif field in SCREENING_FIELDS:
+                group_map = mapper.get("screening_reporting", {}).get(target_group, {})
             mapping_template = group_map.get(field)
 
             if data_value is not None and mapping_template:

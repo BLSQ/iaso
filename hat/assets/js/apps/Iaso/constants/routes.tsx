@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 
+import { WorkflowConfiguration } from 'Iaso/domains/instances/validationWorkflow/details/WorkflowConfiguration';
 import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
-import { WorkflowConfiguration } from 'Iaso/domains/instances/validationWorkflow/WorkflowConfiguration';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';

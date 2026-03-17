@@ -790,6 +790,50 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.label.color',
+    },
+    slug: {
+        id: 'iaso.label.slug',
+        defaultMessage: 'Slug',
+    },
+    rolesRequired: {
+        id: 'iaso.validation.label.rolesRequired',
+        defaultMessage: 'Roles required',
+    },
+    description: {
+        id: 'iaso.form.label.description',
+        defaultMessage: 'Description',
+    },
+    nodes: {
+        id: 'iaso.form.label.nodes',
+        defaultMessage: 'node(s)',
+    },
+    saveOrder: {
+        id: 'iaso.workflows.saveOrder',
+        defaultMessage: 'Save order',
+    },
+    resetOrder: {
+        id: 'iaso.workflows.resetOrder',
+        defaultMessage: 'Reset order',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    deleteNodeQuestion: {
+        id: 'iaso.workflows.label.deleteNodeQuestion',
+        defaultMessage: 'Delete node?',
+    },
+    canSkipPreviousNodes: {
+        id: 'iaso.workflows.label.canSkipPreviousNodes',
+        defaultMessage: 'Can skip previous nodes',
+    },
+    create: {
+        defaultMessage: 'Create',
+        id: 'iaso.label.create',
+    },
 });
 
 export default MESSAGES;

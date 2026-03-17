@@ -1095,6 +1095,19 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response_data["account"]["featureFlags"], [])
 
+    def test_search_user_by_has_email(self):
+        self.client.force_authenticate(self.jane)
+
+        response = self.client.get(reverse("profiles-list", kwargs={"version": "v2"}), {"hasEmail": True})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
+        self.assertTrue(all(x["email"] for x in response_data["results"]))
+
+        response = self.client.get(reverse("profiles-list", kwargs={"version": "v2"}), {"hasEmail": False})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 7)
+        self.assertFalse(all(x["email"] for x in response_data["results"]))
+
     def test_search_user_by_permissions(self):
         self.client.force_authenticate(self.jane)
 

@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
-import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
-import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../../../constants/messages';
+import { baseUrls } from '../../../../constants/urls';
+import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
+import { useGetCountryUsersGroup } from '../requests';
 
 const makeUserNameToDisplay = user => {
     if (user.email) return ` ${user.email}`;
@@ -34,7 +34,6 @@ export const CountryNotificationsConfigTable: FunctionComponent<Props> = ({
         [params.order, params.page, params.pageSize],
     );
 
-    const { data: allUsers } = useGetProfiles();
     const { data: tableData, isLoading } = useGetCountryUsersGroup(tableParams);
 
     const columns = [
@@ -71,7 +70,6 @@ export const CountryNotificationsConfigTable: FunctionComponent<Props> = ({
                         language={settings.row.original.language}
                         users={settings.row.original.users}
                         teams={settings.row.original.teams}
-                        allUsers={allUsers?.results}
                         allLanguages={allLanguages}
                         renderTrigger={({ openDialog }) => (
                             <IconButton

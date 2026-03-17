@@ -14,6 +14,7 @@ import {
 
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -35,7 +36,6 @@ import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { INSTANCE_STATUSES } from '../constants';
 
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown';
 import MESSAGES from '../messages';
 import { parseJson } from '../utils/jsonLogicParse';
 
@@ -233,9 +233,12 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
-    const { data: selectedUsers } = useGetProfilesDropdown(
-        formState.userIds.value,
-    );
+    const { data: selectedUsers } = useGetProfilesDropdown({
+        query: formState?.userIds?.value
+            ? { ids: formState.userIds.value }
+            : {},
+        triggerWithEmptyQuery: false,
+    });
 
     const handleChangeQueryBuilder = value => {
         let parsedValue;

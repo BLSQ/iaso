@@ -11,20 +11,20 @@ import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import { useGetColors } from 'Iaso/hooks/useGetColors';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from 'Iaso/libs/validation';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 import InputComponent from '../../../components/forms/InputComponent';
 
-import {
-    useApiErrorValidation,
-    useTranslatedErrors,
-} from '../../../libs/validation';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
-import { useGetProfilesDropdown } from '../hooks/requests/useGetProfilesDropdown';
 import { useGetTeamsDropdown } from '../hooks/requests/useGetTeams';
 import {
     convertAPIErrorsToState,

@@ -1,26 +1,60 @@
-import React, { FC, useCallback } from 'react';
+import React, { ComponentProps, useCallback, useMemo } from 'react';
 import { AsyncSelect } from 'bluesquare-components';
 import type { IntlMessage } from 'bluesquare-components';
-import { getUsersDropDown } from '../../domains/instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../../domains/instances/hooks/useGetProfilesDropdown';
+import { useQueryClient } from 'react-query';
+import { getUsersDropDown } from 'Iaso/domains/instances/hooks/requests/getUsersDropDown';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import MESSAGES from './messages';
 
 type Props = {
     handleChange: (keyValue: string, value: unknown) => void;
-    filterUsers: any;
+    filterUsers?: string;
     keyValue?: string;
     label?: IntlMessage;
+    additionalFilters?: object;
     multi?: boolean;
-};
+} & Omit<
+    ComponentProps<typeof AsyncSelect>,
+    | 'keyValue'
+    | 'label'
+    | 'multi'
+    | 'value'
+    | 'onChange'
+    | 'fetchOptions'
+    | 'clearable'
+    | 'debounceTime'
+>;
 
-export const UserAsyncSelect: FC<Props> = ({
+export const UserAsyncSelect = ({
     handleChange,
     filterUsers,
+    additionalFilters = {},
     keyValue = 'users',
     label = MESSAGES.user,
     multi = true,
-}) => {
-    const { data: selectedUsers } = useGetProfilesDropdown(filterUsers);
+    ...props
+}: Props) => {
+    const queryClient = useQueryClient();
+
+    const query = useMemo(() => {
+        return {
+            ...(filterUsers ? { ids: filterUsers } : {}),
+        };
+    }, [filterUsers]);
+
+    const { data: selectedUsers } = useGetProfilesDropdown({
+        query: query,
+        additionalFilters: additionalFilters,
+        triggerWithEmptyQuery: false,
+    });
+
+    const fetchOptions = useCallback(
+        (input: string) => {
+            return getUsersDropDown({ query: input, queryClient: queryClient });
+        },
+        [queryClient],
+    );
+
     const handleChangeUsers = useCallback(
         (keyValue, newValue) => {
             const val = multi
@@ -40,7 +74,8 @@ export const UserAsyncSelect: FC<Props> = ({
             debounceTime={500}
             multi={multi}
             clearable={!multi}
-            fetchOptions={input => getUsersDropDown(input)}
+            fetchOptions={input => fetchOptions(input)}
+            {...props}
         />
     );
 };

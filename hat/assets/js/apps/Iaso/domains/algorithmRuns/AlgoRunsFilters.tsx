@@ -1,18 +1,18 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
+import { RefreshButton } from '../../components/Buttons/RefreshButton';
+import InputComponent from '../../components/forms/InputComponent';
+import { SearchButton } from '../../components/SearchButton';
 import { useFilterState } from '../../hooks/useFilterState';
 import {
     useGetAlgorithmsOptions,
     useGetDataSources,
-    useGetProfilesOptions,
     useSourceOptions,
     useSourceVersionOptions,
 } from '../links/hooks/filters';
-import InputComponent from '../../components/forms/InputComponent';
-import { SearchButton } from '../../components/SearchButton';
 import { MESSAGES } from './messages';
-import { RefreshButton } from '../../components/Buttons/RefreshButton';
 
 type Props = {
     baseUrl: string;
@@ -39,7 +39,7 @@ export const AlgoRunsFilters: FunctionComponent<Props> = ({
         useGetAlgorithmsOptions();
 
     const { data: launchers, isFetching: isLoadingLaunchers } =
-        useGetProfilesOptions();
+        useGetProfilesDropdown();
 
     const { data: sources, isFetching: isLoadingSources } = useGetDataSources();
 

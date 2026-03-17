@@ -16,7 +16,6 @@ import { makeUrlWithParams } from '../../../libs/utils';
 
 import { DropdownOptions } from '../../../types/utils';
 import { PaginatedInstances } from '../../instances/types/instance';
-import { Team } from '../../teams/types/team';
 import { Location } from '../components/ListMap';
 import MESSAGES from '../messages';
 import { Entity } from '../types/entity';
@@ -224,24 +223,4 @@ export const useGetSubmissions = (
             staleTime: 1000 * 60 * 5,
         },
     });
-};
-
-export const useGetUsersDropDown = (
-    team?: Team,
-): UseQueryResult<DropdownOptions<number>[], Error> => {
-    return useSnackQuery(
-        ['profilesDropdown', team],
-        () =>
-            getRequest(
-                makeUrlWithParams(
-                    '/api/profiles/dropdown/',
-                    team?.users_details
-                        ? {
-                              search: `ids:${team?.users_details?.map(user => user?.id)?.join(',')}`,
-                          }
-                        : {},
-                ),
-            ),
-        MESSAGES.projectsError,
-    );
 };

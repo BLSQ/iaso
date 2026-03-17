@@ -1,26 +1,25 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { SearchButton } from 'Iaso/components/SearchButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { default as ENTITY_MESSAGE } from 'Iaso/domains/entities/messages';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import DatesRange from '../../../../components/filters/DatesRange';
-import InputComponent from '../../../../components/forms/InputComponent';
-import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
-import { baseUrls } from '../../../../constants/urls';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import {
     useCheckBoxFilter,
     useFilterState,
     useMultiTreeviewFilterState,
-} from '../../../../hooks/useFilterState';
-import { PaginationParams } from '../../../../types/general';
+} from 'Iaso/hooks/useFilterState';
+import { PaginationParams } from 'Iaso/types/general';
+import DatesRange from '../../../../components/filters/DatesRange';
+import InputComponent from '../../../../components/forms/InputComponent';
+import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
 import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { TeamType } from '../../../teams/constants';
 import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
 import { ALGORITHM_DROPDOWN } from '../../constants';
-import {
-    useGetEntityTypesDropdown,
-    useGetUsersDropDown,
-} from '../../hooks/requests';
+import { useGetEntityTypesDropdown } from '../../hooks/requests';
 import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
 import MESSAGES from '../messages';
 
@@ -75,7 +74,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             type: TeamType.TEAM_OF_USERS,
         });
     const { data: usersDropdown, isFetching: isFetchingUsers } =
-        useGetUsersDropDown();
+        useGetProfilesDropdown({ errorMessage: ENTITY_MESSAGE.projectsError });
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetEntityTypesDropdown();

@@ -3,14 +3,13 @@ import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { waitFor } from 'Iaso/utils';
+import { API_URL } from '../constants';
 
 const defaults = {
     order: 'name',
     pageSize: 20,
     page: 1,
 };
-
-const API_URL = '/api/validation-workflows/';
 
 const getSubmissionsWorkflows = async (params: FormattedApiParams) => {
     await waitFor(1000);

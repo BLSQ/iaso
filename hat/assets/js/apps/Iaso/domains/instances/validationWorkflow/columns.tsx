@@ -1,13 +1,23 @@
 import { useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import React from 'react';
+import { IconButton, Setting, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
+import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
+import { baseUrls } from 'Iaso/constants/urls';
+import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import { SUBMISSIONS, SUBMISSIONS_UPDATE } from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
+import { useDeleteWorkflow } from './api/useDeleteWorkflow';
 
 export const useWorkflowsTableColumns = () => {
     const { formatMessage } = useSafeIntl();
+    const user = useCurrentUser();
+    const { mutateAsync: deleteWorkflow } = useDeleteWorkflow();
+
     return useMemo(() => {
-        return [
+        const cols = [
             {
                 Header: formatMessage(MESSAGES.name),
                 id: 'name',
@@ -49,5 +59,33 @@ export const useWorkflowsTableColumns = () => {
                 cell: DateCell,
             },
         ];
-    }, [formatMessage]);
+        if (userHasOneOfPermissions([SUBMISSIONS_UPDATE, SUBMISSIONS], user)) {
+            cols.push({
+                Header: formatMessage(MESSAGES.actions),
+                id: 'actions',
+                accessor: 'actions',
+                sortable: false,
+                Cell: (settings: Setting<any>) => {
+                    return (
+                        <>
+                            <IconButton
+                                tooltipMessage={MESSAGES.edit}
+                                icon="edit"
+                                // TODO use details url
+                                url={`/${baseUrls.instanceValidation}/slug/${settings.row.original.slug}`}
+                            />
+                            <DeleteModal
+                                titleMessage={MESSAGES.deleteWorkflow}
+                                onConfirm={() =>
+                                    deleteWorkflow(settings.row.original.id)
+                                }
+                                type="icon"
+                            />
+                        </>
+                    );
+                },
+            });
+        }
+        return cols;
+    }, [formatMessage, user, deleteWorkflow]);
 };

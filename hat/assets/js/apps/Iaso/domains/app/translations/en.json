@@ -1690,6 +1690,7 @@
     "iaso.users.dialog.locale": "Language",
     "iaso.users.dialog.updatePassword.triggerButton.label": "Update password",
     "iaso.users.dialog.userRoles": "User roles",
+    "iaso.users.errorSingleCap": "Error",
     "iaso.users.exportMobileAppBody": "This will create a zip file containing all the data necessary for the initial setup of the mobile application for:",
     "iaso.users.exportMobileAppBodyNoProjects": "This user has no assigned project. The configuration of the mobile application must be done for a specific project. Please assign at least one project to this user in order to continue.",
     "iaso.users.exportMobileAppBodySure": "Are you sure you want to create the export file?",

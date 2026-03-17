@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { Grid, Container, Stack, Box } from '@mui/material';
+import { Masonry } from '@mui/lab';
+import { Container, Stack, Box } from '@mui/material';
 import {
     LoadingSpinner,
     useRedirectTo,
@@ -52,7 +53,7 @@ export const UserDetailsView = ({ userId }: Props) => {
                 redirectTo(baseUrls.users);
             },
         });
-    }, [deleteProfile]);
+    }, [deleteProfile, redirectTo]);
 
     if (!isLoading && error?.status === 404) {
         return (
@@ -64,75 +65,63 @@ export const UserDetailsView = ({ userId }: Props) => {
     }
 
     return (
-        <Container
-            disableGutters
-            sx={{ pt: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}
-            maxWidth={'xl'}
-        >
+        <Box>
             {isLoading ? (
                 <LoadingSpinner />
             ) : (
                 <Stack spacing={2}>
-                    <Box sx={{ px: 2 }}>
-                        <Grid container>
-                            <Grid
-                                item
-                                xs={12}
-                                sx={{
-                                    justifyContent: 'flex-end',
-                                    display: 'flex',
-                                }}
-                            >
-                                <Stack direction={'row'} spacing={2}>
-                                    <TopActions
-                                        saveProfile={saveProfile}
-                                        onDeleteProfile={onDeleteProfile}
-                                        userId={userId}
-                                        savePassword={savePassword}
-                                        canBypassProjectRestrictions={
-                                            canBypassProjectRestrictions
-                                        }
-                                    />
-                                </Stack>
-                            </Grid>
-                        </Grid>
+                    <Box pt={2} px={2}>
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                            justifyContent="flex-end"
+                        >
+                            <TopActions
+                                saveProfile={saveProfile}
+                                onDeleteProfile={onDeleteProfile}
+                                userId={userId}
+                                savePassword={savePassword}
+                                canBypassProjectRestrictions={
+                                    canBypassProjectRestrictions
+                                }
+                            />
+                        </Stack>
                     </Box>
-                    <Box sx={{ px: 2 }}>
-                        <Grid container spacing={4}>
-                            <Grid item xs={12} md={6}>
-                                <GeneralInfoWidgetPaper
-                                    profile={profile}
-                                    savingProfile={savingProfile}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Box>
-                    <Box sx={{ px: 2 }}>
-                        <Grid container spacing={4}>
-                            <Grid item xs={12} md={6}>
-                                <ProjectsInfoWidgetPaper
-                                    profile={profile}
-                                    savingProfile={savingProfile}
-                                />
-                                <LocationsInfoWidgetPaper
-                                    profile={profile}
-                                    savingProfile={savingProfile}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <UserRolesInfoWidgetPaper
-                                    profile={profile}
-                                    savingProfile={savingProfile}
-                                />
-                                <PermissionsInfoWidgetPaper
-                                    profile={profile}
-                                    savingProfile={savingProfile}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Box>
+                    <Masonry columns={{ xs: 1, md: 2 }} spacing={4}>
+                        <Box>
+                            <GeneralInfoWidgetPaper
+                                profile={profile}
+                                savingProfile={savingProfile}
+                            />
+                        </Box>
+                        <Box>
+                            <PermissionsInfoWidgetPaper
+                                profile={profile}
+                                savingProfile={savingProfile}
+                            />
+                        </Box>
+                        <Box>
+                            <ProjectsInfoWidgetPaper
+                                profile={profile}
+                                savingProfile={savingProfile}
+                            />
+                        </Box>
+                        <Box>
+                            <LocationsInfoWidgetPaper
+                                profile={profile}
+                                savingProfile={savingProfile}
+                            />
+                        </Box>
+                        <Box>
+                            <UserRolesInfoWidgetPaper
+                                profile={profile}
+                                savingProfile={savingProfile}
+                            />
+                        </Box>
+                    </Masonry>
                 </Stack>
             )}
-        </Container>
+            {/* </Container> */}
+        </Box>
     );
 };

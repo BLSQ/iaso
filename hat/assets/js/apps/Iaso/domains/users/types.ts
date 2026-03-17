@@ -74,7 +74,7 @@ export type SaveUserPasswordQuery = {
     confirm_password: string;
 };
 
-type UserRole = {
+type NestedUserRole = {
     id: number | string;
     name: string;
 };
@@ -161,7 +161,7 @@ export type ProfileListResponseItem = {
     country_code?: string;
     editable_org_unit_type_ids: string[] | number[];
     user_roles_editable_org_unit_type_ids: string[] | number[];
-    user_roles: UserRole[];
+    user_roles: NestedUserRole[];
     color: string;
     projects: NestedProject[];
     user_permissions: string[];

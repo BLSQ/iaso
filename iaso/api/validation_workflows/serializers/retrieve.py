@@ -14,7 +14,7 @@ class NestedRolesRequiredSerializer(ModelSerializer):
 
 
 class NestedValidationNodeTemplateSerializer(ModelSerializer):
-    roles_required = NestedRolesRequiredSerializer(read_only=True, many=True, source="roles_required")
+    roles_required = NestedRolesRequiredSerializer(read_only=True, many=True)
 
     class Meta:
         model = ValidationNodeTemplate
@@ -22,9 +22,11 @@ class NestedValidationNodeTemplateSerializer(ModelSerializer):
 
 
 class NestedFormSerializer(ModelSerializer):
+    label = serializers.CharField(read_only=True, source="name")
+
     class Meta:
         model = Form
-        fields = ["id", "name"]
+        fields = ["id", "label"]
 
 
 class ValidationWorkflowRetrieveSerializer(ModelSerializer):
@@ -34,8 +36,18 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
     created_by = UserDisplayNameField()
 
     forms = NestedFormSerializer(many=True, read_only=True, source="form_set")
-    node_templates = NestedValidationNodeTemplateSerializer(many=True, read_only=True, source="node_templates")
+    node_templates = NestedValidationNodeTemplateSerializer(many=True, read_only=True)
 
     class Meta:
         model = ValidationWorkflow
-        fields = ["slug", "name", "forms", "created_by", "updated_by", "created_at", "updated_at", "node_templates"]
+        fields = [
+            "slug",
+            "name",
+            "description",
+            "forms",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
+            "node_templates",
+        ]

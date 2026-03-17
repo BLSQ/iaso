@@ -46,11 +46,11 @@ class ValidationWorkflowViewSet(ModelViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        qs = ValidationWorkflow.objects.filter(account=account)
+        qs = ValidationWorkflow.objects.filter(account=account).select_related("account")
         if self.action == "list":
             qs = (
                 qs.prefetch_related("form_set")
-                .select_related("account", "created_by", "updated_by")
+                .select_related("created_by", "updated_by")
                 .annotate(
                     form_count=Count(
                         "form_set__instances",
@@ -59,6 +59,10 @@ class ValidationWorkflowViewSet(ModelViewSet):
                     )
                 )
             )
+        if self.action == "retrieve":
+            qs = qs.prefetch_related(
+                "node_templates", "form_set", "node_templates__roles_required", "node_templates__roles_required__group"
+            ).select_related("created_by", "updated_by")
         return qs
 
     @action(detail=False, methods=["get"])

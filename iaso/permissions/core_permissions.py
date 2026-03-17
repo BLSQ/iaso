@@ -346,7 +346,7 @@ CORE_WORKFLOW_PERMISSION = CorePermission(
 CORE_VALIDATION_WORKFLOW_PERMISSION = CorePermission(
     codename="iaso_validation_workflows",
     label=_("Validation workflows"),
-    module=MODULE_ENTITIES,
+    module=MODULE_DEFAULT,
     ui_group=PERMISSION_GROUP_ADMIN,
 )
 

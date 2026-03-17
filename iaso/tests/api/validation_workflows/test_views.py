@@ -1,7 +1,8 @@
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, Form, Instance, Project, ValidationWorkflow
+from iaso.models import Account, Form, Instance, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
@@ -358,7 +359,7 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
         res_json = self.assertJSONResponse(res, 200)
         self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 
-        self.assertEqual(res_json[0], {"label": "name-0", "value": "name-0"})
+        self.assertIn({"label": "name-0", "value": "name-0"}, res_json)
 
 
 class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
@@ -383,7 +384,15 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
         res = self.client.delete(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, 204)
 
-        self.assertEqual(ValidationWorkflow.objects.filter(deleted_at__isnull=False).count(), 1)
+        self.assertEqual(ValidationWorkflow.objects.all().count(), 0)
+
+    def test_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(5):
+            res = self.client.delete(
+                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug})
+            )
+            self.assertJSONResponse(res, 204)
 
     def test_permissions(self):
         res = self.client.delete(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
@@ -481,14 +490,27 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
         res = self.client.post(reverse("validationworkflows-list"))
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-
-class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
-    # todo
-    pass
+    def test_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(9):
+            res = self.client.post(
+                reverse("validationworkflows-list"),
+                data={
+                    "name": "Validation workflow",
+                    "description": "Some description",
+                    "forms": [self.form.pk, self.form_2.pk],
+                },
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
+            self.assertEqual(
+                res_data,
+                {
+                    "slug": "validation-workflow",
+                },
+            )
 
 
 class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
-    # todo
     def setUp(self):
         self.account = Account.objects.create(name="account")
         self.project = Project.objects.create(name="project", account=self.account)
@@ -519,11 +541,101 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
             name="Random name",
             description="Random description",
             created_by=self.john_doe,
+            account=self.account,
         )
+
+    def test_permissions(self):
+        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.john_doe)
+        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+    def test_validation(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "name", "This field is required.")
+        self.assertHasError(res_data, "forms", "This field is required.")
+
+        res = self.client.put(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={
+                "forms": [Form.objects.order_by("-pk").first().pk + 1],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data, "forms", f'Invalid pk "{Form.objects.order_by("-pk").first().pk + 1}" - object does not exist.'
+        )
+
+        res = self.client.put(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={
+                "forms": [self.form_3.pk],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "forms", f'Invalid pk "{self.form_3.pk}" - object does not exist.')
+
+    def test_update(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.validation_workflow.refresh_from_db()
+
+        self.assertEqual(self.validation_workflow.description, "Random new description")
+        self.assertEqual(self.validation_workflow.name, "Random new name")
+        self.assertEqual(self.validation_workflow.slug, "random-new-name")
+        self.assertEqual(self.validation_workflow.account, self.account)
+        self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
+        self.assertCountEqual(list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk])
+
+        self.assertEqual(
+            res_data,
+            {
+                "slug": "random-new-name",
+            },
+        )
+
+        res = self.client.put(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"name": "Random new name", "forms": [self.form.pk, self.form_2.pk]},
+        )
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.validation_workflow.refresh_from_db()
+
+        self.assertEqual(self.validation_workflow.description, "Random new description")
+        self.assertEqual(self.validation_workflow.name, "Random new name")
+        self.assertEqual(self.validation_workflow.slug, "random-new-name")
+        self.assertEqual(self.validation_workflow.account, self.account)
+        self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
+        self.assertCountEqual(
+            list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk, self.form_2.pk]
+        )
+
+    def test_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(8):
+            res = self.client.put(
+                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+                data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+            )
+            self.assertJSONResponse(res, status.HTTP_200_OK)
 
 
 class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCase):
-    # todo
     def setUp(self):
         self.account = Account.objects.create(name="account")
         self.project = Project.objects.create(name="project", account=self.account)
@@ -554,4 +666,279 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
             name="Random name",
             description="Random description",
             created_by=self.john_doe,
+            account=self.account,
         )
+
+    def test_permissions(self):
+        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.john_doe)
+        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_validation(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        res = self.client.patch(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={
+                "forms": [Form.objects.order_by("-pk").first().pk + 1],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data, "forms", f'Invalid pk "{Form.objects.order_by("-pk").first().pk + 1}" - object does not exist.'
+        )
+
+        res = self.client.patch(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={
+                "forms": [self.form_3.pk],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "forms", f'Invalid pk "{self.form_3.pk}" - object does not exist.')
+
+        res = self.client.patch(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"forms": [], "name": ""},
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "name", "This field may not be blank.")
+        self.assertHasError(res_data, "forms", "This list may not be empty.")
+
+        res = self.client.patch(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"forms": None, "name": None},
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "forms", "This field may not be null.")
+        self.assertHasError(res_data, "name", "This field may not be null.")
+
+    def test_partial_update(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.patch(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.validation_workflow.refresh_from_db()
+
+        self.assertEqual(self.validation_workflow.description, "Random new description")
+        self.assertEqual(self.validation_workflow.name, "Random new name")
+        self.assertEqual(self.validation_workflow.slug, "random-new-name")
+        self.assertEqual(self.validation_workflow.account, self.account)
+        self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
+        self.assertCountEqual(list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk])
+
+        self.assertEqual(
+            res_data,
+            {
+                "slug": "random-new-name",
+            },
+        )
+
+        res = self.client.patch(
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={
+                "name": "Random new name 2",
+            },
+        )
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.validation_workflow.refresh_from_db()
+
+        self.assertEqual(self.validation_workflow.description, "Random new description")
+        self.assertEqual(self.validation_workflow.name, "Random new name 2")
+        self.assertEqual(self.validation_workflow.slug, "random-new-name-2")
+        self.assertEqual(self.validation_workflow.account, self.account)
+        self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
+        self.assertCountEqual(list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk])
+
+    def test_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(8):
+            res = self.client.patch(
+                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+                data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+            )
+            self.assertJSONResponse(res, status.HTTP_200_OK)
+
+
+class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
+    def setUp(self):
+        self.account = Account.objects.create(name="account")
+        self.project = Project.objects.create(name="project", account=self.account)
+        self.account_2 = Account.objects.create(name="account_2")
+
+        self.group = Group.objects.create(name="Group")
+        self.user_role = UserRole.objects.create(group=self.group, account=self.account)
+
+        self.form = Form.objects.create(name="form")
+        self.form.projects.add(self.project)
+        self.form.save()
+
+        Instance.objects.create(name="instance", form=self.form)
+        Instance.objects.create(name="instance2", form=self.form)
+
+        self.form_2 = Form.objects.create(name="form_2")
+        self.form_2.projects.add(self.project)
+        self.form_2.save()
+
+        self.form_3 = Form.objects.create(name="form_3")
+
+        self.john_doe = self.create_user_with_profile(
+            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+        )
+
+        self.john_wick = self.create_user_with_profile(
+            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+        )
+
+        self.validation_workflow_other_account = ValidationWorkflow.objects.create(
+            name="Random other name",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account_2,
+        )
+
+        self.validation_workflow = ValidationWorkflow.objects.create(
+            name="Random name",
+            description="Random description",
+            created_by=self.john_doe,
+            updated_by=self.john_wick,
+            account=self.account,
+        )
+        self.validation_workflow.form_set.set([self.form, self.form_2])
+        self.validation_workflow.save()
+
+        self.node_template = ValidationNodeTemplate.objects.create(
+            name="First node",
+            description="First node description",
+            color="#FDD75A",
+            can_skip_previous_nodes=False,
+            workflow=self.validation_workflow,
+        )
+
+        self.node_template.roles_required.add(self.user_role)
+        self.node_template.save()
+
+        self.second_node_template = ValidationNodeTemplate.objects.create(
+            name="Second node",
+            description="Second node description",
+            color="#740D54",
+            can_skip_previous_nodes=True,
+            workflow=self.validation_workflow,
+        )
+
+        self.node_template.next_node_templates.add(self.second_node_template)
+        self.node_template.save()
+
+    def test_permissions(self):
+        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.john_doe)
+        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_404(self):
+        self.client.force_authenticate(self.john_wick)
+
+        with self.subTest("fetching wrong pk"):
+            res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": "wrong-slug"}))
+            self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+        with self.subTest("fetching validation workflow that doesn't belong to account"):
+            res = self.client.get(
+                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow_other_account.slug})
+            )
+            self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        # checking main keys
+        with self.subTest("Checking main top level keys"):
+            for k in [
+                "name",
+                "slug",
+                "description",
+                "forms",
+                "createdBy",
+                "createdAt",
+                "updatedBy",
+                "updatedAt",
+                "nodeTemplates",
+            ]:
+                self.assertIn(k, res_data)
+
+            self.assertEqual(res_data["name"], "Random name")
+            self.assertEqual(res_data["slug"], "random-name")
+            self.assertEqual(res_data["description"], "Random description")
+            self.assertEqual(res_data["createdBy"], self.john_doe.get_full_name())
+            self.assertIsNotNone(res_data["createdAt"])
+            self.assertIsNotNone(res_data["updatedAt"])
+            self.assertEqual(res_data["updatedBy"], self.john_wick.username)
+
+            self.assertIsNotNone(res_data["forms"])
+            self.assertIsNotNone(res_data["nodeTemplates"])
+
+        with self.subTest("checking forms"):
+            for form_value in res_data["forms"]:
+                self.assertIn("id", form_value)
+                self.assertIn("label", form_value)
+            self.assertCountEqual(
+                res_data["forms"],
+                [{"id": self.form.pk, "label": self.form.name}, {"id": self.form_2.pk, "label": self.form_2.name}],
+            )
+
+        with self.subTest("checking nodeTemplates"):
+            for node_template in res_data["nodeTemplates"]:
+                for k in ["slug", "name", "description", "color", "canSkipPreviousNodes", "rolesRequired"]:
+                    self.assertIn(k, node_template)
+
+            self.assertEqual(
+                res_data["nodeTemplates"],
+                [
+                    {
+                        "slug": "first-node",
+                        "name": "First node",
+                        "description": "First node description",
+                        "color": "#FDD75A",
+                        "rolesRequired": [{"name": "Group", "id": self.group.pk}],
+                        "canSkipPreviousNodes": False,
+                    },
+                    {
+                        "slug": "second-node",
+                        "name": "Second node",
+                        "description": "Second node description",
+                        "color": "#740D54",
+                        "rolesRequired": [],
+                        "canSkipPreviousNodes": True,
+                    },
+                ],
+            )
+
+    def test_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(7):
+            res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+            self.assertEqual(res.status_code, status.HTTP_200_OK)

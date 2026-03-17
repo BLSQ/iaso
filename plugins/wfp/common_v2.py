@@ -1196,7 +1196,6 @@ class ETLV2:
     def _retrieve_aggregated_journeys_data(
         account, program_type, org_unit_with_updated_data, page_size=5000, page_number=1
     ):
-
         org_units = sorted(list(org_unit_with_updated_data))
         paginator = Paginator(org_units, page_size)
         current_page = paginator.get_page(page_number)

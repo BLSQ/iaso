@@ -72,7 +72,7 @@ export const useWorkflowsTableColumns = () => {
                                 tooltipMessage={MESSAGES.edit}
                                 icon="edit"
                                 // TODO use details url
-                                url={`/${baseUrls.instanceValidation}/slug/${settings.row.original.slug}`}
+                                url={`/${baseUrls.instanceValidationDetail}/slug/${settings.row.original.slug}`}
                             />
                             <DeleteModal
                                 titleMessage={MESSAGES.deleteWorkflow}

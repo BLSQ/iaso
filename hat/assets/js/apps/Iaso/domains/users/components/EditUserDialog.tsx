@@ -14,15 +14,15 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { MutateFunction, useQueryClient } from 'react-query';
+import { UseMutateFunction, useQueryClient } from 'react-query';
 
 import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { useGetProfile } from 'Iaso/domains/users/hooks/useGetProfiles';
-import { SxStyles } from 'Iaso/types/general';
+import { DjangoError, SxStyles } from 'Iaso/types/general';
 import * as Permissions from 'Iaso/utils/permissions';
-import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
+import { useCurrentUser, User } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
@@ -50,8 +50,13 @@ const styles: SxStyles = {
 
 type Props = {
     titleMessage: IntlMessage;
-    userId: string;
-    saveProfile: MutateFunction<Profile, any>;
+    userId?: number | string;
+    saveProfile: UseMutateFunction<
+        User,
+        DjangoError,
+        User | Partial<User>,
+        unknown
+    >;
     allowSendEmailInvitation?: boolean;
     isOpen: boolean;
     closeDialog: () => void;

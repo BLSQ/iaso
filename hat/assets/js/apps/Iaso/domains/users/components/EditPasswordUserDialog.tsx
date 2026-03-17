@@ -5,8 +5,8 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import { FormikProvider, useFormik } from 'formik';
-import { MutateFunction } from 'react-query';
+import { FormikProps, FormikProvider, useFormik } from 'formik';
+import { UseMutateFunction } from 'react-query';
 import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from 'Iaso/domains/users/messages';
@@ -16,11 +16,17 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from 'Iaso/libs/validation';
-import { Profile } from 'Iaso/utils/usersUtils';
+import { DjangoError } from 'Iaso/types/general';
+import { User } from 'Iaso/utils/usersUtils';
 
 type Props = {
     titleMessage: IntlMessage;
-    savePassword: MutateFunction<Profile, any>;
+    savePassword: UseMutateFunction<
+        User,
+        DjangoError,
+        User | Partial<User>,
+        unknown
+    >;
     closeDialog: () => void;
     isOpen: boolean;
 };
@@ -54,7 +60,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
         validationSchema: schema,
     });
 
-    const onChange = (keyValue, value) => {
+    const onChange = (keyValue: string, value: string) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
@@ -68,7 +74,7 @@ const EditPasswordUserDialogComponent: FunctionComponent<Props> = ({
         isValid,
         handleSubmit,
         resetForm,
-    } = formik;
+    }: FormikProps<Partial<SaveUserPasswordQuery>> = formik;
 
     const getErrors = useTranslatedErrors({
         errors,

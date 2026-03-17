@@ -49,12 +49,12 @@ export const useGetProfiles = (params): UseQueryResult<ListResponse, Error> => {
     return useSnackQuery(['profiles', apiParams], () => getRequest(url));
 };
 
-const getProfile = async (profileId?: string): Promise<Profile> => {
+const getProfile = async (profileId?: number | string): Promise<Profile> => {
     return getRequest(`/api/profiles/${profileId}/`);
 };
 
 export const useGetProfile = (
-    profileId?: string,
+    profileId?: number | string,
 ): UseQueryResult<ProfileRetrieveResponseItem, DjangoError> => {
     const queryKey: any[] = ['userDetail', profileId];
     return useSnackQuery({

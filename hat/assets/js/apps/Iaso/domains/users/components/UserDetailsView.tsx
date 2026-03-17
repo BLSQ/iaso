@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { Masonry } from '@mui/lab';
-import { Container, Stack, Box } from '@mui/material';
+import { Stack, Box } from '@mui/material';
 import {
     LoadingSpinner,
     useRedirectTo,

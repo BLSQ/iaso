@@ -24,7 +24,7 @@ export const useSortableTableState = <T>(tableData: T[]) => {
 
     return useMemo(() => {
         return {
-            items,
+            items: items ?? [],
             setItems,
             isOrderChanged,
             handleSortChange,

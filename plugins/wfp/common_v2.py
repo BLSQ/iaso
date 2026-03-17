@@ -47,6 +47,9 @@ JOURNEY_STARTING_FORMS = frozenset(
         "Anthropometric visit child_2",
         "Anthropometric visit child_U6",
         "wfp_coda_pbwg_anthropometric",
+        "anthropometric_admission",
+        "ng_pbwg_anthropometric",
+        "ethiopia_anthro_child",
     ]
 )
 
@@ -65,6 +68,10 @@ FOLLOWUP_FORMS = frozenset(
         "PBWG_BSFP",
         "wfp_coda_pbwg_luctating_followup_anthro",
         "wfp_coda_pbwg_followup_anthro",
+        "anthropometric_second_visit_otp",
+        "anthropometric_second_visit_tsfp",
+        "ethiopia_child_antropometric_followUp_otp",
+        "_ethiopia_child_antropometric_followUp_tsfp",
     ]
 )
 
@@ -87,6 +94,9 @@ ASSISTANCE_FORMS = frozenset(
         "PBWG_BSFP",
         "wfp_coda_pbwg_assistance",
         "wfp_coda_pbwg_assistance_followup",
+        "ng_pbwg_assistanceassistance_admission_otp",
+        "ng_pbwg_assistance",
+        "ethiopia_child_assistance_follow_up",
     ]
 )
 
@@ -356,9 +366,9 @@ def calculate_birth_date(data):
 def extract_gender(data):
     """Extract and normalize gender from form data."""
     raw = data.get("gender", data.get("_gender"))
-    if raw == "F":
+    if raw in ("F", "Female"):
         return "Female"
-    if raw == "M":
+    if raw in ("M", "Male"):
         return "Male"
     return raw
 
@@ -638,6 +648,20 @@ class ETLV2:
     def get_account(self):
         entity_type = EntityType.objects.select_related("account").filter(code=self.entity_type).first()
         return entity_type.account
+
+    def get_updated_data(self, updated_at=None):
+        entities = Instance.objects.filter(entity__entity_type__code=self.entity_type)
+        if updated_at is not None:
+            entities = entities.filter(updated_at__gte=updated_at)
+        return entities
+
+    def get_org_unit_ids_with_updated_data(self, updated_at=None):
+        entities = self.get_updated_data(updated_at)
+        return entities.distinct().values_list("org_unit_id", flat=True)
+
+    def get_updated_entity_ids(self, updated_at=None):
+        entities = self.get_updated_data(updated_at)
+        return entities.distinct().values_list("entity_id", flat=True)
 
     @staticmethod
     def _retrieve_submissions(entity_type_code, entity_ids, page_size=5000, page_number=1):

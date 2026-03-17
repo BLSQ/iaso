@@ -8,12 +8,8 @@ from iaso.management.commands import unique_indexes
 from iaso.management.commands.clean_up_duplicate_submissions import DRY_RUN_ARG
 from iaso.models.base import ExternalCredentials
 from plugins.wfp.aggregator import Aggregator
-from plugins.wfp.common import ETL
+from plugins.wfp.common_v2 import ETLV2
 
-from .management.commands.ethiopia.Under5 import ET_Under5
-from .management.commands.nigeria.Pbwg import NG_PBWG
-from .management.commands.nigeria.Under5 import NG_Under5
-from .management.commands.south_sudan.Screening import Screening
 from .models import *
 
 
@@ -81,6 +77,9 @@ def etl_ng(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
 
+    from .management.commands.nigeria.Pbwg import NG_PBWG
+    from .management.commands.nigeria.Under5 import NG_Under5
+
     task_name = "plugins.wfp.tasks.etl_ng"
     last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
 
@@ -98,13 +97,11 @@ def etl_ng(all_data=None):
 
     logger.info("Starting ETL for Nigeria")
     entity_type_U5_code = "nigeria_under5"
-    etl_u5 = ETL(entity_type_U5_code)
-    etl = ETL()
-    account = etl_u5.account_related_to_entity_type()
+    etl_u5 = ETLV2(entity_type_U5_code)
+    account = etl_u5.get_account()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=account, entity_id__in=updated_U5_beneficiaries).delete()
-
-    NG_Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
+    NG_Under5().run(updated_U5_beneficiaries, entity_type_U5_code, task_name)
     logger.info(
         f"----------------------------- Aggregating journey for {account} per org unit, admission and period(month and year) -----------------------------"
     )
@@ -114,13 +111,14 @@ def etl_ng(all_data=None):
         programme_type="U5",
         org_unit_id__in=org_units_with_updated_data,
     ).delete()
-    etl.journey_with_visit_and_steps_per_visit(account, "U5", org_units_with_updated_data)
+    Aggregator.aggregate_monthly_data_by_org_unit(account, org_units_with_updated_data, "U5")
+
     entity_type_pbwg_code = "nigeria_pbwg"
-    etl_pbwg = ETL(entity_type_pbwg_code)
-    pbwg_account = etl_pbwg.account_related_to_entity_type()
+    etl_pbwg = ETLV2(entity_type_pbwg_code)
+    pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    NG_PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
+    Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
+    NG_PBWG().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
@@ -129,7 +127,7 @@ def etl_ng(all_data=None):
         programme_type="PLW",
         org_unit_id__in=org_units_with_updated_data,
     ).delete()
-    etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units_with_updated_data, "PLW")
 
 
 @shared_task()
@@ -149,8 +147,8 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
     if all_data is not None:
         last_success_task_date = None
 
-    etl = ETL("ssd_under5")
-    account = etl.account_related_to_entity_type()
+    etl = ETLV2("ssd_under5")
+    account = etl.get_account()
     org_units_with_updated_data = etl.get_org_unit_ids_with_updated_data(last_success_task_date)
 
     external_credential = ExternalCredentials.objects.filter(account=account).first()
@@ -171,7 +169,7 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
 
 @shared_task()
 def etl_ssd(all_data=None):
-    """ETL v2 for South Sudan Under-5 children and PBWG.
+    """ETL for South Sudan Under-5 children and PBWG.
 
     This is a rewrite of the Under-5 part of etl_ssd with key fixes:
     - Supports unlimited journeys per beneficiary (v1 limited to 2)
@@ -183,6 +181,7 @@ def etl_ssd(all_data=None):
     from django_celery_results.models import TaskResult
 
     from .management.commands.south_sudan.Pbwg import Pbwg
+    from .management.commands.south_sudan.Screening import Screening
     from .management.commands.south_sudan.Under5 import Under5
 
     task_name = "plugins.wfp.tasks.etl_ssd"
@@ -196,11 +195,11 @@ def etl_ssd(all_data=None):
     if all_data is not None:
         last_success_task_date = None
 
-    logger.info("Starting ETL v2 for South Sudan")
+    logger.info("Starting ETL for South Sudan")
 
     entity_type_u5_code = "ssd_under5"
-    etl_u5 = ETL(entity_type_u5_code)
-    child_account = etl_u5.account_related_to_entity_type()
+    etl_u5 = ETLV2(entity_type_u5_code)
+    child_account = etl_u5.get_account()
     updated_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_beneficiaries).delete()
 
@@ -216,8 +215,8 @@ def etl_ssd(all_data=None):
     Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units_with_updated_data, "U5")
 
     entity_type_pbwg_code = "ssd_pbwg"
-    etl_pbwg = ETL(entity_type_pbwg_code)
-    pbwg_account = etl_pbwg.account_related_to_entity_type()
+    etl_pbwg = ETLV2(entity_type_pbwg_code)
+    pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
     Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
@@ -239,6 +238,7 @@ def etl_ethiopia(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
 
+    from .management.commands.ethiopia.Under5 import ET_Under5
     from .management.commands.south_sudan.Pbwg import Pbwg
 
     task_name = "plugins.wfp.tasks.etl_ethiopia"
@@ -258,12 +258,11 @@ def etl_ethiopia(all_data=None):
 
     logger.info("Starting ETL for Ethiopia")
     entity_type_U5_code = "ethiopia_under5"
-    etl_u5 = ETL(entity_type_U5_code)
-    etl = ETL()
-    child_account = etl_u5.account_related_to_entity_type()
+    etl_u5 = ETLV2(entity_type_U5_code)
+    child_account = etl_u5.get_account()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
-    ET_Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
+    ET_Under5().run(updated_U5_beneficiaries, entity_type_U5_code, task_name)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
@@ -274,11 +273,11 @@ def etl_ethiopia(all_data=None):
         programme_type="U5",
         org_unit_id__in=org_units_with_updated_data,
     ).delete()
-    etl.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
+    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units_with_updated_data, "U5")
 
     entity_type_pbwg_code = "ethiopia_pbwg"
-    etl_pbwg = ETL(entity_type_pbwg_code)
-    pbwg_account = etl_pbwg.account_related_to_entity_type()
+    etl_pbwg = ETLV2(entity_type_pbwg_code)
+    pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
     Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
@@ -291,4 +290,4 @@ def etl_ethiopia(all_data=None):
         programme_type="PLW",
         org_unit_id__in=org_units_with_updated_data,
     ).delete()
-    etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units_with_updated_data, "PLW")

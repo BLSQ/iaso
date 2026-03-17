@@ -153,8 +153,6 @@ class MonthlyStatistics(models.Model):
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
     physiology_status = models.CharField(max_length=255, choices=PHYSIOLOGY_STATUS, null=True, blank=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
-    admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
-    admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
     nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
     oedema = models.IntegerField(null=True)
     muac_under_11_5 = models.IntegerField(null=True)  # MUAC < 11.5cm
@@ -182,8 +180,7 @@ class MonthlyStatistics(models.Model):
     exit_type_death = models.IntegerField(null=True)
     exit_type_defaulter = models.IntegerField(null=True)
     exit_type_non_respondent = models.IntegerField(null=True)
-    pregnant = models.IntegerField(null=True)
-    breastfeeding = models.IntegerField(null=True)
+    total_beneficiaries = models.IntegerField(null=True)
     number_visits = models.IntegerField(null=True)
 
 

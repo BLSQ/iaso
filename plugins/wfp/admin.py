@@ -187,8 +187,6 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "year",
         "gender",
         "physiology_status",
-        "admission_criteria",
-        "admission_type",
         "nutrition_programme",
         "programme_type",
     )
@@ -202,8 +200,6 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "period",
         "gender",
         "physiology_status",
-        "admission_criteria",
-        "admission_type",
         "nutrition_programme",
         "programme_type",
         "muac_under_11_5",
@@ -232,8 +228,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "exit_type_defaulter",
         "exit_type_non_respondent",
         "exit_type_transfer_in_from_other_tsfp",
-        "pregnant",
-        "breastfeeding",
+        "total_beneficiaries",
         "number_visits",
     )
     search_fields = (
@@ -241,9 +236,9 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "org_unit__id",
         "org_unit__name",
         "dhis2_id",
-        "admission_type",
         "nutrition_programme",
         "programme_type",
+        "physiology_status__icontains",
         "gender__icontains",
         "month__icontains",
         "year__icontains",

@@ -1298,10 +1298,7 @@ class ETLV2:
                 ),
                 oedema_cases=Count(
                     "journey__beneficiary_id",
-                    filter=Q(
-                        journey__programme_type="U5",
-                        journey__admission_criteria="oedema",
-                    ),
+                    filter=Q(journey__programme_type="U5", oedema=1),
                     distinct=True,
                 ),
                 community_health_worker_muac_under_11_5=Count(
@@ -1412,16 +1409,7 @@ class ETLV2:
                     filter=Q(journey__exit_type="non_respondent"),
                     distinct=True,
                 ),
-                pregnant=Count(
-                    "journey__beneficiary_id",
-                    filter=Q(journey__physiology_status="pregnant"),
-                    distinct=True,
-                ),
-                breastfeeding=Count(
-                    "journey__beneficiary_id",
-                    filter=Q(journey__physiology_status="breastfeeding"),
-                    distinct=True,
-                ),
+                total_beneficiaries=Count("journey__beneficiary_id", distinct=True),
                 number_visits=Count("id", distinct=True),
             )
             .order_by("org_unit_id")
@@ -1475,8 +1463,7 @@ class ETLV2:
                 exit_type_death=row["exit_type_death"],
                 exit_type_defaulter=row["exit_type_defaulter"],
                 exit_type_non_respondent=row["exit_type_non_respondent"],
-                pregnant=row["pregnant"],
-                breastfeeding=row["breastfeeding"],
+                total_beneficiaries=row["total_beneficiaries"],
                 number_visits=row["number_visits"],
             )
             all_journeys.append(journey_by_org_unit_period)
@@ -1589,8 +1576,7 @@ class ETLV2:
                 defaulter=Sum("exit_type_defaulter"),
                 non_respondent=Sum("exit_type_non_respondent"),
                 transfer_in_from_other_tsfp=Sum("exit_type_transfer_in_from_other_tsfp"),
-                pregnant=Sum("pregnant"),
-                breastfeeding=Sum("breastfeeding"),
+                total_beneficiaries=Sum("total_beneficiaries"),
             )
             .filter(target_group__isnull=False, dhis2_id__isnull=False)
             .exclude(

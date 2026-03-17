@@ -27,7 +27,7 @@ export const userHasOneOfPermissions = (permissions = [], user) => {
     if (!user) {
         return false;
     }
-    if (permissions.length === 0) return true;
+    if (user.is_superuser) return true;
     let isAuthorised = false;
     permissions.forEach(p => {
         if (!!p && userHasPermission(p, user)) {

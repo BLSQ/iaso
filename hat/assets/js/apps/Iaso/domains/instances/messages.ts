@@ -782,6 +782,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.updated_by',
         defaultMessage: 'Updated by',
     },
+    deleteWorkflow: {
+        id: 'iaso.submissions.label.deleteWorkflow',
+        defaultMessage: 'Delete workflow',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
 });
 
 export default MESSAGES;

@@ -354,7 +354,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         ),  # type: ignore
     ]  # type: ignore
 
-    # @swagger_auto_schema(query_serializer=ParamSerializer())
     def list(self, request: Request, *args, **kwargs) -> Response:
         """Completeness of form submission"""
         paramsSerializer = ParamSerializer(data=request.query_params, context={"request": request})

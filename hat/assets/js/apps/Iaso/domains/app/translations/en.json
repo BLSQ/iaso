@@ -1327,6 +1327,8 @@
     "iaso.permissions.users_management": "User management - Geo limited",
     "iaso.permissions.workflows": "Workflows",
     "iaso.planning.label.planningAlreadyPublished": "Planning is already published",
+    "iaso.planning.label.planningWarningMessage": "Editting dates or status can impact the actual data collection",
+    "iaso.planning.label.planningWarningTitle": "Adapt planning dates or status",
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Duplicate planning",
     "iaso.plannings.label.orgUnitsCount": "Org units count",

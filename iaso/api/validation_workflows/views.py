@@ -19,7 +19,7 @@ from iaso.api.validation_workflows.serializers.update import ValidationWorkflowU
 from iaso.models import ValidationWorkflow
 
 
-@extend_schema(tags=["validation-workflows"])
+@extend_schema(tags=["Validation workflows"])
 class ValidationWorkflowViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasValidationWorkflowPermission]
     filter_backends = [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]

@@ -219,7 +219,8 @@ INSTALLED_APPS += [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
-    "drf_yasg",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_json_widget",
     "phonenumber_field",
 ]
@@ -475,6 +476,21 @@ REST_FRAMEWORK = {
         "no_underscore_before_number": True,
     },
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "TITLE": "Iaso",
+    "DESCRIPTION": "Iaso Swagger",
+    "VERSION": "v1",
+    "SERVE_PERMISSIONS": [
+        "rest_framework.permissions.IsAdminUser",
+        "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
+    ],
+    "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {

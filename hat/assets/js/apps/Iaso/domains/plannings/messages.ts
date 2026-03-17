@@ -347,6 +347,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.planning.label.planningAlreadyPublished',
         defaultMessage: 'Planning is already published',
     },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    planningWarningTitle: {
+        defaultMessage: 'Adapt planning dates or status',
+        id: 'iaso.planning.label.planningWarningTitle',
+    },
+    planningWarningMessage: {
+        defaultMessage:
+            'Editting dates or status can impact the actual data collection',
+        id: 'iaso.planning.label.planningWarningMessage',
+    },
 });
 
 export default MESSAGES;

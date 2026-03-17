@@ -5,7 +5,7 @@ import itertools
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -118,7 +118,7 @@ class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
     write_perm = POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION
 
 
-@swagger_auto_schema(tags=["vaccineauthorizations"])
+@extend_schema(tags=["vaccineauthorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
     """
     Vaccine Authorizations API

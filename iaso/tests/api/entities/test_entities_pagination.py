@@ -381,3 +381,100 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         data_filtered = self.assertJSONResponse(response_filtered, 200)
 
         self.assertEqual(data_filtered["count"], 2)
+
+    def test_cursor_multiple_columns(self):
+        """Test multiple field ordering with mixed ASC/DESC directions."""
+
+        self.client.force_authenticate(self.yoda)
+
+        m.Entity.objects.all().delete()
+
+        base_time = now()
+        account = self.yoda.iaso_profile.account
+
+        # Entities in their expected order (name ASC, created_at DESC, implicit id ASC)
+
+        e1 = m.Entity.objects.create(name="Apple", entity_type=self.entity_type, account=account)
+        e1.created_at = base_time
+        e1.save()
+
+        e2 = m.Entity.objects.create(name="Apple", entity_type=self.entity_type, account=account)
+        e2.created_at = base_time
+        e2.save()
+
+        e3 = m.Entity.objects.create(name="Apple", entity_type=self.entity_type, account=account)
+        e3.created_at = base_time
+        e3.save()
+
+        e4 = m.Entity.objects.create(name="Banana", entity_type=self.entity_type, account=account)
+        e4.created_at = base_time + timedelta(days=1)
+        e4.save()
+
+        params = {"order": "name,-created_at", "limit": 2}
+
+        res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
+        data_p1 = self.assertJSONResponse(res_p1, 200)
+
+        self.assertEqual(len(data_p1["result"]), 2)
+        self.assertEqual(data_p1["result"][0]["id"], e1.id)
+        self.assertEqual(data_p1["result"][1]["id"], e2.id)
+
+        res_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
+        data_p2 = self.assertJSONResponse(res_p2, 200)
+
+        self.assertEqual(len(data_p2["result"]), 2)
+        self.assertEqual(data_p2["result"][0]["id"], e3.id)
+        self.assertEqual(data_p2["result"][1]["id"], e4.id)
+        self.assertIsNone(data_p2["next"])
+
+        res_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
+        data_back = self.assertJSONResponse(res_back, 200)
+
+        self.assertEqual(len(data_back["result"]), 2)
+        self.assertEqual(data_back["result"][0]["id"], e1.id)
+        self.assertEqual(data_back["result"][1]["id"], e2.id)
+        self.assertIsNone(data_back["previous"])
+
+    def test_cursor_multiple_columns_nullable(self):
+        self.client.force_authenticate(self.yoda)
+
+        m.Entity.objects.all().delete()
+
+        account = self.yoda.iaso_profile.account
+
+        # Entities in their expected order (org unit name ASC (nulls last), name DESC, implicit id ASC)
+
+        inst_valid = m.Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        e1 = m.Entity.objects.create(name="Alpha", entity_type=self.entity_type, attributes=inst_valid, account=account)
+
+        inst_null_1 = m.Instance.objects.create(org_unit=None, form=self.form_1)
+        e2 = m.Entity.objects.create(name="Zeta", entity_type=self.entity_type, attributes=inst_null_1, account=account)
+
+        inst_null_2 = m.Instance.objects.create(org_unit=None, form=self.form_1)
+        e3 = m.Entity.objects.create(name="Zeta", entity_type=self.entity_type, attributes=inst_null_2, account=account)
+
+        inst_null_3 = m.Instance.objects.create(org_unit=None, form=self.form_1)
+        e4 = m.Entity.objects.create(name="Zeta", entity_type=self.entity_type, attributes=inst_null_3, account=account)
+
+        params = {"order": "attributes__org_unit__name,-name", "limit": 2}
+
+        res_p1 = self.client.get("/api/entities/", data=params | {"cursor": "null"}, format="json")
+        data_p1 = self.assertJSONResponse(res_p1, 200)
+
+        self.assertEqual(len(data_p1["result"]), 2)
+        self.assertEqual(data_p1["result"][0]["id"], e1.id)
+        self.assertEqual(data_p1["result"][1]["id"], e2.id)
+
+        res_p2 = self.client.get("/api/entities/", data=params | {"cursor": data_p1["next"]}, format="json")
+        data_p2 = self.assertJSONResponse(res_p2, 200)
+
+        self.assertEqual(len(data_p2["result"]), 2)
+        self.assertEqual(data_p2["result"][0]["id"], e3.id)
+        self.assertEqual(data_p2["result"][1]["id"], e4.id)
+
+        res_back = self.client.get("/api/entities/", data=params | {"cursor": data_p2["previous"]}, format="json")
+        data_back = self.assertJSONResponse(res_back, 200)
+
+        self.assertEqual(len(data_back["result"]), 2)
+        self.assertEqual(data_back["result"][0]["id"], e1.id)
+        self.assertEqual(data_back["result"][1]["id"], e2.id)

@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react';
 
 import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
+import { WorkflowConfiguration } from 'Iaso/domains/instances/validationWorkflow/WorkflowConfiguration';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
@@ -139,6 +140,12 @@ export const instancesValidationPath = {
     routerUrl: `${baseUrls.instanceValidation}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <SubmissionValidation />,
+};
+export const instanceValidationDetailPath = {
+    baseUrl: baseUrls.instanceValidationDetail,
+    routerUrl: `${baseUrls.instanceValidationDetail}/*`,
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
+    element: <WorkflowConfiguration />,
 };
 
 export const instanceDetailPath = {
@@ -525,6 +532,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     instancesPath,
     instanceDetailPath,
     instancesValidationPath,
+    instanceValidationDetailPath,
     compareInstanceLogsPath,
     compareInstancesPath,
     orgUnitsPath,

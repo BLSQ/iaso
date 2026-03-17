@@ -121,6 +121,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'isSearchActive',
         ],
     },
+    instanceDetail: {
+        url: 'forms/submission',
+        params: ['accountId', 'instanceId', 'referenceFormId'],
+    },
     instanceValidation: {
         url: 'forms/submissions/validation',
         params: [
@@ -131,9 +135,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
-    instanceDetail: {
-        url: 'forms/submission',
-        params: ['accountId', 'instanceId', 'referenceFormId'],
+    instanceValidationDetail: {
+        url: 'forms/submissions/validation/detail',
+        params: ['accountId', 'slug'],
     },
     compareInstanceLogs: {
         url: 'forms/compareInstanceLogs',
@@ -675,8 +679,9 @@ type IasoBaseUrls = {
     pipelineList: string;
     formsStats: string;
     instances: string;
-    instanceValidation: string;
     instanceDetail: string;
+    instanceValidation: string;
+    instanceValidationDetail: string;
     compareInstanceLogs: string;
     compareInstances: string;
     mappings: string;

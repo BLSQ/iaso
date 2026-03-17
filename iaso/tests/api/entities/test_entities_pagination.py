@@ -363,7 +363,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": next_cursor}, format="json")
         data_p2 = self.assertJSONResponse(res_p2, 200)
 
-        self.assertTrue(len(data_p2["result"]) > 0)
+        self.assertEqual(len(data_p2["result"]), 2)
 
     def test_count_endpoint(self):
         self.client.force_authenticate(self.yoda)

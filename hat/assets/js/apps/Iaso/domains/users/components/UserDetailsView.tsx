@@ -70,7 +70,7 @@ export const UserDetailsView = ({ userId }: Props) => {
                 <LoadingSpinner />
             ) : (
                 <Stack spacing={2}>
-                    <Box pt={2} px={2}>
+                    <Box pt={4} px={2}>
                         <Stack
                             direction="row"
                             spacing={2}
@@ -121,7 +121,6 @@ export const UserDetailsView = ({ userId }: Props) => {
                     </Masonry>
                 </Stack>
             )}
-            {/* </Container> */}
         </Box>
     );
 };

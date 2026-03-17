@@ -16,26 +16,21 @@ export const PermissionsInfoWidgetPaper = ({
     profile,
 }: Props) => {
     const { formatMessage } = useSafeIntl();
-
-    let content;
-    if (savingProfile) {
-        content = <LoadingSpinner absolute={false} fixed={false} />;
-    } else if (profile?.permissions?.length) {
-        content = <PermissionTable data={profile?.permissions} />;
-    } else {
-        content = (
-            <Alert color={'info'} severity={'info'} sx={{ mx: 2, mb: 2 }}>
-                {formatMessage(MESSAGES.noResultsFound)}
-            </Alert>
-        );
-    }
-
     return (
         <WidgetPaper
             title={formatMessage(MESSAGES.permissions)}
             data-testid={'permissions-info-box'}
+            sx={{ position: 'relative' }}
         >
-            {content}
+            {savingProfile && <LoadingSpinner absolute fixed={false} />}
+            {profile?.permissions?.length && (
+                <PermissionTable data={profile?.permissions} />
+            )}
+            {!profile?.permissions?.length && (
+                <Alert color={'info'} severity={'info'} sx={{ mx: 2, mb: 2 }}>
+                    {formatMessage(MESSAGES.noResultsFound)}
+                </Alert>
+            )}
         </WidgetPaper>
     );
 };

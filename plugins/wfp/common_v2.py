@@ -1578,7 +1578,6 @@ class ETLV2:
                 community_health_worker_muac_above_23_pregnant=Sum(
                     "community_health_worker_muac_above_23", filter=Q(target_group="Pregnant")
                 ),
-                # community_health_worker_muac_under_11_5=Sum("community_health_worker_muac_under_11_5"),
                 community_health_worker_muac_under_23_breastfeeding=Sum(
                     "community_health_worker_muac_under_23", filter=Q(target_group="Breastfeeding")
                 ),

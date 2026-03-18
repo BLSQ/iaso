@@ -40,12 +40,10 @@ export const TopActions = ({
                 titleMessage={formatMessage(MESSAGES.updateUser)}
                 saveProfile={saveProfile}
                 canBypassProjectRestrictions={canBypassProjectRestrictions}
-                iconProps={{}}
             />
             <EditPasswordUserWithButtonDialog
                 titleMessage={MESSAGES.updateUserPassword}
                 savePassword={savePassword}
-                iconProps={{}}
             />
             {currentUser?.id?.toString() !== userId && (
                 <DisplayIfUserHasPerm

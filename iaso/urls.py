@@ -123,11 +123,8 @@ from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
-from .api.validation_workflow_instances.views import ValidationWorkflowInstanceViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
-from .api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
-from .api.validation_workflows_nodes.views import ValidationNodeViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
@@ -262,21 +259,13 @@ router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, base
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
 
-router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
+router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validationworkflows").register(
     r"node-templates",
     ValidationNodeTemplatesView,
-    basename="validation_node_templates",
+    basename="validation-node-templates",
     parents_query_lookups=["workflow__slug"],
 )
-router.register(
-    r"validation-workflows/instance/(?P<instance_id>\d+)/nodes",
-    ValidationNodeViewSet,
-    basename="validation_workflow_nodes",
-)
-router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile_validation_workflows")
-router.register(
-    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
-)
+
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

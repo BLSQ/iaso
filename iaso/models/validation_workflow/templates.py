@@ -194,6 +194,37 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
 
         return walk(start, set())
 
+    def dump_nodes(self):
+        start = self.get_starting_node()
+
+        def walk(node, visited):
+            path = []
+            current = node
+
+            while True:
+                if current in visited:
+                    path.append(f"[cycle:{current.slug}]")
+                    return path
+
+                visited.add(current)
+                path.append(current.slug)
+
+                next_nodes = current.next_node_templates.all().order_by("slug")
+
+                if not next_nodes.exists():
+                    # end node there
+                    return path
+
+                if next_nodes.count() > 1:
+                    # split in branches
+                    branches = [walk(next_node, visited.copy()) for next_node in next_nodes]
+                    path.append(branches)
+                    return path
+
+                current = next_nodes[0]
+
+        return walk(start, set())
+
 
 class ValidationNodeTemplate(CreatedAndUpdatedModel):
     """

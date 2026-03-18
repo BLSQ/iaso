@@ -869,20 +869,6 @@ class ValidationNodeTemplateAPIDeleteTestCase(BaseApiTestCase):
         )
 
 
-class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
-    def test_move(self):
-        self.fail()
-
-    def test_permissions(self):
-        self.fail()
-
-    def test_validation(self):
-        self.fail()
-
-    def test_num_queries(self):
-        self.fail()
-
-
 class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
     def test_happy_flow(self):
         self.fail()
@@ -897,21 +883,371 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.fail()
 
 
-class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
+class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
+    def setUp(self):
+        self.account = Account.objects.create(name="account")
+        self.project = Project.objects.create(name="project", account=self.account)
+        self.account_2 = Account.objects.create(name="account_2")
+
+        self.group = Group.objects.create(name="Group")
+        self.user_role = UserRole.objects.create(group=self.group, account=self.account)
+
+        self.john_doe = self.create_user_with_profile(
+            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+        )
+
+        self.john_wick = self.create_user_with_profile(
+            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+        )
+
+        self.validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account,
+        )
+
+        # create some nodes
+        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
+        self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
+        self.third_node = ValidationNodeTemplate.objects.create(name="Third node", workflow=self.validation_workflow)
+        self.second_node.previous_node_templates.add(self.first_node)
+        self.second_node.next_node_templates.add(self.third_node)
+
     def test_happy_flow(self):
-        self.fail()
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newNextNodes": [self.first_node.slug],
+            },
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+        # check that it was moved to first node
+        self.validation_workflow.refresh_from_db()
+        self.assertEqual(self.validation_workflow.dump_nodes(), ["second-node", "first-node", "third-node"])
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newPreviousNodes": [self.first_node.slug],
+                "newNextNodes": [self.third_node.slug],
+            },
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.validation_workflow.dump_nodes(), ["first-node", "second-node", "third-node"])
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newPreviousNodes": [self.third_node.slug],
+            },
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.validation_workflow.dump_nodes(), ["first-node", "third-node", "second-node"])
 
     def test_permissions(self):
-        self.fail()
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newNextNodes": [self.first_node.slug],
+            },
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.john_doe)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newNextNodes": [self.first_node.slug],
+            },
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newNextNodes": [self.first_node.slug],
+            },
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_validation(self):
-        self.fail()
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            )
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data,
+            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+            "You must provide one of those : new_next_nodes, new_previous_nodes.",
+        )
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newPreviousNodes": [self.second_node.slug],
+                "newNextNodes": [self.second_node.slug],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "newPreviousNodes", "Object with slug=second-node does not exist.")
+        self.assertHasError(res_data, "newNextNodes", "Object with slug=second-node does not exist.")
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newPreviousNodes": ["wrong"],
+                "newNextNodes": ["wrong"],
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "newPreviousNodes", "Object with slug=wrong does not exist.")
+        self.assertHasError(res_data, "newNextNodes", "Object with slug=wrong does not exist.")
 
     def test_num_queries(self):
-        self.fail()
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-move",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
+            ),
+            data={
+                "newNextNodes": [self.first_node.slug],
+            },
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+        # check that it was moved to first node
+        self.validation_workflow.refresh_from_db()
+        self.assertEqual(self.validation_workflow.dump_nodes(), ["second-node", "first-node", "third-node"])
+
+        with self.assertNumQueries(2):
+            res = self.client.put(
+                reverse(
+                    "validation-node-templates-move",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "slug": self.second_node.slug,
+                    },
+                ),
+                data={
+                    "newPreviousNodes": [self.first_node.slug],
+                    "newNextNodes": [self.third_node.slug],
+                },
+            )
+
+            self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
+    def setUp(self):
+        self.account = Account.objects.create(name="account")
+        self.project = Project.objects.create(name="project", account=self.account)
+        self.account_2 = Account.objects.create(name="account_2")
+
+        self.group = Group.objects.create(name="Group")
+        self.other_group = Group.objects.create(name="Group 2")
+        self.user_role = UserRole.objects.create(group=self.group, account=self.account)
+
+        self.other_user_role = UserRole.objects.create(group=self.other_group, account=self.account_2)
+
+        self.john_doe = self.create_user_with_profile(
+            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+        )
+
+        self.john_wick = self.create_user_with_profile(
+            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+        )
+
+        self.validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account,
+        )
+
+        # create some nodes
+        self.node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
+
+    def test_happy_flow(self):
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={
+                "name": "test",
+                "description": "desc",
+                "color": "#ffffff",
+                "canSkipPreviousNodes": True,
+                "rolesRequired": [self.user_role.pk],
+            },
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertEqual(res_data, {"slug": "test"})
+
+        # check in db
+        self.node.refresh_from_db()
+
+        self.assertEqual(self.node.name, "test")
+        self.assertEqual(self.node.slug, "test")
+        self.assertEqual(self.node.description, "desc")
+        self.assertEqual(self.node.color, "#FFFFFF")
+        self.assertTrue(self.node.can_skip_previous_nodes)
+        self.assertEqual(list(self.node.roles_required.all()), [self.user_role])
+
+    def test_permissions(self):
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            )
+        )
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.john_doe)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            )
+        )
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            )
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_validation(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            )
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "name", "This field is required.")
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": "test", "rolesRequired": [1111]},
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "rolesRequired", 'Invalid pk "1111" - object does not exist.')
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": "test", "rolesRequired": [self.other_user_role.pk]},
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(
+            res_data, "rolesRequired", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+        )
+
+    def test_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(2):
+            res = self.client.put(
+                reverse(
+                    "validation-node-templates-detail",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+                ),
+                data={"name": "test", "rolesRequired": [self.user_role.pk]},
+            )
+
+            self.assertJSONResponse(res, status.HTTP_200_OK)
 
 
 class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
+    def setUp(self):
+        self.account = Account.objects.create(name="account")
+        self.project = Project.objects.create(name="project", account=self.account)
+        self.account_2 = Account.objects.create(name="account_2")
+
+        self.group = Group.objects.create(name="Group")
+        self.user_role = UserRole.objects.create(group=self.group, account=self.account)
+
+        self.other_user_role = UserRole.objects.create(group=self.group, account=self.account_2)
+
+        self.john_doe = self.create_user_with_profile(
+            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+        )
+
+        self.john_wick = self.create_user_with_profile(
+            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+        )
+
+        self.validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account,
+        )
+
+        # create some nodes
+        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
+
     def test_happy_flow(self):
         self.fail()
 

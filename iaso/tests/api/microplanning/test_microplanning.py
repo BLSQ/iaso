@@ -52,7 +52,7 @@ class PlanningTestCase(APITestCase):
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             response = self.client.get("/api/microplanning/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)

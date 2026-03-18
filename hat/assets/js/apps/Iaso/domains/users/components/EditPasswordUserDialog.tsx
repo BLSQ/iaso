@@ -1,4 +1,6 @@
 import React, { FunctionComponent } from 'react';
+import PasswordIcon from '@mui/icons-material/Password';
+import { Button } from '@mui/material';
 import {
     ConfirmCancelModal,
     IntlMessage,
@@ -140,12 +142,12 @@ const PasswordEditButton = (props: PasswordEditButtonProps) => {
             color: 'white',
         },
     };
+    const { formatMessage } = useSafeIntl();
     return (
-        <EditButton
-            message={MESSAGES.updatePasswordButtonLabel}
-            color={'warning'}
-            {...extendedProps}
-        />
+        <Button variant={'contained'} color={'warning'} {...extendedProps}>
+            <PasswordIcon sx={{ mr: 1 }} />
+            {formatMessage(MESSAGES.updatePasswordButtonLabel)}
+        </Button>
     );
 };
 

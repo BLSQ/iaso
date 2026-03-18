@@ -24,12 +24,13 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, Count, F, FloatField, Func, Q, Sum, Value, When
-from django.db.models.functions import Cast, Concat, ExtractMonth, ExtractYear
+from django.db.models import Case, CharField, Count, DateField, F, FloatField, Func, IntegerField, Q, Sum, Value, When
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast, Concat, Extract, ExtractMonth, ExtractYear, Substr
 
-from iaso.models import EntityType, TaskLog
+from iaso.models import Entity, EntityType, TaskLog
 from iaso.models.base import Instance
-from plugins.wfp.models import Beneficiary, Journey, MonthlyStatistics, ScreeningData, Step, Visit
+from plugins.wfp.models import Beneficiary, Journey, MonthlyStatistics, ScreeningData, Step, Visit, Dhis2SyncResults
 
 
 logger = logging.getLogger(__name__)
@@ -1494,6 +1495,82 @@ class ETLV2:
         return MonthlyStatistics.objects.bulk_create(all_journeys)
 
     @staticmethod
+    def _get_screening_raw_data(form_ids, account, updated_at, page_size=5000):
+        queryset = Instance.objects.filter(
+            project__account=account, json__isnull=False, form__form_id__in=form_ids, deleted=False
+        )
+        if updated_at:
+            queryset = queryset.filter(updated_at__gte=updated_at)
+        queryset = queryset.annotate(
+            week_monday=Cast(
+                Func(
+                    Concat(
+                        Cast(Substr("period", 1, 4), CharField()),
+                        Value(" "),
+                        Cast(Substr("period", 6), CharField()),
+                        Value(" 1"),
+                    ),
+                    Value("IYYY IW ID"),
+                    function="TO_DATE",
+                ),
+                output_field=DateField(),
+            ),
+            json_u5_male_green=Cast(KeyTextTransform("u5_male_green", "json"), FloatField()),
+            json_u5_female_green=Cast(KeyTextTransform("u5_female_green", "json"), output_field=FloatField()),
+            json_u5_male_yellow=Cast(KeyTextTransform("u5_male_yellow", "json"), output_field=FloatField()),
+            json_u5_female_yellow=Cast(KeyTextTransform("u5_female_yellow", "json"), output_field=FloatField()),
+            json_u5_male_red=Cast(KeyTextTransform("u5_male_red", "json"), output_field=FloatField()),
+            json_u5_female_red=Cast(KeyTextTransform("u5_female_red", "json"), output_field=FloatField()),
+            json_u5_male_oedema=Cast(KeyTextTransform("u5_male_oedema", "json"), output_field=FloatField()),
+            json_u5_female_oedema=Cast(KeyTextTransform("u5_female_oedema", "json"), output_field=FloatField()),
+            json_pregnant_w_muac_gt_23=Cast(
+                KeyTextTransform("pregnant_w_muac_gt_23", "json"), output_field=FloatField()
+            ),
+            json_pregnant_w_muac_lte_23=Cast(
+                KeyTextTransform("pregnant_w_muac_lte_23", "json"), output_field=FloatField()
+            ),
+            json_lactating_w_muac_gt_23=Cast(
+                KeyTextTransform("lactating_w_muac_gt_23", "json"), output_field=FloatField()
+            ),
+            json_lactating_w_muac_lte_23=Cast(
+                KeyTextTransform("lactating_w_muac_lte_23", "json"), output_field=FloatField()
+            ),
+        ).annotate(
+            yearMonth=Concat(
+                Extract("week_monday", "year"),
+                Func(
+                    Cast(Extract("week_monday", "month"), CharField()),
+                    Value(2),
+                    Value("0"),
+                    function="LPAD",
+                ),
+                output_field=CharField(),
+            )
+        )
+        grouped_queryset = (
+            queryset.values("yearMonth", "org_unit__parent")
+            .annotate(
+                period=F("yearMonth"),
+                org_unit=F("org_unit__parent"),
+                year=Cast(Substr("yearMonth", 1, 4), IntegerField()),
+                month=Cast(Substr("yearMonth", 5, 2), IntegerField()),
+                u5_male_green=Sum("json_u5_male_green"),
+                u5_female_green=Sum("json_u5_female_green"),
+                u5_male_yellow=Sum("json_u5_male_yellow"),
+                u5_female_yellow=Sum("json_u5_female_yellow"),
+                u5_male_red=Sum("json_u5_male_red"),
+                u5_female_red=Sum("json_u5_female_red"),
+                pregnant_w_muac_gt_23=Sum("json_pregnant_w_muac_gt_23"),
+                pregnant_w_muac_lte_23=Sum("json_pregnant_w_muac_lte_23"),
+                lactating_w_muac_gt_23=Sum("json_lactating_w_muac_gt_23"),
+                lactating_w_muac_lte_23=Sum("json_lactating_w_muac_lte_23"),
+            )
+            .order_by("period", "org_unit")
+        )
+        paginator = Paginator(grouped_queryset, page_size)
+        return paginator
+
+    @staticmethod
     def screening_data(account, current_page_org_units):
         queryset = (
             ScreeningData.objects.filter(account=account, org_unit_id__in=current_page_org_units)
@@ -1664,3 +1741,28 @@ class ETLV2:
 
             merged_data.append(monthlyStatistic)
         return merged_data, current_page
+
+    def missing_entities_in_analytics_tables(self, account, entity_type, user):
+        entities = (
+            Entity.objects.filter_for_user(user)
+            .filter(
+                account_id=account, entity_type_id=entity_type, deleted_at__isnull=True, beneficiary__id__isnull=True
+            )
+            .annotate(beneficiary_id=F("beneficiary__id"), entity_id=F("id"), profile=F("attributes__json"))
+            .values("entity_id", "uuid", "deleted_at", "beneficiary_id", "profile")
+        )
+        return entities
+
+    def delete_beneficiaries(self):
+        deleted_count, deleted = Beneficiary.objects.all().delete()
+        MonthlyStatistics.objects.all().delete()
+        ScreeningData.objects.all().delete()
+        Dhis2SyncResults.objects.all().delete()
+
+        if deleted_count > 0:
+            logger.info(f"Deleted {deleted.get('wfp.Beneficiary', 0)} Beneficiaries")
+            logger.info(f"Deleted {deleted.get('wfp.Journey', 0)} Journeys")
+            logger.info(f"Deleted {deleted.get('wfp.Visit', 0)} Visits")
+            logger.info(f"Deleted {deleted.get('wfp.Step', 0)} Steps")
+        else:
+            logger.info("No beneficiaries found to delete.")

@@ -6,7 +6,7 @@ from operator import itemgetter, or_
 
 from django.db.models import Q
 
-from plugins.wfp.common import ETL
+from plugins.wfp.common_v2 import ETLV2
 from plugins.wfp.models import ScreeningData
 
 
@@ -16,27 +16,24 @@ FORMS = ["screening_tally"]
 
 
 class Screening:
-    def run(self, account, update_at):
-        etl_type = ETL(type)
-        instances = etl_type.get_screening_data(FORMS, account, update_at)
+    def run(self, account, updated_at):
+        instances = ETLV2._get_screening_raw_data(FORMS, account, updated_at)
         pages = instances.page_range
-
-        all_screening_data = []
+        logger.info(f"Screening data for {account}")
         for page in pages:
             data = sorted(
                 list(instances.page(page).object_list),
                 key=itemgetter("org_unit"),
             )
             submissions = self.group_submissions_by_org_unit(account, data)
-            all_screening_data.extend(submissions)
-        instances_by_org_unit_period = list(
-            map(lambda row: Q(org_unit=row.org_unit, period=row.period), all_screening_data)
-        )
-        if len(instances_by_org_unit_period) > 0:
-            logger.info(f"Screening data for {account}")
-            ScreeningData.objects.filter(reduce(or_, instances_by_org_unit_period)).delete()
-            logger.info(f"Inserted {len(all_screening_data)} rows for Screening data")
-            ScreeningData.objects.bulk_create(all_screening_data)
+            instances_by_org_unit_period = list(
+                map(lambda row: Q(org_unit=row.org_unit, period=row.period), submissions)
+            )
+            logger.info(f"Processing {len(submissions)} rows on page {page}")
+            if len(instances_by_org_unit_period) > 0:
+                ScreeningData.objects.filter(reduce(or_, instances_by_org_unit_period)).delete()
+                logger.info(f"Inserted {len(submissions)} rows for Screening data")
+                ScreeningData.objects.bulk_create(submissions)
 
     def group_submissions_by_org_unit(self, account, submissions):
         instances = []
@@ -46,7 +43,7 @@ class Screening:
                 row = ScreeningData()
                 row.account = account
                 row.org_unit_id = org_unit_parent_id
-                row.period = item.get("new_period")
+                row.period = item.get("period")
                 row.date = item.get("date")
                 row.year = item.get("year")
                 row.month = item.get("month")

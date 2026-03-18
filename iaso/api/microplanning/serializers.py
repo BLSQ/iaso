@@ -64,9 +64,9 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
-        self.fields["target_org_unit_types"].child_relation.queryset = (
-            OrgUnitType.objects.filter(projects__account=account).distinct()
-        )
+        self.fields["target_org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter(
+            projects__account=account
+        ).distinct()
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)

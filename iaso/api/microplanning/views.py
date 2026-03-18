@@ -85,9 +85,11 @@ class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
     def _get_planning(self, request):
         query_serializer = PlanningOrgUnitListSerializer(data=request.query_params, context={"request": request})
         query_serializer.is_valid(raise_exception=True)
-        return Planning.objects.select_related("org_unit", "selected_sampling_result__group").prefetch_related(
-            "target_org_unit_types"
-        ).get(pk=query_serializer.validated_data["planning"].id)
+        return (
+            Planning.objects.select_related("org_unit", "selected_sampling_result__group")
+            .prefetch_related("target_org_unit_types")
+            .get(pk=query_serializer.validated_data["planning"].id)
+        )
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):

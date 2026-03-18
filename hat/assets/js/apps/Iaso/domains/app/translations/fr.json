@@ -1596,7 +1596,7 @@
     "iaso.storages.writeProfile": "Sauvegarde du profile",
     "iaso.storages.writeRecord": "Sauvegarde enregistrement",
     "iaso.submissions.filterParam": "Sélectionner un formulaire pour activer le téléchargement",
-    "iaso.submissions.label.deleteWorkflow'": "Effacer le workflow",
+    "iaso.submissions.label.deleteWorkflow": "Effacer le workflow",
     "iaso.submissions.searchSubmissionFormsParamsInfo": "Sélectionner un formulaire pour activer la recherche à l'aide des champs soumis du formulaire",
     "iaso.table.label.close": "Fermer",
     "iaso.table.label.resetSearch": "Vider la recherche",

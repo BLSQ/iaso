@@ -72,8 +72,8 @@ export const useWorkflowsTableColumns = () => {
                     return (
                         <>
                             <IconButton
-                                tooltipMessage={MESSAGES.edit}
-                                icon="edit"
+                                tooltipMessage={MESSAGES.see}
+                                icon="remove-red-eye"
                                 url={`/${baseUrls.instanceValidationDetail}/slug/${settings.row.original.slug}`}
                             />
                             <DeleteModal

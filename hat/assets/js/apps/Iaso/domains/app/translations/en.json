@@ -1596,7 +1596,7 @@
     "iaso.storages.writeProfile": "Write profile",
     "iaso.storages.writeRecord": "Write record",
     "iaso.submissions.filterParam": "Select a form to enable data download",
-    "iaso.submissions.label.deleteWorkflow'": "Delete workflow",
+    "iaso.submissions.label.deleteWorkflow": "Delete workflow",
     "iaso.submissions.searchSubmissionFormsParamsInfo": "Select one form to enable search using form submitted fields",
     "iaso.table.label.close": "Close",
     "iaso.table.label.resetSearch": "Empty search",

@@ -1,7 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
+import Add from '@mui/icons-material/Add';
+import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    LinkButton,
+    UrlParams,
+    useSafeIntl,
+} from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -35,6 +41,26 @@ export const SubmissionValidation: FunctionComponent = () => {
 
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Filters params={params} />
+                <Grid
+                    container
+                    spacing={2}
+                    justifyContent="flex-end"
+                    alignItems="center"
+                >
+                    <Box mt={2}>
+                        <LinkButton
+                            buttonClassName={classes.marginLeft}
+                            variant="contained"
+                            color="primary"
+                            size="medium"
+                            target="_self"
+                            to={`/${baseUrls.instanceValidationDetail}/`}
+                        >
+                            <Add className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.create)}
+                        </LinkButton>
+                    </Box>
+                </Grid>
                 <SimpleTableWithDeepLink
                     params={params}
                     isFetching={isLoadingWorkflows}

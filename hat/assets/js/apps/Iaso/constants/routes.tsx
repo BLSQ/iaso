@@ -42,6 +42,7 @@ import { ReviewOrgUnitChangesDetail } from '../domains/orgUnits/reviewChanges/de
 import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
+import { Missions } from '../domains/missions';
 import { Planning } from '../domains/plannings';
 import { Details as PlanningDetails } from '../domains/plannings/details';
 import { Projects } from '../domains/projects';
@@ -394,6 +395,12 @@ export const planningDetailsPath = {
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <PlanningDetails />,
 };
+export const missionsPath = {
+    baseUrl: baseUrls.missions,
+    routerUrl: `${baseUrls.missions}/*`,
+    permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
+    element: <Missions />,
+};
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     routerUrl: `${baseUrls.assignments}/*`,
@@ -546,6 +553,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     teamsPath,
     planningPath,
     planningDetailsPath,
+    missionsPath,
     assignmentsPath,
     entitiesPath,
     entityDetailsPath,

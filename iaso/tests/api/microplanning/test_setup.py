@@ -1,5 +1,5 @@
 from iaso.models import Form, OrgUnit, OrgUnitType, Planning, Project, Team
-from iaso.models.microplanning import PlanningSamplingResult
+from iaso.models.microplanning import Mission, MissionForm, MissionType, PlanningSamplingResult
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 from iaso.test import APITestCase
 
@@ -47,7 +47,21 @@ class PlanningSerializersTestBase(APITestCase):
             created_by=self.user_1,
             pipeline_uuids=["111e4567-e89b-12d3-a456-426614174000", "222e4567-e89b-12d3-a456-426614174000"],
         )
-        self.planning.forms.set([self.form_1, self.form_2])
+        self.mission_1 = Mission.objects.create(
+            name="mission_form_1",
+            account=self.account_1,
+            mission_type=MissionType.FORM_FILLING,
+            created_by=self.user_1,
+        )
+        MissionForm.objects.create(mission=self.mission_1, form=self.form_1, min_cardinality=1, max_cardinality=1)
+        self.mission_2 = Mission.objects.create(
+            name="mission_form_2",
+            account=self.account_1,
+            mission_type=MissionType.FORM_FILLING,
+            created_by=self.user_1,
+        )
+        MissionForm.objects.create(mission=self.mission_2, form=self.form_2, min_cardinality=1, max_cardinality=1)
+        self.planning.missions.set([self.mission_1, self.mission_2])
         self.planning_sampling_result = PlanningSamplingResult.objects.create(
             planning=self.planning,
             pipeline_id="123e4567-e89b-12d3-a456-426614174000",

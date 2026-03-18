@@ -494,6 +494,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'planning/details',
         params: ['accountId', 'planningId', 'mode', ...paginationPathParams],
     },
+    missions: {
+        url: 'planning/missions',
+        params: [
+            'accountId',
+            'search',
+            'missionType',
+            ...paginationPathParams,
+        ],
+    },
     assignments: {
         url: 'planning/assignments',
         params: ['accountId', 'planningId'],

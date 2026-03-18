@@ -335,6 +335,12 @@ const menuItems = (
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
                 },
+                {
+                    label: formatMessage(MESSAGES.missions),
+                    permissions: paths.missionsPath.permissions,
+                    key: 'missions',
+                    icon: props => <FormatListBulleted {...props} />,
+                },
             ],
         },
         {

@@ -834,6 +834,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create',
         id: 'iaso.label.create',
     },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

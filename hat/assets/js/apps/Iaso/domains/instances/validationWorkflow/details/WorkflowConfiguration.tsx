@@ -17,6 +17,7 @@ import MESSAGES from '../../messages';
 import { useGetWorkflowDetails } from '../api/Get';
 import { useWorkflowNodesColumns } from '../columns';
 import { useSortableTableState } from '../useSortableTableState';
+import { AddNode } from './CreateEditNode/CreateEditNode';
 import { WorkflowBaseInfo } from './WorkflowBaseInfo';
 
 const useStyles = makeStyles((theme: any) => {
@@ -113,16 +114,10 @@ export const WorkflowConfiguration: FunctionComponent = () => {
                                 {formatMessage(MESSAGES.saveOrder)}
                             </Button>
                         </Box>
-                        {/* <AddNodeModal
-                            // fields={fields}
-                            // versionId={versionId}
-                            // newOrder={
-                            //     followUps[followUps.length - 1]?.order + 1
-                            // }
-                            // iconProps={{
-                            //     dataTestId: 'create-follow-ups',
-                            // }}
-                        /> */}
+                        <AddNode
+                            workflowSlug={workflow?.slug ?? ''}
+                            iconProps={{ disabled: !Boolean(workflow?.slug) }}
+                        />
                     </Box>
                 </WidgetPaper>
             </Box>

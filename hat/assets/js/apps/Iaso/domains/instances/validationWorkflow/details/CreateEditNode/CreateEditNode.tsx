@@ -1,10 +1,4 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -18,10 +12,13 @@ import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { MultiSelect } from 'Iaso/domains/pages/components/MultiSelect';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
-import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
+import { EditIconButton } from '../../../../../components/Buttons/EditIconButton';
 
-import MESSAGES from '../../messages';
-import { useGetNode } from '../api/Get';
+import MESSAGES from '../../../messages';
+import { useGetNode } from '../../api/Get';
+import { useSaveNode } from '../../api/PostPutPatch';
+import { useNodeValidation } from './validation';
 
 type Props = {
     workflowSlug: string;
@@ -35,7 +32,8 @@ export type NodeFormValues = {
     name?: string;
     description?: string;
     color?: string;
-    rolesRequired?: { name: string; id: number }[];
+    rolesRequired?: number[];
+    // rolesRequired?: { name: string; id: number }[];
     canSkipPreviousNodes?: boolean;
 };
 
@@ -47,9 +45,10 @@ export const CreateEditNode: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: node } = useGetNode({ nodeSlug, workflowSlug });
-    // const { mutateAsync: save } = useSaveNode();
-    // const validationSchema = useNodeValidation();
-    const save = values => {};
+    const { data: userRoles, isFetching: isLoadingRoles } =
+        useGetUserRolesDropDown();
+    const { mutateAsync: save } = useSaveNode();
+    const validationSchema = useNodeValidation();
     const formik = useFormik<NodeFormValues>({
         initialValues: {
             name: node?.name,
@@ -57,13 +56,21 @@ export const CreateEditNode: FunctionComponent<Props> = ({
             color: node?.color,
             description: node?.description,
             canSkipPreviousNodes: node?.canSkipPreviousNodes,
-            rolesRequired: node?.rolesRequired,
+            rolesRequired: node?.rolesRequired.map(r => r.id),
         },
         enableReinitialize: true,
-        onSubmit: values => save(values),
-        // validationSchema,
+        onSubmit: values => save({ workflowSlug, ...values }),
+        validationSchema,
     });
-
+    const handleChangeUserRoles = useCallback(
+        (_, newValue: string) => {
+            const value =
+                newValue && newValue.length > 0 ? newValue : undefined;
+            formik.setFieldTouched('rolesRequired', true);
+            formik.setFieldValue('rolesRequired', value);
+        },
+        [formik],
+    );
     const titleMessage = node?.slug ? MESSAGES.edit : MESSAGES.create;
     const title = formatMessage(titleMessage);
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
@@ -121,7 +128,9 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.rolesRequired)}
                         name="rolesRequired"
                         component={MultiSelect}
-                        options={[]}
+                        onChange={handleChangeUserRoles}
+                        isLoading={isLoadingRoles}
+                        options={userRoles ?? []}
                         required
                     />
                 </Box>
@@ -132,4 +141,4 @@ export const CreateEditNode: FunctionComponent<Props> = ({
 const modalWithButton = makeFullModal(CreateEditNode, AddButton);
 const modalWithIcon = makeFullModal(CreateEditNode, EditIconButton);
 
-export { modalWithButton as CreateNode, modalWithIcon as EditNode };
+export { modalWithButton as AddNode, modalWithIcon as EditNode };

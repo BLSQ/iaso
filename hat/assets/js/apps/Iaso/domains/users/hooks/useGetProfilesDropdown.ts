@@ -58,7 +58,7 @@ export const useGetProfilesDropdown = ({
     return useSnackQuery({
         queryKey: [
             'profiles',
-            params ?? {},
+            params,
             shouldTriggerWithEmptyQuery ? 'triggerWithEmptyQuery' : undefined,
         ].filter(Boolean),
         queryFn: () => {

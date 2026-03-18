@@ -28,7 +28,7 @@ type Props = {
 export const UserAsyncSelect = ({
     handleChange,
     filterUsers,
-    additionalFilters = {},
+    additionalFilters,
     keyValue = 'users',
     label = MESSAGES.user,
     multi = true,
@@ -50,9 +50,13 @@ export const UserAsyncSelect = ({
 
     const fetchOptions = useCallback(
         (input: string) => {
-            return getUsersDropDown({ query: input, queryClient: queryClient });
+            return getUsersDropDown({
+                query: input,
+                queryClient: queryClient,
+                additionalFilters: additionalFilters,
+            });
         },
-        [queryClient],
+        [queryClient, additionalFilters],
     );
 
     const handleChangeUsers = useCallback(

@@ -19,7 +19,7 @@ export const ProjectsInfoWidgetPaper = ({ savingProfile, profile }: Props) => {
             data-testid={'projects-info-box'}
         >
             {savingProfile && <LoadingSpinner absolute fixed={false} />}
-            {profile?.projects?.length && (
+            {!!profile?.projects?.length && (
                 <Box
                     sx={{
                         display: 'flex',

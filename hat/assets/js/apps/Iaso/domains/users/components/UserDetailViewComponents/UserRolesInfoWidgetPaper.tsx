@@ -18,7 +18,7 @@ export const UserRolesInfoWidgetPaper = ({ savingProfile, profile }: Props) => {
             data-testid={'user-roles-info-box'}
         >
             {savingProfile && <LoadingSpinner absolute fixed={false} />}
-            {profile?.user_roles_permissions?.length && (
+            {!!profile?.user_roles_permissions?.length && (
                 <Box
                     sx={{
                         display: 'flex',

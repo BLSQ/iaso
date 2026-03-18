@@ -22,7 +22,7 @@ export const LocationsInfoWidgetPaper = ({ savingProfile, profile }: Props) => {
         >
             {savingProfile && <LoadingSpinner absolute fixed={false} />}
 
-            {profile?.org_units?.length && (
+            {!!profile?.org_units?.length && (
                 <List>
                     {profile?.org_units?.map((orgUnit: OrgUnit) => (
                         <ListItem key={`orgUnit-${orgUnit.id}`}>

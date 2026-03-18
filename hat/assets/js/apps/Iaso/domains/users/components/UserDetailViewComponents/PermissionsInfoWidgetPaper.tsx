@@ -23,7 +23,7 @@ export const PermissionsInfoWidgetPaper = ({
             sx={{ position: 'relative' }}
         >
             {savingProfile && <LoadingSpinner absolute fixed={false} />}
-            {profile?.permissions?.length && (
+            {!!profile?.permissions?.length && (
                 <PermissionTable data={profile?.permissions} />
             )}
             {!profile?.permissions?.length && (

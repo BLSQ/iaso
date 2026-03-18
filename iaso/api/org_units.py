@@ -770,6 +770,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
                 )
 
+                requested_fields = request.query_params.get("fields")
+                if requested_fields:
+                    serializer = OrgUnitSearchSerializer(
+                        org_unit, fields=requested_fields.split(","), context={"request": request}
+                    )
+                    return Response(serializer.data)
+
                 res = org_unit.as_dict_with_parents()
                 res["geo_json"] = None
                 res["catchment"] = None

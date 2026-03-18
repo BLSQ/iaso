@@ -511,6 +511,7 @@
     "iaso.label.accuracy": "Précision",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Ajouter",
+    "iaso.label.addInstancesValidationWorkflow": "Ajouter un workflow de validation",
     "iaso.label.addParameters": "Ajouter des paramètres",
     "iaso.label.address": "Adresse",
     "iaso.label.after": "Après",

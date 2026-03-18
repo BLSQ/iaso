@@ -510,6 +510,7 @@
     "iaso.label.accuracy": "Accuracy",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Add",
+    "iaso.label.addInstancesValidationWorkflow": "Add validation workflow",
     "iaso.label.addParameters": "Add parameters",
     "iaso.label.address": "Address",
     "iaso.label.after": "After",

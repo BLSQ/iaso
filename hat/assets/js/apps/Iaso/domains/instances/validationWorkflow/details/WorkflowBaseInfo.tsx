@@ -17,7 +17,7 @@ import { makeStyles } from '@mui/styles';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from '../../messages';
-import { useUpdateWorkflow } from '../api/PostPutPatch';
+import { useSaveWorkflow } from '../api/PostPutPatch';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -52,24 +52,28 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
     );
 };
 
-type Props = { workflow: any };
+type Props = { workflow?: any };
 
 export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const [name, setName] = useState<string>(workflow.name);
+    const [name, setName] = useState<string>(workflow?.name ?? '');
     const [description, setDescription] = useState<string>(
-        workflow.description,
+        workflow?.description ?? '',
     );
-    const { mutateAsync } = useUpdateWorkflow();
+    const { mutateAsync } = useSaveWorkflow();
 
     const save = useCallback(() => {
-        return mutateAsync({ slug: workflow.slug, name, description });
-    }, [description, mutateAsync, name, workflow.slug]);
+        if (workflow) {
+            return mutateAsync({ slug: workflow.slug, name, description });
+        }
+        return mutateAsync({ name, description });
+    }, [description, mutateAsync, name, workflow]);
 
     // TODO add trim()
     const hasChange =
-        name !== workflow.name || description !== workflow.description;
+        (name && name !== workflow?.name) ||
+        (description && description !== workflow?.description);
     return (
         <>
             <Box p={2} className={classes.root}>

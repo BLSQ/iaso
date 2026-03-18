@@ -4,6 +4,13 @@ import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { waitFor } from 'Iaso/utils';
 import { API_URL } from '../constants';
 
+const postWorkflow = async body => {
+    await waitFor(500);
+
+    console.log('payload', body);
+    // return postRequest(`${API_URL}/`, payload);
+};
+
 const patchWorkflow = async body => {
     await waitFor(500);
     const { slug, ...payload } = body;
@@ -12,9 +19,16 @@ const patchWorkflow = async body => {
     // return patchRequest(`${API_URL}${slug}/`, payload);
 };
 
-export const useUpdateWorkflow = (): UseMutationResult<any, any> => {
+const createEditWorkflow = async body => {
+    if ('slug' in body) {
+        return patchWorkflow(body);
+    }
+    return postWorkflow(body);
+};
+
+export const useSaveWorkflow = (): UseMutationResult<any, any> => {
     return useSnackMutation({
-        mutationFn: patchWorkflow,
+        mutationFn: createEditWorkflow,
         invalidateQueryKey: ['submissions-workflows'],
     });
 };

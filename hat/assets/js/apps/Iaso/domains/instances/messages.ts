@@ -774,6 +774,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.configureInstancesValidation',
         defaultMessage: 'Configure validation of submissions',
     },
+    addInstancesValidationWorkflow: {
+        id: 'iaso.label.addInstancesValidationWorkflow',
+        defaultMessage: 'Add validation workflow',
+    },
     name: {
         defaultMessage: 'Name',
         id: 'iaso.label.name',

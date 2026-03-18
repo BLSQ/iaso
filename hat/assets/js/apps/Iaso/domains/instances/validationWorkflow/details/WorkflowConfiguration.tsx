@@ -7,6 +7,7 @@ import {
     Item,
     LoadingSpinner,
     SortableTable,
+    useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -44,21 +45,21 @@ const useStyles = makeStyles((theme: any) => {
 
 export const WorkflowConfiguration: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.instanceValidationDetail);
+    const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const { data: workflow, isFetching: isLoading } = useGetWorkflowDetails(
         params.slug,
     );
-
     const { items, handleSortChange, handleResetOrder, isOrderChanged } =
         useSortableTableState<Item>(workflow?.nodeTemplates ?? []);
     const columns = useWorkflowNodesColumns(workflow?.slug);
     const title = workflow?.name
         ? `${formatMessage(MESSAGES.configureInstancesValidation)}: ${workflow.name}`
-        : formatMessage(MESSAGES.configureInstancesValidation);
+        : formatMessage(MESSAGES.addInstancesValidationWorkflow);
     return (
         <>
-            <TopBar title={title} />
+            <TopBar title={title} goBack={goBack} displayBackButton />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Box mb={2}>
                     <Grid container spacing={2}>
@@ -69,9 +70,7 @@ export const WorkflowConfiguration: FunctionComponent = () => {
                             >
                                 <Box className={classes.infoPaperBox}>
                                     {isLoading && <LoadingSpinner absolute />}
-                                    {!isLoading && workflow && (
-                                        <WorkflowBaseInfo workflow={workflow} />
-                                    )}
+                                    <WorkflowBaseInfo workflow={workflow} />
                                 </Box>
                             </WidgetPaper>
                         </Grid>

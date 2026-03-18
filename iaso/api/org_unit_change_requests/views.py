@@ -160,6 +160,11 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         """
         POST to create an `OrgUnitChangeRequest`.
         """
+        if (
+            serializer.validated_data["uuid"]
+            and OrgUnitChangeRequest.objects.filter(uuid=serializer.validated_data["uuid"]).exists()
+        ):
+            return
         org_unit_to_change = serializer.validated_data["org_unit"]
         self.has_org_unit_permission(org_unit_to_change)
         serializer.validated_data["created_by"] = self.request.user

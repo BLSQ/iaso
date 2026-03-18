@@ -1,7 +1,7 @@
 import json
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -57,8 +57,8 @@ class MobileWorkflowVersionSerializer(serializers.ModelSerializer):
         ]
 
 
-app_id_param = openapi.Parameter(
-    name="app_id", in_=openapi.IN_QUERY, description="The app id", type=openapi.TYPE_STRING, required=True
+app_id_param = OpenApiParameter(
+    name="app_id", location=OpenApiParameter.QUERY, description="The app id", type=OpenApiTypes.STR, required=True
 )
 
 
@@ -78,7 +78,7 @@ class MobileWorkflowViewSet(GenericViewSet):
     pagination_class = None
     paginator = None
 
-    @swagger_auto_schema(manual_parameters=[app_id_param])
+    @extend_schema(parameters=[app_id_param])
     def list(self, request, *args, **kwargs):
         app_id = AppIdSerializer(data=request.query_params).get_app_id(raise_exception=False)
 

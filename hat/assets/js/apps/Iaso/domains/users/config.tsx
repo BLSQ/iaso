@@ -1,19 +1,23 @@
 import React, { useMemo } from 'react';
-import { IconButton, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import {
+    IconButton,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 
+import { baseUrls } from 'Iaso/constants/urls';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import * as Permission from '../../utils/permissions.ts';
 import { ProjectChips } from '../projects/components/ProjectChips';
+import { EditUserWithIconDialog } from './components/EditUserDialog.tsx';
 import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import PermissionCheckBoxes from './components/PermissionCheckBoxes.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import { UserRolePermissions } from './components/UserRolePermissions.tsx';
-import { EditUserWithIconDialog } from './components/EditUserDialog.tsx';
 import MESSAGES from './messages.ts';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
 import { userHasOneOfPermissions } from './utils';
-import { baseUrls } from 'Iaso/constants/urls';
 
 export const useUsersTableColumns = ({
     deleteProfile,
@@ -99,7 +103,7 @@ export const useUsersTableColumns = ({
                             tooltipMessage={MESSAGES.viewUser}
                         />
                         <EditUserWithIconDialog
-                            initialData={settings.row.original}
+                            userId={settings.row.original.id}
                             titleMessage={MESSAGES.updateUser}
                             params={params}
                             saveProfile={saveProfile}
@@ -138,7 +142,6 @@ export const useUsersTableColumns = ({
                                 onCreateExport={exportMobileSetup}
                             />
                         </DisplayIfUserHasPerm>
-
                     </section>
                 ),
             },

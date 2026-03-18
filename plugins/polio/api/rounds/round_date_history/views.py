@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions
 
 from iaso.api.common import ModelViewSet
@@ -7,7 +7,7 @@ from plugins.polio.api.rounds.round_date_history.serializers import RoundDateHis
 from plugins.polio.models import RoundDateHistoryEntry
 
 
-@swagger_auto_schema(tags=["datelogs"])
+@extend_schema(tags=["datelogs"])
 class RoundDateHistoryEntryViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

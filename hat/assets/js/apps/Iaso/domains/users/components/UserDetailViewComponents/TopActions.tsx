@@ -6,13 +6,11 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { EditPasswordUserWithButtonDialog } from 'Iaso/domains/users/components/EditPasswordUserDialog';
 import { EditUserWithButtonDialog } from 'Iaso/domains/users/components/EditUserDialog';
 import MESSAGES from 'Iaso/domains/users/messages';
-import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
 import * as Permissions from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 type Props = {
     userId?: number | string;
-    profile?: ProfileRetrieveResponseItem;
     canBypassProjectRestrictions: boolean;
     savePassword: void;
     saveProfile: void;
@@ -20,7 +18,6 @@ type Props = {
 };
 export const TopActions = ({
     saveProfile,
-    profile,
     canBypassProjectRestrictions,
     savePassword,
     userId,
@@ -32,7 +29,7 @@ export const TopActions = ({
     return (
         <>
             <EditUserWithButtonDialog
-                initialData={profile}
+                userId={userId}
                 titleMessage={formatMessage(MESSAGES.updateUser)}
                 saveProfile={saveProfile}
                 canBypassProjectRestrictions={canBypassProjectRestrictions}

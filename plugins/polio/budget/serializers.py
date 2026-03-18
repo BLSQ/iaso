@@ -2,7 +2,7 @@ from collections import OrderedDict
 from enum import Enum
 
 from django.db import transaction
-from drf_yasg.utils import swagger_serializer_method
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import DynamicFieldsModelSerializer, UserSerializer
@@ -298,7 +298,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
                 "label": node.label,
             }
 
-    @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
+    @extend_schema_field(TransitionSerializer(many=True))
     def get_next_transitions(self, budget_process: BudgetProcess):
         # // get transition from workflow engine.
         workflow = get_workflow()
@@ -324,20 +324,20 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
         return TransitionSerializer(transitions, many=True).data
 
     # this is used for filter dropdown
-    @swagger_serializer_method(serializer_or_field=NodeSerializer(many=True))
+    @extend_schema_field(NodeSerializer(many=True))
     def get_possible_states(self, _budget_process: BudgetProcess):
         workflow = get_workflow()
         nodes = workflow.nodes
         return NodeSerializer(nodes, many=True).data
 
     # this is used for filter dropdown
-    @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
+    @extend_schema_field(TransitionSerializer(many=True))
     def get_possible_transitions(self, _budget_process: BudgetProcess):
         workflow = get_workflow()
         transitions = workflow.transitions
         return NestedTransitionSerializer(transitions, many=True).data
 
-    @swagger_serializer_method(serializer_or_field=TimelineSerializer())
+    @extend_schema_field(TimelineSerializer())
     def get_timeline(self, budget_process: BudgetProcess):
         """Represent the progression of the budget process, per category
 
@@ -751,7 +751,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
     created_by_team: serializers.SlugRelatedField = serializers.SlugRelatedField(slug_field="name", read_only=True)
     created_by = UserSerializer()
 
-    @swagger_serializer_method(serializer_or_field=serializers.CharField)
+    @extend_schema_field(serializers.CharField)
     def get_transition_label(self, budget_step: BudgetStep) -> str:
         workflow = get_workflow()
         return workflow.get_transition_label_safe(budget_step.transition_key)

@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from django.core.paginator import Paginator
 
-from plugins.wfp.common_v2 import ETLV2
+from plugins.wfp.common import ETL
 
 from .management.commands.south_sudan.Dhis2 import Dhis2
 
@@ -72,7 +72,7 @@ class Aggregator:
             f"Processing monthly data for {len(org_units_with_updated_data)} org units on {programme_type} across {paginator.num_pages} pages for {account}"
         )
         for page in pages:
-            rows, page_info = ETLV2._retrieve_aggregated_journeys_data(
+            rows, page_info = ETL._retrieve_aggregated_journeys_data(
                 account,
                 programme_type,
                 org_units_with_updated_data,
@@ -85,7 +85,7 @@ class Aggregator:
             if rows is None:
                 continue
 
-            records = ETLV2._process_monthly_data(programme_type, rows, account)
+            records = ETL._process_monthly_data(programme_type, rows, account)
             logger.info(f"Processed {len(records)} records for {len(org_unit_ids)} org units.")
 
     @staticmethod
@@ -150,7 +150,7 @@ class Aggregator:
             mapper_config = json.load(mapper)
 
         for page in pages:
-            monthly_data, page_info = ETLV2.group_data_to_push_to_dhis2(
+            monthly_data, page_info = ETL.group_data_to_push_to_dhis2(
                 account, org_unit_ids, page_size=page_size, page_number=page
             )
             logger.info(f"Processing push data for {len(page_info.object_list)} org unit on page {page} for {account}")

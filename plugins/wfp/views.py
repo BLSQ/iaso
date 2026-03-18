@@ -11,7 +11,6 @@ from django.utils import timezone
 from iaso.models import Entity, EntityType
 
 from .common import ETL
-from .common_v2 import ETLV2
 from .models import Beneficiary, Journey, Visit
 
 
@@ -68,7 +67,7 @@ def debug_summary(request):
 
 @login_required
 def show_missing_entities_in_analytics(request, account_id, entity_type):
-    entities = get_list_or_404(ETLV2().missing_entities_in_analytics_tables(account_id, entity_type, request.user))
+    entities = get_list_or_404(ETL().missing_entities_in_analytics_tables(account_id, entity_type, request.user))
     beneficiary_type = EntityType.objects.filter(id=entity_type).first()
     template = loader.get_template("show_missing_beneficiaries.html")
     context = {
@@ -84,7 +83,7 @@ def show_missing_entities_in_analytics(request, account_id, entity_type):
 @staff_member_required
 def delete_beneficiaries_analytics(request):
     if request.method == "POST":
-        ETLV2().delete_beneficiaries()
+        ETL().delete_beneficiaries()
         return HttpResponse("ok")
 
     template = loader.get_template("delete_beneficiaries_analytics.html")

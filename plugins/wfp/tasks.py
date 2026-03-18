@@ -8,7 +8,7 @@ from iaso.management.commands import unique_indexes
 from iaso.management.commands.clean_up_duplicate_submissions import DRY_RUN_ARG
 from iaso.models.base import ExternalCredentials
 from plugins.wfp.aggregator import Aggregator
-from plugins.wfp.common_v2 import ETLV2
+from plugins.wfp.common import ETL
 
 from .models import *
 
@@ -97,7 +97,7 @@ def etl_ng(all_data=None):
 
     logger.info("Starting ETL for Nigeria")
     entity_type_U5_code = "nigeria_under5"
-    etl_u5 = ETLV2(entity_type_U5_code)
+    etl_u5 = ETL(entity_type_U5_code)
     account = etl_u5.get_account()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=account, entity_id__in=updated_U5_beneficiaries).delete()
@@ -114,7 +114,7 @@ def etl_ng(all_data=None):
     Aggregator.aggregate_monthly_data_by_org_unit(account, org_units_with_updated_data, "U5")
 
     entity_type_pbwg_code = "nigeria_pbwg"
-    etl_pbwg = ETLV2(entity_type_pbwg_code)
+    etl_pbwg = ETL(entity_type_pbwg_code)
     pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
@@ -147,7 +147,7 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
     if all_data is not None:
         last_success_task_date = None
 
-    etl = ETLV2("ssd_under5")
+    etl = ETL("ssd_under5")
     account = etl.get_account()
     org_units_with_updated_data = etl.get_org_unit_ids_with_updated_data(last_success_task_date)
 
@@ -198,7 +198,7 @@ def etl_ssd(all_data=None):
     logger.info("Starting ETL for South Sudan")
 
     entity_type_u5_code = "ssd_under5"
-    etl_u5 = ETLV2(entity_type_u5_code)
+    etl_u5 = ETL(entity_type_u5_code)
     child_account = etl_u5.get_account()
     updated_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_beneficiaries).delete()
@@ -215,7 +215,7 @@ def etl_ssd(all_data=None):
     Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units_with_updated_data, "U5")
 
     entity_type_pbwg_code = "ssd_pbwg"
-    etl_pbwg = ETLV2(entity_type_pbwg_code)
+    etl_pbwg = ETL(entity_type_pbwg_code)
     pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
@@ -258,7 +258,7 @@ def etl_ethiopia(all_data=None):
 
     logger.info("Starting ETL for Ethiopia")
     entity_type_U5_code = "ethiopia_under5"
-    etl_u5 = ETLV2(entity_type_U5_code)
+    etl_u5 = ETL(entity_type_U5_code)
     child_account = etl_u5.get_account()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
@@ -276,7 +276,7 @@ def etl_ethiopia(all_data=None):
     Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units_with_updated_data, "U5")
 
     entity_type_pbwg_code = "ethiopia_pbwg"
-    etl_pbwg = ETLV2(entity_type_pbwg_code)
+    etl_pbwg = ETL(entity_type_pbwg_code)
     pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()

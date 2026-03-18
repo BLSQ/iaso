@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 
 from iaso import models as m
-from plugins.wfp.common_v2 import ETLV2
+from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
 
@@ -500,7 +500,7 @@ class ETLTestCase(TestCase):
         self.assertEqual(len(created_visits), 7)
         u5_journeys = load_fixture("monthly_U5_data.json")
 
-        created_U5_monthlyStatistics = ETLV2._process_monthly_data("U5", u5_journeys, self.account)
+        created_U5_monthlyStatistics = ETL._process_monthly_data("U5", u5_journeys, self.account)
 
         self.assertEqual(len(created_U5_monthlyStatistics), 6)
         self.assertEqual(created_U5_monthlyStatistics[0].period, "202508")
@@ -510,7 +510,7 @@ class ETLTestCase(TestCase):
         self.assertEqual(created_U5_monthlyStatistics[2].period, "202509")
 
         pbwg_journeys = load_fixture("monthly_PBWG_data.json")
-        created_PBWG_monthlyStatistics = ETLV2._process_monthly_data("PLW", pbwg_journeys, self.account)
+        created_PBWG_monthlyStatistics = ETL._process_monthly_data("PLW", pbwg_journeys, self.account)
         self.assertEqual(len(created_PBWG_monthlyStatistics), 2)
         self.assertEqual(created_PBWG_monthlyStatistics[1].physiology_status, "Breastfeeding")
         self.assertEqual(created_PBWG_monthlyStatistics[1].period, "202508")

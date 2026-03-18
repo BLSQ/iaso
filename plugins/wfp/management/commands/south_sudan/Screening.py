@@ -6,7 +6,7 @@ from operator import itemgetter, or_
 
 from django.db.models import Q
 
-from plugins.wfp.common_v2 import ETLV2
+from plugins.wfp.common import ETL
 from plugins.wfp.models import ScreeningData
 
 
@@ -17,7 +17,7 @@ FORMS = ["screening_tally"]
 
 class Screening:
     def run(self, account, updated_at):
-        instances = ETLV2._get_screening_raw_data(FORMS, account, updated_at)
+        instances = ETL._get_screening_raw_data(FORMS, account, updated_at)
         pages = instances.page_range
         logger.info(f"Screening data for {account}")
         for page in pages:

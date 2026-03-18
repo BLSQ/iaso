@@ -1,15 +1,15 @@
 import React from 'react';
 
-import { UserDetailsView } from 'Iaso/domains/users/components/UserDetailsView';
-import { screen, within } from '@testing-library/react';
-import { renderWithTheme } from '../../../../../tests/helpers';
-import Page404 from 'Iaso/components/errors/Page404';
-import { textPlaceholder } from 'bluesquare-components';
 import { faker } from '@faker-js/faker';
-import { randomLanguage } from '../../../../../__tests__/factories/language';
+import { screen, within } from '@testing-library/react';
+import { textPlaceholder } from 'bluesquare-components';
+import Page404 from 'Iaso/components/errors/Page404';
+import { Project } from 'Iaso/domains/projects/types/project';
+import { UserDetailsView } from 'Iaso/domains/users/components/UserDetailsView';
 import MESSAGES from 'Iaso/domains/users/messages';
 import * as Permission from 'Iaso/utils/permissions';
-import { Project } from 'Iaso/domains/projects/types/project';
+import { randomLanguage } from '../../../../../__tests__/factories/language';
+import { renderWithTheme } from '../../../../../tests/helpers';
 
 // mock utilities functions
 const mockRedirectTo = vi.fn();
@@ -18,19 +18,18 @@ vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
     return {
         ...actual,
-        LoadingSpinner: () => (
-            <div data-testid="loading-spinner" />),
+        LoadingSpinner: () => <div data-testid="loading-spinner" />,
         useRedirectTo: () => mockRedirectTo,
         useSafeIntl: () => ({
             formatMessage: (msg: any) =>
-                typeof msg === 'string' ? msg : msg?.defaultMessage ?? 'msg',
+                typeof msg === 'string' ? msg : (msg?.defaultMessage ?? 'msg'),
         }),
     };
 });
 
 const { mockCurrentUser } = vi.hoisted(() => {
-  return { mockCurrentUser: vi.fn() }
-})
+    return { mockCurrentUser: vi.fn() };
+});
 
 vi.mock('Iaso/utils/usersUtils', async () => {
     const actual = await vi.importActual('Iaso/utils/usersUtils');
@@ -38,20 +37,18 @@ vi.mock('Iaso/utils/usersUtils', async () => {
         ...actual,
         useCurrentUser: mockCurrentUser,
     };
-
 });
-
 
 // mocking hooks
 const { mockUseGetProfile } = vi.hoisted(() => {
-  return { mockUseGetProfile: vi.fn() }
-})
+    return { mockUseGetProfile: vi.fn() };
+});
 
 vi.mock('Iaso/domains/users/hooks/useGetProfiles', () => {
     return {
         ...vi.importActual('Iaso/domains/users/hooks/useGetProfiles'),
-        useGetProfile: mockUseGetProfile
-    }
+        useGetProfile: mockUseGetProfile,
+    };
 });
 
 const mockSavePassword = vi.fn();
@@ -90,8 +87,12 @@ vi.mock('Iaso/domains/users/hooks/useDeleteProfile', () => ({
 
 // mock components
 vi.mock('Iaso/components/errors/Page404', () => ({
-    default: ({ customMessage, ...props }: React.ComponentProps<typeof Page404>) => <div
-        data-testid={'page-404'}>{customMessage}</div>,
+    default: ({
+        customMessage,
+        ...props
+    }: React.ComponentProps<typeof Page404>) => (
+        <div data-testid={'page-404'}>{customMessage}</div>
+    ),
 }));
 
 vi.mock('Iaso/components/dialogs/DeleteDialogComponent', () => ({
@@ -99,26 +100,43 @@ vi.mock('Iaso/components/dialogs/DeleteDialogComponent', () => ({
 }));
 
 vi.mock('Iaso/domains/users/components/EditPasswordUserDialog', () => ({
-    EditPasswordUserWithButtonDialog: () => <div data-testid={'edit-user-password-dialog'}></div>,
+    EditPasswordUserWithButtonDialog: () => (
+        <div data-testid={'edit-user-password-dialog'}></div>
+    ),
 }));
 
 vi.mock('Iaso/components/dialogs/EditUserDialog', () => ({
-    EditUserWithButtonDialog: () => <div data-testid={'edit-user-dialog'}></div>,
+    EditUserWithButtonDialog: () => (
+        <div data-testid={'edit-user-dialog'}></div>
+    ),
 }));
 
 vi.mock('Iaso/domains/projects/components/ProjectChip', () => ({
-    ProjectChip: ({ project }: {project: Project}) => <div data-testid={'project-chip'}>
-        {project?.name}
-    </div>,
+    ProjectChip: ({ project }: { project: Project }) => (
+        <div data-testid={'project-chip'}>{project?.name}</div>
+    ),
 }));
 
 vi.mock('Iaso/domains/users/components/PermissionTable', () => {
     return {
-        PermissionTable: ({data}: {data?: string[]}) => <div data-testid={"permission-table"}>
-            {data?.map((d: string) => <span key={d}>{d}<br/></span>)}
-        </div>
-    }
-})
+        PermissionTable: ({ data }: { data?: string[] }) => (
+            <div data-testid={'permission-table'}>
+                {data?.map((d: string) => (
+                    <span key={d}>
+                        {d}
+                        <br />
+                    </span>
+                ))}
+            </div>
+        ),
+    };
+});
+
+vi.mock('@mui/lab', () => ({
+    Masonry: ({ children }: { children: React.ReactNode }) => (
+        <div data-testid="masonry">{children}</div>
+    ),
+}));
 
 // fake data
 const randomUser = {
@@ -145,16 +163,16 @@ const getRandomProject = () => {
 const getRandomOrgUnit = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun()
+        name: faker.word.noun(),
     };
 };
 
 const getRandomUserRole = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun()
-    }
-}
+        name: faker.word.noun(),
+    };
+};
 
 describe('UsersDetailView unit tests', () => {
     beforeEach(() => {
@@ -171,14 +189,14 @@ describe('UsersDetailView unit tests', () => {
             error: null,
         });
 
-
         renderWithTheme(<UserDetailsView userId="1" />);
         expect(screen.queryAllByTestId('loading-spinner')).toHaveLength(1);
-        expect(screen.queryByText(MESSAGES.generalInfo.defaultMessage)).toBeNull();
+        expect(
+            screen.queryByText(MESSAGES.generalInfo.defaultMessage),
+        ).toBeNull();
         expect(screen.queryByTestId('delete-dialog')).toBeNull();
         expect(screen.queryByTestId('edit-user-dialog')).toBeNull();
         expect(screen.queryByTestId('edit-user-password-dialog')).toBeNull();
-
     });
     it('renders 404 page if user is not found', () => {
         mockUseGetProfile.mockReturnValue({
@@ -194,50 +212,72 @@ describe('UsersDetailView unit tests', () => {
         expect(screen.queryByTestId('delete-dialog')).toBeNull();
         expect(screen.queryByTestId('edit-user-dialog')).toBeNull();
         expect(screen.queryByTestId('edit-user-password-dialog')).toBeNull();
-
     });
-    it.each(
-        [
-            {
-                label: 'general info',
-                title: MESSAGES.generalInfo.defaultMessage,
-                sectionDataTestId: 'general-info-box',
-            },
-            { label: 'projects', title: MESSAGES.projects.defaultMessage, sectionDataTestId: 'projects-info-box' },
-            { label: 'user roles', title: MESSAGES.userRoles.defaultMessage, sectionDataTestId: 'user-roles-info-box' },
-            { label: 'locations', title: MESSAGES.locations.defaultMessage, sectionDataTestId: 'locations-info-box' },
-            {
-                label: 'permissions',
-                title: MESSAGES.permissions.defaultMessage,
-                sectionDataTestId: 'permissions-info-box',
-            }],
-    )('renders a spinner in the user $label box while saving', ({ title, sectionDataTestId }: {
-        title: string,
-        sectionDataTestId: string
-    }) => {
-        mockIsSaveProfileLoading.mockReturnValue(true);
-        mockUseGetProfile.mockReturnValue({
-            data: randomUser,
-            isLoading: false,
-            error: null,
-        });
+    it.each([
+        {
+            label: 'general info',
+            title: MESSAGES.generalInfo.defaultMessage,
+            sectionDataTestId: 'general-info-box',
+        },
+        {
+            label: 'projects',
+            title: MESSAGES.projects.defaultMessage,
+            sectionDataTestId: 'projects-info-box',
+        },
+        {
+            label: 'user roles',
+            title: MESSAGES.userRoles.defaultMessage,
+            sectionDataTestId: 'user-roles-info-box',
+        },
+        {
+            label: 'locations',
+            title: MESSAGES.locations.defaultMessage,
+            sectionDataTestId: 'locations-info-box',
+        },
+        {
+            label: 'permissions',
+            title: MESSAGES.permissions.defaultMessage,
+            sectionDataTestId: 'permissions-info-box',
+        },
+    ])(
+        'renders a spinner in the user $label box while saving',
+        ({
+            title,
+            sectionDataTestId,
+        }: {
+            title: string;
+            sectionDataTestId: string;
+        }) => {
+            mockIsSaveProfileLoading.mockReturnValue(true);
+            mockUseGetProfile.mockReturnValue({
+                data: randomUser,
+                isLoading: false,
+                error: null,
+            });
 
-        renderWithTheme(<UserDetailsView userId={'1'} />);
+            renderWithTheme(<UserDetailsView userId={'1'} />);
 
-        expect(within(screen.getByTestId(sectionDataTestId)).getByTestId('loading-spinner')).toBeInTheDocument();
-        expect(screen.getByText(title)).toBeInTheDocument();
-    });
+            expect(
+                within(screen.getByTestId(sectionDataTestId)).getByTestId(
+                    'loading-spinner',
+                ),
+            ).toBeInTheDocument();
+            expect(screen.getByText(title)).toBeInTheDocument();
+        },
+    );
 
     it('renders correctly user general info', () => {
-        mockUseGetProfile.mockReturnValueOnce({
-            data: null,
-            isLoading: false,
-            error: null,
-        }).mockReturnValueOnce({
-            data: randomUser,
-            isLoading: false,
-            error: null,
-        });
+        mockUseGetProfile
+            .mockReturnValueOnce({
+                data: null,
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: randomUser,
+                isLoading: false,
+                error: null,
+            });
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
 
         expect(screen.getByText('General info')).toBeInTheDocument();
@@ -246,19 +286,21 @@ describe('UsersDetailView unit tests', () => {
         rerender(<UserDetailsView userId={'1'} />);
         expect(screen.getByText('General info')).toBeInTheDocument();
         expect(screen.queryByText(textPlaceholder)).toBeNull();
-        Object.entries(randomUser).filter(([k, _]) => k !== 'color').forEach(([k, v]) => {
-            // @ts-ignore
-            expect(screen.getByText(v), `Field ${k} with value ${v} should be in the document`).toBeInTheDocument();
-        });
+        Object.entries(randomUser)
+            .filter(([k, _]) => k !== 'color')
+            .forEach(([k, v]) => {
+                // @ts-ignore
+                expect(
+                    screen.getByText(v),
+                    `Field ${k} with value ${v} should be in the document`,
+                ).toBeInTheDocument();
+            });
 
         const emailLink = screen.getByRole('link', {
             name: randomUser.email,
         });
 
-        expect(emailLink).toHaveAttribute(
-            'href',
-            `mailto:${randomUser.email}`,
-        );
+        expect(emailLink).toHaveAttribute('href', `mailto:${randomUser.email}`);
 
         const phoneLink = screen.getByRole('link', {
             name: randomUser.phone_number,
@@ -270,40 +312,42 @@ describe('UsersDetailView unit tests', () => {
         );
 
         expect(screen.getByTestId('user-color-badge')).toBeInTheDocument();
-
     });
 
     it('renders correctly projects info', () => {
+        const projects = [getRandomProject(), getRandomProject()];
 
-        const projects = [
-            getRandomProject(),
-            getRandomProject(),
-        ];
-
-        mockUseGetProfile.mockReturnValueOnce({
-            data: null,
-            isLoading: false,
-            error: null,
-        }).mockReturnValueOnce({
-            data: {
-                projects: [],
-            },
-            isLoading: false,
-            error: null,
-        }).mockReturnValueOnce({
-            data: {
-                projects: projects,
-            },
-            isLoading: false,
-            error: null,
-        });
+        mockUseGetProfile
+            .mockReturnValueOnce({
+                data: null,
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    projects: [],
+                },
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    projects: projects,
+                },
+                isLoading: false,
+                error: null,
+            });
 
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
 
-        expect(within(screen.getByTestId('projects-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('projects-info-box')).getByRole('alert'),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
-        expect(within(screen.getByTestId('projects-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('projects-info-box')).getByRole('alert'),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
         // check that we render some projects
@@ -311,124 +355,142 @@ describe('UsersDetailView unit tests', () => {
         projects.forEach(({ name }) => {
             expect(screen.getByText(name)).toBeInTheDocument();
         });
-
     });
 
     it('renders correctly user roles info', () => {
-        const user_roles = [
-            getRandomUserRole(),
-            getRandomUserRole(),
-        ];
+        const user_roles = [getRandomUserRole(), getRandomUserRole()];
 
-        mockUseGetProfile.mockReturnValueOnce({
-            data: null,
-            isLoading: false,
-            error: null,
-        }).mockReturnValueOnce({
-            data: {
-                user_roles_permissions: [],
-            },
-            isLoading: false,
-            error: null,
-
-        }).mockReturnValueOnce({
-            data: {
-                user_roles_permissions: user_roles,
-            },
-            isLoading: false,
-            error: false,
-        });
+        mockUseGetProfile
+            .mockReturnValueOnce({
+                data: null,
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    user_roles_permissions: [],
+                },
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    user_roles_permissions: user_roles,
+                },
+                isLoading: false,
+                error: false,
+            });
 
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
-        expect(within(screen.getByTestId('user-roles-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('user-roles-info-box')).getByRole(
+                'alert',
+            ),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
-        expect(within(screen.getByTestId('user-roles-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('user-roles-info-box')).getByRole(
+                'alert',
+            ),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
         user_roles.forEach(({ name }) => {
-            expect(within(screen.getByTestId('user-roles-info-box')).getByText(name)).toBeInTheDocument();
+            expect(
+                within(screen.getByTestId('user-roles-info-box')).getByText(
+                    name,
+                ),
+            ).toBeInTheDocument();
         });
     });
 
     it('renders correctly permissions info', () => {
+        const permissions = [faker.word.verb(), faker.word.verb()];
 
-        const permissions = [
-            faker.word.verb(),
-            faker.word.verb()
-        ];
-
-        mockUseGetProfile.mockReturnValueOnce({
-            data: null,
-            isLoading: false,
-            error: null,
-        }).mockReturnValueOnce({
-            data: {
-                permissions: [],
-            },
-            isLoading: false,
-            error: null,
-
-        }).mockReturnValueOnce({
-            data: {
-                permissions: permissions,
-            },
-            isLoading: false,
-            error: false,
-        });
+        mockUseGetProfile
+            .mockReturnValueOnce({
+                data: null,
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    permissions: [],
+                },
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    permissions: permissions,
+                },
+                isLoading: false,
+                error: false,
+            });
 
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
-        expect(within(screen.getByTestId('locations-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
-        expect(within(screen.getByTestId('locations-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
-        expect(screen.getByTestId('permission-table')).toBeDefined()
-        permissions.forEach((perm) => {
-            expect(within(screen.getByTestId('permission-table')).getByText(perm)).toBeInTheDocument();
+        expect(screen.getByTestId('permission-table')).toBeDefined();
+        permissions.forEach(perm => {
+            expect(
+                within(screen.getByTestId('permission-table')).getByText(perm),
+            ).toBeInTheDocument();
         });
-
     });
 
     it('renders correctly locations info', () => {
-        const org_units = [
-            getRandomOrgUnit(),
-            getRandomOrgUnit(),
-        ];
+        const org_units = [getRandomOrgUnit(), getRandomOrgUnit()];
 
-        mockUseGetProfile.mockReturnValueOnce({
-            data: null,
-            isLoading: false,
-            error: null,
-        }).mockReturnValueOnce({
-            data: {
-                org_units: [],
-            },
-            isLoading: false,
-            error: null,
-
-        }).mockReturnValueOnce({
-            data: {
-                org_units: org_units,
-            },
-            isLoading: false,
-            error: false,
-        });
+        mockUseGetProfile
+            .mockReturnValueOnce({
+                data: null,
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    org_units: [],
+                },
+                isLoading: false,
+                error: null,
+            })
+            .mockReturnValueOnce({
+                data: {
+                    org_units: org_units,
+                },
+                isLoading: false,
+                error: false,
+            });
 
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
-        expect(within(screen.getByTestId('locations-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
-        expect(within(screen.getByTestId('locations-info-box')).getByRole('alert')).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
+        expect(
+            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+        ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
         org_units.forEach(({ name }) => {
-            expect(within(screen.getByTestId('locations-info-box')).getByText(name)).toBeInTheDocument();
+            expect(
+                within(screen.getByTestId('locations-info-box')).getByText(
+                    name,
+                ),
+            ).toBeInTheDocument();
         });
-
     });
-
 
     it('does not show delete button for own profile', () => {
         mockUseGetProfile.mockReturnValue({
@@ -444,11 +506,9 @@ describe('UsersDetailView unit tests', () => {
         renderWithTheme(<UserDetailsView userId={'1'} />);
 
         expect(screen.queryByTestId('delete-dialog')).toBeNull();
-
     });
 
     it('shows delete button for admin on other user', () => {
-
         mockUseGetProfile.mockReturnValue({
             data: randomUser,
             isLoading: false,
@@ -457,10 +517,7 @@ describe('UsersDetailView unit tests', () => {
 
         mockCurrentUser.mockReturnValue({
             id: 1,
-            permissions: [
-                Permission.USERS_ADMIN,
-                Permission.USERS_MANAGEMENT,
-            ],
+            permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
         });
 
         renderWithTheme(<UserDetailsView userId={'2'} />);
@@ -481,6 +538,4 @@ describe('UsersDetailView unit tests', () => {
         renderWithTheme(<UserDetailsView userId={'2'} />);
         expect(screen.queryByTestId('delete-dialog')).toBeNull();
     });
-
-
 });

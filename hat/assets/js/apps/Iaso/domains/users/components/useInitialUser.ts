@@ -17,98 +17,99 @@ export type InitialUserUtils = {
 };
 
 export const useInitialUser = (
-    initialData: InitialUserData,
+    initialData: InitialUserData | undefined,
 ): InitialUserUtils => {
     const { formatMessage } = useSafeIntl();
     const initialUser: UserDialogData = useMemo(() => {
+        const data: InitialUserData = initialData ?? {};
         return {
-            id: { value: get(initialData, 'id', null), errors: [] },
+            id: { value: get(data, 'id', null), errors: [] },
             user_name: {
-                value: get(initialData, 'user_name', ''),
+                value: get(data, 'user_name', ''),
                 errors: [],
             },
             first_name: {
-                value: get(initialData, 'first_name', ''),
+                value: get(data, 'first_name', ''),
                 errors: [],
             },
             last_name: {
-                value: get(initialData, 'last_name', ''),
+                value: get(data, 'last_name', ''),
                 errors: [],
             },
-            email: { value: get(initialData, 'email', ''), errors: [] },
+            email: { value: get(data, 'email', ''), errors: [] },
             password: { value: '', errors: [] },
             permissions: {
-                value: get(initialData, 'permissions', []),
+                value: get(data, 'permissions', []),
                 errors: [],
             },
             org_units: {
-                value: get(initialData, 'org_units', []),
+                value: get(data, 'org_units', []),
                 errors: [],
             },
             language: {
-                value: get(initialData, 'language', ''),
+                value: get(data, 'language', ''),
                 errors: [],
             },
             home_page: {
-                value: get(initialData, 'home_page', ''),
+                value: get(data, 'home_page', ''),
                 errors: [],
             },
             organization: {
-                value: get(initialData, 'organization', undefined),
+                value: get(data, 'organization', undefined),
                 errors: [],
             },
             dhis2_id: {
-                value: get(initialData, 'dhis2_id', ''),
+                value: get(data, 'dhis2_id', ''),
                 errors: [],
             },
             user_roles: {
-                value: get(initialData, 'user_roles', []),
+                value: get(data, 'user_roles', []),
                 errors: [],
             },
             user_roles_permissions: {
-                value: get(initialData, 'user_roles_permissions', []),
+                value: get(data, 'user_roles_permissions', []),
                 errors: [],
             },
             user_permissions: {
-                value: get(initialData, 'user_permissions', []),
+                value: get(data, 'user_permissions', []),
                 errors: [],
             },
             send_email_invitation: {
-                value: get(initialData, 'send_email_invitation', false),
+                value: get(data, 'send_email_invitation', false),
                 errors: [],
             },
             projects: {
-                value: get(initialData, 'projects', []).map(
-                    project => project.id,
+                value: get(data, 'projects', []).map(
+                    (project: { id: number }) => project.id,
                 ),
                 errors: [],
             },
             phone_number: {
-                value: get(initialData, 'phone_number', ''),
+                value: get(data, 'phone_number', ''),
                 errors: [],
             },
             country_code: {
-                value: get(initialData, 'country_code', ''),
+                value: get(data, 'country_code', ''),
                 errors: [],
             },
             editable_org_unit_type_ids: {
-                value: get(initialData, 'editable_org_unit_type_ids', []),
+                value: get(data, 'editable_org_unit_type_ids', []),
                 errors: [],
             },
             user_roles_editable_org_unit_type_ids: {
                 value: get(
-                    initialData,
+                    data,
                     'user_roles_editable_org_unit_type_ids',
                     [],
                 ),
                 errors: [],
             },
             has_multiple_accounts: {
-                value: get(initialData, 'other_accounts', [])?.length > 0,
+                value: get(data, 'other_accounts', [])?.length > 0,
                 errors: [],
             },
             color: {
-                value: get(initialData, "color", ""),
+                value: get(data, 'color', ''),
                 errors: [],
             },
         };

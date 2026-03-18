@@ -4,7 +4,6 @@ import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { DjangoError } from 'Iaso/types/general';
 import { User } from 'Iaso/utils/usersUtils';
 
-
 export const useSavePassword = (
     id: number | string | undefined,
     showSuccessSnackBar = true,

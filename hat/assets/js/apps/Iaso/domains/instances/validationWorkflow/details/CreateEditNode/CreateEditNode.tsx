@@ -33,7 +33,6 @@ export type NodeFormValues = {
     description?: string;
     color?: string;
     rolesRequired?: number[];
-    // rolesRequired?: { name: string; id: number }[];
     canSkipPreviousNodes?: boolean;
 };
 

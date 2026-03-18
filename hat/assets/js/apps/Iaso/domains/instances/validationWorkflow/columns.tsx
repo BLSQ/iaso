@@ -12,7 +12,7 @@ import { SUBMISSIONS, SUBMISSIONS_UPDATE } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 import { useDeleteNode, useDeleteWorkflow } from './api/Delete';
-import { EditNode } from './details/CreateEditNode';
+import { EditNode } from './details/CreateEditNode/CreateEditNode';
 
 export const useWorkflowsTableColumns = () => {
     const { formatMessage } = useSafeIntl();

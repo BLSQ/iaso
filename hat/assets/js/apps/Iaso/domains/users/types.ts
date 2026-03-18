@@ -20,6 +20,7 @@ export type UserDialogData = {
     org_units?: ValueAndErrors<number[]>;
     permissions: ValueAndErrors<string[]>;
     user_permissions: ValueAndErrors<string[]>;
+    user_roles?: ValueAndErrors<Array<UserRole | number>>;
     user_roles_permissions: ValueAndErrors<UserRole[]>;
     language: ValueAndErrors<string | null>;
     password: ValueAndErrors<string | null>;

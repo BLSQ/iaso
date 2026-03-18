@@ -19,11 +19,13 @@ import { UseMutateFunction, useQueryClient } from 'react-query';
 import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { UserRole } from 'Iaso/domains/userRoles/types/userRoles';
 import { useGetProfile } from 'Iaso/domains/users/hooks/useGetProfiles';
 import { DjangoError, SxStyles } from 'Iaso/types/general';
 import * as Permissions from 'Iaso/utils/permissions';
 import { useCurrentUser, User } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
+import { InitialUserData } from '../types';
 import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
 import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
@@ -87,7 +89,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
         setPhoneNumber,
         hasErrors,
         setEmail,
-    } = useInitialUser(initialData);
+    } = useInitialUser(initialData as InitialUserData | undefined);
 
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
@@ -97,15 +99,17 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
             if (key === 'org_units') {
-                currentUser[key] = user?.[key].value?.map(
-                    (orgUnit: OrgUnit) => orgUnit?.id,
-                );
+                currentUser[key] = (
+                    user?.[key]?.value as OrgUnit[] | undefined
+                )?.map(orgUnit => orgUnit?.id);
             } else if (key === 'user_roles') {
-                currentUser[key] = user?.[key].value?.map(
-                    userRole => userRole?.id ?? userRole,
+                currentUser[key] = user?.user_roles?.value?.map(
+                    (userRole: UserRole | number) =>
+                        (userRole as UserRole)?.id ?? userRole,
                 );
             } else {
-                currentUser[key] = user[key].value;
+                const userRecord = user as Record<string, { value: unknown }>;
+                currentUser[key] = userRecord[key]?.value;
             }
         });
 
@@ -288,7 +292,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                                     setFieldValue={(key, value) =>
                                         setFieldValue(key, value)
                                     }
-                                    initialData={initialData}
+                                    initialData={initialData ?? {}}
                                     currentUser={user}
                                     allowSendEmailInvitation={
                                         allowSendEmailInvitation

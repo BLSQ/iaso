@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iaso.api.common import ModelSerializer, TimestampField
+from iaso.api.common import ModelSerializer
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
 from iaso.models import Form, UserRole, ValidationNodeTemplate, ValidationWorkflow
 
@@ -30,13 +30,11 @@ class NestedFormSerializer(ModelSerializer):
 
 
 class ValidationWorkflowRetrieveSerializer(ModelSerializer):
-    created_at = TimestampField(read_only=True)
     updated_by = UserDisplayNameField()
-    updated_at = TimestampField(read_only=True)
     created_by = UserDisplayNameField()
 
     forms = NestedFormSerializer(many=True, read_only=True, source="form_set")
-    node_templates = NestedValidationNodeTemplateSerializer(many=True, read_only=True)
+    node_templates = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ValidationWorkflow
@@ -51,3 +49,42 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
             "updated_at",
             "node_templates",
         ]
+
+    def get_node_templates(self, obj):
+        nodes = list(getattr(obj, "_prefetched_objects_cache", {}).get("node_templates", obj.node_templates.all()))
+
+        next_map = {}
+        prev_map = {}
+
+        for node in nodes:
+            next_map[node.id] = list(
+                getattr(node, "_prefetched_objects_cache", {}).get(
+                    "next_node_templates", node.next_node_templates.all()
+                )
+            )
+            prev_map[node.id] = list(
+                getattr(node, "_prefetched_objects_cache", {}).get(
+                    "previous_node_templates", node.previous_node_templates.all()
+                )
+            )
+
+        start = next((n for n in nodes if not prev_map[n.id]), None)
+
+        if not start:
+            raise ValueError("No starting node")
+
+        next_map = {node.id: list(node.next_node_templates.all()) for node in nodes}
+
+        ordered = []
+        current = start
+
+        while current:
+            ordered.append(current)
+            next_nodes = next_map[current.id]
+
+            if not next_nodes:
+                break
+
+            current = next_nodes[0]
+
+        return [NestedValidationNodeTemplateSerializer(instance=data).data for data in ordered]

@@ -6,7 +6,7 @@ Each workflow is made of multiple nodes or tasks.
 
 from autoslug import AutoSlugField
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 
 from iaso.models import Instance
 from iaso.models.base import UserRole
@@ -49,6 +49,59 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
 
     def get_starting_node(self):
         return self.node_templates.get(previous_node_templates__isnull=True)
+
+    @transaction.atomic
+    def delete_node_template(self, node):
+        previous_nodes = list(node.previous_node_templates.all())
+        next_nodes = list(node.next_node_templates.all())
+
+        for prev in previous_nodes:
+            prev.next_node_templates.add(*next_nodes)
+
+        for prev in previous_nodes:
+            prev.next_node_templates.remove(node)
+
+        for next_node in next_nodes:
+            node.next_node_templates.remove(next_node)
+
+        node.delete()
+
+    @transaction.atomic
+    def insert_node_template(self, node):
+        previous_nodes = list(node.previous_node_templates.all())
+        next_nodes = list(node.next_node_templates.all())
+
+        for prev in previous_nodes:
+            prev.next_node_templates.remove(*next_nodes)
+
+        for prev in previous_nodes:
+            prev.next_node_templates.add(node)
+
+        node.next_node_templates.add(*next_nodes)
+
+    @transaction.atomic
+    def move_node_template(self, node, new_previous_nodes, new_next_nodes):
+        new_previous_nodes = list(new_previous_nodes)
+        new_next_nodes = list(new_next_nodes)
+
+        old_previous = list(node.previous_node_templates.all())
+        old_next = list(node.next_node_templates.all())
+
+        for prev in old_previous:
+            prev.next_node_templates.add(*old_next)
+
+        for prev in old_previous:
+            prev.next_node_templates.remove(node)
+
+        node.next_node_templates.clear()
+
+        for prev in new_previous_nodes:
+            prev.next_node_templates.remove(*new_next_nodes)
+
+        for prev in new_previous_nodes:
+            prev.next_node_templates.add(node)
+
+        node.next_node_templates.add(*new_next_nodes)
 
 
 class ValidationNodeTemplate(CreatedAndUpdatedModel):

@@ -80,9 +80,12 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         node.next_node_templates.add(*next_nodes)
 
     @transaction.atomic
-    def move_node_template(self, node, new_previous_nodes, new_next_nodes):
-        new_previous_nodes = list(new_previous_nodes)
-        new_next_nodes = list(new_next_nodes)
+    def move_node_template(self, node, new_previous_nodes=None, new_next_nodes=None):
+        new_previous_nodes = list(new_previous_nodes or [])
+        new_next_nodes = list(new_next_nodes or [])
+
+        if not new_next_nodes and not new_previous_nodes:
+            raise ValueError
 
         old_previous = list(node.previous_node_templates.all())
         old_next = list(node.next_node_templates.all())
@@ -102,6 +105,37 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             prev.next_node_templates.add(node)
 
         node.next_node_templates.add(*new_next_nodes)
+
+    def dump_nodes(self):
+        start = self.get_starting_node()
+
+        def walk(node, visited):
+            path = []
+            current = node
+
+            while True:
+                if current in visited:
+                    path.append(f"[cycle:{current.slug}]")
+                    return path
+
+                visited.add(current)
+                path.append(current.slug)
+
+                next_nodes = current.next_node_templates.all().order_by("slug")
+
+                if not next_nodes.exists():
+                    # end node there
+                    return path
+
+                if next_nodes.count() > 1:
+                    # split in branches
+                    branches = [walk(next_node, visited.copy()) for next_node in next_nodes]
+                    path.append(branches)
+                    return path
+
+                current = next_nodes[0]
+
+        return walk(start, set())
 
 
 class ValidationNodeTemplate(CreatedAndUpdatedModel):

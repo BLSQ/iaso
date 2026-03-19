@@ -20,7 +20,7 @@ class HasProfilePermission(permissions.BasePermission):
         if request.user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
             return self.has_permission_over_user(request, pk, view.action)
 
-        return view.action in ["retrieve", "list", "export_csv", "export_xlsx"]
+        return view.action in ["retrieve", "list", "export_csv", "export_xlsx", "dropdown"]
 
     # We could `return False` instead of raising exceptions,
     # but it's better to be explicit about why the permission was denied.

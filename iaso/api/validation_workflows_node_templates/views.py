@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from iaso.api.common import ModelViewSet
+from iaso.api.filters import CamelCaseOrderingFilter
 from iaso.api.validation_workflows_node_templates.pagination import ValidationNodeTemplatePagination
 from iaso.api.validation_workflows_node_templates.permissions import HasValidationNodeTemplatePermission
 from iaso.api.validation_workflows_node_templates.serializers.bulk_create import (
@@ -22,7 +23,7 @@ from iaso.api.validation_workflows_node_templates.serializers.list import Valida
 from iaso.api.validation_workflows_node_templates.serializers.move import ValidationNodeTemplateMoveSerializer
 from iaso.api.validation_workflows_node_templates.serializers.retrieve import ValidationNodeTemplateRetrieveSerializer
 from iaso.api.validation_workflows_node_templates.serializers.update import ValidationNodeTemplateUpdateSerializer
-from iaso.models import ValidationNodeTemplate
+from iaso.models import ValidationNodeTemplate, ValidationWorkflow
 
 
 @extend_schema(tags=["Validation workflow node templates"])
@@ -31,6 +32,7 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
     lookup_url_kwarg = "slug"
     permission_classes = [IsAuthenticated, HasValidationNodeTemplatePermission]
     model = ValidationNodeTemplate
+    filter_backends = [CamelCaseOrderingFilter]
     parser_classes = [CamelCaseJSONParser]
     renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
     pagination_class = ValidationNodeTemplatePagination
@@ -44,7 +46,7 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
             return ValidationNodeTemplateRetrieveSerializer
         if self.action == "create":
             return ValidationNodeTemplateCreateSerializer
-        if self.action == "update":
+        if self.action in ["update", "partial_update"]:
             return ValidationNodeTemplateUpdateSerializer
         if self.action == "bulk_create":
             return ValidationNodeTemplateBulkCreateSerializer
@@ -70,7 +72,17 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
             )
         return qs.select_related("workflow", "workflow__account").filter(workflow__account=account)
 
-    @action(detail=False, methods=["POST"], url_path="bulk")
+    def get_validation_workflow(self):
+        account = self.request.user.iaso_profile.account
+        return ValidationWorkflow.objects.prefetch_related("node_templates").get(
+            account=account, slug=self.kwargs.get("parent_lookup_workflow__slug")
+        )
+
+    @extend_schema(
+        request=ValidationNodeTemplateBulkCreateSerializer(many=True),
+        responses=ValidationNodeTemplateBulkCreateSerializer(many=True),
+    )
+    @action(detail=False, methods=["POST"], url_path="bulk", url_name="bulk")
     def bulk_create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=True, allow_empty=False, min_length=1)
         serializer.is_valid(raise_exception=True)
@@ -78,9 +90,16 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=False, methods=["PUT"], url_path="bulk")
-    def bulk_update(self):
-        pass
+    @extend_schema(
+        description="Allow to update an existing list of nodes attached to a workflow (fields and order). Does not allow to delete nodes."
+    )
+    @bulk_create.mapping.put
+    def bulk_update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True, allow_empty=False, instance=self.get_queryset())
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @transaction.atomic
     def perform_destroy(self, instance):

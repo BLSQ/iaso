@@ -50,7 +50,9 @@ class ValidationNodeTemplateBulkCreateSerializer(ModelSerializer):
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
         user = getattr(request, "user", None)
-        self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(
-            account=user.iaso_profile.account
-        )
-        self.fields["workflow"].queryset = ValidationWorkflow.objects.filter(account=user.iaso_profile.account)
+        iaso_profile = getattr(user, "iaso_profile", None)
+        if getattr(iaso_profile, "account", None):
+            self.fields["roles_required"].child_relation.queryset = UserRole.objects.filter(
+                account=user.iaso_profile.account
+            )
+            self.fields["workflow"].queryset = ValidationWorkflow.objects.filter(account=user.iaso_profile.account)

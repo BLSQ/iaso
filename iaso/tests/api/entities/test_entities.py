@@ -4,13 +4,10 @@ import io
 import json
 import uuid
 
-from datetime import timedelta
-
 import pytz
 import time_machine
 
 from django.core.files import File
-from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -235,7 +232,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(10):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]
@@ -335,7 +332,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
             instance.org_unit.name,
             str(instance.org_unit.id),
-            "",
+            "2021-07-18 14:57:00",
             "Jean",
             "M.",
             "Dupont",
@@ -889,7 +886,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
             instance.org_unit.name,
             str(instance.org_unit.id),
-            "",
+            "2021-07-18 14:57:00",
         ]
         self.assertEqual(row_to_test, expected_row)
 

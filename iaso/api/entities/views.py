@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from django.db.models import Max
+from django.db.models import Max, Prefetch
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -101,27 +101,39 @@ class EntityViewSet(ModelViewSet):
             return EntityCursorPagination
         return EntityListPaginator
 
+    @property
+    def _requested_ordering_fields(self):
+        """Access the raw ordering fields from the request."""
+
+        order_param = self.request.query_params.get("order_columns") or self.request.query_params.get("order") or ""
+        return {field.strip().lstrip("-") for field in order_param.split(",") if field.strip()}
+
     def get_queryset(self):
         queryset = Entity.objects.filter_for_user(self.request.user)
         if self.action == "count":
             return queryset
-        queryset = (
-            queryset.select_related(
-                "attributes__org_unit",
-                "attributes__created_by",
-                "entity_type",
+        if self.action == "list" and "last_saved_instance" in self._requested_ordering_fields:
+            queryset = queryset.annotate(
+                last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
             )
-            .annotate(last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at")))
-            .with_duplicates()
-            .prefetch_related(
-                "attributes__created_by__teams",
-                "attributes__form",
-                "attributes__org_unit__groups",
-                "attributes__org_unit__org_unit_type",
-                "attributes__org_unit__parent",
-                "attributes__org_unit__version__data_source",
+
+        queryset = queryset.select_related(
+            "attributes__org_unit",
+            "attributes__created_by",
+            "entity_type",
+        ).prefetch_related(
+            "attributes__created_by__teams",
+            "attributes__form",
+            "attributes__org_unit__groups",
+            "attributes__org_unit__org_unit_type",
+            "attributes__org_unit__parent",
+            "attributes__org_unit__version__data_source",
+            Prefetch(
                 "instances",
-            )
+                queryset=Instance.objects.only("id", "entity_id", "source_created_at", "created_at"),
+            ),
+            "duplicates1",
+            "duplicates2",
         )
         return queryset
 

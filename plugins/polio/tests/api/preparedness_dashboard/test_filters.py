@@ -24,8 +24,8 @@ class PreparednessScoreFilterAPITestCase(PreparednessDashboardAPIBase):
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data, {})
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.preparedness_summary")
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_preparedness")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_filter_date_returns_entry_before_or_on_date(self, mock_get_preparedness, mock_summary):
         """Date filter returns the most recent SpreadSheetImport created on or before the given date."""
         mock_get_preparedness.return_value = {"totals": {"national": 80}}
@@ -57,8 +57,8 @@ class PreparednessScoreFilterAPITestCase(PreparednessDashboardAPIBase):
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data, {})
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.preparedness_summary")
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_preparedness")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_filter_date_returns_most_recent_before_date(self, mock_get_preparedness, mock_summary):
         """Date filter picks the entry closest to (but not after) the given date."""
         mock_get_preparedness.return_value = {"totals": {"national": 50}}

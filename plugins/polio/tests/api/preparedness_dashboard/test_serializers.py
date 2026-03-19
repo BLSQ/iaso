@@ -1,13 +1,13 @@
 from unittest import mock
 
-from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessScoreSerializer
-from plugins.polio.models.base import Round, SpreadSheetImport
+from plugins.polio.api.dashboards.preparedness.serializers import PreparednessScoreSerializer
+from plugins.polio.models.base import SpreadSheetImport
 
 from .common_data import PreparednessDashboardAPIBase
 
 
-MOCK_PREPAREDNESS = "plugins.polio.api.dashboards.preparedness_dashboard.get_preparedness"
-MOCK_SUMMARY = "plugins.polio.api.dashboards.preparedness_dashboard.preparedness_summary"
+MOCK_PREPAREDNESS = "plugins.polio.api.dashboards.preparedness.serializers.get_preparedness"
+MOCK_SUMMARY = "plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary"
 
 
 class PreparednessScoreSerializerAPITestCase(PreparednessDashboardAPIBase):
@@ -21,6 +21,9 @@ class PreparednessScoreSerializerAPITestCase(PreparednessDashboardAPIBase):
         mock_get_preparedness.return_value = {"totals": {"national": 90, "regional": 75, "district": 60}}
         mock_summary.return_value = {"overall_status_score": 75.0}
 
+        self.ssi.round_id = self.round_with_ssi.id
+        self.ssi.round_number = self.round_with_ssi.number
+        self.ssi.campaign = self.campaign.obr_name
         serializer = PreparednessScoreSerializer(instance=self.ssi)
         data = serializer.data
 
@@ -35,6 +38,9 @@ class PreparednessScoreSerializerAPITestCase(PreparednessDashboardAPIBase):
         mock_get_preparedness.return_value = {"totals": {}}
         mock_summary.return_value = {"overall_status_score": 0}
 
+        self.ssi.round_id = self.round_with_ssi.id
+        self.ssi.round_number = self.round_with_ssi.number
+        self.ssi.campaign = self.campaign.obr_name
         serializer = PreparednessScoreSerializer(instance=self.ssi)
         details = serializer.data["campaign_details"]
 
@@ -59,31 +65,17 @@ class PreparednessScoreSerializerAPITestCase(PreparednessDashboardAPIBase):
 
     @mock.patch(MOCK_SUMMARY)
     @mock.patch(MOCK_PREPAREDNESS)
-    def test_campaign_details_raises_when_multiple_rounds_share_url(self, mock_get_preparedness, mock_summary):
-        """When multiple rounds share the same preparedness URL, the serializer raises."""
+    def test_campaign_details_returns_provided_attrs(self, mock_get_preparedness, mock_summary):
+        """The serializer renders whatever round attrs were set by the view."""
         mock_get_preparedness.return_value = {"totals": {}}
         mock_summary.return_value = {"overall_status_score": 0}
 
-        shared_url = "https://docs.google.com/spreadsheets/d/shared"
+        self.ssi.round_id = 999
+        self.ssi.round_number = 42
+        self.ssi.campaign = "custom-campaign"
+        serializer = PreparednessScoreSerializer(instance=self.ssi)
+        details = serializer.data["campaign_details"]
 
-        ssi_shared = SpreadSheetImport.objects.create(
-            url=shared_url,
-            content={"title": "Shared", "sheets": []},
-            spread_id="shared",
-        )
-
-        Round.objects.create(
-            campaign=self.campaign,
-            number=10,
-            preparedness_spreadsheet_url=shared_url,
-        )
-        Round.objects.create(
-            campaign=self.campaign,
-            number=11,
-            preparedness_spreadsheet_url=shared_url,
-        )
-
-        serializer = PreparednessScoreSerializer(instance=ssi_shared)
-        with self.assertRaises(Exception) as ctx:
-            serializer.data
-        self.assertIn("Found more than one round for url:", str(ctx.exception))
+        self.assertEqual(details["round_id"], 999)
+        self.assertEqual(details["round_number"], 42)
+        self.assertEqual(details["campaign"], "custom-campaign")

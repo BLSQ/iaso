@@ -12,7 +12,7 @@ from plugins.polio.api.dashboards.budget import BudgetDashboardViewSet
 from plugins.polio.api.dashboards.campaign import CampaignDashboardViewSet
 from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
-from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
+from plugins.polio.api.dashboards.preparedness.preparedness_dashboard import PreparednessDashboardViewSet
 from plugins.polio.api.dashboards.rounds import RoundDashboardViewSet
 from plugins.polio.api.dashboards.spreadsheetimport import SpreadSheetImportViewSet
 

@@ -5,6 +5,8 @@ import time_machine
 
 from rest_framework import status
 
+from plugins.polio.models.base import SpreadSheetImport
+
 from .common_data import PreparednessDashboardAPIBase
 
 
@@ -75,7 +77,7 @@ PREPAREDNESS_LIST_SCHEMA = {
 
 
 class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
     def test_list_returns_preparedness_for_polio_campaigns(self, mock_get_cache):
         mock_get_cache.return_value = {"campaign_obr_name": "test-campaign", "round": "Round1", "score": 80}
 
@@ -87,7 +89,7 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
         # 4 rounds on "test-campaign" + 3 rounds on "other-campaign"
         self.assertEqual(len(data), 7)
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
     def test_list_response_shape(self, mock_get_cache):
         """Validate the JSON schema of the list endpoint response."""
         mock_get_cache.return_value = {
@@ -147,7 +149,7 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
     def test_list_filters_by_campaign_name(self, mock_get_cache):
         mock_get_cache.return_value = {"campaign_obr_name": "test-campaign", "round": "Round1"}
 
@@ -160,7 +162,7 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
         for item in data:
             self.assertEqual(item["campaign_obr_name"], "test-campaign")
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
     def test_list_returns_empty_for_nonexistent_campaign(self, mock_get_cache):
         mock_get_cache.return_value = None
 
@@ -170,7 +172,7 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
 
         self.assertEqual(data, [])
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
     def test_list_excludes_none_results(self, mock_get_cache):
         """Rounds where get_or_set_preparedness_cache_for_round returns None are excluded."""
         mock_get_cache.return_value = None
@@ -181,7 +183,7 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
 
         self.assertEqual(data, [])
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
     def test_list_excludes_non_polio_campaigns(self, mock_get_cache):
         """Only campaigns with POLIO type should be included."""
         mock_get_cache.return_value = {"campaign_obr_name": "test-campaign", "round": "Round1"}
@@ -244,8 +246,8 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertIn("date", data)
         self.assertNotIn("url", data)
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.preparedness_summary")
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_preparedness")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_accessible_with_polio_permission(self, mock_get_preparedness, mock_summary):
         mock_get_preparedness.return_value = {"totals": {"national": 80}}
         mock_summary.return_value = {"overall_status_score": 80.0}
@@ -254,8 +256,8 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         response = self.client.get(self.SCORE_URL, self.VALID_SCORE_PARAMS)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.preparedness_summary")
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_preparedness")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_accessible_with_config_permission(self, mock_get_preparedness, mock_summary):
         mock_get_preparedness.return_value = {"totals": {"national": 80}}
         mock_summary.return_value = {"overall_status_score": 80.0}
@@ -271,8 +273,8 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
 
         self.assertEqual(data, {})
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.preparedness_summary")
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_preparedness")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_returns_serialized_data(self, mock_get_preparedness, mock_summary):
         mock_get_preparedness.return_value = {"totals": {"national": 80, "regional": 70, "district": 60}}
         mock_summary.return_value = {"overall_status_score": 70.0}
@@ -287,8 +289,8 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertEqual(data["scores"]["national"], 80)
         self.assertIn("campaign_details", data)
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.preparedness_summary")
-    @mock.patch("plugins.polio.api.dashboards.preparedness_dashboard.get_preparedness")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.preparedness_summary")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.serializers.get_preparedness")
     def test_score_returns_campaign_details_with_linked_round(self, mock_get_preparedness, mock_summary):
         mock_get_preparedness.return_value = {"totals": {"national": 80}}
         mock_summary.return_value = {"overall_status_score": 80.0}
@@ -301,3 +303,21 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertEqual(campaign_details["round_id"], self.round_with_ssi.id)
         self.assertEqual(campaign_details["round_number"], 4)
         self.assertEqual(campaign_details["campaign"], "test-campaign")
+
+    def test_score_raises_when_multiple_rounds_share_url(self):
+        """When multiple rounds share the same preparedness URL, the view raises."""
+        from plugins.polio.models.base import Round
+
+        shared_url = "https://docs.google.com/spreadsheets/d/shared"
+        SpreadSheetImport.objects.create(
+            url=shared_url,
+            content={"title": "Shared", "sheets": []},
+            spread_id="shared",
+        )
+        Round.objects.create(campaign=self.campaign, number=10, preparedness_spreadsheet_url=shared_url)
+        Round.objects.create(campaign=self.campaign, number=11, preparedness_spreadsheet_url=shared_url)
+
+        self.client.force_authenticate(self.user_polio)
+        with self.assertRaises(Exception) as ctx:
+            self.client.get(self.SCORE_URL, {"url": shared_url, "date": "2030-01-01"})
+        self.assertIn("Found more than one round for url:", str(ctx.exception))

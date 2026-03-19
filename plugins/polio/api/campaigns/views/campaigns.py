@@ -131,7 +131,7 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_test=False)
 
         if on_hold == "false":
-            campaigns = campaigns.filter(on_hold=False)
+            campaigns = campaigns.filter(Q(on_hold=False) & Q(has_round_on_hold=False))
 
         if campaign_category == "on_hold" and on_hold == "false":
             campaigns = campaigns.none()
@@ -148,11 +148,6 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(is_planned=False)
 
         if campaign_category == "regular" and on_hold == "false":
-            rounds_on_hold = Round.objects.filter(
-                campaign_id=OuterRef("pk"),
-                on_hold=True,
-            )
-            campaigns = campaigns.annotate(has_round_on_hold=Exists(rounds_on_hold))
             campaigns = (
                 campaigns.filter(is_preventive=False)
                 .filter(is_test=False)

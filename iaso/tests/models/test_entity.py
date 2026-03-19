@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from iaso import models as m
 from iaso.models.deduplication import ValidationStatus
 from iaso.test import TestCase
@@ -46,30 +50,56 @@ class EntityTestCase(TestCase):
         cls.form_1.projects.add(cls.project)
         cls.entity_type = m.EntityType.objects.create(name="Type 1", reference_form=cls.form_1, account=cls.account)
 
-    def test_annotate_duplicates(self):
-        """Test queryset method with_duplicates"""
+    def test_pending_duplicate_ids(self):
+        """Test the pending_duplicate_ids property on the Entity model."""
         entities = m.Entity.objects.bulk_create(
-            m.Entity(entity_type=self.entity_type, account=self.account) for _ in range(6)
+            m.Entity(entity_type=self.entity_type, account=self.account) for _ in range(4)
+        )
+        main_entity, other1, other2, other3 = entities
+
+        dup1 = m.EntityDuplicate.objects.create(
+            entity1=main_entity, entity2=other1, validation_status=ValidationStatus.PENDING
         )
 
-        # Entities 0-2 are duplicates of each other
-        m.EntityDuplicate.objects.create(
-            entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
-        )
-        m.EntityDuplicate.objects.create(
-            entity1=entities[0], entity2=entities[2], validation_status=ValidationStatus.PENDING
+        dup2 = m.EntityDuplicate.objects.create(
+            entity1=other2, entity2=main_entity, validation_status=ValidationStatus.PENDING
         )
 
-        # Entities 3-4 as well
-        m.EntityDuplicate.objects.create(
-            entity1=entities[3], entity2=entities[4], validation_status=ValidationStatus.PENDING
+        dup3 = m.EntityDuplicate.objects.create(
+            entity1=main_entity, entity2=other3, validation_status=ValidationStatus.VALIDATED
         )
 
-        annotated = list(m.Entity.objects.with_duplicates().all())
+        pending_ids = main_entity.pending_duplicate_ids
 
-        self.assertTrue(annotated[0].has_duplicates)
-        self.assertTrue(annotated[1].has_duplicates)
-        self.assertTrue(annotated[2].has_duplicates)
-        self.assertTrue(annotated[3].has_duplicates)
-        self.assertTrue(annotated[4].has_duplicates)
-        self.assertFalse(annotated[5].has_duplicates)
+        self.assertEqual(len(pending_ids), 2)
+        self.assertCountEqual(pending_ids, [dup1.id, dup2.id])
+
+    def test_latest_instance_created_at(self):
+        """Test the latest_instance_created_at property evaluates dates correctly."""
+        entity = m.Entity.objects.create(entity_type=self.entity_type, account=self.account)
+
+        # Test fallback when the entity has no instances
+        self.assertEqual(entity.latest_instance_created_at, entity.created_at)
+
+        now = timezone.now()
+        date_oldest = now - timedelta(days=10)
+        date_middle = now - timedelta(days=5)
+        date_newest = now - timedelta(days=1)
+
+        # Test instance with only created_at
+        inst1 = m.Instance.objects.create(entity=entity, form=self.form_1)
+        m.Instance.objects.filter(id=inst1.id).update(created_at=date_oldest)
+
+        self.assertEqual(entity.latest_instance_created_at, date_oldest)
+
+        # Test multiple instances
+        inst2 = m.Instance.objects.create(entity=entity, form=self.form_1)
+        m.Instance.objects.filter(id=inst2.id).update(created_at=date_middle)
+
+        self.assertEqual(entity.latest_instance_created_at, date_middle)
+
+        # Test that source_created_at takes precedence
+        inst3 = m.Instance.objects.create(entity=entity, form=self.form_1, source_created_at=date_newest)
+        m.Instance.objects.filter(id=inst3.id).update(created_at=date_oldest)
+
+        self.assertEqual(entity.latest_instance_created_at, date_newest)

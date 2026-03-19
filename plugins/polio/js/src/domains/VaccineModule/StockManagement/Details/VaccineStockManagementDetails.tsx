@@ -9,7 +9,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import ExcellSvg from '../../../../../../../../hat/assets/js/apps/Iaso/components/svg/ExcellSvgComponent';
+import ExcellSvg from 'Iaso/components/svg/ExcellSvgComponent';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../../constants/urls';

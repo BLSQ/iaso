@@ -353,6 +353,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         reference_instances = (
             org_unit.reference_instances(manager="non_deleted_objects")
+            .filter(form__deleted_at__isnull=True)
             .prefetch_related("instancefile_set")
             .order_by("id")
         )

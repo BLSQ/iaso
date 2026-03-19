@@ -2,42 +2,39 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.fields import Field
 
+from iaso.api.common import ModelSerializer
 from iaso.models import Project
 from iaso.models.team import Team, TeamType
-from iaso.utils.colors import COLOR_FORMAT_ERROR, validate_hex_color
+from iaso.utils.serializer.color import ColorFieldSerializer
 
 
-class NestedProjectSerializer(serializers.ModelSerializer):
+class NestedProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
         ref_name = "TeamsNestedProject"
 
 
-class NestedTeamSerializer(serializers.ModelSerializer):
+class NestedTeamSerializer(ModelSerializer):
     class Meta:
         model = Team
         fields = ["id", "name", "deleted_at", "color"]
 
 
-class NestedUserSerializer(serializers.ModelSerializer):
-    color = serializers.SerializerMethodField()
+class NestedUserSerializer(ModelSerializer):
+    color = ColorFieldSerializer(source="iaso_profile.color", read_only=True, default=None)
     iaso_profile_id = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ["id", "username", "first_name", "last_name", "color", "iaso_profile_id"]
 
-    def get_color(self, obj):
-        profile = getattr(obj, "iaso_profile", None)
-        return getattr(profile, "color", None) if profile else None
-
     def get_iaso_profile_id(self, obj):
         profile = getattr(obj, "iaso_profile", None)
         return getattr(profile, "id", None) if profile else None
 
 
-class AuditTeamSerializer(serializers.ModelSerializer):
+class AuditTeamSerializer(ModelSerializer):
     sub_teams: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
@@ -45,7 +42,7 @@ class AuditTeamSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TeamDropdownSerializer(serializers.ModelSerializer):
+class TeamDropdownSerializer(ModelSerializer):
     """Lightweight serializer for team dropdown lists"""
 
     class Meta:
@@ -54,7 +51,7 @@ class TeamDropdownSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name", "color", "type", "project"]
 
 
-class TeamSerializer(serializers.ModelSerializer):
+class TeamSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
@@ -90,12 +87,6 @@ class TeamSerializer(serializers.ModelSerializer):
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
     project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
-
-    def validate_color(self, value: str) -> str:
-        try:
-            return validate_hex_color(value)
-        except ValueError:
-            raise serializers.ValidationError(COLOR_FORMAT_ERROR)
 
     def validate_parent(self, value: Team):
         if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):

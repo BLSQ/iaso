@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions
 
 from iaso.api.common import ModelViewSet
@@ -7,7 +7,7 @@ from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models import OrgUnit
 
 
-@swagger_auto_schema(tags=["lqasimcountries"])
+@extend_schema(tags=["lqasimcountries"])
 class CountriesWithLqasIMConfigViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

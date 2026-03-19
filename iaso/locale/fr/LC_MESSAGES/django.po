@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-16 11:48+0000\n"
+"POT-Creation-Date: 2026-03-11 17:08+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -316,6 +316,11 @@ msgstr ""
 "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 
 #: iaso/api/org_units.py
+#, python-brace-format
+msgid "Invalid validation status : {validation_status}"
+msgstr "Statut de validation invalide : {validation_status}"
+
+#: iaso/api/org_units.py
 msgid "Can't parse geom"
 msgstr "Impossible d'analyser la géométrie"
 
@@ -418,41 +423,78 @@ msgstr "Nombre de modifications d'unités organisationnelles"
 msgid "Form: %(name)s"
 msgstr "Formulaire : %(name)s"
 
-#: iaso/api/profiles/profile_logs.py
+#: iaso/api/profile_logs/filters.py
 msgid "User IDs"
 msgstr "IDs utilisateurs"
 
-#: iaso/api/profiles/profile_logs.py
+#: iaso/api/profile_logs/filters.py
 msgid "Modified by"
 msgstr "Modifié par"
 
-#: iaso/api/profiles/profile_logs.py
+#: iaso/api/profile_logs/filters.py
 msgid "Location"
 msgstr "Localisation"
 
-#: iaso/api/profiles/profiles.py
-msgid "Nom d'utilisateur requis"
-msgstr "Nom d'utilisateur requis"
+#: iaso/api/profiles/policies.py
+#, python-brace-format
+msgid ""
+"User with {perm} cannot assign an OrgUnit outside of their own health "
+"pyramid. Trying to assign {org_unit_id}."
+msgstr ""
+"Un utilisateur disposant des permissions {perm} ne peut pas affecter une "
+"OrgUnit en dehors de sa propre pyramide de santé. Tentative d'affectation de "
+"{org_unit_id}."
 
-#: iaso/api/profiles/profiles.py
-msgid "Mot de passe requis"
-msgstr "Mot de passe requis"
+#: iaso/api/profiles/policies.py
+msgid "You must specify which projects are authorized for this user."
+msgstr "Vous devez préciser quels projets sont autorisés pour cet utilisateur."
 
-#: iaso/api/profiles/profiles.py
-msgid "Nom d'utilisateur existant"
-msgstr "Nom d'utilisateur existant"
+#: iaso/api/profiles/policies.py
+msgid "You cannot edit a user who has broader access to projects."
+msgstr ""
+"Vous ne pouvez pas modifier un utilisateur qui dispose d'un accès plus "
+"étendu aux projets."
 
-#: iaso/api/profiles/profiles.py
+#: iaso/api/profiles/policies.py
+msgid "Some projects are outside your scope."
+msgstr "Certains projets ne relèvent pas de votre champ d'action'."
+
+#: iaso/api/profiles/serializers/common.py
+msgid "Enter a valid phone number."
+msgstr "Veuillez saisir un numéro de téléphone valide."
+
+#: iaso/api/profiles/serializers/common.py
 msgid "Both phone number and country code must be provided"
 msgstr "Le numéro de téléphone et le code pays doivent être fournis"
 
-#: iaso/api/profiles/profiles.py
-msgid "Invalid phone number format"
-msgstr "Format de numéro de téléphone invalide"
+#: iaso/api/profiles/serializers/create.py
+#: iaso/api/profiles/serializers/update.py
+msgid "One or more user roles do not belong to the provided account."
+msgstr ""
+"Un ou plusieurs rôles d'utilisateur n'appartiennent pas au compte fourni."
 
-#: iaso/api/profiles/profiles.py
-msgid "Invalid phone number"
-msgstr "Numéro de téléphone invalide"
+#: iaso/api/profiles/serializers/create.py
+#: iaso/utils/serializer/id_or_uuid_field.py
+msgid "This field is required."
+msgstr "Ce champ est requis."
+
+#: iaso/api/profiles/serializers/update.py
+msgid "Username already exists"
+msgstr "Nom d'utilisateur existant"
+
+#: iaso/api/profiles/serializers/update.py
+msgid "Password cannot be empty."
+msgstr "Le mot de passe ne peut pas être vide."
+
+#: iaso/api/profiles/serializers/update.py
+msgid "Passwords must match."
+msgstr "Les mots de passe doivent correspondre."
+
+# iaso/api/profiles/views
+#: iaso/api/profiles/views.py
+#, python-brace-format
+msgid "Set up a password for your new account on {domain}"
+msgstr "Configurer un mot de passe pour votre nouveau compte sur {domain}"
 
 #: iaso/api/setup_account.py
 msgid "Email is required when email_invitation is True"
@@ -519,7 +561,7 @@ msgstr "Exporté"
 msgid "Errored"
 msgstr "En erreur"
 
-#: iaso/models/base.py
+#: iaso/models/base.py iaso/models/validation_workflow/validation_node.py
 msgid "Skipped"
 msgstr "Ignoré"
 
@@ -542,6 +584,20 @@ msgstr "MULTIPLE"
 #: iaso/models/comment.py
 msgid "content type"
 msgstr "type de contenu"
+
+#: iaso/models/common.py iaso/models/org_unit.py
+msgid "Approved"
+msgstr "Approuvé"
+
+#: iaso/models/common.py iaso/models/org_unit.py iaso/models/payments.py
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Rejected"
+msgstr "Rejeté"
+
+#: iaso/models/common.py iaso/models/deduplication.py iaso/models/payments.py
+#: iaso/utils/virus_scan/model.py
+msgid "Pending"
+msgstr "En attente"
 
 #: iaso/models/data_source.py
 msgid ""
@@ -599,11 +655,6 @@ msgstr "Synchronisation de source de données"
 #: iaso/models/deduplication.py
 msgid "Levenshtein"
 msgstr "Levenshtein"
-
-#: iaso/models/deduplication.py iaso/models/payments.py
-#: iaso/utils/virus_scan/model.py
-msgid "Pending"
-msgstr "En attente"
 
 #: iaso/models/deduplication.py
 msgid "Validated"
@@ -815,14 +866,6 @@ msgstr "Modification d'unité organisationnelle"
 msgid "New"
 msgstr "Nouveau"
 
-#: iaso/models/org_unit.py iaso/models/payments.py
-msgid "Rejected"
-msgstr "Rejeté"
-
-#: iaso/models/org_unit.py
-msgid "Approved"
-msgstr "Approuvé"
-
 #: iaso/models/org_unit.py
 msgid "Org unit change request"
 msgstr "Demande de modification d'unité organisationnelle"
@@ -870,6 +913,14 @@ msgstr "Payé"
 #: iaso/models/payments.py
 msgid "Partially Paid"
 msgstr "Partiellement payé"
+
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Accepted"
+msgstr "Accepté"
+
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Unknown"
+msgstr "Inconnu"
 
 #: iaso/permissions/core_permissions.py
 msgid "Attributions"
@@ -930,6 +981,10 @@ msgstr "Export hors ligne de l'application mobile"
 #: iaso/permissions/core_permissions.py
 msgid "modules"
 msgstr "modules"
+
+#: iaso/permissions/core_permissions.py
+msgid "Metric types"
+msgstr "Types d'indicateurs"
 
 #: iaso/permissions/core_permissions.py
 msgid "Unités d'organisations"
@@ -1060,6 +1115,48 @@ msgstr "Copie des unités organisationnelles"
 msgid "Fixing parents"
 msgstr "Correction des parents"
 
+#: iaso/templates/emails/create_password_email.html
+#, python-format
+msgid ""
+"<p> Hello,<br><br> You have been invited to access IASO - <a "
+"href=\"%(protocol)s://%(domain)s\" target=\"_blank\">%(account_name)s</a>."
+"<br><br> Username: <strong>%(user_name)s</strong><br><br> Please click on "
+"the link below to create your password:<br><br> <a href=\"%(url)s\" "
+"target=\"_blank\">%(url)s</a><br><br> If clicking the link above doesn't "
+"work, please copy and paste the URL in a new browser<br> window instead."
+"<br><br> If you did not request an account on %(account_name)s, you can "
+"ignore this e-mail - no password will be created.<br><br> Sincerely,<br> The "
+"%(domain)s Team. </p>"
+msgstr ""
+"<p>Bonjour,<br><br> Vous avez été invité à accéder à l'IASO - <a "
+"href=\"%(protocol)s://%(domain)s\" target=\"_blank\">%(account_name)s</a>."
+"<br><br> Nom d'utilisateur: <strong>%(user_name)s</strong><br><br> Pour "
+"configurer un mot de passe pour votre compte, merci de cliquer sur le lien "
+"ci-dessous:<br><br> <a href=\"%(url)s\" target=\"_blank \">%(url)s</"
+"a><br><br> Si le lien ne fonctionne pas, merci de copier et coller l'URL "
+"dans une nouvelle fenêtre de votre navigateur.<br><br> Si vous n'avez pas "
+"demandé de compte sur %(account_name)s, vous pouvez ignorer cet e-mail - "
+"aucun mot de passe ne sera créé.<br><br> Cordialement,<br> L'équipe "
+"%(domain)s.</p>"
+
+#: iaso/templates/emails/create_password_email.txt
+#, python-format
+msgid ""
+"Hello, You have been invited to access IASO - %(protocol)s://%(domain)s. "
+"Username: %(user_name)s Please click on the link below to create your "
+"password: %(url)s If clicking the link above doesn't work, please copy and "
+"paste the URL in a new browser window instead. If you did not request an "
+"account on %(account_name)s, you can ignore this e-mail - no password will "
+"be created. Sincerely, The %(domain)s Team."
+msgstr ""
+"Bonjour, Vous avez été invité à accéder à l'IASO - %(protocol)s://"
+"%(domain)s. Nom d'utilisateur: %(user_name)s Pour configurer un mot de passe "
+"pour votre compte, merci de cliquer sur le lien ci-dessous: %(url)s Si le "
+"lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle "
+"fenêtre de votre navigateur. Si vous n'avez pas demandé de compte sur "
+"%(account_name)s, vous pouvez ignorer cet e-mail - aucun mot de passe ne "
+"sera créé. Cordialement, L'équipe %(domain)s."
+
 #: iaso/utils/colors.py
 msgid "Color must be a valid hex code (#RRGGBB)."
 msgstr "La couleur doit être un code hexadécimal valide (#RRGGBB)."
@@ -1097,10 +1194,6 @@ msgid "User profile not found"
 msgstr "Profil de l'utilisateur non trouvé"
 
 #: iaso/utils/serializer/id_or_uuid_field.py
-msgid "This field is required."
-msgstr "Ce champ est requis."
-
-#: iaso/utils/serializer/id_or_uuid_field.py
 #, python-brace-format
 msgid "Invalid pk or uuid \"{pk_value}\" - object does not exist."
 msgstr "Clé primaire ou uuid invalide \"{pk_value}\" - l'objet n'existe pas."
@@ -1127,21 +1220,14 @@ msgstr "Virus détecté"
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
 
-#~ msgid "This query parameter is required."
-#~ msgstr "Ce paramètre de requête est requis."
+#~ msgid "Nom d'utilisateur requis"
+#~ msgstr "Nom d'utilisateur requis"
 
-#~ msgid "Unknown or inaccessible planning"
-#~ msgstr "Planification inconnue ou inaccessible"
+#~ msgid "Mot de passe requis"
+#~ msgstr "Mot de passe requis"
 
-#~ msgid "User profile or account not found"
-#~ msgstr "Profil utilisateur ou compte introuvable"
+#~ msgid "Invalid phone number format"
+#~ msgstr "Format de numéro de téléphone invalide"
 
-#~ msgid "task_id is required"
-#~ msgstr "L'ID de tâche est requis"
-
-#, python-brace-format
-#~ msgid "Invalid validation status : {validation_status}"
-#~ msgstr "Statut de validation invalide : {validation_status}"
-
-#~ msgid "Polio"
-#~ msgstr "Polio"
+#~ msgid "Invalid phone number"
+#~ msgstr "Numéro de téléphone invalide"

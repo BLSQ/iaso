@@ -160,6 +160,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'searchActive',
             'searches',
             'isClusterActive',
+            'fields',
         ],
     },
     orgUnitDetails: {
@@ -322,6 +323,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    userDetails: {
+        url: 'settings/users/management/details',
+        params: ['accountId', 'userId'],
+    },
     usersHistory: {
         url: 'settings/users/history',
         params: [
@@ -411,8 +416,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'locationLimit',
             'groups',
             'fieldsSearch',
-            ...paginationPathParams,
             'isSearchActive',
+            // pagination params
+            'order',
+            'pageSize',
+            'cursor',
         ],
     },
     entityDetails: {
@@ -678,6 +686,7 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
+    userDetails: string;
     usersHistory: string;
     userRoles: string;
     projects: string;

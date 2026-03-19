@@ -216,7 +216,10 @@ def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
 
     # fetch orgunit ids
     limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
+    orgunits = iaso_client.get(
+        "/api/orgunits/",
+        params={"limit": limit, "orgUnitTypeId": hf_out["id"], "fields": "id,longitude,latitude,altitude"},
+    )["orgunits"]
 
     # Getting the latest form version for reference form
     if new_entity_type["reference_form"]["id"]:

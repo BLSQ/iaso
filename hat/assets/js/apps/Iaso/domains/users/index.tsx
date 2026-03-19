@@ -10,31 +10,32 @@ import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
-    Table,
     useSafeIntl,
     selectionInitialState,
     setTableSelection,
-    LoadingSpinner,
     useRedirectTo,
 } from 'bluesquare-components';
 
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
+import { CreateUserDialog } from 'Iaso/domains/users/components/CreateUserDialog';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import * as Permission from '../../utils/permissions';
-import { useCurrentUser } from '../../utils/usersUtils';
 import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
 import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
 import Filters from './components/Filters';
-import { AddUsersDialog } from './components/UsersDialog';
 
 import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useUsersTableColumns } from './config';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
 import { useCreateExportMobileSetup } from './hooks/useCreateExportMobileSetup';
+import { useCreateProfile } from './hooks/useCreateProfile';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import {
     useGetProfilesApiParams,
@@ -57,7 +58,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Users: FunctionComponent = () => {
+export const Users = () => {
     const params = useParamsObject(baseUrls.users) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
@@ -103,6 +104,8 @@ export const Users: FunctionComponent = () => {
     const { mutate: deleteProfile, isLoading: deletingProfile } =
         useDeleteProfile();
 
+    const { mutate: createProfile, isLoading: creatingProfile } =
+        useCreateProfile();
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
     const { mutateAsync: bulkSave, isLoading: savingProfiles } =
         useBulkSaveProfiles();
@@ -110,7 +113,11 @@ export const Users: FunctionComponent = () => {
     const { mutateAsync: exportMobileSetup } = useCreateExportMobileSetup();
 
     const isLoading =
-        fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
+        fetchingProfiles ||
+        deletingProfile ||
+        creatingProfile ||
+        savingProfile ||
+        savingProfiles;
 
     const apiParams = useGetProfilesApiParams(params);
     const columns = useUsersTableColumns({
@@ -121,9 +128,19 @@ export const Users: FunctionComponent = () => {
         exportMobileSetup,
         canBypassProjectRestrictions,
     });
+
+    const exportCsvURL = makeUrlWithParams(`/api/profiles/export-csv/`, {
+        ...apiParams?.apiParams,
+        managedUsersOnly: apiParams?.apiParams?.managedUsersOnly ?? 'true',
+    });
+
+    const exportXlsxURL = makeUrlWithParams(`/api/profiles/export-xlsx/`, {
+        ...apiParams?.apiParams,
+        managedUsersOnly: apiParams?.apiParams?.managedUsersOnly ?? 'true',
+    });
+
     return (
         <>
-            {isLoading && <LoadingSpinner />}
             <UsersMultiActionsDialog
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
@@ -134,12 +151,8 @@ export const Users: FunctionComponent = () => {
                 }
                 canBypassProjectRestrictions={canBypassProjectRestrictions}
             />
-            <TopBar
-                title={formatMessage(MESSAGES.users)}
-                displayBackButton={false}
-            />
+            <TopBar title={formatMessage(MESSAGES.users)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {multiActionPopupOpen && 'SHOW MODALE'}
                 <Filters
                     baseUrl={baseUrl}
                     params={params}
@@ -158,9 +171,9 @@ export const Users: FunctionComponent = () => {
                         alignItems="center"
                         className={classes.marginTop}
                     >
-                        <AddUsersDialog
+                        <CreateUserDialog
                             titleMessage={MESSAGES.create}
-                            saveProfile={saveProfile}
+                            createProfile={createProfile}
                             allowSendEmailInvitation
                             iconProps={{
                                 dataTestId: 'add-user-button',
@@ -174,14 +187,14 @@ export const Users: FunctionComponent = () => {
                             <BulkImportUsersDialog />
                         </Box>
                         <DownloadButtonsComponent
-                            csvUrl={`${apiParams.url}&csv=true`}
-                            xlsxUrl={`${apiParams.url}&xlsx=true`}
+                            csvUrl={exportCsvURL}
+                            xlsxUrl={exportXlsxURL}
                             disabled={isLoading}
                         />
                     </Grid>
                 </DisplayIfUserHasPerm>
-                <Table
-                    data={data?.profiles ?? []}
+                <TableWithDeepLink
+                    data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'user__username', desc: false }]}
                     columns={columns}
@@ -189,6 +202,7 @@ export const Users: FunctionComponent = () => {
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{
+                        loading: isLoading,
                         pageSize: params.pageSize,
                         search: params.search,
                     }}

@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.db.models import JSONField
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpRequest
+
+from iaso.admin.base import IasoJSONEditorWidget
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
 from .tasks import clean_up_duplicate_instances, clean_up_duplicate_instances_dry_run, create_index_on_instance_uuid
@@ -111,6 +114,7 @@ class JourneyAdmin(admin.ModelAdmin):
         "whz_score",
         "admission_type",
         "nutrition_programme",
+        "physiology_status",
         "programme_type",
         "initial_weight",
         "discharge_weight",
@@ -128,6 +132,7 @@ class JourneyAdmin(admin.ModelAdmin):
         "admission_criteria",
         "admission_type",
         "nutrition_programme",
+        "physiology_status",
         "beneficiary__gender",
         "programme_type",
         "start_date",
@@ -234,6 +239,9 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
 
 @admin.register(Dhis2SyncResults)
 class Dhis2SyncResultsAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        JSONField: {"widget": IasoJSONEditorWidget},
+    }
     list_display = (
         "id",
         "org_unit_dhis2_id",
@@ -243,6 +251,7 @@ class Dhis2SyncResultsAdmin(admin.ModelAdmin):
         "month",
         "year",
         "response",
+        "json",
         "account",
         "status",
         "created_at",

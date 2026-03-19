@@ -59,9 +59,14 @@ def setup_instances(account_name, iaso_client):
         iaso_client.put(f"/api/v2/orgunittypes/{org_unit_type_id}/", json=org_unit_type)
 
         limit = org_unit_type["units_count"]
-        orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": org_unit_type_id})[
-            "orgunits"
-        ]
+        orgunits = iaso_client.get(
+            "/api/orgunits/",
+            params={
+                "limit": limit,
+                "orgUnitTypeId": org_unit_type_id,
+                "fields": "id,longitude,latitude,altitude,org_unit_type_name",
+            },
+        )["orgunits"]
         print("-- Submitting %d submissions" % limit)
         count = 0
         for orgunit in orgunits:

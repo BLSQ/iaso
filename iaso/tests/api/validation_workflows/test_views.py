@@ -543,6 +543,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
             created_by=self.john_doe,
             account=self.account,
         )
+        self.validation_workflow.form_set.set([self.form, self.form_2])
 
     def test_permissions(self):
         res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
@@ -561,33 +562,24 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "name", "This field is required.")
-        self.assertHasError(res_data, "forms", "This field is required.")
 
         res = self.client.put(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={
-                "forms": [Form.objects.order_by("-pk").first().pk + 1],
-            },
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}), data={"name": ""}
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data, "forms", f'Invalid pk "{Form.objects.order_by("-pk").first().pk + 1}" - object does not exist.'
-        )
+        self.assertHasError(res_data, "name", "This field may not be blank.")
 
         res = self.client.put(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={
-                "forms": [self.form_3.pk],
-            },
+            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}), data={"name": None}
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "forms", f'Invalid pk "{self.form_3.pk}" - object does not exist.')
+        self.assertHasError(res_data, "name", "This field may not be null.")
 
     def test_update(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.put(
             reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+            data={"name": "Random new name", "description": "Random new description"},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -598,7 +590,9 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertEqual(self.validation_workflow.slug, "random-new-name")
         self.assertEqual(self.validation_workflow.account, self.account)
         self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
-        self.assertCountEqual(list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk])
+        self.assertCountEqual(
+            list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk, self.form_2.pk]
+        )
 
         self.assertEqual(
             res_data,
@@ -609,7 +603,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 
         res = self.client.put(
             reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={"name": "Random new name", "forms": [self.form.pk, self.form_2.pk]},
+            data={"name": "Random new name"},
         )
 
         self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -627,10 +621,10 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(5):
             res = self.client.put(
                 reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-                data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+                data={"name": "Random new name", "description": "Random new description"},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -638,21 +632,6 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCase):
     def setUp(self):
         self.account = Account.objects.create(name="account")
-        self.project = Project.objects.create(name="project", account=self.account)
-        self.account_2 = Account.objects.create(name="account_2")
-
-        self.form = Form.objects.create(name="form")
-        self.form.projects.add(self.project)
-        self.form.save()
-
-        Instance.objects.create(name="instance", form=self.form)
-        Instance.objects.create(name="instance2", form=self.form)
-
-        self.form_2 = Form.objects.create(name="form_2")
-        self.form_2.projects.add(self.project)
-        self.form_2.save()
-
-        self.form_3 = Form.objects.create(name="form_3")
 
         self.john_doe = self.create_user_with_profile(
             username="john.doe", account=self.account, first_name="John", last_name="Doe"
@@ -688,47 +667,25 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
 
         res = self.client.patch(
             reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={
-                "forms": [Form.objects.order_by("-pk").first().pk + 1],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data, "forms", f'Invalid pk "{Form.objects.order_by("-pk").first().pk + 1}" - object does not exist.'
-        )
-
-        res = self.client.patch(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={
-                "forms": [self.form_3.pk],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "forms", f'Invalid pk "{self.form_3.pk}" - object does not exist.')
-
-        res = self.client.patch(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={"forms": [], "name": ""},
+            data={"name": ""},
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "name", "This field may not be blank.")
-        self.assertHasError(res_data, "forms", "This list may not be empty.")
 
         res = self.client.patch(
             reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={"forms": None, "name": None},
+            data={"name": None},
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "forms", "This field may not be null.")
         self.assertHasError(res_data, "name", "This field may not be null.")
 
     def test_partial_update(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.patch(
             reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-            data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+            data={"name": "Random new name", "description": "Random new description"},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -739,7 +696,6 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
         self.assertEqual(self.validation_workflow.slug, "random-new-name")
         self.assertEqual(self.validation_workflow.account, self.account)
         self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
-        self.assertCountEqual(list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk])
 
         self.assertEqual(
             res_data,
@@ -764,14 +720,13 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
         self.assertEqual(self.validation_workflow.slug, "random-new-name-2")
         self.assertEqual(self.validation_workflow.account, self.account)
         self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
-        self.assertCountEqual(list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk])
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(5):
             res = self.client.patch(
                 reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
-                data={"name": "Random new name", "description": "Random new description", "forms": [self.form.pk]},
+                data={"name": "Random new name", "description": "Random new description"},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
 

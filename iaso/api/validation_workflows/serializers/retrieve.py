@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iaso.api.common import ModelSerializer, TimestampField
+from iaso.api.common import ModelSerializer
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
 from iaso.models import Form, UserRole, ValidationNodeTemplate, ValidationWorkflow
 
@@ -30,9 +30,7 @@ class NestedFormSerializer(ModelSerializer):
 
 
 class ValidationWorkflowRetrieveSerializer(ModelSerializer):
-    created_at = TimestampField(read_only=True)
     updated_by = UserDisplayNameField()
-    updated_at = TimestampField(read_only=True)
     created_by = UserDisplayNameField()
 
     forms = NestedFormSerializer(many=True, read_only=True, source="form_set")

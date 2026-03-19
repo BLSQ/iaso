@@ -4,10 +4,15 @@ import io
 import json
 import uuid
 
+from datetime import timedelta
+
 import pytz
 import time_machine
 
 from django.core.files import File
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -239,6 +244,42 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(result), 3)
         target_result = next(item for item in result if item["id"] == entities[0].id)
         self.assertTrue(target_result["has_duplicates"])
+
+    def test_list_entities_annotate_last_saved_at(self):
+        """Test `last_saved_instance` is annotated correctly without n+1 queries"""
+
+        expensive_annotation = """MAX(COALESCE("iaso_instance"."source_created_at", "iaso_instance"."created_at"))"""
+
+        self.client.force_authenticate(self.yoda)
+        source_created_at = timezone.make_aware(datetime.datetime(2025, 2, 3))
+
+        for i in range(3):
+            entity = Entity.objects.create(entity_type=self.entity_type, account=self.yoda.iaso_profile.account)
+            Instance.objects.create(
+                entity=entity,
+                form=self.form_1,
+                source_created_at=source_created_at + timedelta(days=i),
+            )
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get("/api/entities/", data={"order": "id"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        result = data["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["last_saved_instance"], "2025-02-03T00:00:00Z")
+
+        self.assertEqual(len(ctx.captured_queries), 8)
+        self.assertNotIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get("/api/entities/", data={"order": "-last_saved_instance"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        result = data["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["last_saved_instance"], "2025-02-05T00:00:00Z")
+
+        self.assertEqual(len(ctx.captured_queries), 6)
+        self.assertIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):

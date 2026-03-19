@@ -217,7 +217,7 @@ class EntityViewSet(ModelViewSet):
 
         # Handle streaming responses
 
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(self.get_queryset()).order_by("-id")
 
         def data_iterator(queryset):
             context = self.get_serializer_context()

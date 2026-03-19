@@ -1,11 +1,10 @@
-from iaso.models.base import Mapping
 import typing
 
 from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from django.db.models import BooleanField, Case, Count, Exists, Max, OuterRef, Prefetch, Q, When, Subquery
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Subquery
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import permissions, serializers, status
@@ -30,8 +29,9 @@ from iaso.models import (
     OrgUnit,
     OrgUnitType,
     Project,
-    ProjectFeatureFlags, Instance,
+    ProjectFeatureFlags,
 )
+from iaso.models.base import Mapping
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
@@ -375,15 +375,11 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # spare 8 or more sql when not needed
         if not is_request_from_manifest:
             # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
             # TODO
             #  - be smarter cfr is_field_referenced
-            #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
-
             prefetch_relations = [
-                "form_versions",
                 "projects",
                 "projects__feature_flags",
                 "reference_of_org_unit_types",

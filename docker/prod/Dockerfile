@@ -9,18 +9,18 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 WORKDIR /opt/app
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY ../../package.json package-lock.json ./
 RUN npm install -g npm@10.9.3 && \
     rm -rf node_modules && \
     npm cache clean --force && \
     npm ci
 
 # Copy project code
-COPY hat/ ./hat/
-COPY plugins/ ./plugins/
+COPY ../../hat/ ./hat/
+COPY ../../plugins/ ./plugins/
 
 # Copy webpack configuration files
-COPY tsconfig.json babel-register.js ./
+COPY ../../tsconfig.json ../../babel-register.js ./
 
 # Build webpack assets
 RUN npm run webpack-prod
@@ -43,7 +43,7 @@ RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 # Install python dependencies + gunicorn
-COPY requirements.txt ./
+COPY ../../requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir gunicorn
 
@@ -88,14 +88,14 @@ WORKDIR /opt/app
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets
 
 # Copy project code (all owned by appuser, no separate chown layer needed)
-COPY --chown=appuser:appuser hat ./hat
-COPY --chown=appuser:appuser iaso ./iaso
-COPY --chown=appuser:appuser setuper ./setuper
-COPY --chown=appuser:appuser beanstalk_worker ./beanstalk_worker
-COPY --chown=appuser:appuser django_sql_dashboard_export ./django_sql_dashboard_export
-COPY --chown=appuser:appuser plugins ./plugins
-COPY --chown=appuser:appuser scripts ./scripts
-COPY --chown=appuser:appuser README.md manage.py entrypoint.sh tsconfig.json babel-register.js pyproject.toml ./
+COPY --chown=appuser:appuser ../../hat ./hat
+COPY --chown=appuser:appuser ../../iaso ./iaso
+COPY --chown=appuser:appuser ../../setuper ./setuper
+COPY --chown=appuser:appuser ../../beanstalk_worker ./beanstalk_worker
+COPY --chown=appuser:appuser ../../django_sql_dashboard_export ./django_sql_dashboard_export
+COPY --chown=appuser:appuser ../../plugins ./plugins
+COPY --chown=appuser:appuser ../../scripts ./scripts
+COPY --chown=appuser:appuser ../../README.md manage.py entrypoint.sh tsconfig.json babel-register.js pyproject.toml ./
 
 # Create dir for uploaded files
 RUN mkdir media && chown appuser:appuser media

@@ -1,0 +1,119 @@
+services:
+    iaso:
+      image: blsq/iaso:${IMAGE_TAG-latest}
+      ## If you want to run the prod docker compose locally
+      ## Comment the image line and uncomment the build line
+      # build:
+      #   context: .
+      #   dockerfile: docker/prod/Dockerfile
+      ports:
+        - '8081:8081'
+      ## If you want to use a .env file with your own values
+      ##  Uncomment the env_file line
+      # env_file:
+      #   - .env
+      environment:
+        APP_TITLE: ${APP_TITLE}
+        AUTHENTICATION_ENFORCED: ${AUTHENTICATION_ENFORCED}
+        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+        AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME}
+        CLAMAV_ACTIVE: ${CLAMAV_ACTIVE}
+        FORUM_PATH: ${FORUM_PATH}
+        CLAMAV_FQDN: ${CLAMAV_FQDN}
+        DB_READONLY_PASSWORD: ${DB_READONLY_PASSWORD}
+        DB_READONLY_USERNAME: ${DB_READONLY_USERNAME}
+        DEBUG: 'false'
+        DEBUG_SQL: ${DEBUG_SQL}
+        DISABLE_PASSWORD_LOGINS: ${DISABLE_PASSWORD_LOGINS}
+        DISABLE_SSL_REDIRECT: ${DISABLE_SSL_REDIRECT:-false}
+        DNS_DOMAIN: ${DNS_DOMAIN}
+        EMAIL_BACKEND: ${EMAIL_BACKEND}
+        ENABLE_ANALYTICS: ${ENABLE_ANALYTICS:-false}
+        ENABLE_GZIP: ${ENABLE_GZIP:-true}
+        ENCRYPTED_TEXT_FIELD_KEY: ${ENCRYPTED_TEXT_FIELD_KEY}
+        ENKETO_API_TOKEN: ${ENKETO_API_TOKEN}
+        ENKETO_DEV: ${ENKETO_DEV:-false}
+        ENKETO_SIGNING_SECRET: ${ENKETO_SIGNING_SECRET}
+        ENKETO_URL: ${ENKETO_URL}
+        FAVICON_PATH: ${FAVICON_PATH}
+        GOOGLE_API_KEY_BASE64: ${GOOGLE_API_KEY_BASE64}
+        LIVE_COMPONENTS: ${LIVE_COMPONENTS}
+        LOGO_PATH: ${LOGO_PATH}
+        LOGIN_LOGO_PATH: ${LOGIN_LOGO_PATH}
+        LQAS_PIPELINE: ${LQAS_PIPELINE}
+        LQAS_PIPELINE_VERSION: ${LQAS_PIPELINE_VERSION}
+        MAINTENANCE_MODE: ${MAINTENANCE_MODE}
+        OH_PIPELINE_TARGET: ${OH_PIPELINE_TARGET}
+        OPENHEXA_TOKEN: ${OPENHEXA_TOKEN}
+        OPENHEXA_URL: ${OPENHEXA_URL}
+        PLUGINS: ${PLUGINS}
+        PREPAREDNESS_TEMPLATE_FR_ID: ${PREPAREDNESS_TEMPLATE_FR_ID}
+        PREPAREDNESS_TEMPLATE_ID: ${PREPAREDNESS_TEMPLATE_ID}
+        PYTHONUNBUFFERED: 'true'
+        RDS_DB_NAME: ${RDS_DB_NAME}
+        RDS_HOSTNAME: ${RDS_HOSTNAME}
+        RDS_PASSWORD: ${RDS_PASSWORD}
+        RDS_USERNAME: ${RDS_USERNAME}
+        SECRET_KEY: ${SECRET_KEY}
+        SERVER_URL: ${SERVER_URL}
+        TEST_PROD: ${TEST_PROD}
+        SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
+        SENTRY_FRONT_ENABLED: ${SENTRY_FRONT_ENABLED}
+        SENTRY_URL: ${SENTRY_URL}
+        PRODUCT_FRUITS_WORKSPACE_CODE: ${PRODUCT_FRUITS_WORKSPACE_CODE}
+        AVAILABLE_LANGUAGES: ${AVAILABLE_LANGUAGES}
+        SHOW_NAME_WITH_LOGO: ${SHOW_NAME_WITH_LOGO}
+        HIDE_BASIC_NAV_ITEMS: ${HIDE_BASIC_NAV_ITEMS}
+        SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+        SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME}
+        SUPERSET_URL: ${SUPERSET_URL}
+        THEME_PRIMARY_BACKGROUND_COLOR: ${THEME_PRIMARY_BACKGROUND_COLOR:-#F5F5F5}
+        THEME_PRIMARY_COLOR: ${THEME_PRIMARY_COLOR:-#006699}
+        THEME_SECONDARY_COLOR: ${THEME_SECONDARY_COLOR:-#ff7961}
+        USER_MANUAL_PATH: ${USER_MANUAL_PATH}
+        WFP_AUTH_ACCOUNT: ${WFP_AUTH_ACCOUNT}
+        WFP_AUTH_CLIENT_ID: ${WFP_AUTH_CLIENT_ID}
+        WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT: ${WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT}
+        USE_CELERY: ${USE_CELERY}
+        CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+        CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+
+      logging: &iaso_logging
+        driver: json-file
+        options:
+          max-size: 5k
+      volumes:
+        - "static-files:/opt/app/static"
+      stdin_open: true
+      tty: true
+    nginx:
+      image: nginx:stable-alpine
+      ports:
+        - '80:80'
+      volumes:
+        - ".platform/nginx/nginx.conf:/etc/nginx/nginx.conf"
+        - "static-files:/opt/app/static"
+      depends_on:
+        - iaso
+
+# If you want to run the prod docker compose locally
+# you will need a database in the same network
+# and you will need your env variables to point to this database
+    db:
+      # https://registry.hub.docker.com/r/postgis/postgis
+      # Pinning specific minor versions of PostgreSQL and PostGIS is not easy.
+      # https://github.com/postgis/docker-postgis/issues/396
+      image: postgis/postgis:16-3.5
+      logging: *iaso_logging
+      ports:
+          - '5433:5432'
+      volumes:
+          - ../pgdata-iaso-16:/var/lib/postgresql/data
+      environment:
+          POSTGRES_DB: ${RDS_DB_NAME}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+volumes:
+  static-files:

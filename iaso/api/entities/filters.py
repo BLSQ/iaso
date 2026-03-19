@@ -61,9 +61,14 @@ class EntityFilterSet(FilterSet):
                 raise ValidationError(f"Failed parsing uuids in search '{value}'")
             return queryset.filter(uuid__in=uuids)
 
-        return queryset.filter(
-            Q(name__icontains=value) | Q(uuid__icontains=value) | Q(attributes__json__icontains=value)
-        )
+        tokens = re.findall(r'"[^"]*"|\S+', value)
+        tokens = [t.strip('"') for t in tokens]
+        q = Q()
+        for token in tokens:
+            q &= Q(name__icontains=token) | Q(attributes__json__icontains=token)
+        q |= Q(uuid__icontains=value)
+
+        return queryset.filter(q)
 
 
 class EntityDateFilterBackend(filters.BaseFilterBackend):

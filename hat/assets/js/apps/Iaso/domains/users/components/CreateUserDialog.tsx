@@ -289,6 +289,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                             }
                             setPhoneNumber={setPhoneNumber}
                             setEmail={setEmail}
+                            mode="create"
                         />
                     </Box>
                     {tab === 'permissions' && (

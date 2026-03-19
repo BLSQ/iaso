@@ -9,9 +9,15 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 import { useAppLocales } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { useSavePassword } from '../hooks/useSavePassword';
 import MESSAGES from '../messages';
-import { InitialUserData, ProfileRetrieveResponseItem, UserDialogData } from '../types';
+import {
+    InitialUserData,
+    ProfileRetrieveResponseItem,
+    UserDialogData,
+} from '../types';
 import { userHasAccessToModule } from '../utils';
+import { EditPasswordUserWithButtonDialog } from './EditPasswordUserDialog';
 
 const styles: SxStyles = {
     passwordDisabled: {
@@ -30,7 +36,7 @@ type Props = {
     canBypassProjectRestrictions: boolean;
     setPhoneNumber: (phoneNumber: string, countryCode: string) => void;
     setEmail: (email: string) => void;
-    withPassword?: boolean;
+    mode: 'create' | 'edit';
 };
 
 export const UsersInfos: FunctionComponent<Props> = ({
@@ -41,7 +47,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
     canBypassProjectRestrictions,
     setPhoneNumber,
     setEmail,
-    withPassword = true,
+    mode,
 }) => {
     const loggedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -56,7 +62,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
 
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
-
+    const { mutate: savePassword } = useSavePassword(initialData?.id);
     const availableProjects = useMemo(() => {
         if (!loggedUser || !loggedUser.projects) {
             return [];
@@ -82,6 +88,38 @@ export const UsersInfos: FunctionComponent<Props> = ({
     );
 
     const appLocales = useAppLocales();
+    const extraFields = useMemo(() => {
+        return (
+            <>
+                <InputComponent
+                    keyValue="projects"
+                    onChange={(key, value) =>
+                        setFieldValue(
+                            key,
+                            value
+                                ?.split(',')
+                                .map(projectId => parseInt(projectId, 10)),
+                        )
+                    }
+                    value={currentUser.projects.value}
+                    errors={currentUser.projects.errors}
+                    type="select"
+                    multi
+                    label={MESSAGES.projects}
+                    options={availableProjects}
+                    loading={isFetchingProjects}
+                />
+                <Box sx={{ pt: 2, pb: 2 }}>
+                    <ColorPicker
+                        currentColor={currentUser?.color?.value}
+                        onChangeColor={(color: string): void =>
+                            setFieldValue('color', color)
+                        }
+                    />
+                </Box>
+            </>
+        );
+    }, []);
     return (
         <form>
             {isMultiAccountUser && (
@@ -136,37 +174,51 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         disabled={isMultiAccountUser}
                     />
 
-                    {allowSendEmailInvitation && withPassword && (
-                        <InputComponent
-                            keyValue="send_email_invitation"
-                            onChange={(key, value) => setFieldValue(key, value)}
-                            value={currentUser.send_email_invitation.value}
-                            type="checkbox"
-                            disabled={sendUserEmailInvitation}
-                            label={sendUserIEmailnvitationLabel}
-                        />
-                    )}
-                    {withPassword && (
-                        <Box
-                            sx={passwordDisabled ? styles.passwordDisabled : {}}
-                        >
-                            <InputComponent
-                                keyValue="password"
-                                onChange={(key, value) =>
-                                    setFieldValue(key, value.trim())
+                    {mode === 'edit' && extraFields}
+                    {mode === 'create' && (
+                        <>
+                            {allowSendEmailInvitation && (
+                                <Box sx={{ mb: 3 }}>
+                                    <InputComponent
+                                        keyValue="send_email_invitation"
+                                        onChange={(key, value) =>
+                                            setFieldValue(key, value)
+                                        }
+                                        value={
+                                            currentUser.send_email_invitation
+                                                .value
+                                        }
+                                        type="checkbox"
+                                        disabled={sendUserEmailInvitation}
+                                        label={sendUserIEmailnvitationLabel}
+                                    />
+                                </Box>
+                            )}
+                            <Box
+                                sx={
+                                    passwordDisabled
+                                        ? styles.passwordDisabled
+                                        : {}
                                 }
-                                value={currentUser.password.value}
-                                errors={currentUser.password.errors}
-                                type="password"
-                                label={
-                                    initialData
-                                        ? isInitialDataEmpty
-                                        : MESSAGES.password
-                                }
-                                required={!initialData}
-                                disabled={passwordDisabled}
-                            />
-                        </Box>
+                            >
+                                <InputComponent
+                                    keyValue="password"
+                                    onChange={(key, value) =>
+                                        setFieldValue(key, value.trim())
+                                    }
+                                    value={currentUser.password.value}
+                                    errors={currentUser.password.errors}
+                                    type="password"
+                                    label={
+                                        initialData
+                                            ? isInitialDataEmpty
+                                            : MESSAGES.password
+                                    }
+                                    required={!initialData}
+                                    disabled={passwordDisabled}
+                                />
+                            </Box>
+                        </>
                     )}
                 </Grid>
                 <Grid item sm={12} md={6}>
@@ -213,24 +265,6 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         />
                     </InputWithInfos>
                     <InputComponent
-                        keyValue="projects"
-                        onChange={(key, value) =>
-                            setFieldValue(
-                                key,
-                                value
-                                    ?.split(',')
-                                    .map(projectId => parseInt(projectId, 10)),
-                            )
-                        }
-                        value={currentUser.projects.value}
-                        errors={currentUser.projects.errors}
-                        type="select"
-                        multi
-                        label={MESSAGES.projects}
-                        options={availableProjects}
-                        loading={isFetchingProjects}
-                    />
-                    <InputComponent
                         keyValue="language"
                         onChange={(key, value) => setFieldValue(key, value)}
                         value={currentUser.language.value}
@@ -245,14 +279,16 @@ export const UsersInfos: FunctionComponent<Props> = ({
                             };
                         })}
                     />
-                    <Box sx={{ pt: 2, pb: 2 }}>
-                        <ColorPicker
-                            currentColor={currentUser?.color?.value}
-                            onChangeColor={(color: string): void =>
-                                setFieldValue('color', color)
-                            }
-                        />
-                    </Box>
+
+                    {mode === 'edit' && (
+                        <Box pt={3} display="flex" justifyContent="flex-end">
+                            <EditPasswordUserWithButtonDialog
+                                titleMessage={MESSAGES.updateUserPassword}
+                                savePassword={savePassword}
+                            />
+                        </Box>
+                    )}
+                    {mode === 'create' && extraFields}
                 </Grid>
             </Grid>
         </form>

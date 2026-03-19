@@ -30,7 +30,7 @@ import { ExtraColumn } from './types/fields';
 
 export const baseUrl = baseUrls.entities;
 
-export const defaultSorted = [{ id: 'last_saved_instance', desc: false }];
+export const defaultSorted = [{ id: 'id', desc: true }];
 
 export const useStaticColumns = (): Array<Column> => {
     const getValue = useGetFieldValue();

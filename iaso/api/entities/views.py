@@ -69,7 +69,7 @@ class EntityViewSet(ModelViewSet):
         CSVStreamingRenderer,
         XlsxStreamingRenderer,
     )
-    ordering = ["-created_at"]
+    ordering = ["-id"]
 
     def get_serializer_class(self):
         if self.action == "list":

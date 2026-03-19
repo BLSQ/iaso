@@ -793,6 +793,46 @@ python manage.py shell_plus --notebook
 
 # Deployment in Production
 
+## Docker Compose
+
+You will need to populate at least these environment variables with your own values in a `.env` file:
+
+```
+# PostgreSQL Database connection details
+RDS_DB_NAME=
+RDS_HOSTNAME=
+RDS_PASSWORD=
+RDS_USERNAME=
+DB_READONLY_PASSWORD=
+DB_READONLY_USERNAME=
+
+# Used for encryption and authorisation
+ENCRYPTED_TEXT_FIELD_KEY=
+SECRET_KEY=
+
+# To interact with Enketo/ODK
+ENKETO_API_TOKEN=
+ENKETO_SIGNING_SECRET=
+
+# Docker image tag (defaults to "latest" if not set)
+IMAGE_TAG=
+```
+
+Docker Compose automatically reads a `.env` file in the project root, so no `source` command is needed.
+
+Alternatively, you can uncomment the `env_file:` section in `docker-compose.prod.yml` to pass the variables directly to the container.
+
+Note: for production deployments you need an external PostgreSQL database. The `db` service in the compose file is only intended for local development. Make sure your `RDS_*` variables point to your production database.
+
+Proceed to run docker compose on your server:
+
+```
+docker compose -f docker-compose.prod.yml up
+```
+
+This will pull the necessary containers (iaso & nginx) and spin up the service at port 80.
+
+
 ## System requirements
 
 Recommended:

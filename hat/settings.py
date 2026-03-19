@@ -491,6 +491,8 @@ SPECTACULAR_SETTINGS = {
         "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
     ],
     "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
+    "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
+    in ["true", "1"],
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {

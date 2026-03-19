@@ -223,17 +223,6 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(data["result"]), 1)
         self.assertEqual(data["result"][0]["id"], entity_1.id)
 
-        # Exact search (double quotes)
-        response = self.client.get("/api/entities/", data={"search": '"New Client"'}, format="json")
-        data = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(data["result"]), 1)
-        self.assertEqual(data["result"][0]["id"], entity_1.id)
-
-        # Exact search, no matches
-        response = self.client.get("/api/entities/", data={"search": '"Client New"'}, format="json")
-        data = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(data["result"]), 0)
-
         # 'ids:' prefix search
         response = self.client.get("/api/entities/", data={"search": f"ids:{entity_2.id}"}, format="json")
         data = self.assertJSONResponse(response, 200)

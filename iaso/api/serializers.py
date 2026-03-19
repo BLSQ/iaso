@@ -233,19 +233,6 @@ class OrgUnitSearchSerializer(OrgUnitSerializer, DynamicFieldsModelSerializer):
             "default_image",
         ]
 
-        default_fields = [
-            "id",
-            "projects",
-            "name",
-            "org_unit_type_name",
-            "source",
-            "source_ref",
-            "instances_count",
-            "validation_status",
-            "created_at",
-            "updated_at",
-        ]
-
 
 # noinspection PyMethodMayBeStatic
 class OrgUnitTreeSearchSerializer(TimestampSerializerMixin, serializers.ModelSerializer):

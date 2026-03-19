@@ -3,9 +3,9 @@ const arcgisPattern =
 const tiles = {
     osm: {
         maxZoom: 18,
-        url: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
+        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         attribution:
-            '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     },
     'arcgis-street': {
         maxZoom: 18,

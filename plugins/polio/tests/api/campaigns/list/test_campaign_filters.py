@@ -1,3 +1,4 @@
+from django.db.models import Exists, OuterRef
 from rest_framework.status import HTTP_200_OK
 
 from iaso.models.base import Group
@@ -5,7 +6,7 @@ from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from plugins.polio.models import (
     Campaign,
 )
-from plugins.polio.models.base import CampaignGroup, CampaignType
+from plugins.polio.models.base import CampaignGroup, CampaignType, Round
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tests.api.campaigns.setupData import CampaignFiltersTestBase
 
@@ -27,7 +28,6 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
             self.preventive_campaign.obr_name,
             self.planned_campaign.obr_name,
             self.planned_preventive_campaign.obr_name,
-            self.campaign_with_on_hold_round.obr_name,
         ]  # using to obr_names to avoid having to cast UUID to string
 
         self.client.force_authenticate(self.user)
@@ -105,9 +105,24 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         # the show_test/is_test filter filters out test campaigns when false
         # but returns ALL campaigns when true, i.E it doesn't exclude on test campaigns
         # We filter out on hold in the test setup because these are excluded by default
-        initial_count = Campaign.objects.filter(on_hold=False).count()
+        rounds_on_hold = Round.objects.filter(
+            campaign_id=OuterRef("pk"),
+            on_hold=True,
+        )
+        initial_count = (
+            Campaign.objects.filter(on_hold=False)
+            .annotate(has_round_on_hold=Exists(rounds_on_hold))
+            .filter(has_round_on_hold=False)
+            .count()
+        )
         # Count existing visible non-test campaigns from setUpTestData (default filters: show_test=false, on_hold=false)
-        initial_visible_count = Campaign.objects.filter(is_test=False, on_hold=False).count()
+
+        initial_visible_count = (
+            Campaign.objects.filter(is_test=False, on_hold=False)
+            .annotate(has_round_on_hold=Exists(rounds_on_hold))
+            .filter(has_round_on_hold=False)
+            .count()
+        )
 
         payload1 = {
             "account": self.account.pk,
@@ -153,7 +168,16 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
     def test_filter_by_deletion_status(self):
         self.client.force_authenticate(self.user)
         # Count existing campaigns from setUpTestData, excluding test and on_hold, to account for API default filtering
-        initial_total_count = Campaign.objects.filter(is_test=False, on_hold=False).count()
+        rounds_on_hold = Round.objects.filter(
+            campaign_id=OuterRef("pk"),
+            on_hold=True,
+        )
+        initial_total_count = (
+            Campaign.objects.filter(on_hold=False, is_test=False)
+            .annotate(has_round_on_hold=Exists(rounds_on_hold))
+            .filter(has_round_on_hold=False)
+            .count()
+        )
 
         new_ids = self._create_multiple_campaigns(10)
 
@@ -170,14 +194,19 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(len(result), deleted_count)
 
-        # test that it return all (including deleted, but excluding test and on_hold - beacuse of API default params)
+        # test that it return all (including deleted, but excluding test and on_hold - because of API default params)
         response = self.client.get(f"{URL}?deletion_status=all", format="json")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(len(result), total_campaigns)
 
         # per defaut it return undeleted, i.e "active" (with default filters: show_test=false, on_hold=false)
         # Calculate remaining visible campaigns after deletion
-        remaining_visible = Campaign.objects.filter(deleted_at__isnull=True, is_test=False, on_hold=False).count()
+        remaining_visible = (
+            Campaign.objects.filter(deleted_at__isnull=True, is_test=False, on_hold=False)
+            .annotate(has_round_on_hold=Exists(rounds_on_hold))
+            .filter(has_round_on_hold=False)
+            .count()
+        )
 
         response = self.client.get(f"{URL}", format="json")
 
@@ -254,21 +283,20 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
             ],
         )
 
-        # preventive with on_hold=true (still excludes on_hold campaigns and those with rounds on hold)
+        # preventive with on_hold=true
         response = self.client.get(f"{URL}?campaign_category=preventive&on_hold=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
                 self.preventive_campaign.obr_name,  # planned campaigns are excluded
+                self.preventive_on_hold_campaign.obr_name,
             ],
         )
         # preventive on hold == false (explicit)
         response = self.client.get(f"{URL}?campaign_category=preventive&on_hold=false")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
@@ -299,16 +327,17 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
                 self.preventive_campaign.obr_name,  # planned campaigns are excluded
             ],
         )
-        # preventive test with on_hold=true (excludes preventive_on_hold and preventive_test_on_hold)
+        # preventive test with on_hold=true
         response = self.client.get(f"{URL}?campaign_category=preventive&show_test=true&on_hold=true")
         result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 2)
         obr_names = [cmp["obr_name"] for cmp in result]
         self.assertCountEqual(
             obr_names,
             [
                 self.preventive_campaign.obr_name,  # planned campaigns are excluded
                 self.preventive_test_campaign.obr_name,
+                self.preventive_on_hold_campaign.obr_name,
+                self.preventive_test_on_hold_campaign.obr_name,
             ],
         )
 
@@ -407,7 +436,6 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
             self.preventive_campaign.obr_name,
             self.planned_campaign.obr_name,
             self.planned_preventive_campaign.obr_name,
-            self.campaign_with_on_hold_round.obr_name,
         ]  # using to obr_names to avoid having to cast UUID to string
 
         # explicitly pass false
@@ -424,6 +452,7 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
             *default_obr_names,
             self.preventive_on_hold_campaign.obr_name,
             self.on_hold_campaign.obr_name,
+            self.campaign_with_on_hold_round.obr_name,
         ]
         self.assertCountEqual(expected_on_hold_obr_names, obr_names)
 
@@ -488,10 +517,6 @@ class CampaignFiltersAPITestCase(CampaignFiltersTestBase):
         response = self.client.get(f"{URL}?search=test")
         result = self.assertJSONResponse(response, HTTP_200_OK)
         self.assertEqual(len(result), 0)
-        response = self.client.get(f"{URL}?search=hold")
-        result = self.assertJSONResponse(response, HTTP_200_OK)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["obr_name"], self.campaign_with_on_hold_round.obr_name)
 
         self.client.force_authenticate(geo_limited_user)
         # test search geo limited

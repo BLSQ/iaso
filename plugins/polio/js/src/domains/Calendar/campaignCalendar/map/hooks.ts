@@ -93,8 +93,7 @@ export const useMergedShapes = ({
     selection,
 }: UseMergedShapesArgs): UseMergedShapesResult => {
     const mergedShapesOptions = useMemo(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-        const { accountId, ...rest } = params;
+        const { accountId: _accountId, ...rest } = params;
         if (rest.campaignCategory === 'on_hold') {
             rest.on_hold = 'true';
         }

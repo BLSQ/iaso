@@ -77,11 +77,14 @@ PREPAREDNESS_LIST_SCHEMA = {
 
 
 class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
-    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    def setUp(self):
+        super().setUp()
+        self.client.force_authenticate(self.user_polio)
+
+    @mock.patch("plugins.polio.api.dashboards.preparedness.views.get_or_set_preparedness_cache_for_round")
     def test_list_returns_preparedness_for_polio_campaigns(self, mock_get_cache):
         mock_get_cache.return_value = {"campaign_obr_name": "test-campaign", "round": "Round1", "score": 80}
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.PREPAREDNESS_DASHBOARD_API_URL)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -89,7 +92,7 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
         # 4 rounds on "test-campaign" + 3 rounds on "other-campaign"
         self.assertEqual(len(data), 7)
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.views.get_or_set_preparedness_cache_for_round")
     def test_list_response_shape(self, mock_get_cache):
         """Validate the JSON schema of the list endpoint response."""
         mock_get_cache.return_value = {
@@ -138,7 +141,6 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
             ],
         }
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.PREPAREDNESS_DASHBOARD_API_URL, {"campaign": "test-campaign"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -149,11 +151,10 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.views.get_or_set_preparedness_cache_for_round")
     def test_list_filters_by_campaign_name(self, mock_get_cache):
         mock_get_cache.return_value = {"campaign_obr_name": "test-campaign", "round": "Round1"}
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.PREPAREDNESS_DASHBOARD_API_URL, {"campaign": "test-campaign"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -162,33 +163,29 @@ class PreparednessDashboardListAPITestCase(PreparednessDashboardAPIBase):
         for item in data:
             self.assertEqual(item["campaign_obr_name"], "test-campaign")
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.views.get_or_set_preparedness_cache_for_round")
     def test_list_returns_empty_for_nonexistent_campaign(self, mock_get_cache):
         mock_get_cache.return_value = None
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.PREPAREDNESS_DASHBOARD_API_URL, {"campaign": "does-not-exist"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(data, [])
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.views.get_or_set_preparedness_cache_for_round")
     def test_list_excludes_none_results(self, mock_get_cache):
         """Rounds where get_or_set_preparedness_cache_for_round returns None are excluded."""
         mock_get_cache.return_value = None
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.PREPAREDNESS_DASHBOARD_API_URL)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(data, [])
 
-    @mock.patch("plugins.polio.api.dashboards.preparedness.preparedness_dashboard.get_or_set_preparedness_cache_for_round")
+    @mock.patch("plugins.polio.api.dashboards.preparedness.views.get_or_set_preparedness_cache_for_round")
     def test_list_excludes_non_polio_campaigns(self, mock_get_cache):
         """Only campaigns with POLIO type should be included."""
         mock_get_cache.return_value = {"campaign_obr_name": "test-campaign", "round": "Round1"}
-
-        self.client.force_authenticate(self.user_polio)
 
         # Filtering by the non-polio campaign returns nothing
         response = self.client.get(self.PREPAREDNESS_DASHBOARD_API_URL, {"campaign": "measles-campaign"})
@@ -210,6 +207,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
 
     def setUp(self):
         super().setUp()
+        self.client.force_authenticate(self.user_polio)
         self.VALID_SCORE_PARAMS = {**self.VALID_SCORE_PARAMS, "url": self.spreadsheet_url}
 
     def test_score_requires_authentication(self):
@@ -223,7 +221,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_score_raises_when_both_params_missing(self):
-        self.client.force_authenticate(self.user_polio)
+
         response = self.client.get(self.SCORE_URL)
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
@@ -231,7 +229,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertIn("date", data)
 
     def test_score_raises_when_url_missing(self):
-        self.client.force_authenticate(self.user_polio)
+
         response = self.client.get(self.SCORE_URL, {"date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
@@ -239,7 +237,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertNotIn("date", data)
 
     def test_score_raises_when_date_missing(self):
-        self.client.force_authenticate(self.user_polio)
+
         response = self.client.get(self.SCORE_URL, {"url": 1})
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
@@ -252,7 +250,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         mock_get_preparedness.return_value = {"totals": {"national": 80}}
         mock_summary.return_value = {"overall_status_score": 80.0}
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.SCORE_URL, self.VALID_SCORE_PARAMS)
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -267,7 +264,7 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_score_returns_empty_when_no_match(self):
-        self.client.force_authenticate(self.user_polio)
+
         response = self.client.get(self.SCORE_URL, {"url": 999999, "date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -279,7 +276,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         mock_get_preparedness.return_value = {"totals": {"national": 80, "regional": 70, "district": 60}}
         mock_summary.return_value = {"overall_status_score": 70.0}
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.SCORE_URL, self.VALID_SCORE_PARAMS)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         print("DATA", data)
@@ -295,7 +291,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         mock_get_preparedness.return_value = {"totals": {"national": 80}}
         mock_summary.return_value = {"overall_status_score": 80.0}
 
-        self.client.force_authenticate(self.user_polio)
         response = self.client.get(self.SCORE_URL, self.VALID_SCORE_PARAMS)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
@@ -317,7 +312,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         Round.objects.create(campaign=self.campaign, number=10, preparedness_spreadsheet_url=shared_url)
         Round.objects.create(campaign=self.campaign, number=11, preparedness_spreadsheet_url=shared_url)
 
-        self.client.force_authenticate(self.user_polio)
         with self.assertRaises(Exception) as ctx:
             self.client.get(self.SCORE_URL, {"url": shared_url, "date": "2030-01-01"})
         self.assertIn("Found more than one round for url:", str(ctx.exception))

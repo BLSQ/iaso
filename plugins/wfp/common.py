@@ -12,7 +12,7 @@ Key improvements over v1:
 - Better code structure with clear separation of concerns
 
 Usage:
-    docker-compose run iaso manage etl_ssd_v2 all_data
+    docker-compose run iaso manage etl_ssd all_data
 """
 
 import logging

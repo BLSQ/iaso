@@ -7,10 +7,11 @@ Each workflow is made of multiple nodes or tasks.
 from autoslug import AutoSlugField
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
+from django.db.models import Q
 
 from iaso.models import Instance
 from iaso.models.base import UserRole
-from iaso.models.common import CreatedAndUpdatedModel
+from iaso.models.common import BulkAutoSlugField, CreatedAndUpdatedModel
 from iaso.utils.models.color import ColorField
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 
@@ -52,59 +53,115 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
 
     @transaction.atomic
     def delete_node_template(self, node):
-        previous_nodes = list(node.previous_node_templates.all())
-        next_nodes = list(node.next_node_templates.all())
+        previous_nodes = list(node.previous_node_templates.values_list("pk", flat=True))
+        next_nodes = list(node.next_node_templates.values_list("pk", flat=True))
 
+        through_table = node.next_node_templates.through
+
+        # we update the previous nodes by linking them to deleted node next nodes
+        through_table.objects.bulk_create(
+            [
+                through_table(
+                    from_validationnodetemplate_id=prev,
+                    to_validationnodetemplate_id=nxt,
+                )
+                for (prev, nxt) in zip(previous_nodes, next_nodes)
+            ],
+            ignore_conflicts=True,
+        )
+
+        q_delete = Q()
         for prev in previous_nodes:
-            prev.next_node_templates.add(*next_nodes)
+            q_delete |= Q(from_validationnodetemplate_id=prev, to_validationnodetemplate_id=node.id)
+        for nxt in next_nodes:
+            q_delete |= Q(from_validationnodetemplate_id=node.id, to_validationnodetemplate_id=nxt)
 
-        for prev in previous_nodes:
-            prev.next_node_templates.remove(node)
-
-        for next_node in next_nodes:
-            node.next_node_templates.remove(next_node)
+        if q_delete:
+            through_table.objects.filter(q_delete).delete()
 
         node.delete()
 
+    @staticmethod
     @transaction.atomic
-    def insert_node_template(self, node):
-        previous_nodes = list(node.previous_node_templates.all())
-        next_nodes = list(node.next_node_templates.all())
+    def insert_node_template(node):
+        """
+        Function to insert a node in the workflow
+        """
 
+        previous_nodes = list(node.previous_node_templates.values_list("pk", flat=True))
+        next_nodes = list(node.next_node_templates.values_list("pk", flat=True))
+
+        # future previous nodes should be updated and get their next nodes removed
+        through_table = node.next_node_templates.through
+
+        to_delete = Q()
         for prev in previous_nodes:
-            prev.next_node_templates.remove(*next_nodes)
+            for nxt in next_nodes:
+                to_delete |= Q(
+                    from_validationnodetemplate_id=prev,
+                    to_validationnodetemplate_id=nxt,
+                )
+        if to_delete:
+            through_table.objects.filter(to_delete).delete()
 
-        for prev in previous_nodes:
-            prev.next_node_templates.add(node)
-
-        node.next_node_templates.add(*next_nodes)
+        # update the related previous nodes to point to the current inserted node and update the next nodes so their previous node is current inserted node
+        through_table.objects.bulk_create(
+            [
+                through_table(
+                    from_validationnodetemplate_id=prev,
+                    to_validationnodetemplate_id=node.id,
+                )
+                for prev in previous_nodes
+            ]
+            + [
+                through_table(from_validationnodetemplate_id=node.id, to_validationnodetemplate_id=nxt)
+                for nxt in next_nodes
+            ],
+            ignore_conflicts=True,
+        )
 
     @transaction.atomic
     def move_node_template(self, node, new_previous_nodes=None, new_next_nodes=None):
-        new_previous_nodes = list(new_previous_nodes or [])
-        new_next_nodes = list(new_next_nodes or [])
+        new_previous_nodes = [n.pk for n in new_previous_nodes or []]
+        new_next_nodes = [n.pk for n in new_next_nodes or []]
 
         if not new_next_nodes and not new_previous_nodes:
             raise ValueError
 
-        old_previous = list(node.previous_node_templates.all())
-        old_next = list(node.next_node_templates.all())
+        old_previous = list(node.previous_node_templates.values_list("pk", flat=True))
+        old_next = list(node.next_node_templates.values_list("pk", flat=True))
+
+        through_table = node.next_node_templates.through
+
+        q_delete = Q()
 
         for prev in old_previous:
-            prev.next_node_templates.add(*old_next)
+            q_delete |= Q(from_validationnodetemplate_id=prev, to_validationnodetemplate_id=node.id)
 
-        for prev in old_previous:
-            prev.next_node_templates.remove(node)
+        for prev in new_previous_nodes:
+            for new_nxt in new_next_nodes:
+                q_delete |= Q(from_validationnodetemplate_id=prev, to_validationnodetemplate_id=new_nxt)
+
+        if q_delete:
+            through_table.objects.filter(q_delete).delete()
 
         node.next_node_templates.clear()
 
-        for prev in new_previous_nodes:
-            prev.next_node_templates.remove(*new_next_nodes)
-
-        for prev in new_previous_nodes:
-            prev.next_node_templates.add(node)
-
-        node.next_node_templates.add(*new_next_nodes)
+        through_table.objects.bulk_create(
+            [
+                through_table(from_validationnodetemplate_id=prev, to_validationnodetemplate_id=nxt)
+                for (prev, nxt) in zip(old_previous, old_next)
+            ]
+            + [
+                through_table(from_validationnodetemplate_id=prev, to_validationnodetemplate_id=node.id)
+                for prev in new_previous_nodes
+            ]
+            + [
+                through_table(from_validationnodetemplate_id=node.id, to_validationnodetemplate_id=nxt)
+                for nxt in new_next_nodes
+            ],
+            ignore_conflicts=True,
+        )
 
     def dump_nodes(self):
         start = self.get_starting_node()
@@ -145,7 +202,7 @@ class ValidationNodeTemplate(CreatedAndUpdatedModel):
 
     workflow = models.ForeignKey(ValidationWorkflow, on_delete=models.CASCADE, related_name="node_templates")
     name = models.CharField(max_length=256)
-    slug = AutoSlugField(populate_from="name", unique=True, always_update=True, unique_with="workflow_id")
+    slug = BulkAutoSlugField(populate_from="name", unique=True, unique_with="workflow_id")
     description = models.CharField(max_length=1024, blank=True)
     color = ColorField(blank=True, null=True)
     next_node_templates = models.ManyToManyField("self", symmetrical=False, related_name="previous_node_templates")

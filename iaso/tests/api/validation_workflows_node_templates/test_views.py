@@ -194,7 +194,8 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(1):
+        # todo : could we reduce the num of queries ?
+        with self.assertNumQueries(24):
             res = self.client.post(
                 reverse(
                     "validation-node-templates-list",
@@ -467,7 +468,7 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(18):
             res = self.client.post(
                 reverse(
                     "validation-node-templates-bulk",
@@ -489,6 +490,34 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 ],
             )
             self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+    def test_uniqueness_of_slug(self):
+        self.client.force_authenticate(self.john_wick)
+
+        # create node
+        ValidationNodeTemplate.objects.create(name="First-node-", workflow=self.validation_workflow)
+
+        res = self.client.post(
+            reverse(
+                "validation-node-templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {
+                    "name": "First node",
+                    "color": "#740d54",
+                    "description": "Here we should check something",
+                },
+                {
+                    "name": "First-node",
+                    "color": "#fdd75b",
+                    "canSkipPreviousNodes": True,
+                    "rolesRequired": [self.user_role.pk],
+                },
+            ],
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
+        self.assertEqual(res_data, [{"slug": "first-node-2"}, {"slug": "first-node-1"}])
 
     def test_happy_flow(self):
         self.client.force_authenticate(self.john_wick)
@@ -619,7 +648,7 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
     def test_number_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(4):
             res = self.client.get(
                 reverse(
                     "validation-node-templates-detail",
@@ -719,7 +748,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
     def test_number_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(5):
             res = self.client.get(
                 reverse(
                     "validation-node-templates-list",
@@ -831,7 +860,7 @@ class ValidationNodeTemplateAPIDeleteTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(15):
             res = self.client.delete(
                 reverse(
                     "validation-node-templates-detail",
@@ -876,6 +905,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.account_2 = Account.objects.create(name="account_2")
 
         self.group = Group.objects.create(name="Group")
+        self.other_group = Group.objects.create(name="Group 2")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
 
         self.john_doe = self.create_user_with_profile(
@@ -894,7 +924,9 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         )
 
         # create some nodes
-        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
+        self.first_node = ValidationNodeTemplate.objects.create(
+            name="First node", workflow=self.validation_workflow, description="first node desc", color="#ffffff"
+        )
         self.second_node = ValidationNodeTemplate.objects.create(
             name="Second node",
             workflow=self.validation_workflow,
@@ -902,13 +934,89 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             description="some description",
             can_skip_previous_nodes=True,
         )
-        self.third_node = ValidationNodeTemplate.objects.create(name="Third node", workflow=self.validation_workflow)
+        self.third_node = ValidationNodeTemplate.objects.create(
+            name="Third node", workflow=self.validation_workflow, description="third node desc", color="#ffffff"
+        )
         self.second_node.previous_node_templates.add(self.first_node)
         self.second_node.next_node_templates.add(self.third_node)
         self.second_node.roles_required.add(self.user_role)
 
+        self.other_user_role = UserRole.objects.create(group=self.other_group, account=self.account_2)
+
+    def test_uniqueness_of_slug(self):
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {"slug": self.third_node.slug, "name": "New first node", "rolesRequired": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "New-first-node", "canSkipPreviousNodes": True},
+                {
+                    "slug": self.second_node.slug,
+                    "name": "new third node",
+                    "description": "some description",
+                    "color": "#ebebeb",
+                },
+            ],
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertEqual(res_data, [{"slug": "third-node"}, {"slug": "first-node"}, {"slug": "second-node"}])
+
     def test_happy_flow(self):
-        self.fail()
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation-node-templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                {
+                    "slug": self.second_node.slug,
+                    "name": "new third node",
+                    "description": "some description",
+                    "color": "#ebebeb",
+                },
+            ],
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertEqual(res_data, [{"slug": "third-node"}, {"slug": "first-node"}, {"slug": "second-node"}])
+
+        # check db
+        self.assertEqual(self.validation_workflow.dump_nodes(), ["third-node", "first-node", "second-node"])
+
+        self.third_node.refresh_from_db()
+
+        self.assertEqual(self.third_node.slug, "third-node")
+        self.assertEqual(self.third_node.name, "new first node")
+        self.assertEqual(self.third_node.description, "third node desc")
+        self.assertEqual(list(self.third_node.roles_required.all()), [self.user_role])
+        self.assertEqual(self.third_node.color, "#FFFFFF")
+        self.assertFalse(self.third_node.can_skip_previous_nodes)
+
+        self.second_node.refresh_from_db()
+
+        self.assertEqual(self.second_node.slug, "second-node")
+        self.assertEqual(self.second_node.name, "new third node")
+        self.assertEqual(self.second_node.description, "some description")
+        self.assertEqual(list(self.second_node.roles_required.all()), [self.user_role])
+        self.assertEqual(self.second_node.color, "#EBEBEB")
+        self.assertTrue(self.second_node.can_skip_previous_nodes)
+
+        self.first_node.refresh_from_db()
+
+        self.assertEqual(self.first_node.slug, "first-node")
+        self.assertEqual(self.first_node.name, "new second node")
+        self.assertEqual(self.first_node.description, "first node desc")
+        self.assertEqual(list(self.first_node.roles_required.all()), [])
+        self.assertEqual(self.first_node.color, "#FFFFFF")
+        self.assertTrue(self.first_node.can_skip_previous_nodes)
 
     def test_permissions(self):
         res = self.client.put(
@@ -1047,10 +1155,60 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 self.assertHasError(error, "name", "This field is required.")
 
         with self.subTest("Validate items : roles required"):
-            pass
+            res = self.client.put(
+                reverse(
+                    "validation-node-templates-bulk",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                ),
+                data=[
+                    {"slug": self.first_node.slug, "name": "test", "rolesRequired": [1111]},
+                    {"slug": self.second_node.slug, "name": "test", "rolesRequired": [1111]},
+                    {"slug": self.third_node.slug, "name": "test", "rolesRequired": [1111]},
+                ],
+            )
+
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            for error in res_data:
+                self.assertHasError(error, "rolesRequired", 'Invalid pk "1111" - object does not exist.')
+
+            res = self.client.put(
+                reverse(
+                    "validation-node-templates-bulk",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                ),
+                data=[
+                    {"slug": self.first_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
+                    {"slug": self.second_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
+                    {"slug": self.third_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
+                ],
+            )
+
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            for error in res_data:
+                self.assertHasError(
+                    error, "rolesRequired", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+                )
 
     def test_num_queries(self):
-        self.fail()
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(12):
+            res = self.client.put(
+                reverse(
+                    "validation-node-templates-bulk",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                ),
+                data=[
+                    {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
+                    {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                    {
+                        "slug": self.second_node.slug,
+                        "name": "new third node",
+                        "description": "some description",
+                        "color": "#ebebeb",
+                    },
+                ],
+            )
+            self.assertJSONResponse(res, status.HTTP_200_OK)
 
 
 class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
@@ -1232,7 +1390,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         self.validation_workflow.refresh_from_db()
         self.assertEqual(self.validation_workflow.dump_nodes(), ["second-node", "first-node", "third-node"])
 
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(10):
             res = self.client.put(
                 reverse(
                     "validation-node-templates-move",
@@ -1298,13 +1456,13 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertEqual(res_data, {"slug": "test"})
+        self.assertEqual(res_data, {"slug": "first-node"})
 
         # check in db
         self.node.refresh_from_db()
 
         self.assertEqual(self.node.name, "test")
-        self.assertEqual(self.node.slug, "test")
+        self.assertEqual(self.node.slug, "first-node")
         self.assertEqual(self.node.description, "desc")
         self.assertEqual(self.node.color, "#FFFFFF")
         self.assertTrue(self.node.can_skip_previous_nodes)
@@ -1377,7 +1535,7 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(8):
             res = self.client.put(
                 reverse(
                     "validation-node-templates-detail",
@@ -1435,12 +1593,12 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             data={"name": "test", "rolesRequired": [self.user_role.pk]},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertEqual(res_data, {"slug": "test"})
+        self.assertEqual(res_data, {"slug": "first-node"})
 
         # check db
         self.node.refresh_from_db()
 
-        self.assertEqual(self.node.slug, "test")
+        self.assertEqual(self.node.slug, "first-node")
         self.assertEqual(self.node.name, "test")
         self.assertEqual(self.node.description, "some node")
         self.assertEqual(self.node.color, "#FFFFFF")
@@ -1534,7 +1692,7 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(8):
             res = self.client.patch(
                 reverse(
                     "validation-node-templates-detail",

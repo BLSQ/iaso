@@ -10,16 +10,52 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
     class Meta:
         model = ValidationNodeTemplate
 
+    @transaction.atomic
     def create(self, validated_data):
-        with transaction.atomic():
-            instances = []
-            for data in validated_data:
-                instance = self.child.create(data)
-                instances.append(instance)
+        # pre generate slugs
+        existing_slugs = set(
+            ValidationNodeTemplate.objects.filter(workflow__slug=self.context.get("workflow")).values_list(
+                "slug", flat=True
+            )
+        )
 
-            for prev, curr in zip(instances, instances[1:]):
-                curr.previous_node_templates.add(prev)
-            return instances
+        slug_field = ValidationNodeTemplate._meta.get_field("slug")
+
+        instances = []
+        for data in validated_data:
+            instance = ValidationNodeTemplate(**{k: v for k, v in data.items() if k != "roles_required"})
+            instance.slug = slug_field.generate_slug_for_bulk_create(instance, existing_slugs)
+            existing_slugs.add(instance.slug)
+            instances.append(instance)
+
+        ValidationNodeTemplate.objects.bulk_create(instances, batch_size=100)
+
+        instance_role_pairs = [
+            (instance.id, role.pk)
+            for instance, data in zip(instances, validated_data)
+            for role in data.get("roles_required", [])
+        ]
+        if instance_role_pairs:
+            through = ValidationNodeTemplate.roles_required.through
+            through.objects.bulk_create(
+                [
+                    through(validationnodetemplate_id=inst_id, userrole_id=role_id)
+                    for inst_id, role_id in instance_role_pairs
+                ],
+                ignore_conflicts=True,
+            )
+
+        next_links = [
+            ValidationNodeTemplate.next_node_templates.through(
+                from_validationnodetemplate_id=prev.id, to_validationnodetemplate_id=curr.id
+            )
+            for prev, curr in zip(instances, instances[1:])
+        ]
+
+        if next_links:
+            ValidationNodeTemplate.next_node_templates.through.objects.bulk_create(next_links, ignore_conflicts=True)
+
+        return instances
 
 
 class ValidationNodeTemplateBulkCreateSerializer(ModelSerializer):

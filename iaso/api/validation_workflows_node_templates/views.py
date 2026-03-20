@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Prefetch
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
 from drf_spectacular.utils import extend_schema
@@ -23,7 +24,7 @@ from iaso.api.validation_workflows_node_templates.serializers.list import Valida
 from iaso.api.validation_workflows_node_templates.serializers.move import ValidationNodeTemplateMoveSerializer
 from iaso.api.validation_workflows_node_templates.serializers.retrieve import ValidationNodeTemplateRetrieveSerializer
 from iaso.api.validation_workflows_node_templates.serializers.update import ValidationNodeTemplateUpdateSerializer
-from iaso.models import ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import UserRole, ValidationNodeTemplate, ValidationWorkflow
 
 
 @extend_schema(tags=["Validation workflow node templates"])
@@ -64,13 +65,16 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
         qs = super().get_queryset()
-        if self.action == "retrieve":
-            return (
-                qs.select_related("workflow", "workflow__account")
-                .prefetch_related("roles_required", "roles_required__group")
-                .filter(workflow__account=account)
+        qs = qs.filter(workflow__account=account)
+        if self.action in ["delete"]:
+            return qs.prefetch_related("roles_required", "next_node_templates", "previous_node_templates")
+        # if self.action in ["move"]:
+        #     return qs.prefetch_related("next_node_templates", "previous_node_templates")
+        if self.action in ["retrieve", "list"]:
+            return qs.select_related("workflow", "workflow__account").prefetch_related(
+                Prefetch("roles_required", queryset=UserRole.objects.select_related("group"))
             )
-        return qs.select_related("workflow", "workflow__account").filter(workflow__account=account)
+        return qs.select_related("workflow", "workflow__account")
 
     def get_validation_workflow(self):
         account = self.request.user.iaso_profile.account
@@ -78,11 +82,13 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
             account=account, slug=self.kwargs.get("parent_lookup_workflow__slug")
         )
 
+    # This endpoint returns a plain list (not paginated).
+    # pagination_class=None ensures the OpenAPI schema reflects that.
     @extend_schema(
         request=ValidationNodeTemplateBulkCreateSerializer(many=True),
         responses=ValidationNodeTemplateBulkCreateSerializer(many=True),
     )
-    @action(detail=False, methods=["POST"], url_path="bulk", url_name="bulk")
+    @action(detail=False, methods=["POST"], url_path="bulk", url_name="bulk", pagination_class=None)
     def bulk_create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=True, allow_empty=False, min_length=1)
         serializer.is_valid(raise_exception=True)
@@ -91,7 +97,9 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @extend_schema(
-        description="Allow to update an existing list of nodes attached to a workflow (fields and order). Does not allow to delete nodes."
+        description="Allow to update an existing list of nodes attached to a workflow (fields and order). Does not allow to delete nodes.",
+        request=ValidationNodeTemplateBulkUpdateSerializer(many=True),
+        responses=ValidationNodeTemplateBulkUpdateSerializer(many=True),
     )
     @bulk_create.mapping.put
     def bulk_update(self, request, *args, **kwargs):

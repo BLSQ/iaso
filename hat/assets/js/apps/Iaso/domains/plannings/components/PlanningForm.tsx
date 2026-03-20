@@ -166,7 +166,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
             forms,
             project,
             description,
-            publishingStatus: publishingStatus ?? 'draft',
+            publishingStatus,
             pipelineUuids,
             targetOrgUnitTypes,
         },

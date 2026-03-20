@@ -10,7 +10,7 @@ import { useAppLocales } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import MESSAGES from '../messages';
-import { InitialUserData, UserDialogData } from '../types';
+import { InitialUserData, ProfileRetrieveResponseItem, UserDialogData } from '../types';
 import { userHasAccessToModule } from '../utils';
 
 const styles: SxStyles = {
@@ -25,7 +25,7 @@ const styles: SxStyles = {
 type Props = {
     setFieldValue: (key: string, value: string) => void;
     currentUser: UserDialogData;
-    initialData: InitialUserData;
+    initialData: InitialUserData | ProfileRetrieveResponseItem;
     allowSendEmailInvitation: boolean;
     canBypassProjectRestrictions: boolean;
     setPhoneNumber: (phoneNumber: string, countryCode: string) => void;

@@ -331,12 +331,14 @@ class EtlModelViewset(ModelViewSet):
 
     def get_pagination_class(self):
         custom_pagination_class = getattr(self, "pagination_class", None)
-        if custom_pagination_class and not issubclass(custom_pagination_class, EtlPaginator):
-            raise TypeError(
-                f"The pagination_class must be a subclass of {EtlPaginator.__name__}. "
-                f"Received: {custom_pagination_class.__name__}."
-            )
-        return custom_pagination_class
+        if isinstance(custom_pagination_class, type):
+            if not issubclass(custom_pagination_class, EtlPaginator):
+                raise TypeError(
+                    f"The pagination_class must be a subclass of {EtlPaginator.__name__}. "
+                    f"Received: {custom_pagination_class.__name__}."
+                )
+            return custom_pagination_class
+        return EtlPaginator
 
 
 class ChoiceEnum(enum.Enum):

@@ -1,14 +1,16 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Alert, Box, Grid } from '@mui/material';
-import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    InputWithInfos,
+    BaseCountryData,
+} from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
-import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import InputComponent from '../../../components/forms/InputComponent';
 import { SxStyles } from '../../../types/general';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useAppLocales } from '../../app/constants';
 
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { useSavePassword } from '../hooks/useSavePassword';
 import MESSAGES from '../messages';
 import {
@@ -18,6 +20,7 @@ import {
 } from '../types';
 import { userHasAccessToModule } from '../utils';
 import { EditPasswordUserWithButtonDialog } from './EditPasswordUserDialog';
+import { UsersInfosExtraFields } from './UsersInfosExtraFields';
 
 const styles: SxStyles = {
     passwordDisabled: {
@@ -60,66 +63,20 @@ export const UsersInfos: FunctionComponent<Props> = ({
     const isMultiAccountUser = currentUser.has_multiple_accounts.value;
     const passwordDisabled = currentUser.send_email_invitation.value;
 
-    const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
     const { mutate: savePassword } = useSavePassword(initialData?.id);
-    const availableProjects = useMemo(() => {
-        if (!loggedUser || !loggedUser.projects) {
-            return [];
-        }
-        return allProjects?.map(project => {
-            return {
-                value: project.value,
-                label: project.label,
-                color: project.color,
-            };
-        });
-    }, [allProjects, loggedUser]);
 
     const isInitialDataEmpty = isEmpty(initialData)
         ? MESSAGES.password
         : MESSAGES.newPassword;
 
     const handlePhoneNumberChange = useCallback(
-        (_, phoneNumber, country) => {
+        (_: any, phoneNumber: string, country: any) => {
             setPhoneNumber(phoneNumber, country.countryCode);
         },
         [setPhoneNumber],
     );
 
     const appLocales = useAppLocales();
-    const extraFields = useMemo(() => {
-        return (
-            <>
-                <InputComponent
-                    keyValue="projects"
-                    onChange={(key, value) =>
-                        setFieldValue(
-                            key,
-                            value
-                                ?.split(',')
-                                .map(projectId => parseInt(projectId, 10)),
-                        )
-                    }
-                    value={currentUser.projects.value}
-                    errors={currentUser.projects.errors}
-                    type="select"
-                    multi
-                    label={MESSAGES.projects}
-                    options={availableProjects}
-                    loading={isFetchingProjects}
-                />
-                <Box sx={{ pt: 2, pb: 2 }}>
-                    <ColorPicker
-                        currentColor={currentUser?.color?.value}
-                        onChangeColor={(color: string): void =>
-                            setFieldValue('color', color)
-                        }
-                    />
-                </Box>
-            </>
-        );
-    }, []);
     return (
         <form>
             {isMultiAccountUser && (
@@ -174,7 +131,16 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         disabled={isMultiAccountUser}
                     />
 
-                    {mode === 'edit' && extraFields}
+                    {mode === 'edit' && (
+                        <UsersInfosExtraFields
+                            setFieldValue={setFieldValue}
+                            currentUser={currentUser}
+                            loggedUser={loggedUser}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
+                        />
+                    )}
                     {mode === 'create' && (
                         <>
                             {allowSendEmailInvitation && (
@@ -288,7 +254,16 @@ export const UsersInfos: FunctionComponent<Props> = ({
                             />
                         </Box>
                     )}
-                    {mode === 'create' && extraFields}
+                    {mode === 'create' && (
+                        <UsersInfosExtraFields
+                            setFieldValue={setFieldValue}
+                            currentUser={currentUser}
+                            loggedUser={loggedUser}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
+                        />
+                    )}
                 </Grid>
             </Grid>
         </form>

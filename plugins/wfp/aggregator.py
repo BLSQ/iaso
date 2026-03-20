@@ -174,29 +174,40 @@ class Aggregator:
 
     def aggregate_by_nutrition_program(self, account, org_unit_ids, external_credential):
         """Group monthly statistics by org unit and period to make a payload to send to dhis2"""
+
+        org_units_pages = org_unit_ids.page_range
         page_size = PAGE_SIZE
-        paginator = Paginator(org_unit_ids, page_size)
-        pages = paginator.page_range
         dhis2 = Dhis2()
 
         with open("plugins/wfp/dhis2_mapper.json") as mapper:
             mapper_config = json.load(mapper)
 
-        for page in pages:
-            monthly_data, page_info = ETL.group_data_to_push_to_dhis2(
-                account, org_unit_ids, page_size=page_size, page_number=page
-            )
-            logger.info(f"Processing push data for {len(page_info.object_list)} org unit on page {page} for {account}")
+        for org_units_page in org_units_pages:
+            current_page_org_units = list(org_unit_ids.page(org_units_page).object_list)
+            paginator = Paginator(current_page_org_units, page_size)
+            pages = paginator.page_range
 
-            aggregated_data = self._aggregate_data_by_org_unit_and_period(monthly_data)
-            data_sets = []
-            for (dhis2_id, period), programs in aggregated_data.items():
-                data_set = self._build_dhis2_payload(dhis2_id, period, programs, mapper_config)
-                data_sets.append(data_set)
-            if len(data_sets) == 0:
-                continue
-
-            pushed_data = dhis2.save_dhis2_sync_results(external_credential, account, data_sets)
             logger.info(
-                f"------------------------ Processed push to DHIS2 for page {page} on U5 and PBW for {len(pushed_data)} rows aggregated per year, month and org unit-------------------------"
+                f"----------------------------- Aggregating monthly data to push to DHIS2 for {len(current_page_org_units)} across {paginator.num_pages} pages org unit on {account} -----------------------------"
             )
+
+            for page in pages:
+                monthly_data, page_info = ETL.group_data_to_push_to_dhis2(
+                    account, current_page_org_units, page_size=page_size, page_number=page
+                )
+                logger.info(
+                    f"Processing push data for {len(page_info.object_list)} org unit on page {page} for {account}"
+                )
+
+                aggregated_data = self._aggregate_data_by_org_unit_and_period(monthly_data)
+                data_sets = []
+                for (dhis2_id, period), programs in aggregated_data.items():
+                    data_set = self._build_dhis2_payload(dhis2_id, period, programs, mapper_config)
+                    data_sets.append(data_set)
+                if len(data_sets) == 0:
+                    continue
+
+                pushed_data = dhis2.save_dhis2_sync_results(external_credential, account, data_sets)
+                logger.info(
+                    f"------------------------ Processed push to DHIS2 for page {page} on U5 and PBW for {len(pushed_data)} rows aggregated per year, month and org unit-------------------------"
+                )

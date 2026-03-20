@@ -673,10 +673,6 @@ class ETL:
             entities = entities.filter(updated_at__gte=updated_at)
         return entities
 
-    def get_org_unit_ids_with_updated_data(self, updated_at=None):
-        entities = self.get_updated_data(updated_at)
-        return entities.distinct().values_list("org_unit_id", flat=True)
-
     def get_updated_entity_ids(self, updated_at=None):
         entities = self.get_updated_data(updated_at)
         return entities.distinct().values_list("entity_id", flat=True)
@@ -1586,19 +1582,20 @@ class ETL:
     @staticmethod
     def screening_data(account, current_page_org_units):
         queryset = (
-            ScreeningData.objects.filter(account=account, org_unit_id__in=current_page_org_units)
+            ScreeningData.objects.filter(account=account)
+            .filter(reduce(or_, current_page_org_units))
             .values("org_unit_id", "period")
             .annotate(
-                u5_male_green=Sum("u5_male_green"),
-                u5_female_green=Sum("u5_female_green"),
-                u5_male_yellow=Sum("u5_male_yellow"),
-                u5_female_yellow=Sum("u5_female_yellow"),
-                u5_male_red=Sum("u5_male_red"),
-                u5_female_red=Sum("u5_female_red"),
-                pregnant_muac_lte_23=Sum("pregnant_w_muac_lte_23"),
-                lactating_muac_lte_23=Sum("lactating_w_muac_lte_23"),
-                pregnant_muac_gt_23=Sum("pregnant_w_muac_gt_23"),
-                lactating_muac_gt_23=Sum("lactating_w_muac_gt_23"),
+                u5_male_green=Cast(Coalesce(Sum("u5_male_green"), 0), IntegerField()),
+                u5_female_green=Cast(Coalesce(Sum("u5_female_green"), 0), IntegerField()),
+                u5_male_yellow=Cast(Coalesce(Sum("u5_male_yellow"), 0), IntegerField()),
+                u5_female_yellow=Cast(Coalesce(Sum("u5_female_yellow"), 0), IntegerField()),
+                u5_male_red=Cast(Coalesce(Sum("u5_male_red"), 0), IntegerField()),
+                u5_female_red=Cast(Coalesce(Sum("u5_female_red"), 0), IntegerField()),
+                pregnant_muac_lte_23=Cast(Coalesce(Sum("pregnant_w_muac_lte_23"), 0), IntegerField()),
+                lactating_muac_lte_23=Cast(Coalesce(Sum("lactating_w_muac_lte_23"), 0), IntegerField()),
+                pregnant_muac_gt_23=Cast(Coalesce(Sum("pregnant_w_muac_gt_23"), 0), IntegerField()),
+                lactating_muac_gt_23=Cast(Coalesce(Sum("lactating_w_muac_gt_23"), 0), IntegerField()),
             )
         )
         rows = {(row["org_unit_id"], row["period"]): row for row in queryset}
@@ -1608,13 +1605,12 @@ class ETL:
     def group_data_to_push_to_dhis2(account, org_unit_ids, page_size=5000, page_number=1):
         monthlyStatistics = MonthlyStatistics.objects.prefetch_related("account", "org_unit").filter(account=account)
 
-        org_unit_ids = sorted(list(org_unit_ids))
         paginator = Paginator(org_unit_ids, page_size)
         current_page = paginator.get_page(page_number)
         current_page_org_units = current_page.object_list
 
         if current_page_org_units is not None and len(current_page_org_units) > 0:
-            monthlyStatistics = monthlyStatistics.filter(org_unit_id__in=current_page_org_units)
+            monthlyStatistics = monthlyStatistics.filter(reduce(or_, current_page_org_units))
 
         monthlyStatistics = monthlyStatistics.annotate(
             target_group=Case(

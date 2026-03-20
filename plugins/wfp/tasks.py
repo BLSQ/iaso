@@ -141,8 +141,7 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
 
     etl = ETL("ssd_under5")
     account = etl.get_account()
-    org_units_with_updated_data = etl.get_org_unit_ids_with_updated_data(last_success_task_date)
-
+    org_units = etl.get_org_unit_and_period_with_updated_data(last_success_task_date)
     external_credential = ExternalCredentials.objects.filter(account=account).first()
     if external_credential is not None and (
         external_credential.url is not None
@@ -150,9 +149,9 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
         and external_credential.password is not None
     ):
         logger.info(
-            f"----------------------------- Aggregating monthly data to push to DHIS2 for {len(org_units_with_updated_data)} org unit on {account} -----------------------------"
+            f"----------------------------- Aggregating monthly data to push to DHIS2 for {account} -----------------------------"
         )
-        Aggregator().aggregate_by_nutrition_program(account, org_units_with_updated_data, external_credential)
+        Aggregator().aggregate_by_nutrition_program(account, org_units, external_credential)
     else:
         logger.info(
             f"----------------------------- No DHIS2 credentials found for {account} -----------------------------"

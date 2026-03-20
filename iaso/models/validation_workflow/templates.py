@@ -12,7 +12,7 @@ from iaso.models import Instance
 from iaso.models.base import UserRole
 from iaso.models.common import CreatedAndUpdatedModel
 from iaso.utils.models.color import ColorField
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 
 
 class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
@@ -34,11 +34,13 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_updated_set"
     )
 
+    objects = DefaultSoftDeletableManager()
+
     def __str__(self):
         return self.name
 
     class Meta:
-        unique_together = ("account_id", "slug")
+        unique_together = [("account", "slug"), ("account", "name")]
 
     def is_artifact_allowed(self, instance):
         if self.form_set.count():
@@ -57,14 +59,14 @@ class ValidationNodeTemplate(CreatedAndUpdatedModel):
     workflow = models.ForeignKey(ValidationWorkflow, on_delete=models.CASCADE, related_name="node_templates")
     name = models.CharField(max_length=256)
     slug = AutoSlugField(populate_from="name", unique=True, always_update=True, unique_with="workflow_id")
-
+    description = models.CharField(max_length=1024, blank=True)
     color = ColorField(blank=True, null=True)
     next_node_templates = models.ManyToManyField("self", symmetrical=False, related_name="previous_node_templates")
     roles_required = models.ManyToManyField(UserRole, blank=True)
     can_skip_previous_nodes = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ("workflow_id", "name")
+        unique_together = [("workflow", "name"), ("workflow", "slug")]
 
     def __str__(self):
         return self.name

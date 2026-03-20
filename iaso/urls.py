@@ -123,6 +123,7 @@ from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
+from .api.validation_workflows.views import ValidationWorkflowViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
@@ -256,6 +257,9 @@ router.register(r"stockrulesversions", StockRulesVersionViewSet, basename="stock
 router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, basename="mobilestockkeepingunits")
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
+
+router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validationworkflows")
+
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

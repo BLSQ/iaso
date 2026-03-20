@@ -491,6 +491,9 @@ SPECTACULAR_SETTINGS = {
         "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
     ],
     "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
+    "POSTPROCESSING_HOOKS": [
+        "iaso.drf_spectacular_utils.post_processing_hooks.selective_camelize_serializer_fields",
+    ],
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {

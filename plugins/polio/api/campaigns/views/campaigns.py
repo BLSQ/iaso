@@ -5,7 +5,7 @@ from typing import Any, List, Union
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models import Max, Min, Prefetch, Q
+from django.db.models import Exists, Max, Min, OuterRef, Prefetch, Q
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -121,25 +121,38 @@ class CampaignViewSet(ModelViewSet):
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
         campaigns = queryset
+        rounds_on_hold = Round.objects.filter(
+            campaign_id=OuterRef("pk"),
+            on_hold=True,
+        )
+        campaigns = campaigns.annotate(has_round_on_hold=Exists(rounds_on_hold))
 
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
+
         if on_hold == "false":
-            campaigns = campaigns.filter(on_hold=False)
-        if campaign_category == "preventive":
-            campaigns = campaigns.filter(is_preventive=True).filter(is_planned=False)
-        if campaign_category == "on_hold":
-            campaigns = campaigns.filter(on_hold=True).filter(is_planned=False)
+            campaigns = campaigns.filter(Q(on_hold=False) & Q(has_round_on_hold=False))
+
+        if campaign_category == "on_hold" and on_hold == "false":
+            campaigns = campaigns.none()
+        if campaign_category == "on_hold" and on_hold == "true":
+            campaigns = campaigns.filter(Q(on_hold=True) | Q(has_round_on_hold=True)).filter(is_planned=False)
+
         if campaign_category == "is_planned":
             campaigns = campaigns.filter(is_planned=True)
+
+        if campaign_category == "preventive":
+            campaigns = campaigns.filter(is_preventive=True).filter(is_planned=False)
+
         if campaign_category == "regular" and on_hold == "true":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(is_planned=False)
+
         if campaign_category == "regular" and on_hold == "false":
             campaigns = (
                 campaigns.filter(is_preventive=False)
                 .filter(is_test=False)
-                .filter(on_hold=False)
                 .filter(is_planned=False)
+                .filter(Q(on_hold=False) & Q(has_round_on_hold=False))
             )
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))

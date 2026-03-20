@@ -66,12 +66,6 @@ class ListRoundSerializer(RoundSerializer):
             "is_planned",
         ]
 
-    def to_representation(self, instance):
-        # Skip rounds on hold
-        if instance.on_hold:
-            return None
-        return super().to_representation(instance)
-
 
 class CampaignScopeSerializer(serializers.ModelSerializer):
     group = GroupIdSerializer()

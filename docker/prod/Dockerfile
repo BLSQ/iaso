@@ -90,7 +90,7 @@ COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/
 # Copy project code (all owned by appuser, no separate chown layer needed)
 COPY --chown=appuser:appuser ../../hat ./hat
 COPY --chown=appuser:appuser ../../iaso ./iaso
-COPY --chown=appuser:appuser ../../setuper ./setuper
+# COPY --chown=appuser:appuser ../../setuper ./setuper
 COPY --chown=appuser:appuser ../../beanstalk_worker ./beanstalk_worker
 COPY --chown=appuser:appuser ../../django_sql_dashboard_export ./django_sql_dashboard_export
 COPY --chown=appuser:appuser ../../plugins ./plugins

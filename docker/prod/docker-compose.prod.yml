@@ -1,6 +1,6 @@
 services:
     iaso:
-      image: blsq/iaso:${IMAGE_TAG-latest}
+      image: blsq/iaso:${IMAGE_TAG:-latest}
       ## If you want to run the prod docker compose locally
       ## Comment the image line and uncomment the build line
       # build:
@@ -97,23 +97,23 @@ services:
       depends_on:
         - iaso
 
-# If you want to run the prod docker compose locally
-# you will need a database in the same network
-# and you will need your env variables to point to this database
-    db:
-      # https://registry.hub.docker.com/r/postgis/postgis
-      # Pinning specific minor versions of PostgreSQL and PostGIS is not easy.
-      # https://github.com/postgis/docker-postgis/issues/396
-      image: postgis/postgis:16-3.5
-      logging: *iaso_logging
-      ports:
-          - '5433:5432'
-      volumes:
-          - ../pgdata-iaso-16:/var/lib/postgresql/data
-      environment:
-          POSTGRES_DB: ${RDS_DB_NAME}
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+    # If you want to run the prod docker compose locally
+    # you will need a database in the same network
+    # and you will need your env variables to point to this database
+    # db:
+    #   # https://registry.hub.docker.com/r/postgis/postgis
+    #   # Pinning specific minor versions of PostgreSQL and PostGIS is not easy.
+    #   # https://github.com/postgis/docker-postgis/issues/396
+    #   image: postgis/postgis:16-3.5
+    #   logging: *iaso_logging
+    #   ports:
+    #       - '5433:5432'
+    #   volumes:
+    #       - ../pgdata-iaso-16:/var/lib/postgresql/data
+    #   environment:
+    #       POSTGRES_DB: ${RDS_DB_NAME}
+    #       POSTGRES_USER: postgres
+    #       POSTGRES_PASSWORD: postgres
 
 volumes:
   static-files:

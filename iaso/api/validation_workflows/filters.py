@@ -2,7 +2,7 @@ import django_filters
 
 from django_filters.rest_framework import FilterSet
 
-from iaso.api.common import NumberInFilter
+from iaso.api.utils.filters import NumberInFilter
 from iaso.models import ValidationWorkflow
 
 

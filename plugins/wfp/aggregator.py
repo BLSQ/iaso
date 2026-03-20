@@ -2,10 +2,13 @@ import json
 import logging
 
 from collections import defaultdict
+from functools import reduce
+from operator import or_
 
 from django.core.paginator import Paginator
 
 from plugins.wfp.common import ETL
+from plugins.wfp.models import MonthlyStatistics
 
 from .management.commands.south_sudan.Dhis2 import Dhis2
 
@@ -63,30 +66,59 @@ PAGE_SIZE = 5000
 
 class Aggregator:
     @staticmethod
-    def aggregate_monthly_data_by_org_unit(account, org_units_with_updated_data, programme_type):
-        page_size = PAGE_SIZE
-        paginator = Paginator(org_units_with_updated_data, page_size)
-        pages = paginator.page_range
-
-        logger.info(
-            f"Processing monthly data for {len(org_units_with_updated_data)} org units on {programme_type} across {paginator.num_pages} pages for {account}"
-        )
+    def reset_monthly_statistics(account, programme_type, org_units):
+        """
+        Deletes MonthlyStatistics records for a specific account, programme type,
+            and set of organizational units.
+        """
+        pages = org_units.page_range
+        logger.info(f"Cleaning monthly statistics data for {org_units.count} rows on {account}")
         for page in pages:
-            rows, page_info = ETL._retrieve_aggregated_journeys_data(
-                account,
-                programme_type,
-                org_units_with_updated_data,
-                page_size,
-                page,
-            )
-            org_unit_ids = page_info.object_list
-            logger.info(f"Processing data for {len(org_unit_ids)} org unit on page {page} for {account}")
+            current_page_org_units = list(org_units.page(page).object_list)
 
-            if rows is None:
+            if len(current_page_org_units) == 0:
                 continue
 
-            records = ETL._process_monthly_data(programme_type, rows, account)
-            logger.info(f"Processed {len(records)} records for {len(org_unit_ids)} org units.")
+            deleted_count, deleted = (
+                MonthlyStatistics.objects.filter(account=account, programme_type=programme_type)
+                .filter(reduce(or_, current_page_org_units))
+                .delete()
+            )
+            logger.info(f"Page {page}: Deleted {deleted_count} Monthly statistics records")
+
+    @staticmethod
+    def aggregate_monthly_data_by_org_unit(account, org_units, programme_type):
+        """
+        Aggregates monthly data by streaming org_units and period and store the result in monthly statistics table.
+        """
+        org_units_pages = org_units.page_range
+        page_size = PAGE_SIZE
+        for org_units_page in org_units_pages:
+            current_page_org_units = list(org_units.page(org_units_page).object_list)
+            paginator = Paginator(current_page_org_units, page_size)
+            pages = paginator.page_range
+
+            logger.info(
+                f"Processing monthly data for {len(current_page_org_units)} org units on {programme_type} across {paginator.num_pages} pages for {account}"
+            )
+            for page in pages:
+                logger.info(f"Processing data org unit on sub page {page}")
+
+                rows, page_info = ETL._retrieve_aggregated_journeys_data(
+                    account,
+                    programme_type,
+                    current_page_org_units,
+                    page_size,
+                    page,
+                )
+                org_unit_ids = page_info.object_list
+                logger.info(f"Processing data for {len(org_unit_ids)} org unit on page {page} for {account}")
+
+                if rows is None:
+                    continue
+
+                records = ETL._process_monthly_data(programme_type, rows, account)
+                logger.info(f"Processed {len(records)} records for {len(org_unit_ids)} org units.")
 
     @staticmethod
     def _aggregate_data_by_org_unit_and_period(rows):
@@ -141,6 +173,7 @@ class Aggregator:
         return data_values
 
     def aggregate_by_nutrition_program(self, account, org_unit_ids, external_credential):
+        """Group monthly statistics by org unit and period to make a payload to send to dhis2"""
         page_size = PAGE_SIZE
         paginator = Paginator(org_unit_ids, page_size)
         pages = paginator.page_range

@@ -105,13 +105,9 @@ def etl_ng(all_data=None):
     logger.info(
         f"----------------------------- Aggregating journey for {account} per org unit, admission and period(month and year) -----------------------------"
     )
-    org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
-    MonthlyStatistics.objects.filter(
-        account=account,
-        programme_type="U5",
-        org_unit_id__in=org_units_with_updated_data,
-    ).delete()
-    Aggregator.aggregate_monthly_data_by_org_unit(account, org_units_with_updated_data, "U5")
+    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(account, "U5", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(account, org_units, "U5")
 
     entity_type_pbwg_code = "nigeria_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
@@ -122,12 +118,8 @@ def etl_ng(all_data=None):
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.filter(
-        account=pbwg_account,
-        programme_type="PLW",
-        org_unit_id__in=org_units_with_updated_data,
-    ).delete()
-    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units_with_updated_data, "PLW")
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units, "PLW")
 
 
 @shared_task()
@@ -205,14 +197,10 @@ def etl_ssd(all_data=None):
 
     Under5().run(updated_beneficiaries, entity_type_u5_code, task_name)
 
-    logger.info(f"Aggregating Children under 5 journey (v2) for {child_account} per org unit, admission and period")
-    org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
-    MonthlyStatistics.objects.filter(
-        account=child_account,
-        programme_type="U5",
-        org_unit_id__in=org_units_with_updated_data,
-    ).delete()
-    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units_with_updated_data, "U5")
+    logger.info(f"Aggregating Children under 5 journey for {child_account} per org unit, admission and period")
+    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
 
     entity_type_pbwg_code = "ssd_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
@@ -221,14 +209,9 @@ def etl_ssd(all_data=None):
     Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
     Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
 
-    logger.info(f"Aggregating PBWG journey (v2) for {pbwg_account} per org unit, admission and period")
-    org_units_with_updated_data = etl_pbwg.get_org_unit_ids_with_updated_data(last_success_task_date)
-    MonthlyStatistics.objects.filter(
-        account=pbwg_account,
-        programme_type="PLW",
-        org_unit_id__in=org_units_with_updated_data,
-    ).delete()
-    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units_with_updated_data, "PLW")
+    logger.info(f"Aggregating PBWG journey for {pbwg_account} per org unit, admission and period")
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units, "PLW")
 
     Screening().run(child_account, last_success_task_date)
 
@@ -267,13 +250,9 @@ def etl_ethiopia(all_data=None):
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
-    MonthlyStatistics.objects.filter(
-        account=child_account,
-        programme_type="U5",
-        org_unit_id__in=org_units_with_updated_data,
-    ).delete()
-    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units_with_updated_data, "U5")
+    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
 
     entity_type_pbwg_code = "ethiopia_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
@@ -285,9 +264,5 @@ def etl_ethiopia(all_data=None):
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.filter(
-        account=pbwg_account,
-        programme_type="PLW",
-        org_unit_id__in=org_units_with_updated_data,
-    ).delete()
-    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units_with_updated_data, "PLW")
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units, "PLW")

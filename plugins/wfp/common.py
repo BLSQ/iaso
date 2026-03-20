@@ -19,6 +19,8 @@ import logging
 import traceback
 
 from datetime import date, datetime, timedelta
+from functools import reduce
+from operator import or_
 
 import sentry_sdk
 
@@ -26,7 +28,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
 from django.db.models import Case, CharField, Count, DateField, F, FloatField, Func, IntegerField, Q, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast, Concat, Extract, ExtractMonth, ExtractYear, Substr
+from django.db.models.functions import Cast, Coalesce, Concat, Extract, ExtractMonth, ExtractYear, Substr
 
 from iaso.models import Entity, EntityType, TaskLog
 from iaso.models.base import Instance
@@ -646,6 +648,21 @@ class ETL:
     def __init__(self, entity_type=None):
         self.entity_type = entity_type
 
+    def delete_beneficiaries(self, account_id):
+        deleted_count, deleted = Beneficiary.objects.filter(account=account_id).delete()
+        MonthlyStatistics.objects.filter(account=account_id).delete()
+        ScreeningData.objects.filter(account=account_id).delete()
+        Dhis2SyncResults.objects.filter(account=account_id).delete()
+
+        if deleted_count > 0:
+            logger.info(f"Deleted {deleted_count} Items")
+            logger.info(f"Deleted {deleted.get('wfp.Beneficiary', 0)} Beneficiaries")
+            logger.info(f"Deleted {deleted.get('wfp.Journey', 0)} Journeys")
+            logger.info(f"Deleted {deleted.get('wfp.Visit', 0)} Visits")
+            logger.info(f"Deleted {deleted.get('wfp.Step', 0)} Steps")
+        else:
+            logger.info("No beneficiaries found to delete.")
+
     def get_account(self):
         entity_type = EntityType.objects.select_related("account").filter(code=self.entity_type).first()
         return entity_type.account
@@ -1218,10 +1235,7 @@ class ETL:
     # Aggregating beneficiary journeys data by org unit and period(month and year extracted from visite date)
     # --------------------------------------------------------------------------------------------------------
     @staticmethod
-    def _retrieve_aggregated_journeys_data(
-        account, program_type, org_unit_with_updated_data, page_size=5000, page_number=1
-    ):
-        org_units = sorted(list(org_unit_with_updated_data))
+    def _retrieve_aggregated_journeys_data(account, program_type, org_units, page_size=5000, page_number=1):
         paginator = Paginator(org_units, page_size)
         current_page = paginator.get_page(page_number)
         current_page_org_units = current_page.object_list
@@ -1231,9 +1245,6 @@ class ETL:
             journey__programme_type=program_type,
             journey__beneficiary__account=account,
         ).select_related("journey", "org_unit")
-
-        if current_page_org_units is not None:
-            queryset = queryset.filter(org_unit_id__in=current_page_org_units)
 
         queryset = queryset.annotate(
             year=ExtractYear("journey__visit__date"),
@@ -1254,6 +1265,8 @@ class ETL:
                 output_field=CharField(),
             )
         )
+        if current_page_org_units is not None:
+            queryset = queryset.filter(reduce(or_, current_page_org_units))
 
         # Fields for Group By
         fields = [
@@ -1753,16 +1766,47 @@ class ETL:
         )
         return entities
 
-    def delete_beneficiaries(self):
-        deleted_count, deleted = Beneficiary.objects.all().delete()
-        MonthlyStatistics.objects.all().delete()
-        ScreeningData.objects.all().delete()
-        Dhis2SyncResults.objects.all().delete()
-
-        if deleted_count > 0:
-            logger.info(f"Deleted {deleted.get('wfp.Beneficiary', 0)} Beneficiaries")
-            logger.info(f"Deleted {deleted.get('wfp.Journey', 0)} Journeys")
-            logger.info(f"Deleted {deleted.get('wfp.Visit', 0)} Visits")
-            logger.info(f"Deleted {deleted.get('wfp.Step', 0)} Steps")
-        else:
-            logger.info("No beneficiaries found to delete.")
+    def get_org_unit_and_period_with_updated_data(self, updated_at=None):
+        visit_date = Coalesce(
+            Cast(KeyTextTransform("visit_date", "json"), DateField()),
+            Cast(KeyTextTransform("_visit_date", "json"), DateField()),
+            Cast(F("updated_at"), DateField()),
+            Cast(F("source_updated_at"), DateField()),
+            Cast(F("source_created_at"), DateField()),
+            Cast(F("created_at"), DateField()),
+        )
+        query_set = (
+            (
+                Instance.objects.filter(entity__entity_type__code=self.entity_type).annotate(
+                    year=Cast(ExtractYear(visit_date), CharField()),
+                    month=Cast(ExtractMonth(visit_date), CharField()),
+                    yearMonth=Concat(
+                        F("year"),
+                        Func(
+                            Cast(F("month"), CharField()),
+                            Value(2),
+                            Value("0"),
+                            function="LPAD",
+                        ),
+                        output_field=CharField(),
+                    ),
+                )
+            )
+            .exclude(deleted=True)
+            .exclude(entity__deleted_at__isnull=False)
+            .exclude(yearMonth__isnull=True)
+            .exclude(yearMonth="")
+        )
+        if updated_at is not None:
+            query_set = query_set.filter(updated_at__gte=updated_at)
+        query_set = (
+            query_set.values(
+                "org_unit_id",
+                "yearMonth",
+            )
+            .exclude(org_unit_id__isnull=True)
+            .order_by("org_unit_id")
+            .distinct()
+        )
+        group_org_unit_period = [Q(org_unit_id=row["org_unit_id"], period=row["yearMonth"]) for row in query_set]
+        return Paginator(group_org_unit_period, 5000)

@@ -1569,6 +1569,8 @@ class ETL:
                 u5_female_yellow=Sum("json_u5_female_yellow"),
                 u5_male_red=Sum("json_u5_male_red"),
                 u5_female_red=Sum("json_u5_female_red"),
+                u5_male_oedema=Sum("json_u5_male_oedema"),
+                u5_female_oedema=Sum("json_u5_female_oedema"),
                 pregnant_w_muac_gt_23=Sum("json_pregnant_w_muac_gt_23"),
                 pregnant_w_muac_lte_23=Sum("json_pregnant_w_muac_lte_23"),
                 lactating_w_muac_gt_23=Sum("json_lactating_w_muac_gt_23"),
@@ -1581,6 +1583,7 @@ class ETL:
 
     @staticmethod
     def screening_data(account, current_page_org_units):
+        """As the value type in dhis2 is INTEGER_ZERO_OR_POSITIVE we need to convert the value in integer"""
         queryset = (
             ScreeningData.objects.filter(account=account)
             .filter(reduce(or_, current_page_org_units))
@@ -1592,6 +1595,8 @@ class ETL:
                 u5_female_yellow=Cast(Coalesce(Sum("u5_female_yellow"), 0), IntegerField()),
                 u5_male_red=Cast(Coalesce(Sum("u5_male_red"), 0), IntegerField()),
                 u5_female_red=Cast(Coalesce(Sum("u5_female_red"), 0), IntegerField()),
+                u5_male_oedema=Cast(Coalesce(Sum("u5_male_oedema"), 0), IntegerField()),
+                u5_female_oedema=Cast(Coalesce(Sum("u5_female_oedema"), 0), IntegerField()),
                 pregnant_muac_lte_23=Cast(Coalesce(Sum("pregnant_w_muac_lte_23"), 0), IntegerField()),
                 lactating_muac_lte_23=Cast(Coalesce(Sum("lactating_w_muac_lte_23"), 0), IntegerField()),
                 pregnant_muac_gt_23=Cast(Coalesce(Sum("pregnant_w_muac_gt_23"), 0), IntegerField()),
@@ -1711,6 +1716,7 @@ class ETL:
                     "u5_male_green": screening.get("u5_male_green"),
                     "u5_male_yellow": screening.get("u5_male_yellow"),
                     "u5_male_red": screening.get("u5_male_red"),
+                    "u5_male_oedema": screening.get("u5_male_oedema"),
                 }
                 community_health_worker_values = {
                     "muac_under_11_5": monthlyStatistic["community_health_worker_muac_under_11_5_male"],
@@ -1722,6 +1728,7 @@ class ETL:
                     "u5_female_green": screening.get("u5_female_green"),
                     "u5_female_yellow": screening.get("u5_female_yellow"),
                     "u5_female_red": screening.get("u5_female_red"),
+                    "u5_female_oedema": screening.get("u5_female_oedema"),
                 }
                 community_health_worker_values = {
                     "muac_under_11_5": monthlyStatistic.get("community_health_worker_muac_under_11_5_female"),

@@ -23,6 +23,8 @@ SCREENING_FIELDS = [
     "u5_female_green",
     "u5_female_yellow",
     "u5_female_red",
+    "u5_female_oedema",
+    "u5_male_oedema",
     "muac_lte_23",
     "muac_gt_23",
 ]

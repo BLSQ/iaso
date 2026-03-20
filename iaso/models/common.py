@@ -26,20 +26,24 @@ class ValidationWorkflowArtefact(models.Model):
     def has_workflow(self, workflow):
         return self.validationnode_set.filter(node__workflow=workflow).exists()
 
-    def get_general_validation_status(self, workflow):
+    def get_general_validation_status(self, workflow=None):
         from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
         if self.validationnode_set.filter(
-            final=True, status=ValidationNodeStatus.ACCEPTED, node__workflow=workflow
+            final=True, status=ValidationNodeStatus.ACCEPTED, **{"node__workflow": workflow} if workflow else {}
         ).exists():
             return ValidationWorkflowArtefactStatus.APPROVED
 
-        if self.validationnode_set.filter(status=ValidationNodeStatus.REJECTED, node__workflow=workflow).exists():
+        if self.validationnode_set.filter(
+            status=ValidationNodeStatus.REJECTED, **{"node__workflow": workflow} if workflow else {}
+        ).exists():
             return ValidationWorkflowArtefactStatus.REJECTED
-        if self.validationnode_set.filter(status=ValidationNodeStatus.UNKNOWN, node__workflow=workflow).exists():
+        if self.validationnode_set.filter(
+            status=ValidationNodeStatus.UNKNOWN, **{"node__workflow": workflow} if workflow else {}
+        ).exists():
             return ValidationWorkflowArtefactStatus.PENDING
         if self.validationnode_set.filter(
-            final=False, status=ValidationNodeStatus.ACCEPTED, node__workflow=workflow
+            final=False, status=ValidationNodeStatus.ACCEPTED, **{"node__workflow": workflow} if workflow else {}
         ).exists():
             return ValidationWorkflowArtefactStatus.PENDING
 
@@ -60,7 +64,7 @@ class ValidationWorkflowArtefact(models.Model):
 
         return pks
 
-    def get_all_validation_nodes(self, workflow):
+    def get_all_validation_nodes(self, workflow=None):
         """
         Function to recursively get all validation nodes (including parent) and order them
         """
@@ -74,7 +78,9 @@ class ValidationWorkflowArtefact(models.Model):
         )
 
         return (
-            ValidationNode.objects.filter(node__workflow=workflow, instance_id__in=artefact_pks)
+            ValidationNode.objects.filter(
+                instance_id__in=artefact_pks, **{"node__workflow": workflow} if workflow else {}
+            )
             .annotate(_order=order)
             .order_by("-_order", "-created_at")
         )

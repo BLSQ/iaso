@@ -19,10 +19,11 @@ from django_filters import BaseInFilter, CharFilter
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet as BaseModelViewSet, ViewSet
+from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework_csv.renderers import CSVRenderer
 
 from hat.api_import.models import APIImport
@@ -258,7 +259,7 @@ class EtlPaginator(Paginator):
     max_page_size = 1000
 
 
-class ModelViewSet(BaseModelViewSet):
+class CustomPaginationListModelMixin(ListModelMixin):
     results_key = "results"
     # FIXME Contrary to name it remove result key if NOT paginated
     remove_results_key_if_paginated = False
@@ -300,6 +301,8 @@ class ModelViewSet(BaseModelViewSet):
             return Response({self.get_results_key(): serializer.data})
         return Response(serializer.data)
 
+
+class ProtectDestroyMixin(DestroyModelMixin):
     def perform_destroy(self, instance):
         """Handle ProtectedError (prevent deletion of instances when linked to protected models)"""
 
@@ -313,6 +316,12 @@ class ModelViewSet(BaseModelViewSet):
                 self.request.method,
                 f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )
+
+
+class ModelViewSet(
+    CustomPaginationListModelMixin, DestroyModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
+):
+    pass
 
 
 class EtlModelViewset(ModelViewSet):

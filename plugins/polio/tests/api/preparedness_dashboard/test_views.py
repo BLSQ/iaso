@@ -221,7 +221,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_score_raises_when_both_params_missing(self):
-
         response = self.client.get(self.SCORE_URL)
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
@@ -229,7 +228,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertIn("date", data)
 
     def test_score_raises_when_url_missing(self):
-
         response = self.client.get(self.SCORE_URL, {"date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
@@ -237,7 +235,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertNotIn("date", data)
 
     def test_score_raises_when_date_missing(self):
-
         response = self.client.get(self.SCORE_URL, {"url": 1})
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
@@ -264,7 +261,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_score_returns_empty_when_no_match(self):
-
         response = self.client.get(self.SCORE_URL, {"url": 999999, "date": "2030-01-01"})
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
 

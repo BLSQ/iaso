@@ -61,7 +61,9 @@ export const TeamTable: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { mutate: updateTeam } = useSaveTeam('edit', false);
-    const { mutate: updateUser } = useSaveProfile({showSuccessSnackBar: false});
+    const { mutate: updateUser } = useSaveProfile({
+        showSuccessSnackBar: false,
+    });
 
     const countTeams = useCallback(
         (subTeam: SubTeam) => {

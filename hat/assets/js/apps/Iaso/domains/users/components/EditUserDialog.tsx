@@ -302,7 +302,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                                     }
                                     setPhoneNumber={setPhoneNumber}
                                     setEmail={setEmail}
-                                    withPassword={false}
+                                    mode="edit"
                                 />
                             </Box>
                             {tab === 'permissions' && (

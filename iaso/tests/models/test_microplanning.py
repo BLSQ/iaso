@@ -1,5 +1,3 @@
-from django.db.models import ProtectedError
-
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Project, SourceVersion, Team
 from iaso.models.microplanning import Planning
 from iaso.test import APITestCase
@@ -133,28 +131,36 @@ class PlanningPipelineIntegrationTestCase(APITestCase):
         self.planning.refresh_from_db()
         self.assertEqual(self.planning.pipeline_uuids, test_uuids)
 
-    def test_target_org_unit_type_nullable(self):
-        """Test that target_org_unit_type can be null."""
-        self.assertIsNone(self.planning.target_org_unit_type)
+    def test_target_org_unit_types_empty_by_default(self):
+        """Test that target_org_unit_types is empty by default."""
+        self.assertEqual(list(self.planning.target_org_unit_types.all()), [])
 
-        self.planning.target_org_unit_type = None
-        self.planning.save()
-        self.planning.refresh_from_db()
-        self.assertIsNone(self.planning.target_org_unit_type)
-
-    def test_target_org_unit_type_assignment(self):
-        """Test assigning target_org_unit_type to planning."""
+    def test_target_org_unit_types_assignment(self):
+        """Test assigning target_org_unit_types to planning."""
         target_type = OrgUnitType.objects.create(name="Health Post")
         target_type.projects.add(self.project)
 
-        self.planning.target_org_unit_type = target_type
-        self.planning.save()
+        self.planning.target_org_unit_types.set([target_type])
 
         self.planning.refresh_from_db()
-        self.assertEqual(self.planning.target_org_unit_type, target_type)
-        self.assertEqual(self.planning.target_org_unit_type.name, "Health Post")
+        self.assertIn(target_type, self.planning.target_org_unit_types.all())
+        self.assertEqual(self.planning.target_org_unit_types.first().name, "Health Post")
 
-    def test_target_org_unit_type_reverse_relation(self):
+    def test_target_org_unit_types_multiple(self):
+        """Test assigning multiple target_org_unit_types to planning."""
+        type1 = OrgUnitType.objects.create(name="Health Post")
+        type1.projects.add(self.project)
+        type2 = OrgUnitType.objects.create(name="Clinic")
+        type2.projects.add(self.project)
+
+        self.planning.target_org_unit_types.set([type1, type2])
+
+        self.planning.refresh_from_db()
+        self.assertEqual(self.planning.target_org_unit_types.count(), 2)
+        self.assertIn(type1, self.planning.target_org_unit_types.all())
+        self.assertIn(type2, self.planning.target_org_unit_types.all())
+
+    def test_target_org_unit_types_reverse_relation(self):
         """Test the reverse relation from OrgUnitType to Planning."""
         target_type = OrgUnitType.objects.create(name="Clinic")
         target_type.projects.add(self.project)
@@ -164,34 +170,32 @@ class PlanningPipelineIntegrationTestCase(APITestCase):
             project=self.project,
             team=self.team,
             org_unit=self.org_unit,
-            target_org_unit_type=target_type,
             created_by=self.user,
         )
+        planning1.target_org_unit_types.set([target_type])
+
         planning2 = Planning.objects.create(
             name="Planning 2",
             project=self.project,
             team=self.team,
             org_unit=self.org_unit,
-            target_org_unit_type=target_type,
             created_by=self.user,
         )
+        planning2.target_org_unit_types.set([target_type])
 
         target_plannings = target_type.target_plannings.all()
         self.assertEqual(target_plannings.count(), 2)
         self.assertIn(planning1, target_plannings)
         self.assertIn(planning2, target_plannings)
 
-    def test_target_org_unit_type_protect_on_delete(self):
-        """Test that deleting an OrgUnitType with plannings raises ProtectedError."""
-
+    def test_target_org_unit_types_cleared_on_org_unit_type_delete(self):
+        """Test that M2M relation is cleared when OrgUnitType is deleted."""
         target_type = OrgUnitType.objects.create(name="Hospital")
         target_type.projects.add(self.project)
 
-        self.planning.target_org_unit_type = target_type
-        self.planning.save()
+        self.planning.target_org_unit_types.set([target_type])
 
-        with self.assertRaises(ProtectedError):
-            target_type.delete()
+        target_type.delete()
 
         self.planning.refresh_from_db()
-        self.assertEqual(self.planning.target_org_unit_type, target_type)
+        self.assertEqual(self.planning.target_org_unit_types.count(), 0)

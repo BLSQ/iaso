@@ -85,5 +85,6 @@ export const useGetNode = ({
                 nodeSlug,
                 workflowSlug,
             }),
+        options: { enabled: Boolean(nodeSlug) },
     });
 };

@@ -561,6 +561,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#iaso.models.entity.Entity.get_latest_instance_created_at" class="md-nav__link">
+    get_latest_instance_created_at()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iaso.models.entity.Entity.get_pending_duplicate_ids" class="md-nav__link">
+    get_pending_duplicate_ids()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#iaso.models.entity.Entity.soft_delete_with_instances_and_pending_duplicates" class="md-nav__link">
     soft_delete_with_instances_and_pending_duplicates()
   </a>
@@ -842,6 +856,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#iaso.models.entity.Entity.get_latest_instance_created_at" class="md-nav__link">
+    get_latest_instance_created_at()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iaso.models.entity.Entity.get_pending_duplicate_ids" class="md-nav__link">
+    get_pending_duplicate_ids()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#iaso.models.entity.Entity.soft_delete_with_instances_and_pending_duplicates" class="md-nav__link">
     soft_delete_with_instances_and_pending_duplicates()
   </a>
@@ -955,7 +983,15 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
 <span class="normal">226</span>
@@ -1050,7 +1086,21 @@ submission</p>
 <span class="normal">315</span>
 <span class="normal">316</span>
 <span class="normal">317</span>
-<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An entity represents a physical object or person with a known Entity Type</span>
 
 <span class="sd">    Contrary to forms, they are not linked to a specific OrgUnit.</span>
@@ -1146,6 +1196,28 @@ submission</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">duplicates2</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">validation_status</span><span class="o">=</span><span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">get_pending_duplicate_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the id list of related pending duplicate entities.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates1&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates2&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates2</span><span class="p">)))</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">e1qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates1</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">e2qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates2</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">e1qs</span><span class="p">,</span> <span class="n">e2qs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">duplicate</span><span class="o">.</span><span class="n">validation_status</span> <span class="o">==</span> <span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">:</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_latest_instance_created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the datetime of the last created instance for this entity.&quot;&quot;&quot;</span>
+        <span class="n">instance_dates</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">saved_at</span>
+            <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">saved_at</span> <span class="o">:=</span> <span class="n">instance</span><span class="o">.</span><span class="n">source_created_at</span> <span class="ow">or</span> <span class="n">instance</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">instance_dates</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
         </details>
 
@@ -1160,6 +1232,88 @@ submission</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="iaso.models.entity.Entity.get_latest_instance_created_at" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_latest_instance_created_at</span><span class="p">()</span></code>
+
+<a href="#iaso.models.entity.Entity.get_latest_instance_created_at" class="headerlink" title="Permanent link">#</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Retrieve the datetime of the last created instance for this entity.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>iaso/models/entity.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_latest_instance_created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve the datetime of the last created instance for this entity.&quot;&quot;&quot;</span>
+    <span class="n">instance_dates</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">saved_at</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">saved_at</span> <span class="o">:=</span> <span class="n">instance</span><span class="o">.</span><span class="n">source_created_at</span> <span class="ow">or</span> <span class="n">instance</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">instance_dates</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="iaso.models.entity.Entity.get_pending_duplicate_ids" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_pending_duplicate_ids</span><span class="p">()</span></code>
+
+<a href="#iaso.models.entity.Entity.get_pending_duplicate_ids" class="headerlink" title="Permanent link">#</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Retrieve the id list of related pending duplicate entities.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>iaso/models/entity.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_pending_duplicate_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve the id list of related pending duplicate entities.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates1&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pending_duplicates2&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_duplicates2</span><span class="p">)))</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">e1qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates1</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">e2qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicates2</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">duplicate</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">e1qs</span><span class="p">,</span> <span class="n">e2qs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">duplicate</span><span class="o">.</span><span class="n">validation_status</span> <span class="o">==</span> <span class="n">ValidationStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">duplicate</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -1180,7 +1334,15 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">296</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
 <span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
@@ -1194,15 +1356,7 @@ submission</p>
 <span class="normal">307</span>
 <span class="normal">308</span>
 <span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method does a proper soft-deletion of the entity:</span>
 <span class="sd">    - soft delete the entity</span>
@@ -1260,8 +1414,7 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
-<span class="normal"> 45</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 45</span>
 <span class="normal"> 46</span>
 <span class="normal"> 47</span>
 <span class="normal"> 48</span>
@@ -1335,7 +1488,8 @@ submission</p>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
-<span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="normal">119</span>
+<span class="normal">120</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)&quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>  <span class="c1"># Example: &quot;Child under 5&quot;</span>
@@ -1452,8 +1606,7 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 88</span>
-<span class="normal"> 89</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 89</span>
 <span class="normal"> 90</span>
 <span class="normal"> 91</span>
 <span class="normal"> 92</span>
@@ -1483,7 +1636,8 @@ submission</p>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
-<span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_list_view_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="normal">119</span>
+<span class="normal">120</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_list_view_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fetch the fields listed in `fields_list_view` from the reference form.</span>
 

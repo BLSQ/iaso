@@ -41,7 +41,7 @@ class EntityExportSerializer(serializers.ModelSerializer):
         if hasattr(obj, "last_saved_instance"):
             result = obj.last_saved_instance  # annotated value
         else:
-            result = obj.latest_instance_created_at
+            result = obj.get_latest_instance_created_at()
 
         return result.strftime(EXPORTS_DATETIME_FORMAT) if result else ""
 
@@ -152,10 +152,10 @@ class EntityListSerializer(serializers.ModelSerializer):
         if hasattr(obj, "last_saved_instance"):
             return obj.last_saved_instance  # annotated value
 
-        return obj.latest_instance_created_at
+        return obj.get_latest_instance_created_at()
 
     def get_has_duplicates(self, obj):
-        return bool(obj.pending_duplicate_ids)
+        return bool(obj.get_pending_duplicate_ids())
 
     def get_name(self, obj):
         return obj.attributes and obj.attributes.json and obj.attributes.json.get("name")
@@ -196,7 +196,7 @@ class EntitySerializer(serializers.ModelSerializer):
     submitter = serializers.SerializerMethodField()
     org_unit = serializers.SerializerMethodField()
     duplicates = serializers.ListField(
-        source="pending_duplicate_ids", child=serializers.IntegerField(), read_only=True, default=[]
+        source="get_pending_duplicate_ids", child=serializers.IntegerField(), read_only=True, default=[]
     )
     nfc_cards = serializers.SerializerMethodField()
 

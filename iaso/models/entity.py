@@ -309,8 +309,7 @@ class Entity(SoftDeletableModel):
 
         return self
 
-    @property
-    def pending_duplicate_ids(self):
+    def get_pending_duplicate_ids(self):
         """Retrieve the id list of related pending duplicate entities."""
         results = set()
         e1qs = self.duplicates1.all()
@@ -320,8 +319,7 @@ class Entity(SoftDeletableModel):
                 results.add(duplicate.id)
         return list(results)
 
-    @property
-    def latest_instance_created_at(self):
+    def get_latest_instance_created_at(self):
         """Retrieve the datetime of the last created instance for this entity."""
         instance_dates = (
             saved_at

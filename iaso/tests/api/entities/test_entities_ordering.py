@@ -43,8 +43,9 @@ class WebEntityOrderingAPITestCase(EntityAPITestCase):
         self.entity_3.created_at = base_time  # Newest
         self.entity_3.save()
 
-    def test_ordering_default(self):
         self.client.force_authenticate(self.yoda)
+
+    def test_ordering_default(self):
         response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
 
@@ -56,8 +57,6 @@ class WebEntityOrderingAPITestCase(EntityAPITestCase):
         self.assertEqual(result[2]["id"], self.entity_1.id)
 
     def test_ordering_by_standard_model_field(self):
-        self.client.force_authenticate(self.yoda)
-
         # Test ascending
         response = self.client.get("/api/entities/?order=name", format="json")
         result = response.json()["result"]
@@ -71,8 +70,6 @@ class WebEntityOrderingAPITestCase(EntityAPITestCase):
         self.assertEqual(result[2]["id"], self.entity_3.id)  # Giraffe
 
     def test_ordering_by_dynamic_json_attribute(self):
-        self.client.force_authenticate(self.yoda)
-
         # Order by a key from the entity attributes json
         response = self.client.get("/api/entities/?order=age", format="json")
         result = response.json()["result"]
@@ -84,8 +81,6 @@ class WebEntityOrderingAPITestCase(EntityAPITestCase):
 
     def test_ordering_by_attributes_span(self):
         """Test ordering spanning relations (attributes__org_unit__name)."""
-        self.client.force_authenticate(self.yoda)
-
         response = self.client.get("/api/entities/?order=attributes__org_unit__name,-created_at", format="json")
         result = response.json()["result"]
 

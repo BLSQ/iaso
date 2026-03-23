@@ -11,6 +11,7 @@ from rest_framework import permissions, renderers, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 
 from hat.audit.models import ENTITY_API
 from iaso.api.common import (
@@ -105,7 +106,11 @@ class EntityViewSet(ModelViewSet):
     def _requested_ordering_fields(self):
         """Access the raw ordering fields from the request."""
 
-        order_param = self.request.query_params.get("order_columns") or self.request.query_params.get("order") or ""
+        order_param = (
+            self.request.query_params.get("order_columns")
+            or self.request.query_params.get(api_settings.ORDERING_PARAM)
+            or ""
+        )
         return {field.strip().lstrip("-") for field in order_param.split(",") if field.strip()}
 
     def get_queryset(self):
@@ -217,7 +222,9 @@ class EntityViewSet(ModelViewSet):
 
         # Handle streaming responses
 
-        queryset = self.filter_queryset(self.get_queryset()).order_by("-id")
+        queryset = self.filter_queryset(self.get_queryset())
+        # reset ordering for exports to an indexed column to ensure stable performance
+        queryset = queryset.order_by("-id")
 
         def data_iterator(queryset):
             context = self.get_serializer_context()

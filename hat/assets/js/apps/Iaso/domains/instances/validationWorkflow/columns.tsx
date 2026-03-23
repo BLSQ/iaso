@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 import React from 'react';
-import { IconButton, Setting, useSafeIntl } from 'bluesquare-components';
+import {
+    IconButton,
+    Setting,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
@@ -35,7 +40,7 @@ export const useWorkflowsTableColumns = () => {
                 Cell: DateCell,
             },
             {
-                Header: formatMessage(MESSAGES.created_at),
+                Header: formatMessage(MESSAGES.forms),
                 id: 'formCount',
                 accessor: 'formCount',
                 Cell: NumberCell,
@@ -52,14 +57,13 @@ export const useWorkflowsTableColumns = () => {
                 id: 'createdBy',
                 accessor: 'createdBy',
                 sortable: true,
-                Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.updated_by),
                 id: 'updatedBy',
                 accessor: 'updatedBy',
                 sortable: true,
-                Cell: DateCell,
+                Cell: ({ value }) => value ?? textPlaceholder,
             },
         ];
         if (userHasOneOfPermissions([SUBMISSIONS_UPDATE, SUBMISSIONS], user)) {
@@ -72,16 +76,18 @@ export const useWorkflowsTableColumns = () => {
                     return (
                         <>
                             <IconButton
-                                tooltipMessage={MESSAGES.see}
-                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.edit}
+                                icon="edit"
                                 url={`/${baseUrls.instanceValidationDetail}/slug/${settings.row.original.slug}`}
                             />
                             <DeleteModal
+                                key={settings.row.original.slug}
+                                type="icon"
                                 titleMessage={MESSAGES.deleteWorkflow}
                                 onConfirm={() =>
                                     deleteWorkflow(settings.row.original.slug)
                                 }
-                                type="icon"
+                                backdropClick
                             />
                         </>
                     );
@@ -152,6 +158,8 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
                                 iconProps={{}}
                             />
                             <DeleteModal
+                                key={`${workFlowSlug}${value}`}
+                                type="icon"
                                 titleMessage={MESSAGES.deleteNodeQuestion}
                                 onConfirm={() =>
                                     deleteNode({
@@ -159,7 +167,7 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
                                         nodeSlug: value,
                                     })
                                 }
-                                type="icon"
+                                backdropClick
                             />
                         </>
                     );

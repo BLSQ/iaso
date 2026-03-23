@@ -18,7 +18,7 @@ class ValidationWorkflowListFilter(FilterSet):
 
 class MobileValidationWorkflowListFilter(FilterSet):
     last_sync = django_filters.IsoDateTimeFilter(method="filter_last_sync")
-    app_id = django_filters.CharFilter(field_name="projects__app_id")
+    app_id = django_filters.CharFilter(field_name="project__app_id", distinct=True)
 
     class Meta:
         model = Instance
@@ -29,5 +29,5 @@ class MobileValidationWorkflowListFilter(FilterSet):
         Filter by last updated for the instance and last updated for the history.
         """
         if value:
-            return queryset.filter(Q(updated_at__gte=value) | Q(validationnode__updated_at__gte=value))
-        return queryset
+            return queryset.filter(Q(updated_at__gte=value) | Q(validationnode__updated_at__gte=value)).distinct()
+        return queryset.distinct()

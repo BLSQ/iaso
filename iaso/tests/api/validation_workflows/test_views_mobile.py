@@ -1,5 +1,7 @@
 import uuid
 
+from datetime import datetime
+
 from django.urls import reverse
 from rest_framework import status
 
@@ -14,6 +16,7 @@ from iaso.test import APITestCase
 class MobileValidationWorkflowAPITestCase(APITestCase):
     def setUp(self):
         self.account = Account.objects.create(name="account")
+        self.other_account = Account.objects.create(name="account2")
 
         self.john_doe = self.create_user_with_profile(
             username="john.doe", account=self.account, first_name="John", last_name="Doe"
@@ -21,6 +24,10 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.john_wick = self.create_user_with_profile(
             username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+        )
+
+        self.jane_doe = self.create_user_with_profile(
+            username="jane.doe", account=self.other_account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
         )
 
         # setup the validation workflow
@@ -42,11 +49,23 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         )
         self.third_node.previous_node_templates.add(self.second_node)
         self.form = Form.objects.create(name="Form")
+        self.other_form = Form.objects.create(name="Form 2")
+
+        self.other_project = Project.objects.create(account=self.other_account, app_id="1.2")
+        self.other_project.forms.add(self.other_form)
+
         self.project = Project.objects.create(account=self.account, app_id="1.1")
+        self.project.forms.add(self.form)
 
         self.instance = self.create_form_instance(
             form=self.form,
             project=self.project,
+            uuid=str(uuid.uuid4()),
+        )
+
+        self.other_instance = self.create_form_instance(
+            form=self.other_form,
+            project=self.other_project,
             uuid=str(uuid.uuid4()),
         )
 
@@ -80,19 +99,138 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             i += 1
 
     def test_permissions(self):
-        pass
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.john_doe)
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_is_paginated(self):
-        pass
+        instance = self.create_form_instance(
+            form=self.form,
+            project=self.project,
+            uuid=str(uuid.uuid4()),
+        )
 
-    def test_filter(self):
-        pass
+        self.client.force_authenticate(self.john_wick)
+
+        self.setup_start()
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, instance)
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=2, paginated=True)
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"limit": 1})
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+    def test_filter_app_id(self):
+        self.setup_start()
+
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "xxxx"})
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "1.1"})
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+    def test_filter_last_sync(self):
+        self.setup_start()
+
+        self.assertGreater(
+            self.instance.get_next_pending_nodes(self.validation_workflow).first().updated_at, self.instance.updated_at
+        )
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.get(
+            reverse("mobile-validation-workflows-list"), data={"last_sync": datetime.now().isoformat()}
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
+
+        res = self.client.get(
+            reverse("mobile-validation-workflows-list"), data={"last_sync": self.instance.updated_at.isoformat()}
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        res = self.client.get(
+            reverse("mobile-validation-workflows-list"),
+            data={
+                "last_sync": self.instance.get_next_pending_nodes(self.validation_workflow)
+                .first()
+                .updated_at.isoformat()
+            },
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
 
     def test_should_not_contain_instances_where_form_are_soft_deleted(self):
-        pass
+        self.client.force_authenticate(self.john_wick)
+
+        self.setup_start()
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        self.form.delete()
+
+        self.form.refresh_from_db()
+
+        self.assertIsNotNone(self.form.deleted_at)
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
 
     def test_should_only_contain_instances_related_to_account(self):
-        pass
+        self.client.force_authenticate(self.john_wick)
+
+        self.setup_start()
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        self.assertEqual(res_data["results"][0]["instance_id"], self.instance.uuid)
+
+        self.client.logout()
+        self.client.force_authenticate(self.jane_doe)
+
+        ValidationWorkflowEngine.start(self.validation_workflow, self.jane_doe, self.other_instance)
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        self.assertEqual(res_data["results"][0]["instance_id"], self.other_instance.uuid)
 
     def test_should_only_contain_instances_with_validation_process(self):
         self.client.force_authenticate(self.john_wick)

@@ -102,7 +102,7 @@ ASSISTANCE_FORMS = frozenset(
         "ethiopia_child_assistance_follow_up",
     ]
 )
-
+EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
 
 # ---------------------------------------------------------------------------
 # Field extraction helpers
@@ -1637,6 +1637,8 @@ class ETL:
                 "dhis2_id",
                 "target_group",
             )
+            .filter(target_group__isnull=False, dhis2_id__isnull=False)
+            .exclude(nutrition_programme__in=EXCLUDED_PROGRAMMES)
             .annotate(
                 orgUnitId=F("org_unit__id"),
                 new_case=Sum("admission_type_new_case"),
@@ -1656,35 +1658,37 @@ class ETL:
                 whz_score_3=Sum("whz_score_3"),
                 whz_score_3_2=Sum("whz_score_3_2"),
                 oedema=Sum("oedema"),
-                community_health_worker_muac_under_11_5_male=Sum(
-                    "community_health_worker_muac_under_11_5", filter=Q(target_group="Male")
-                ),
-                community_health_worker_muac_under_11_5_female=Sum(
-                    "community_health_worker_muac_under_11_5", filter=Q(target_group="Female")
-                ),
-                community_health_worker_muac_11_5_12_4_male=Sum(
-                    "community_health_worker_muac_11_5_12_4", filter=Q(target_group="Male")
-                ),
-                community_health_worker_muac_11_5_12_4_female=Sum(
-                    "community_health_worker_muac_11_5_12_4", filter=Q(target_group="Female")
-                ),
-                community_health_worker_oedema_male=Sum(
-                    "community_health_worker_oedema", filter=Q(target_group="Male")
-                ),
-                community_health_worker_oedema_female=Sum(
-                    "community_health_worker_oedema", filter=Q(target_group="Female")
-                ),
                 community_health_worker_muac_under_23_pregnant=Sum(
-                    "community_health_worker_muac_under_23", filter=Q(target_group="Pregnant")
+                    "community_health_worker_muac_under_23", filter=Q(programme_type="PLW", target_group="pregnant")
                 ),
                 community_health_worker_muac_above_23_pregnant=Sum(
-                    "community_health_worker_muac_above_23", filter=Q(target_group="Pregnant")
+                    "community_health_worker_muac_above_23", filter=Q(programme_type="PLW", target_group="pregnant")
                 ),
                 community_health_worker_muac_under_23_breastfeeding=Sum(
-                    "community_health_worker_muac_under_23", filter=Q(target_group="Breastfeeding")
+                    "community_health_worker_muac_under_23",
+                    filter=Q(programme_type="PLW", target_group="breastfeeding"),
                 ),
                 community_health_worker_muac_above_23_breastfeeding=Sum(
-                    "community_health_worker_muac_above_23", filter=Q(target_group="Breastfeeding")
+                    "community_health_worker_muac_above_23",
+                    filter=Q(programme_type="PLW", target_group="breastfeeding"),
+                ),
+                community_health_worker_muac_under_11_5_male=Sum(
+                    "community_health_worker_muac_under_11_5", filter=Q(programme_type="U5", target_group="Male")
+                ),
+                community_health_worker_muac_under_11_5_female=Sum(
+                    "community_health_worker_muac_under_11_5", filter=Q(programme_type="U5", target_group="Female")
+                ),
+                community_health_worker_muac_11_5_12_4_male=Sum(
+                    "community_health_worker_muac_11_5_12_4", filter=Q(programme_type="U5", target_group="Male")
+                ),
+                community_health_worker_muac_11_5_12_4_female=Sum(
+                    "community_health_worker_muac_11_5_12_4", filter=Q(programme_type="U5", target_group="Female")
+                ),
+                community_health_worker_oedema_male=Sum(
+                    "community_health_worker_oedema", filter=Q(programme_type="U5", target_group="Male")
+                ),
+                community_health_worker_oedema_female=Sum(
+                    "community_health_worker_oedema", filter=Q(programme_type="U5", target_group="Female")
                 ),
                 cured=Sum("exit_type_cured"),
                 death=Sum("exit_type_death"),
@@ -1692,13 +1696,6 @@ class ETL:
                 non_respondent=Sum("exit_type_non_respondent"),
                 transfer_in_from_other_tsfp=Sum("exit_type_transfer_in_from_other_tsfp"),
                 total_beneficiaries=Sum("total_beneficiaries"),
-            )
-            .filter(target_group__isnull=False, dhis2_id__isnull=False)
-            .exclude(
-                Q(nutrition_programme__isnull=True)
-                | Q(nutrition_programme="")
-                | Q(nutrition_programme="Not Eligible")
-                | Q(nutrition_programme="OTP - Under 6")
             )
             .order_by("org_unit", "year", "month", "period")
         )
@@ -1708,53 +1705,55 @@ class ETL:
         for monthlyStatistic in monthlyStatistics:
             key = (monthlyStatistic["org_unit__id"], monthlyStatistic["period"])
             screening = screening_data.get(key, {})
-            screening_values = {}
             community_health_worker_values = {}
             target_group = monthlyStatistic["target_group"]
             if target_group == "Male":
-                screening_values = {
-                    "u5_male_green": screening.get("u5_male_green"),
-                    "u5_male_yellow": screening.get("u5_male_yellow"),
-                    "u5_male_red": screening.get("u5_male_red"),
-                    "u5_male_oedema": screening.get("u5_male_oedema"),
-                }
                 community_health_worker_values = {
                     "muac_under_11_5": monthlyStatistic["community_health_worker_muac_under_11_5_male"],
                     "muac_11_5_12_4": monthlyStatistic["community_health_worker_muac_11_5_12_4_male"],
                     "oedema": monthlyStatistic["community_health_worker_oedema_male"],
                 }
             elif target_group == "Female":
-                screening_values = {
-                    "u5_female_green": screening.get("u5_female_green"),
-                    "u5_female_yellow": screening.get("u5_female_yellow"),
-                    "u5_female_red": screening.get("u5_female_red"),
-                    "u5_female_oedema": screening.get("u5_female_oedema"),
-                }
                 community_health_worker_values = {
                     "muac_under_11_5": monthlyStatistic.get("community_health_worker_muac_under_11_5_female"),
                     "muac_11_5_12_4": monthlyStatistic.get("community_health_worker_muac_11_5_12_4_female"),
                     "oedema": monthlyStatistic.get("community_health_worker_oedema_female"),
                 }
             elif target_group == "pregnant":
-                screening_values = {
-                    "muac_lte_23": screening.get("pregnant_muac_lte_23"),
-                    "muac_gt_23": screening.get("pregnant_w_muac_gt_23"),
-                }
                 community_health_worker_values = {
-                    "muac_under_23": monthlyStatistic.get("community_health_worker_muac_under_23_pregnant"),
+                    "community_health_worker_muac_under_23_pregnant": monthlyStatistic.get(
+                        "community_health_worker_muac_under_23_pregnant"
+                    ),
                 }
-
             elif target_group == "breastfeeding":
-                screening_values = {
-                    "muac_lte_23": screening.get("lactating_muac_lte_23"),
-                    "muac_gt_23": screening.get("lactating_w_muac_gt_23"),
-                }
                 community_health_worker_values = {
-                    "muac_under_23": monthlyStatistic.get("community_health_worker_muac_under_23_breastfeeding"),
+                    "community_health_worker_muac_under_23_breastfeeding": monthlyStatistic.get(
+                        "community_health_worker_muac_under_23_breastfeeding"
+                    ),
                 }
-            monthlyStatistic["screening_reporting"] = {f"{target_group}": screening_values}
+            monthlyStatistic["screening_reporting"] = {
+                "Male": {
+                    "u5_male_green": screening.get("u5_male_green"),
+                    "u5_male_yellow": screening.get("u5_male_yellow"),
+                    "u5_male_red": screening.get("u5_male_red"),
+                    "u5_male_oedema": screening.get("u5_male_oedema"),
+                },
+                "Female": {
+                    "u5_female_green": screening.get("u5_female_green"),
+                    "u5_female_yellow": screening.get("u5_female_yellow"),
+                    "u5_female_red": screening.get("u5_female_red"),
+                    "u5_female_oedema": screening.get("u5_female_oedema"),
+                },
+                "pregnant": {
+                    "muac_lte_23": screening.get("pregnant_muac_lte_23"),
+                    "muac_gt_23": screening.get("pregnant_muac_gt_23"),
+                },
+                "breastfeeding": {
+                    "muac_lte_23": screening.get("lactating_muac_lte_23"),
+                    "muac_gt_23": screening.get("lactating_muac_gt_23"),
+                },
+            }
             monthlyStatistic["community_health_worker"] = {f"{target_group}": community_health_worker_values}
-
             merged_data.append(monthlyStatistic)
         return merged_data, current_page
 

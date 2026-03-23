@@ -427,13 +427,13 @@
         "pregnant": {
             "community_health_worker_muac_under_23_pregnant": {
                 "dataElement": "bEEy3eKKM7Q",
-                "categoryOptionCombo": "wegLiifhZWx"
+                "categoryOptionCombo": "xdEOX113CTu"
             }
         },
         "breastfeeding": {
             "community_health_worker_muac_under_23_breastfeeding": {
                 "dataElement": "bEEy3eKKM7Q",
-                "categoryOptionCombo": "xdEOX113CTu"
+                "categoryOptionCombo": "wegLiifhZWx"
             }
         }
     }

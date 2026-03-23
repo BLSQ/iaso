@@ -1220,6 +1220,8 @@
     "iaso.permissions.iaso_snt_settings_permissions_tooltip": "Permet de voir et de modifier la configuration générale",
     "iaso.permissions.iaso_stock_management": "Gestion des stocks",
     "iaso.permissions.iaso_stock_management_tooltip": "Permet d'accéder à tous les aspects de la gestion de stocks (équipement médical, fournitures, médicaments...)",
+    "iaso.permissions.iaso_validation_workflows": "Workflows de validation",
+    "iaso.permissions.iaso_validation_workflows_tooltip": "Gérer les workflows de validation: créer, éditer et effacer les workflows de validation",
     "iaso.permissions.iaso_workflows": "Workflows",
     "iaso.permissions.iaso_write_sources": "Sources de données géo - Lecture et écriture",
     "iaso.permissions.links": "Liens entre sources de données géo",

@@ -138,13 +138,13 @@ export const instancesPath = {
 export const instancesValidationPath = {
     baseUrl: baseUrls.instanceValidation,
     routerUrl: `${baseUrls.instanceValidation}/*`,
-    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
+    permissions: [Permission.VALIDATION_WORKFLOWS],
     element: <SubmissionValidation />,
 };
 export const instanceValidationDetailPath = {
     baseUrl: baseUrls.instanceValidationDetail,
     routerUrl: `${baseUrls.instanceValidationDetail}/*`,
-    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
+    permissions: [Permission.VALIDATION_WORKFLOWS],
     element: <WorkflowConfiguration />,
 };
 

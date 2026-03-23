@@ -94,6 +94,7 @@ build_scripts/deploy.zip
 #!.elasticbeanstalk/*.global.yml
 .elasticbeanstalk/config.yml
 .elasticbeanstalk/logs
+.elasticbeanstalk/app_versions
 
 ### Built JS ###
 hat/assets/bundles/

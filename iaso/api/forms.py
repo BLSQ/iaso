@@ -231,7 +231,6 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     def update(self, form, validated_data):
         original = copy(form)
-        print("VALIDATED DATA", validated_data)
         form = super(FormSerializer, self).update(form, validated_data)
         log_modification(original, form, FORM_API, user=self.context["request"].user)
         return form

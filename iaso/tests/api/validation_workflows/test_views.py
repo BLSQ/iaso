@@ -232,9 +232,9 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("validationworkflows-dropdown"))
         res_json = self.assertJSONResponse(res, 200)
-        self.assertFalse(any(item["value"] == "out-of-account" for item in res_json))
+        self.assertFalse(any(item["label"] == "out-of-account" for item in res_json))
 
-        self.assertTrue(any(item["value"] == "name-1" for item in res_json))
+        self.assertTrue(any(item["label"] == "name-1" for item in res_json))
 
     def test_search_filters(self):
         self.client.force_authenticate(self.john_wick)
@@ -359,7 +359,7 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
         res_json = self.assertJSONResponse(res, 200)
         self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 
-        self.assertIn({"label": "name-0", "value": "name-0"}, res_json)
+        self.assertIn({"label": "name-0", "value": ValidationWorkflow.objects.get(slug="name-0").id}, res_json)
 
 
 class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
@@ -434,21 +434,6 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
             username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
         )
 
-    def test_validation(self):
-        self.client.force_authenticate(self.john_wick)
-
-        with self.subTest("name and forms are required"):
-            res = self.client.post(reverse("validationworkflows-list"), data={})
-            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-
-            self.assertHasError(res_data, "name", "This field is required.")
-            self.assertHasError(res_data, "forms", "This field is required.")
-
-        with self.subTest("forms that don't belong to account should raise an error"):
-            res = self.client.post(reverse("validationworkflows-list"), data={"forms": [self.form_3.pk]})
-            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(res_data, "forms", f'Invalid pk "{self.form_3.pk}" - object does not exist.')
-
     def test_happy_flow(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
@@ -472,9 +457,6 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertEqual(validation_workflow.name, "Validation workflow")
         self.assertEqual(validation_workflow.account, self.account)
         self.assertEqual(validation_workflow.created_by, self.john_wick)
-        self.assertCountEqual(
-            list(validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk, self.form_2.pk]
-        )
 
     def test_permissions(self):
         res = self.client.post(reverse("validationworkflows-list"))
@@ -492,13 +474,12 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(5):
             res = self.client.post(
                 reverse("validationworkflows-list"),
                 data={
                     "name": "Validation workflow",
                     "description": "Some description",
-                    "forms": [self.form.pk, self.form_2.pk],
                 },
             )
             res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)

@@ -355,7 +355,6 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        print(instance_data)
         self.assertEqual(len(instance_data["history"]), 2)
 
         for history_item in instance_data["history"]:

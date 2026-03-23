@@ -9,7 +9,7 @@ const postWorkflow = async body => {
 
 const patchWorkflow = async body => {
     const { slug, ...payload } = body;
-    return patchRequest(`${API_URL}${slug}`, payload);
+    return patchRequest(`${API_URL}${slug}/`, payload);
 };
 
 const createEditWorkflow = async body => {

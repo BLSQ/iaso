@@ -1,4 +1,4 @@
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import { deleteRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { API_URL } from '../constants';
@@ -6,9 +6,10 @@ import { API_URL } from '../constants';
 const deleteWorkflow = (slug: string) => deleteRequest(`${API_URL}${slug}/`);
 
 export const useDeleteWorkflow = (): UseMutationResult<any, any> => {
+    const queryClient = useQueryClient();
     return useSnackMutation({
         mutationFn: deleteWorkflow,
-        invalidateQueryKey: ['submission-workflow'],
+        invalidateQueryKey: 'submissions-workflows',
     });
 };
 
@@ -23,6 +24,6 @@ const deleteNode = ({
 export const useDeleteNode = (): UseMutationResult<any, any> => {
     return useSnackMutation({
         mutationFn: deleteNode,
-        invalidateQueryKey: ['submission-workflow'],
+        invalidateQueryKey: ['submission-workflows'],
     });
 };

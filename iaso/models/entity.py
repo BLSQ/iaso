@@ -311,6 +311,9 @@ class Entity(SoftDeletableModel):
 
     def get_pending_duplicate_ids(self):
         """Retrieve the id list of related pending duplicate entities."""
+        if hasattr(self, "pending_duplicates1") and hasattr(self, "pending_duplicates2"):
+            return list(set(duplicate.id for duplicate in chain(self.pending_duplicates1, self.pending_duplicates2)))
+
         results = set()
         e1qs = self.duplicates1.all()
         e2qs = self.duplicates2.all()

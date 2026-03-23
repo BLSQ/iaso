@@ -28,7 +28,8 @@ from iaso.api.entities.serializers import (
     EntitySerializer,
     EntityTypeColumnSerializer,
 )
-from iaso.models import Entity, EntityType, Instance
+from iaso.models import Entity, EntityDuplicate, EntityType, Instance
+from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
@@ -137,8 +138,16 @@ class EntityViewSet(ModelViewSet):
                 "instances",
                 queryset=Instance.objects.only("id", "entity_id", "source_created_at", "created_at"),
             ),
-            "duplicates1",
-            "duplicates2",
+            Prefetch(
+                "duplicates1",
+                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                to_attr="pending_duplicates1",
+            ),
+            Prefetch(
+                "duplicates2",
+                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                to_attr="pending_duplicates2",
+            ),
         )
         return queryset
 

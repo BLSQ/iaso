@@ -154,24 +154,22 @@ class Aggregator:
         """Extracts valid data values based on the dhis2 mapper file."""
         data_values = []
         target_group = entry.get("target_group")
-        all_fields = DEFAULT_FIELDS + SCREENING_FIELDS + HEALTH_WORKERS_FIELDS
-        for field in all_fields:
-            if field in HEALTH_WORKERS_FIELDS:
-                prog = "community_health_worker"
-            elif field in SCREENING_FIELDS:
-                prog = "screening_reporting"
-            else:
-                prog = program_name
 
-            mapping_template = mapper.get(prog, {}).get(target_group, {}).get(field)
+        for field in SCREENING_FIELDS:
+            prog = "screening_reporting"
+            for group in ["Male", "Female", "pregnant", "breastfeeding"]:
+                mapping_template = mapper.get(prog, {}).get(group, {}).get(field)
+                data_value = entry.get(prog, {}).get(group, {}).get(field)
+                if data_value is not None and mapping_template:
+                    data_values.append({**mapping_template, "value": data_value})
 
-            if prog == program_name:
+        nutrition_fields = [(DEFAULT_FIELDS, program_name), (HEALTH_WORKERS_FIELDS, "community_health_worker")]
+        for fields, prog in nutrition_fields:
+            for field in fields:
+                mapping_template = mapper.get(prog, {}).get(target_group, {}).get(field)
                 data_value = entry.get(field)
-            else:
-                data_value = entry.get(prog, {}).get(target_group, {}).get(field)
-
-            if data_value is not None and mapping_template:
-                data_values.append({**mapping_template, "value": data_value})
+                if data_value is not None and mapping_template:
+                    data_values.append({**mapping_template, "value": data_value})
         return data_values
 
     def aggregate_by_nutrition_program(self, account, org_unit_ids, external_credential):

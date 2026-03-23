@@ -167,52 +167,73 @@ class WebEntityAPITestCase(EntityAPITestCase):
         """
         Test the 'search' filter of /api/entities
 
-        This parameter allows to filter either by name, UUID or attributes (of the reference form)
+        This parameter allows to filter either by name, UUID, attributes (of the reference form),
+        as well as explicit ids: and uuids: prefixes.
         """
         self.client.force_authenticate(self.yoda)
 
         instance = Instance.objects.create(
             org_unit=self.ou_country,
             form=self.form_1,
+            uuid=uuid.uuid4(),
             json={"name": "c", "age": 30, "gender": "F"},
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        entity_1 = Entity.objects.create(
+            name="New Client",
+            entity_type=self.entity_type,
+            account=self.yoda.iaso_profile.account,
+            attributes=instance,
+        )
 
-        self.client.post("/api/entities/", data=payload, format="json")
+        second_instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
 
-        newly_added_entity = Entity.objects.last()
+        entity_2 = Entity.objects.create(
+            name="Client Old",
+            entity_type=self.entity_type,
+            account=self.yoda.iaso_profile.account,
+            attributes=second_instance,
+        )
 
-        # Case 1: search by entity name
-        response = self.client.get("/api/entities/?search=Client", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        the_result = response.json()["result"][0]
-        self.assertEqual(the_result["id"], newly_added_entity.id)
-
-        # Case 2: search by entity name - make sure it's case-insensitive and ignores white space
+        # search by entity name - make sure it's case-insensitive and ignores white space
         response = self.client.get("/api/entities/", data={"search": " cLiEnT "}, format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        the_result = response.json()["result"][0]
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 2)
 
-        # Case 3: search by entity UUID
-        response = self.client.get(f"/api/entities/?search={newly_added_entity.uuid}", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # Search by entity UUID
+        response = self.client.get("/api/entities/", data={"search": entity_1.uuid}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_1.id)
 
-        # Case 4: search by JSON attribute
-        response = self.client.get("/api/entities/?search=age", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # Search by JSON attribute
+        response = self.client.get("/api/entities/", data={"search": "30"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        # Both entities share the same instance attributes in this setup
+        self.assertEqual(len(data["result"]), 2)
+
+        # Multi-word search. "client new" should match "New Client"
+        response = self.client.get("/api/entities/", data={"search": "client new"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_1.id)
+
+        # 'ids:' prefix search
+        response = self.client.get("/api/entities/", data={"search": f"ids:{entity_2.id}"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_2.id)
+
+        # 'uuids:' prefix search
+        response = self.client.get("/api/entities/", data={"search": f"uuids:{entity_2.uuid}"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_2.id)
 
     def test_list_entities_annotate_duplicates(self):
         """

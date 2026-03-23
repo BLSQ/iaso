@@ -743,6 +743,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.noFormVersion',
         defaultMessage: 'There is no version yet of your form',
     },
+    validationWorkflow: {
+        id: 'iaso.forms.validationWorkflow',
+        defaultMessage: 'Validation workflow',
+    },
 });
 
 export default MESSAGES;

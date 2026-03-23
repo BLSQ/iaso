@@ -309,7 +309,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         errors={currentForm?.validation_workflow?.errors ?? []}
                         type="select"
                         options={workflowOptions || []}
-                        label={MESSAGES.orgUnitsTypes}
+                        label={MESSAGES.validationWorkflow}
                         loading={isFetchingWorkflows}
                         disabled={!Boolean(validation_workflow)}
                     />

@@ -1658,36 +1658,34 @@ class ETL:
                 whz_score_3=Sum("whz_score_3"),
                 whz_score_3_2=Sum("whz_score_3_2"),
                 oedema=Sum("oedema"),
-                community_health_worker_muac_under_23_pregnant=Sum(
+                muac_under_23_pregnant=Sum(
                     "community_health_worker_muac_under_23", filter=Q(programme_type="PLW", target_group="pregnant")
                 ),
-                community_health_worker_muac_above_23_pregnant=Sum(
+                muac_above_23_pregnant=Sum(
                     "community_health_worker_muac_above_23", filter=Q(programme_type="PLW", target_group="pregnant")
                 ),
-                community_health_worker_muac_under_23_breastfeeding=Sum(
+                muac_under_23_breastfeeding=Sum(
                     "community_health_worker_muac_under_23",
                     filter=Q(programme_type="PLW", target_group="breastfeeding"),
                 ),
-                community_health_worker_muac_above_23_breastfeeding=Sum(
+                muac_above_23_breastfeeding=Sum(
                     "community_health_worker_muac_above_23",
                     filter=Q(programme_type="PLW", target_group="breastfeeding"),
                 ),
-                community_health_worker_muac_under_11_5_male=Sum(
+                muac_under_11_5_male=Sum(
                     "community_health_worker_muac_under_11_5", filter=Q(programme_type="U5", target_group="Male")
                 ),
-                community_health_worker_muac_under_11_5_female=Sum(
+                muac_under_11_5_female=Sum(
                     "community_health_worker_muac_under_11_5", filter=Q(programme_type="U5", target_group="Female")
                 ),
-                community_health_worker_muac_11_5_12_4_male=Sum(
+                muac_11_5_12_4_male=Sum(
                     "community_health_worker_muac_11_5_12_4", filter=Q(programme_type="U5", target_group="Male")
                 ),
-                community_health_worker_muac_11_5_12_4_female=Sum(
+                muac_11_5_12_4_female=Sum(
                     "community_health_worker_muac_11_5_12_4", filter=Q(programme_type="U5", target_group="Female")
                 ),
-                community_health_worker_oedema_male=Sum(
-                    "community_health_worker_oedema", filter=Q(programme_type="U5", target_group="Male")
-                ),
-                community_health_worker_oedema_female=Sum(
+                oedema_male=Sum("community_health_worker_oedema", filter=Q(programme_type="U5", target_group="Male")),
+                oedema_female=Sum(
                     "community_health_worker_oedema", filter=Q(programme_type="U5", target_group="Female")
                 ),
                 cured=Sum("exit_type_cured"),
@@ -1709,27 +1707,23 @@ class ETL:
             target_group = monthlyStatistic["target_group"]
             if target_group == "Male":
                 community_health_worker_values = {
-                    "muac_under_11_5": monthlyStatistic["community_health_worker_muac_under_11_5_male"],
-                    "muac_11_5_12_4": monthlyStatistic["community_health_worker_muac_11_5_12_4_male"],
-                    "oedema": monthlyStatistic["community_health_worker_oedema_male"],
+                    "muac_under_11_5_male": monthlyStatistic["muac_under_11_5_male"],
+                    "muac_11_5_12_4_male": monthlyStatistic["muac_11_5_12_4_male"],
+                    "oedema_male": monthlyStatistic["oedema_male"],
                 }
             elif target_group == "Female":
                 community_health_worker_values = {
-                    "muac_under_11_5": monthlyStatistic.get("community_health_worker_muac_under_11_5_female"),
-                    "muac_11_5_12_4": monthlyStatistic.get("community_health_worker_muac_11_5_12_4_female"),
-                    "oedema": monthlyStatistic.get("community_health_worker_oedema_female"),
+                    "muac_under_11_5_female": monthlyStatistic.get("muac_under_11_5_female"),
+                    "muac_11_5_12_4_female": monthlyStatistic.get("muac_11_5_12_4_female"),
+                    "oedema_female": monthlyStatistic.get("oedema_female"),
                 }
             elif target_group == "pregnant":
                 community_health_worker_values = {
-                    "community_health_worker_muac_under_23_pregnant": monthlyStatistic.get(
-                        "community_health_worker_muac_under_23_pregnant"
-                    ),
+                    "muac_under_23_pregnant": monthlyStatistic.get("muac_under_23_pregnant"),
                 }
             elif target_group == "breastfeeding":
                 community_health_worker_values = {
-                    "community_health_worker_muac_under_23_breastfeeding": monthlyStatistic.get(
-                        "community_health_worker_muac_under_23_breastfeeding"
-                    ),
+                    "muac_under_23_breastfeeding": monthlyStatistic.get("muac_under_23_breastfeeding"),
                 }
             monthlyStatistic["screening_reporting"] = {
                 "Male": {

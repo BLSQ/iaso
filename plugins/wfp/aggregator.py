@@ -29,14 +29,14 @@ SCREENING_FIELDS = [
     "muac_gt_23",
 ]
 HEALTH_WORKERS_FIELDS = [
-    "community_health_worker_muac_under_11_5_male",
-    "community_health_worker_muac_under_11_5_female",
-    "community_health_worker_muac_11_5_12_4_male",
-    "community_health_worker_muac_11_5_12_4_female",
-    "community_health_worker_oedema_male",
-    "community_health_worker_oedema_female",
-    "community_health_worker_muac_under_23_pregnant",
-    "community_health_worker_muac_under_23_breastfeeding",
+    "muac_under_11_5_male",
+    "muac_under_11_5_female",
+    "muac_11_5_12_4_male",
+    "muac_11_5_12_4_female",
+    "oedema_male",
+    "oedema_female",
+    "muac_under_23_pregnant",
+    "muac_under_23_breastfeeding",
 ]
 
 DEFAULT_FIELDS = [

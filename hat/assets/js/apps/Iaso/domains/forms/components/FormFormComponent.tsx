@@ -8,6 +8,7 @@ import {
     LinkWithLocation,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useGetWorkflowOptions } from 'Iaso/domains/instances/validationWorkflow/api/Get';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
@@ -69,6 +70,9 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+    const { data: workflowOptions, isFetching: isFetchingWorkflows } =
+        useGetWorkflowOptions();
+
     const setPeriodType = value => {
         let periodTypeValue = value;
         if (value === null || value === NO_PERIOD) {
@@ -102,6 +106,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     if (currentForm.project_ids.value.length > 0) {
         projects = currentForm.project_ids.value;
     }
+    const { validation_workflow } = currentForm;
     const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
         useGetOrgUnitTypesDropdownOptions({
             projectIds: currentForm.project_ids.value,
@@ -296,6 +301,18 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             }
                         />
                     </InputWithInfos>
+                    <InputComponent
+                        clearable
+                        keyValue="validation_workflow"
+                        onChange={(key, value) => setFieldValue(key, value)}
+                        value={validation_workflow?.value}
+                        errors={currentForm?.validation_workflow?.errors ?? []}
+                        type="select"
+                        options={workflowOptions || []}
+                        label={MESSAGES.orgUnitsTypes}
+                        loading={isFetchingWorkflows}
+                        disabled={!Boolean(validation_workflow)}
+                    />
                     {showAdvancedSettings && (
                         <>
                             <InputComponent

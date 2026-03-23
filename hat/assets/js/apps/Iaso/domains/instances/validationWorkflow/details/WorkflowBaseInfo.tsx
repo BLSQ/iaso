@@ -14,8 +14,14 @@ import {
     Button,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import {
+    textPlaceholder,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
 import { useSaveWorkflow } from '../api/PostPutPatch';
 
@@ -55,20 +61,31 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
 type Props = { workflow?: any };
 
 export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
+    const params = useParamsObject(baseUrls.instanceValidationDetail);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const [name, setName] = useState<string>(workflow?.name ?? '');
     const [description, setDescription] = useState<string>(
         workflow?.description ?? '',
     );
+    const redirectToReplace = useRedirectToReplace();
     const { mutateAsync } = useSaveWorkflow();
 
     const save = useCallback(() => {
         if (workflow) {
             return mutateAsync({ slug: workflow.slug, name, description });
         }
-        return mutateAsync({ name, description });
-    }, [description, mutateAsync, name, workflow]);
+        return mutateAsync(
+            { name, description },
+            {
+                onSuccess: data =>
+                    redirectToReplace(baseUrls.instanceValidationDetail, {
+                        ...params,
+                        slug: data.slug,
+                    }),
+            },
+        );
+    }, [description, mutateAsync, name, params, redirectToReplace, workflow]);
 
     // TODO add trim()
     const hasChange =

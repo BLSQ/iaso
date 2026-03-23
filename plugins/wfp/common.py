@@ -655,11 +655,11 @@ class ETL:
         Dhis2SyncResults.objects.filter(account=account_id).delete()
 
         if deleted_count > 0:
-            logger.warning("Cleanup complete %d items removed", deleted_count)
-            logger.warning("Deleted %d Beneficiaries", deleted.get("wfp.Beneficiary", 0))
-            logger.warning("Deleted %d Journeys", deleted.get("wfp.Journey", 0))
-            logger.warning("Deleted %d Visits", deleted.get("wfp.Visit", 0))
-            logger.warning("Deleted %d Steps", deleted.get("wfp.Step", 0))
+            print("Cleanup complete %d items removed", deleted_count)
+            print("Deleted %d Beneficiaries", deleted.get("wfp.Beneficiary", 0))
+            print("Deleted %d Journeys", deleted.get("wfp.Journey", 0))
+            print("Deleted %d Visits", deleted.get("wfp.Visit", 0))
+            print("Deleted %d Steps", deleted.get("wfp.Step", 0))
         else:
             logger.info("No beneficiaries found to delete.")
 

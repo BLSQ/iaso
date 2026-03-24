@@ -62,8 +62,11 @@ class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
 
         if sampling and sampling.group_id:
             queryset = base_queryset.filter(pk__in=sampling.group.org_units.values_list("pk", flat=True))
-        elif root_org_unit and planning.target_org_unit_type:
-            queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type=planning.target_org_unit_type)
+        elif root_org_unit:
+            target_type_ids = [t.id for t in planning.target_org_unit_types.all()]
+            if not target_type_ids:
+                raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
+            queryset = base_queryset.descendants(root_org_unit).filter(org_unit_type_id__in=target_type_ids)
         else:
             raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
 
@@ -82,9 +85,11 @@ class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
     def _get_planning(self, request):
         query_serializer = PlanningOrgUnitListSerializer(data=request.query_params, context={"request": request})
         query_serializer.is_valid(raise_exception=True)
-        return Planning.objects.select_related(
-            "org_unit", "target_org_unit_type", "selected_sampling_result__group"
-        ).get(pk=query_serializer.validated_data["planning"].id)
+        return (
+            Planning.objects.select_related("org_unit", "selected_sampling_result__group")
+            .prefetch_related("target_org_unit_types")
+            .get(pk=query_serializer.validated_data["planning"].id)
+        )
 
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
@@ -116,7 +121,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return (
             self.queryset.filter_for_user(user)
             .select_related("project", "org_unit", "team", "selected_sampling_result")
-            .prefetch_related("forms")
+            .prefetch_related("forms", "target_org_unit_types")
             .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))
         )
 

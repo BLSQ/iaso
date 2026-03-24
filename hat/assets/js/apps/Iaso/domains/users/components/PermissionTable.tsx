@@ -1,32 +1,46 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import {
-    Column,
-    Table,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { Box } from '@mui/material';
+import { Column, Table, useSafeIntl } from 'bluesquare-components';
 import PermissionTooltip from 'Iaso/domains/users/components/PermissionTooltip';
 import MESSAGES from 'Iaso/domains/users/messages';
 import PERMISSIONS_MESSAGES from 'Iaso/domains/users/permissionsMessages';
+import { SxStyles } from 'Iaso/types/general';
 
 type Props = {
     data: string[];
 };
 
+const styles: SxStyles = {
+    root: {
+        width: '100%',
+        maxHeight: '307px',
+        overflow: 'auto',
+        '& thead': {
+            display: 'none',
+        },
+    },
+};
 
-const usePermissionTableColumns = () => {
+const usePermissionTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
-        const columns = [
+        const columns: Column[] = [
             {
                 Header: '',
                 id: 'tooltip',
                 sortable: false,
-                align: 'center',
+                align: 'center' as const,
                 width: 50,
-                Cell: settings => {
+                Cell: ({
+                    row: {
+                        original: { permissionName },
+                    },
+                }: {
+                    row: { original: { permissionName: string } };
+                }) => {
                     return (
                         <PermissionTooltip
-                            codename={`${settings.row.original}_tooltip`}
+                            codename={`${permissionName}_tooltip`}
                         />
                     );
                 },
@@ -38,31 +52,42 @@ const usePermissionTableColumns = () => {
                 sortable: false,
                 width: 250,
                 align: 'left',
-                Cell: settings => {
-                    return PERMISSIONS_MESSAGES?.[settings.row.original] ? formatMessage(PERMISSIONS_MESSAGES?.[settings.row.original]) : settings.row.original;
+                Cell: ({
+                    row: {
+                        original: { permissionName },
+                    },
+                }: {
+                    row: { original: { permissionName: string } };
+                }) => {
+                    const message =
+                        permissionName in PERMISSIONS_MESSAGES
+                            ? PERMISSIONS_MESSAGES[
+                                  permissionName as keyof typeof PERMISSIONS_MESSAGES
+                              ]
+                            : undefined;
+                    return message ? formatMessage(message) : permissionName;
                 },
             },
         ];
         return columns;
-    }, [
-        formatMessage,
-    ]);
+    }, [formatMessage]);
 };
 export const PermissionTable: FunctionComponent<Props> = ({ data }) => {
-
     const columns: Column[] = usePermissionTableColumns();
 
     return (
-        <>
+        <Box sx={styles.root}>
             <Table
                 columns={columns}
-                data={data}
+                data={data.map(permission => ({
+                    permissionName: permission,
+                }))}
                 showPagination={false}
                 countOnTop={false}
                 marginTop={false}
                 marginBottom={false}
                 elevation={0}
             />
-        </>
+        </Box>
     );
 };

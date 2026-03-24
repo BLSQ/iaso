@@ -1,20 +1,20 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Grid } from '@mui/material';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
-import { SearchButton } from '../../../components/SearchButton';
 import FullStarsSvg from '../../../components/stars/FullStarsSvgComponent';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import {
     useGetAlgorithmRunsOptions,
     useGetAlgorithmsOptions,
     useGetDataSources,
-    useGetProfilesOptions,
     useSourceOptions,
     useSourceVersionOptions,
     useStatusOptions,
 } from '../hooks/filters';
 import MESSAGES from '../messages';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     params: any;
@@ -43,7 +43,7 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
         useGetAlgorithmRunsOptions();
     const statuses = useStatusOptions();
     const { data: validators, isLoading: isLoadingValidators } =
-        useGetProfilesOptions();
+        useGetProfilesDropdown();
     const { data: sources, isLoading: isLoadingSources } = useGetDataSources();
     const sourceOptions = useSourceOptions(sources);
     const { options: originVersionOptions, disabled: originVersionDisabled } =

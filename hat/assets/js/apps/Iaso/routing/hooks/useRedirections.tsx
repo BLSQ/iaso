@@ -83,7 +83,7 @@ export const useRedirections: RedirectionsMethod = ({
             {
                 path: `/${baseUrls.entities}`,
                 to: `/${baseUrls.entities}${getPaginationParams(
-                    'last_saved_instance',
+                    '-id',
                 )}/isSearchActive/true`,
             },
             {

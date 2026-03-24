@@ -11,5 +11,6 @@
     "reportOptionalCall": "none",
     "reportArgumentType": "none",
     "reportOptionalSubscript": "none",
-    "reportOptionalIterable": "none"
+    "reportOptionalIterable": "none",
+    "reportAssignmentType": "none"
 }

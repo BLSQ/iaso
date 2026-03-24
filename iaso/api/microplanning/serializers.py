@@ -64,7 +64,9 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
-        self.fields["target_org_unit_type"].queryset = OrgUnitType.objects.filter(projects__account=account).distinct()
+        self.fields["target_org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter(
+            projects__account=account
+        ).distinct()
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -102,17 +104,20 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
             if project not in org_unit_projects:
                 validation_errors["org_unit"] = "planningAndOrgUnit"
 
-        target_org_unit_type = validated_data.get(
-            "target_org_unit_type", self.instance.target_org_unit_type if self.instance else None
+        target_org_unit_types = validated_data.get(
+            "target_org_unit_types",
+            list(self.instance.target_org_unit_types.all()) if self.instance else None,
         )
-        if target_org_unit_type:
-            target_type_projects = target_org_unit_type.projects.all()
-            if project not in target_type_projects:
-                validation_errors["target_org_unit_type"] = "planningAndTargetOrgUnitType"
-            else:
-                descendant_org_units = OrgUnit.objects.descendants(org_unit).filter(org_unit_type=target_org_unit_type)
+        if target_org_unit_types:
+            for target_type in target_org_unit_types:
+                target_type_projects = target_type.projects.all()
+                if project not in target_type_projects:
+                    validation_errors["target_org_unit_types"] = "planningAndTargetOrgUnitType"
+                    break
+                descendant_org_units = OrgUnit.objects.descendants(org_unit).filter(org_unit_type=target_type)
                 if not descendant_org_units.exists():
-                    validation_errors["target_org_unit_type"] = "noOrgUnitsOfTypeInHierarchy"
+                    validation_errors["target_org_unit_types"] = "noOrgUnitsOfTypeInHierarchy"
+                    break
 
         selected_sampling_result = validated_data.get("selected_sampling_result")
         if selected_sampling_result:
@@ -156,7 +161,9 @@ class PlanningReadSerializer(serializers.ModelSerializer):
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
-    target_org_unit_type_details = NestedOrgUnitTypeSerializer(source="target_org_unit_type", read_only=True)
+    target_org_unit_type_details = NestedOrgUnitTypeSerializer(
+        source="target_org_unit_types", many=True, read_only=True
+    )
 
 
 class SamplingGroupSerializer(serializers.ModelSerializer):

@@ -47,7 +47,7 @@ export type Planning = {
     started_at?: string;
     ended_at?: string;
     pipeline_uuids: string[];
-    target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails | null;
+    target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails[] | null;
     selected_sampling_result?: SamplingResult;
     assignments_count: number;
 };

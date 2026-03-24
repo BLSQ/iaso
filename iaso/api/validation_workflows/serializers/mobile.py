@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, TimestampField
@@ -51,6 +52,7 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
             "history",
         ]
 
+    @extend_schema_field({"type": "string", "nullable": True})
     def get_rejection_comment(self, obj):
         if obj.get_general_validation_status() == ValidationWorkflowArtefactStatus.REJECTED:
             return (
@@ -61,6 +63,7 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
             )
         return None
 
+    @extend_schema_field({"type": "integer", "format": "int64", "nullable": True})
     def get_updated_at(self, obj):
         updated_at = getattr(obj.validationnode_set.all().order_by("-updated_at").first(), "updated_at", None)
         return updated_at.timestamp() if updated_at else None

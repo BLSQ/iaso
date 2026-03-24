@@ -135,7 +135,6 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
     def test_filter_app_id(self):
         self.setup_start()
-
         self.client.force_authenticate(self.john_wick)
 
         res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "xxxx"})
@@ -149,6 +148,26 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        self.instance.form = None
+        self.instance.save()
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "1.1"})
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
+
+        self.instance.project = None
+        self.instance.form = self.form
+
+        self.instance.save()
+
+        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "1.1"})
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
 
     def test_filter_last_sync(self):
         self.setup_start()
@@ -381,3 +400,10 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(last_item["comment"], "LGTM 0")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
         self.assertEqual(last_item["updated_by"], self.john_wick.username)
+
+    def test_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+        self.setup_approve()
+        with self.assertNumQueries(2):
+            res = self.client.get(reverse("mobile-validation-workflows-list"))
+            self.assertJSONResponse(res, status.HTTP_200_OK)

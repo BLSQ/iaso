@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 
+@extend_schema_field(OpenApiTypes.INT64)
 class TimestampField(serializers.Field):
     def to_representation(self, value: datetime):
         return value.timestamp()

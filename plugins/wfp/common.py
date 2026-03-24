@@ -803,11 +803,12 @@ class ETL:
                 continue
 
             gender = extract_gender(data)
-            if gender in ("Male", "Female"):
-                info["gender"] = gender
-            else:
-                info["physiology"] = extract_pbwg_physiology(data)
+            physiology = extract_pbwg_physiology(data)
+            if physiology:
+                info["physiology"] = physiology
                 info["gender"] = None
+            elif gender in ("Male", "Female"):
+                info["gender"] = gender
             birth_date = calculate_birth_date(data)
             if birth_date is not None:
                 info["birth_date"] = birth_date
@@ -1261,7 +1262,7 @@ class ETL:
                 output_field=CharField(),
             )
         )
-        if current_page_org_units is not None:
+        if current_page_org_units:
             queryset = queryset.filter(reduce(or_, current_page_org_units))
 
         # Fields for Group By

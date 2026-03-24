@@ -9,9 +9,9 @@ import {
     useSafeIntl,
     useSkipEffectOnMount,
     InputWithInfos,
-    AsyncSelect,
 } from 'bluesquare-components';
 
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
@@ -34,8 +34,6 @@ import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPla
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { INSTANCE_STATUSES } from '../constants';
 
-import { getUsersDropDown } from '../hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown';
 import MESSAGES from '../messages';
 import { parseJson } from '../utils/jsonLogicParse';
 
@@ -233,9 +231,6 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
-    const { data: selectedUsers } = useGetProfilesDropdown(
-        formState.userIds.value,
-    );
 
     const handleChangeQueryBuilder = value => {
         let parsedValue;
@@ -252,9 +247,9 @@ const InstancesFiltersComponent = ({
 
     const joinValuesBeforeHandleFormChange = useCallback(
         (keyValue, newValue) => {
-            console.log(newValue, keyValue)
-            const joined = newValue?.map((r: {label: string, value: number}) => r.value)?.join(',');
-            console.log(joined)
+            const joined = Array.isArray(newValue)
+                ? newValue?.join(',')
+                : newValue;
             handleFormChange(keyValue, joined);
         },
         [handleFormChange],
@@ -470,14 +465,11 @@ const InstancesFiltersComponent = ({
                         </Box>
                     )}
                     <Box mt={2}>
-                        <AsyncSelect
+                        <UserAsyncSelect
                             keyValue="userIds"
                             label={MESSAGES.user}
-                            value={selectedUsers ?? ''}
-                            onChange={joinValuesBeforeHandleFormChange}
-                            debounceTime={500}
-                            multi
-                            fetchOptions={input => getUsersDropDown(input)}
+                            filterUsers={formState?.userIds?.value}
+                            handleChange={joinValuesBeforeHandleFormChange}
                         />
                     </Box>
                 </Grid>

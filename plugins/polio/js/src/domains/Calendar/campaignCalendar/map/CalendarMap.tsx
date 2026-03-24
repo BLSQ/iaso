@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
-import { MappedCampaign } from '../types';
+import { CalendarParams, MappedCampaign } from '../types';
 import { CalendarMapContainer } from './CalendarMapContainer';
 import { defaultViewport } from './constants';
 import { useMergedShapes, useShapes } from './hooks';
@@ -13,9 +13,11 @@ type Props = {
     isPdf?: boolean;
     loadingCampaigns: boolean;
     campaigns: MappedCampaign[];
+    params: CalendarParams;
 };
 
 export const CalendarMap: FunctionComponent<Props> = ({
+    params,
     campaigns,
     loadingCampaigns,
     isPdf = false,
@@ -29,7 +31,9 @@ export const CalendarMap: FunctionComponent<Props> = ({
         isLoadingShapes,
         roundsDict,
     } = useShapes(selection, campaigns, loadingCampaigns);
+
     const { mergedShapes, isLoadingMergedShapes } = useMergedShapes({
+        params,
         campaigns,
         roundsDict,
         selection,

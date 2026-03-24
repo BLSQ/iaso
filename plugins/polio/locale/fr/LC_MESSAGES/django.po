@@ -737,6 +737,22 @@ msgstr "Types de campagnes"
 msgid "Campaign category"
 msgstr "Catégorie de campagne"
 
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "Test campaign"
+msgstr "Campagne de test"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "Planned"
+msgstr "Planifié"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "Preventive"
+msgstr "Préventive"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "On hold"
+msgstr "En pause"
+
 #: plugins/polio/api/campaigns/filters/filters.py
 msgid "Show test"
 msgstr "Afficher les tests"

@@ -53,7 +53,11 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
     limit = 20
     orgunits = iaso_client.get(
         "/api/orgunits/",
-        params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]},
+        params={
+            "limit": limit,
+            "orgUnitTypeId": health_facility_type["id"],
+            "fields": "id,longitude,latitude,altitude",
+        },
     )["orgunits"]
     print("-- Submitting %d submissions" % limit)
 

@@ -1,6 +1,6 @@
+import { UseMutationResult } from 'react-query';
 import { getRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
-import { UseMutationResult } from 'react-query';
 
 export const useGetCountryUsersGroup = params => {
     const searchParams = new URLSearchParams({
@@ -36,11 +36,6 @@ export const usePutCountryMutation = (): UseMutationResult =>
         undefined,
         undefined,
         ['countryusersgroup'],
-    );
-
-export const useGetProfiles = () =>
-    useSnackQuery(['polio', 'profiles'], async () =>
-        getRequest('/api/profiles'),
     );
 
 export const useCountryUsersGroup = countryId => {

@@ -800,7 +800,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_create_profile_with_color(self):
         self.client.force_authenticate(self.jim)
-        color = "#123ABC"
+        color = "#123abc"
         data = {
             "userName": "color_user",
             "password": "unittest_password",
@@ -813,10 +813,10 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
 
-        self.assertEqual(response_data["color"], color)
+        self.assertEqual(response_data["color"], color.upper())
 
         profile = m.Profile.objects.get(pk=response_data["id"])
-        self.assertEqual(profile.color, color)
+        self.assertEqual(profile.color, color.upper())
 
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
@@ -1094,6 +1094,19 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn("account", response_data)
 
         self.assertEqual(response_data["account"]["featureFlags"], [])
+
+    def test_search_user_by_has_email(self):
+        self.client.force_authenticate(self.jane)
+
+        response = self.client.get(reverse("profiles-list", kwargs={"version": "v2"}), {"hasEmail": True})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
+        self.assertTrue(all(x["email"] for x in response_data["results"]))
+
+        response = self.client.get(reverse("profiles-list", kwargs={"version": "v2"}), {"hasEmail": False})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 7)
+        self.assertFalse(all(x["email"] for x in response_data["results"]))
 
     def test_search_user_by_permissions(self):
         self.client.force_authenticate(self.jane)
@@ -2523,3 +2536,61 @@ class ProfileAPITestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["count"], 7)
         self.assertEqual(response_data["results"][0]["user_name"], "janedoe")
+
+    def test_search_users_by_organization(self):
+        self.jane.iaso_profile.organization = "Some organization"
+        self.jane.iaso_profile.save()
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(reverse("profiles-list", kwargs={"version": "v2"}), {"limit": 100})
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response_data, 7)
+
+        for parameter in ["so", "some org", "Some organization"]:
+            with self.subTest(f"Searching with {parameter}"):
+                response = self.client.get(
+                    reverse("profiles-list", kwargs={"version": "v2"}), {"limit": 100, "search": parameter}
+                )
+                response_data = self.assertJSONResponse(response, 200)
+                self.assertValidProfileListData(response_data, 1)
+
+        response = self.client.get(
+            reverse("profiles-list", kwargs={"version": "v2"}), {"limit": 100, "search": "wrong search"}
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response_data, 0)
+
+    def test_dropdown_endpoint(self):
+        self.jane.iaso_profile.organization = "Some organization"
+        self.jane.iaso_profile.save()
+        self.client.force_authenticate(self.jane)
+
+        with self.subTest("should not be paginated by default"):
+            response = self.client.get(reverse("profiles-dropdown"))
+
+            response_data = self.assertJSONResponse(response, 200)
+            self.assertValidListData(list_data=response_data, results_key=None, expected_length=7, paginated=False)
+
+        with self.subTest("should not be paginated if limit is provided"):
+            response = self.client.get(reverse("profiles-dropdown"), {"limit": 1})
+            response_data = self.assertJSONResponse(response, 200)
+            self.assertValidListData(list_data=response_data, results_key="results", expected_length=1, paginated=True)
+
+        with self.subTest("Can still be filtered"):
+            for parameter in ["so", "some org", "Some organization"]:
+                with self.subTest(f"Searching with {parameter}"):
+                    response = self.client.get(reverse("profiles-dropdown"), {"search": parameter})
+                    response_data = self.assertJSONResponse(response, 200)
+                    self.assertValidListData(
+                        list_data=response_data, results_key=None, expected_length=1, paginated=False
+                    )
+
+        with self.subTest("Check response data"):
+            response = self.client.get(reverse("profiles-dropdown"), {"search": parameter})
+            response_data = self.assertJSONResponse(response, 200)
+            self.assertValidListData(list_data=response_data, results_key=None, expected_length=1, paginated=False)
+
+            item = response_data[0]
+            self.assertCountEqual(item.keys(), ["label", "value"])
+            self.assertEqual(item["value"], self.jane.id)
+            self.assertEqual(item["label"], f"{self.jane.username} ({self.jane.get_full_name()})")

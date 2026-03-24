@@ -184,6 +184,10 @@ class Form(SoftDeletableModel):
 
     change_request_mode = models.TextField(choices=CHANGE_REQUEST_MODE, default=CR_MODE_NONE)
 
+    validation_workflow = models.ForeignKey(
+        "ValidationWorkflow", null=True, blank=True, on_delete=models.SET_NULL, related_name="%(class)s_set"
+    )
+
     @property
     def latest_version(self):
         # attribute filled by queryset.with_latest_version() on FormQuerySet

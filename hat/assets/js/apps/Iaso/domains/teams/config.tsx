@@ -1,20 +1,20 @@
 import React, { ReactElement } from 'react';
-import { Box } from '@mui/material';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { ColorBadge } from 'Iaso/components/ColorBadge';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { EditTeamModal } from './components/CreateEditTeam';
 import { TypeCell } from './components/TypeCell';
 import { UsersTeamsCell } from './components/UsersTeamsCell';
 import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
-import { useSaveTeam } from './hooks/requests/useSaveTeam';
 import MESSAGES from './messages';
 
-export const useTeamColumns = ({params, data}): Column[] => {
-    const { mutate: deleteTeam } = useDeleteTeam({params, count: data?.count ?? 0});
+export const useTeamColumns = ({ params, data }): Column[] => {
+    const { mutate: deleteTeam } = useDeleteTeam({
+        params,
+        count: data?.count ?? 0,
+    });
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: saveTeam } = useSaveTeam('edit', false);
     return [
         {
             Header: 'Id',
@@ -28,18 +28,10 @@ export const useTeamColumns = ({params, data}): Column[] => {
             width: 10,
             sortable: false,
             Cell: settings => (
-                <Box display="flex" justifyContent="center">
-                    <ColorPicker
-                        currentColor={settings.row.original.color}
-                        displayLabel={false}
-                        onChangeColor={color =>
-                            saveTeam({
-                                id: settings.row.original.id,
-                                color,
-                            })
-                        }
-                    />
-                </Box>
+                <ColorBadge
+                    data-testid={'team-badge-color'}
+                    backgroundColor={settings.row.original.color}
+                />
             ),
         },
         {

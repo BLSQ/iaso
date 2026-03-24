@@ -3,8 +3,8 @@
 from datetime import timedelta
 
 from django.db.models import Case, CharField, Exists, Max, Min, OuterRef, Q, Subquery, When
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -168,51 +168,51 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     default_page_size = 50
 
-    file_type_param = openapi.Parameter(
+    file_type_param = OpenApiParameter(
         "file_type",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by file type (VRF, PRE_ALERT, FORM_A)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    campaign_status_param = openapi.Parameter(
+    campaign_status_param = OpenApiParameter(
         "campaign_status",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by campaign status (ONGOING, PAST, PREPARING)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    vrf_type_param = openapi.Parameter(
+    vrf_type_param = OpenApiParameter(
         "vrf_type",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by VRF type (Normal, Missing, Not Required)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    campaign_id_param = openapi.Parameter(
+    campaign_id_param = OpenApiParameter(
         "campaign",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by campaign ID (OBR name)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    country_block_param = openapi.Parameter(
+    country_block_param = OpenApiParameter(
         "country_block",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by country block (comma separated list of org unit group ids)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    country_param = openapi.Parameter(
+    country_param = OpenApiParameter(
         "country",
-        openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         description="Filter by country (id of country)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
     # @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             file_type_param,
             campaign_status_param,
             vrf_type_param,

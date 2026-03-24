@@ -18,15 +18,16 @@ import typing
 import uuid
 
 from copy import copy
+from itertools import chain
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Exists, OuterRef, Prefetch, Q, Subquery
+from django.db.models import Prefetch, Subquery
 
 from iaso.models import Account, Instance, OrgUnit, Project
-from iaso.models.deduplication import EntityDuplicate, ValidationStatus
+from iaso.models.deduplication import ValidationStatus
 from iaso.utils.jsonlogic import annotate_suffixed_json_fields, jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
@@ -84,6 +85,39 @@ class EntityType(models.Model):
             "reference_form": self.reference_form.as_dict(show_version=False) if self.reference_form else None,
             "account": self.account.as_dict(),
         }
+
+    def get_list_view_fields(self) -> list:
+        """
+        Fetch the fields listed in `fields_list_view` from the reference form.
+
+        Return an array of field descriptions (see `Form.possile_fields`):
+        ```
+        [
+            {
+                "name": "last_name",
+                "type": "text",
+                "label": "Nom de famille"
+            },
+            ...
+        ]
+        ```
+        """
+
+        if not self.reference_form or not self.reference_form.possible_fields:
+            return []
+
+        selected_fields = set(self.fields_list_view or [])
+        if not selected_fields:
+            return []
+
+        fields = {}  # Used for deduplication by field name
+
+        for field_data in self.reference_form.possible_fields:
+            name = field_data.get("name")
+            if name in selected_fields:
+                fields[name] = field_data
+
+        return list(fields.values())
 
 
 class InvalidLimitDateError(ValidationError):
@@ -176,15 +210,6 @@ class EntityQuerySet(models.QuerySet):
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
     ):
         return self.filter_for_user(user).filter_for_app_id(user, app_id)
-
-    def with_duplicates(self):
-        return self.annotate(
-            has_duplicates=Exists(
-                EntityDuplicate.objects.filter(
-                    Q(entity1=OuterRef("pk")) | Q(entity2=OuterRef("pk")), validation_status=ValidationStatus.PENDING
-                )
-            )
-        )
 
 
 class Entity(SoftDeletableModel):
@@ -283,3 +308,25 @@ class Entity(SoftDeletableModel):
         self.duplicates2.filter(validation_status=ValidationStatus.PENDING).delete()
 
         return self
+
+    def get_pending_duplicate_ids(self):
+        """Retrieve the id list of related pending duplicate entities."""
+        if hasattr(self, "pending_duplicates1") and hasattr(self, "pending_duplicates2"):
+            return list(set(duplicate.id for duplicate in chain(self.pending_duplicates1, self.pending_duplicates2)))
+
+        results = set()
+        e1qs = self.duplicates1.all()
+        e2qs = self.duplicates2.all()
+        for duplicate in chain(e1qs, e2qs):
+            if duplicate.validation_status == ValidationStatus.PENDING:
+                results.add(duplicate.id)
+        return list(results)
+
+    def get_latest_instance_created_at(self):
+        """Retrieve the datetime of the last created instance for this entity."""
+        instance_dates = (
+            saved_at
+            for instance in self.instances.all()
+            if (saved_at := instance.source_created_at or instance.created_at) is not None
+        )
+        return max(instance_dates, default=self.created_at)

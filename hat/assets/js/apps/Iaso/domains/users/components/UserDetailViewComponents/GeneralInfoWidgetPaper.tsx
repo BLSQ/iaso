@@ -1,41 +1,30 @@
-import MESSAGES from 'Iaso/domains/users/messages';
-import { Box, Table, TableBody } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
-import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import React from 'react';
+import { Table, TableBody } from '@mui/material';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { ColorBadge } from 'Iaso/components/ColorBadge';
+import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
+import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
+import MESSAGES from 'Iaso/domains/users/messages';
 import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
-import { SxStyles } from 'Iaso/types/general';
 
 type Props = {
     savingProfile?: boolean;
-    profile?: ProfileRetrieveResponseItem
-}
-
-const styles: SxStyles = {
-    badge: {
-        // @ts-ignore
-        border: theme => `3px solid ${theme.palette.ligthGray.border}`,
-        borderRadius: theme => theme.spacing(3),
-        width: theme => theme.spacing(3),
-        height: theme => theme.spacing(3),
-        display: 'inline-block',
-        outline: 'none !important',
-    },
+    profile?: ProfileRetrieveResponseItem;
 };
 
 export const GeneralInfoWidgetPaper = ({
-                                           savingProfile = false,
-                                           profile,
-                                       }: Props) => {
+    savingProfile = false,
+    profile,
+}: Props) => {
     const { formatMessage } = useSafeIntl();
 
-    return <WidgetPaper title={formatMessage(MESSAGES.generalInfo)} data-testid={'general-info-box'}>
-        {savingProfile ? (
-                <Box sx={{ my: 2 }}>
-                    <LoadingSpinner absolute={false} fixed={false} />
-                </Box>
-            ) :
+    return (
+        <WidgetPaper
+            title={formatMessage(MESSAGES.generalInfo)}
+            data-testid={'general-info-box'}
+            sx={{ position: 'relative' }}
+        >
+            {savingProfile && <LoadingSpinner absolute fixed={false} />}
 
             <Table size="small">
                 <TableBody>
@@ -61,9 +50,7 @@ export const GeneralInfoWidgetPaper = ({
                         field={{
                             label: formatMessage(MESSAGES.email),
                             value: profile?.email && (
-                                <a
-                                    href={`mailto:${profile?.email}`}
-                                >
+                                <a href={`mailto:${profile?.email}`}>
                                     {profile?.email}
                                 </a>
                             ),
@@ -85,9 +72,7 @@ export const GeneralInfoWidgetPaper = ({
                         field={{
                             label: formatMessage(MESSAGES.phoneNumber),
                             value: profile?.phone_number && (
-                                <a
-                                    href={`tel:${profile?.phone_number}`}
-                                >
+                                <a href={`tel:${profile?.phone_number}`}>
                                     {profile?.phone_number}
                                 </a>
                             ),
@@ -102,20 +87,17 @@ export const GeneralInfoWidgetPaper = ({
                     <Row
                         field={{
                             label: formatMessage(MESSAGES.color),
-                            value: profile?.color && <Box
-                                component="span"
-                                data-testid={'user-color-badge'}
-                                sx={{
-                                    ...styles.badge,
-                                    backgroundColor:
-                                    profile?.color,
-                                }}
-                                tabIndex={0}
-                            />,
+                            value: profile?.color && (
+                                <ColorBadge
+                                    data-testid={'user-color-badge'}
+                                    backgroundColor={profile?.color}
+                                    tabIndex={0}
+                                />
+                            ),
                         }}
                     />
                 </TableBody>
             </Table>
-        }
-    </WidgetPaper>;
+        </WidgetPaper>
+    );
 };

@@ -54,8 +54,11 @@ class Planning(SoftDeletableModel):
     forms = models.ManyToManyField(Form, related_name="plannings")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
-    target_org_unit_type = models.ForeignKey(
-        OrgUnitType, on_delete=models.PROTECT, related_name="target_plannings", null=True, blank=True
+    target_org_unit_types = models.ManyToManyField(
+        OrgUnitType,
+        related_name="target_plannings",
+        blank=True,
+        help_text="Org unit types that can receive assignments in this planning",
     )
     published_at = models.DateTimeField(null=True, blank=True)
     pipeline_uuids = ArrayField(

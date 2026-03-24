@@ -51,7 +51,10 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
 
 def create_org_units_submissions(account_name, iaso_client, facility_type_id, form):
     limit = 20
-    orgUnits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": facility_type_id})["orgunits"]
+    orgUnits = iaso_client.get(
+        "/api/orgunits/",
+        params={"limit": limit, "orgUnitTypeId": facility_type_id, "fields": "id,longitude,latitude,altitude"},
+    )["orgunits"]
 
     for orgUnit in orgUnits:
         create_form_submissions(account_name, iaso_client, form, orgUnit)

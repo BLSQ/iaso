@@ -62,6 +62,19 @@ class ProgrammeType(SimpleListFilter):
         return queryset
 
 
+class PhysiologyStatus(SimpleListFilter):
+    title = "Physiology status"
+    parameter_name = "physiology_status"
+
+    def lookups(self, request, modeladmin):
+        return Journey._meta.get_field("physiology_status").choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(journey__physiology_status=self.value()).distinct()
+        return queryset
+
+
 class Year(SimpleListFilter):
     title = "Year"
     parameter_name = "year"
@@ -100,7 +113,7 @@ class Month(SimpleListFilter):
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender", "account", "guidelines", ProgrammeType)
+    list_filter = ("birth_date", "gender", PhysiologyStatus, "account", "guidelines", ProgrammeType)
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
     actions = [create_uuid_index_action, clean_up_duplicates_action, clean_up_duplicates_action_dry_run]
 

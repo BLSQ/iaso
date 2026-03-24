@@ -3,7 +3,7 @@ from typing import List, Union
 from django.conf import settings
 from django.contrib import auth
 from django.urls import URLPattern, URLResolver, include, path
-from rest_framework import routers
+from rest_framework_extensions.routers import ExtendedDefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.token_authentication import token_auth
@@ -125,6 +125,7 @@ from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
 from .api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
+from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
@@ -136,7 +137,7 @@ from .dhis2.authentication import dhis2_callback  # type: ignore
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
 
-router = routers.DefaultRouter()
+router = ExtendedDefaultRouter()
 router.register(
     r"mobile/orgunits/changes/configs",
     MobileOrgUnitChangeRequestConfigurationViewSet,
@@ -259,7 +260,12 @@ router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, base
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
 
-router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validationworkflows")
+router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validationworkflows").register(
+    r"node-templates",
+    ValidationNodeTemplatesView,
+    basename="validation-node-templates",
+    parents_query_lookups=["workflow__slug"],
+)
 router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile-validation-workflows")
 
 router.registry.extend(plugins_router.registry)

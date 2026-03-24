@@ -61,7 +61,9 @@ class ValidationNodeTemplate(CreatedAndUpdatedModel):
     slug = AutoSlugField(populate_from="name", unique=True, always_update=True, unique_with="workflow_id")
     description = models.CharField(max_length=1024, blank=True)
     color = ColorField(blank=True, null=True)
-    next_node_templates = models.ManyToManyField("self", symmetrical=False, related_name="previous_node_templates")
+    next_node_templates = models.ManyToManyField(
+        "self", symmetrical=False, related_name="previous_node_templates", blank=True
+    )
     roles_required = models.ManyToManyField(UserRole, blank=True)
     can_skip_previous_nodes = models.BooleanField(default=False)
 

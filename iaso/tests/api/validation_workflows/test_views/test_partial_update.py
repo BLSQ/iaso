@@ -26,24 +26,24 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
         )
 
     def test_permissions(self):
-        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.patch(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.john_doe)
-        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.patch(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
-        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.patch(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)
-        res = self.client.patch(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.patch(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
         res = self.client.patch(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
             data={"name": ""},
         )
 
@@ -51,7 +51,7 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
         self.assertHasError(res_data, "name", "This field may not be blank.")
 
         res = self.client.patch(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
             data={"name": None},
         )
 
@@ -61,7 +61,7 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
     def test_partial_update(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.patch(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
             data={"name": "Random new name", "description": "Random new description"},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -82,7 +82,7 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
         )
 
         res = self.client.patch(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
             data={
                 "name": "Random new name 2",
             },
@@ -102,7 +102,7 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
         self.client.force_authenticate(self.john_wick)
         with self.assertNumQueries(5):
             res = self.client.patch(
-                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+                reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
                 data={"name": "Random new name", "description": "Random new description"},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)

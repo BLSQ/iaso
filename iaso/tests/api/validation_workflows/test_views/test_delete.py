@@ -25,7 +25,7 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
 
     def test_perform_delete(self):
         self.client.force_authenticate(self.john_wick)
-        res = self.client.delete(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.delete(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, 204)
 
         self.assertEqual(ValidationWorkflow.objects.all().count(), 0)
@@ -34,18 +34,18 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.john_wick)
         with self.assertNumQueries(5):
             res = self.client.delete(
-                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug})
+                reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
             )
             self.assertJSONResponse(res, 204)
 
     def test_permissions(self):
-        res = self.client.delete(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.delete(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.john_doe)
-        res = self.client.delete(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.delete(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, 403)
 
         self.client.force_authenticate(self.john_wick)
-        res = self.client.delete(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.delete(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, 204)

@@ -99,16 +99,16 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             i += 1
 
     def test_permissions(self):
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.john_doe)
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_is_paginated(self):
@@ -123,12 +123,12 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.setup_start()
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, instance)
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=2, paginated=True)
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"limit": 1})
+        res = self.client.get(reverse("mobile_validation_workflows-list"), data={"limit": 1})
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
@@ -137,13 +137,13 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.setup_start()
         self.client.force_authenticate(self.john_wick)
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "xxxx"})
+        res = self.client.get(reverse("mobile_validation_workflows-list"), data={"app_id": "xxxx"})
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "1.1"})
+        res = self.client.get(reverse("mobile_validation_workflows-list"), data={"app_id": "1.1"})
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -152,7 +152,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.instance.form = None
         self.instance.save()
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "1.1"})
+        res = self.client.get(reverse("mobile_validation_workflows-list"), data={"app_id": "1.1"})
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -163,7 +163,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.instance.save()
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"), data={"app_id": "1.1"})
+        res = self.client.get(reverse("mobile_validation_workflows-list"), data={"app_id": "1.1"})
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -178,7 +178,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.client.force_authenticate(self.john_wick)
 
         res = self.client.get(
-            reverse("mobile-validation-workflows-list"), data={"last_sync": datetime.now().isoformat()}
+            reverse("mobile_validation_workflows-list"), data={"last_sync": datetime.now().isoformat()}
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -186,7 +186,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
 
         res = self.client.get(
-            reverse("mobile-validation-workflows-list"), data={"last_sync": self.instance.updated_at.isoformat()}
+            reverse("mobile_validation_workflows-list"), data={"last_sync": self.instance.updated_at.isoformat()}
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -194,7 +194,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
 
         res = self.client.get(
-            reverse("mobile-validation-workflows-list"),
+            reverse("mobile_validation_workflows-list"),
             data={
                 "last_sync": self.instance.get_next_pending_nodes(self.validation_workflow)
                 .first()
@@ -211,7 +211,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.setup_start()
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
@@ -222,7 +222,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertIsNotNone(self.form.deleted_at)
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=0, paginated=True)
@@ -232,7 +232,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.setup_start()
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
@@ -244,7 +244,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         ValidationWorkflowEngine.start(self.validation_workflow, self.jane_doe, self.other_instance)
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
@@ -254,7 +254,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_should_only_contain_instances_with_validation_process(self):
         self.client.force_authenticate(self.john_wick)
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -265,7 +265,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.setup_start()
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
@@ -301,7 +301,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_data_approved(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
@@ -356,7 +356,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.client.force_authenticate(self.john_wick)
         self.setup_reject()
 
-        res = self.client.get(reverse("mobile-validation-workflows-list"))
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -404,6 +404,10 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        with self.assertNumQueries(2):
-            res = self.client.get(reverse("mobile-validation-workflows-list"))
+        with self.assertNumQueries(9):
+            # 1-2: PERM
+            # 3 ORGUNIT
+            # 4-5: QUERYSET + FILTER
+            # 6-9: SERIALIZER
+            res = self.client.get(reverse("mobile_validation_workflows-list"))
             self.assertJSONResponse(res, status.HTTP_200_OK)

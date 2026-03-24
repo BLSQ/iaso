@@ -11,7 +11,7 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
         User should not see workflows that don't belong to his account.
         """
         self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validationworkflows-dropdown"))
+        res = self.client.get(reverse("validation_workflows-dropdown"))
         res_json = self.assertJSONResponse(res, 200)
         self.assertFalse(any(item["value"] == "out-of-account" for item in res_json))
 
@@ -20,57 +20,57 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
     def test_search_filters(self):
         self.client.force_authenticate(self.john_wick)
 
-        res = self.client.get(reverse("validationworkflows-dropdown"))
+        res = self.client.get(reverse("validation_workflows-dropdown"))
         res_json = self.assertJSONResponse(res, 200)
         self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 
         with self.subTest("Search by name"):
-            res = self.client.get(reverse("validationworkflows-dropdown"), data={"name": "name"})
+            res = self.client.get(reverse("validation_workflows-dropdown"), data={"name": "name"})
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 15)
 
-            res = self.client.get(reverse("validationworkflows-dropdown"), data={"name": "NAME"})
+            res = self.client.get(reverse("validation_workflows-dropdown"), data={"name": "NAME"})
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 15)
 
-            res = self.client.get(reverse("validationworkflows-dropdown"), data={"name": "NAME-14"})
+            res = self.client.get(reverse("validation_workflows-dropdown"), data={"name": "NAME-14"})
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 1)
 
-            res = self.client.get(reverse("validationworkflows-dropdown"), data={"name": "wrong"})
+            res = self.client.get(reverse("validation_workflows-dropdown"), data={"name": "wrong"})
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 0)
 
         with self.subTest("Search by forms"):
             res = self.client.get(
-                reverse("validationworkflows-dropdown"), data={"forms": [Form.objects.order_by("-pk").first().pk + 1]}
+                reverse("validation_workflows-dropdown"), data={"forms": [Form.objects.order_by("-pk").first().pk + 1]}
             )
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 0)
 
             res = self.client.get(
-                reverse("validationworkflows-dropdown"),
+                reverse("validation_workflows-dropdown"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form.pk]},
             )
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 1)
 
             res = self.client.get(
-                reverse("validationworkflows-dropdown"),
+                reverse("validation_workflows-dropdown"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form.pk, self.form_2.pk]},
             )
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 1)
 
             res = self.client.get(
-                reverse("validationworkflows-dropdown"),
+                reverse("validation_workflows-dropdown"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form_2.pk]},
             )
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 1)
 
             res = self.client.get(
-                reverse("validationworkflows-dropdown"),
+                reverse("validation_workflows-dropdown"),
                 data={"forms": [Form.objects.order_by("-pk").first().pk + 1, self.form_2.pk, self.form_3.pk]},
             )
             res_json = self.assertJSONResponse(res, 200)
@@ -79,14 +79,14 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
             # testing with forms=x,y,z
 
             res = self.client.get(
-                reverse("validationworkflows-dropdown"),
+                reverse("validation_workflows-dropdown"),
                 data={"forms": ",".join(map(str, [Form.objects.order_by("-pk").first().pk + 1]))},
             )
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 0)
 
             res = self.client.get(
-                reverse("validationworkflows-dropdown"),
+                reverse("validation_workflows-dropdown"),
                 data={"forms": ",".join(map(str, [Form.objects.order_by("-pk").first().pk + 1, self.form.pk]))},
             )
             res_json = self.assertJSONResponse(res, 200)
@@ -95,11 +95,11 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
     def test_view_is_not_paginated(self):
         self.client.force_authenticate(self.john_wick)
 
-        res = self.client.get(reverse("validationworkflows-dropdown"))
+        res = self.client.get(reverse("validation_workflows-dropdown"))
         res_json = self.assertJSONResponse(res, 200)
         self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 
-        res = self.client.get(reverse("validationworkflows-dropdown"), data={"limit": 2})
+        res = self.client.get(reverse("validation_workflows-dropdown"), data={"limit": 2})
         res_json = self.assertJSONResponse(res, 200)
         self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 
@@ -108,7 +108,7 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
 
         with self.assertNumQueries(3):
             res = self.client.get(
-                reverse("validationworkflows-dropdown"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
+                reverse("validation_workflows-dropdown"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 1)
@@ -118,25 +118,25 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
 
         with self.assertNumQueries(3):
             self.client.force_authenticate(self.john_wick)
-            res = self.client.get(reverse("validationworkflows-dropdown"))
+            res = self.client.get(reverse("validation_workflows-dropdown"))
             res_json = self.assertJSONResponse(res, 200)
             self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 
     def test_permissions(self):
-        res = self.client.get(reverse("validationworkflows-dropdown"))
+        res = self.client.get(reverse("validation_workflows-dropdown"))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.john_doe)
-        res = self.client.get(reverse("validationworkflows-dropdown"))
+        res = self.client.get(reverse("validation_workflows-dropdown"))
         self.assertJSONResponse(res, 403)
 
         self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validationworkflows-dropdown"))
+        res = self.client.get(reverse("validation_workflows-dropdown"))
         self.assertJSONResponse(res, 200)
 
     def test_values(self):
         self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validationworkflows-dropdown"))
+        res = self.client.get(reverse("validation_workflows-dropdown"))
         res_json = self.assertJSONResponse(res, 200)
         self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 

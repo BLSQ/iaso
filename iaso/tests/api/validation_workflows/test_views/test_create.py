@@ -37,20 +37,20 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.john_wick)
 
         with self.subTest("name is required"):
-            res = self.client.post(reverse("validationworkflows-list"), data={})
+            res = self.client.post(reverse("validation_workflows-list"), data={})
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
             self.assertHasError(res_data, "name", "This field is required.")
 
         with self.subTest("forms that don't belong to account should raise an error"):
-            res = self.client.post(reverse("validationworkflows-list"), data={"forms": [self.form_3.pk]})
+            res = self.client.post(reverse("validation_workflows-list"), data={"forms": [self.form_3.pk]})
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(res_data, "forms", f'Invalid pk "{self.form_3.pk}" - object does not exist.')
 
     def test_happy_flow(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
-            reverse("validationworkflows-list"),
+            reverse("validation_workflows-list"),
             data={
                 "name": "Validation workflow",
                 "description": "Some description",
@@ -75,24 +75,24 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
         )
 
     def test_permissions(self):
-        res = self.client.post(reverse("validationworkflows-list"))
+        res = self.client.post(reverse("validation_workflows-list"))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.john_doe)
 
-        res = self.client.post(reverse("validationworkflows-list"))
+        res = self.client.post(reverse("validation_workflows-list"))
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
 
-        res = self.client.post(reverse("validationworkflows-list"))
+        res = self.client.post(reverse("validation_workflows-list"))
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         with self.assertNumQueries(9):
             res = self.client.post(
-                reverse("validationworkflows-list"),
+                reverse("validation_workflows-list"),
                 data={
                     "name": "Validation workflow",
                     "description": "Some description",

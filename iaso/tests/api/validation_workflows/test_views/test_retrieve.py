@@ -77,27 +77,27 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         self.node_template.save()
 
     def test_permissions(self):
-        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.john_doe)
-        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_404(self):
         self.client.force_authenticate(self.john_wick)
 
         with self.subTest("fetching wrong pk"):
-            res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": "wrong-slug"}))
+            res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": "wrong-slug"}))
             self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
         with self.subTest("fetching validation workflow that doesn't belong to account"):
             res = self.client.get(
-                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow_other_account.slug})
+                reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_other_account.slug})
             )
             self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -105,12 +105,12 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         validation_workflow = ValidationWorkflow.objects.create(name="without node", account=self.account)
 
         self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": validation_workflow.slug}))
+        res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_retrieve(self):
         self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         # checking main keys
@@ -178,5 +178,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         with self.assertNumQueries(10):
-            res = self.client.get(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+            res = self.client.get(
+                reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
+            )
             self.assertEqual(res.status_code, status.HTTP_200_OK)

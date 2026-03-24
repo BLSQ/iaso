@@ -34,7 +34,7 @@ class NestedHistorySerializer(ModelSerializer):
 class MobileValidationWorkflowListSerializer(ModelSerializer):
     instance_id = serializers.CharField(read_only=True, source="uuid")
     created_at = TimestampField(read_only=True)
-    history = NestedHistorySerializer(read_only=True, source="get_all_validation_nodes", many=True)
+    history = serializers.SerializerMethodField(read_only=True)
     validation_status = serializers.CharField(read_only=True, source="get_general_validation_status")
     rejection_comment = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(label="Timestamp of the last update (history)", read_only=True)
@@ -62,6 +62,12 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
                 .comment
             )
         return None
+
+    @extend_schema_field(NestedHistorySerializer(many=True))
+    def get_history(self, obj):
+        return NestedHistorySerializer(
+            obj.get_all_validation_nodes().select_related("created_by", "updated_by", "node"), many=True
+        ).data
 
     @extend_schema_field({"type": "integer", "format": "int64", "nullable": True})
     def get_updated_at(self, obj):

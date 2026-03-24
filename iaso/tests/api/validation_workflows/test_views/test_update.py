@@ -42,31 +42,31 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.validation_workflow.form_set.set([self.form, self.form_2])
 
     def test_permissions(self):
-        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.john_doe)
-        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
-        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)
-        res = self.client.put(reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "name", "This field is required.")
 
         res = self.client.put(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}), data={"name": ""}
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}), data={"name": ""}
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "name", "This field may not be blank.")
 
         res = self.client.put(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}), data={"name": None}
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}), data={"name": None}
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "name", "This field may not be null.")
@@ -74,7 +74,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
     def test_update(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.put(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
             data={"name": "Random new name", "description": "Random new description"},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -98,7 +98,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         )
 
         res = self.client.put(
-            reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
             data={"name": "Random new name"},
         )
 
@@ -119,7 +119,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.john_wick)
         with self.assertNumQueries(5):
             res = self.client.put(
-                reverse("validationworkflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+                reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
                 data={"name": "Random new name", "description": "Random new description"},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)

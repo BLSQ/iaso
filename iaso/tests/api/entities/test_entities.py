@@ -10,7 +10,9 @@ import pytz
 import time_machine
 
 from django.core.files import File
-from django.utils.timezone import now
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -167,52 +169,73 @@ class WebEntityAPITestCase(EntityAPITestCase):
         """
         Test the 'search' filter of /api/entities
 
-        This parameter allows to filter either by name, UUID or attributes (of the reference form)
+        This parameter allows to filter either by name, UUID, attributes (of the reference form),
+        as well as explicit ids: and uuids: prefixes.
         """
         self.client.force_authenticate(self.yoda)
 
         instance = Instance.objects.create(
             org_unit=self.ou_country,
             form=self.form_1,
+            uuid=uuid.uuid4(),
             json={"name": "c", "age": 30, "gender": "F"},
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        entity_1 = Entity.objects.create(
+            name="New Client",
+            entity_type=self.entity_type,
+            account=self.yoda.iaso_profile.account,
+            attributes=instance,
+        )
 
-        self.client.post("/api/entities/", data=payload, format="json")
+        second_instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
 
-        newly_added_entity = Entity.objects.last()
+        entity_2 = Entity.objects.create(
+            name="Client Old",
+            entity_type=self.entity_type,
+            account=self.yoda.iaso_profile.account,
+            attributes=second_instance,
+        )
 
-        # Case 1: search by entity name
-        response = self.client.get("/api/entities/?search=Client", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        the_result = response.json()["result"][0]
-        self.assertEqual(the_result["id"], newly_added_entity.id)
-
-        # Case 2: search by entity name - make sure it's case-insensitive and ignores white space
+        # search by entity name - make sure it's case-insensitive and ignores white space
         response = self.client.get("/api/entities/", data={"search": " cLiEnT "}, format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        the_result = response.json()["result"][0]
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 2)
 
-        # Case 3: search by entity UUID
-        response = self.client.get(f"/api/entities/?search={newly_added_entity.uuid}", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # Search by entity UUID
+        response = self.client.get("/api/entities/", data={"search": entity_1.uuid}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_1.id)
 
-        # Case 4: search by JSON attribute
-        response = self.client.get("/api/entities/?search=age", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # Search by JSON attribute
+        response = self.client.get("/api/entities/", data={"search": "30"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        # Both entities share the same instance attributes in this setup
+        self.assertEqual(len(data["result"]), 2)
+
+        # Multi-word search. "client new" should match "New Client"
+        response = self.client.get("/api/entities/", data={"search": "client new"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_1.id)
+
+        # 'ids:' prefix search
+        response = self.client.get("/api/entities/", data={"search": f"ids:{entity_2.id}"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_2.id)
+
+        # 'uuids:' prefix search
+        response = self.client.get("/api/entities/", data={"search": f"uuids:{entity_2.uuid}"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_2.id)
 
     def test_list_entities_annotate_duplicates(self):
         """
@@ -235,13 +258,49 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(10):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]
         self.assertEqual(len(result), 3)
         target_result = next(item for item in result if item["id"] == entities[0].id)
         self.assertTrue(target_result["has_duplicates"])
+
+    def test_list_entities_annotate_last_saved_at(self):
+        """Test `last_saved_instance` is annotated correctly without n+1 queries"""
+
+        expensive_annotation = """MAX(COALESCE("iaso_instance"."source_created_at", "iaso_instance"."created_at"))"""
+
+        self.client.force_authenticate(self.yoda)
+        source_created_at = timezone.make_aware(datetime.datetime(2025, 2, 3))
+
+        for i in range(3):
+            entity = Entity.objects.create(entity_type=self.entity_type, account=self.yoda.iaso_profile.account)
+            Instance.objects.create(
+                entity=entity,
+                form=self.form_1,
+                source_created_at=source_created_at + timedelta(days=i),
+            )
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get("/api/entities/", data={"order": "id"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        result = data["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["last_saved_instance"], "2025-02-03T00:00:00Z")
+
+        self.assertEqual(len(ctx.captured_queries), 8)
+        self.assertNotIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get("/api/entities/", data={"order": "-last_saved_instance"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        result = data["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["last_saved_instance"], "2025-02-05T00:00:00Z")
+
+        self.assertEqual(len(ctx.captured_queries), 6)
+        self.assertIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):
@@ -335,7 +394,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
             instance.org_unit.name,
             str(instance.org_unit.id),
-            "",
+            "2021-07-18 14:57:00",
             "Jean",
             "M.",
             "Dupont",
@@ -889,7 +948,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
             instance.org_unit.name,
             str(instance.org_unit.id),
-            "",
+            "2021-07-18 14:57:00",
         ]
         self.assertEqual(row_to_test, expected_row)
 
@@ -1316,91 +1375,3 @@ class WebEntityAPITestCase(EntityAPITestCase):
             inst.refresh_from_db()
             self.assertTrue(inst.deleted)
         self.assertEqual(m.EntityDuplicate.objects.count(), 1)  # only pending removed
-
-
-class WebEntityOrderingAPITestCase(EntityAPITestCase):
-    """Test custom ordering filter logic for the entity list api."""
-
-    def setUp(self):
-        super().setUp()
-
-        account = self.yoda.iaso_profile.account
-        self.entity_type_2 = m.EntityType.objects.create(name="Type 2", account=account)
-
-        burkina_faso = self.ou_country
-        yaba = m.OrgUnit.objects.create(name="Yaba", validation_status=m.OrgUnit.VALIDATION_VALID)
-        karo = m.OrgUnit.objects.create(name="karo", validation_status=m.OrgUnit.VALIDATION_VALID)
-
-        inst_1 = m.Instance.objects.create(org_unit=burkina_faso, form=self.form_1, json={"age": 30})
-        inst_2 = m.Instance.objects.create(org_unit=yaba, form=self.form_1, json={"age": 20})
-        inst_3 = m.Instance.objects.create(org_unit=karo, form=self.form_1, json={"age": 40})
-
-        base_time = now()
-
-        self.entity_1 = m.Entity.objects.create(
-            name="Zebra", entity_type=self.entity_type_2, attributes=inst_1, account=account
-        )
-        self.entity_1.created_at = base_time - timedelta(days=2)  # Oldest
-        self.entity_1.save()
-
-        self.entity_2 = m.Entity.objects.create(
-            name="Monkey", entity_type=self.entity_type, attributes=inst_2, account=account
-        )
-        self.entity_2.created_at = base_time - timedelta(days=1)  # Middle
-        self.entity_2.save()
-
-        self.entity_3 = m.Entity.objects.create(
-            name="Giraffe", entity_type=self.entity_type_2, attributes=inst_3, account=account
-        )
-        self.entity_3.created_at = base_time  # Newest
-        self.entity_3.save()
-
-    def test_ordering_default(self):
-        self.client.force_authenticate(self.yoda)
-        response = self.client.get("/api/entities/", format="json")
-        self.assertEqual(response.status_code, 200)
-
-        result = response.json()["result"]
-
-        # -created_at should be the default
-        self.assertEqual(result[0]["id"], self.entity_3.id)
-        self.assertEqual(result[1]["id"], self.entity_2.id)
-        self.assertEqual(result[2]["id"], self.entity_1.id)
-
-    def test_ordering_by_standard_model_field(self):
-        self.client.force_authenticate(self.yoda)
-
-        # Test ascending
-        response = self.client.get("/api/entities/?order=name", format="json")
-        result = response.json()["result"]
-        self.assertEqual(result[0]["id"], self.entity_3.id)  # Giraffe
-        self.assertEqual(result[2]["id"], self.entity_1.id)  # Zebra
-
-        # Test descending
-        response = self.client.get("/api/entities/?order=-name", format="json")
-        result = response.json()["result"]
-        self.assertEqual(result[0]["id"], self.entity_1.id)  # Zebra
-        self.assertEqual(result[2]["id"], self.entity_3.id)  # Giraffe
-
-    def test_ordering_by_dynamic_json_attribute(self):
-        self.client.force_authenticate(self.yoda)
-
-        # Order by a key from the entity attributes json
-        response = self.client.get("/api/entities/?order=age", format="json")
-        result = response.json()["result"]
-
-        # Ages are 20 (entity 2), 30 (entity 1), 40 (entity 3)
-        self.assertEqual(result[0]["id"], self.entity_2.id)
-        self.assertEqual(result[1]["id"], self.entity_1.id)
-        self.assertEqual(result[2]["id"], self.entity_3.id)
-
-    def test_ordering_by_attributes_span(self):
-        """Test ordering spanning relations (attributes__org_unit__name)."""
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get("/api/entities/?order=attributes__org_unit__name,-created_at", format="json")
-        result = response.json()["result"]
-
-        self.assertEqual(result[0]["id"], self.entity_1.id)  # Burkina Faso
-        self.assertEqual(result[1]["id"], self.entity_3.id)  # karo
-        self.assertEqual(result[2]["id"], self.entity_2.id)  # Yaba

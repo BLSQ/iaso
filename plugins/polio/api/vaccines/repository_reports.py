@@ -1,8 +1,8 @@
 """API endpoints and serializers for vaccine repository reports."""
 
 from django.db.models import Q
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -122,31 +122,31 @@ class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
 
         return base_qs.filter(Q(destructionreport__isnull=False) | Q(incidentreport__isnull=False))
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 "file_type",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by file type (IR, DR)",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "country_block",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by country block (comma separated list of org unit group ids)",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "countries",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by countries (comma separated list of country ids)",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 "vaccine_name",
-                openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Filter by vaccine name",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
         ]
     )

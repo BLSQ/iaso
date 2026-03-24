@@ -49,7 +49,7 @@ from .api.enketo import (
     enketo_public_create_url,
     enketo_public_launch,
 )
-from .api.entity import EntityViewSet
+from .api.entities.views import EntityViewSet
 from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
@@ -175,7 +175,7 @@ router.register(r"apitoken", APITokenViewSet, basename="apitoken")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")
 router.register(r"logs", LogsViewSet, basename="logs")
-router.register(r"profiles", ProfilesViewSet, basename="profiles")
+router.register(r"(?:(?P<version>(v1|v2)+)/)?profiles", ProfilesViewSet, basename="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")

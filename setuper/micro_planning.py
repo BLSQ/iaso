@@ -47,7 +47,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         }
         iaso_client.post("/api/profiles/", json=user)
 
-    users = iaso_client.get("/api/profiles?limit=20000")["profiles"]
+    users = iaso_client.get("/api/profiles?limit=20000")["results"]
 
     print(f"\t{len(users) - 1} users created")
 

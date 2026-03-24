@@ -219,7 +219,8 @@ INSTALLED_APPS += [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
-    "drf_yasg",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_json_widget",
     "phonenumber_field",
 ]
@@ -259,6 +260,10 @@ if DEBUG:
     MIDDLEWARE += [
         "querycount.middleware.QueryCountMiddleware",
     ]
+
+MIDDLEWARE += [
+    "iaso.middleware.CustomCamelCaseMiddleWare",
+]
 
 ROOT_URLCONF = "hat.urls"
 
@@ -459,11 +464,39 @@ REST_FRAMEWORK = {
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
-        "rest_framework.renderers.JSONRenderer",
-        "rest_framework.renderers.BrowsableAPIRenderer",
+        "rest_framework.renderers.JSONRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseJSONRenderer
+        "rest_framework.renderers.BrowsableAPIRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer
         "rest_framework_csv.renderers.CSVRenderer",
     ),
+    # in the future:
+    # 'DEFAULT_PARSER_CLASSES': (
+    #     'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    # ),
+    "JSON_UNDERSCOREIZE": {
+        "no_underscore_before_number": True,
+    },
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "TITLE": "Iaso",
+    "DESCRIPTION": "Iaso Swagger",
+    "VERSION": "v1",
+    "SERVE_PERMISSIONS": [
+        "rest_framework.permissions.IsAdminUser",
+        "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
+    ],
+    "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
+    "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
+    in ["true", "1"],
+}
+
+REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {
+    "iaso.utils.models.color.ColorField": "iaso.utils.serializer.color.ColorFieldSerializer"
 }
 
 SIMPLE_JWT = {

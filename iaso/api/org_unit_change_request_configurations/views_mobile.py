@@ -4,8 +4,8 @@ import django_filters
 
 from django.db.models import Q
 from django.utils import timezone
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
@@ -30,19 +30,19 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
     serializer_class = MobileOrgUnitChangeRequestConfigurationListSerializer
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
-    app_id_param = openapi.Parameter(
+    app_id_param = OpenApiParameter(
         name=APP_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Application id (`Project.app_id`)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
-    include_creation_param = openapi.Parameter(
+    include_creation_param = OpenApiParameter(
         name=INCLUDE_CREATION,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Whether to include OUCRC creations (used for legacy reasons)",
-        type=openapi.TYPE_BOOLEAN,
+        type=OpenApiTypes.STR,
     )
 
     def get_queryset(self):
@@ -56,7 +56,7 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             .order_by("org_unit_type_id")
         )
 
-    @swagger_auto_schema(manual_parameters=[app_id_param])
+    @extend_schema(parameters=[app_id_param])
     def list(self, request: Request, *args, **kwargs) -> Response:
         """
         Because some Org Unit Type restrictions are also configurable at the `Profile` level,

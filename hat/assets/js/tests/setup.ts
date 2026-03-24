@@ -1,7 +1,8 @@
 import '@testing-library/jest-dom';
+import DOMMatrix from '@thednp/dommatrix';
+import { toHaveNoViolations } from 'jest-axe';
 
 // fix for react-pdf
-import DOMMatrix from '@thednp/dommatrix';
 import { vi } from 'vitest';
 // @ts-ignore
 global.DOMMatrix = DOMMatrix as unknown as typeof DOMMatrix;
@@ -15,3 +16,5 @@ const ResizeObserverMock = vi.fn(() => ({
 
 // Stub the global ResizeObserver
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+
+expect.extend(toHaveNoViolations);

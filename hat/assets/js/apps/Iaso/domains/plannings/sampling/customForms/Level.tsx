@@ -42,7 +42,7 @@ type Props = {
     handleOrgUnitTypeChange: (value: any, index: number) => void;
     handleOrgUnitTypeQuantityChange: (value: any, index: number) => void;
     handleRemoveLevel: (index: number) => void;
-    orgUnitTypeId: number;
+    orgUnitTypeId?: number;
     handleParameterChange: (parameterName: string, value: any) => void;
     planning: Planning;
     handleCriteriaChange: (value: any, index: number) => void;

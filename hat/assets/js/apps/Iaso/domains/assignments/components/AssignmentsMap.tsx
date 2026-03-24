@@ -84,15 +84,16 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         return childrenOrgUnits?.filter(
             ou =>
                 ou.has_geo_json &&
-                ou.org_unit_type_id ===
-                    planning?.target_org_unit_type_details?.id &&
+                planning?.target_org_unit_type_details?.some(
+                    t => t.id === ou.org_unit_type_id,
+                ) &&
                 !assignments?.allAssignments?.find(
                     assignment => assignment.org_unit === ou.id,
                 ),
         );
     }, [
         childrenOrgUnits,
-        planning?.target_org_unit_type_details?.id,
+        planning?.target_org_unit_type_details,
         assignments?.allAssignments,
     ]);
 
@@ -100,15 +101,16 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         return childrenOrgUnits?.filter(
             ou =>
                 ou.has_geo_json &&
-                ou.org_unit_type_id ===
-                    planning?.target_org_unit_type_details?.id &&
+                planning?.target_org_unit_type_details?.some(
+                    t => t.id === ou.org_unit_type_id,
+                ) &&
                 assignments?.allAssignments?.find(
                     assignment => assignment.org_unit === ou.id,
                 ),
         );
     }, [
         childrenOrgUnits,
-        planning?.target_org_unit_type_details?.id,
+        planning?.target_org_unit_type_details,
         assignments?.allAssignments,
     ]);
 
@@ -116,10 +118,11 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         return childrenOrgUnits?.filter(
             ou =>
                 ou.has_geo_json &&
-                ou.org_unit_type_id !==
-                    planning?.target_org_unit_type_details?.id,
+                !planning?.target_org_unit_type_details?.some(
+                    t => t.id === ou.org_unit_type_id,
+                ),
         );
-    }, [childrenOrgUnits, planning?.target_org_unit_type_details?.id]);
+    }, [childrenOrgUnits, planning?.target_org_unit_type_details]);
     const isLoading =
         isLoadingChildrenOrgUnits ||
         isLoadingRootTeam ||

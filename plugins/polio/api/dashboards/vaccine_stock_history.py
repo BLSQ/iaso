@@ -41,7 +41,6 @@ class VaccineStockHistoryFilter(django_filters.rest_framework.FilterSet):
 class VaccineStockHistoryDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/vaccine_stock_history/
-    Returns all Preparedness sheet snapshots
     Simple endpoint that returns all model fields to facilitate data manipulation by OpenHexa or PowerBI
     """
 

@@ -7,12 +7,15 @@ from traceback import format_exc
 
 import pytz
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
 from django.http import HttpResponse
+from django.utils.module_loading import import_string
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _
+from django_filters import BaseInFilter, CharFilter
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, ValidationError
@@ -319,16 +322,23 @@ class EtlModelViewset(ModelViewSet):
     Use case: dashboard endpoints that will try to fetch all instances of a model
     """
 
-    pagination_class = EtlPaginator
+    results_key = "results"
+    # FIXME Contrary to name it remove result key if NOT paginated
+    remove_results_key_if_paginated = False
+
+    def pagination_class(self):
+        return EtlPaginator(self.get_results_key())
 
     def get_pagination_class(self):
         custom_pagination_class = getattr(self, "pagination_class", None)
-        if custom_pagination_class and not issubclass(custom_pagination_class, EtlPaginator):
-            raise TypeError(
-                f"The pagination_class must be a subclass of {EtlPaginator.__name__}. "
-                f"Received: {custom_pagination_class.__name__}."
-            )
-        return custom_pagination_class
+        if isinstance(custom_pagination_class, type):
+            if not issubclass(custom_pagination_class, EtlPaginator):
+                raise TypeError(
+                    f"The pagination_class must be a subclass of {EtlPaginator.__name__}. "
+                    f"Received: {custom_pagination_class.__name__}."
+                )
+            return custom_pagination_class
+        return EtlPaginator
 
 
 class ChoiceEnum(enum.Enum):
@@ -502,3 +512,29 @@ def is_field_referenced(field_name, requested_fields, order):
 
     fields_list = requested_fields.split(",")
     return ":all" in fields_list or field_name in fields_list or field_name in order or f"-{field_name}" in order
+
+
+class ModelSerializer(serializers.ModelSerializer):
+    @property
+    def serializer_field_mapping(self):
+        mapping = getattr(settings, "REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS", {})
+        resolved_mapping = {}
+
+        for model_field_class, serializer_field in mapping.items():
+            # Dynamically import from string path to avoid circular import in settings
+            if isinstance(serializer_field, str):
+                serializer_field = import_string(serializer_field)
+            if isinstance(model_field_class, str):
+                model_field_class = import_string(model_field_class)
+            resolved_mapping[model_field_class] = serializer_field
+
+        return {**serializers.ModelSerializer.serializer_field_mapping, **resolved_mapping}
+
+
+class CharInFilter(BaseInFilter, CharFilter):
+    """
+    Filter that checks if the model field is in a list of comma-separated strings.
+
+    Usage (in a FilterSet):
+    >>> filter_name = CharInFilter(field_name="model_field_name", lookup_expr="in")
+    """

@@ -9,17 +9,21 @@ import { Box, Tab, Tabs } from '@mui/material';
 import {
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal, theme,
+    LoadingSpinner,
+    makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { MutateFunction, useQueryClient } from 'react-query';
+import { UseMutateFunction, useQueryClient } from 'react-query';
 
+import { EditButton } from 'Iaso/components/Buttons/EditButton';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import { EditButton } from 'Iaso/components/Buttons/EditButton';
+import { UserRole } from 'Iaso/domains/userRoles/types/userRoles';
+import { useGetProfile } from 'Iaso/domains/users/hooks/useGetProfiles';
+import { DjangoError, SxStyles } from 'Iaso/types/general';
 import * as Permissions from 'Iaso/utils/permissions';
-import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
+import { useCurrentUser, User } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
 import PermissionsAttribution from './PermissionsAttribution';
@@ -29,11 +33,10 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
     tabs: {
-        marginBottom: theme.spacing(3),
+        marginBottom: theme => theme.spacing(1),
     },
     root: {
         position: 'relative',
@@ -45,12 +48,17 @@ const styles: SxStyles = {
         zIndex: -10,
         opacity: 0,
     },
-}
+};
 
 type Props = {
     titleMessage: IntlMessage;
-    initialData?: InitialUserData;
-    saveProfile: MutateFunction<Profile, any>;
+    userId?: number | string;
+    saveProfile: UseMutateFunction<
+        User,
+        DjangoError,
+        User | Partial<User>,
+        unknown
+    >;
     allowSendEmailInvitation?: boolean;
     isOpen: boolean;
     closeDialog: () => void;
@@ -58,11 +66,10 @@ type Props = {
 };
 
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
-const defaultData: InitialUserData = {};
 const EditUserDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
-    initialData = defaultData,
+    userId,
     saveProfile,
     allowSendEmailInvitation = false,
     closeDialog,
@@ -73,6 +80,8 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
 
     const queryClient = useQueryClient();
 
+    const { data: initialData, isLoading: isLoading } = useGetProfile(userId);
+
     const {
         user,
         setFieldValue,
@@ -80,7 +89,8 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
         setPhoneNumber,
         hasErrors,
         setEmail,
-    } = useInitialUser(initialData);
+    } = useInitialUser(initialData as InitialUserData | undefined);
+
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
     const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
@@ -89,15 +99,17 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
             if (key === 'org_units') {
-                currentUser[key] = user?.[key].value?.map(
-                    (orgUnit: OrgUnit) => orgUnit?.id,
-                );
-            } else if(key === 'user_roles'){
-                currentUser[key] = user?.[key].value?.map(
-                    (userRole) => userRole?.id ?? userRole,
+                currentUser[key] = (
+                    user?.[key]?.value as OrgUnit[] | undefined
+                )?.map(orgUnit => orgUnit?.id);
+            } else if (key === 'user_roles') {
+                currentUser[key] = user?.user_roles?.value?.map(
+                    (userRole: UserRole | number) =>
+                        (userRole as UserRole)?.id ?? userRole,
                 );
             } else {
-                currentUser[key] = user[key].value;
+                const userRecord = user as Record<string, { value: unknown }>;
+                currentUser[key] = userRecord[key]?.value;
             }
         });
 
@@ -130,7 +142,8 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     const userRolesPermissions = user?.user_roles_permissions.value ?? [];
 
     const isPhoneNumberUpdated =
-        (user.phone_number.value ?? '') !== (initialData?.phone_number ?? '') && !!user.id?.value;
+        (user.phone_number.value ?? '') !== (initialData?.phone_number ?? '') &&
+        !!user.id?.value;
 
     const isUserWithoutPermissions =
         userPermissions.length === 0 &&
@@ -221,109 +234,128 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                 dataTestId="user-dialog"
                 closeOnConfirm={false}
             >
-                <Tabs
-                    id="user-dialog-tabs"
-                    value={tab}
-                    sx={styles.tabs}
-                    onChange={(_event, newtab) => setTab(newtab)}
-                >
-                    <Tab
-                        sx={styles.tabs}
-                        value="infos"
-                        label={formatMessage(MESSAGES.infos)}
-                    />
-                    <Tab
-                        sx={styles.tabs}
-                        value="permissions"
-                        label={formatMessage(MESSAGES.permissions)}
-                    />
-                    <Tab
-                        sx={styles.tabs}
-                        value="locations"
-                        label={formatMessage(MESSAGES.location)}
-                    />
-                    {hasNoOrgUnitManagementWrite ? (
-                        <UsersDialogTabDisabled
-                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
-                            disabled
-                            tooltipMessage={formatMessage(
-                                MESSAGES.OrgUnitTypeWriteDisableTooltip,
-                                { type: formatMessage(MESSAGES.user) },
-                            )}
-                        />
-                    ) : (
-                        <Tab
+                {isLoading ? (
+                    <LoadingSpinner />
+                ) : (
+                    <>
+                        <Tabs
+                            id="user-dialog-tabs"
+                            value={tab}
                             sx={styles.tabs}
-                            value="orgUnitWriteTypes"
-                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
-                        />
-                    )}
-                </Tabs>
-                <Box sx={styles.root} id="user-profile-dialog">
-                    <Box
-                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
-                    >
-                        <UsersInfos
-                            setFieldValue={(key, value) =>
-                                setFieldValue(key, value)
-                            }
-                            initialData={initialData}
-                            currentUser={user}
-                            allowSendEmailInvitation={allowSendEmailInvitation}
-                            canBypassProjectRestrictions={
-                                canBypassProjectRestrictions
-                            }
-                            setPhoneNumber={setPhoneNumber}
-                            setEmail={setEmail}
-                            withPassword={false}
-                        />
-                    </Box>
-                    {tab === 'permissions' && (
-                        <PermissionsAttribution
-                            isSuperUser={initialData?.is_superuser ?? false}
-                            currentUser={user}
-                            handleChange={permissions => {
-                                setFieldValue('user_permissions', permissions);
-                            }}
-                            setFieldValue={(key, value) =>
-                                setFieldValue(key, value)
-                            }
-                        />
-                    )}
-                    {tab === 'locations' && (
-                        <UsersLocations
-                            handleChange={ouList =>
-                                setFieldValue('org_units', ouList)
-                            }
-                            currentUser={user}
-                        />
-                    )}
-                    {tab === 'orgUnitWriteTypes' && (
-                        <UserOrgUnitWriteTypes
-                            currentUser={user}
-                            handleChange={(ouTypesIds: number[]) =>
-                                setFieldValue(
-                                    'editable_org_unit_type_ids',
-                                    ouTypesIds,
-                                )
-                            }
-                        />
-                    )}
-                </Box>
+                            onChange={(_event, newtab) => setTab(newtab)}
+                        >
+                            <Tab
+                                sx={styles.tabs}
+                                value="infos"
+                                label={formatMessage(MESSAGES.infos)}
+                            />
+                            <Tab
+                                sx={styles.tabs}
+                                value="permissions"
+                                label={formatMessage(MESSAGES.permissions)}
+                            />
+                            <Tab
+                                sx={styles.tabs}
+                                value="locations"
+                                label={formatMessage(MESSAGES.location)}
+                            />
+                            {hasNoOrgUnitManagementWrite ? (
+                                <UsersDialogTabDisabled
+                                    label={formatMessage(
+                                        MESSAGES.orgUnitWriteTypes,
+                                    )}
+                                    disabled
+                                    tooltipMessage={formatMessage(
+                                        MESSAGES.OrgUnitTypeWriteDisableTooltip,
+                                        { type: formatMessage(MESSAGES.user) },
+                                    )}
+                                />
+                            ) : (
+                                <Tab
+                                    sx={styles.tabs}
+                                    value="orgUnitWriteTypes"
+                                    label={formatMessage(
+                                        MESSAGES.orgUnitWriteTypes,
+                                    )}
+                                />
+                            )}
+                        </Tabs>
+                        <Box sx={styles.root} id="user-profile-dialog">
+                            <Box
+                                sx={
+                                    tab === 'infos'
+                                        ? null
+                                        : styles.hiddenOpacity
+                                }
+                            >
+                                <UsersInfos
+                                    setFieldValue={(key, value) =>
+                                        setFieldValue(key, value)
+                                    }
+                                    initialData={initialData ?? {}}
+                                    currentUser={user}
+                                    allowSendEmailInvitation={
+                                        allowSendEmailInvitation
+                                    }
+                                    canBypassProjectRestrictions={
+                                        canBypassProjectRestrictions
+                                    }
+                                    setPhoneNumber={setPhoneNumber}
+                                    setEmail={setEmail}
+                                    mode="edit"
+                                />
+                            </Box>
+                            {tab === 'permissions' && (
+                                <PermissionsAttribution
+                                    isSuperUser={
+                                        initialData?.is_superuser ?? false
+                                    }
+                                    currentUser={user}
+                                    handleChange={permissions => {
+                                        setFieldValue(
+                                            'user_permissions',
+                                            permissions,
+                                        );
+                                    }}
+                                    setFieldValue={(key, value) =>
+                                        setFieldValue(key, value)
+                                    }
+                                />
+                            )}
+                            {tab === 'locations' && (
+                                <UsersLocations
+                                    handleChange={ouList =>
+                                        setFieldValue('org_units', ouList)
+                                    }
+                                    currentUser={user}
+                                />
+                            )}
+                            {tab === 'orgUnitWriteTypes' && (
+                                <UserOrgUnitWriteTypes
+                                    currentUser={user}
+                                    handleChange={(ouTypesIds: number[]) =>
+                                        setFieldValue(
+                                            'editable_org_unit_type_ids',
+                                            ouTypesIds,
+                                        )
+                                    }
+                                />
+                            )}
+                        </Box>
+                    </>
+                )}
             </ConfirmCancelModal>
         </>
     );
 };
 
-type EditUserButtonProps = Omit<React.ComponentProps<typeof EditButton>, "message">
+type EditUserButtonProps = Omit<
+    React.ComponentProps<typeof EditButton>,
+    'message'
+>;
 
 const EditUserButton = (props: EditUserButtonProps) => {
-    return (
-        <EditButton
-            message={MESSAGES.updateUser}
-            {...props}
-        />
-    );
+    return <EditButton message={MESSAGES.updateUser} {...props} />;
 };
 const modalWithButton = makeFullModal(EditUserDialogComponent, EditUserButton);
 const modalWithIcon = makeFullModal(EditUserDialogComponent, EditIconButton);

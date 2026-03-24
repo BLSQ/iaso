@@ -10,13 +10,14 @@ import {
     AddButton,
     ConfirmCancelModal,
     IntlMessage,
-    makeFullModal, theme,
+    makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { SxStyles } from 'Iaso/types/general';
 import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permissions from '../../../utils/permissions';
 import MESSAGES from '../messages';
@@ -28,11 +29,10 @@ import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
     tabs: {
-        marginBottom: theme.spacing(3),
+        marginBottom: theme => theme.spacing(1),
     },
     root: {
         position: 'relative',
@@ -44,7 +44,7 @@ const styles: SxStyles = {
         zIndex: -10,
         opacity: 0,
     },
-}
+};
 
 type Props = {
     titleMessage: IntlMessage;
@@ -94,8 +94,19 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                 user[key].value !== '' &&
                 user[key].value?.length !== 0 &&
                 user[key].value !== null
-            )
-                currentUser[key] = user[key].value;
+            ) {
+                if (key === 'org_units') {
+                    currentUser[key] = user?.[key].value?.map(
+                        (orgUnit: OrgUnit) => orgUnit?.id,
+                    );
+                } else if (key === 'user_roles') {
+                    currentUser[key] = user?.[key].value?.map(
+                        userRole => userRole?.id ?? userRole,
+                    );
+                } else {
+                    currentUser[key] = user[key].value;
+                }
+            }
         });
 
         createProfile(currentUser, {
@@ -265,9 +276,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                     )}
                 </Tabs>
                 <Box sx={styles.root} id="user-profile-dialog">
-                    <Box
-                        sx={tab === 'infos' ? null : styles.hiddenOpacity}
-                    >
+                    <Box sx={tab === 'infos' ? null : styles.hiddenOpacity}>
                         <UsersInfos
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -280,6 +289,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                             }
                             setPhoneNumber={setPhoneNumber}
                             setEmail={setEmail}
+                            mode="create"
                         />
                     </Box>
                     {tab === 'permissions' && (
@@ -297,13 +307,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>
-                                setFieldValue(
-                                    'org_units',
-                                    ouList.map(
-                                        (ouListItem: OrgUnit): number =>
-                                            ouListItem.id,
-                                    ),
-                                )
+                                setFieldValue('org_units', ouList)
                             }
                             currentUser={user}
                         />

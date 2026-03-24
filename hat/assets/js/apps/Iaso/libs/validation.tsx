@@ -1,8 +1,8 @@
+import { useCallback, useMemo, useState } from 'react';
 import { IntlFormatMessage, IntlMessage } from 'bluesquare-components';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import { isEqual } from 'lodash';
-import { useCallback, useMemo, useState } from 'react';
-import { UseMutateAsyncFunction } from 'react-query';
+import { UseMutateAsyncFunction, UseMutateFunction } from 'react-query';
 import { TestConfig, TestContext } from 'yup';
 import { ValidationError } from '../types/utils';
 import { ApiError } from './Api';
@@ -16,7 +16,9 @@ import { ApiError } from './Api';
 
 type Params = {
     // Typing for this function is taken from react-query's docs.
-    mutationFn: UseMutateAsyncFunction<any, any, any>;
+    mutationFn:
+        | UseMutateAsyncFunction<any, any, any>
+        | UseMutateFunction<any, any, any>;
     onSuccess?: any;
     onError?: any;
     onCatch?: any;

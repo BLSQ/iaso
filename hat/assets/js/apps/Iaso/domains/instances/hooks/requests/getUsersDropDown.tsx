@@ -1,16 +1,29 @@
-import { makeUrlWithParams } from '../../../../libs/utils';
-import { getRequest } from '../../../../libs/Api';
-import getDisplayName from '../../../../utils/usersUtils';
-import { ProfileListResponseItem } from 'Iaso/domains/users/types';
+import { QueryClient } from 'react-query';
+import { getRequest } from 'Iaso/libs/Api';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
 
-export const getUsersDropDown = async (query: string): Promise<any[]> => {
-    const url = makeUrlWithParams(`/api/profiles/`, { search: query });
-    return getRequest(url).then(data =>
-        data.results.map((user: ProfileListResponseItem) => {
-            return {
-                value: user.user_id,
-                label: getDisplayName(user),
-            };
-        }),
+type Props = {
+    query: string;
+    additionalFilters?: object;
+    limit?: number;
+    queryClient: QueryClient;
+};
+export const getUsersDropDown = async ({
+    query,
+    additionalFilters,
+    limit,
+    queryClient,
+}: Props): Promise<DropdownOptions<number>[]> => {
+    const params = {
+        ...(limit && { limit }),
+        ...(query && { search: query }),
+        ...additionalFilters,
+    };
+
+    const data = await queryClient.fetchQuery(['profiles', params ?? {}], () =>
+        getRequest(makeUrlWithParams('/api/profiles/dropdown/', params)),
     );
+
+    return limit ? (data?.results ?? []) : data;
 };

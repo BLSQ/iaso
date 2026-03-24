@@ -19,15 +19,16 @@ import {
 import DatesRange from 'Iaso/components/filters/DatesRange';
 // @ts-ignore
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
-import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
-
-import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import InputComponent from '../../../components/forms/InputComponent';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
-} from '../../../utils/featureFlags';
-import { useCurrentUser } from '../../../utils/usersUtils';
+} from 'Iaso/utils/featureFlags';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
+
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
@@ -40,7 +41,6 @@ import { baseUrl } from '../config';
 import {
     useGetEntitiesApiParams,
     useGetEntityTypesDropdown,
-    useGetUsersDropDown,
 } from '../hooks/requests';
 import { useFiltersParams } from '../hooks/useFiltersParams';
 import MESSAGES from '../messages';
@@ -106,7 +106,10 @@ const Filters: FunctionComponent<Props> = ({
     const { data: selectedTeam } = useGetTeam(
         filters?.submitterTeamId ? parseInt(filters.submitterTeamId, 10) : 0,
     );
-    const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
+    const { data: usersOptions } = useGetProfilesDropdown({
+        team: selectedTeam,
+        errorMessage: MESSAGES.projectsError,
+    });
     const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
     const sourceVersionId = currentUser?.account?.default_version?.id;
     const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({

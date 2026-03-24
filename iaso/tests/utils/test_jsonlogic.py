@@ -171,6 +171,12 @@ class JsonLogicTests(TestCase):
             "(AND: ('var1__exact', 1), (NOT (AND: ('var2__exact', 1))), ('var3__gt', 1), ('var4__gte', 1), ('var5__lt', 1), ('var6__lte', 1))",
         )
 
+    def test_jsonlogic_to_q_filters_trim(self) -> None:
+        """Test that jsonlogic_to_q trims whitespaces on values."""
+        filters = {"and": [{"==": [{"var": "gender"}, "F "]}, {"<": [{"var": "age"}, " 25"]}]}
+        q, _ = jsonlogic_to_q(filters)
+        self.assertEqual(str(q), "(AND: ('gender__exact', 'F'), ('age__lt', '25'))")
+
 
 class JsonLogicSomeAllStringFieldTests(TestCase):
     def test_some_operator_all_values_present(self):

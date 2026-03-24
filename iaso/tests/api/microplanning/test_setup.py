@@ -43,11 +43,11 @@ class PlanningSerializersTestBase(APITestCase):
             started_at="2025-01-01",
             ended_at="2025-01-10",
             description="A test planning",
-            target_org_unit_type=self.org_unit_type_child,
             created_by=self.user_1,
             pipeline_uuids=["111e4567-e89b-12d3-a456-426614174000", "222e4567-e89b-12d3-a456-426614174000"],
         )
         self.planning.forms.set([self.form_1, self.form_2])
+        self.planning.target_org_unit_types.set([self.org_unit_type_child])
         self.planning_sampling_result = PlanningSamplingResult.objects.create(
             planning=self.planning,
             pipeline_id="123e4567-e89b-12d3-a456-426614174000",

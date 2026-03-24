@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, Group, OrgUnit
-from iaso.models.deduplication import ValidationStatus
 from iaso.models.storage import StorageDevice
 
 
@@ -39,10 +38,12 @@ class EntityExportSerializer(serializers.ModelSerializer):
     last_saved_instance = serializers.SerializerMethodField(label="Last Update")
 
     def get_last_saved_instance(self, obj):
-        if timestamp := getattr(obj, "last_saved_instance", None):
-            return timestamp.strftime(EXPORTS_DATETIME_FORMAT)
+        if hasattr(obj, "last_saved_instance"):
+            result = obj.last_saved_instance  # annotated value
+        else:
+            result = obj.get_latest_instance_created_at()
 
-        return ""
+        return result.strftime(EXPORTS_DATETIME_FORMAT) if result else ""
 
     def to_representation(self, instance):
         """
@@ -148,10 +149,13 @@ class EntityListSerializer(serializers.ModelSerializer):
     has_duplicates = serializers.SerializerMethodField()
 
     def get_last_saved_instance(self, obj):
-        return getattr(obj, "last_saved_instance", None)
+        if hasattr(obj, "last_saved_instance"):
+            return obj.last_saved_instance  # annotated value
+
+        return obj.get_latest_instance_created_at()
 
     def get_has_duplicates(self, obj):
-        return getattr(obj, "has_duplicates", None)
+        return bool(obj.get_pending_duplicate_ids())
 
     def get_name(self, obj):
         return obj.attributes and obj.attributes.json and obj.attributes.json.get("name")
@@ -191,7 +195,9 @@ class EntitySerializer(serializers.ModelSerializer):
     attributes = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
     org_unit = serializers.SerializerMethodField()
-    duplicates = serializers.SerializerMethodField()
+    duplicates = serializers.ListField(
+        source="get_pending_duplicate_ids", child=serializers.IntegerField(), read_only=True, default=[]
+    )
     nfc_cards = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
@@ -212,9 +218,6 @@ class EntitySerializer(serializers.ModelSerializer):
             submitter = None
         return submitter
 
-    def get_duplicates(self, entity: Entity):
-        return _get_duplicates(entity)
-
     def get_nfc_cards(self, entity: Entity):
         nfc_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
         return nfc_count
@@ -222,14 +225,3 @@ class EntitySerializer(serializers.ModelSerializer):
     @staticmethod
     def get_entity_type_name(obj: Entity):
         return obj.entity_type.name if obj.entity_type else None
-
-
-def _get_duplicates(entity):
-    results = []
-    e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
-    e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
-    if e1qs.count() > 0:
-        results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
-    elif e2qs.count() > 0:
-        results = results + list(map(lambda x: x.entity1.id, e2qs.all()))
-    return results

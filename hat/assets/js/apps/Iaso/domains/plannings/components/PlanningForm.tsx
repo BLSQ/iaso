@@ -93,11 +93,14 @@ export const PlanningForm: FunctionComponent<Props> = ({
         pipeline_uuids: pipelineUuids,
         target_org_unit_type_details,
     } = useMemo(() => planning ?? {}, [planning]) as Planning;
-    const [displayWarning, setDisplayWarning] = useState(false);
     const selectedOrgUnit = org_unit_details?.id;
+    const [displayWarning, setDisplayWarning] = useState(false);
     const selectedTeam = team_details?.id;
     const project = project_details?.id;
-    const targetOrgUnitType = target_org_unit_type_details?.id;
+    const targetOrgUnitTypes = useMemo(
+        () => target_org_unit_type_details?.map(t => t.id) ?? [],
+        [target_org_unit_type_details],
+    );
     const assignmentUrl = `/${baseUrls.assignments}/planningId/${id}/team/${selectedTeam}`;
     const startDate = started_at ? moment(started_at).format('L') : undefined;
     const endDate = ended_at ? moment(ended_at).format('L') : undefined;
@@ -165,7 +168,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
             description,
             publishingStatus,
             pipelineUuids,
-            targetOrgUnitType,
+            targetOrgUnitTypes,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -176,11 +179,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const hasStarted = Boolean(
         startDate && moment().isAfter(moment(startDate, 'DD/MM/YYYY'), 'day'),
     );
-
     const isEditingDisabled = Boolean(
         (isPublished || hasStarted) && mode === 'edit',
     );
-
     const {
         values,
         setFieldValue,
@@ -238,8 +239,8 @@ export const PlanningForm: FunctionComponent<Props> = ({
             setFieldValue('forms', null);
         }
         if (keyValue === 'selectedOrgUnit') {
-            setFieldTouched('targetOrgUnitType', false);
-            setFieldValue('targetOrgUnitType', null);
+            setFieldTouched('targetOrgUnitTypes', false);
+            setFieldValue('targetOrgUnitTypes', []);
         }
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
@@ -308,7 +309,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                 titleMessage={formatMessage(MESSAGES.planningWarningTitle)}
             >
                 {formatMessage(MESSAGES.planningWarningMessage)}
-            </ConfirmCancelModal>{' '}
+            </ConfirmCancelModal>
             <FormikProvider value={formik}>
                 <Grid container spacing={2}>
                     <Grid xs={12} md={4} item>
@@ -456,15 +457,21 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 />
                                 <InputComponent
                                     type="select"
-                                    keyValue="targetOrgUnitType"
+                                    multi
+                                    keyValue="targetOrgUnitTypes"
+                                    onChange={(keyValue, value) =>
+                                        onChange(
+                                            keyValue,
+                                            commaSeparatedIdsToArray(value),
+                                        )
+                                    }
                                     label={MESSAGES.targetOrgUnitType}
-                                    onChange={onChange}
-                                    errors={getErrors('targetOrgUnitType')}
+                                    errors={getErrors('targetOrgUnitTypes')}
                                     value={
                                         isFetchingOrgunitTypes ||
                                         isFetchingRootOrgUnit
                                             ? undefined
-                                            : values.targetOrgUnitType
+                                            : values.targetOrgUnitTypes
                                     }
                                     disabled={
                                         !values.selectedOrgUnit ||

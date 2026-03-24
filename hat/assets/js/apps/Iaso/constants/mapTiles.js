@@ -2,7 +2,7 @@ const arcgisPattern =
     'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
 const tiles = {
     osm: {
-        maxZoom: 19,
+        maxZoom: 18,
         url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

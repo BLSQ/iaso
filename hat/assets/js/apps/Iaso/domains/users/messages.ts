@@ -626,6 +626,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Please check the file encoding. It must be in UTF-8 format to be read by Iaso.',
     },
+    error: {
+        defaultMessage: 'Error',
+        id: 'iaso.users.errorSingleCap',
+    },
 });
 
 export default MESSAGES;

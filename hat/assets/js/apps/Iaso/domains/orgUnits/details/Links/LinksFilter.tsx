@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import { DataSource } from 'Iaso/domains/dataSources/types/dataSources';
+import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { SearchButton } from '../../../../components/SearchButton';
 import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
-import { useFilterState } from '../../../../hooks/useFilterState';
 import { scoreOptions } from '../../../links/components/LinksFilters';
 import {
     useGetAlgorithmRunsOptions,
     useGetAlgorithmsOptions,
-    useGetProfilesOptions,
     useSourceOptions,
     useStatusOptions,
 } from '../../../links/hooks/filters';
@@ -37,7 +37,7 @@ export const LinksFilter: FunctionComponent<Props> = ({
         useGetAlgorithmRunsOptions();
     const statuses = useStatusOptions();
     const { data: validators, isLoading: isLoadingValidators } =
-        useGetProfilesOptions();
+        useGetProfilesDropdown();
     // const { data: sources, isLoading: isLoadingSources } = useGetDataSources();
     const sourceOptions = useSourceOptions(sources);
 

@@ -7,6 +7,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { Pagination } from 'Iaso/types/general';
+import { DjangoError } from 'Iaso/types/general';
 import { Profile } from 'Iaso/utils/usersUtils';
 
 export const useGetProfilesApiParams = params => {
@@ -48,13 +49,13 @@ export const useGetProfiles = (params): UseQueryResult<ListResponse, Error> => {
     return useSnackQuery(['profiles', apiParams], () => getRequest(url));
 };
 
-const getProfile = async (profileId?: string): Promise<Profile> => {
+const getProfile = async (profileId?: number | string): Promise<Profile> => {
     return getRequest(`/api/profiles/${profileId}/`);
 };
 
 export const useGetProfile = (
-    profileId?: string,
-): UseQueryResult<ProfileRetrieveResponseItem, Error> => {
+    profileId?: number | string,
+): UseQueryResult<ProfileRetrieveResponseItem, DjangoError> => {
     const queryKey: any[] = ['userDetail', profileId];
     return useSnackQuery({
         queryKey,

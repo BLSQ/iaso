@@ -61,7 +61,12 @@ class ValidationWorkflowViewSet(ModelViewSet):
             )
         if self.action == "retrieve":
             qs = qs.prefetch_related(
-                "node_templates", "form_set", "node_templates__roles_required", "node_templates__roles_required__group"
+                "node_templates",
+                "node_templates__next_node_templates",
+                "node_templates__previous_node_templates",
+                "form_set",
+                "node_templates__roles_required",
+                "node_templates__roles_required__group",
             ).select_related("created_by", "updated_by")
         return qs
 

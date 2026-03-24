@@ -7,14 +7,9 @@ from iaso.models import Form, ValidationWorkflow
 
 class ValidationWorkflowCreateSerializer(ModelSerializer):
     forms = serializers.PrimaryKeyRelatedField(
-        queryset=Form.objects.none(),
-        many=True,
-        required=True,
-        source="form_set",
-        write_only=True,
-        allow_empty=False,
-        allow_null=False,
+        queryset=Form.objects.none(), many=True, required=False, source="form_set", write_only=True, allow_empty=True
     )
+
     account = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault(), write_only=True)
 

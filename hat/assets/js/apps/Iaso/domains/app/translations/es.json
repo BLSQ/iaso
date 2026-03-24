@@ -1231,6 +1231,7 @@
     "iaso.projets.featureflag.limit_ou_download_to_roots": "Móvil: Limitar la descarga de unidades organizativas a lo que el usuario tiene acceso",
     "iaso.projets.featureflag.mobile_check_forms_update": "Móvil: Advertir al usuario cuando los formularios han sido actualizados",
     "iaso.projets.featureflag.mobile_check_ou_update": "Móvil: Advertir al usuario cuando las unidades organizativas han sido actualizadas",
+    "iaso.projets.featureflag.mobile_enable_validation_workflow": "Móvil: Habilitar flujo de trabajo de validación",
     "iaso.projets.featureflag.mobile_entity_limited_search": "Móvil: Limitar búsqueda de entidades",
     "iaso.projets.featureflag.mobile_entity_no_creation": "Móvil: El usuario no puede crear una entidad",
     "iaso.snackBar.deleteEntityTypeError": "Se ha producido un error al eliminar un tipo de entidad",

@@ -1,13 +1,25 @@
+from rest_framework import serializers
+
 from iaso.api.common import ModelSerializer
-from iaso.models import ValidationWorkflow
+from iaso.models import Form, ValidationWorkflow
 
 
 class ValidationWorkflowUpdateSerializer(ModelSerializer):
+    forms = serializers.PrimaryKeyRelatedField(
+        queryset=Form.objects.none(), many=True, required=False, source="form_set", write_only=True, allow_empty=True
+    )
+
     class Meta:
         model = ValidationWorkflow
-        fields = ["name", "description", "slug"]
+        fields = ["name", "description", "slug", "forms"]
 
         extra_kwargs = {"name": {"write_only": True}, "description": {"write_only": True}, "slug": {"read_only": True}}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
 
     def update(self, instance, validated_data):
         request = self.context.get("request")

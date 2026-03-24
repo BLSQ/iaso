@@ -82,7 +82,6 @@ class ProfilesViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
 
-    filter_backends = [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = ["id", "user__username", "annotated_first_user_role"]

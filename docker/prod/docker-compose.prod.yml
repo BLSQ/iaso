@@ -79,6 +79,7 @@ services:
         USE_CELERY: ${USE_CELERY}
         CELERY_BROKER_URL: ${CELERY_BROKER_URL}
         CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+        WORKER: ${WORKER}
 
       logging: &iaso_logging
         driver: json-file

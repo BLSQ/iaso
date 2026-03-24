@@ -124,6 +124,7 @@ from .api.tasks.views import TaskSourceViewSet
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
+from .api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
@@ -265,6 +266,7 @@ router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="va
     basename="validation-node-templates",
     parents_query_lookups=["workflow__slug"],
 )
+router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile-validation-workflows")
 
 router.registry.extend(plugins_router.registry)
 

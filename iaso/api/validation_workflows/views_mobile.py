@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-from iaso.api.common import CustomPaginationListModelMixin
+from iaso.api.common.mixin import CustomPaginationListModelMixin
 from iaso.api.validation_workflows.filters import MobileValidationWorkflowListFilter
 from iaso.api.validation_workflows.pagination import MobileValidationWorkflowPagination
 from iaso.api.validation_workflows.permissions import HasValidationWorkflowPermission

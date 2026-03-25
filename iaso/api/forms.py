@@ -4,7 +4,7 @@ from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from django.db.models import BooleanField, Case, Count, Exists, Max, OuterRef, Prefetch, Q, When
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Subquery
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import permissions, serializers, status
@@ -25,11 +25,13 @@ from iaso.models import (
     Form,
     FormAttachment,
     FormVersion,
+    Instance,
     OrgUnit,
     OrgUnitType,
     Project,
     ProjectFeatureFlags,
 )
+from iaso.models.base import Mapping
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
@@ -305,14 +307,8 @@ class FormsViewSet(ModelViewSet):
         order = self.request.query_params.get("order", default_order).split(",")
 
         if is_field_referenced("has_mappings", requested_fields, order):
-            queryset = queryset.annotate(
-                mapping_count=Count("mapping"),
-                has_mappings=Case(
-                    When(mapping_count__gt=0, then=True),
-                    default=False,
-                    output_field=BooleanField(),
-                ),
-            )
+            mappings_exist = Mapping.objects.filter(form_id=OuterRef("pk"))
+            queryset = queryset.annotate(has_mappings=Exists(mappings_exist))
 
         if is_field_referenced("has_attachments", requested_fields, order) and not is_request_from_manifest:
             attachment_exists = FormAttachment.objects.filter(form_id=OuterRef("pk"))
@@ -324,7 +320,8 @@ class FormsViewSet(ModelViewSet):
             profile = False
 
         if is_field_referenced("instance_updated_at", requested_fields, order) and not is_request_from_manifest:
-            queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+            latest_instance = Instance.objects.filter(form=OuterRef("pk")).order_by("-updated_at")
+            queryset = queryset.annotate(instance_updated_at=Subquery(latest_instance.values("updated_at")[:1]))
 
         enable_count = is_field_referenced("instances_count", requested_fields, order) and not is_request_from_manifest
 
@@ -378,15 +375,11 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # spare 8 or more sql when not needed
         if not is_request_from_manifest:
             # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
             # TODO
             #  - be smarter cfr is_field_referenced
-            #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
-
             prefetch_relations = [
-                "form_versions",
                 "projects",
                 "projects__feature_flags",
                 "reference_of_org_unit_types",

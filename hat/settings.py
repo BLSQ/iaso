@@ -258,7 +258,7 @@ MIDDLEWARE += [
 ]
 if DEBUG:
     MIDDLEWARE += [
-        "querycount.middleware.QueryCountMiddleware",
+        "iaso.middleware.SafeQueryCountMiddleware",
     ]
 
 MIDDLEWARE += [

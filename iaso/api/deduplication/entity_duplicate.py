@@ -175,13 +175,14 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     root = _xmlfile_to_element(att1.file)
 
     for field_name, e_id in merge_def.items():
-        the_val = lookup[e_id].json[field_name]
-        try:
-            the_field = root.find(".//" + field_name)
-            if the_field is not None:
-                the_field.text = the_val
-        except Exception as e:
-            logger.exception("Error updating xml field %s: %s", field_name, e)
+        the_val = lookup[e_id].json.get(field_name, None)
+        if the_val is not None:
+            try:
+                the_field = root.find(".//" + field_name)
+                if the_field is not None:
+                    the_field.text = the_val
+            except Exception as e:
+                logger.exception("Error updating xml field %s: %s", field_name, e)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:

@@ -31,6 +31,17 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
             account=self.account,
         )
 
+        self.other_validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name 2",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account_2,
+        )
+
+        self.other_node = ValidationNodeTemplate.objects.create(
+            name="Other node", workflow=self.other_validation_workflow
+        )
+
         # create some nodes
         self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
         self.second_node = ValidationNodeTemplate.objects.create(
@@ -68,6 +79,17 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
             )
         )
         self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_check_validation_workflow_parent_slug_access(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-list",
+                kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
+            )
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=0)
 
     def test_number_queries(self):
         self.client.force_authenticate(self.john_wick)

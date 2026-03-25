@@ -24,7 +24,7 @@ from iaso.api.validation_workflows_node_templates.serializers.list import Valida
 from iaso.api.validation_workflows_node_templates.serializers.move import ValidationNodeTemplateMoveSerializer
 from iaso.api.validation_workflows_node_templates.serializers.retrieve import ValidationNodeTemplateRetrieveSerializer
 from iaso.api.validation_workflows_node_templates.serializers.update import ValidationNodeTemplateUpdateSerializer
-from iaso.models import UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import UserRole, ValidationNodeTemplate
 
 
 @extend_schema(tags=["Validation workflow node templates"])
@@ -68,19 +68,11 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
         qs = qs.filter(workflow__account=account)
         if self.action in ["delete"]:
             return qs.prefetch_related("roles_required", "next_node_templates", "previous_node_templates")
-        # if self.action in ["move"]:
-        #     return qs.prefetch_related("next_node_templates", "previous_node_templates")
         if self.action in ["retrieve", "list"]:
             return qs.select_related("workflow", "workflow__account").prefetch_related(
                 Prefetch("roles_required", queryset=UserRole.objects.select_related("group"))
             )
         return qs.select_related("workflow", "workflow__account")
-
-    def get_validation_workflow(self):
-        account = self.request.user.iaso_profile.account
-        return ValidationWorkflow.objects.prefetch_related("node_templates").get(
-            account=account, slug=self.kwargs.get("parent_lookup_workflow__slug")
-        )
 
     # This endpoint returns a plain list (not paginated).
     # pagination_class=None ensures the OpenAPI schema reflects that.

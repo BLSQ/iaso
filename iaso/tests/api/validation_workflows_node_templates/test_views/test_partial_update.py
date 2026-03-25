@@ -27,6 +27,17 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
         )
 
+        self.other_validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name 2",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account_2,
+        )
+
+        self.other_node = ValidationNodeTemplate.objects.create(
+            name="First node 2", workflow=self.other_validation_workflow
+        )
+
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name",
             description="Random description",
@@ -42,6 +53,20 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             color="#ffffff",
             can_skip_previous_nodes=True,
         )
+
+    def test_check_validation_workflow_parent_slug_access(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.other_validation_workflow.slug,
+                    "slug": self.other_node.slug,
+                },
+            ),
+            data={"name": "test"},
+        )
+        self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)
 
     def test_happy_flow(self):
         self.client.force_authenticate(self.john_wick)

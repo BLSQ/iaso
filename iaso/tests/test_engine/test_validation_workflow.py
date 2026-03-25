@@ -4,7 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Instance, Profile, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Instance, Profile, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
@@ -28,7 +28,11 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         self.other_user = get_user_model().objects.create(username="john.doe", password="testpass")
         self.workflow = ValidationWorkflow.objects.create(name="test workflow", account=account)
         self.check_file_node = ValidationNodeTemplate.objects.create(workflow=self.workflow, name="check_file_node")
-        self.instance = Instance.objects.create()
+
+        self.form = Form.objects.create()
+        self.instance = Instance.objects.create(form=self.form)
+
+        self.workflow.form_set.add(self.form)
         self.workflow.refresh_from_db()
 
     def test_start(self):
@@ -151,7 +155,9 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         )
         self.manager_approves_node.previous_node_templates.add(self.check_file_name_node)
 
-        self.instance = Instance.objects.create()
+        self.form = Form.objects.create()
+        self.instance = Instance.objects.create(form=self.form)
+        self.workflow.form_set.add(self.form)
         self.workflow.refresh_from_db()
 
     def test_happy_flow(self):
@@ -342,7 +348,11 @@ class TestPermissionCheck(TestCase):
 
         self.check_file_node.roles_required.set([user_role_1, user_role_2])
 
-        self.instance = Instance.objects.create()
+        self.form = Form.objects.create()
+        self.instance = Instance.objects.create(form=self.form)
+
+        self.workflow.form_set.add(self.form)
+
         self.workflow.refresh_from_db()
 
     def _has_no_impact(self):
@@ -481,8 +491,12 @@ class TestUndoFeature(TestCase):
             workflow=self.workflow, name="check_file_node"
         )
         self.manager_approves_node.previous_node_templates.add(self.check_file_type_node)
-        self.instance = Instance.objects.create()
-        self.parent_instance = Instance.objects.create()
+        self.form = Form.objects.create()
+
+        self.instance = Instance.objects.create(form=self.form)
+        self.parent_instance = Instance.objects.create(form=self.form)
+
+        self.workflow.form_set.add(self.form)
         self.workflow.refresh_from_db()
 
     def test_try_undo_first_approved_node(self):
@@ -635,8 +649,13 @@ class TestResubmitFeature(TestCase):
             workflow=self.workflow, name="check_file_node"
         )
         self.manager_approves_node.previous_node_templates.add(self.check_file_type_node)
-        self.instance = Instance.objects.create()
-        self.parent_instance = Instance.objects.create()
+        self.form = Form.objects.create()
+
+        self.instance = Instance.objects.create(form=self.form)
+        self.parent_instance = Instance.objects.create(form=self.form)
+
+        self.workflow.form_set.add(self.form)
+
         self.workflow.refresh_from_db()
 
     def test_resubmit_after_reject(self):
@@ -755,7 +774,10 @@ class TestByPassFeature(TestCase):
         self.manager_approves_node.previous_node_templates.add(self.check_file_name_node)
         self.manager_approves_node.roles_required.set([user_role_3])
 
-        self.instance = Instance.objects.create()
+        self.form = Form.objects.create()
+        self.workflow.form_set.add(self.form)
+
+        self.instance = Instance.objects.create(form=self.form)
         self.workflow.refresh_from_db()
 
     def test_approve_last_node_if_nothing_else_has_been_approved(self):
@@ -1039,7 +1061,11 @@ class TestUndoFeatureForSkipNodes(TestCase):
         )
         self.big_boss_approves_node.previous_node_templates.add(self.manager_approves_node)
 
-        self.instance = Instance.objects.create()
+        self.form = Form.objects.create()
+
+        self.instance = Instance.objects.create(form=self.form)
+
+        self.workflow.form_set.add(self.form)
         self.workflow.refresh_from_db()
 
     def test_undo_last_approved_node_when_first_has_been_approved(self):

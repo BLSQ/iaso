@@ -56,5 +56,5 @@ class TestValidationWorkflow(TestCase):
 
         self.assertFalse(workflow.is_artifact_allowed(another_instance))
 
-        self.assertTrue(another_workflow.is_artifact_allowed(instance))
-        self.assertTrue(another_workflow.is_artifact_allowed(another_instance))
+        self.assertFalse(another_workflow.is_artifact_allowed(instance))
+        self.assertFalse(another_workflow.is_artifact_allowed(another_instance))

@@ -105,7 +105,11 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
     def perform_destroy(self, instance):
         instance.workflow.delete_node_template(instance)
 
-    @extend_schema(description="Move a node to a new position in the workflow")
+    @extend_schema(
+        description="Move a node to a new position in the workflow",
+        responses={"204": None},
+        request=ValidationNodeTemplateMoveSerializer,
+    )
     @action(detail=True, methods=["PUT"])
     def move(self, request, *args, **kwargs):
         instance = self.get_object()

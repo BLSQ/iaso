@@ -1,0 +1,5 @@
+{% load i18n %}
+<form method="post" action="{% url provider_login_url %}" type="submit" class="auth__form">
+  {% csrf_token %}
+  <button type="submit" class="button">{% blocktrans with name=provider_name %}Login via {{ name }}{% endblocktrans %}</button>
+</form>

@@ -1,770 +1,759 @@
 openapi: 3.1.0
 info:
-  title: Validation Workflow API - OpenAPI 3.1
-  description: |-
-    This is a first draft of what the API would look like.
-  version: 1.0.0
+    title: Validation Workflow API - OpenAPI 3.1
+    description: |-
+        This is a first draft of what the API would look like.
+    version: 1.0.0
 tags:
-  - name: Validation workflows
-    description: Everything about the static workflow definitions
-  - name: Validation workflow node templates
-    description: Everything about the static workflow node templates definitions
-  - name: Validation nodes
-    description: Everything about the validation nodes aka tasks
-
+    - name: Validation workflows
+      description: Everything about the static workflow definitions
+    - name: Validation workflow node templates
+      description: Everything about the static workflow node templates definitions
+    - name: Validation nodes
+      description: Everything about the validation nodes aka tasks
 
 paths:
+    /validation-workflows:
+        get:
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.read
+            description: Filter and list all validation workflows linked to the user (accountId)
+            tags:
+                - Validation workflows
+            parameters:
+                - name: forms
+                  in: query
+                  schema:
+                      type: array
+                      items:
+                          type: integer
+                  description: related (multiple) form artifact allowed
+                  required: false
+                - name: name
+                  in: query
+                  schema:
+                      type: string
+                  required: false
+            responses:
+                '200':
+                    description: 'OK'
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    count:
+                                        type: integer
+                                    hasNext:
+                                        type: boolean
+                                    hasPrevious:
+                                        type: boolean
+                                    page:
+                                        type: integer
+                                    pages:
+                                        type: integer
+                                    limit:
+                                        type: integer
+                                    results:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/ValidationWorkflowList'
+        post:
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            description: Create a validation workflow
+            tags:
+                - Validation workflows
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateValidationWorkflowSchema'
+                required: true
+            responses:
+                '201':
+                    description: 'Workflow created'
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    slug:
+                                        type: string
+                                        example: 'validation-workflow'
 
-  /validation-workflows:
-    get:
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.read
-      description: Filter and list all validation workflows linked to the user (accountId)
-      tags:
-        - Validation workflows
-      parameters:
-        - name: forms
-          in: query
-          schema:
-            type: array
-            items:
-              type: integer
-          description: related (multiple) form artifact allowed
-          required: false
-        - name: name
-          in: query
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                properties:
-                  count:
-                    type: integer
-                  hasNext:
-                    type: boolean
-                  hasPrevious:
-                    type: boolean
-                  page:
-                    type: integer
-                  pages:
-                    type: integer
-                  limit:
-                    type: integer
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ValidationWorkflowList'
-    post:
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      description: Create a validation workflow
-      tags:
-        - Validation workflows
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateValidationWorkflowSchema'
-        required: true
-      responses:
-        "201":
-          description: "Workflow created"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  slug:
-                    type: string
-                    example: "validation-workflow"
+    /validation-workflows/dropdown:
+        get:
+            x-permission-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.read
+            tags:
+                - Validation workflows
+            summary: Get a list of all validation workflows usable for dropdowns, filtered by accountId
+            responses:
+                '200':
+                    description: 'A list of validation workflows'
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ValidationWorkflowDropdown'
 
+    /validation-workflows/{validationWorkflowSlug}:
+        get:
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.read
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            tags:
+                - Validation workflows
+            summary: Retrieve the specific validation workflow
+            responses:
+                '200':
+                    description: 'OK'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RetrieveValidationWorkflowSchema'
 
-  /validation-workflows/dropdown:
-    get:
-      x-permission-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.read
-      tags:
-        - Validation workflows
-      summary: Get a list of all validation workflows usable for dropdowns, filtered by accountId
-      responses:
-        "200":
-          description: "A list of validation workflows"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ValidationWorkflowDropdown'
+                '404':
+                    $ref: '#/components/responses/DRF404'
 
-  /validation-workflows/{validationWorkflowSlug}:
-    get:
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.read
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      tags:
-        - Validation workflows
-      summary: Retrieve the specific validation workflow
-      responses:
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RetrieveValidationWorkflowSchema"
+        put:
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            tags:
+                - Validation workflows
+            summary: Update a specific validation workflow (all fields are optional)
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateValidationWorkflowSchema'
 
-        "404":
-          $ref: '#/components/responses/DRF404'
+        delete:
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            tags:
+                - Validation workflows
+            summary: Delete a specific validation workflow
+            responses:
+                '204':
+                    description: Successfully deleted
 
-    put:
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      tags:
-        - Validation workflows
-      summary: Update a specific validation workflow (all fields are optional)
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateValidationWorkflowSchema"
+    /validation-workflows/{validationWorkflowSlug}/node-templates:
+        get:
+            tags:
+                - Validation workflow node templates
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.read
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            summary: List all the related node templates attached to the workflow
+            responses:
+                '200':
+                    description: 'OK'
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/NodeTemplateForRetrieveWorkflowSchema'
 
-    delete:
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      tags:
-        - Validation workflows
-      summary: Delete a specific validation workflow
-      responses:
-        "204":
-          description: Successfully deleted
+        post:
+            tags:
+                - Validation workflow node templates
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            summary: Create a new node template for the selected workflow
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - name
+                            properties:
+                                name:
+                                    type: string
+                                    maxLength: 256
+                                color:
+                                    type: string
+                                rolesRequired:
+                                    type: array
+                                    description: ids of the roles required
+                                    items:
+                                        type: number
+                                previousNodeTemplate:
+                                    type: string
+                                    description: slug of the previous node if any
+                                nextNodeTemplate:
+                                    type: string
+                                    description: slug of the next node if any
+                                canSkipPreviousNode:
+                                    type: boolean
+                required: true
 
-  /validation-workflows/{validationWorkflowSlug}/node-templates:
+    /validation-workflows/{validationWorkflowSlug}/node-templates/bulk:
+        post:
+            tags:
+                - Validation workflow node templates
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            summary: Create multiple node templates to attach to the workflow
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                required:
+                                    - name
+                                type: object
+                                properties:
+                                    name:
+                                        type: string
+                                        maxLength: 256
+                                    color:
+                                        type: string
+                                    rolesRequired:
+                                        type: array
+                                        description: ids of the roles required
+                                        items:
+                                            type: number
+                                    canSkipPreviousNode:
+                                        type: boolean
+                required: true
+        put:
+            tags:
+                - Validation workflow node templates
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            summary: Update the current list of node templates
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                required:
+                                    - slug
+                                type: object
+                                properties:
+                                    slug:
+                                        type: string
+                                    name:
+                                        type: string
+                                        maxLength: 256
+                                    color:
+                                        type: string
+                                    rolesRequired:
+                                        type: array
+                                        description: ids of the roles required
+                                        items:
+                                            type: number
+                                    canSkipPreviousNode:
+                                        type: boolean
+                required: true
 
-    get:
-      tags:
-        - Validation workflow node templates
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.read
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      summary: List all the related node templates attached to the workflow
-      responses:
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NodeTemplateForRetrieveWorkflowSchema'
+    /validation-workflows/{validationWorkflowSlug}/node-templates/{nodeTemplateSlug}:
+        get:
+            tags:
+                - Validation workflow node templates
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.read
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+                - $ref: '#/components/parameters/nodeTemplateSlugParam'
+            summary: See details of the node template
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NodeTemplateForRetrieveWorkflowSchema'
+        delete:
+            tags:
+                - Validation workflow node templates
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+                - $ref: '#/components/parameters/nodeTemplateSlugParam'
+            summary: Delete the node template
+            responses:
+                '204':
+                    description: 'Deleted'
 
-    post:
-      tags:
-        - Validation workflow node templates
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      summary: Create a new node template for the selected workflow
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - name
-              properties:
-                name:
-                  type: string
-                  maxLength: 256
-                color:
-                  type: string
-                rolesRequired:
-                  type: array
-                  description: ids of the roles required
-                  items:
-                    type: number
-                previousNodeTemplate:
-                  type: string
-                  description: slug of the previous node if any
-                nextNodeTemplate:
-                  type: string
-                  description: slug of the next node if any
-                canSkipPreviousNode:
-                  type: boolean
-        required: true
+        put:
+            tags:
+                - Validation workflow node templates
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            parameters:
+                - $ref: '#/components/parameters/validationWorkflowSlugParam'
+                - $ref: '#/components/parameters/nodeTemplateSlugParam'
+            summary: Update the node template, all parameters are optional (partial update)
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/NodeTemplateForRetrieveWorkflowSchema'
 
-  /validation-workflows/{validationWorkflowSlug}/node-templates/bulk:
+    /validation-workflows/instance/{instanceId}:
+        parameters:
+            - $ref: '#/components/parameters/validationWorkflowSlugParam'
+            - $ref: '#/components/parameters/instanceIdParam'
+        get:
+            tags:
+                - Validation nodes
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_submissions.read
+            summary: See details of the active validation process for that instance
+            responses:
+                '200':
+                    description: 'OK'
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    validationStatus:
+                                        type: string
+                                        enum:
+                                            - 'APPROVED'
+                                            - 'REJECTED'
+                                            - 'PENDING'
+                                    rejectionComment:
+                                        type:
+                                            - string
+                                            - 'null'
+                                    history:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/InstanceValidationWorkflowRetrieve'
 
-    post:
-      tags: 
-        - Validation workflow node templates
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      summary: Create multiple node templates to attach to the workflow
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                required: 
-                  - name
-                type: object
-                properties:
-                  name:
-                    type: string
-                    maxLength: 256
-                  color:
-                    type: string
-                  rolesRequired:
-                    type: array
-                    description: ids of the roles required
-                    items:
+    /validation-workflows/instance/{instanceId}/validation-node/{nodeId}/complete:
+        post:
+            parameters:
+                - $ref: '#/components/parameters/instanceIdParam'
+                - name: nodeId
+                  in: path
+                  schema:
                       type: number
-                  canSkipPreviousNode:
-                    type: boolean
-        required: true
-    put:
-      tags:
-        - Validation workflow node templates
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      summary: Update the current list of node templates
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                required:
-                  - slug
-                type: object
-                properties:
-                  slug:
-                    type: string
-                  name:
-                    type: string
-                    maxLength: 256
-                  color:
-                    type: string
-                  rolesRequired:
-                    type: array
-                    description: ids of the roles required
-                    items:
+                  required: true
+
+            tags:
+                - Validation nodes
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            summary: Complete a task related to the node for this instance
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                approved:
+                                    type: boolean
+                                comment:
+                                    type: string
+                                    maxLength: 1024
+
+            responses:
+                '204':
+                    description: 'ok'
+
+    /validation-workflows/instance/{instanceId}/validation-node/{nodeId}/undo:
+        post:
+            parameters:
+                - $ref: '#/components/parameters/instanceIdParam'
+                - name: nodeId
+                  in: path
+                  schema:
                       type: number
-                  canSkipPreviousNode:
-                    type: boolean
-        required: true
+                  required: true
+            tags:
+                - Validation nodes
+            x-permissions-required:
+                - authenticated
+                - iaso.iaso_validation_workflow.write
+            summary: Undo an already approved validation node
+            responses:
+                '204':
+                    description: 'OK'
 
-  /validation-workflows/{validationWorkflowSlug}/node-templates/{nodeTemplateSlug}:
-    get:
-      tags:
-        - Validation workflow node templates
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.read
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-        - $ref: '#/components/parameters/nodeTemplateSlugParam'
-      summary: See details of the node template
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NodeTemplateForRetrieveWorkflowSchema"
-    delete:
-      tags:
-        - Validation workflow node templates
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-        - $ref: '#/components/parameters/nodeTemplateSlugParam'
-      summary: Delete the node template
-      responses:
-        "204":
-          description: "Deleted"
-
-    put:
-      tags:
-        - Validation workflow node templates
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      parameters:
-        - $ref: '#/components/parameters/validationWorkflowSlugParam'
-        - $ref: '#/components/parameters/nodeTemplateSlugParam'
-      summary: Update the node template, all parameters are optional (partial update)
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NodeTemplateForRetrieveWorkflowSchema'
-
-
-  /validation-workflows/instance/{instanceId}:
-    parameters:
-      - $ref: '#/components/parameters/validationWorkflowSlugParam'
-      - $ref: '#/components/parameters/instanceIdParam'
-    get:
-      tags:
-        - Validation nodes
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_submissions.read
-      summary: See details of the active validation process for that instance
-      responses:
-        "200":
-          description: "OK"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  validationStatus:
-                    type: string
-                    enum:
-                      - "APPROVED"
-                      - "REJECTED"
-                      - "PENDING"
-                  rejectionComment:
-                    type:
-                      - string
-                      - 'null'
-                  history:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/InstanceValidationWorkflowRetrieve'
-
-
-  /validation-workflows/instance/{instanceId}/validation-node/{nodeId}/complete:
-    post:
-      parameters:
-        - $ref: '#/components/parameters/instanceIdParam'
-        - name: nodeId
-          in: path
-          schema:
-            type: number
-          required: true
-
-      tags:
-        - Validation nodes
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      summary: Complete a task related to the node for this instance
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                approved:
-                  type: boolean
-                comment:
-                  type: string
-                  maxLength: 1024
-
-      responses:
-        "204":
-          description: "ok"
-
-  /validation-workflows/instance/{instanceId}/validation-node/{nodeId}/undo:
-    post:
-      parameters:
-        - $ref: '#/components/parameters/instanceIdParam'
-        - name: nodeId
-          in: path
-          schema:
-            type: number
-          required: true
-      tags:
-        - Validation nodes
-      x-permissions-required:
-        - authenticated
-        - iaso.iaso_validation_workflow.write
-      summary: Undo an already approved validation node
-      responses:
-        "204":
-          description: "OK"
-
-
-  /mobile/validation-workflows/:
-    get:
-      tags:
-        - Mobile endpoints
-      summary:
-        Return all instances linked to user (through accountId) and related validation history.
-        It must not return instances where form is soft deleted.
-      parameters:
-        - name: last_sync
-          in: query
-          schema:
-            type: string
-            format: date-time
-          required: false
-        - name: app_id
-          in: query
-          schema:
-            type: string
-          required: true
-          description: to filter on instances linked to that app_id
-      responses:
-        '200':
-          description: 'OK'
-          content:
-            application/json:
-              schema:
-                properties:
-                  count:
-                    type: integer
-                  has_next:
-                    type: boolean
-                  has_previous:
-                    type: boolean
-                  page:
-                    type: integer
-                  pages:
-                    type: integer
-                  limit:
-                    type: integer
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ValidationMobileResponse'
+    /mobile/validation-workflows/:
+        get:
+            tags:
+                - Mobile endpoints
+            summary:
+                Return all instances linked to user (through accountId) and related validation history.
+                It must not return instances where form is soft deleted.
+            parameters:
+                - name: last_sync
+                  in: query
+                  schema:
+                      type: string
+                      format: date-time
+                  required: false
+                - name: app_id
+                  in: query
+                  schema:
+                      type: string
+                  required: true
+                  description: to filter on instances linked to that app_id
+            responses:
+                '200':
+                    description: 'OK'
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    count:
+                                        type: integer
+                                    has_next:
+                                        type: boolean
+                                    has_previous:
+                                        type: boolean
+                                    page:
+                                        type: integer
+                                    pages:
+                                        type: integer
+                                    limit:
+                                        type: integer
+                                    results:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/ValidationMobileResponse'
 
 components:
-  schemas:
-    ValidationWorkflowDropdown:
-      type: object
-      properties:
-        value:
-          type: string
-          description: workflow slug
-        label:
-          type: string
-          description: workflow name
-    ValidationWorkflowList:
-      type: object
-      properties:
-        slug:
-          type: string
-          examples:
-            'hospital-rdc'
-        name:
-          type: string
-          examples:
-            'Hospital RDC'
-        formCount:
-          type: integer
-        createdBy:
-          type: string
-          description: Display label of the user that created the workflow
-          examples:
-            - "George M"
-        updatedBy:
-          type:
-            - string
-            - 'null'
-          description: Display label of the user that last updated the workflow
-          examples:
-            - "Laura G"
-        createdAt:
-          type: number
-          format: double
-          examples:
-            - 1024.000
-        updatedAt:
-          type:
-           - number
-           - 'null'
-          format: double
-          examples:
-            - 1024.000
-    CreateValidationWorkflowSchema:
-      type: object
-      required:
-        - name
-        - forms
-      properties:
-        name:
-          type: string
-          maxLength: 256
-        description:
-          type:
-           - string
-           - 'null'
-          maxLength: 1024
-        forms:
-          type: array
-          description: List of form ids that should be validated by this workflow
-          items:
-            type: number
-    UpdateValidationWorkflowSchema:
-      type: object
-      properties:
-        name:
-          type: string
-          maxLength: 256
-        description:
-          type:
-            - string
-            - 'null'
-          maxLength: 1024
-        forms:
-          type: array
-          description: List of form ids that should be validated by this workflow
-          items:
-            type: number
-    RetrieveValidationWorkflowSchema:
-      type : object
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        description:
-          type:
-            - string
-            - 'null'
-        forms:
-          type: array
-          items:
+    schemas:
+        ValidationWorkflowDropdown:
             type: object
             properties:
-              id:
-                type: number
-              label:
-                type: string
-        createdBy:
-          type: string
-          description: Display name of the user that created the workflow
-
-        updatedBy:
-          type:
-            - string
-            - 'null'
-          description: Display name of the user that last updated the workflow
-
-        createdAt:
-          type: number
-          format: double
-          examples:
-            - 1024.000
-        updatedAt:
-          type: number
-          format: double
-          examples:
-            - 1024.000
-
-        nodeTemplates:
-          type: array
-          items:
-            $ref: '#/components/schemas/NodeTemplateForRetrieveWorkflowSchema'
-    NodeTemplateForRetrieveWorkflowSchema:
-      type: object
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        description:
-          type:
-            - string
-            - 'null'
-        color:
-          type: string
-          examples:
-            - '#FFFFFF'
-        rolesRequired:
-          type: array
-          items:
+                value:
+                    type: string
+                    description: workflow slug
+                label:
+                    type: string
+                    description: workflow name
+        ValidationWorkflowList:
             type: object
             properties:
-              name:
-                type: string
-                description: related group.name
-              id:
-                type: number
-
-
-        canSkipPreviousNodes:
-          type: boolean
-    InstanceValidationWorkflowRetrieve:
-      type: object
-      properties:
-        validation_status:
-          type: string
-          enum:
-            - APPROVED
-            - REJECTED
-            - PENDING
-        rejection_comment:
-          type:
-            - string
-            - 'null'
-          description: Will represent the last rejected comment if any
-          examples:
-            - "Not enough data"
-        nextTasks:
-          type: array
-          items:
+                slug:
+                    type: string
+                    examples: 'hospital-rdc'
+                name:
+                    type: string
+                    examples: 'Hospital RDC'
+                formCount:
+                    type: integer
+                createdBy:
+                    type: string
+                    description: Display label of the user that created the workflow
+                    examples:
+                        - 'George M'
+                updatedBy:
+                    type:
+                        - string
+                        - 'null'
+                    description: Display label of the user that last updated the workflow
+                    examples:
+                        - 'Laura G'
+                createdAt:
+                    type: number
+                    format: double
+                    examples:
+                        - 1024.000
+                updatedAt:
+                    type:
+                        - number
+                        - 'null'
+                    format: double
+                    examples:
+                        - 1024.000
+        CreateValidationWorkflowSchema:
+            type: object
+            required:
+                - name
+                - forms
+            properties:
+                name:
+                    type: string
+                    maxLength: 256
+                description:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 1024
+                forms:
+                    type: array
+                    description: List of form ids that should be validated by this workflow
+                    items:
+                        type: number
+        UpdateValidationWorkflowSchema:
             type: object
             properties:
-              userRoles:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: number
-                    name:
-                      type: string
-              name:
-                type: string
-              id:
-                type: number
-
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationMobileResponseItem'
-
-    ValidationMobileResponse:
-      type: object
-      properties:
-        instance_id:
-          type: string
-          format: uuid
-        validation_status:
-          type: string
-          enum:
-            - APPROVED
-            - REJECTED
-            - PENDING
-        rejection_comment:
-          type:
-            - string
-            - 'null'
-          description: Will represent the last rejected comment if any
-          examples:
-            - "Not enough data"
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationMobileResponseItem'
-    ValidationMobileResponseItem:
-      type: object
-      properties:
-        level:
-          description: name of the node template
-          type: string
-          examples:
-            - Aire de santé
-            - Hopital
-        color:
-          description: color of the node template
-          type: string
-          examples:
-            - '#FFFFFF'
-            - '#EBEBEB'
-        created_at:
-          type: number
-          format: double
-          description: timestamp of created_at
-          examples:
-            - 1024.123
-        updated_at:
-          type: number
-          format: double
-          examples:
-            - 1024.123
-          description: timestamp of updated_at
-        status:
-          type: string
-          enum:
-            - ACCEPTED
-            - REJECTED
-            - SKIPPED
-            - PENDING
-            - SUBMISSION
-        comment:
-          type:
-            - string
-            - 'null'
-          maxLength: 1024
-          examples:
-            - "LGTM"
-
-        updated_by:
-          description: Display name of the user that last updated the node
-          type:
-            - string
-            - 'null'
-          examples:
-            - "George Michael"
-        created_by:
-          description: Display name of the user that created the node
-          type:
-            - string
-            - 'null'
-          examples:
-            - "Gregory House"
-  parameters:
-    validationWorkflowSlugParam:
-        name: validationWorkflowSlug
-        in: path
-        schema:
-          type: string
-          format: uuid
-        required: true
-    nodeTemplateSlugParam:
-      name: nodeTemplateSlug
-      in: path
-      schema:
-        type: string
-        format: uuid
-      required: true
-    instanceIdParam:
-      name: instanceId
-      in: path
-      schema:
-        type: integer
-      required: true
-  responses:
-    DRF404:
-      description: "Object not found"
-      content:
-        application/json:
-          schema:
+                name:
+                    type: string
+                    maxLength: 256
+                description:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 1024
+                forms:
+                    type: array
+                    description: List of form ids that should be validated by this workflow
+                    items:
+                        type: number
+        RetrieveValidationWorkflowSchema:
             type: object
             properties:
-              details:
+                slug:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type:
+                        - string
+                        - 'null'
+                forms:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            id:
+                                type: number
+                            label:
+                                type: string
+                createdBy:
+                    type: string
+                    description: Display name of the user that created the workflow
+
+                updatedBy:
+                    type:
+                        - string
+                        - 'null'
+                    description: Display name of the user that last updated the workflow
+
+                createdAt:
+                    type: number
+                    format: double
+                    examples:
+                        - 1024.000
+                updatedAt:
+                    type: number
+                    format: double
+                    examples:
+                        - 1024.000
+
+                nodeTemplates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/NodeTemplateForRetrieveWorkflowSchema'
+        NodeTemplateForRetrieveWorkflowSchema:
+            type: object
+            properties:
+                slug:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type:
+                        - string
+                        - 'null'
+                color:
+                    type: string
+                    examples:
+                        - '#FFFFFF'
+                rolesRequired:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            name:
+                                type: string
+                                description: related group.name
+                            id:
+                                type: number
+
+                canSkipPreviousNodes:
+                    type: boolean
+        InstanceValidationWorkflowRetrieve:
+            type: object
+            properties:
+                validation_status:
+                    type: string
+                    enum:
+                        - APPROVED
+                        - REJECTED
+                        - PENDING
+                rejection_comment:
+                    type:
+                        - string
+                        - 'null'
+                    description: Will represent the last rejected comment if any
+                    examples:
+                        - 'Not enough data'
+                nextTasks:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            userRoles:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: number
+                                        name:
+                                            type: string
+                            name:
+                                type: string
+                            id:
+                                type: number
+
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ValidationMobileResponseItem'
+
+        ValidationMobileResponse:
+            type: object
+            properties:
+                instance_id:
+                    type: string
+                    format: uuid
+                validation_status:
+                    type: string
+                    enum:
+                        - APPROVED
+                        - REJECTED
+                        - PENDING
+                rejection_comment:
+                    type:
+                        - string
+                        - 'null'
+                    description: Will represent the last rejected comment if any
+                    examples:
+                        - 'Not enough data'
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ValidationMobileResponseItem'
+        ValidationMobileResponseItem:
+            type: object
+            properties:
+                level:
+                    description: name of the node template
+                    type: string
+                    examples:
+                        - Aire de santé
+                        - Hopital
+                color:
+                    description: color of the node template
+                    type: string
+                    examples:
+                        - '#FFFFFF'
+                        - '#EBEBEB'
+                created_at:
+                    type: number
+                    format: double
+                    description: timestamp of created_at
+                    examples:
+                        - 1024.123
+                updated_at:
+                    type: number
+                    format: double
+                    examples:
+                        - 1024.123
+                    description: timestamp of updated_at
+                status:
+                    type: string
+                    enum:
+                        - ACCEPTED
+                        - REJECTED
+                        - SKIPPED
+                        - PENDING
+                        - SUBMISSION
+                comment:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 1024
+                    examples:
+                        - 'LGTM'
+
+                updated_by:
+                    description: Display name of the user that last updated the node
+                    type:
+                        - string
+                        - 'null'
+                    examples:
+                        - 'George Michael'
+                created_by:
+                    description: Display name of the user that created the node
+                    type:
+                        - string
+                        - 'null'
+                    examples:
+                        - 'Gregory House'
+    parameters:
+        validationWorkflowSlugParam:
+            name: validationWorkflowSlug
+            in: path
+            schema:
                 type: string
-                example: "Not found."
+                format: uuid
+            required: true
+        nodeTemplateSlugParam:
+            name: nodeTemplateSlug
+            in: path
+            schema:
+                type: string
+                format: uuid
+            required: true
+        instanceIdParam:
+            name: instanceId
+            in: path
+            schema:
+                type: integer
+            required: true
+    responses:
+        DRF404:
+            description: 'Object not found'
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        properties:
+                            details:
+                                type: string
+                                example: 'Not found.'

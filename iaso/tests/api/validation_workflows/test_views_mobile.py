@@ -80,6 +80,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             ValidationWorkflowEngine.complete_node(
                 self.instance.get_next_pending_nodes(self.validation_workflow).first(),
                 self.john_wick,
+                artifact=self.instance,
                 approved=True,
                 comment=f"LGTM {i}",
             )
@@ -93,6 +94,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             ValidationWorkflowEngine.complete_node(
                 self.instance.get_next_pending_nodes(self.validation_workflow).first(),
                 self.john_wick,
+                artifact=self.instance,
                 approved=i != 1,
                 comment=f"LGTM {i}" if i != 1 else "Nope",
             )
@@ -404,10 +406,10 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(7):
             # 1-2: PERM
             # 3 ORGUNIT
             # 4-5: QUERYSET + FILTER
-            # 6-9: SERIALIZER
+            # 6-7: SERIALIZER
             res = self.client.get(reverse("mobile_validation_workflows-list"))
             self.assertJSONResponse(res, status.HTTP_200_OK)

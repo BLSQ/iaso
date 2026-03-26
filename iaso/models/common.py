@@ -1,7 +1,7 @@
 from autoslug import AutoSlugField
 from autoslug.utils import crop_slug, get_prepopulated_value
 from django.db import models
-from django.db.models import Case, IntegerField, When
+from django.db.models import Case, IntegerField, Q, When
 from django.utils.translation import gettext_lazy as _
 
 
@@ -21,6 +21,9 @@ class ValidationWorkflowArtefactStatus(models.TextChoices):
 
 class ValidationWorkflowArtefact(models.Model):
     parent_artefact_for_validation = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)
+    general_validation_status = models.CharField(
+        choices=ValidationWorkflowArtefactStatus.choices, blank=True, default="", max_length=20
+    )
 
     class Meta:
         abstract = True
@@ -28,33 +31,12 @@ class ValidationWorkflowArtefact(models.Model):
     def has_workflow(self, workflow):
         return self.validationnode_set.filter(node__workflow=workflow).exists()
 
-    def get_general_validation_status(self, workflow=None):
+    def get_next_pending_nodes(self, workflow=None):
         from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
-        if self.validationnode_set.filter(
-            final=True, status=ValidationNodeStatus.ACCEPTED, **{"node__workflow": workflow} if workflow else {}
-        ).exists():
-            return ValidationWorkflowArtefactStatus.APPROVED
-
-        if self.validationnode_set.filter(
-            status=ValidationNodeStatus.REJECTED, **{"node__workflow": workflow} if workflow else {}
-        ).exists():
-            return ValidationWorkflowArtefactStatus.REJECTED
-        if self.validationnode_set.filter(
+        return self.validationnode_set.filter(
             status=ValidationNodeStatus.UNKNOWN, **{"node__workflow": workflow} if workflow else {}
-        ).exists():
-            return ValidationWorkflowArtefactStatus.PENDING
-        if self.validationnode_set.filter(
-            final=False, status=ValidationNodeStatus.ACCEPTED, **{"node__workflow": workflow} if workflow else {}
-        ).exists():
-            return ValidationWorkflowArtefactStatus.PENDING
-
-        raise ValueError
-
-    def get_next_pending_nodes(self, workflow):
-        from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-
-        return self.validationnode_set.filter(status=ValidationNodeStatus.UNKNOWN, node__workflow=workflow)
+        )
 
     def _collect_artefact_pks(self):
         pks = []
@@ -86,6 +68,19 @@ class ValidationWorkflowArtefact(models.Model):
             .annotate(_order=order)
             .order_by("-_order", "-created_at")
         )
+
+    def get_next_bypass_nodes(self, workflow=None):
+        from iaso.models import ValidationNodeTemplate
+        from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+
+        if self.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
+            return (
+                ValidationNodeTemplate.objects.prefetch_related("validationnode")
+                .filter(can_skip_previous_nodes=True, **{"workflow": workflow} if workflow else {})
+                .filter(Q(validationnode__isnull=True) | Q(validationnode__status=ValidationNodeStatus.UNKNOWN))
+            )
+
+        return ValidationNodeTemplate.objects.none()
 
 
 class BulkAutoSlugField(AutoSlugField):

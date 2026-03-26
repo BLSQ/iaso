@@ -91,7 +91,9 @@ class StockKeepingUnitMobileAPITestCase(APITestCase):
             response = self.client.get(SKU_URL, data={"app_id": self.project_2.app_id})
         self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(2, len(response.data["results"]))
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
+            # 1. SELECT project (+ account + default_version via select_related)
+            # 2. SELECT COUNT(*) — no SKUs for project_3 / other account, so no page SELECT or prefetches
             response = self.client.get(SKU_URL, data={"app_id": self.project_3.app_id})
         self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))

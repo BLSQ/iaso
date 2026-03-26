@@ -7,7 +7,7 @@ import iaso.models.common
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0371_alter_corepermissionsupport_options_and_more"),
+        ("iaso", "0372_auto_20260323_1438"),
     ]
 
     operations = [

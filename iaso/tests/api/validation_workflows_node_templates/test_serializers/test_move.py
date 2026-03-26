@@ -78,6 +78,19 @@ class TestValidationNodeTemplateMoveSerializer(TestCase):
             f"Parent node templates are required if position is set to {PositionChoices.child_of}.",
         )
 
+        serializer = ValidationNodeTemplateMoveSerializer(
+            data={"position": PositionChoices.child_of, "name": "random name", "parent_node_templates": []},
+            context=self.context,
+            instance=self.first_node_template,
+        )
+        self.assertFalse(serializer.is_valid())
+
+        self.assertCountEqual([api_settings.NON_FIELD_ERRORS_KEY], serializer.errors.keys())
+        self.assertEqual(
+            serializer.errors[api_settings.NON_FIELD_ERRORS_KEY][0],
+            f"Parent node templates are required if position is set to {PositionChoices.child_of}.",
+        )
+
     def test_validation_parent_nodes_max_one(self):
         serializer = ValidationNodeTemplateMoveSerializer(
             data={

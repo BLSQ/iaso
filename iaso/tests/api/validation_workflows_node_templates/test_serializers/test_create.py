@@ -1,20 +1,15 @@
+from django.contrib.auth.models import Group
 from django.test import RequestFactory
 from rest_framework.settings import api_settings
 
 from iaso.api.validation_workflows_node_templates.serializers.create import ValidationNodeTemplateCreateSerializer
-from iaso.models import Account
+from iaso.models import Account, UserRole
 from iaso.models.validation_workflow.templates import PositionChoices, ValidationNodeTemplate, ValidationWorkflow
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import TestCase
 
 
 class TestValidationNodeTemplateCreateSerializer(TestCase):
-    @staticmethod
-    def snake_case_to_camel_case(value):
-        camel_string = "".join(x.capitalize() for x in value.lower().split("_"))
-
-        return value[0].lower() + camel_string[1:]
-
     def setUp(self):
         request = RequestFactory()
 
@@ -23,6 +18,9 @@ class TestValidationNodeTemplateCreateSerializer(TestCase):
         self.validation_workflow = ValidationWorkflow.objects.create(name="test", account=self.account)
         self.other_validation_workflow = ValidationWorkflow.objects.create(name="test2", account=self.other_account)
 
+        self.other_user_role = UserRole.objects.create(
+            account=self.other_account, group=Group.objects.create(name="group")
+        )
         self.first_node_template = ValidationNodeTemplate.objects.create(
             name="first", workflow=self.validation_workflow
         )
@@ -76,6 +74,18 @@ class TestValidationNodeTemplateCreateSerializer(TestCase):
             f"Parent node templates are required if position is set to {PositionChoices.child_of}.",
         )
 
+        serializer = ValidationNodeTemplateCreateSerializer(
+            data={"position": PositionChoices.child_of, "name": "random name", "parent_node_templates": []},
+            context=self.context,
+        )
+        self.assertFalse(serializer.is_valid())
+
+        self.assertCountEqual([api_settings.NON_FIELD_ERRORS_KEY], serializer.errors.keys())
+        self.assertEqual(
+            serializer.errors[api_settings.NON_FIELD_ERRORS_KEY][0],
+            f"Parent node templates are required if position is set to {PositionChoices.child_of}.",
+        )
+
     def test_validation_parent_nodes_max_one(self):
         serializer = ValidationNodeTemplateCreateSerializer(
             data={
@@ -117,6 +127,18 @@ class TestValidationNodeTemplateCreateSerializer(TestCase):
 
         self.assertCountEqual(["roles_required"], serializer.errors.keys())
         self.assertEqual(serializer.errors["roles_required"][0], 'Invalid pk "222" - object does not exist.')
+
+    def test_validation_roles_belongs_to_account(self):
+        serializer = ValidationNodeTemplateCreateSerializer(
+            data={"name": "random name", "roles_required": [self.other_user_role.pk]}, context=self.context
+        )
+
+        self.assertFalse(serializer.is_valid())
+
+        self.assertCountEqual(["roles_required"], serializer.errors.keys())
+        self.assertEqual(
+            serializer.errors["roles_required"][0], f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+        )
 
     def test_validation_workflow_slug_from_context(self):
         serializer = ValidationNodeTemplateCreateSerializer(

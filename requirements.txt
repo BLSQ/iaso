@@ -12,6 +12,7 @@ django-translated-fields==0.12.0  # https://github.com/matthiask/django-translat
 django-phonenumber-field[phonenumberslite]==7.3.0 # https://django-phonenumber-field.readthedocs.io/en/latest/
 django-qr-code==4.0.1 # https://django-qr-code.readthedocs.io/en/latest/
 django-stubs-ext==4.2.7  # https://github.com/typeddjango/django-stubs/tags
+django-axes==8.0.0 # https://github.com/jazzband/django-axes/tags
 
 # Django REST Framework.
 # ------------------------------------------------------------------------------

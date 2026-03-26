@@ -39,6 +39,9 @@ cleanup() {
     mv "$DEV_EB_EXTENSIONS" "$PROD_EB_EXTENSIONS"
     mv "$DEV_EB_EXTENSIONS_BAK" "$DEV_EB_EXTENSIONS"
 
+    echo "==> Clean up 00container_commands"
+    rm "$DEV_EB_EXTENSIONS/00container_commands.config"
+
     echo "==> Unstaging swapped files..."
     git reset HEAD -- "$DEV_COMPOSE" "$DEV_EB_EXTENSIONS"
 }

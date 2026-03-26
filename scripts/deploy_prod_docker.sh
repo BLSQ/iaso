@@ -34,15 +34,19 @@ cleanup() {
     echo "==> Restoring docker-compose for dev..."
     mv "$DEV_COMPOSE" "$PROD_COMPOSE"
     mv "$DEV_COMPOSE_BAK" "$DEV_COMPOSE"
-    
+
     echo "==> Restoring eb extensions for dev..."
     mv "$DEV_EB_EXTENSIONS" "$PROD_EB_EXTENSIONS"
     mv "$DEV_EB_EXTENSIONS_BAK" "$DEV_EB_EXTENSIONS"
-    git checkout -- "$DEV_COMPOSE"
-    git checkout -- "$DEV_EB_EXTENSIONS"
+
+    echo "==> Unstaging swapped files..."
+    git reset HEAD -- "$DEV_COMPOSE" "$DEV_EB_EXTENSIONS"
 }
 
-# Swap docker-compose files 
+# Set trap early so any failure after this point triggers cleanup
+trap cleanup EXIT
+
+# Swap docker-compose files
 echo "==> Swapping docker-compose to prod"
 mv "$DEV_COMPOSE" "$DEV_COMPOSE_BAK"
 mv "$PROD_COMPOSE" "$DEV_COMPOSE"
@@ -55,9 +59,6 @@ mv "$PROD_EB_EXTENSIONS" "$DEV_EB_EXTENSIONS"
 # Stage the swapped files so `eb deploy --staged` picks it up
 git add "$DEV_COMPOSE"
 git add "$DEV_EB_EXTENSIONS"
-
-# Rollback even if deploy failed
-trap cleanup EXIT
 
 # Create version from tags
 VERSION_NAME=$(git describe --tags --match "v[[:digit:]]*")

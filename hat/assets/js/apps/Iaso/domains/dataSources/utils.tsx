@@ -5,8 +5,8 @@ import {
 } from '@mui/icons-material';
 import { Chip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { userHasAccessToModule } from '../users/utils.js';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { userHasAccessToModule } from '../users/utils';
 import MESSAGES from './messages';
 
 /**

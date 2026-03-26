@@ -38,9 +38,7 @@ class ValidationNode(CreatedAndUpdatedModel):
         """
         Return the existing ValidationNode that are placed right after this one in the workflow.
         """
-        return ValidationNode.objects.filter(
-            node__pk__in=self.node.next_node_templates.values_list("pk", flat=True), instance=self.instance
-        )
+        return ValidationNode.objects.filter(node__in=self.node.next_node_templates.all(), instance=self.instance)
 
     class Meta:
         ordering = ["-created_at"]

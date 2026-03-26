@@ -4,6 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Q
 
+from iaso.engine.exceptions import ValidationWorkflowEngineException
 from iaso.models import ValidationNode, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefact, ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
@@ -18,32 +19,33 @@ class ValidationWorkflowEngine:
         artifact: ValidationWorkflowArtefact,
         parent_artifact: Optional[ValidationWorkflowArtefact] = None,
     ):
+        update_fields = ["general_validation_status"]
         if artifact and not workflow_template.is_artifact_allowed(artifact):
-            raise ValueError("Invalid artifact type")
+            raise ValidationWorkflowEngineException("Invalid artifact type")
 
         if artifact.has_workflow(workflow_template):
-            raise ValueError("Artifact is already attached to a related workflow")
+            raise ValidationWorkflowEngineException("Artifact is already attached to a related workflow")
 
         if parent_artifact:
             if not workflow_template.is_artifact_allowed(parent_artifact):
-                raise ValueError("Invalid parent artifact type")
+                raise ValidationWorkflowEngineException("Invalid parent artifact type")
 
             if not parent_artifact.has_workflow(workflow_template):
-                raise ValueError("Invalid parent artifact: no related workflow")
+                raise ValidationWorkflowEngineException("Invalid parent artifact: no related workflow")
 
-            if (
-                parent_artifact.get_general_validation_status(workflow_template)
-                != ValidationWorkflowArtefactStatus.REJECTED
-            ):
-                raise ValueError("Invalid parent artifact: workflow is in incorrect status")
+            if parent_artifact.general_validation_status != ValidationWorkflowArtefactStatus.REJECTED:
+                raise ValidationWorkflowEngineException("Invalid parent artifact: workflow is in incorrect status")
 
             artifact.parent_artefact_for_validation = parent_artifact
-            artifact.save()
+            update_fields.append("parent_artefact_for_validation")
+
+        artifact.general_validation_status = ValidationWorkflowArtefactStatus.PENDING
+        artifact.save(update_fields=update_fields)
 
         starting_node = workflow_template.get_starting_node()
 
         if starting_node is None:
-            raise ValueError("Workflow has no starting node")
+            raise ValidationWorkflowEngineException("Workflow has no starting node")
 
         return ValidationWorkflowEngine._activate_node(starting_node, artifact, user)
 
@@ -56,7 +58,7 @@ class ValidationWorkflowEngine:
     def complete_node_by_passing(
         node: ValidationNodeTemplate,
         user,
-        instance: ValidationWorkflowArtefact,
+        artifact: ValidationWorkflowArtefact,
         workflow: ValidationWorkflow,
         approved: Optional[bool] = False,
         comment: Optional[str] = "",
@@ -65,49 +67,63 @@ class ValidationWorkflowEngine:
         # it will also need to be optimized
 
         if not node.can_skip_previous_nodes:
-            raise ValueError("Skipping previous nodes is not possible")
+            raise ValidationWorkflowEngineException("Skipping previous nodes is not possible")
 
-        if instance.get_general_validation_status(workflow) == ValidationWorkflowArtefactStatus.REJECTED:
-            raise ValueError("Already rejected, cannot skip")
+        if artifact.general_validation_status == ValidationWorkflowArtefactStatus.REJECTED:
+            raise ValidationWorkflowEngineException("Already rejected, cannot skip")
 
-        validation_status, created = ValidationNode.objects.get_or_create(node=node, instance=instance)
+        validation_status, created = ValidationNode.objects.get_or_create(node=node, instance=artifact)
         validation_status.updated_by = user
 
         if not created and validation_status.status != ValidationNodeStatus.UNKNOWN:
-            raise ValueError("Already completed")
+            raise ValidationWorkflowEngineException("Already completed")
 
         if not created:
             # it means previous node (linear assumption) has already been approved
-            ValidationWorkflowEngine.complete_node(validation_status, user, approved=approved, comment=comment)
+            ValidationWorkflowEngine.complete_node(
+                validation_status, user, artifact=artifact, approved=approved, comment=comment
+            )
             return
 
-        forbidden_pk = [validation_status.pk]
-        forbidden_pk += list(validation_status.get_next_nodes().values_list("pk", flat=True))
-        while instance.get_next_pending_nodes(workflow).exclude(pk__in=forbidden_pk).count():
+        forbidden_pk = {validation_status.pk}
+        forbidden_pk.update(validation_status.get_next_nodes().values_list("pk", flat=True))
+
+        next_pending = artifact.get_next_pending_nodes(workflow).exclude(pk__in=forbidden_pk)
+
+        while next_pending.exists():
             ValidationWorkflowEngine.complete_node(
-                instance.get_next_pending_nodes(workflow).exclude(pk__in=forbidden_pk).first(),
+                next_pending.first(),
                 user,
+                artifact=artifact,
                 skipped=True,
                 skipped_from_parent=node,
+                update_artifact=False,
             )
+            next_pending = artifact.get_next_pending_nodes(workflow).exclude(pk__in=forbidden_pk)
 
-        ValidationWorkflowEngine.complete_node(validation_status, user, comment=comment, approved=approved)
+        ValidationWorkflowEngine.complete_node(
+            validation_status, user, artifact=artifact, comment=comment, approved=approved, update_artifact=False
+        )
+
+        artifact.save(update_fields=["general_validation_status"])
 
     @staticmethod
     @transaction.atomic
     def complete_node(
         validation_status: ValidationNode,
         user,
-        approved=False,
+        artifact: ValidationWorkflowArtefact,
+        approved: Optional[bool] = False,
         comment: Optional[str] = "",
         skipped: Optional[bool] = False,
         skipped_from_parent: Optional[ValidationNodeTemplate] = None,
+        update_artifact: Optional[bool] = True,
     ):
         if not skipped:
             ValidationWorkflowEngine._check_permissions_for_node(validation_status, user)
 
         if validation_status.status != ValidationNodeStatus.UNKNOWN:
-            raise ValueError("Already completed")
+            raise ValidationWorkflowEngineException("Already completed")
 
         validation_status.updated_by = user
         validation_status.comment = comment
@@ -121,6 +137,13 @@ class ValidationWorkflowEngine:
 
         if approved and validation_status.node.is_final_node():
             validation_status.final = True
+            artifact.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
+            if update_artifact:
+                artifact.save(update_fields=["general_validation_status"])
+        elif not approved and not skipped:
+            artifact.general_validation_status = ValidationWorkflowArtefactStatus.REJECTED
+            if update_artifact:
+                artifact.save(update_fields=["general_validation_status"])
 
         validation_status.save()
 
@@ -138,7 +161,7 @@ class ValidationWorkflowEngine:
         """
         required_roles = validation_status.node.roles_required.all()
 
-        if not required_roles.exists():
+        if not required_roles:
             return  # No perm required , anybody can do it
 
         if user is None or getattr(user, "is_anonymous", True):  # not sure it'll happen IRL
@@ -160,16 +183,16 @@ class ValidationWorkflowEngine:
     @staticmethod
     def _can_undo_node(validation_status: ValidationNode, user):
         if validation_status.status == ValidationNodeStatus.UNKNOWN:
-            raise ValueError("Cannot undo node that hasn't been completed yet")
+            raise ValidationWorkflowEngineException("Cannot undo node that hasn't been completed yet")
 
         if validation_status.final:
-            raise ValueError("Cannot undo final node")
+            raise ValidationWorkflowEngineException("Cannot undo final node")
 
         if validation_status.status == ValidationNodeStatus.REJECTED:
-            raise ValueError("Cannot undo rejected node")
+            raise ValidationWorkflowEngineException("Cannot undo rejected node")
 
         if validation_status.status != ValidationNodeStatus.ACCEPTED:
-            raise ValueError("Cannot undo node that isn't accepted")
+            raise ValidationWorkflowEngineException("Cannot undo node that isn't accepted")
 
         if validation_status.updated_by != user:
             raise PermissionDenied(f"Only user {validation_status.updated_by.username} can undo this action")
@@ -180,7 +203,7 @@ class ValidationWorkflowEngine:
             .filter(Q(status=ValidationNodeStatus.ACCEPTED) | Q(status=ValidationNodeStatus.REJECTED))
             .exists()
         ):
-            raise ValueError("Cannot undo node as next nodes have been completed")
+            raise ValidationWorkflowEngineException("Cannot undo node as next nodes have been completed")
 
     @staticmethod
     @transaction.atomic

@@ -3,6 +3,7 @@ from django.contrib.auth.models import AnonymousUser, Group
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 
+from iaso.engine.exceptions import ValidationWorkflowEngineException
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.models import Account, Form, Instance, Profile, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
@@ -46,7 +47,11 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            artifact=self.instance,
+            comment="LGTM",
+            approved=True,
         )
 
         # check the validation status
@@ -59,7 +64,7 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         self.assertEqual(validation_status.updated_by, self.user)
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
@@ -67,7 +72,10 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="Don't like it"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="Don't like it",
+            artifact=self.instance,
         )
 
         self.assertEqual(self.check_file_node.get_validation_nodes().count(), 1)
@@ -79,7 +87,7 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         self.assertEqual(validation_status.updated_by, self.user)
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.REJECTED,
         )
 
@@ -87,33 +95,52 @@ class TestSimpleLinearValidationWorkflowEngine(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
 
         # shouldn't happen if using self.instance.get_next_pending_nodes.. but who knows
-        with self.assertRaisesMessage(ValueError, "Already completed"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Already completed"):
             ValidationWorkflowEngine.complete_node(
-                self.check_file_node.get_validation_nodes().first(), self.user, comment="LGTM", approved=True
+                self.check_file_node.get_validation_nodes().first(),
+                self.user,
+                comment="LGTM",
+                approved=True,
+                artifact=self.instance,
             )
 
     def test_cannot_start_another_same_workflow_after_it_has_been_final_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, approved=True, comment="LGTM"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            approved=True,
+            comment="LGTM",
+            artifact=self.instance,
         )
 
-        with self.assertRaisesMessage(ValueError, "Artifact is already attached to a related workflow"):
+        with self.assertRaisesMessage(
+            ValidationWorkflowEngineException, "Artifact is already attached to a related workflow"
+        ):
             ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
     def test_cannot_start_another_same_workflow_after_it_has_been_final_rejected(self):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="Don't like it"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="Don't like it",
+            artifact=self.instance,
         )
 
-        with self.assertRaisesMessage(ValueError, "Artifact is already attached to a related workflow"):
+        with self.assertRaisesMessage(
+            ValidationWorkflowEngineException, "Artifact is already attached to a related workflow"
+        ):
             ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
 
@@ -164,23 +191,29 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, approved=True, comment="LGTM"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            approved=True,
+            comment="LGTM",
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
             self.instance.get_next_pending_nodes(self.workflow).first(),
             self.user,
             approved=True,
             comment="I agree : LGTM",
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
             self.instance.get_next_pending_nodes(self.workflow).first(),
             self.user,
             approved=True,
             comment="I confirm : LGTM",
+            artifact=self.instance,
         )
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
@@ -209,11 +242,13 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, approved=False, comment="Nope"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            approved=False,
+            comment="Nope",
+            artifact=self.instance,
         )
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.REJECTED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
         self.assertEqual(self.instance.validationnode_set.all().count(), 1)
         validation_status = self.instance.validationnode_set.first()
         self.assertEqual(validation_status.comment, "Nope")
@@ -226,12 +261,14 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, approved=True, comment="LGTM"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            approved=True,
+            comment="LGTM",
+            artifact=self.instance,
         )
 
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.PENDING
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
         self.assertEqual(self.instance.validationnode_set.all().count(), 2)  # this one + next one pending
         validation_status = self.instance.validationnode_set.last()
         self.assertEqual(validation_status.comment, "LGTM")
@@ -247,11 +284,10 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
             self.user,
             approved=False,
             comment="name is wrong",
+            artifact=self.instance,
         )
 
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.REJECTED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
         self.assertEqual(self.instance.validationnode_set.all().count(), 2)
         validation_status = self.instance.validationnode_set.first()
         self.assertEqual(validation_status.comment, "name is wrong")
@@ -263,11 +299,13 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
     def test_approve_check_file_name_node(self):
         self.test_approve_check_file_type_node()
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, approved=True, comment="name LGTM"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            approved=True,
+            comment="name LGTM",
+            artifact=self.instance,
         )
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.PENDING
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
         self.assertEqual(
             self.instance.validationnode_set.all().count(), 3
         )  # this one + next one pending + previous one
@@ -281,11 +319,13 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
     def test_reject_manager_approves_node(self):
         self.test_approve_check_file_name_node()
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, approved=False, comment="Nope"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            approved=False,
+            comment="Nope",
+            artifact=self.instance,
         )
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.REJECTED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
         self.assertEqual(self.instance.validationnode_set.all().count(), 3)
         validation_status = self.instance.validationnode_set.first()
         self.assertEqual(validation_status.comment, "Nope")
@@ -301,10 +341,9 @@ class TestMultiLinearValidationWorkflowEngine(TestCase):
             self.user,
             approved=True,
             comment="Manager approves",
+            artifact=self.instance,
         )
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.APPROVED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.APPROVED)
         self.assertEqual(self.instance.validationnode_set.all().count(), 3)
         validation_status = self.instance.validationnode_set.first()
         self.assertEqual(validation_status.comment, "Manager approves")
@@ -368,11 +407,16 @@ class TestPermissionCheck(TestCase):
                 AnonymousUser(),
                 comment="LGTM",
                 approved=True,
+                artifact=self.instance,
             )
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_nodes(self.workflow).first(), None, comment="LGTM", approved=True
+                self.instance.get_next_pending_nodes(self.workflow).first(),
+                None,
+                comment="LGTM",
+                approved=True,
+                artifact=self.instance,
             )
 
         # check that there's no impact
@@ -387,6 +431,7 @@ class TestPermissionCheck(TestCase):
                 self.other_user,
                 comment="LGTM",
                 approved=True,
+                artifact=self.instance,
             )
 
         # check that there's no impact
@@ -396,7 +441,11 @@ class TestPermissionCheck(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
 
         # check the validation status
@@ -409,7 +458,7 @@ class TestPermissionCheck(TestCase):
         self.assertEqual(validation_status.updated_by, self.user)
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
@@ -422,11 +471,16 @@ class TestPermissionCheck(TestCase):
                 AnonymousUser(),
                 comment="Nope",
                 approved=False,
+                artifact=self.instance,
             )
 
         with self.assertRaisesMessage(PermissionDenied, "User required"):
             ValidationWorkflowEngine.complete_node(
-                self.instance.get_next_pending_nodes(self.workflow).first(), None, comment="Nope", approved=False
+                self.instance.get_next_pending_nodes(self.workflow).first(),
+                None,
+                comment="Nope",
+                approved=False,
+                artifact=self.instance,
             )
 
         # check that there's no impact
@@ -441,6 +495,7 @@ class TestPermissionCheck(TestCase):
                 self.other_user,
                 comment="Nope",
                 approved=False,
+                artifact=self.instance,
             )
 
         # check that there's no impact
@@ -450,7 +505,10 @@ class TestPermissionCheck(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="Don't like it"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="Don't like it",
+            artifact=self.instance,
         )
 
         self.assertEqual(self.check_file_node.get_validation_nodes().count(), 1)
@@ -503,7 +561,11 @@ class TestUndoFeature(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
 
         with self.assertRaisesMessage(PermissionDenied, "Only user noprofile can undo this action"):
@@ -526,21 +588,31 @@ class TestUndoFeature(TestCase):
             self.instance.get_next_pending_nodes(self.workflow).first().status, ValidationNodeStatus.UNKNOWN
         )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "PENDING")
+        self.assertEqual(self.instance.general_validation_status, "PENDING")
 
     def test_try_undo_first_approved_node_when_next_nodes_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM again", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM again",
+            approved=True,
+            artifact=self.instance,
         )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "APPROVED")
+        self.assertEqual(self.instance.general_validation_status, "APPROVED")
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo node as next nodes have been completed"):
+        with self.assertRaisesMessage(
+            ValidationWorkflowEngineException, "Cannot undo node as next nodes have been completed"
+        ):
             ValidationWorkflowEngine.undo_node(
                 self.check_file_type_node.validationnode_set.get(instance=self.instance),
                 self.user,
@@ -548,21 +620,31 @@ class TestUndoFeature(TestCase):
                 self.workflow,
             )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "APPROVED")
+        self.assertEqual(self.instance.general_validation_status, "APPROVED")
 
     def test_try_undo_first_approved_node_when_next_nodes_has_been_rejected(self):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="Nope", approved=False
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="Nope",
+            approved=False,
+            artifact=self.instance,
         )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "REJECTED")
+        self.assertEqual(self.instance.general_validation_status, "REJECTED")
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo node as next nodes have been completed"):
+        with self.assertRaisesMessage(
+            ValidationWorkflowEngineException, "Cannot undo node as next nodes have been completed"
+        ):
             ValidationWorkflowEngine.undo_node(
                 self.check_file_type_node.validationnode_set.get(instance=self.instance),
                 self.user,
@@ -570,7 +652,7 @@ class TestUndoFeature(TestCase):
                 self.workflow,
             )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "REJECTED")
+        self.assertEqual(self.instance.general_validation_status, "REJECTED")
 
     def test_try_undo_last_approved_node(self):
         """
@@ -579,15 +661,23 @@ class TestUndoFeature(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="LGTM again", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="LGTM again",
+            approved=True,
+            artifact=self.instance,
         )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "APPROVED")
+        self.assertEqual(self.instance.general_validation_status, "APPROVED")
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo final node"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Cannot undo final node"):
             ValidationWorkflowEngine.undo_node(
                 self.manager_approves_node.validationnode_set.get(instance=self.instance),
                 self.user,
@@ -595,7 +685,7 @@ class TestUndoFeature(TestCase):
                 self.workflow,
             )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "APPROVED")
+        self.assertEqual(self.instance.general_validation_status, "APPROVED")
 
     def test_try_undo_rejected_node(self):
         """
@@ -604,12 +694,16 @@ class TestUndoFeature(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.user, comment="Nope", approved=False
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.user,
+            comment="Nope",
+            approved=False,
+            artifact=self.instance,
         )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "REJECTED")
+        self.assertEqual(self.instance.general_validation_status, "REJECTED")
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo rejected node"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Cannot undo rejected node"):
             ValidationWorkflowEngine.undo_node(
                 self.check_file_type_node.validationnode_set.get(instance=self.instance),
                 self.user,
@@ -617,7 +711,7 @@ class TestUndoFeature(TestCase):
                 self.workflow,
             )
 
-        self.assertEqual(self.instance.get_general_validation_status(workflow=self.workflow), "REJECTED")
+        self.assertEqual(self.instance.general_validation_status, "REJECTED")
 
 
 class TestResubmitFeature(TestCase):
@@ -666,11 +760,13 @@ class TestResubmitFeature(TestCase):
             self.user,
             approved=False,
             comment="Nope",
+            artifact=self.parent_instance,
         )
 
         ValidationWorkflowEngine.start(self.workflow, self.user, self.instance, self.parent_instance)
 
         self.instance.refresh_from_db()
+        self.parent_instance.refresh_from_db()
         self.assertEqual(self.instance.parent_artefact_for_validation, self.parent_instance)
 
         ValidationWorkflowEngine.complete_node(
@@ -678,6 +774,7 @@ class TestResubmitFeature(TestCase):
             self.user,
             approved=False,
             comment="Nope for the second time",
+            artifact=self.instance,
         )
 
         validations = self.instance.get_all_validation_nodes(self.workflow)
@@ -699,9 +796,12 @@ class TestResubmitFeature(TestCase):
             self.user,
             approved=True,
             comment="LGTM",
+            artifact=self.instance,
         )
 
-        with self.assertRaisesMessage(ValueError, "Invalid parent artifact: workflow is in incorrect status"):
+        with self.assertRaisesMessage(
+            ValidationWorkflowEngineException, "Invalid parent artifact: workflow is in incorrect status"
+        ):
             ValidationWorkflowEngine.start(self.workflow, self.user, self.instance, self.parent_instance)
 
         self.instance.refresh_from_db()
@@ -786,6 +886,7 @@ class TestByPassFeature(TestCase):
             ValidationWorkflowEngine.complete_node_by_passing(
                 self.manager_approves_node, self.dwight, self.instance, self.workflow
             )
+        self.instance.refresh_from_db()
 
         ValidationWorkflowEngine.complete_node_by_passing(
             self.manager_approves_node,
@@ -797,7 +898,7 @@ class TestByPassFeature(TestCase):
         )
         # check
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
@@ -823,13 +924,19 @@ class TestByPassFeature(TestCase):
     def test_approve_last_node_when_first_node_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
 
         with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
             ValidationWorkflowEngine.complete_node_by_passing(
                 self.manager_approves_node, self.dwight, self.instance, self.workflow
             )
+
+        self.instance.refresh_from_db()
 
         ValidationWorkflowEngine.complete_node_by_passing(
             self.manager_approves_node,
@@ -841,7 +948,7 @@ class TestByPassFeature(TestCase):
         )
         # check
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
@@ -867,13 +974,18 @@ class TestByPassFeature(TestCase):
     def test_approve_last_node_when_second_node_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
             self.instance.get_next_pending_nodes(self.workflow).first(),
             self.dwight,
             comment="LGTM again",
             approved=True,
+            artifact=self.instance,
         )
 
         with self.assertRaisesMessage(PermissionDenied, "You do not have permission to complete this task"):
@@ -892,7 +1004,7 @@ class TestByPassFeature(TestCase):
 
         # check
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
@@ -918,10 +1030,14 @@ class TestByPassFeature(TestCase):
     def test_approve_last_node_when_first_node_has_been_rejected(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="Nope", approved=False
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="Nope",
+            approved=False,
+            artifact=self.instance,
         )
 
-        with self.assertRaisesMessage(ValueError, "Already rejected, cannot skip"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Already rejected, cannot skip"):
             ValidationWorkflowEngine.complete_node_by_passing(
                 self.manager_approves_node,
                 self.michael,
@@ -932,20 +1048,28 @@ class TestByPassFeature(TestCase):
             )
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.REJECTED,
         )
 
     def test_approve_last_node_when_second_node_has_been_rejected(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.dwight, comment="Nope", approved=False
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.dwight,
+            comment="Nope",
+            approved=False,
+            artifact=self.instance,
         )
 
-        with self.assertRaisesMessage(ValueError, "Already rejected, cannot skip"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Already rejected, cannot skip"):
             ValidationWorkflowEngine.complete_node_by_passing(
                 self.manager_approves_node,
                 self.michael,
@@ -956,7 +1080,7 @@ class TestByPassFeature(TestCase):
             )
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.REJECTED,
         )
 
@@ -968,41 +1092,50 @@ class TestByPassFeature(TestCase):
         )
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.REJECTED,
         )
 
     def test_reject_last_node_when_first_node_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node_by_passing(
             self.manager_approves_node, self.michael, self.instance, self.workflow, comment="Nope", approved=False
         )
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.REJECTED,
         )
 
     def test_reject_last_node_when_second_node_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
             self.instance.get_next_pending_nodes(self.workflow).first(),
             self.dwight,
             comment="LGTM again",
             approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node_by_passing(
             self.manager_approves_node, self.michael, self.instance, self.workflow, comment="Nope", approved=False
         )
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.REJECTED,
         )
 
@@ -1071,7 +1204,11 @@ class TestUndoFeatureForSkipNodes(TestCase):
     def test_undo_last_approved_node_when_first_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node_by_passing(
             self.big_boss_approves_node,
@@ -1082,22 +1219,28 @@ class TestUndoFeatureForSkipNodes(TestCase):
             approved=True,
         )
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo final node"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Cannot undo final node"):
             ValidationWorkflowEngine.undo_node(
                 self.big_boss_approves_node.validationnode_set.first(), self.david, self.instance, self.workflow
             )
 
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.APPROVED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.APPROVED)
 
     def test_undo_last_approved_node_when_second_node_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.dwight, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.dwight,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node_by_passing(
             self.big_boss_approves_node,
@@ -1108,19 +1251,21 @@ class TestUndoFeatureForSkipNodes(TestCase):
             approved=True,
         )
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo final node"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Cannot undo final node"):
             ValidationWorkflowEngine.undo_node(
                 self.big_boss_approves_node.validationnode_set.first(), self.david, self.instance, self.workflow
             )
 
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.APPROVED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.APPROVED)
 
     def test_undo_last_rejected_node_when_first_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node_by_passing(
             self.big_boss_approves_node,
@@ -1131,22 +1276,28 @@ class TestUndoFeatureForSkipNodes(TestCase):
             approved=False,
         )
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo rejected node"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Cannot undo rejected node"):
             ValidationWorkflowEngine.undo_node(
                 self.big_boss_approves_node.validationnode_set.first(), self.david, self.instance, self.workflow
             )
 
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.REJECTED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
 
     def test_undo_last_rejected_node_when_second_node_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.dwight, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.dwight,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node_by_passing(
             self.big_boss_approves_node,
@@ -1157,32 +1308,36 @@ class TestUndoFeatureForSkipNodes(TestCase):
             approved=False,
         )
 
-        with self.assertRaisesMessage(ValueError, "Cannot undo rejected node"):
+        with self.assertRaisesMessage(ValidationWorkflowEngineException, "Cannot undo rejected node"):
             ValidationWorkflowEngine.undo_node(
                 self.big_boss_approves_node.validationnode_set.first(), self.david, self.instance, self.workflow
             )
 
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.REJECTED
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
 
     def test_undo_manager_approved_node_when_first_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
+
+        self.instance.refresh_from_db()
         ValidationWorkflowEngine.complete_node_by_passing(
             self.manager_approves_node,
             self.michael,
-            self.instance,
-            self.workflow,
+            artifact=self.instance,
+            workflow=self.workflow,
             comment="I'm the boss",
             approved=True,
         )
 
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.PENDING
-        )
+        self.instance.refresh_from_db()
+
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
 
         self.assertTrue(self.big_boss_approves_node.validationnode_set.exists())
         self.assertEqual(self.big_boss_approves_node.validationnode_set.count(), 1)
@@ -1206,9 +1361,7 @@ class TestUndoFeatureForSkipNodes(TestCase):
         )
 
         # check afterward
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.PENDING
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
 
         # check nodes
 
@@ -1233,13 +1386,18 @@ class TestUndoFeatureForSkipNodes(TestCase):
     def test_undo_manager_approved_node_when_second_node_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.jim, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.jim,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node(
             self.instance.get_next_pending_nodes(self.workflow).first(),
             self.dwight,
             comment="LGTM again",
             approved=True,
+            artifact=self.instance,
         )
         ValidationWorkflowEngine.complete_node_by_passing(
             self.manager_approves_node,
@@ -1255,9 +1413,7 @@ class TestUndoFeatureForSkipNodes(TestCase):
         )
 
         # check afterward
-        self.assertEqual(
-            self.instance.get_general_validation_status(self.workflow), ValidationWorkflowArtefactStatus.PENDING
-        )
+        self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
 
         # check nodes
 

@@ -46,7 +46,8 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     def is_artifact_allowed(self, instance):
         if self.form_set.count():
             return isinstance(instance, Instance) and self.form_set.filter(pk=instance.form_id).exists()
-        return isinstance(instance, Instance)
+        # by default we don't allow it if no forms has been configured.
+        return False
 
     def get_starting_node(self):
         return self.node_templates.get(previous_node_templates__isnull=True)

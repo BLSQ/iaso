@@ -677,21 +677,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @safe_api_import("instance")
     def create(self, _, request):
-        instances = import_data(request.data, request.user, request.query_params.get("app_id"))
-
-        if instances:
-            for instance in instances:
-                validation_workflow = getattr(instance.form, "validation_workflow", None)
-                if validation_workflow and getattr(validation_workflow, "node_templates", None):
-                    try:
-                        ValidationWorkflowEngine.start(
-                            instance.form.validation_workflow,
-                            request.user if request.user.is_authenticated else None,
-                            instance,
-                        )
-                    except Exception as e:
-                        # so we avoid the whole instance creation crashing
-                        logger.error(e)
+        import_data(request.data, request.user, request.query_params.get("app_id"))
 
         return Response({"res": "ok"})
 
@@ -1147,7 +1133,17 @@ def import_data(instances, user, app_id):
                 oucr.save()
 
         rtn_instances.append(instance)
-    return rtn_instances
+
+    for instance in rtn_instances:
+        validation_workflow = getattr(instance.form, "validation_workflow", None)
+        if validation_workflow and getattr(validation_workflow, "node_templates", None):
+            try:
+                ValidationWorkflowEngine.start(
+                    instance.form.validation_workflow, user if user.is_authenticated else None, instance
+                )
+            except Exception as e:
+                # so we avoid the whole instance creation crashing
+                logger.error(e)
 
 
 def _entity_correctness_score(entity):

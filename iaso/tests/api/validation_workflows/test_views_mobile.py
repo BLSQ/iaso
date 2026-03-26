@@ -51,6 +51,8 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.form = Form.objects.create(name="Form")
         self.other_form = Form.objects.create(name="Form 2")
 
+        self.validation_workflow.form_set.set([self.form, self.other_form])
+
         self.other_project = Project.objects.create(account=self.other_account, app_id="1.2")
         self.other_project.forms.add(self.other_form)
 

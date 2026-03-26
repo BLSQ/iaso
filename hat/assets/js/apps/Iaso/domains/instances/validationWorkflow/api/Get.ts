@@ -85,5 +85,18 @@ export const useGetNode = ({
                 nodeSlug,
                 workflowSlug,
             }),
+        options: { enabled: Boolean(nodeSlug) },
+    });
+};
+
+const getWorkflowOptions = () => {
+    return getRequest(`${API_URL}dropdown/`);
+};
+
+export const useGetWorkflowOptions = () => {
+    return useSnackQuery({
+        queryKey: ['submissions-workflows', 'options'],
+        queryFn: () => getWorkflowOptions(),
+        options: { staleTime: Infinity, cacheTime: Infinity, retry: false },
     });
 };

@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import get from 'lodash/get';
 import { useSafeIntl } from 'bluesquare-components';
-import InstanceDetailsField from './InstanceDetailsField';
+import get from 'lodash/get';
 import MESSAGES from '../messages';
+import InstanceDetailsField from './InstanceDetailsField';
 
 type Props = {
     currentInstance: any;
@@ -37,7 +37,7 @@ const InstanceDetailsInfos: FunctionComponent<Props> = ({
                             MESSAGES[
                                 'getLabelKey' in f
                                     ? f.getLabelKey(currentInstance)
-                                    : f.translationKey ?? f.key
+                                    : (f.translationKey ?? f.key)
                             ],
                         )}
                         valueTitle={

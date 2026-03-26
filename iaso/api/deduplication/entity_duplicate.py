@@ -226,7 +226,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
         meta_instance_id.text = "uuid:" + str(new_uuid)
 
     new_xml_string = ET.tostring(root, encoding="utf-8", xml_declaration=False)
-    new_xml_content = ContentFile(new_xml_string.decode("utf-8"))
+    new_xml_content = ContentFile(new_xml_string)  # .decode("utf-8")
 
     new_inst.pk = None
     new_inst.entity = new_entity

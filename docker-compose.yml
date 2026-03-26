@@ -80,6 +80,7 @@ services:
         CELERY_BROKER_URL: ${CELERY_BROKER_URL}
         CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
         WORKER: ${WORKER}
+        USE_S3: ${USE_S3}
 
       logging: &iaso_logging
         driver: json-file

@@ -4,22 +4,24 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
 import { Filters } from './components/Filters';
 import { AddVersionModal } from './components/versions/Modal';
-import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
-import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
-import { WorkflowsParams } from './types';
-import { baseUrls } from '../../constants/urls';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import MESSAGES from './messages';
+import { WorkflowsParams } from './types';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Workflows: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.workflows) as WorkflowsParams;
+    const params = useParamsObject(
+        baseUrls.workflows,
+    ) as unknown as WorkflowsParams;
     const goBack = useGoBack(baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

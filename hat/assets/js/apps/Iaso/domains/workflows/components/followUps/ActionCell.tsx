@@ -1,14 +1,10 @@
 import React, { FunctionComponent } from 'react';
-
 import { QueryBuilderFields } from 'bluesquare-components';
-
-import { FollowUps } from '../../types';
-
-import MESSAGES from '../../messages';
 import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
-import { FollowUpsModal } from './Modal';
-
 import { useDeleteWorkflowFollowUp } from '../../hooks/requests/useDeleteWorkflowFollowUp';
+import MESSAGES from '../../messages';
+import { FollowUps } from '../../types';
+import { FollowUpsModal } from './Modal';
 
 type Props = {
     followUp: FollowUps;

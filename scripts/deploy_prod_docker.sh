@@ -87,3 +87,5 @@ python "scripts/eb_deploy.py" "${EB_ENVIRONMENT}"
 
 # Timestamp
 date
+
+# aws elasticbeanstalk update-environment --environment-name "${EB_ENVIRONMENT}" --options-to-remove Namespace=aws:elasticbeanstalk:environment:proxy:staticfiles,OptionName=/static

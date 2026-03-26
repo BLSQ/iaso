@@ -45,6 +45,7 @@ from iaso.api.instances.serializers import FileTypeSerializer, InstanceImportAcc
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSerializer
+from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
     Account,
@@ -676,7 +677,21 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @safe_api_import("instance")
     def create(self, _, request):
-        import_data(request.data, request.user, request.query_params.get("app_id"))
+        instances = import_data(request.data, request.user, request.query_params.get("app_id"))
+
+        if instances:
+            for instance in instances:
+                validation_workflow = getattr(instance.form, "validation_workflow", None)
+                if validation_workflow and getattr(validation_workflow, "node_templates", None):
+                    try:
+                        ValidationWorkflowEngine.start(
+                            instance.form.validation_workflow,
+                            request.user if request.user.is_authenticated else None,
+                            instance,
+                        )
+                    except Exception as e:
+                        # so we avoid the whole instance creation crashing
+                        logger.error(e)
 
         return Response({"res": "ok"})
 
@@ -1036,6 +1051,7 @@ def import_data(instances, user, app_id):
     the second endpoint (POST /sync/form_upload/).
     """
     project = Project.objects.get_for_user_and_app_id(user, app_id)
+    rtn_instances = []
 
     for instance_data in instances:
         uuid = instance_data.get("id", None)
@@ -1129,6 +1145,9 @@ def import_data(instances, user, app_id):
                 oucr.new_reference_instances.set([instance])
                 oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()
+
+        rtn_instances.append(instance)
+    return rtn_instances
 
 
 def _entity_correctness_score(entity):

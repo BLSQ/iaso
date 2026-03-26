@@ -31,6 +31,16 @@ class ValidationNodeTemplateAPIDeleteTestCase(BaseApiTestCase):
             account=self.account,
         )
 
+        self.other_validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name 2",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account_2,
+        )
+        self.other_node = ValidationNodeTemplate.objects.create(
+            name="Other node", workflow=self.other_validation_workflow
+        )
+
         # create some nodes
         self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
         self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
@@ -78,6 +88,19 @@ class ValidationNodeTemplateAPIDeleteTestCase(BaseApiTestCase):
                 )
             )
             self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)
+
+    def test_check_validation_workflow_parent_slug_access(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.delete(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.other_validation_workflow.slug,
+                    "slug": self.other_node.slug,
+                },
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)
 
     def test_happy_flow(self):
         self.client.force_authenticate(self.john_wick)

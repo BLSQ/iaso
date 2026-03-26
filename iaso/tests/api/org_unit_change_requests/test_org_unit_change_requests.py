@@ -286,7 +286,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "org_unit_id": self.org_unit.id,
             "new_name": "Bar",
         }
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(9):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
@@ -308,7 +308,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_location_accuracy": 1.2345,
         }
 
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(11):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])

@@ -164,7 +164,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(14):
             # 1. SELECT  FROM "iaso_project"
             # 2. SELECT FROM "iaso_account"
             # 3. SELECT FROM "iaso_orgunit"
@@ -206,7 +206,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.goku.validation_status = OrgUnit.VALIDATION_VALID
         self.goku.save()
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(14):
             # 1. SELECT  FROM "iaso_project"
             # 2. SELECT FROM "iaso_account"
             # 3. SELECT FROM "iaso_orgunit"
@@ -252,7 +252,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.goku.org_unit_type = self.nameks
         self.goku.save()
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(14):
             # 1. SELECT  FROM "iaso_project"
             # 2. SELECT FROM "iaso_account"
             # 3. SELECT FROM "iaso_orgunit"

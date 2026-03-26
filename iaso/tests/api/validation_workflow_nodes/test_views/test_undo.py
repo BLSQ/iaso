@@ -35,7 +35,7 @@ class ValidationNodeAPIUndoTestCase(BaseAPITestCase):
         )
         self.third_node.previous_node_templates.add(self.second_node)
         self.form = Form.objects.create(name="Form")
-
+        self.validation_workflow.form_set.add(self.form)
         self.project = Project.objects.create(account=self.account, app_id="1.1")
         self.project.forms.add(self.form)
 

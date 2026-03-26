@@ -95,6 +95,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
         return data
 
 
+@extend_schema(tags=["Polio - Vaccine repository reports"])
 class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
     """ViewSet for retrieving vaccine repository reports data."""
 

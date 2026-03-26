@@ -21,6 +21,7 @@ version_id_param = OpenApiParameter(
 )
 
 
+@extend_schema(tags=["Workflow changes"])
 class WorkflowChangeViewSet(ModelViewSet):
     """Workflow Changes API
 

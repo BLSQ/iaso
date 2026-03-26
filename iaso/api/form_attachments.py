@@ -1,6 +1,7 @@
 import typing
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from drf_spectacular.utils import extend_schema
 from rest_framework import parsers, serializers, status
 from rest_framework.exceptions import NotFound
 from rest_framework.fields import Field
@@ -88,6 +89,7 @@ class HasFormAttachmentPermission(HasFormPermission):
         return ok_forms.filter(id=obj.form_id).exists()
 
 
+@extend_schema(tags=["Form attachments"])
 class FormAttachmentsViewSet(ModelViewSet):
     f"""Form Attachments API
 

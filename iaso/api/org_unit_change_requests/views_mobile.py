@@ -1,6 +1,7 @@
 import django_filters
 
 from django.db.models import Count, F, Prefetch, Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.mixins import ListModelMixin
 
@@ -12,6 +13,7 @@ from iaso.api.serializers import AppIdSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 
 
+@extend_schema(tags=["Org unit changes", "Org units", "Mobile"])
 class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [HasOrgUnitsChangeRequestPermission]
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]

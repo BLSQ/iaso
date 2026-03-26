@@ -60,7 +60,7 @@ def get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_b
     return latest_active_campaign, latest_active_campaign_rounds, round_numbers
 
 
-@extend_schema(tags=["lqaszoomin"])
+@extend_schema(tags=["Polio - Lqas IM Zoom-in maps"])
 class LQASIMZoominMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -206,7 +206,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         return Response({"results": results})
 
 
-@extend_schema(tags=["lqaszoominbackground"])
+@extend_schema(tags=["Polio - Lqas IM Zoom-in map backgrounds"])
 class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

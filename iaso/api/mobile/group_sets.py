@@ -33,6 +33,7 @@ class MobileGroupSetSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Groups", "Group sets", "Mobile"])
 class MobileGroupSetsViewSet(ListModelMixin, GenericViewSet):
     """Groupsets API for Mobile.
 

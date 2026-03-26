@@ -1,5 +1,6 @@
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -45,6 +46,7 @@ class GroupSetDropdownSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name", "label"]
 
 
+@extend_schema(tags=["Groups", "Group sets"])
 class GroupSetsViewSet(ModelViewSet):
     f"""Groups API
 

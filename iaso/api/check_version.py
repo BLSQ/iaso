@@ -12,6 +12,7 @@ from iaso.api.query_params import APP_ID, APP_VERSION
 from iaso.models import Project
 
 
+@extend_schema(tags=["Mobile", "Check version"])
 class CheckVersionViewSet(ViewSet):
     """Check Version API
 

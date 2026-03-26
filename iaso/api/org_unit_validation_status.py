@@ -1,9 +1,11 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 
 from iaso.models import OrgUnit
 
 
+@extend_schema(tags=["Org unit validation statuses", "Org units"])
 class ValidationStatusViewSet(viewsets.ViewSet):
     """Org unit validation status API
 

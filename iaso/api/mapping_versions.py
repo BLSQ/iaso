@@ -2,6 +2,7 @@ import typing
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 import iaso.models as m
@@ -169,6 +170,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         return instance
 
 
+@extend_schema(tags=["Mapping versions"])
 class MappingVersionsViewSet(ModelViewSet):
     f"""Mapping versions API
 

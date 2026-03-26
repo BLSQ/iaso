@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 
@@ -7,6 +8,7 @@ from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMIS
 from .common import HasPermission
 
 
+@extend_schema(tags=["Periods"])
 class PeriodsViewSet(viewsets.ViewSet):
     f"""Periods API
 

@@ -16,6 +16,7 @@ from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -98,6 +99,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 
 # noinspection PyMethodMayBeStatic
+@extend_schema(tags=["Org units"])
 class OrgUnitViewSet(viewsets.ViewSet):
     f"""Org units API
 

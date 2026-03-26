@@ -386,6 +386,7 @@
     "iaso.forms.validated": "Validé",
     "iaso.forms.validation_status": "Statut de validation",
     "iaso.forms.validationStatus": "Statut de validation",
+    "iaso.forms.validationWorkflow": "Workflow de validation",
     "iaso.forms.viewForm": "Voir le formulaire",
     "iaso.forms.viewInstance": "Voir la soumission",
     "iaso.forms.viewInstances": "Voir le(s) soumission(s)",

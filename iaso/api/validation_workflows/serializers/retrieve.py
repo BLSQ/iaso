@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
@@ -50,6 +51,7 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
             "node_templates",
         ]
 
+    @extend_schema_field(NestedValidationNodeTemplateSerializer(many=True))
     def get_node_templates(self, obj):
         nodes = list(getattr(obj, "_prefetched_objects_cache", {}).get("node_templates", obj.node_templates.all()))
 
@@ -71,7 +73,7 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
         start = next((n for n in nodes if not prev_map[n.id]), None)
 
         if not start:
-            raise ValueError("No starting node")
+            return []
 
         next_map = {node.id: list(node.next_node_templates.all()) for node in nodes}
 

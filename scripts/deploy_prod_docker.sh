@@ -8,7 +8,8 @@ DEV_PLATFORM=".platform"
 DEV_PLATFORM_BAK=".platform.bak"
 DEV_COMPOSE="docker-compose.yml"
 DEV_COMPOSE_BAK="docker-compose.dev.yml"
-
+DEV_EB_EXTENSIONS=".ebextensions"
+DEV_EB_EXTENSIONS_BAK=".ebextensions.bak"
 EB_ENVIRONMENT="${1}"
 
 if [ -z "$EB_ENVIRONMENT" ]; then
@@ -35,6 +36,8 @@ cleanup() {
     mv "$DEV_COMPOSE" "$PROD_COMPOSE"
     mv "$DEV_COMPOSE_BAK" "$DEV_COMPOSE"
 
+    echo "==> Restoring eb extensions for dev..."
+    mv "$DEV_EB_EXTENSIONS_BAK" "$DEV_EB_EXTENSIONS"
 
     echo "==> Restoring platform hooks for dev..."
     if [ -d "$DEV_PLATFORM" ]; then
@@ -45,7 +48,7 @@ cleanup() {
     fi
 
     echo "==> Unstaging swapped files..."
-    git reset HEAD -- "$DEV_COMPOSE" "$DEV_EB_EXTENSIONS" "$DEV_PLATFORM"
+    git reset HEAD -- "$DEV_COMPOSE" "$DEV_PLATFORM"
 }
 
 # Set trap early so any failure after this point triggers cleanup
@@ -56,10 +59,9 @@ echo "==> Swapping docker-compose to prod"
 mv "$DEV_COMPOSE" "$DEV_COMPOSE_BAK"
 mv "$PROD_COMPOSE" "$DEV_COMPOSE"
 
-# Swap eb extensions files
-echo "==> Swapping eb extensions to prod"
+# Hide dev eb extensions (no prod ebextensions needed)
+echo "==> Hiding dev eb extensions"
 mv "$DEV_EB_EXTENSIONS" "$DEV_EB_EXTENSIONS_BAK"
-mv "$PROD_EB_EXTENSIONS" "$DEV_EB_EXTENSIONS"
 
 # Swap platform hooks
 echo "==> Swapping platform hooks to prod"
@@ -70,7 +72,6 @@ mv "$PROD_PLATFORM" "$DEV_PLATFORM"
 
 # Stage the swapped files so `eb deploy --staged` picks it up
 git add "$DEV_COMPOSE"
-git add "$DEV_EB_EXTENSIONS"
 git add "$DEV_PLATFORM"
 
 # Create version from tags

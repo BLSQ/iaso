@@ -48,7 +48,7 @@ cleanup() {
     fi
 
     echo "==> Unstaging swapped files..."
-    git reset HEAD -- "$DEV_COMPOSE" "$DEV_PLATFORM"
+    git reset HEAD -- "$DEV_COMPOSE" "$DEV_PLATFORM" "$DEV_EB_EXTENSIONS"
 }
 
 # Set trap early so any failure after this point triggers cleanup
@@ -73,6 +73,8 @@ mv "$PROD_PLATFORM" "$DEV_PLATFORM"
 # Stage the swapped files so `eb deploy --staged` picks it up
 git add "$DEV_COMPOSE"
 git add "$DEV_PLATFORM"
+# Stage removal of dev ebextensions so they're excluded from the bundle
+git rm -r --cached --quiet "$DEV_EB_EXTENSIONS"
 
 # Create version from tags
 VERSION_NAME=$(git describe --tags --match "v[[:digit:]]*")

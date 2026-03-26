@@ -66,7 +66,7 @@ echo "==> Version name/tag ${VERSION_NAME}"
 
 # Deploy to prod
 echo "==> Deploying ${EB_ENVIRONMENT}"
-# python "scripts/eb_deploy.py" "${EB_ENVIRONMENT}"
+python "scripts/eb_deploy.py" "${EB_ENVIRONMENT}"
 
 # Timestamp
 date

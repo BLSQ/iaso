@@ -179,4 +179,4 @@ class InstancesAPITestCase(APITestCase):
 
         instance = Instance.objects.get(uuid=instance_uuid)
 
-        self.assertEqual(instance.get_general_validation_status(), ValidationWorkflowArtefactStatus.PENDING)
+        self.assertEqual(instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)

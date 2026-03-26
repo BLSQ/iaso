@@ -172,8 +172,14 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
         self.assertEqual(res_data, [{"slug": "first-node-2"}, {"slug": "first-node-1"}])
 
+    def test_happy_flow_as_superuser(self):
+        self.base_test_happy_flow(self.superuser)
+
     def test_happy_flow(self):
-        self.client.force_authenticate(self.john_wick)
+        self.base_test_happy_flow(self.john_wick)
+
+    def base_test_happy_flow(self, user):
+        self.client.force_authenticate(user)
         res = self.client.post(
             reverse(
                 "validation_node_templates-bulk",

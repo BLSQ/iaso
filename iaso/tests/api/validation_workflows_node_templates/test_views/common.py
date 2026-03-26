@@ -21,7 +21,9 @@ class BaseApiTestCase(APITestCase):
         super().setUp()
         self.account = Account.objects.create(name="account")
 
-        self.superuser = self.create_user_with_profile(username="john.super", account=self.account)
+        self.superuser = self.create_user_with_profile(
+            username="john.super", account=self.account, is_staff=True, is_superuser=True
+        )
 
         self.john_doe = self.create_user_with_profile(
             username="john.doe", account=self.account, first_name="John", last_name="Doe"

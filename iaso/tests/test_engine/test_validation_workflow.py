@@ -480,7 +480,7 @@ class TestPermissionCheck(TestCase):
         self.assertEqual(validation_status.updated_by, self.superuser)
 
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
@@ -931,7 +931,7 @@ class TestByPassFeature(TestCase):
         )
         # check
         self.assertEqual(
-            self.instance.get_general_validation_status(workflow=self.workflow),
+            self.instance.general_validation_status,
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 

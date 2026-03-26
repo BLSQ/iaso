@@ -17,6 +17,7 @@ from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReference
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
+from iaso.api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from plugins.router import router as plugins_router
 
 from .api.accounts import AccountViewSet
@@ -125,7 +126,6 @@ from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.validation_workflow_instances.views import ValidationWorkflowInstanceViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
-from .api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
 from .api.validation_workflows_nodes.views import ValidationNodeViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
@@ -262,10 +262,10 @@ router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, base
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
 
-router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
+router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validationworkflows").register(
     r"node-templates",
     ValidationNodeTemplatesView,
-    basename="validation_node_templates",
+    basename="validation-node-templates",
     parents_query_lookups=["workflow__slug"],
 )
 router.register(
@@ -278,7 +278,9 @@ router.register(
     r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
 )
 router.registry.extend(plugins_router.registry)
-
+router.register(
+    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
+)
 urlpatterns: URLList = [
     path(
         "fill/<form_uuid>/<org_unit_id>/<period>",

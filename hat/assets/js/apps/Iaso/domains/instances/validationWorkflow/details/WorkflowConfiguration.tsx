@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -16,6 +16,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
 import { useGetWorkflowDetails } from '../api/Get';
+import { useSaveNodeOrder } from '../api/PostPutPatch';
 import { useWorkflowNodesColumns } from '../columns';
 import { useSortableTableState } from '../useSortableTableState';
 import { AddNode } from './CreateEditNode/CreateEditNode';
@@ -51,8 +52,21 @@ export const WorkflowConfiguration: FunctionComponent = () => {
     const { data: workflow, isFetching: isLoading } = useGetWorkflowDetails(
         params.slug,
     );
-    const { items, handleSortChange, handleResetOrder, isOrderChanged } =
-        useSortableTableState<Item>(workflow?.nodeTemplates ?? []);
+    const {
+        items,
+        handleSortChange,
+        handleResetOrder,
+        isOrderChanged,
+        setIsOrderChanged,
+    } = useSortableTableState<Item>(workflow?.nodeTemplates ?? []);
+    const { mutateAsync: saveOrder } = useSaveNodeOrder(params.slug);
+    const saveItems = useCallback(() => {
+        const itemsForApi = items.map(item => ({
+            ...item,
+            rolesRequired: item.rolesRequired.map(role => role.id),
+        }));
+        return saveOrder(itemsForApi).then(() => setIsOrderChanged(false));
+    }, [items, saveOrder, setIsOrderChanged]);
     const columns = useWorkflowNodesColumns(workflow?.slug);
     const title = workflow?.name
         ? `${formatMessage(MESSAGES.configureInstancesValidation)}: ${workflow.name}`
@@ -107,7 +121,7 @@ export const WorkflowConfiguration: FunctionComponent = () => {
                                 color="primary"
                                 disabled={!isOrderChanged}
                                 data-test="save-follow-up-order"
-                                onClick={() => {}}
+                                onClick={saveItems}
                                 variant="contained"
                             >
                                 {formatMessage(MESSAGES.saveOrder)}

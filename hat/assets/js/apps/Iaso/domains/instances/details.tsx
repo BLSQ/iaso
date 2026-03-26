@@ -227,6 +227,12 @@ const InstanceDetails: FunctionComponent = () => {
                                     currentInstance={currentInstance}
                                 />
                             </WidgetPaper>
+                            <WidgetPaper
+                                title={formatMessage(MESSAGES.validation)}
+                                id="location"
+                            >
+                                <InstanceValidation id={currentInstance.id} />
+                            </WidgetPaper>
                             {currentInstance.change_requests.length > 0 && (
                                 <WidgetPaper
                                     title={formatMessage(

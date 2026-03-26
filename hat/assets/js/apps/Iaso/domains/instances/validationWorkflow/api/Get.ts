@@ -2,7 +2,7 @@ import { FormattedApiParams, useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { API_URL } from '../constants';
+import { API_URL, WF_BASE_QUERYKEY } from '../constants';
 
 const defaults = {
     order: 'name',
@@ -21,7 +21,7 @@ export const useGetSubmissionValidationWorkflows = (
     const safeParams = useUrlParams(params, defaults);
     const apiParams = useApiParams(safeParams);
     return useSnackQuery({
-        queryKey: ['submissions-workflows', apiParams],
+        queryKey: [WF_BASE_QUERYKEY, apiParams],
         queryFn: () => getSubmissionsWorkflows(apiParams),
         options: {
             staleTime: Infinity,
@@ -33,12 +33,12 @@ export const useGetSubmissionValidationWorkflows = (
 };
 
 const getWorkflowDetails = async (slug?: string) => {
-    return getRequest(`${API_URL}${slug}`);
+    return getRequest(`${API_URL}${slug}/`);
 };
 
 export const useGetWorkflowDetails = (slug?: string) => {
     return useSnackQuery({
-        queryKey: ['submissions-workflows', 'details', slug],
+        queryKey: [WF_BASE_QUERYKEY, 'details', slug],
         queryFn: () => getWorkflowDetails(slug),
         options: {
             staleTime: Infinity,
@@ -79,7 +79,7 @@ export const useGetNode = ({
     workflowSlug: string;
 }) => {
     return useSnackQuery({
-        queryKey: ['submissions-workflows', 'nodes', nodeSlug, workflowSlug],
+        queryKey: [WF_BASE_QUERYKEY, 'nodes', nodeSlug, workflowSlug],
         queryFn: () =>
             getNode({
                 nodeSlug,
@@ -95,7 +95,7 @@ const getWorkflowOptions = () => {
 
 export const useGetWorkflowOptions = () => {
     return useSnackQuery({
-        queryKey: ['submissions-workflows', 'options'],
+        queryKey: [WF_BASE_QUERYKEY, 'options'],
         queryFn: () => getWorkflowOptions(),
         options: { staleTime: Infinity, cacheTime: Infinity, retry: false },
     });

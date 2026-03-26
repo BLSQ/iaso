@@ -13,7 +13,7 @@ import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 import { baseUrls } from 'Iaso/constants/urls';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
-import { SUBMISSIONS, SUBMISSIONS_UPDATE } from 'Iaso/utils/permissions';
+import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 import { useDeleteNode, useDeleteWorkflow } from './api/Delete';
@@ -66,7 +66,7 @@ export const useWorkflowsTableColumns = () => {
                 Cell: ({ value }) => value ?? textPlaceholder,
             },
         ];
-        if (userHasOneOfPermissions([SUBMISSIONS_UPDATE, SUBMISSIONS], user)) {
+        if (userHasOneOfPermissions([VALIDATION_WORKFLOWS], user)) {
             cols.push({
                 Header: formatMessage(MESSAGES.actions),
                 id: 'actions',
@@ -104,6 +104,7 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
     const { mutate: deleteNode } = useDeleteNode();
     return useMemo(() => {
         const cols = [
+            { Header: 'Order', id: 'order', accessor: 'order' },
             {
                 Header: formatMessage(MESSAGES.color),
                 id: 'color',
@@ -144,7 +145,7 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
                 },
             },
         ];
-        if (userHasOneOfPermissions([SUBMISSIONS_UPDATE, SUBMISSIONS], user)) {
+        if (userHasOneOfPermissions([VALIDATION_WORKFLOWS], user)) {
             cols.push({
                 Header: formatMessage(MESSAGES.actions),
                 id: 'slug',

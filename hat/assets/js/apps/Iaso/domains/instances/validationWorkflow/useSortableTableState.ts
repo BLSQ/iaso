@@ -29,6 +29,7 @@ export const useSortableTableState = <T>(tableData: T[]) => {
             isOrderChanged,
             handleSortChange,
             handleResetOrder,
+            setIsOrderChanged,
         };
     }, [handleResetOrder, handleSortChange, isOrderChanged, items, setItems]);
 };

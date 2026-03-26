@@ -53,6 +53,14 @@ export type ParameterValues =
           org_unit_type_criteria?: Criteria[];
       }
     | undefined;
+
+type ArrayParamKey = keyof Pick<
+    NonNullable<ParameterValues>,
+    | 'org_unit_type_quantities'
+    | 'org_unit_type_sequence_identifiers'
+    | 'org_unit_type_exceptions'
+    | 'org_unit_type_criteria'
+>;
 type Props = {
     planning: Planning;
     setAllowConfirm: React.Dispatch<React.SetStateAction<boolean>>;
@@ -74,7 +82,7 @@ export const LQASForm: FunctionComponent<Props> = ({
     const [expandedLevels, setExpandedLevels] = useState<boolean[]>([false]);
 
     const update = useCallback(
-        (arrayName: string, index: number, value: any) => {
+        (arrayName: ArrayParamKey, index: number, value: any) => {
             const currentArray = parameterValues?.[arrayName] || [];
             const updatedArray = updateArrayAtIndex(index, value, currentArray);
             handleParameterChange(arrayName, updatedArray);
@@ -82,7 +90,7 @@ export const LQASForm: FunctionComponent<Props> = ({
         [parameterValues, handleParameterChange],
     );
     const add = useCallback(
-        (arrayName: string, value: any = undefined) => {
+        (arrayName: ArrayParamKey, value: any = undefined) => {
             const currentArray = parameterValues?.[arrayName] || [];
             const updatedArray = addToArray(value, currentArray);
             handleParameterChange(arrayName, updatedArray);
@@ -92,7 +100,7 @@ export const LQASForm: FunctionComponent<Props> = ({
     );
 
     const remove = useCallback(
-        (arrayName: string, index: number) => {
+        (arrayName: ArrayParamKey, index: number) => {
             const currentArray = parameterValues?.[arrayName] || [];
             const updatedArray = removeFromArray(index, currentArray);
             const expandedLevelsCopy = removeFromArray(index, expandedLevels);
@@ -203,8 +211,10 @@ export const LQASForm: FunctionComponent<Props> = ({
             setAllowConfirm(
                 Boolean(allLevelsFilled) &&
                     (!planning.target_org_unit_type_details ||
-                        latestOptions?.value ===
-                            planning.target_org_unit_type_details?.id),
+                        planning.target_org_unit_type_details?.some(
+                            orgUnitType =>
+                                orgUnitType.id === latestOptions?.value,
+                        )),
             );
         } else {
             setAllowConfirm(false);
@@ -215,9 +225,8 @@ export const LQASForm: FunctionComponent<Props> = ({
         org_unit_type_criteria,
         org_unit_type_quantities,
         canAddLevel,
-        planning.target_org_unit_type_details?.id,
-        latestOptions?.value,
         planning.target_org_unit_type_details,
+        latestOptions?.value,
     ]);
 
     return (

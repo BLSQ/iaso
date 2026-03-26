@@ -1,10 +1,10 @@
 import django_filters
 
-from django.db.models import Q, QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils.translation import gettext_lazy as _
 
 from iaso.models import OrgUnit, OrgUnitType
-from plugins.polio.models.base import ON_HOLD, PLANNED, PREVENTIVE, REGULAR, Campaign
+from plugins.polio.models.base import ON_HOLD, PLANNED, PREVENTIVE, REGULAR, Campaign, Round
 
 
 # search query shared with legacy SearchFilter. Regrouped here to avoid code duplication and ensure consistent behaviour
@@ -69,18 +69,32 @@ class CampaignFilterV2(django_filters.rest_framework.FilterSet):
     def filter_campaign_category(self, queryset: QuerySet, _, value: str) -> QuerySet:
         """
         PLANNED and ON_HOLD are mutually exclusive on the business side (not on the model yet)
+        ON_HOLD returns campaigns on hold or with at least 1 round on hold
         PREVENTIVE and REGULAR are "the same" except for the is_preventive field
         There is no fine-grained filtering for e.g preventive on hold campaigns at the moment as it would clutter the already
         charged UI
 
         Individual filters for each boolean would make more sense, but that would require some UI design first
         """
+        rounds_on_hold = Round.objects.filter(
+            campaign_id=OuterRef("pk"),
+            on_hold=True,
+        )
+        queryset = queryset.annotate(has_round_on_hold=Exists(rounds_on_hold))
         if value == REGULAR:
-            return queryset.filter(is_preventive=False).filter(is_planned=False).filter(on_hold=False)
+            return (
+                queryset.filter(is_preventive=False)
+                .filter(is_planned=False)
+                .filter(Q(on_hold=False) & Q(has_round_on_hold=False))
+            )
         if value == PREVENTIVE:
-            return queryset.filter(is_preventive=True).filter(is_planned=False).filter(on_hold=False)
+            return (
+                queryset.filter(is_preventive=True)
+                .filter(is_planned=False)
+                .filter(Q(on_hold=False) & Q(has_round_on_hold=False))
+            )
         if value == ON_HOLD:
-            return queryset.filter(on_hold=True)
+            return queryset.filter(Q(on_hold=True) | Q(has_round_on_hold=True))
         if value == PLANNED:
             return queryset.filter(is_planned=True)
         return queryset

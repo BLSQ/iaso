@@ -208,7 +208,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         order = request.query_params.get("order", "name").split(",")
         # Annotate number of instance per org unit to sort by it
-        count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
+        if requested_fields is None:
+            count_instances = True
+        else:
+            count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
 
         if with_shapes or as_location or parquet_format:
             count_instances = False

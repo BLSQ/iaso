@@ -32,7 +32,7 @@ from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.profiles.constants import PK_ME
 from iaso.api.profiles.filters import ProfileListFilter
-from iaso.api.profiles.pagination import ProfilePagination
+from iaso.api.profiles.pagination import ProfileDropdownPagination, ProfilePagination
 from iaso.api.profiles.permissions import HasProfilePermission
 from iaso.api.profiles.policies import (
     GroupFromUserRolesPolicy,
@@ -48,6 +48,7 @@ from iaso.api.profiles.serializers import (
     ProfileUpdateSerializer,
     ProfileUserFallbackRetrieveSerializer,
 )
+from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
 from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer, ProfileUpdatePasswordSerializer
 from iaso.models import OrgUnit, Profile, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
@@ -66,6 +67,7 @@ class ProfilesViewSet(ModelViewSet):
 
     GET /api/profiles/
     GET /api/profiles/me => current user
+    GET /api/profiles/dropdown/
     GET /api/profiles/<id>
     GET /api/profiles/export-csv/
     GET /api/profiles/export-xlsx/
@@ -80,7 +82,6 @@ class ProfilesViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
 
-    filter_backends = [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = ["id", "user__username", "annotated_first_user_role"]
@@ -114,6 +115,8 @@ class ProfilesViewSet(ModelViewSet):
             return ProfileUpdateSerializer
         if self.action in ["update_password"]:
             return ProfileUpdatePasswordSerializer
+        if self.action == "dropdown":
+            return ProfileDropdownSerializer
 
         raise NotImplementedError(f"Serializer not implemented for action {self.action}")
 
@@ -494,3 +497,15 @@ class ProfilesViewSet(ModelViewSet):
     def get_subject_by_language(language=settings.LANGUAGE_CODE, domain=settings.DNS_DOMAIN):
         with translation.override(language):
             return _("Set up a password for your new account on {domain}").format(domain=domain)
+
+    @action(detail=False, methods=["get"], pagination_class=ProfileDropdownPagination)
+    def dropdown(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(sorted(serializer.data, key=lambda x: x["label"].lower()))

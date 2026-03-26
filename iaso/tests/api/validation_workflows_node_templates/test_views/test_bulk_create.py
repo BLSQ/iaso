@@ -4,26 +4,17 @@ from rest_framework import status
 from rest_framework.settings import api_settings
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
 
 
 class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
     def setUp(self):
-        self.account = Account.objects.create(name="account")
+        super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
-
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name",
@@ -57,6 +48,15 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.client.force_authenticate(self.superuser)
         res = self.client.post(
             reverse(
                 "validation_node_templates-bulk",

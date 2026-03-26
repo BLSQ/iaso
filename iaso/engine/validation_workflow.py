@@ -136,6 +136,10 @@ class ValidationWorkflowEngine:
         """
         We check if the user has the permission to complete this node.
         """
+
+        if getattr(user, "is_superuser", False):
+            return
+
         required_roles = validation_status.node.roles_required.all()
 
         if not required_roles.exists():

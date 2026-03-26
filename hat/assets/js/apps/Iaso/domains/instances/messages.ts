@@ -850,6 +850,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validate',
         defaultMessage: 'Validate',
     },
+    comment: {
+        id: 'iaso.label.comment',
+        defaultMessage: 'Comment',
+    },
+    validation: {
+        defaultMessage: 'Validation',
+        id: 'iaso.label.validation',
+    },
 });
 
 export default MESSAGES;

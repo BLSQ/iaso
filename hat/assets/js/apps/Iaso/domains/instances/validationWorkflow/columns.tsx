@@ -104,6 +104,7 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
     const { mutate: deleteNode } = useDeleteNode();
     return useMemo(() => {
         const cols = [
+            { Header: 'Order', id: 'order', accessor: 'order' },
             {
                 Header: formatMessage(MESSAGES.color),
                 id: 'color',
@@ -144,7 +145,7 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
                 },
             },
         ];
-        if (userHasOneOfPermissions([SUBMISSIONS_UPDATE, SUBMISSIONS], user)) {
+        if (userHasOneOfPermissions([VALIDATION_WORKFLOWS], user)) {
             cols.push({
                 Header: formatMessage(MESSAGES.actions),
                 id: 'slug',

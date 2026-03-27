@@ -35,6 +35,6 @@ export const useSaveNode = ({
     );
     return useSnackMutation({
         mutationFn: save,
-        invalidateQueryKey: WF_BASE_QUERYKEY,
+        invalidateQueryKey: ['instance', instanceId],
     });
 };

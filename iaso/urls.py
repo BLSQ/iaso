@@ -262,10 +262,10 @@ router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, base
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
 
-router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validationworkflows").register(
+router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
     r"node-templates",
     ValidationNodeTemplatesView,
-    basename="validation-node-templates",
+    basename="validation_node_templates",
     parents_query_lookups=["workflow__slug"],
 )
 router.register(

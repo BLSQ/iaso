@@ -60,7 +60,7 @@ const getSubmissionValidationStatus = async (id: number) => {
     return getRequest(`/api/validation-workflows/instance/${id}/`);
 };
 
-export const useGetSubmissionValidationStatus = (id: number) => {
+export const useGetSubmissionValidationStatus = (id?: number) => {
     return useSnackQuery({
         queryKey: ['submission-validation-status', id],
         queryFn: () => getSubmissionValidationStatus(id),
@@ -69,6 +69,7 @@ export const useGetSubmissionValidationStatus = (id: number) => {
             cacheTime: Infinity,
             retry: false,
             keepPreviousData: true,
+            enabled: Boolean(id),
         },
     });
 };

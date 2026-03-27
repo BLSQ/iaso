@@ -156,7 +156,6 @@ const FormDetail: FunctionComponent = () => {
             );
             saveForm = updateForm(currentForm.id.value, formData);
         }
-        console.log('DATA', formData);
         setIsLoading(true);
         let savedFormData;
         try {

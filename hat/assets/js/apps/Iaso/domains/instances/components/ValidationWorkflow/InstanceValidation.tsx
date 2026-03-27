@@ -7,14 +7,11 @@ import {
     Stepper,
     Typography,
 } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import MESSAGES from '../../messages';
-import {
-    useGetNodesList,
-    useGetSubmissionValidationStatus,
-} from './useGetSubmissionValidationStatus';
+import { useGetNodesList } from './useGetSubmissionValidationStatus';
 import { useValidationTimeline } from './useValidationTimeline';
 import { ValidateNodeModal } from './ValidationModal';
 
@@ -46,11 +43,10 @@ const formatStepContent = stepContent => {
     );
 };
 
-type Props = { id: number };
-export const InstanceValidation: FunctionComponent<Props> = ({ id }) => {
+type Props = { id?: number; data?: any };
+export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
     const { formatMessage } = useSafeIntl();
 
-    const { data, isLoading } = useGetSubmissionValidationStatus(id);
     const { data: nodes } = useGetNodesList(data?.workflow);
 
     const validationTimeline = useValidationTimeline({ data, nodes });
@@ -64,8 +60,6 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id }) => {
                 overflow: 'auto',
             }}
         >
-            {isLoading && <LoadingSpinner absolute fixed />}
-
             {(data?.history ?? []).length > 0 && (
                 <Stepper
                     orientation="vertical"

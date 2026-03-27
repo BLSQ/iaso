@@ -158,11 +158,11 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_data_pending(self):
+        self.setup_start()
+
         for user in [self.john_wick, self.superuser]:
             with self.subTest(f"with user {user}"):
                 self.client.force_authenticate(user)
-
-                self.setup_start()
 
                 res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
@@ -215,10 +215,11 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 )
 
     def test_data_approved(self):
+        self.setup_approve()
+
         for user in [self.john_wick, self.superuser]:
             with self.subTest(f"with user {user}"):
                 self.client.force_authenticate(user)
-                self.setup_approve()
                 res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
                 res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -273,10 +274,11 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 self.assertEqual(res_data["nextBypass"], [])
 
     def test_data_reject(self):
+        self.setup_reject()
+
         for user in [self.john_wick, self.superuser]:
             with self.subTest(f"with user {user}"):
                 self.client.force_authenticate(user)
-                self.setup_reject()
 
                 res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 

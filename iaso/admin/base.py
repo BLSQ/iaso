@@ -94,6 +94,7 @@ from ..models import (
 from ..models.data_store import JsonDataStore
 from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
 from ..models.team import Team
+from ..models.validation_workflow import ValidationNode
 from ..utils.gis import convert_2d_point_to_3d
 
 
@@ -375,6 +376,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "created_by",
                     "form_version",
                     "planning",
+                    "general_validation_status",
                 )
             },
         ),
@@ -624,8 +626,8 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields["entity_type"].label_from_instance = (
-            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = lambda entity: (
+            f"{entity.name} (Account: {entity.account.name})"
         )
         return form
 
@@ -926,8 +928,8 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields["entity_type"].label_from_instance = (
-            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = lambda entity: (
+            f"{entity.name} (Account: {entity.account.name})"
         )
         return form
 
@@ -1212,6 +1214,11 @@ class UserRoleAdmin(admin.ModelAdmin):
 @admin.register(OrgUnitChangeRequestConfiguration)
 class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
     autocomplete_fields = ["project"]
+
+
+@admin.register(ValidationNode)
+class ValidationNode(admin.ModelAdmin):
+    autocomplete_fields = ["instance"]
 
 
 @admin.register(GroupSet)

@@ -35,6 +35,7 @@ import InstanceFileContent from './components/InstanceFileContent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { InstanceValidation } from './components/ValidationWorkflow/InstanceValidation';
+import { useGetSubmissionValidationStatus } from './components/ValidationWorkflow/useGetSubmissionValidationStatus';
 import { INSTANCE_METAS_FIELDS } from './constants';
 import {
     ReassignInstancePayload,
@@ -100,10 +101,12 @@ const InstanceDetails: FunctionComponent = () => {
         useGetInstance(instanceId);
     const { isLoading: isLoadingEntityFields, fields: entityFields } =
         useGetEntityFields(currentInstance?.entity);
-
+    const { data: validationWorkflow, isLoading: isLoadingValidationStatus } =
+        useGetSubmissionValidationStatus(currentInstance?.id);
     const isLoading =
         isReassigning ||
         isLoadingInstance ||
+        isLoadingValidationStatus ||
         (currentInstance?.entity && isLoadingEntityFields);
 
     // not showing history link in submission detail if there is only one version/log
@@ -216,9 +219,6 @@ const InstanceDetails: FunctionComponent = () => {
                                     </Grid>
                                 )}
                             </WidgetPaper>
-                            <WidgetPaper title="Validation" id="validation">
-                                <InstanceValidation id={currentInstance.id} />
-                            </WidgetPaper>
                             <WidgetPaper
                                 title={formatMessage(MESSAGES.location)}
                                 id="location"
@@ -227,6 +227,17 @@ const InstanceDetails: FunctionComponent = () => {
                                     currentInstance={currentInstance}
                                 />
                             </WidgetPaper>
+                            {validationWorkflow?.validationStatus && (
+                                <WidgetPaper
+                                    title={formatMessage(MESSAGES.validation)}
+                                    id="validation"
+                                >
+                                    <InstanceValidation
+                                        id={currentInstance?.id}
+                                        data={validationWorkflow}
+                                    />
+                                </WidgetPaper>
+                            )}
                             {currentInstance.change_requests.length > 0 && (
                                 <WidgetPaper
                                     title={formatMessage(

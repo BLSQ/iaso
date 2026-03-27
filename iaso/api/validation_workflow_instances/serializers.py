@@ -26,16 +26,7 @@ class NestedHistorySerializer(ModelSerializer):
 
     class Meta:
         model = ValidationNode
-        fields = [
-            "level",
-            "color",
-            "created_at",
-            "updated_at",
-            "status",
-            "comment",
-            "updated_by",
-            "created_by",
-        ]
+        fields = ["level", "color", "created_at", "updated_at", "status", "comment", "updated_by", "created_by", "id"]
 
 
 class NextTasksSerializer(ModelSerializer):
@@ -61,10 +52,11 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
     history = serializers.SerializerMethodField(read_only=True)
     next_tasks = NextTasksSerializer(read_only=True, many=True, source="get_next_pending_nodes")
     next_bypass = serializers.SerializerMethodField(read_only=True)
+    workflow = serializers.CharField(read_only=True, source="form.validation_workflow.slug")
 
     class Meta:
         model = Instance
-        fields = ["validation_status", "rejection_comment", "history", "next_tasks", "next_bypass"]
+        fields = ["validation_status", "rejection_comment", "history", "next_tasks", "next_bypass", "workflow"]
 
     @extend_schema_field(NestedHistorySerializer(many=True))
     def get_history(self, obj):

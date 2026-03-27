@@ -17,6 +17,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.form_2 = Form.objects.create(name="form_2")
         self.form_3 = Form.objects.create(name="form_3")
 
+        self.vf_pk = None
         for i in range(15):
             v = ValidationWorkflow.objects.create(
                 name=f"name-{i}",
@@ -26,6 +27,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
                 updated_by=self.john_wick,
             )
             if i == 0:
+                self.vf_pk = v.pk
                 v.form_set.set([self.form_3])
                 v.save()
 
@@ -47,7 +49,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.validation_workflow_multiple_forms.form_set.set([self.form, self.form_2])
         self.validation_workflow_multiple_forms.save()
 
-        ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
+        self.out_of_account_vw = ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
 
     def test_output_fields(self):
         for user in [self.john_wick, self.superuser]:

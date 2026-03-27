@@ -7,7 +7,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
-import { isEqual } from 'lodash';
 import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { MultiSelect } from 'Iaso/domains/pages/components/MultiSelect';
@@ -34,6 +33,8 @@ export type NodeFormValues = {
     color?: string;
     rolesRequired?: number[];
     canSkipPreviousNodes?: boolean;
+    // previousNodeTemplate: string; // node slug
+    // nextNodeTemplate: string; // node slug
 };
 
 export const CreateEditNode: FunctionComponent<Props> = ({
@@ -56,6 +57,8 @@ export const CreateEditNode: FunctionComponent<Props> = ({
             description: node?.description,
             canSkipPreviousNodes: node?.canSkipPreviousNodes,
             rolesRequired: node?.rolesRequired.map(r => r.id),
+            // previousNodeTemplate: node?.previousNodeTemplate,
+            // nextNodeTemplate: node?.nextNodeTemplate,
         },
         enableReinitialize: true,
         onSubmit: values => save({ workflowSlug, ...values }),
@@ -72,7 +75,7 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     );
     const titleMessage = node?.slug ? MESSAGES.edit : MESSAGES.create;
     const title = formatMessage(titleMessage);
-    const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+    const allowConfirm = formik.isValid && formik.dirty;
 
     return (
         <FormikProvider value={formik}>

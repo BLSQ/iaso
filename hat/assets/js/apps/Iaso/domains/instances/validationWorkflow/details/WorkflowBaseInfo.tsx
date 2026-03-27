@@ -21,6 +21,7 @@ import {
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
 import { useSaveWorkflow } from '../api/PostPutPatch';
@@ -64,9 +65,9 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
     const params = useParamsObject(baseUrls.instanceValidationDetail);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const [name, setName] = useState<string>(workflow?.name ?? '');
-    const [description, setDescription] = useState<string>(
-        workflow?.description ?? '',
+    const [name, setName] = useAsyncInitialState<string>(workflow?.name);
+    const [description, setDescription] = useAsyncInitialState<string>(
+        workflow?.description,
     );
     const redirectToReplace = useRedirectToReplace();
     const { mutateAsync } = useSaveWorkflow();

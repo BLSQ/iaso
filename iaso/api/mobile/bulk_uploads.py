@@ -41,6 +41,7 @@ class ZipFileSerializer(serializers.Serializer):
         raise ValueError("Zip file not valid")
 
 
+@extend_schema(tags=["Mobile"])
 class MobileBulkUploadsViewSet(ViewSet):
     parser_classes = [MultiPartParser]
     permission_classes = [AuthenticationEnforcedPermission, MobileBulkUploadsPermission]

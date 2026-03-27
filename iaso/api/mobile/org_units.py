@@ -10,6 +10,7 @@ from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
@@ -187,6 +188,7 @@ class Buffer(GeomOutputGeoFunc):
     arity = 2
 
 
+@extend_schema(tags=["Mobile", "Org units"])
 class MobileOrgUnitViewSet(ModelViewSet):
     f"""Org units API used by the mobile application
 

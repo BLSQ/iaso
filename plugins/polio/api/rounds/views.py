@@ -10,7 +10,7 @@ from plugins.polio.models import Campaign, Round
 from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
-@extend_schema(tags=["rounds"], request=LqasDistrictsUpdateSerializer)
+@extend_schema(tags=["Polio - Rounds"], request=LqasDistrictsUpdateSerializer)
 class RoundViewSet(ModelViewSet):
     # Patch should be in the list to allow updatelqasfields to work
     http_method_names = ["patch"]

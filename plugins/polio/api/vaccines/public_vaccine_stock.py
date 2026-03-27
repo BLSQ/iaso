@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 
 from django.db.models import Model
 from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -18,6 +19,7 @@ from plugins.polio.api.vaccines.export_utils import download_xlsx_public_stock_v
 from plugins.polio.models import VaccineStock
 
 
+@extend_schema(tags=["Polio - Public vaccine stocks"])
 class PublicVaccineStockViewset(ViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     http_method_names = ["get"]

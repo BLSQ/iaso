@@ -1,6 +1,7 @@
 import requests
 
 from django.conf import settings
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -8,6 +9,7 @@ from rest_framework.response import Response
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 
 
+@extend_schema(tags=["Superset token"])
 class SupersetTokenViewSet(viewsets.ViewSet):
     """
     POST /api/superset/token

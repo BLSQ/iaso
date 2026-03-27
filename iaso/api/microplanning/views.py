@@ -3,6 +3,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -43,6 +44,7 @@ from .serializers import (
 )
 
 
+@extend_schema(tags=["Micro plannings", "Org units", "Plannings"])
 class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
     """List orgunits for a planning."""
 
@@ -92,6 +94,7 @@ class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
         )
 
 
+@extend_schema(tags=["Micro plannings", "Plannings"])
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
     permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
@@ -143,6 +146,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return self._read_response(instance)
 
 
+@extend_schema(tags=["Micro plannings", "Planning samplings", "Plannings"])
 class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     """List/create sampling results scoped by planning."""
 
@@ -198,6 +202,7 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(tags=["Micro plannings", "Assignments"])
 class AssignmentViewSet(AuditMixin, ModelViewSet):
     """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
     sense outside of it's planning."""

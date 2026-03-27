@@ -147,6 +147,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
 
+@extend_schema(tags=["Polio - Vaccine repository forms"])
 class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
     """
     ViewSet for retrieving vaccine repository data.

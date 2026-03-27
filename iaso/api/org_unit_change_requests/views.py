@@ -8,6 +8,7 @@ from django.db.models import Prefetch
 from django.db.transaction import atomic
 from django.http import HttpResponse
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -39,6 +40,7 @@ from iaso.tasks.org_unit_change_requests_bulk_review import (
 from iaso.utils.models.common import get_creator_name
 
 
+@extend_schema(tags=["Org unit changes", "Org units"])
 class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     CSV_HEADER_COLUMNS = [
         "Id",

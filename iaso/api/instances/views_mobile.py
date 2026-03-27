@@ -1,4 +1,5 @@
 from django.db.models import Prefetch
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import RetrieveModelMixin
@@ -24,6 +25,7 @@ class DenyAll(BasePermission):
         return False
 
 
+@extend_schema(tags=["Mobile", "Instances"])
 class InstancesMobileViewSet(GenericViewSet, RetrieveModelMixin):
     """Mobile Instances API
 

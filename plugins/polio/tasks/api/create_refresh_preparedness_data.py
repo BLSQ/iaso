@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
@@ -23,6 +24,7 @@ class RefreshPreparednessLaucherSerializer(serializers.Serializer):
 
 
 # noinspection PyMethodMayBeStatic
+@extend_schema(tags=["Polio - Tasks - Refresh Preparedness Launcher"])
 class RefreshPreparednessLaucherViewSet(viewsets.ViewSet):
     permission_classes = [
         permissions.IsAuthenticated,

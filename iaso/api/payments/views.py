@@ -42,6 +42,7 @@ from .serializers import (
 )
 
 
+@extend_schema(tags=["Payment lots"])
 class PaymentLotsViewSet(ModelViewSet):
     """
     # `Payment Lots` API
@@ -418,6 +419,7 @@ class PaymentLotsViewSet(ModelViewSet):
         return response
 
 
+@extend_schema(tags=["Potential payments"])
 class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     """
     # `Potential payment` API
@@ -565,6 +567,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         return super().list(request, queryset)
 
 
+@extend_schema(tags=["Payments"])
 class PaymentsViewSet(ModelViewSet):
     """
     # `Payment` API
@@ -635,6 +638,7 @@ class PaymentsViewSet(ModelViewSet):
             return Response(serializer.data)
 
 
+@extend_schema(tags=["Payments"])
 class PaymentOptionsViewSet(DropdownOptionsListViewSet):
     permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnly]
     http_method_names = ["get"]

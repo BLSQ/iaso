@@ -2,6 +2,7 @@ from django.db.models import Count, Prefetch
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -31,6 +32,7 @@ class HasGroupPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
+@extend_schema(tags=["Groups"])
 class GroupsViewSet(ModelViewSet):
     f"""Groups API
 

@@ -24,6 +24,7 @@ from iaso.api.serializers import AppIdSerializer
 from iaso.models import OrgUnitChangeRequestConfiguration, Project
 
 
+@extend_schema(tags=["Mobile", "Org unit change request configurations"])
 class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [HasOrgUnitsChangeRequestConfigurationReadPermission]
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]

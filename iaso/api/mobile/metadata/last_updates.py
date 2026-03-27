@@ -13,6 +13,7 @@ from iaso.api.query_params import APP_ID
 from iaso.models import Form, FormVersion, OrgUnit, OrgUnitType, Project
 
 
+@extend_schema(tags=["Metadata last updates", "Mobile"])
 class LastUpdatesViewSet(ViewSet):
     """Metadata Last Updates
 

@@ -69,7 +69,7 @@ class DataStorePermission(permissions.BasePermission):
         return False
 
 
-@extend_schema(tags=["datastore"])
+@extend_schema(tags=["Data store"])
 class DataStoreViewSet(ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
     permission_classes = [DataStorePermission]

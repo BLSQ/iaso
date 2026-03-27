@@ -399,6 +399,7 @@ duplicate_detail_entities_param = OpenApiParameter(
 )
 
 
+@extend_schema(tags=["Entity duplicates"])
 class EntityDuplicateViewSet(ModelViewSet):
     """
     Entity Duplicates API.

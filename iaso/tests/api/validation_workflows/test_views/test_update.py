@@ -2,13 +2,12 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Form, Instance, Project, ValidationWorkflow
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
 class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
     def setUp(self):
-        self.account = Account.objects.create(name="account")
+        super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
 
@@ -24,14 +23,6 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.form_2.save()
 
         self.form_3 = Form.objects.create(name="form_3")
-
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random name",
@@ -50,6 +41,10 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
+        res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
+        self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.client.force_authenticate(self.superuser)
         res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
@@ -72,7 +67,13 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertHasError(res_data, "name", "This field may not be null.")
 
     def test_update(self):
-        self.client.force_authenticate(self.john_wick)
+        self.base_test_update(self.john_wick)
+
+    def test_update_as_superuser(self):
+        self.base_test_update(self.superuser)
+
+    def base_test_update(self, user):
+        self.client.force_authenticate(user)
         res = self.client.put(
             reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
             data={"name": "Random new name", "description": "Random new description"},
@@ -85,7 +86,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertEqual(self.validation_workflow.name, "Random new name")
         self.assertEqual(self.validation_workflow.slug, "random-new-name")
         self.assertEqual(self.validation_workflow.account, self.account)
-        self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
+        self.assertEqual(self.validation_workflow.updated_by, user)
         self.assertCountEqual(
             list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk, self.form_2.pk]
         )
@@ -110,7 +111,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertEqual(self.validation_workflow.name, "Random new name")
         self.assertEqual(self.validation_workflow.slug, "random-new-name")
         self.assertEqual(self.validation_workflow.account, self.account)
-        self.assertEqual(self.validation_workflow.updated_by, self.john_wick)
+        self.assertEqual(self.validation_workflow.updated_by, user)
         self.assertCountEqual(
             list(self.validation_workflow.form_set.values_list("pk", flat=True)), [self.form.pk, self.form_2.pk]
         )

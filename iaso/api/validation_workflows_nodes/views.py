@@ -49,10 +49,7 @@ class ValidationNodeViewSet(GenericViewSet):
         if self.action == "complete_bypass":
             queryset = self.filter_queryset(self.get_queryset())
             filter_kwargs = {"pk": self.kwargs["instance_id"]}
-            obj = get_object_or_404(queryset, **filter_kwargs)
-            # May raise a permission denied
-            self.check_object_permissions(self.request, obj)
-            return obj
+            return get_object_or_404(queryset, **filter_kwargs)
 
         return super().get_object()
 

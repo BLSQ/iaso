@@ -72,21 +72,21 @@ class ValidationWorkflowEngine:
         if artifact.general_validation_status == ValidationWorkflowArtefactStatus.REJECTED:
             raise ValidationWorkflowEngineException("Already rejected, cannot skip")
 
-        validation_status, created = ValidationNode.objects.get_or_create(node=node, instance=artifact)
-        validation_status.updated_by = user
+        validation_node, created = ValidationNode.objects.get_or_create(node=node, instance=artifact)
+        validation_node.updated_by = user
 
-        if not created and validation_status.status != ValidationNodeStatus.UNKNOWN:
+        if not created and validation_node.status != ValidationNodeStatus.UNKNOWN:
             raise ValidationWorkflowEngineException("Already completed")
 
         if not created:
             # it means previous node (linear assumption) has already been approved
             ValidationWorkflowEngine.complete_node(
-                validation_status, user, artifact=artifact, approved=approved, comment=comment
+                validation_node, user, artifact=artifact, approved=approved, comment=comment
             )
             return
 
-        forbidden_pk = {validation_status.pk}
-        forbidden_pk.update(validation_status.get_next_nodes().values_list("pk", flat=True))
+        forbidden_pk = {validation_node.pk}
+        forbidden_pk.update(validation_node.get_next_nodes().values_list("pk", flat=True))
 
         next_pending = artifact.get_next_pending_nodes(workflow).exclude(pk__in=forbidden_pk)
 
@@ -102,7 +102,7 @@ class ValidationWorkflowEngine:
             next_pending = artifact.get_next_pending_nodes(workflow).exclude(pk__in=forbidden_pk)
 
         ValidationWorkflowEngine.complete_node(
-            validation_status, user, artifact=artifact, comment=comment, approved=approved, update_artifact=False
+            validation_node, user, artifact=artifact, comment=comment, approved=approved, update_artifact=False
         )
 
         artifact.save(update_fields=["general_validation_status"])
@@ -110,7 +110,7 @@ class ValidationWorkflowEngine:
     @staticmethod
     @transaction.atomic
     def complete_node(
-        validation_status: ValidationNode,
+        validation_node: ValidationNode,
         user,
         artifact: ValidationWorkflowArtefact,
         approved: Optional[bool] = False,
@@ -120,23 +120,23 @@ class ValidationWorkflowEngine:
         update_artifact: Optional[bool] = True,
     ):
         if not skipped:
-            ValidationWorkflowEngine._check_permissions_for_node(validation_status, user)
+            ValidationWorkflowEngine._check_permissions_for_node(validation_node, user)
 
-        if validation_status.status != ValidationNodeStatus.UNKNOWN:
+        if validation_node.status != ValidationNodeStatus.UNKNOWN:
             raise ValidationWorkflowEngineException("Already completed")
 
-        validation_status.updated_by = user
-        validation_status.comment = comment
+        validation_node.updated_by = user
+        validation_node.comment = comment
 
         if skipped:
-            validation_status.status = ValidationNodeStatus.SKIPPED
+            validation_node.status = ValidationNodeStatus.SKIPPED
         elif approved:
-            validation_status.status = ValidationNodeStatus.ACCEPTED
+            validation_node.status = ValidationNodeStatus.ACCEPTED
         else:
-            validation_status.status = ValidationNodeStatus.REJECTED
+            validation_node.status = ValidationNodeStatus.REJECTED
 
-        if approved and validation_status.node.is_final_node():
-            validation_status.final = True
+        if approved and validation_node.node.is_final_node():
+            validation_node.final = True
             artifact.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
             if update_artifact:
                 artifact.save(update_fields=["general_validation_status"])
@@ -145,17 +145,17 @@ class ValidationWorkflowEngine:
             if update_artifact:
                 artifact.save(update_fields=["general_validation_status"])
 
-        validation_status.save()
+        validation_node.save()
 
         if approved:
-            for node in validation_status.node.next_node_templates.all():
-                ValidationWorkflowEngine._activate_node(node, validation_status.instance, user)
+            for node in validation_node.node.next_node_templates.all():
+                ValidationWorkflowEngine._activate_node(node, validation_node.instance, user)
         elif skipped:
-            for node in validation_status.node.next_node_templates.exclude(pk=skipped_from_parent.pk).all():
-                ValidationWorkflowEngine._activate_node(node, validation_status.instance, user)
+            for node in validation_node.node.next_node_templates.exclude(pk=skipped_from_parent.pk).all():
+                ValidationWorkflowEngine._activate_node(node, validation_node.instance, user)
 
     @staticmethod
-    def _check_permissions_for_node(validation_status: ValidationNode, user):
+    def _check_permissions_for_node(validation_node: ValidationNode, user):
         """
         We check if the user has the permission to complete this node.
         """
@@ -163,7 +163,7 @@ class ValidationWorkflowEngine:
         if getattr(user, "is_superuser", False):
             return
 
-        required_roles = validation_status.node.roles_required.all()
+        required_roles = validation_node.node.roles_required.all()
 
         if not required_roles:
             return  # No perm required , anybody can do it
@@ -185,25 +185,25 @@ class ValidationWorkflowEngine:
             raise PermissionDenied("You do not have permission to complete this task")
 
     @staticmethod
-    def _can_undo_node(validation_status: ValidationNode, user):
-        if validation_status.status == ValidationNodeStatus.UNKNOWN:
+    def _can_undo_node(validation_node: ValidationNode, user):
+        if validation_node.status == ValidationNodeStatus.UNKNOWN:
             raise ValidationWorkflowEngineException("Cannot undo node that hasn't been completed yet")
 
-        if validation_status.final:
+        if validation_node.final:
             raise ValidationWorkflowEngineException("Cannot undo final node")
 
-        if validation_status.status == ValidationNodeStatus.REJECTED:
+        if validation_node.status == ValidationNodeStatus.REJECTED:
             raise ValidationWorkflowEngineException("Cannot undo rejected node")
 
-        if validation_status.status != ValidationNodeStatus.ACCEPTED:
+        if validation_node.status != ValidationNodeStatus.ACCEPTED:
             raise ValidationWorkflowEngineException("Cannot undo node that isn't accepted")
 
-        if validation_status.updated_by != user:
-            raise PermissionDenied(f"Only user {validation_status.updated_by.username} can undo this action")
+        if validation_node.updated_by != user:
+            raise PermissionDenied(f"Only user {validation_node.updated_by.username} can undo this action")
 
         # if there are any nodes further on that have already been approved/rejected, not allowed, it's too late
         if (
-            validation_status.get_next_nodes()
+            validation_node.get_next_nodes()
             .filter(Q(status=ValidationNodeStatus.ACCEPTED) | Q(status=ValidationNodeStatus.REJECTED))
             .exists()
         ):
@@ -212,26 +212,26 @@ class ValidationWorkflowEngine:
     @staticmethod
     @transaction.atomic
     def undo_node(
-        validation_status: ValidationNode, user, instance: ValidationWorkflowArtefact, workflow: ValidationWorkflow
+        validation_node: ValidationNode, user, instance: ValidationWorkflowArtefact, workflow: ValidationWorkflow
     ):
-        ValidationWorkflowEngine._can_undo_node(validation_status, user)
+        ValidationWorkflowEngine._can_undo_node(validation_node, user)
 
         instance.get_next_pending_nodes(workflow).delete()
 
-        validation_status.updated_by = None
-        validation_status.status = ValidationNodeStatus.UNKNOWN
-        validation_status.comment = ""
-        validation_status.save()
+        validation_node.updated_by = None
+        validation_node.status = ValidationNodeStatus.UNKNOWN
+        validation_node.comment = ""
+        validation_node.save()
 
         # todo : optimize this
-        if validation_status.node.can_skip_previous_nodes:
+        if validation_node.node.can_skip_previous_nodes:
             # there, it might be that previous nodes have been skipped and hence must be reverted
             if instance.validationnode_set.filter(
                 node__workflow=workflow, status=ValidationNodeStatus.SKIPPED
             ).exists():
-                validation_status.status = ValidationNodeStatus.ACCEPTED
-                validation_status.save()
-                for skipped_validation_node in validation_status.node.get_all_previous_nodes_with_validation_status(
+                validation_node.status = ValidationNodeStatus.ACCEPTED
+                validation_node.save()
+                for skipped_validation_node in validation_node.node.get_all_previous_nodes_with_validation_status(
                     instance
                 ).filter(validationnode__status=ValidationNodeStatus.SKIPPED):
                     for skipped_validation_status in skipped_validation_node.validationnode_set.all():
@@ -245,6 +245,6 @@ class ValidationWorkflowEngine:
                     ).last()
                     if next_validation:
                         for node in next_validation.node.next_node_templates.all():
-                            ValidationWorkflowEngine._activate_node(node, validation_status.instance, user)
+                            ValidationWorkflowEngine._activate_node(node, validation_node.instance, user)
 
-                validation_status.delete()
+                validation_node.delete()

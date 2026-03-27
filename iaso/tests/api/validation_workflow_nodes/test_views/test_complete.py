@@ -61,13 +61,11 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         )
 
     def test_permissions(self):
+        pk_node = self.instance.get_next_pending_nodes(self.validation_workflow).first().pk
         res = self.client.post(
             reverse(
                 "validation_workflow_nodes-complete",
-                kwargs={
-                    "instance_id": self.instance.id,
-                    "pk": self.instance.get_next_pending_nodes(self.validation_workflow).first().pk,
-                },
+                kwargs={"instance_id": self.instance.id, "pk": pk_node},
             )
         )
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -76,10 +74,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         res = self.client.post(
             reverse(
                 "validation_workflow_nodes-complete",
-                kwargs={
-                    "instance_id": self.instance.id,
-                    "pk": self.instance.get_next_pending_nodes(self.validation_workflow).first().pk,
-                },
+                kwargs={"instance_id": self.instance.id, "pk": pk_node},
             )
         )
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
@@ -89,10 +84,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         res = self.client.post(
             reverse(
                 "validation_workflow_nodes-complete",
-                kwargs={
-                    "instance_id": self.instance.id,
-                    "pk": self.instance.get_next_pending_nodes(self.validation_workflow).first().pk,
-                },
+                kwargs={"instance_id": self.instance.id, "pk": pk_node},
             )
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
@@ -102,10 +94,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         res = self.client.post(
             reverse(
                 "validation_workflow_nodes-complete",
-                kwargs={
-                    "instance_id": self.instance.id,
-                    "pk": self.instance.get_next_pending_nodes(self.validation_workflow).first().pk,
-                },
+                kwargs={"instance_id": self.instance.id, "pk": pk_node},
             )
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)

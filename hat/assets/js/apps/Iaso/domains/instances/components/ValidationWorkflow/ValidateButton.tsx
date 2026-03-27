@@ -33,7 +33,7 @@ export const ValidateButton: FunctionComponent<Props> = ({
     id = '',
     dataTestId = '',
     sx,
-    size = 'medium',
+    size = 'small',
     disabled = false,
     variant = 'contained',
     color = 'primary',

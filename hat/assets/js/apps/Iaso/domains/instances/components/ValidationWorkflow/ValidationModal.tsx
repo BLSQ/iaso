@@ -39,6 +39,8 @@ export const ValidationModal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
 }) => {
+    console.log('SLUG', nodeSlug);
+    console.log('ID', nodeId);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveNode({ instanceId, nodeId });
     const validationSchema = useNodeValidationSchema();

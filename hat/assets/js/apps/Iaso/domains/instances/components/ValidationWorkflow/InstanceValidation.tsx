@@ -1,75 +1,59 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Step, StepLabel, Stepper } from '@mui/material';
-
+import {
+    Box,
+    Step,
+    StepContent,
+    StepLabel,
+    Stepper,
+    Typography,
+} from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { userHasOneOfRoles } from 'Iaso/domains/users/utils';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import moment from 'moment';
+import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import MESSAGES from '../../messages';
 import {
     useGetNodesList,
     useGetSubmissionValidationStatus,
 } from './useGetSubmissionValidationStatus';
+import { useValidationTimeline } from './useValidationTimeline';
 import { ValidateNodeModal } from './ValidationModal';
 
 const formatStepContent = stepContent => {
-    if ('description' in stepContent) return stepContent.description;
-    return `${stepContent.comment}
-    ${stepContent.author}
-    ${stepContent.date}
-    `;
+    if ('description' in stepContent)
+        return (
+            <Typography variant="body2">{stepContent.description}</Typography>
+        );
+    return (
+        <>
+            {stepContent.comment && (
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                    {stepContent.comment}
+                </Typography>
+            )}
+            {stepContent.author && (
+                <Typography variant="subtitle2" sx={{ fontWeight: 'normal' }}>
+                    {stepContent.author}
+                </Typography>
+            )}
+            {stepContent.date && (
+                <Typography variant="subtitle2" sx={{ fontWeight: 'normal' }}>
+                    {moment(stepContent.date, apiMobileDateFormat).format(
+                        'DD-MM-YYYY HH:mm:ss',
+                    )}
+                </Typography>
+            )}
+        </>
+    );
 };
 
 type Props = { id: number };
 export const InstanceValidation: FunctionComponent<Props> = ({ id }) => {
     const { formatMessage } = useSafeIntl();
 
-    const currentUser = useCurrentUser();
     const { data, isLoading } = useGetSubmissionValidationStatus(id);
-    const { data: nodes, isFetching } = useGetNodesList(data?.workflow);
-    console.log('DATA', data);
-    console.log('NODES', nodes);
-    const currentStep = data?.history?.[0];
-    const currentStatus = currentStep?.status
-        ? `${currentStep.level}: ${currentStep?.status}`
-        : '';
+    const { data: nodes } = useGetNodesList(data?.workflow);
 
-    const canValidate = data?.userRoles
-        ? userHasOneOfRoles(
-              currentUser,
-              data?.userRoles.map(r => r.value) ?? [],
-          )
-        : false;
-    const validationTimeline = useMemo(() => {
-        const templates = nodes?.nodeTemplates ?? [];
-        const result = templates.map(node => {
-            return {
-                label: node.name,
-                content: { description: node.description },
-                status: 'inactive',
-                color: node.color,
-            };
-        });
-
-        data?.history.forEach(step => {
-            const index = templates.findIndex(node => {
-                return step.level === node.name;
-            });
-
-            if (index >= 0) {
-                result[index] = {
-                    ...result[index],
-                    content: {
-                        comment: step.comment,
-                        author: step?.updatedBy ?? step.createdBy,
-                        date: step.updatedAt,
-                    },
-                    status: step.status,
-                };
-            }
-        });
-        return result;
-    }, [data, nodes]);
-    console.log('TIMELINE', validationTimeline);
+    const validationTimeline = useValidationTimeline({ data, nodes });
 
     return (
         <Box
@@ -81,40 +65,6 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id }) => {
             }}
         >
             {isLoading && <LoadingSpinner absolute fixed />}
-            <Box>{currentStatus}</Box>
-            {
-                <>
-                    {(data?.nextTasks ?? []).map(task => {
-                        console.log('TASK', task);
-                        return (
-                            <ValidateNodeModal
-                                key={task.id}
-                                instanceId={id}
-                                nodeId={task.id}
-                            />
-                        );
-                    })}
-                </>
-            }
-            {
-                <>
-                    {(data?.nextBypass ?? []).map(bypass => {
-                        return (
-                            <ValidateNodeModal
-                                key={bypass.slug}
-                                instanceId={id}
-                                nodeSlug={bypass.slug}
-                                iconProps={{
-                                    sx: {
-                                        marginRight: theme => theme.spacing(2),
-                                    },
-                                    buttonText: `${formatMessage(MESSAGES.validate)}: ${bypass.name ?? bypass.slug}`,
-                                }}
-                            />
-                        );
-                    })}
-                </>
-            }
 
             {(data?.history ?? []).length > 0 && (
                 <Stepper
@@ -122,12 +72,12 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id }) => {
                     activeStep={data?.history?.length - 1}
                     nonLinear
                     sx={{ margin: 'auto' }}
-                    // activeStep={-1}
                 >
                     {validationTimeline.map(step => {
                         return (
-                            <Step key={step.label}>
+                            <Step key={step.label} expanded>
                                 <StepLabel
+                                    error={step.status === 'REJECTED'}
                                     StepIconProps={{
                                         sx: {
                                             color: step.color,
@@ -135,7 +85,20 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id }) => {
                                     }}
                                 >
                                     <Box>{step.label}</Box>
-                                    <Box>{formatStepContent(step.content)}</Box>
+                                    <StepContent sx={{ fontWeight: 'normal' }}>
+                                        {formatStepContent(step.content)}
+                                        {step.canValidate && (
+                                            <ValidateNodeModal
+                                                key={step.slug}
+                                                instanceId={id}
+                                                nodeSlug={step.slug}
+                                                nodeId={step.nodeId}
+                                                iconProps={{
+                                                    buttonText: `${formatMessage(MESSAGES.validate)}`,
+                                                }}
+                                            />
+                                        )}
+                                    </StepContent>
                                 </StepLabel>
                             </Step>
                         );

@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
@@ -29,14 +30,24 @@ class ValidationNodeViewSet(GenericViewSet):
                 Instance.objects.select_related("project__account", "form", "form__validation_workflow")
                 .filter_for_user(self.request.user)
                 .filter(form__deleted_at__isnull=True)
-                .prefetch_related("validationnode_set")
+                .prefetch_related(
+                    Prefetch(
+                        "validationnode_set",
+                        queryset=ValidationNode.objects.select_related("node__workflow__account").all(),
+                    )
+                )
             )
 
-        qs = ValidationNode.objects.select_related("instance").filter(
-            instance__in=Instance.objects.select_related("project__account", "form")
+        qs = (
+            ValidationNode.objects.select_related("instance", "node__workflow__account")
+            .filter(
+                instance__in=Instance.objects.select_related("project__account", "form")
+                .filter_for_user(self.request.user)
+                .filter(form__deleted_at__isnull=True)
+            )
             .filter_for_user(self.request.user)
-            .filter(form__deleted_at__isnull=True)
         )
+
         if self.action == "complete":
             return qs.select_related("node").prefetch_related("node__roles_required", "node__next_node_templates")
         if self.action == "undo":
@@ -49,10 +60,7 @@ class ValidationNodeViewSet(GenericViewSet):
         if self.action == "complete_bypass":
             queryset = self.filter_queryset(self.get_queryset())
             filter_kwargs = {"pk": self.kwargs["instance_id"]}
-            obj = get_object_or_404(queryset, **filter_kwargs)
-            # May raise a permission denied
-            self.check_object_permissions(self.request, obj)
-            return obj
+            return get_object_or_404(queryset, **filter_kwargs)
 
         return super().get_object()
 

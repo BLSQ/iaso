@@ -375,6 +375,7 @@ class TestPermissionCheck(TestCase):
 
         self.user = get_user_model().objects.create_user(username="noprofile", password="testpass")
         self.other_user = get_user_model().objects.create(username="john.doe", password="testpass")
+        self.superuser = get_user_model().objects.create_superuser(username="john.super", password="testpass")
 
         profile = Profile.objects.create(account=account, user=self.user)
         profile.user_roles.set([user_role_1, user_role_2])
@@ -462,6 +463,31 @@ class TestPermissionCheck(TestCase):
             ValidationWorkflowArtefactStatus.APPROVED,
         )
 
+    def test_approve_superuser(self):
+        ValidationWorkflowEngine.start(self.workflow, self.superuser, self.instance)
+
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.superuser,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
+        )
+
+        # check the validation status
+        self.assertEqual(self.check_file_node.get_validation_nodes().count(), 1)
+        validation_status = self.check_file_node.get_validation_nodes().first()
+
+        self.assertEqual(validation_status.final, True)
+        self.assertEqual(validation_status.status, ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(validation_status.comment, "LGTM")
+        self.assertEqual(validation_status.updated_by, self.superuser)
+
+        self.assertEqual(
+            self.instance.general_validation_status,
+            ValidationWorkflowArtefactStatus.APPROVED,
+        )
+
     def test_reject_anonymous_user(self):
         ValidationWorkflowEngine.start(workflow_template=self.workflow, user=self.user, artifact=self.instance)
 
@@ -518,6 +544,24 @@ class TestPermissionCheck(TestCase):
         self.assertEqual(validation_status.status, ValidationNodeStatus.REJECTED)
         self.assertEqual(validation_status.comment, "Don't like it")
         self.assertEqual(validation_status.updated_by, self.user)
+
+    def test_reject_happy_flow_super_user(self):
+        ValidationWorkflowEngine.start(self.workflow, self.superuser, self.instance)
+
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.superuser,
+            comment="Don't like it",
+            artifact=self.instance,
+        )
+
+        self.assertEqual(self.check_file_node.get_validation_nodes().count(), 1)
+        validation_status = self.check_file_node.get_validation_nodes().first()
+
+        self.assertEqual(validation_status.final, False)
+        self.assertEqual(validation_status.status, ValidationNodeStatus.REJECTED)
+        self.assertEqual(validation_status.comment, "Don't like it")
+        self.assertEqual(validation_status.updated_by, self.superuser)
 
 
 class TestUndoFeature(TestCase):
@@ -846,6 +890,7 @@ class TestByPassFeature(TestCase):
         self.jim = get_user_model().objects.create_user(username="jim.halpert", password="testpass")
         self.dwight = get_user_model().objects.create(username="dwight.schrute", password="testpass")
         self.michael = get_user_model().objects.create(username="michael.scott", password="testpass")
+        self.superuser = get_user_model().objects.create_superuser(username="john.super", password="testpass")
 
         profile_seller = Profile.objects.create(account=account, user=self.jim)
         profile_seller.user_roles.set([user_role_1])
@@ -879,6 +924,42 @@ class TestByPassFeature(TestCase):
 
         self.instance = Instance.objects.create(form=self.form)
         self.workflow.refresh_from_db()
+
+    def test_superuser_approves(self):
+        ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)
+
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.manager_approves_node,
+            self.superuser,
+            self.instance,
+            self.workflow,
+            comment="I'm the boss",
+            approved=True,
+        )
+        # check
+        self.assertEqual(
+            self.instance.general_validation_status,
+            ValidationWorkflowArtefactStatus.APPROVED,
+        )
+
+        self.check_file_type_node.refresh_from_db()
+        self.check_file_name_node.refresh_from_db()
+        self.manager_approves_node.refresh_from_db()
+
+        first_validation_status = self.check_file_type_node.validationnode_set.first()
+        self.assertEqual(first_validation_status.status, ValidationNodeStatus.SKIPPED)
+        self.assertEqual(first_validation_status.updated_by, self.superuser)
+        self.assertEqual(first_validation_status.comment, "")
+
+        second_validation_status = self.check_file_name_node.validationnode_set.first()
+        self.assertEqual(second_validation_status.status, ValidationNodeStatus.SKIPPED)
+        self.assertEqual(second_validation_status.updated_by, self.superuser)
+        self.assertEqual(second_validation_status.comment, "")
+
+        last_validation_status = self.manager_approves_node.validationnode_set.first()
+        self.assertEqual(last_validation_status.status, ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(last_validation_status.updated_by, self.superuser)
+        self.assertEqual(last_validation_status.comment, "I'm the boss")
 
     def test_approve_last_node_if_nothing_else_has_been_approved(self):
         ValidationWorkflowEngine.start(self.workflow, self.jim, self.instance)

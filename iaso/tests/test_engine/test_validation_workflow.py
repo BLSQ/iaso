@@ -467,7 +467,11 @@ class TestPermissionCheck(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.superuser, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.superuser, comment="LGTM", approved=True
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.superuser,
+            comment="LGTM",
+            approved=True,
+            artifact=self.instance,
         )
 
         # check the validation status
@@ -545,7 +549,10 @@ class TestPermissionCheck(TestCase):
         ValidationWorkflowEngine.start(self.workflow, self.superuser, self.instance)
 
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes(self.workflow).first(), self.superuser, comment="Don't like it"
+            self.instance.get_next_pending_nodes(self.workflow).first(),
+            self.superuser,
+            comment="Don't like it",
+            artifact=self.instance,
         )
 
         self.assertEqual(self.check_file_node.get_validation_nodes().count(), 1)

@@ -1,65 +1,13 @@
-import uuid
-
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
 
-from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflow_nodes.test_views.common import BaseAPITestCase
 
 
 class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
-    def setUp(self):
-        # create workflow
-        self.account = Account.objects.create(name="account")
-
-        # setup the validation workflow
-        self.validation_workflow = ValidationWorkflow.objects.create(
-            name="Validation workflow", account=self.account, description="Description"
-        )
-
-        self.first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
-        )
-
-        self.second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#12fa4b"
-        )
-        self.second_node.previous_node_templates.add(self.first_node)
-
-        self.third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
-        )
-        self.third_node.previous_node_templates.add(self.second_node)
-        self.form = Form.objects.create(name="Form")
-
-        self.validation_workflow.form_set.add(self.form)
-
-        self.project = Project.objects.create(account=self.account, app_id="1.1")
-        self.project.forms.add(self.form)
-
-        self.instance = self.create_form_instance(
-            form=self.form,
-            project=self.project,
-            uuid=str(uuid.uuid4()),
-        )
-
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
-        self.setup_start()
-
-    def setup_start(self):
-        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
-
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)
 
@@ -149,6 +97,19 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
+        self.client.force_authenticate(self.superuser)
+
+        res = self.client.post(
+            reverse(
+                "validation_workflow_nodes-complete",
+                kwargs={
+                    "instance_id": self.instance.id,
+                    "pk": self.instance.get_next_pending_nodes(self.validation_workflow).first().pk,
+                },
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
 
@@ -195,7 +156,10 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         self.assertEqual(validation_node.status, ValidationNodeStatus.REJECTED)
 
     def test_approve(self):
-        self.client.force_authenticate(self.john_wick)
+        self.base_test_approve(self.john_wick)
+
+    def base_test_approve(self, user):
+        self.client.force_authenticate(user)
         res = self.client.post(
             reverse(
                 "validation_workflow_nodes-complete",
@@ -216,12 +180,15 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
 
         self.assertEqual(validation_node.comment, "LGTM")
         self.assertEqual(validation_node.created_by, self.john_wick)
-        self.assertEqual(validation_node.updated_by, self.john_wick)
+        self.assertEqual(validation_node.updated_by, user)
         self.assertEqual(validation_node.status, ValidationNodeStatus.ACCEPTED)
 
         validation_node = self.instance.validationnode_set.first()
 
         self.assertEqual(validation_node.comment, "")
-        self.assertEqual(validation_node.created_by, self.john_wick)
+        self.assertEqual(validation_node.created_by, user)
         self.assertIsNone(validation_node.updated_by)
         self.assertEqual(validation_node.status, ValidationNodeStatus.UNKNOWN)
+
+    def test_approve_as_super_user(self):
+        self.base_test_approve(self.superuser)

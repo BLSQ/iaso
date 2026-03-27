@@ -72,7 +72,7 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
                 "validation_node_templates-detail",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
             ),
-            data={"name": "test", "rolesRequired": [self.user_role.pk]},
+            data={"name": "test", "roles_required": [self.user_role.pk]},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertEqual(res_data, {"slug": "first-node"})
@@ -154,31 +154,31 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(res_data, "name", "This field may not be null.")
 
-        with self.subTest("rolesRequired"):
+        with self.subTest("roles_required"):
             res = self.client.patch(
                 reverse(
                     "validation_node_templates-detail",
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
                 ),
-                data={"name": "test", "rolesRequired": [1111]},
+                data={"name": "test", "roles_required": [1111]},
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-            self.assertHasError(res_data, "rolesRequired", 'Invalid pk "1111" - object does not exist.')
+            self.assertHasError(res_data, "roles_required", 'Invalid pk "1111" - object does not exist.')
 
             res = self.client.patch(
                 reverse(
                     "validation_node_templates-detail",
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
                 ),
-                data={"name": "test", "rolesRequired": [self.other_user_role.pk]},
+                data={"name": "test", "roles_required": [self.other_user_role.pk]},
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
             self.assertHasError(
-                res_data, "rolesRequired", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+                res_data, "roles_required", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
             )
 
     def test_num_queries(self):
@@ -189,6 +189,6 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
                     "validation_node_templates-detail",
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
                 ),
-                data={"name": "test", "rolesRequired": [self.user_role.pk]},
+                data={"name": "test", "roles_required": [self.user_role.pk]},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)

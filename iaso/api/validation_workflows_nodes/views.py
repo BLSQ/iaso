@@ -1,7 +1,5 @@
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
-from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -18,8 +16,6 @@ from iaso.models import Instance, ValidationNode
 
 @extend_schema(tags=["Validation nodes"])
 class ValidationNodeViewSet(GenericViewSet):
-    parser_classes = [CamelCaseJSONParser]
-    renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
     permission_classes = [IsAuthenticated, HasValidationWorkflowPermission]
     http_method_names = ["get", "post"]
     pagination_class = None

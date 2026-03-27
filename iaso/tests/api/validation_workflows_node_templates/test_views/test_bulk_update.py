@@ -62,8 +62,8 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
             ),
             data=[
-                {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
-                {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
                 {
                     "slug": self.second_node.slug,
                     "name": "new third node",
@@ -102,8 +102,8 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
             ),
             data=[
-                {"slug": self.third_node.slug, "name": "New first node", "rolesRequired": [self.user_role.pk]},
-                {"slug": self.first_node.slug, "name": "New-first-node", "canSkipPreviousNodes": True},
+                {"slug": self.third_node.slug, "name": "New first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "New-first-node", "can_skip_previous_nodes": True},
                 {
                     "slug": self.second_node.slug,
                     "name": "new third node",
@@ -130,8 +130,8 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
             ),
             data=[
-                {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
-                {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
                 {
                     "slug": self.second_node.slug,
                     "name": "new third node",
@@ -326,15 +326,15 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
                 ),
                 data=[
-                    {"slug": self.first_node.slug, "name": "test", "rolesRequired": [1111]},
-                    {"slug": self.second_node.slug, "name": "test", "rolesRequired": [1111]},
-                    {"slug": self.third_node.slug, "name": "test", "rolesRequired": [1111]},
+                    {"slug": self.first_node.slug, "name": "test", "roles_required": [1111]},
+                    {"slug": self.second_node.slug, "name": "test", "roles_required": [1111]},
+                    {"slug": self.third_node.slug, "name": "test", "roles_required": [1111]},
                 ],
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             for error in res_data:
-                self.assertHasError(error, "rolesRequired", 'Invalid pk "1111" - object does not exist.')
+                self.assertHasError(error, "roles_required", 'Invalid pk "1111" - object does not exist.')
 
             res = self.client.put(
                 reverse(
@@ -342,16 +342,16 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
                 ),
                 data=[
-                    {"slug": self.first_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
-                    {"slug": self.second_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
-                    {"slug": self.third_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
+                    {"slug": self.first_node.slug, "name": "test", "roles_required": [self.other_user_role.pk]},
+                    {"slug": self.second_node.slug, "name": "test", "roles_required": [self.other_user_role.pk]},
+                    {"slug": self.third_node.slug, "name": "test", "roles_required": [self.other_user_role.pk]},
                 ],
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             for error in res_data:
                 self.assertHasError(
-                    error, "rolesRequired", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+                    error, "roles_required", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
                 )
 
     def test_num_queries(self):
@@ -363,8 +363,8 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
                 ),
                 data=[
-                    {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
-                    {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                    {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                    {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
                     {
                         "slug": self.second_node.slug,
                         "name": "new third node",

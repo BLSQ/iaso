@@ -1,13 +1,12 @@
 from django.db.models import Count, Q
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
-from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet
-from iaso.api.filters import CamelCaseDjangoFilterBackend, CamelCaseOrderingFilter
 from iaso.api.validation_workflows.filters import ValidationWorkflowListFilter
 from iaso.api.validation_workflows.pagination import ValidationWorkflowPagination
 from iaso.api.validation_workflows.permissions import HasValidationWorkflowPermission
@@ -22,9 +21,7 @@ from iaso.models import ValidationWorkflow
 @extend_schema(tags=["Validation workflows"])
 class ValidationWorkflowViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasValidationWorkflowPermission]
-    filter_backends = [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
-    parser_classes = [CamelCaseJSONParser]
-    renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
+    filter_backends = [OrderingFilter, DjangoFilterBackend]
     pagination_class = ValidationWorkflowPagination
     http_method_names = ["get", "post", "put", "patch", "delete"]
     lookup_field = "slug"

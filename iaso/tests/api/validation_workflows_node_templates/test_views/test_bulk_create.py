@@ -81,8 +81,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "First-node",
                     "color": "#fdd75b",
-                    "canSkipPreviousNodes": True,
-                    "rolesRequired": [self.user_role.pk],
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
                 },
             ],
         )
@@ -137,8 +137,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                     {
                         "name": "Last node",
                         "color": "#fdd75b",
-                        "canSkipPreviousNodes": True,
-                        "rolesRequired": [self.user_role.pk],
+                        "can_skip_previous_nodes": True,
+                        "roles_required": [self.user_role.pk],
                     },
                 ],
             )
@@ -164,8 +164,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "First-node",
                     "color": "#fdd75b",
-                    "canSkipPreviousNodes": True,
-                    "rolesRequired": [self.user_role.pk],
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
                 },
             ],
         )
@@ -195,8 +195,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "Last node",
                     "color": "#fdd75b",
-                    "canSkipPreviousNodes": True,
-                    "rolesRequired": [self.user_role.pk],
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
                 },
             ],
         )

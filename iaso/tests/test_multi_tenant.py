@@ -236,7 +236,7 @@ class MultiTenantTestCase(APITestCase):
             reverse("profiles-list", kwargs={"version": "v2"}), accept="application/json"
         )
         content = json.loads(response.content)
-        self.assertEqual(content["results"][0]["userName"], "raccoon")
+        self.assertEqual(content["results"][0]["user_name"], "raccoon")
 
         response = self.yoda_client.get(reverse("profiles-list"), accept="application/json")
         content = json.loads(response.content)

@@ -14,6 +14,14 @@ class ValidationNodeStatus(models.TextChoices):
     UNKNOWN = "UNKNOWN", _("Unknown")
 
 
+class ValidationNodeQuerySet(models.QuerySet):
+    def filter_for_user(self, user):
+        iaso_profile = getattr(user, "iaso_profile", None)
+        if getattr(iaso_profile, "account", None):
+            return self.filter(node__workflow__account=iaso_profile.account)
+        return self.none()
+
+
 class ValidationNode(CreatedAndUpdatedModel):
     """
     Represents a runtime instance of a ValidationNodeTemplate.
@@ -42,3 +50,5 @@ class ValidationNode(CreatedAndUpdatedModel):
 
     class Meta:
         ordering = ["-created_at"]
+
+    objects = models.Manager.from_queryset(ValidationNodeQuerySet)()

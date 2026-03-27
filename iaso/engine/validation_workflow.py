@@ -160,14 +160,6 @@ class ValidationWorkflowEngine:
         We check if the user has the permission to complete this node.
         """
 
-        if getattr(user, "is_superuser", False):
-            return
-
-        required_roles = validation_node.node.roles_required.all()
-
-        if not required_roles:
-            return  # No perm required , anybody can do it
-
         if user is None or getattr(user, "is_anonymous", True):  # not sure it'll happen IRL
             raise PermissionDenied("User required")
 
@@ -176,6 +168,17 @@ class ValidationWorkflowEngine:
 
         if not user.iaso_profile:  # not sure it'll happen IRL
             raise PermissionDenied("User required")
+
+        if validation_node.node.workflow.account != user.iaso_profile.account:
+            raise PermissionDenied
+
+        if getattr(user, "is_superuser", False):
+            return
+
+        required_roles = validation_node.node.roles_required.all()
+
+        if not required_roles:
+            return  # No perm required , anybody can do it
 
         user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
 
@@ -186,6 +189,18 @@ class ValidationWorkflowEngine:
 
     @staticmethod
     def _can_undo_node(validation_node: ValidationNode, user):
+        if user is None or getattr(user, "is_anonymous", True):  # not sure it'll happen IRL
+            raise PermissionDenied("User required")
+
+        if not hasattr(user, "iaso_profile"):  # not sure it'll happen IRL
+            raise PermissionDenied("User required")
+
+        if not user.iaso_profile:  # not sure it'll happen IRL
+            raise PermissionDenied("User required")
+
+        if validation_node.node.workflow.account != user.iaso_profile.account:
+            raise PermissionDenied
+
         if validation_node.status == ValidationNodeStatus.UNKNOWN:
             raise ValidationWorkflowEngineException("Cannot undo node that hasn't been completed yet")
 

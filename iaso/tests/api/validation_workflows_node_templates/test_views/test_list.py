@@ -120,7 +120,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=3)
 
-        fields = ["slug", "name", "description", "color", "rolesRequired", "canSkipPreviousNodes"]
+        fields = ["slug", "name", "description", "color", "roles_required", "can_skip_previous_nodes"]
 
         for data in res_data["results"]:
             for field in fields:

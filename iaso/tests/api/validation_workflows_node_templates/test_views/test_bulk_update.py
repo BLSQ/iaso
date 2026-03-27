@@ -75,7 +75,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             res_data,
-            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+            api_settings.NON_FIELD_ERRORS_KEY,
             "The slugs provided don't match the existing ones",
         )
 
@@ -89,7 +89,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             res_data,
-            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+            api_settings.NON_FIELD_ERRORS_KEY,
             "The slugs provided don't match the existing ones",
         )
 
@@ -224,7 +224,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
                 res_data,
-                self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+                api_settings.NON_FIELD_ERRORS_KEY,
                 'Expected a list of items but got type "dict".',
             )
 
@@ -239,7 +239,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
                 res_data,
-                self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+                api_settings.NON_FIELD_ERRORS_KEY,
                 "This list may not be empty.",
             )
 
@@ -257,7 +257,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
                 res_data,
-                self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+                api_settings.NON_FIELD_ERRORS_KEY,
                 "The slugs provided don't match the existing ones",
             )
 
@@ -273,9 +273,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 ],
             )
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(
-                res_data, self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY), "Duplicate slugs provided."
-            )
+            self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "Duplicate slugs provided.")
 
         with self.subTest("Validate items : name"):
             res = self.client.put(

@@ -150,13 +150,13 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                         ],
                     )
 
-                with self.subTest("checking nodeTemplates"):
-                    for node_template in res_data["nodeTemplates"]:
+                with self.subTest("checking node_templates"):
+                    for node_template in res_data["node_templates"]:
                         for k in ["slug", "name", "description", "color", "can_skip_previous_nodes", "roles_required"]:
                             self.assertIn(k, node_template)
 
                     self.assertEqual(
-                        res_data["nodeTemplates"],
+                        res_data["node_templates"],
                         [
                             {
                                 "slug": "first-node",

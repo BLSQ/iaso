@@ -1246,8 +1246,8 @@ class ETL:
         ).select_related("journey", "org_unit")
 
         queryset = queryset.annotate(
-            year=ExtractYear("journey__visit__date"),
-            month=ExtractMonth("journey__visit__date"),
+            year=ExtractYear("date"),
+            month=ExtractMonth("date"),
             muac_numeric=Cast("muac_size", output_field=FloatField()),
             dhis2_id=F("org_unit__source_ref"),
             nutrition_programme=F("journey__nutrition_programme"),

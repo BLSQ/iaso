@@ -118,8 +118,9 @@ def etl_ng(all_data=None):
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", org_units)
-    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units, "PLW")
+    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")
 
 
 @shared_task()
@@ -209,8 +210,9 @@ def etl_ssd(all_data=None):
     Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
 
     logger.info(f"Aggregating PBWG journey for {pbwg_account} per org unit, admission and period")
-    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", org_units)
-    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units, "PLW")
+    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")
 
     Screening().run(child_account, last_success_task_date)
 
@@ -263,5 +265,6 @@ def etl_ethiopia(all_data=None):
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", org_units)
-    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, org_units, "PLW")
+    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")

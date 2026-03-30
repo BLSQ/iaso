@@ -88,7 +88,7 @@ def delete_beneficiaries_analytics(request, account_id):
 
     template = loader.get_template("delete_beneficiaries_analytics.html")
 
-    return HttpResponse(template.render({}, request))
+    return HttpResponse(template.render({"account_id": account_id}, request))
 
 
 @staff_member_required

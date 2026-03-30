@@ -677,7 +677,7 @@ class ETL:
 
     def get_updated_entity_ids(self, updated_at=None):
         entities = self.get_updated_data(updated_at)
-        return entities.distinct().values_list("entity_id", flat=True)
+        return entities.distinct().values_list("entity_id", flat=True).order_by("entity_id")
 
     @staticmethod
     def _retrieve_submissions(entity_type_code, entity_ids, page_size=5000, page_number=1):

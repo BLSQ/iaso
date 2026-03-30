@@ -12,7 +12,11 @@ from .views import (
 urlpatterns = [
     path("debug/<int:id>/", debug, name="wfp_debug"),
     path("debug_summary/", debug_summary, name="wfp_debug_summary"),
-    path("delete_beneficiaries_analytics/", delete_beneficiaries_analytics, name="delete_beneficiaries_analytics"),
+    path(
+        "delete_beneficiaries_analytics/<int:account_id>/",
+        delete_beneficiaries_analytics,
+        name="delete_beneficiaries_analytics",
+    ),
     path(
         "delete_all_instances_and_entities/",
         delete_all_instances_and_entities,

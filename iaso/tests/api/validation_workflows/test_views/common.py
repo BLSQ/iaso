@@ -30,11 +30,11 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
         for data in list_data[results_key]:
             self.assertIn("slug", data)
             self.assertIn("name", data)
-            self.assertIn("formCount", data)
-            self.assertIn("createdBy", data)
-            self.assertIn("updatedBy", data)
-            self.assertIn("createdAt", data)
-            self.assertIn("updatedAt", data)
+            self.assertIn("form_count", data)
+            self.assertIn("created_by", data)
+            self.assertIn("updated_by", data)
+            self.assertIn("created_at", data)
+            self.assertIn("updated_at", data)
 
     def assertValidValidationWorkflowDropdownListData(self, list_data, expected_length):
         self.assertValidListData(

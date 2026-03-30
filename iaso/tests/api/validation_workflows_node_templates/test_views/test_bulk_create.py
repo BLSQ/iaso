@@ -81,8 +81,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "First-node",
                     "color": "#fdd75b",
-                    "canSkipPreviousNodes": True,
-                    "rolesRequired": [self.user_role.pk],
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
                 },
             ],
         )
@@ -103,9 +103,7 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data, self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY), "This list may not be empty."
-        )
+        self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "This list may not be empty.")
 
         res = self.client.post(
             reverse(
@@ -116,7 +114,7 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data[0], "name", "This field is required.")
-        self.assertHasError(res_data[0], "rolesRequired", 'Invalid pk "222" - object does not exist.')
+        self.assertHasError(res_data[0], "roles_required", 'Invalid pk "222" - object does not exist.')
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
@@ -137,8 +135,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                     {
                         "name": "Last node",
                         "color": "#fdd75b",
-                        "canSkipPreviousNodes": True,
-                        "rolesRequired": [self.user_role.pk],
+                        "can_skip_previous_nodes": True,
+                        "roles_required": [self.user_role.pk],
                     },
                 ],
             )
@@ -164,8 +162,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "First-node",
                     "color": "#fdd75b",
-                    "canSkipPreviousNodes": True,
-                    "rolesRequired": [self.user_role.pk],
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
                 },
             ],
         )
@@ -195,8 +193,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "Last node",
                     "color": "#fdd75b",
-                    "canSkipPreviousNodes": True,
-                    "rolesRequired": [self.user_role.pk],
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
                 },
             ],
         )

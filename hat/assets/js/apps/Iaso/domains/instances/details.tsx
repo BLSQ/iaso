@@ -227,7 +227,7 @@ const InstanceDetails: FunctionComponent = () => {
                                     currentInstance={currentInstance}
                                 />
                             </WidgetPaper>
-                            {validationWorkflow?.validationStatus && (
+                            {validationWorkflow?.validation_status && (
                                 <WidgetPaper
                                     title={formatMessage(MESSAGES.validation)}
                                     id="validation"

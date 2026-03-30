@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    ReactNode,
-    useCallback,
-    useState,
-} from 'react';
+import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 import {
     Table,
     TableBody,
@@ -21,6 +16,7 @@ import {
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
+import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
@@ -59,9 +55,9 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
     );
 };
 
-type Props = { workflow?: any };
+type Props = { workflow?: ValidationWorkflowRetrieveResponseItem };
 
-export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
+export const WorkflowBaseInfo = ({ workflow }: Props) => {
     const params = useParamsObject(baseUrls.instanceValidationDetail);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -74,10 +70,13 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
 
     const save = useCallback(() => {
         if (workflow) {
-            return mutateAsync({ slug: workflow.slug, name, description });
+            return mutateAsync({
+                slug: workflow.slug,
+                body: { name, description },
+            });
         }
         return mutateAsync(
-            { name, description },
+            { body: { name, description } },
             {
                 onSuccess: data =>
                     redirectToReplace(baseUrls.instanceValidationDetail, {
@@ -92,6 +91,7 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
     const hasChange =
         (name && name !== workflow?.name) ||
         (description && description !== workflow?.description);
+
     return (
         <>
             <Box p={2} className={classes.root}>
@@ -118,21 +118,17 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
                 <TableBody>
                     <Row
                         label={formatMessage(MESSAGES.created_by)}
-                        value={workflow?.createdBy}
+                        value={workflow?.created_by}
                     />
                     <Row
                         label={formatMessage(MESSAGES.updated_at)}
-                        value={workflow?.updatedAt}
+                        value={workflow?.updated_at}
                     />
                     <Row
                         label={formatMessage(MESSAGES.forms)}
                         value={
-                            workflow?.forms
-                                .map(
-                                    (f: { id: number; label: string }) =>
-                                        f.label,
-                                )
-                                .join(', ') ?? textPlaceholder
+                            workflow?.forms?.map(f => f.label).join(', ') ||
+                            textPlaceholder
                         }
                     />
                 </TableBody>

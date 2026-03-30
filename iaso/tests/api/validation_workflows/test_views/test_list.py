@@ -60,9 +60,9 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
 
                 item = res_json["results"][0]
 
-                self.assertEqual(item["formCount"], 2)
-                self.assertEqual(item["createdBy"], "John Doe")
-                self.assertEqual(item["updatedBy"], "john.wick")
+                self.assertEqual(item["form_count"], 2)
+                self.assertEqual(item["created_by"], "John Doe")
+                self.assertEqual(item["updated_by"], "john.wick")
 
     def test_filter_out_by_account(self):
         """

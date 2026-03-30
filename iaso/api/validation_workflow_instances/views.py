@@ -1,7 +1,5 @@
 from django.contrib.auth.models import Group
 from django.db.models import Prefetch
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
-from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
 from drf_spectacular.utils import extend_schema
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
@@ -14,8 +12,6 @@ from iaso.models import Instance, ValidationNode
 
 @extend_schema(tags=["Validation nodes"])
 class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, GenericViewSet):
-    parser_classes = [CamelCaseJSONParser]
-    renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
     methods = ["get"]
     serializer_class = ValidationWorkflowInstanceRetrieveSerializer
     permission_classes = [IsAuthenticated, HasValidationWorkflowPermission]

@@ -60,9 +60,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data, self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY), "Already completed"
-        )
+        self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "Already completed")
 
     def test_permissions(self):
         pk_node = self.instance.get_next_pending_nodes(self.validation_workflow).first().pk

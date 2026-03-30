@@ -98,9 +98,9 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random name 2",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
+                    "roles_required": [self.user_role.pk],
                     "position": PositionChoices.first,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
 
@@ -119,9 +119,9 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random name 3",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
+                    "roles_required": [self.user_role.pk],
                     "position": PositionChoices.last,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
 
@@ -139,10 +139,10 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random name",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
+                    "roles_required": [self.user_role.pk],
                     "position": PositionChoices.child_of,
-                    "parentNodeTemplates": [self.first_node.slug],
-                    "canSkipPreviousNodes": True,
+                    "parent_node_templates": [self.first_node.slug],
+                    "can_skip_previous_nodes": True,
                 },
             )
 
@@ -164,10 +164,10 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 "name": "Random node",
                 "description": "Random description",
                 "color": "#377760",
-                "rolesRequired": [self.user_role.pk],
+                "roles_required": [self.user_role.pk],
                 "position": PositionChoices.child_of,
-                "parentNodeTemplates": [self.first_node.slug],
-                "canSkipPreviousNodes": True,
+                "parent_node_templates": [self.first_node.slug],
+                "can_skip_previous_nodes": True,
             },
         )
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
@@ -207,7 +207,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "description": "Random description",
                     "color": "#377760",
                     "position": PositionChoices.first,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
             self.assertJSONResponse(res, status.HTTP_201_CREATED)
@@ -266,7 +266,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "description": "Random description",
                     "color": "#377760",
                     "position": PositionChoices.last,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
             self.assertJSONResponse(res, status.HTTP_201_CREATED)

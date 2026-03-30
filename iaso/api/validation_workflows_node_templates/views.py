@@ -1,16 +1,14 @@
 from django.db import transaction
 from django.db.models import Prefetch
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
-from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from iaso.api.common import ModelViewSet
-from iaso.api.filters import CamelCaseOrderingFilter
 from iaso.api.validation_workflows_node_templates.pagination import ValidationNodeTemplatePagination
 from iaso.api.validation_workflows_node_templates.permissions import HasValidationNodeTemplatePermission
 from iaso.api.validation_workflows_node_templates.serializers.bulk_create import (
@@ -33,9 +31,7 @@ class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
     lookup_url_kwarg = "slug"
     permission_classes = [IsAuthenticated, HasValidationNodeTemplatePermission]
     model = ValidationNodeTemplate
-    filter_backends = [CamelCaseOrderingFilter]
-    parser_classes = [CamelCaseJSONParser]
-    renderer_classes = [CamelCaseJSONRenderer, CamelCaseBrowsableAPIRenderer]
+    filter_backends = [OrderingFilter]
     pagination_class = ValidationNodeTemplatePagination
     http_method_names = ["get", "post", "put", "delete", "patch"]
     queryset = ValidationNodeTemplate.objects.all()

@@ -71,8 +71,8 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
                 "name": "test",
                 "description": "desc",
                 "color": "#ffffff",
-                "canSkipPreviousNodes": True,
-                "rolesRequired": [self.user_role.pk],
+                "can_skip_previous_nodes": True,
+                "roles_required": [self.user_role.pk],
             },
         )
 
@@ -142,25 +142,25 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
                 "validation_node_templates-detail",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
             ),
-            data={"name": "test", "rolesRequired": [1111]},
+            data={"name": "test", "roles_required": [1111]},
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-        self.assertHasError(res_data, "rolesRequired", 'Invalid pk "1111" - object does not exist.')
+        self.assertHasError(res_data, "roles_required", 'Invalid pk "1111" - object does not exist.')
 
         res = self.client.put(
             reverse(
                 "validation_node_templates-detail",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
             ),
-            data={"name": "test", "rolesRequired": [self.other_user_role.pk]},
+            data={"name": "test", "roles_required": [self.other_user_role.pk]},
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
         self.assertHasError(
-            res_data, "rolesRequired", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+            res_data, "roles_required", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
         )
 
     def test_num_queries(self):
@@ -171,7 +171,7 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
                     "validation_node_templates-detail",
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
                 ),
-                data={"name": "test", "rolesRequired": [self.user_role.pk]},
+                data={"name": "test", "roles_required": [self.user_role.pk]},
             )
 
             self.assertJSONResponse(res, status.HTTP_200_OK)

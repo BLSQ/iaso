@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import MESSAGES from '../../messages';
 import { useGetNodesList } from './useGetSubmissionValidationStatus';
@@ -43,7 +44,7 @@ const formatStepContent = stepContent => {
     );
 };
 
-type Props = { id?: number; data?: any };
+type Props = { id?: number; data?: ValidationNodeRetrieveResponse };
 export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
     const { formatMessage } = useSafeIntl();
 

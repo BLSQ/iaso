@@ -88,7 +88,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={"position": PositionChoices.child_of, "parentNodeTemplates": [self.first_node.slug]},
+            data={"position": PositionChoices.child_of, "parent_node_templates": [self.first_node.slug]},
         )
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -174,7 +174,6 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                         "slug": self.second_node.slug,
                     },
                 ),
-                data={"position": PositionChoices.child_of, "parentNodeTemplates": [self.first_node.slug]},
+                data={"position": PositionChoices.child_of, "parent_node_templates": [self.first_node.slug]},
             )
-
             self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)

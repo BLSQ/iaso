@@ -58,12 +58,12 @@ export const WorkflowConfiguration: FunctionComponent = () => {
         handleResetOrder,
         isOrderChanged,
         setIsOrderChanged,
-    } = useSortableTableState<Item>(workflow?.nodeTemplates ?? []);
+    } = useSortableTableState<Item>(workflow?.node_templates ?? []);
     const { mutateAsync: saveOrder } = useSaveNodeOrder(params.slug);
     const saveItems = useCallback(() => {
         const itemsForApi = items.map(item => ({
             ...item,
-            rolesRequired: item.rolesRequired.map(role => role.id),
+            roles_required: item.roles_required?.map(role => role.id),
         }));
         return saveOrder(itemsForApi).then(() => setIsOrderChanged(false));
     }, [items, saveOrder, setIsOrderChanged]);
@@ -95,7 +95,7 @@ export const WorkflowConfiguration: FunctionComponent = () => {
                     title={formatMessage(MESSAGES.nodes)}
                 >
                     <Box className={classes.count}>
-                        {`${(workflow?.nodeTemplates ?? []).length} `}
+                        {`${(workflow?.node_templates ?? []).length} `}
                         {formatMessage(MESSAGES.nodes)}
                     </Box>
                     <SortableTable

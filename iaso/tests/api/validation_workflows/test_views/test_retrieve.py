@@ -119,24 +119,24 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                         "slug",
                         "description",
                         "forms",
-                        "createdBy",
-                        "createdAt",
-                        "updatedBy",
-                        "updatedAt",
-                        "nodeTemplates",
+                        "created_by",
+                        "created_at",
+                        "updated_by",
+                        "updated_at",
+                        "node_templates",
                     ]:
                         self.assertIn(k, res_data)
 
                     self.assertEqual(res_data["name"], "Random name")
                     self.assertEqual(res_data["slug"], "random-name")
                     self.assertEqual(res_data["description"], "Random description")
-                    self.assertEqual(res_data["createdBy"], self.john_doe.get_full_name())
-                    self.assertIsNotNone(res_data["createdAt"])
-                    self.assertIsNotNone(res_data["updatedAt"])
-                    self.assertEqual(res_data["updatedBy"], self.john_wick.username)
+                    self.assertEqual(res_data["created_by"], self.john_doe.get_full_name())
+                    self.assertIsNotNone(res_data["created_at"])
+                    self.assertIsNotNone(res_data["updated_at"])
+                    self.assertEqual(res_data["updated_by"], self.john_wick.username)
 
                     self.assertIsNotNone(res_data["forms"])
-                    self.assertIsNotNone(res_data["nodeTemplates"])
+                    self.assertIsNotNone(res_data["node_templates"])
 
                 with self.subTest("checking forms"):
                     for form_value in res_data["forms"]:
@@ -150,29 +150,29 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                         ],
                     )
 
-                with self.subTest("checking nodeTemplates"):
-                    for node_template in res_data["nodeTemplates"]:
-                        for k in ["slug", "name", "description", "color", "canSkipPreviousNodes", "rolesRequired"]:
+                with self.subTest("checking node_templates"):
+                    for node_template in res_data["node_templates"]:
+                        for k in ["slug", "name", "description", "color", "can_skip_previous_nodes", "roles_required"]:
                             self.assertIn(k, node_template)
 
                     self.assertEqual(
-                        res_data["nodeTemplates"],
+                        res_data["node_templates"],
                         [
                             {
                                 "slug": "first-node",
                                 "name": "First node",
                                 "description": "First node description",
                                 "color": "#FDD75A",
-                                "rolesRequired": [{"name": "Group", "id": self.group.pk}],
-                                "canSkipPreviousNodes": False,
+                                "roles_required": [{"name": "Group", "id": self.group.pk}],
+                                "can_skip_previous_nodes": False,
                             },
                             {
                                 "slug": "second-node",
                                 "name": "Second node",
                                 "description": "Second node description",
                                 "color": "#740D54",
-                                "rolesRequired": [],
-                                "canSkipPreviousNodes": True,
+                                "roles_required": [],
+                                "can_skip_previous_nodes": True,
                             },
                         ],
                     )

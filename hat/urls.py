@@ -68,6 +68,11 @@ else:
                 provider_urlpatterns += prov_urlpatterns
         urlpatterns += [path("accounts/", include(provider_urlpatterns))]
 
+    if getattr(settings, "SSO_PROVIDERS", {}):
+        from plugins.sso.urls import get_sso_urlpatterns
+
+        urlpatterns += get_sso_urlpatterns()
+
     urlpatterns += [
         path("robots.txt", robots_txt),
         path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),

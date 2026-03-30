@@ -156,6 +156,7 @@
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-webpack-plugin": "^5.0.1",
         "file-loader": "^6.2.0",
+        "fishery": "^2.4.0",
         "jest-axe": "^10.0.0",
         "jsdom": "^26.1.0",
         "json": "^11.0.0",

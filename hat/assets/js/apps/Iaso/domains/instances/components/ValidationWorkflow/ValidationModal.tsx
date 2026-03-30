@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
 import {
     ConfirmCancelModal,
@@ -32,13 +32,13 @@ type Props = {
     isOpen: boolean;
 };
 
-export const ValidationModal: FunctionComponent<Props> = ({
+export const ValidationModal = ({
     instanceId,
     nodeId,
     nodeSlug,
     closeDialog,
     isOpen,
-}) => {
+}: Props) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveNode({ instanceId, nodeId });
     const validationSchema = useNodeValidationSchema();

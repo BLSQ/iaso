@@ -1,6 +1,11 @@
-import React, { FunctionComponent } from 'react';
-import { Button, SxProps } from '@mui/material';
+import React from 'react';
+import { Button, ButtonPropsSizeOverrides } from '@mui/material';
+import {
+    ButtonProps,
+    ButtonPropsVariantOverrides,
+} from '@mui/material/Button/Button';
 import { makeStyles } from '@mui/styles';
+import { OverridableStringUnion } from '@mui/types';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 
@@ -8,49 +13,32 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Props = {
-    onClick: () => void;
-    id?: string;
-    dataTestId?: string;
-    sx?: SxProps;
-    size?: 'medium' | 'large' | 'small' | undefined;
-    variant?: 'text' | 'contained' | 'outlined';
-    disabled?: boolean;
+type Props = Omit<ButtonProps, 'children' | 'size' | 'variant'> & {
+    size?: OverridableStringUnion<
+        'small' | 'medium' | 'large',
+        ButtonPropsSizeOverrides
+    >;
+    variant?: OverridableStringUnion<
+        'text' | 'outlined' | 'contained',
+        ButtonPropsVariantOverrides
+    >;
     buttonText?: string;
-    color?:
-        | 'inherit'
-        | 'primary'
-        | 'secondary'
-        | 'success'
-        | 'error'
-        | 'info'
-        | 'warning';
 };
 
-export const ValidateButton: FunctionComponent<Props> = ({
-    onClick,
+export const ValidateButton = ({
     buttonText,
-    id = '',
-    dataTestId = '',
-    sx,
     size = 'small',
-    disabled = false,
     variant = 'contained',
-    color = 'primary',
-}) => {
+    ...props
+}: Props) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return (
         <Button
-            sx={sx}
             variant={variant}
             className={classes.button}
-            color={color}
-            onClick={onClick}
-            id={id}
-            data-test={dataTestId}
             size={size}
-            disabled={disabled}
+            {...props}
         >
             {buttonText ?? formatMessage(MESSAGES.validate)}
         </Button>

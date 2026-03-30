@@ -1,20 +1,22 @@
-import React, { FunctionComponent } from 'react';
-import { Checkbox } from '@mui/material';
+import React from 'react';
+import { Checkbox, FormControlLabelProps } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
-type Props = {
+type Props = Omit<
+    FormControlLabelProps,
+    'label' | 'id' | 'checked' | 'onChange' | 'name' | 'control' | 'value'
+> & {
     label: string;
     field?: Record<string, any>;
-    disabled?: boolean;
     onChange?: (value: boolean) => void;
 };
 
-export const BooleanInput: FunctionComponent<Props> = ({
+export const BooleanInput = ({
     label,
     onChange,
     field = {},
-    disabled = false,
-}) => {
+    ...props
+}: Props) => {
     return (
         <FormControlLabel
             id={`check-box-${field.name}`}
@@ -23,8 +25,8 @@ export const BooleanInput: FunctionComponent<Props> = ({
             name={field.name}
             control={<Checkbox />}
             label={label}
-            value={field.value || false}
-            disabled={disabled}
+            value={!!field.value}
+            {...props}
         />
     );
 };

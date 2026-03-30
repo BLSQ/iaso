@@ -60,9 +60,9 @@ export const UserAsyncSelect = ({
     );
 
     const handleChangeUsers = useCallback(
-        (keyValue, newValue) => {
+        (keyValue: string, newValue: any) => {
             const val = multi
-                ? newValue?.map(r => r.value)?.join(',')
+                ? newValue?.map((r: { value: string }) => r.value)?.join(',')
                 : newValue?.value;
             handleChange(keyValue, val);
         },

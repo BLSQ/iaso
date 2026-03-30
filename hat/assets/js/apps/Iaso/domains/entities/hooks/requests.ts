@@ -1,5 +1,4 @@
-// @ts-ignore
-import { Pagination, UrlParams } from 'bluesquare-components';
+import { UrlParams } from 'bluesquare-components';
 import moment from 'moment';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { ParamsWithAccountId } from 'Iaso/routing/hooks/useParamsObject';
@@ -17,15 +16,19 @@ import { makeUrlWithParams } from '../../../libs/utils';
 import { DropdownOptions } from '../../../types/utils';
 import { PaginatedInstances } from '../../instances/types/instance';
 import { Location } from '../components/ListMap';
+import { EntityType } from '../entityTypes/types/entityType';
 import MESSAGES from '../messages';
 import { Entity } from '../types/entity';
 import { ExtraColumn } from '../types/fields';
 import { Params } from '../types/filters';
 import { DisplayedLocation } from '../types/locations';
 
-export interface PaginatedEntities extends Pagination {
+export interface PaginatedEntities {
     result: Array<Entity>;
     columns: Array<ExtraColumn>;
+    /** Cursor pagination tokens from `/api/entities/` when using `cursor` query param. */
+    next?: string | null;
+    previous?: string | null;
 }
 
 type ApiParams = {
@@ -117,7 +120,7 @@ export const useGetEntitiesLocations = (
             enabled: apiParams.tab === 'map',
             staleTime: 60000,
             select: data =>
-                data?.result?.map(entity => ({
+                data?.result?.map((entity: Entity) => ({
                     latitude:
                         displayedLocation === 'submissions'
                             ? entity.latitude
@@ -141,10 +144,16 @@ export const useGetEntitiesCount = (
     hasCursor: boolean,
 ): UseQueryResult<{ count: number }, Error> => {
     // strip attributes that shouldn't affect the count cache or api
-    const { cursor, page, pageSize, order, ...countParams } = params;
+    const {
+        cursor: _cursor,
+        page: _page,
+        pageSize: _pageSize,
+        order: _order,
+        ...countParams
+    } = params;
 
     const { url, apiParams } = useGetEntitiesApiParams(
-        countParams,
+        countParams as Params,
         false,
         true,
     );
@@ -172,7 +181,7 @@ export const useGetEntityTypesDropdown = (): UseQueryResult<
             staleTime: Infinity,
             cacheTime: 1000 * 60 * 5,
             select: data =>
-                data?.map(type => ({
+                data?.map((type: EntityType) => ({
                     label: type.name,
                     value: type.id,
                     original: type,

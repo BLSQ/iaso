@@ -9,13 +9,10 @@ export const useNodeValidation = () => {
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        color: yup
-            .string()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
+        color: yup.string().nullable(),
         description: yup.string().nullable(),
-        canSkipPreviousNodes: yup.boolean().nullable(),
-        rolesRequired: yup
+        can_skip_previous_nodes: yup.boolean().nullable(),
+        roles_required: yup
             .array()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),

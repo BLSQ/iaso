@@ -1,11 +1,19 @@
 import { useMemo } from 'react';
+import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 import { userHasOneOfRoles } from 'Iaso/domains/users/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
-export const useValidationTimeline = ({ data, nodes }) => {
+export const useValidationTimeline = ({
+    data,
+    nodes,
+}: {
+    data: ValidationNodeRetrieveResponse;
+    nodes: ValidationWorkflowRetrieveResponseItem;
+}) => {
     const currentUser = useCurrentUser();
     return useMemo(() => {
-        const templates = nodes?.nodeTemplates ?? [];
+        const templates = nodes?.node_templates ?? [];
         const result = templates.map(node => {
             return {
                 label: node.name,
@@ -30,18 +38,18 @@ export const useValidationTimeline = ({ data, nodes }) => {
                                 : undefined,
                         author:
                             step.status !== 'UNKNOWN'
-                                ? (step?.updatedBy ?? step.createdBy)
+                                ? (step?.updated_by ?? step.created_by)
                                 : undefined,
                         date:
                             step.status !== 'UNKNOWN'
-                                ? step.updatedAt
+                                ? step.updated_at
                                 : undefined,
                     },
                     status: step.status,
                 };
             }
         });
-        data?.nextBypass.forEach(bypass => {
+        data?.next_bypass.forEach(bypass => {
             const index = templates.findIndex(node => {
                 return bypass.name === node.name;
             });
@@ -52,12 +60,12 @@ export const useValidationTimeline = ({ data, nodes }) => {
                     nodeSlug: bypass.slug,
                     canValidate: userHasOneOfRoles(
                         currentUser,
-                        bypass.userRoles.map(role => role.id),
+                        bypass?.user_roles?.map(role => role.id) ?? [],
                     ),
                 };
             }
         });
-        data?.nextTasks.forEach(task => {
+        data?.next_tasks.forEach(task => {
             const index = templates.findIndex(node => {
                 return task.name === node.name;
             });
@@ -68,7 +76,7 @@ export const useValidationTimeline = ({ data, nodes }) => {
                     nodeId: task.id,
                     canValidate: userHasOneOfRoles(
                         currentUser,
-                        task.userRoles.map(role => role.id),
+                        task?.user_roles?.map(role => role.id) ?? [],
                     ),
                 };
             }

@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import Add from '@mui/icons-material/Add';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme: any) => {
     return { ...commonStyles(theme) };
 });
 
-export const SubmissionValidation: FunctionComponent = () => {
+export const SubmissionValidation = () => {
     const params: ParamsWithAccountId & Partial<UrlParams> = useParamsObject(
         baseUrls.instanceValidation,
     );

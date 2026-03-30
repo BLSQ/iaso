@@ -35,33 +35,33 @@ export const useWorkflowsTableColumns = () => {
             {
                 Header: formatMessage(MESSAGES.created_at),
                 id: 'createdAt',
-                accessor: 'createdAt',
+                accessor: 'created_at',
                 sortable: true,
                 Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.forms),
                 id: 'formCount',
-                accessor: 'formCount',
+                accessor: 'form_count',
                 Cell: NumberCell,
             },
             {
                 Header: formatMessage(MESSAGES.updated_at),
                 id: 'updatedAt',
-                accessor: 'updatedAt',
+                accessor: 'updated_at',
                 sortable: true,
                 Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.created_by),
                 id: 'createdBy',
-                accessor: 'createdBy',
+                accessor: 'created_by',
                 sortable: true,
             },
             {
                 Header: formatMessage(MESSAGES.updated_by),
                 id: 'updatedBy',
-                accessor: 'updatedBy',
+                accessor: 'updated_by',
                 sortable: true,
                 Cell: ({ value }) => value ?? textPlaceholder,
             },
@@ -133,7 +133,7 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
             {
                 Header: formatMessage(MESSAGES.rolesRequired),
                 id: 'rolesRequired',
-                accessor: 'rolesRequired',
+                accessor: 'roles_required',
                 Cell: value => {
                     return (
                         <BreakWordCell

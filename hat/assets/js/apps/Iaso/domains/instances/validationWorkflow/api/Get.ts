@@ -1,3 +1,11 @@
+import { UseQueryResult } from 'react-query';
+import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
+import {
+    ValidationWorkflowListDropdownResponse,
+    ValidationWorkflowListResponse,
+    ValidationWorkflowRetrieveResponseItem,
+    ValidationWorkflowRetrieveResponseItemWithOrderedNodes,
+} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 import { FormattedApiParams, useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';
@@ -10,14 +18,16 @@ const defaults = {
     page: 1,
 };
 
-const getSubmissionsWorkflows = async (params: FormattedApiParams) => {
+const getSubmissionsWorkflows = async (
+    params: FormattedApiParams,
+): Promise<ValidationWorkflowListResponse> => {
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`${API_URL}?${queryString}`);
 };
 
 export const useGetSubmissionValidationWorkflows = (
     params: Record<string, any>,
-) => {
+): UseQueryResult<ValidationWorkflowListResponse, Error> => {
     const safeParams = useUrlParams(params, defaults);
     const apiParams = useApiParams(safeParams);
     return useSnackQuery({
@@ -32,11 +42,15 @@ export const useGetSubmissionValidationWorkflows = (
     });
 };
 
-const getWorkflowDetails = async (slug?: string) => {
+const getWorkflowDetails = async (
+    slug?: string,
+): Promise<ValidationWorkflowRetrieveResponseItem> => {
     return getRequest(`${API_URL}${slug}/`);
 };
 
-export const useGetWorkflowDetails = (slug?: string) => {
+export const useGetWorkflowDetails = (
+    slug?: string,
+): UseQueryResult<ValidationWorkflowRetrieveResponseItem, Error> => {
     return useSnackQuery({
         queryKey: [WF_BASE_QUERYKEY, 'details', slug],
         queryFn: () => getWorkflowDetails(slug),
@@ -45,12 +59,13 @@ export const useGetWorkflowDetails = (slug?: string) => {
             cacheTime: Infinity,
             keepPreviousData: true,
             enabled: Boolean(slug),
-            select: data => {
+            select: (
+                data: ValidationWorkflowRetrieveResponseItem,
+            ): ValidationWorkflowRetrieveResponseItemWithOrderedNodes => {
                 if (!data) return data;
-                const { nodeTemplates } = data;
                 return {
                     ...data,
-                    nodeTemplates: nodeTemplates.map((node, index) => ({
+                    node_templates: data.node_templates?.map((node, index) => ({
                         ...node,
                         id: index + 1,
                         order: index + 1,
@@ -67,7 +82,7 @@ const getNode = async ({
 }: {
     nodeSlug?: string;
     workflowSlug: string;
-}) => {
+}): Promise<ValidationNodeTemplateRetrieveResponse> => {
     return getRequest(`${API_URL}${workflowSlug}/node-templates/${nodeSlug}`);
 };
 
@@ -89,11 +104,15 @@ export const useGetNode = ({
     });
 };
 
-const getWorkflowOptions = () => {
-    return getRequest(`${API_URL}dropdown/`);
-};
+const getWorkflowOptions =
+    (): Promise<ValidationWorkflowListDropdownResponse> => {
+        return getRequest(`${API_URL}dropdown/`);
+    };
 
-export const useGetWorkflowOptions = () => {
+export const useGetWorkflowOptions = (): UseQueryResult<
+    ValidationWorkflowListDropdownResponse,
+    Error
+> => {
     return useSnackQuery({
         queryKey: [WF_BASE_QUERYKEY, 'options'],
         queryFn: () => getWorkflowOptions(),

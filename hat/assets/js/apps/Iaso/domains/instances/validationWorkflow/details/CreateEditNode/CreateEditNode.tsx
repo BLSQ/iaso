@@ -31,10 +31,8 @@ export type NodeFormValues = {
     name?: string;
     description?: string;
     color?: string;
-    rolesRequired?: number[];
-    canSkipPreviousNodes?: boolean;
-    // previousNodeTemplate: string; // node slug
-    // nextNodeTemplate: string; // node slug
+    roles_required?: number[];
+    can_skip_previous_nodes?: boolean;
 };
 
 export const CreateEditNode: FunctionComponent<Props> = ({
@@ -55,21 +53,20 @@ export const CreateEditNode: FunctionComponent<Props> = ({
             slug: node?.slug,
             color: node?.color,
             description: node?.description,
-            canSkipPreviousNodes: node?.canSkipPreviousNodes,
-            rolesRequired: node?.rolesRequired.map(r => r.id),
-            // previousNodeTemplate: node?.previousNodeTemplate,
-            // nextNodeTemplate: node?.nextNodeTemplate,
+            can_skip_previous_nodes: node?.can_skip_previous_nodes,
+            roles_required: node?.roles_required?.map(r => r.id),
         },
         enableReinitialize: true,
-        onSubmit: values => save({ workflowSlug, ...values }),
+        onSubmit: values =>
+            save({ workflowSlug: workflowSlug, slug: nodeSlug, body: values }),
         validationSchema,
     });
     const handleChangeUserRoles = useCallback(
         (_, newValue: string) => {
             const value =
                 newValue && newValue.length > 0 ? newValue : undefined;
-            formik.setFieldTouched('rolesRequired', true);
-            formik.setFieldValue('rolesRequired', value);
+            formik.setFieldTouched('roles_required', true);
+            formik.setFieldValue('roles_required', value);
         },
         [formik],
     );
@@ -100,6 +97,7 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.name)}
                             name="name"
                             component={TextInput}
+                            required
                             withMarginTop
                         />
                     </Box>
@@ -121,14 +119,14 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                 />
                 <Field
                     label={formatMessage(MESSAGES.canSkipPreviousNodes)}
-                    name="canSkipPreviousNodes"
+                    name="can_skip_previous_nodes"
                     component={BooleanInput}
                     required
                 />
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.rolesRequired)}
-                        name="rolesRequired"
+                        name="roles_required"
                         component={MultiSelect}
                         onChange={handleChangeUserRoles}
                         isLoading={isLoadingRoles}

@@ -1,22 +1,45 @@
 import { UseMutationResult } from 'react-query';
+import {
+    ValidationNodeTemplateBulkUpdateBody,
+    ValidationNodeTemplateCreateBody,
+    ValidationNodeTemplateUpdateBody,
+} from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
+import {
+    ValidationWorkflowCreateBody,
+    ValidationWorkflowPatchBody,
+} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 import { patchRequest, postRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { API_URL, WF_BASE_QUERYKEY } from '../constants';
 
-const postWorkflow = async body => {
+const postWorkflow = async (body: ValidationWorkflowCreateBody) => {
     return postRequest(`${API_URL}`, body);
 };
 
-const patchWorkflow = async body => {
-    const { slug, ...payload } = body;
-    return patchRequest(`${API_URL}${slug}/`, payload);
+const patchWorkflow = async ({
+    slug,
+    body,
+}: {
+    slug: string;
+    body: ValidationWorkflowPatchBody;
+}) => {
+    return patchRequest(`${API_URL}${slug}/`, body);
 };
 
-const createEditWorkflow = async body => {
-    if ('slug' in body) {
-        return patchWorkflow(body);
+const createEditWorkflow = async ({
+    slug,
+    body,
+}: {
+    slug?: string;
+    body: ValidationWorkflowPatchBody | ValidationWorkflowCreateBody;
+}) => {
+    if (!!slug) {
+        return patchWorkflow({
+            slug: slug,
+            body: body as ValidationWorkflowPatchBody,
+        });
     }
-    return postWorkflow(body);
+    return postWorkflow(body as ValidationWorkflowCreateBody);
 };
 
 export const useSaveWorkflow = (): UseMutationResult<any, any> => {
@@ -26,15 +49,25 @@ export const useSaveWorkflow = (): UseMutationResult<any, any> => {
     });
 };
 
-const saveNode = async body => {
-    const { workflowSlug, slug, ...payload } = body;
-    if (body.slug) {
+const saveNode = async ({
+    workflowSlug,
+    slug,
+    body,
+}: {
+    workflowSlug: string;
+    slug?: string;
+    body: ValidationNodeTemplateCreateBody | ValidationNodeTemplateUpdateBody;
+}) => {
+    if (!!slug) {
         return putRequest(
             `${API_URL}${workflowSlug}/node-templates/${slug}/`,
-            payload,
+            body as ValidationNodeTemplateUpdateBody,
         );
     }
-    return postRequest(`${API_URL}${workflowSlug}/node-templates/`, payload);
+    return postRequest(
+        `${API_URL}${workflowSlug}/node-templates/`,
+        body as ValidationNodeTemplateCreateBody,
+    );
 };
 
 export const useSaveNode = (): UseMutationResult<any, any> => {
@@ -44,9 +77,10 @@ export const useSaveNode = (): UseMutationResult<any, any> => {
     });
 };
 
-const saveNodeOrder = (slug: string) => (body: any[]) => {
-    return putRequest(`${API_URL}${slug}/node-templates/bulk/`, body);
-};
+const saveNodeOrder =
+    (slug: string) => (body: ValidationNodeTemplateBulkUpdateBody) => {
+        return putRequest(`${API_URL}${slug}/node-templates/bulk/`, body);
+    };
 
 export const useSaveNodeOrder = (slug: string) => {
     return useSnackMutation({

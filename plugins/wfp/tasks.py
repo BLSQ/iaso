@@ -259,7 +259,7 @@ def etl_ethiopia(all_data=None):
     etl_pbwg = ETL(entity_type_pbwg_code)
     pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
+    Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
     Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
 
     logger.info(

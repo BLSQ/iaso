@@ -13,7 +13,7 @@ class UserAccessPermission(permissions.BasePermission):
         access_granted = False
         if hasattr(view, "permission_required"):
             for permission in view.permission_required:
-                if user.has_perm(permission):
+                if user.has_perm(permission.full_name()):
                     access_granted = True
         else:
             access_granted = True

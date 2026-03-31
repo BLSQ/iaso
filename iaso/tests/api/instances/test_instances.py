@@ -444,6 +444,62 @@ class InstancesAPITestCase(TaskAPITestCase):
         last_instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(Decimal("12.35"), last_instance.accuracy)
 
+    def test_instance_create_with_accuracy_coerced(self):
+        """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 126264.07,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "name": "test_accuracy_rounded",
+            }
+        ]
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        last_instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(Decimal("99999.00"), last_instance.accuracy)
+
+    def test_instance_create_with_accuracy_coerced_and_rounded(self):
+        """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 126264.345,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "name": "test_accuracy_rounded",
+            }
+        ]
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        last_instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(Decimal("99999.00"), last_instance.accuracy)
+
     def test_instance_create_with_accuracy_rounded_with_long_number(self):
         """POST /api/instances/ with accuracy having more than 2 decimal places should be rounded"""
 

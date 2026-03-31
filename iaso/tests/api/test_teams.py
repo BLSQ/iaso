@@ -335,6 +335,39 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(mod.new_value[0]["name"], "hello")
         self.assertEqual(mod.source, "API POST/api/teams/")
 
+    def test_create_with_fields_param(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        data_low = {
+            "name": "low_team",
+            "project": self.project1.id,
+            "manager": self.user.id,
+            "users": [],
+            "sub_teams": [],
+        }
+        with self.assertNumQueries(19):
+            response = self.client.post("/api/teams/", data=data_low, format="json")
+
+        data_fast = {
+            "name": "fast_team",
+            "project": self.project1.id,
+            "manager": self.user.id,
+            "users": [],
+            "sub_teams": [],
+        }
+        with self.assertNumQueries(13):
+            response = self.client.post("/api/teams/?fields=id", data=data_fast, format="json")
+
+        r = self.assertJSONResponse(response, 201)
+
+        self.assertEqual(list(r.keys()), ["id"])
+        self.assertIsInstance(r["id"], int)
+
+        self.assertTrue(Team.objects.filter(name="fast_team").exists())
+
     def test_create_no_perms(self):
         self.client.force_authenticate(self.user)
         data = {
@@ -529,6 +562,24 @@ class TeamAPITestCase(APITestCase):
         )
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 4)
+
+    def test_list_with_fields_param(self):
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/teams/", format="json")
+
+        with self.assertNumQueries(1):
+            response = self.client.get("/api/teams/?fields=id,name", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        self.assertTrue(len(r) > 0)
+        team_data = r[0]
+
+        self.assertEqual(set(team_data.keys()), {"id", "name"})
+
+        self.assertNotIn("project_details", team_data)
+        self.assertNotIn("users_details", team_data)
+        self.assertNotIn("sub_teams_details", team_data)
 
     def test_list_filter_by_project(self):
         ash_ketchum = self.create_user_with_profile(

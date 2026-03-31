@@ -1,16 +1,18 @@
 from logging import getLogger
 
-from django.db.models import Max
+from django.db.models import Max, Prefetch
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, renderers, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 
 from hat.audit.models import ENTITY_API
 from iaso.api.common import (
@@ -19,7 +21,7 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.api.entities.filters import EntityDateFilterBackend, EntityFilterSet, EntityOrderingFilter
-from iaso.api.entities.pagination import EntityListPaginator, EntityLocationPaginator
+from iaso.api.entities.pagination import EntityCursorPagination, EntityListPaginator, EntityLocationPaginator
 from iaso.api.entities.renderers import CSVStreamingRenderer, LegacyExportContentNegotation, XlsxStreamingRenderer
 from iaso.api.entities.serializers import (
     EntityExportSerializer,
@@ -27,19 +29,23 @@ from iaso.api.entities.serializers import (
     EntitySerializer,
     EntityTypeColumnSerializer,
 )
-from iaso.models import Entity, EntityType, Instance
+from iaso.models import Entity, EntityDuplicate, EntityType, Instance
+from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
 logger = getLogger(__name__)
 
 
+@extend_schema(tags=["Entities"])
 class EntityViewSet(ModelViewSet):
     """Entity API
 
     list: /api/entities
 
     list entity by entity type: /api/entities/?entity_type_id=ids
+
+    list entities with cursor pagination: /api/entities/?cursor=null
 
     details =/api/entities/<id>
 
@@ -67,7 +73,7 @@ class EntityViewSet(ModelViewSet):
         CSVStreamingRenderer,
         XlsxStreamingRenderer,
     )
-    ordering = ["-created_at"]
+    ordering = ["-id"]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -91,33 +97,61 @@ class EntityViewSet(ModelViewSet):
 
         return context
 
-    def get_queryset(self):
-        queryset = (
-            Entity.objects.filter_for_user(self.request.user)
-            .select_related(
-                "attributes__org_unit",
-                "attributes__created_by",
-                "entity_type",
-            )
-            .annotate(last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at")))
-            .with_duplicates()
-            .prefetch_related(
-                "attributes__created_by__teams",
-                "attributes__form",
-                "attributes__org_unit__groups",
-                "attributes__org_unit__org_unit_type",
-                "attributes__org_unit__parent",
-                "attributes__org_unit__version__data_source",
-                "instances",
-            )
-        )
-        return queryset
-
     @property
     def pagination_class(self):
         if self.request.query_params.get("asLocation"):
             return EntityLocationPaginator
+        if self.request.query_params.get("cursor"):
+            return EntityCursorPagination
         return EntityListPaginator
+
+    @property
+    def _requested_ordering_fields(self):
+        """Access the raw ordering fields from the request."""
+
+        order_param = (
+            self.request.query_params.get("order_columns")
+            or self.request.query_params.get(api_settings.ORDERING_PARAM)
+            or ""
+        )
+        return {field.strip().lstrip("-") for field in order_param.split(",") if field.strip()}
+
+    def get_queryset(self):
+        queryset = Entity.objects.filter_for_user(self.request.user)
+        if self.action == "count":
+            return queryset
+        if self.action == "list" and "last_saved_instance" in self._requested_ordering_fields:
+            queryset = queryset.annotate(
+                last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
+            )
+
+        queryset = queryset.select_related(
+            "attributes__org_unit",
+            "attributes__created_by",
+            "entity_type",
+        ).prefetch_related(
+            "attributes__created_by__teams",
+            "attributes__form",
+            "attributes__org_unit__groups",
+            "attributes__org_unit__org_unit_type",
+            "attributes__org_unit__parent",
+            "attributes__org_unit__version__data_source",
+            Prefetch(
+                "instances",
+                queryset=Instance.objects.only("id", "entity_id", "source_created_at", "created_at"),
+            ),
+            Prefetch(
+                "duplicates1",
+                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                to_attr="pending_duplicates1",
+            ),
+            Prefetch(
+                "duplicates2",
+                queryset=EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING),
+                to_attr="pending_duplicates2",
+            ),
+        )
+        return queryset
 
     @cached_property
     def entity_type_columns(self):
@@ -200,6 +234,8 @@ class EntityViewSet(ModelViewSet):
         # Handle streaming responses
 
         queryset = self.filter_queryset(self.get_queryset())
+        # reset ordering for exports to an indexed column to ensure stable performance
+        queryset = queryset.order_by("-id")
 
         def data_iterator(queryset):
             context = self.get_serializer_context()
@@ -218,6 +254,12 @@ class EntityViewSet(ModelViewSet):
         filename = renderer_context.get("export_filename", "export")
         response["Content-Disposition"] = f'attachment; filename="{filename}.{renderer.format}"'
         return response
+
+    @action(detail=False)
+    def count(self, request):
+        """Result count based on a stripped-down query for cursor pagination."""
+        queryset = self.filter_queryset(self.get_queryset()).order_by().values("id")
+        return Response({"count": queryset.count()})
 
     def destroy(self, request, pk=None):
         entity = Entity.objects_include_deleted.get(pk=pk)

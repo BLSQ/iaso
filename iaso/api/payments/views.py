@@ -8,8 +8,8 @@ from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import translation
 from django.utils.translation import get_language_from_request, gettext as _
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -42,6 +42,7 @@ from .serializers import (
 )
 
 
+@extend_schema(tags=["Payment lots"])
 class PaymentLotsViewSet(ModelViewSet):
     """
     # `Payment Lots` API
@@ -149,39 +150,37 @@ class PaymentLotsViewSet(ModelViewSet):
 
         return queryset
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 name="user",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of User IDs associated with the payment lots creation",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="status",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of the possible payment lot status",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="parent_id",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The ID of the parent organization unit linked to the change requests. This should also include child units.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="created_at_after",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The start date for when the lots has been created. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="created_at_before",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The end date for when the lots has been created. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
         ]
     )
@@ -189,14 +188,14 @@ class PaymentLotsViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         return super().list(request, queryset)
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={status.HTTP_200_OK: PaymentLotSerializer()},
-        manual_parameters=[
-            openapi.Parameter(
+        parameters=[
+            OpenApiParameter(
                 name="mark_payments_as_sent",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="If set to true, all related payments will be marked as sent",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
     )
@@ -224,8 +223,8 @@ class PaymentLotsViewSet(ModelViewSet):
                     status=status.HTTP_201_CREATED,
                 )
 
-    @swagger_auto_schema(
-        request_body=PaymentLotCreateSerializer,
+    @extend_schema(
+        request=PaymentLotCreateSerializer,
         responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
     )
     def create(self, request):
@@ -420,6 +419,7 @@ class PaymentLotsViewSet(ModelViewSet):
         return response
 
 
+@extend_schema(tags=["Potential payments"])
 class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     """
     # `Potential payment` API
@@ -504,61 +504,59 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
         OrgUnitChangeRequest.objects.bulk_update(change_requests, ["potential_payment"])
 
-    @swagger_auto_schema(auto_schema=None)
+    @extend_schema(exclude=True)
     def retrieve(self, request, *args, **kwargs):
         raise NotFound("Retrieve operation is not allowed.")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
                 name="users",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of User IDs associated with the payments",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="user_roles",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of User Role IDs associated with the payments",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="parent_id",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The ID of the parent organization unit linked to the change requests. This should also include child units.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="change_requests__created_at_after",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The start date for when the change request has been validated. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="change_requests__created_at_before",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="The end date for when the change request has been validated. Format: YYYY-MM-DD",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="select_all",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="Select all potential payments from the query",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="selected_ids",
-                in_=openapi.IN_QUERY,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of Potential Payments IDs selected to return from the query",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
+            OpenApiParameter(
                 name="unselected_ids",
-                in_=openapi.TYPE_STRING,
+                location=OpenApiParameter.QUERY,
                 description="A comma-separated list of Potential Payments IDs to exlude from the query",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
         ]
     )
@@ -569,6 +567,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         return super().list(request, queryset)
 
 
+@extend_schema(tags=["Payments"])
 class PaymentsViewSet(ModelViewSet):
     """
     # `Payment` API
@@ -639,6 +638,7 @@ class PaymentsViewSet(ModelViewSet):
             return Response(serializer.data)
 
 
+@extend_schema(tags=["Payments"])
 class PaymentOptionsViewSet(DropdownOptionsListViewSet):
     permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnly]
     http_method_names = ["get"]

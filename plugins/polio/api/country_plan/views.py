@@ -1,5 +1,6 @@
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters
 
 from hat.audit.audit_mixin import AuditMixin
@@ -15,6 +16,7 @@ from .filters import CountryPlanFilter
 from .permissions import CountryPlanPermission
 
 
+@extend_schema(tags=["Polio: - Country plan"])
 class CountryPlanViewSet(AuditMixin, ModelViewSet):
     """
     API endpoint for Performance Dashboard.

@@ -3,6 +3,7 @@ import logging
 import django_filters
 
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from lazy_services import LazyService
@@ -31,6 +32,7 @@ task_service = LazyService("BACKGROUND_TASK_SERVICE")
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(tags=["Tasks"])
 class TaskSourceViewSet(ModelViewSet):
     """Task API
 

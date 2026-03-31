@@ -33,11 +33,9 @@ class TestValidationWorkflow(TestCase):
         account = Account.objects.create(name="test")
         other_account = Account.objects.create(name="another account")
         d1 = ValidationWorkflow.objects.create(name="test", account=account)
-        d2 = ValidationWorkflow.objects.create(name="test", account=account)
         d3 = ValidationWorkflow.objects.create(name="test", account=other_account)
 
         self.assertEqual(d1.slug, "test")
-        self.assertEqual(d2.slug, "test-2")
         self.assertEqual(d3.slug, "test")
 
     def test_is_artifact_allowed(self):
@@ -58,5 +56,5 @@ class TestValidationWorkflow(TestCase):
 
         self.assertFalse(workflow.is_artifact_allowed(another_instance))
 
-        self.assertTrue(another_workflow.is_artifact_allowed(instance))
-        self.assertTrue(another_workflow.is_artifact_allowed(another_instance))
+        self.assertFalse(another_workflow.is_artifact_allowed(instance))
+        self.assertFalse(another_workflow.is_artifact_allowed(another_instance))

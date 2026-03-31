@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.response import Response
 
@@ -104,6 +104,7 @@ class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Entity duplicates", "Entity duplicates analysis"])
 class EntityDuplicateAnalyzisViewSet(ModelViewSet):
     """
     Entity Duplicates API
@@ -195,8 +196,8 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @swagger_auto_schema(
-        request_body=AnalyzePostBodySerializer,
+    @extend_schema(
+        request=AnalyzePostBodySerializer,
     )
     def create(self, request, *args, **kwargs):
         """

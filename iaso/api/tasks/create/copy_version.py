@@ -1,6 +1,7 @@
 import logging
 
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
@@ -60,6 +61,7 @@ class CopyVersionSerializer(serializers.Serializer):
         return validated_data
 
 
+@extend_schema(tags=["Copy version"])
 class CopyVersionViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_SOURCE_PERMISSION)]  # type: ignore
     serializer_class = CopyVersionSerializer

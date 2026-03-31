@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -21,6 +22,7 @@ from plugins.polio.permissions import (
 )
 
 
+@extend_schema(tags=["Polio - Doses per vial"])
 class DosesPerVialViewset(ListModelMixin, GenericViewSet):
     """
     Super custom endpoint to send the possible vaccine presentation (doses per vial) to the front end

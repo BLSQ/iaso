@@ -174,6 +174,45 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
 
     @time_machine.travel(DT, tick=False)
+    def test_create_same_uuid_ok(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "uuid": "9eedf036-b444-47ad-b8a2-7169b87e89bf",
+            "org_unit_id": self.org_unit.id,
+            "new_name": "I want this new name",
+            "new_org_unit_type_id": self.org_unit_type.pk,
+        }
+        response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        self.assertEqual(change_request.uuid.__str__(), data["uuid"])
+        self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
+        self.assertEqual(change_request.created_at, self.DT)
+        self.assertEqual(change_request.created_by, self.user)
+        self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
+
+        new_data = {
+            "uuid": data["uuid"],
+            "org_unit_id": data["org_unit_id"],
+            "new_name": "I want this new name 2",
+            "new_org_unit_type_id": data["new_org_unit_type_id"],
+        }
+        response = self.client.post("/api/orgunits/changes/", data=new_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
+        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        self.assertEqual(change_request.uuid.__str__(), data["uuid"])
+        self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
+        self.assertEqual(change_request.created_at, self.DT)
+        self.assertEqual(change_request.created_by, self.user)
+        self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
+
+    @time_machine.travel(DT, tick=False)
     def test_create_ok_erase_fields(self):
         self.client.force_authenticate(self.user)
         data = {
@@ -225,7 +264,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_name": "I want this new name",
             "new_org_unit_type_id": self.org_unit_type.pk,
         }
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(12):
             response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
@@ -247,7 +286,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "org_unit_id": self.org_unit.id,
             "new_name": "Bar",
         }
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(13):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
@@ -269,7 +308,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_location_accuracy": 1.2345,
         }
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(13):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])

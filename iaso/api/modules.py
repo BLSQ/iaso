@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Permission
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.models import Account, Profile
@@ -54,6 +55,7 @@ class ModuleSerializer(serializers.Serializer):
         return []
 
 
+@extend_schema(tags=["Modules"])
 class ModulesViewSet(ModelViewSet):
     f"""Modules API
 

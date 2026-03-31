@@ -2,6 +2,7 @@ import django_filters
 
 from django.db.models import Prefetch, QuerySet
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
@@ -24,6 +25,7 @@ class ChronogramPagination(Paginator):
     page_size = 20
 
 
+@extend_schema(tags=["Polio - Chronograms"])
 class ChronogramViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramFilter
@@ -124,6 +126,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         return Response(available_rounds.as_ui_dropdown_data(), status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=["Polio - Chronogram tasks"])
 class ChronogramTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramTaskFilter
@@ -159,6 +162,7 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 
+@extend_schema(tags=["Polio - Chronogram template tasks"])
 class ChronogramTemplateTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     pagination_class = ChronogramPagination

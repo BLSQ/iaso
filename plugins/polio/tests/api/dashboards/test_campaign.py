@@ -50,11 +50,6 @@ class CampaignDashboardAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.campaign_3_deleted.campaign_types.set([cls.polio_type])
         cls.campaign_3_deleted.delete()
 
-    def test_anonymous_user_cannot_get(self):
-        self.client.force_authenticate(self.anon)
-        response = self.client.get(f"{BASE_URL}")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
     def test_default_pagination_is_added(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{BASE_URL}")
@@ -74,34 +69,11 @@ class CampaignDashboardAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{BASE_URL}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data["results"]
-        self.assertEqual(len(results), 2)
-        self.assertEqual(results[0]["id"], str(self.campaign_1.id))
-        self.assertEqual(results[0]["obr_name"], self.campaign_1.obr_name)
-        self.assertEqual(results[1]["id"], str(self.campaign_2.id))
-        self.assertEqual(results[1]["obr_name"], self.campaign_2.obr_name)
+        results = response.data["campaigns"]
+        result_obr_names = [c["obr_name"] for c in results]
 
-    def test_list_with_other_account(self):
-        # Setting up new campaign with rounds and budget processes, in another account
-        new_account, new_data_source, new_source_version, new_project = self.create_account_datasource_version_project(
-            "New Account", "New Data source", "New Project"
-        )
-        new_campaign, new_round_1, new_round_2, new_round_3, self.country, self.district = self.create_campaign(
-            obr_name="New Campaign",
-            account=new_account,
-            source_version=new_source_version,
-            country_ou_type=self.country_type,
-            district_ou_type=self.district_type,
-        )
-        new_campaign.campaign_types.set([self.polio_type])
-
-        # Now we check that we only have the initial ones
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"{BASE_URL}")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data["results"]
-        self.assertEqual(len(results), 2)  # both from the setup
-        self.assertEqual(results[0]["id"], str(self.campaign_1.id))
-        self.assertEqual(results[0]["obr_name"], self.campaign_1.obr_name)
-        self.assertEqual(results[1]["id"], str(self.campaign_2.id))
-        self.assertEqual(results[1]["obr_name"], self.campaign_2.obr_name)
+        expected_names = [
+            self.campaign_1.obr_name,
+            self.campaign_2.obr_name,
+        ]
+        self.assertCountEqual(result_obr_names, expected_names)

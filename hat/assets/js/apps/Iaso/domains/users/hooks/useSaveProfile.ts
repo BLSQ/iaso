@@ -7,14 +7,24 @@ import { User } from 'Iaso/utils/usersUtils';
 type UseSaveProfileParams = {
     id?: number | string;
     showSuccessSnackBar?: boolean;
-}
+};
 
-export const useSaveProfile = (
-    { id, showSuccessSnackBar = true }: UseSaveProfileParams = {},
-): UseMutationResult<User, DjangoError, User | Partial<User>> =>
+export const useSaveProfile = ({
+    id,
+    showSuccessSnackBar = true,
+}: UseSaveProfileParams = {}): UseMutationResult<
+    User,
+    DjangoError,
+    User | Partial<User>
+> =>
     useSnackMutation({
         mutationFn: ({ id: userId, ...body }) =>
             patchRequest(`/api/profiles/${id ?? userId}/`, body),
-        invalidateQueryKey: ['profiles', 'usersHistoryList', 'team', 'userDetail'],
+        invalidateQueryKey: [
+            'profiles',
+            'usersHistoryList',
+            'team',
+            'userDetail',
+        ],
         showSuccessSnackBar,
     });

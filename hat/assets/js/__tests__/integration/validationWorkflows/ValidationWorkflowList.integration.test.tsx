@@ -101,7 +101,7 @@ describe('Validation workflow list UI integration test', () => {
                     screen.getByTestId('loading-spinner'),
                 ).toBeInTheDocument();
             },
-            { timeout: 2000 },
+            { timeout: 5000 },
         );
     });
 

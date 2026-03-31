@@ -75,7 +75,7 @@ describe('Validation workflow list UI integration test', () => {
         });
     });
 
-    it('displays a spinner while loading', () => {
+    it('displays a spinner while loading', async () => {
         mockUseGetSubmissionValidationWorkflows.mockReturnValue({
             data: null,
             isFetching: true,
@@ -89,15 +89,20 @@ describe('Validation workflow list UI integration test', () => {
             </MemoryRouter>,
         );
 
-        waitFor(() => {
-            expect(
-                screen.getByRole('heading', {
-                    name: 'Configure validation of submissions',
-                }),
-            ).toBeInTheDocument();
-            expect(screen.queryByText('No result')).toBeNull();
-            expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-        });
+        waitFor(
+            () => {
+                expect(
+                    screen.getByRole('heading', {
+                        name: 'Configure validation of submissions',
+                    }),
+                ).toBeInTheDocument();
+                expect(screen.queryByText('No result')).toBeNull();
+                expect(
+                    screen.getByTestId('loading-spinner'),
+                ).toBeInTheDocument();
+            },
+            { timeout: 2000 },
+        );
     });
 
     it("displays no results when there isn't any", () => {

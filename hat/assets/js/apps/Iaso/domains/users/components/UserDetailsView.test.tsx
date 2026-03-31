@@ -167,7 +167,7 @@ const getRandomOrgUnit = () => {
 const getRandomUserRole = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun({ length: 10 }),
+        name: faker.word.sample({ length: 10 }),
     };
 };
 

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, Group, OrgUnit
 from iaso.models.storage import StorageDevice
+from iaso.plugins import is_trypelim_plugin_active
 
 
 class EntityTypeColumnSerializer(serializers.Serializer):
@@ -232,7 +233,7 @@ class EntitySerializer(serializers.ModelSerializer):
         if not obj.attributes:
             return None
 
-        if obj.attributes.patient_set.exists():
+        if is_trypelim_plugin_active() and obj.attributes.patient_set.exists():
             patient = obj.attributes.patient_set.first()
             if patient:
                 return patient.id

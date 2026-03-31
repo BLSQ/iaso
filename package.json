@@ -13,6 +13,7 @@
         "test:watch": "vitest --config vitest.config.ts",
         "test:coverage": "vitest run --coverage --config vitest.config.ts",
         "test:smoke": "playwright test --project=smoke",
+        "test:smoke:healthcheck": "playwright test --project=smoke healthcheck.test.ts",
         "test:e2e": "playwright test --project=e2e",
         "build": "npm run webpack",
         "webpack": "webpack --config ./hat/webpack.dev.js",

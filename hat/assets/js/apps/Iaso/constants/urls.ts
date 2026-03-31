@@ -129,8 +129,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'forms/submissions/validation',
         params: [
             'accountId',
-            'formIds',
-            'search',
+            'forms',
+            'name',
             'showDeleted',
             ...paginationPathParams,
         ],

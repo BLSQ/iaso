@@ -36,13 +36,7 @@ from iaso.api.org_units import import_org_units
 from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.api.storage import import_storage_logs
 from iaso.models import Instance, OrgUnit, Project, StockLedgerItem, Task
-from plugins.trypelim.common.form_utils import (
-    get_population_form,
-    get_population_instances,
-)
-from plugins.trypelim.common.utils import sns_notify
-from plugins.trypelim.import_export.bulk_upload import notify_coordinations, positive_instance_qs
-from plugins.trypelim.tasks.utils import acquire_lock, release_lock
+from iaso.plugins import is_trypelim_plugin_active
 
 
 INSTANCES_JSON = "instances.json"
@@ -78,25 +72,27 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     user = api_import.user
 
     try:
-        # Trypelim-specific
-        # To avoid concurrency issues, we acquire a mutex with a max duration of 10 minutes.
-        acquire_lock(
-            key=TASK_LOCK_KEY,
-            max_retries=TASK_LOCK_MAX_RETRIES,
-            retry_interval=TASK_LOCK_RETRY_INTERVAL,
-            max_duration=TASK_LOCK_MAX_DURATION,
-            progress_callback=lambda num_attempt: the_task.report_progress_and_stop_if_killed(
-                progress_message=f"Acquiring task lock (attempt {num_attempt} of {TASK_LOCK_MAX_RETRIES})",
-                progress_value=10,
-                end_value=100,
-            ),
-        )
+        if is_trypelim_plugin_active():
+            from plugins.trypelim.tasks.utils import acquire_lock
 
-        the_task.report_progress_and_stop_if_killed(
-            progress_message="Lock acquired, processing upload",
-            progress_value=20,
-            end_value=100,
-        )
+            # Trypelim-specific
+            # To avoid concurrency issues, we acquire a mutex with a max duration of 10 minutes.
+            acquire_lock(
+                key=TASK_LOCK_KEY,
+                max_retries=TASK_LOCK_MAX_RETRIES,
+                retry_interval=TASK_LOCK_RETRY_INTERVAL,
+                max_duration=TASK_LOCK_MAX_DURATION,
+                progress_callback=lambda num_attempt: the_task.report_progress_and_stop_if_killed(
+                    progress_message=f"Acquiring task lock (attempt {num_attempt} of {TASK_LOCK_MAX_RETRIES})",
+                    progress_value=10,
+                    end_value=100,
+                ),
+            )
+            the_task.report_progress_and_stop_if_killed(
+                progress_message="Lock acquired, processing upload",
+                progress_value=20,
+                end_value=100,
+            )
 
         project = Project.objects.get(id=project_id)
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
@@ -108,11 +104,12 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     log_progress(the_task, 0, "Importing OrgUnits")
                     org_units_data = read_json_file_from_zip(zip_ref, ORG_UNITS_JSON)
                     new_org_units = import_org_units(org_units_data, user, project.app_id)
-                    # Trypelim-specific
-                    for ou in new_org_units:
-                        if ou.location:
-                            ou.validation_status = OrgUnit.VALIDATION_VALID
-                            ou.save()
+                    if is_trypelim_plugin_active():
+                        # Trypelim-specific
+                        for ou in new_org_units:
+                            if ou.location:
+                                ou.validation_status = OrgUnit.VALIDATION_VALID
+                                ou.save()
                     stats["new_org_units"] = len(new_org_units)
                 else:
                     log_progress(the_task, 0, f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
@@ -132,11 +129,11 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         new_instance_files += process_instance_attachments(dirs[uuid], instance)
                         created_objects_ids["instance"].append(instance.id)
 
-                    # Trypelim-specifics
                     duplicated_count = duplicate_instance_files(new_instance_files)
                     stats["new_instance_files"] = len(new_instance_files) + duplicated_count
-                    # Trypelim-specifics
-                    process_population_instances(instances_data)
+                    if is_trypelim_plugin_active():
+                        # Trypelim-specifics
+                        process_population_instances(instances_data)
                 else:
                     log_progress(the_task, 20, f"The file {INSTANCES_JSON} does not exist in the zip file.")
 
@@ -184,26 +181,32 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
         raise e
 
     finally:
-        release_lock(TASK_LOCK_KEY)
+        if is_trypelim_plugin_active():
+            from plugins.trypelim.tasks.utils import release_lock
+
+            release_lock(TASK_LOCK_KEY)
 
     api_import.has_problem = False
     api_import.exception = ""
     api_import.save()
     message = result_message(user, project, start_date, start_time, stats)
 
-    # Trypelim-specific
-    # Trigger a task to notify relevant coordinations of confirmed cases
-    if instance_ids := created_objects_ids["instance"]:
-        confirmation_ids = (
-            positive_instance_qs(Instance.objects).filter(id__in=instance_ids).values_list("id", flat=True)
-        )
+    if is_trypelim_plugin_active():
+        from plugins.trypelim.common.utils import sns_notify
+        from plugins.trypelim.import_export.bulk_upload import notify_coordinations, positive_instance_qs
 
-        logger.info(f"Bulk upload id={api_import_id} imported {len(confirmation_ids)} confirmations.")
-        if confirmation_ids and user:
-            notify_coordinations(user, confirmation_ids)
+        # Trypelim-specific
+        # Trigger a task to notify relevant coordinations of confirmed cases
+        if instance_ids := created_objects_ids["instance"]:
+            confirmation_ids = (
+                positive_instance_qs(Instance.objects).filter(id__in=instance_ids).values_list("id", flat=True)
+            )
+            logger.info(f"Bulk upload id={api_import_id} imported {len(confirmation_ids)} confirmations.")
+            if confirmation_ids and user:
+                notify_coordinations(user, confirmation_ids)
 
-        # Add confirmation stats to the task message
-        message += f"Number of new positive confirmations: {len(confirmation_ids)}\n"
+            # Add confirmation stats to the task message
+            message += f"Number of new positive confirmations: {len(confirmation_ids)}\n"
 
     # Trypelim-specific
     # Notify a SNS topic with basic import stats
@@ -345,6 +348,8 @@ def duplicate_instance_files(new_instance_files):
 # For all the new "Population" form instances: update the extra_fields on the
 # org unit for the **newest** population form instance.
 def process_population_instances(instances_data):
+    from plugins.trypelim.common.form_utils import get_population_form, get_population_instances
+
     pop_form = get_population_form()
     for instance_metadata in instances_data:
         if instance_metadata["formId"] == str(pop_form.id):

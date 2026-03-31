@@ -87,10 +87,7 @@ vi.mock('Iaso/domains/users/hooks/useDeleteProfile', () => ({
 
 // mock components
 vi.mock('Iaso/components/errors/Page404', () => ({
-    default: ({
-        customMessage,
-        ...props
-    }: React.ComponentProps<typeof Page404>) => (
+    default: ({ customMessage }: React.ComponentProps<typeof Page404>) => (
         <div data-testid={'page-404'}>{customMessage}</div>
     ),
 }));
@@ -154,7 +151,7 @@ const randomUser = {
 const getRandomProject = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun(),
+        name: faker.word.noun({ length: 10 }),
         color: faker.color.rgb({ format: 'hex' }),
         app_id: faker.string.numeric(3),
     };
@@ -163,14 +160,14 @@ const getRandomProject = () => {
 const getRandomOrgUnit = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun(),
+        name: faker.word.noun({ length: 10 }),
     };
 };
 
 const getRandomUserRole = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun(),
+        name: faker.word.noun({ length: 10 }),
     };
 };
 
@@ -289,9 +286,9 @@ describe('UsersDetailView unit tests', () => {
         Object.entries(randomUser)
             .filter(([k, _]) => k !== 'color')
             .forEach(([k, v]) => {
-                // @ts-ignore
                 expect(
                     screen.getByText(v),
+                    // @ts-ignore
                     `Field ${k} with value ${v} should be in the document`,
                 ).toBeInTheDocument();
             });

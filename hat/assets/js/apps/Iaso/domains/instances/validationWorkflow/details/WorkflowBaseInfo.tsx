@@ -49,8 +49,13 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
     const classes = useStyles();
     return (
         <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
-            <TableCell>{value}</TableCell>
+            <TableCell
+                className={classes.leftCell}
+                sx={{ wordBreak: 'break-word' }}
+            >
+                {label}
+            </TableCell>
+            <TableCell sx={{ wordBreak: 'break-word' }}>{value}</TableCell>
         </TableRow>
     );
 };
@@ -114,7 +119,7 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
                 />
             </Box>
             <Divider />
-            <Table size="small" data-test="workflow-base-info">
+            <Table size="small" data-testid="workflow-base-info">
                 <TableBody>
                     <Row
                         label={formatMessage(MESSAGES.created_by)}

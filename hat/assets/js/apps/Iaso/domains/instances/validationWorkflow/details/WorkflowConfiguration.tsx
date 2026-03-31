@@ -81,6 +81,7 @@ export const WorkflowConfiguration: FunctionComponent = () => {
                             <WidgetPaper
                                 className={classes.infoPaper}
                                 title={formatMessage(MESSAGES.infos)}
+                                sx={{ position: 'relative' }}
                             >
                                 <Box className={classes.infoPaperBox}>
                                     {isLoading && <LoadingSpinner absolute />}

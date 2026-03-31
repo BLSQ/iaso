@@ -42,7 +42,7 @@ const validationWorkflowListItemFactory =
     Factory.define<ValidationWorkflowListResponseItem>(() => ({
         slug: faker.lorem.slug(3),
         name: faker.word.noun({ length: 10, strategy: 'closest' }),
-        form_count: faker.number.int({ max: 100 }),
+        form_count: faker.number.int({ max: 1000 }),
         created_by: faker.person.fullName(),
         updated_by: faker.person.fullName(),
         created_at: faker.date.anytime().toLocaleDateString(),

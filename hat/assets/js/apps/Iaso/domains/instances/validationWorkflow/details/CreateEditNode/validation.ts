@@ -12,9 +12,6 @@ export const useNodeValidation = () => {
         color: yup.string().nullable(),
         description: yup.string().nullable(),
         can_skip_previous_nodes: yup.boolean().nullable(),
-        roles_required: yup
-            .array()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
+        roles_required: yup.array().nullable(),
     });
 };

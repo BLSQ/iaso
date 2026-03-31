@@ -52,7 +52,6 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 alignItems="center"
             >
                 <SearchButton
-                    data-test="search-button"
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}
                 />

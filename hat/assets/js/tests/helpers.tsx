@@ -6,6 +6,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { theme } from 'bluesquare-components';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import moment from 'moment/moment';
+import { IntlProvider } from 'react-intl';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { getGlobalOverrides } from 'Iaso/styles';
 
@@ -49,6 +50,23 @@ export function renderWithTheme(
 ) {
     return render(ui, {
         wrapper: Wrapper,
+        ...options,
+    });
+}
+
+function IntlProviderThemeWrapper({ children }: { children: React.ReactNode }) {
+    return (
+        <IntlProvider locale={'en'} messages={{}}>
+            <Wrapper>{children}</Wrapper>
+        </IntlProvider>
+    );
+}
+export function renderWithThemeAndIntlProvider(
+    ui: React.ReactElement,
+    options?: RenderOptions,
+) {
+    return render(ui, {
+        wrapper: IntlProviderThemeWrapper,
         ...options,
     });
 }

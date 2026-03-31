@@ -70,6 +70,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     )
     api_import = APIImport.objects.get(id=api_import_id)
     user = api_import.user
+    project = Project.objects.get(id=project_id)
 
     try:
         if is_trypelim_plugin_active():
@@ -93,8 +94,6 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 progress_value=20,
                 end_value=100,
             )
-
-        project = Project.objects.get(id=project_id)
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
         created_objects_ids = defaultdict(list)
 
@@ -206,15 +205,14 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 notify_coordinations(user, confirmation_ids)
 
             # Add confirmation stats to the task message
-            message += f"Number of new positive confirmations: {len(confirmation_ids)}\n"
+            message += f"Number of imported positive confirmation tests: {len(confirmation_ids)}\n"
 
-    # Trypelim-specific
-    # Notify a SNS topic with basic import stats
-    try:
-        logger.info("Notifying SNS topic of new bulk upload.")
-        sns_notify(message)
-    except Exception as e:
-        logger.exception("Failed to publish to SNS" + str(e))
+        # Notify a SNS topic with basic import stats
+        try:
+            logger.info("Notifying SNS topic of new bulk upload.")
+            sns_notify(message)
+        except Exception as e:
+            logger.exception("Failed to publish to SNS" + str(e))
 
     the_task.report_success_with_result(message=message)
 

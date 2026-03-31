@@ -24,6 +24,13 @@ export const setLocale = (code: string): void => {
 
 const queryClient = new QueryClient();
 
+export const QueryClientWrapper = ({
+    children,
+}: {
+    children: React.ReactNode;
+}) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 function Wrapper({ children }: { children: React.ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>

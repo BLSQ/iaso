@@ -1,4 +1,5 @@
-type History = {
+export type History = {
+    id: number;
     level: string;
     color: `#${string}`;
     created_at: number;
@@ -8,19 +9,19 @@ type History = {
     created_by: string;
     comment?: string;
 };
-type NextTasks = {
+export type NextTasks = {
     id: number;
     name: string;
     user_roles?: Array<{ id: number; name: string }>;
 };
-type NextByPass = {
+export type NextByPass = {
     slug: string;
     name: string;
     user_roles?: Array<{ id: number; name: string }>;
 };
 
 export type ValidationNodeRetrieveResponse = {
-    validation_status: string;
+    validation_status: 'APPROVED' | 'REJECTED' | 'PENDING';
     rejection_comment?: string;
     history: Array<History>;
     next_tasks: Array<NextTasks>;

@@ -13,7 +13,7 @@ type ValidationWorkflowListResponseItem = {
 export type ValidationWorkflowListResponse =
     PaginatedResponse<ValidationWorkflowListResponseItem>;
 
-type NestedNodeTemplate = {
+export type NestedNodeTemplate = {
     slug: string;
     name: string;
     description?: string;

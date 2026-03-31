@@ -53,15 +53,39 @@ class TeamDropdownSerializer(ModelSerializer):
 
 class TeamSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
+        requested_fields = kwargs.pop("fields", None)
         super().__init__(*args, **kwargs)
-        user = self.context["request"].user
-        account = user.iaso_profile.account
-        users_in_account = User.objects.filter(iaso_profile__account=account)
-        self.fields["project"].queryset = account.project_set.all()
-        self.fields["manager"].queryset = users_in_account
-        self.fields["users"].child_relation.queryset = users_in_account
-        self.fields["sub_teams"].child_relation.queryset = Team.objects.filter_for_user(user)
-        self.fields["parent"].queryset = Team.objects.filter_for_user(user)
+
+        if requested_fields is not None:
+            allowed = set(requested_fields)
+            existing = set(self.fields.keys())
+            for field_name in existing - allowed:
+                self.fields.pop(field_name, None)
+
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            user = request.user
+            account = user.iaso_profile.account
+            active_fields = self.fields
+
+            if "project" in active_fields:
+                active_fields["project"].queryset = account.project_set.all()
+
+            user_heavy_fields = {"manager", "users"}
+            if any(f in active_fields for f in user_heavy_fields):
+                users_in_account = User.objects.filter(iaso_profile__account=account)
+                if "manager" in active_fields:
+                    active_fields["manager"].queryset = users_in_account
+                if "users" in active_fields:
+                    active_fields["users"].child_relation.queryset = users_in_account
+
+            team_heavy_fields = {"sub_teams", "parent"}
+            if any(f in active_fields for f in team_heavy_fields):
+                user_teams = Team.objects.filter_for_user(user)
+                if "sub_teams" in active_fields:
+                    active_fields["sub_teams"].child_relation.queryset = user_teams
+                if "parent" in active_fields:
+                    active_fields["parent"].queryset = user_teams
 
     class Meta:
         model = Team
@@ -117,11 +141,17 @@ class TeamSerializer(ModelSerializer):
             old_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
         r = super().save(**kwargs)
         new_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
-        team_changed_qs = Team.objects.filter(id__in=new_sub_teams_ids + old_sub_teams_ids)
-        teams_to_update = []
-        for team in team_changed_qs:
-            teams_to_update += team.calculate_paths(force_recalculate=True)
-        Team.objects.bulk_update(teams_to_update, ["path"])
+
+        if set(old_sub_teams_ids) != set(new_sub_teams_ids):
+            team_changed_qs = Team.objects.filter(id__in=new_sub_teams_ids + old_sub_teams_ids)
+            teams_to_update = []
+            for team in team_changed_qs:
+                teams_to_update += team.calculate_paths(force_recalculate=True)
+
+            if teams_to_update:
+                unique_teams = {t.pk: t for t in teams_to_update}.values()
+                Team.objects.bulk_update(unique_teams, ["path"])
+
         return r
 
     def validate(self, attrs):

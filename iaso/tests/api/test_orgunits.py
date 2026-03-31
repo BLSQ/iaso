@@ -1656,6 +1656,58 @@ class OrgUnitAPITestCase(APITestCase):
             old_ou.reference_instances.all(),
         )
 
+    def test_org_unit_patch_requested_fields(self):
+        """Test that partial update correctly modify only the requested fields"""
+        self.client.force_authenticate(self.yoda)
+        ou = self.jedi_council_corruscant
+
+        old_code = ou.code
+        old_source_ref = ou.source_ref
+        old_version = ou.version
+        old_org_unit_type = ou.org_unit_type
+        old_created_at = ou.created_at
+        previous_updated_at = ou.updated_at
+
+        requested_fields = [
+            "id",
+            "name",
+            "validation_status",
+            "aliases",
+            "latitude",
+            "longitude",
+            "org_unit_type_id",
+            "updated_at",
+        ]
+
+        url = f"/api/orgunits/{ou.id}/?fields={','.join(requested_fields)}"
+
+        payload = {
+            "name": "Updated Jedi HQ",
+            "validation_status": "VALID",
+            "aliases": ["Old Temple", "New Base"],
+            "latitude": 12.34,
+            "longitude": 56.78,
+            "altitude": 90.0,
+        }
+
+        response = self.client.patch(url, data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        ou.refresh_from_db()
+
+        self.assertEqual(set(data.keys()), set(requested_fields))
+        self.assertEqual(ou.name, "Updated Jedi HQ")
+        self.assertEqual(ou.validation_status, "VALID")
+
+        self.assertEqual(ou.code, old_code)
+        self.assertEqual(ou.source_ref, old_source_ref)
+        self.assertEqual(ou.version, old_version)
+        self.assertEqual(ou.org_unit_type, old_org_unit_type)
+        self.assertEqual(ou.created_at, old_created_at)
+
+        self.assertGreater(ou.updated_at, previous_updated_at)
+
     def set_up_org_unit_partial_update(self):
         ou = m.OrgUnit(version=self.sw_version_1)
         ou.name = "test ou"

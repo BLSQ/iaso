@@ -12,11 +12,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="apiimport",
             name="app_id",
-            field=models.TextField(blank=True, null=True),
+            field=models.TextField(blank=True, null=False),
         ),
         migrations.AddField(
             model_name="apiimport",
             name="app_version",
-            field=models.CharField(blank=True, max_length=25, null=True),
+            field=models.CharField(blank=True, max_length=25, null=False),
         ),
     ]

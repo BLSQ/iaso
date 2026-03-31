@@ -50,8 +50,8 @@ class APIImport(models.Model):
     has_problem = models.BooleanField(default=False)
     exception = models.TextField(blank=True, default="")
     file = models.FileField(upload_to=api_import_upload_to, null=True, blank=True)
-    app_id = models.TextField(blank=True, null=True)
-    app_version = models.CharField(max_length=25, blank=True, null=True)
+    app_id = models.TextField(blank=True, null=False)
+    app_version = models.CharField(max_length=25, blank=True, null=False)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (

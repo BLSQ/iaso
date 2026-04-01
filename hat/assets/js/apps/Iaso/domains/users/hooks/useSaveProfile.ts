@@ -21,7 +21,7 @@ export const useSaveProfile = ({
 > =>
     useSnackMutation({
         mutationFn: ({ id: userId, ...body }) =>
-            patchRequest(`/api/profiles/${id ?? userId}/`, body),
+            patchRequest(`/api/trypelim/profiles/${id ?? userId}/`, body),
         invalidateQueryKey: [
             'profiles',
             'usersHistoryList',

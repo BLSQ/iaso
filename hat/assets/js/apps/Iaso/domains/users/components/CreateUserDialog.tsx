@@ -253,9 +253,7 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                     />
                     {/* Trypelim-specific tab */}
                     <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
+                        sx={styles.tabs}
                         value="trypelimProfile"
                         label={'Trypelim'}
                     />

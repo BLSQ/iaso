@@ -29,7 +29,7 @@ export const useGetProfilesApiParams = params => {
           }
         : {};
 
-    const url = makeUrlWithParams(`/api/profiles/`, {
+    const url = makeUrlWithParams(`/api/trypelim/profiles/`, {
         ...apiParams,
         fields: ':all',
         managedUsersOnly: apiParams.managedUsersOnly ?? 'true',
@@ -51,7 +51,7 @@ export const useGetProfiles = (params): UseQueryResult<ListResponse, Error> => {
 };
 
 const getProfile = async (profileId?: number | string): Promise<Profile> => {
-    return getRequest(`/api/profiles/${profileId}/`);
+    return getRequest(`/api/trypelim/profiles/${profileId}/`);
 };
 
 export const useGetProfile = (

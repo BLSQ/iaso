@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import ValidationWorkflow
+from iaso.models import Account, ValidationWorkflow
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
@@ -101,9 +101,48 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.patch(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
                 data={"name": "Random new name", "description": "Random new description"},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_uniqueness_validators(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.patch(
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"name": self.validation_workflow.name, "description": "Random new description"},
+        )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        validation_workflow = ValidationWorkflow.objects.create(name="Random new name", account=self.account)
+
+        res = self.client.patch(
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"name": validation_workflow.name, "description": "Random new description"},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "name", "This field must be unique.")
+
+        validation_workflow.delete()
+        self.assertIsNotNone(validation_workflow.deleted_at)
+
+        res = self.client.patch(
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"name": validation_workflow.name, "description": "Random new description"},
+        )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        # create a workflow that belongs to another account
+        other_account_validation_workflow = ValidationWorkflow.objects.create(
+            name="Random new name 2", account=Account.objects.create(name="random account")
+        )
+
+        self.validation_workflow.refresh_from_db()
+        res = self.client.patch(
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
+            data={"name": other_account_validation_workflow.name, "description": "Random new description"},
+        )
+        self.assertJSONResponse(res, status.HTTP_200_OK)

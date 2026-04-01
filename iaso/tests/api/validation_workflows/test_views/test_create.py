@@ -1,5 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.settings import api_settings
 
 from iaso.models import Account, Form, Instance, Project, ValidationWorkflow
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
@@ -38,6 +39,65 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
             res = self.client.post(reverse("validation_workflows-list"), data={"forms": [self.form_3.pk]})
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(res_data, "forms", f'Invalid pk "{self.form_3.pk}" - object does not exist.')
+
+    def test_uniqueness_validators(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse("validation_workflows-list"),
+            data={
+                "name": "Validation workflow",
+                "description": "Some description",
+                "forms": [self.form.pk, self.form_2.pk],
+            },
+        )
+        self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+        res = self.client.post(
+            reverse("validation_workflows-list"),
+            data={
+                "name": "Validation workflow",
+                "description": "Some description",
+                "forms": [self.form.pk, self.form_2.pk],
+            },
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data, api_settings.NON_FIELD_ERRORS_KEY, "The fields name, account must make a unique set."
+        )
+
+        vf = ValidationWorkflow.objects.get(slug="validation-workflow")
+        vf.delete()
+
+        vf.refresh_from_db()
+        self.assertIsNotNone(vf.deleted_at)
+
+        res = self.client.post(
+            reverse("validation_workflows-list"),
+            data={
+                "name": "Validation workflow",
+                "description": "Some description",
+                "forms": [self.form.pk, self.form_2.pk],
+            },
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+        self.assertEqual(res_data["slug"], vf.slug)
+
+        # create workflow with same name from another account
+        vf = ValidationWorkflow.objects.create(name="other-account", account=self.account_2)
+
+        res = self.client.post(
+            reverse("validation_workflows-list"),
+            data={
+                "name": vf.name,
+                "description": "Some description",
+                "forms": [self.form.pk, self.form_2.pk],
+            },
+        )
+
+        self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
     def test_happy_flow(self):
         self.base_test_happy_flow(self.john_wick)

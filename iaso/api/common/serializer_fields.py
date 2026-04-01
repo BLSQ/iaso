@@ -7,6 +7,8 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from iaso.api.common.validators import JSONSchemaFieldValidator
+
 
 @extend_schema_field(OpenApiTypes.INT64)
 class TimestampField(serializers.Field):
@@ -45,3 +47,14 @@ class HiddenSlugRelatedField(serializers.SlugRelatedField):
 
     def get_value(self, dictionary):
         return serializers.empty
+
+
+@extend_schema_field(OpenApiTypes.OBJECT)
+class JSONSchemaField(serializers.JSONField):
+    def __init__(self, schema, *args, **kwargs):
+        # for swagger
+        kwargs.setdefault("help_text", f"JSON object matching schema: {schema}")
+        super().__init__(*args, **kwargs)
+        self.allow_null = False
+        self.allow_blank = False
+        self.validators = [JSONSchemaFieldValidator(schema=schema)]

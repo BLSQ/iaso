@@ -22,6 +22,7 @@ from hat.audit.models import PROFILE_API_BULK
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.tasks.bulk_create_users_email import send_bulk_email_invitations
 
 
@@ -767,6 +768,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         profiles_to_create = []
         invitation_users = []
 
+        if is_trypelim_plugin_active():
+            from plugins.trypelim.users.models import Profile as ProfileTrypelim
+
+        trypelim_profiles = []
+
         for row_index, (user, data) in enumerate(zip(created_users, csv_data)):
             language = (
                 data.get("profile_language", "").strip().lower()
@@ -788,10 +794,16 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             )
             profiles_to_create.append(profile)
 
+            if is_trypelim_plugin_active():
+                trypelim_profile = ProfileTrypelim(user=user)
+                trypelim_profiles.append(trypelim_profile)
+
             if not data.get("password", "").strip() and data.get("email", "").strip():
                 invitation_users.append(user)
 
         created_profiles = Profile.objects.bulk_create(profiles_to_create)
+        if is_trypelim_plugin_active():
+            ProfileTrypelim.objects.bulk_create(trypelim_profiles)
 
         # Phase 3: Handle ManyToMany relationships with bulk operations
         self._bulk_set_many_to_many_relationships(

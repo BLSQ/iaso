@@ -21,6 +21,7 @@ import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { UserRole } from 'Iaso/domains/userRoles/types/userRoles';
 import { useGetProfile } from 'Iaso/domains/users/hooks/useGetProfiles';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
 import { DjangoError, SxStyles } from 'Iaso/types/general';
 import * as Permissions from 'Iaso/utils/permissions';
 import { useCurrentUser, User } from 'Iaso/utils/usersUtils';
@@ -79,6 +80,9 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const queryClient = useQueryClient();
+
+    // Component for the Trypelim-specific tab
+    const UserProfileTrypelim = useFindCustomComponent('user.profile_trypelim');
 
     const { data: initialData, isLoading: isLoading } = useGetProfile(userId);
 
@@ -259,6 +263,12 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                                 value="locations"
                                 label={formatMessage(MESSAGES.location)}
                             />
+                            {/* Trypelim-specific tab */}
+                            <Tab
+                                sx={styles.tabs}
+                                value="trypelimProfile"
+                                label={'Trypelim'}
+                            />
                             {hasNoOrgUnitManagementWrite ? (
                                 <UsersDialogTabDisabled
                                     label={formatMessage(
@@ -339,6 +349,13 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
                                             ouTypesIds,
                                         )
                                     }
+                                />
+                            )}
+                            {/* Trypelim-specific tab */}
+                            {tab === 'trypelimProfile' && (
+                                <UserProfileTrypelim
+                                    currentUser={user}
+                                    setFieldValue={setFieldValue}
                                 />
                             )}
                         </Box>

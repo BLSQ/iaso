@@ -8,7 +8,7 @@ export const useCreateProfile = (
     showSuccessSnackBar = true,
 ): UseMutationResult<User, DjangoError, User | Partial<User>> =>
     useSnackMutation({
-        mutationFn: body => postRequest('/api/profiles/', body),
+        mutationFn: body => postRequest('/api/trypelim/profiles/', body),
         invalidateQueryKey: ['profiles', 'usersHistoryList', 'team'],
         showSuccessSnackBar,
     });

@@ -22,21 +22,13 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
 
     def _user_for_scoped_queries(self):
         """One row with joins; avoids extra profile/account queries on this view."""
-        cached = getattr(self, "_cached_user_for_scoped_queries", None)
-        if cached is not None:
-            return cached
         User = get_user_model()
-        self._cached_user_for_scoped_queries = User.objects.select_related(
+        return User.objects.select_related(
             "iaso_profile__account",
             "iaso_profile__account__default_version",
         ).get(pk=self.request.user.pk)
-        return self._cached_user_for_scoped_queries
 
     def get_queryset(self):
-        cached_qs = getattr(self, "_cached_mobile_change_requests_queryset", None)
-        if cached_qs is not None:
-            return cached_qs
-
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         user = self._user_for_scoped_queries()
 
@@ -84,5 +76,4 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
             .distinct()
         )
 
-        self._cached_mobile_change_requests_queryset = change_requests
         return change_requests

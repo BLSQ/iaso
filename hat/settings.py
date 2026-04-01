@@ -258,11 +258,11 @@ MIDDLEWARE += [
 ]
 if DEBUG:
     MIDDLEWARE += [
-        "querycount.middleware.QueryCountMiddleware",
+        "iaso.middlewares.query_count.SafeQueryCountMiddleware",
     ]
 
 MIDDLEWARE += [
-    "iaso.middleware.CustomCamelCaseMiddleWare",
+    "iaso.middlewares.camel_case.CustomCamelCaseMiddleWare",
 ]
 
 ROOT_URLCONF = "hat.urls"

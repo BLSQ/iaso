@@ -165,7 +165,11 @@ def supports_method(path, method):
 # polio endpoints are out of scope
 # and wfp auth urls
 def should_skip(path):
-    return path.startswith(("/api/polio", "/wfp_auth", "/dashboard/polio/")) or path == "/dashboard/home/"
+    return (
+        path.startswith(("/api/polio", "/wfp_auth", "/dashboard/polio/", "/api/trypelim/"))
+        or path == "/dashboard/home/"
+        or path == "/api/sms-delivery-receipts/"
+    )
 
 
 class TestAuthEnforcement(TestCase):

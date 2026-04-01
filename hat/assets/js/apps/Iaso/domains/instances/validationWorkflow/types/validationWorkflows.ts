@@ -1,6 +1,6 @@
 import { PaginatedResponse } from 'Iaso/domains/instances/validationWorkflow/types/common';
 
-type ValidationWorkflowListResponseItem = {
+export type ValidationWorkflowListResponseItem = {
     slug: string;
     name: string;
     form_count: number;
@@ -13,7 +13,7 @@ type ValidationWorkflowListResponseItem = {
 export type ValidationWorkflowListResponse =
     PaginatedResponse<ValidationWorkflowListResponseItem>;
 
-type NestedNodeTemplate = {
+export type NestedNodeTemplate = {
     slug: string;
     name: string;
     description?: string;

@@ -18,9 +18,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} sm={3} md={3}>
                 <InputComponent
-                    keyValue="search"
+                    keyValue="name"
                     onChange={handleChange}
-                    value={filters.search}
+                    value={filters.name}
                     type="search"
                     label={MESSAGES.search}
                     onEnterPressed={handleSearch}
@@ -29,9 +29,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid item xs={12} sm={3} md={3}>
                 <InputComponent
-                    keyValue="formIds"
+                    keyValue="forms"
                     onChange={handleChange}
-                    value={filters.formIds}
+                    value={filters.forms}
                     type="select"
                     options={formsList}
                     label={MESSAGES.forms}
@@ -52,7 +52,6 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 alignItems="center"
             >
                 <SearchButton
-                    data-test="search-button"
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}
                 />

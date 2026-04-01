@@ -121,7 +121,6 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                     label={formatMessage(MESSAGES.canSkipPreviousNodes)}
                     name="can_skip_previous_nodes"
                     component={BooleanInput}
-                    required
                 />
                 <Box mb={2}>
                     <Field
@@ -131,7 +130,6 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                         onChange={handleChangeUserRoles}
                         isLoading={isLoadingRoles}
                         options={userRoles ?? []}
-                        required
                     />
                 </Box>
             </ConfirmCancelModal>

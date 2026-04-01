@@ -6,7 +6,7 @@ from operator import itemgetter
 from django.core.paginator import Paginator
 
 from iaso.models import Task
-from plugins.wfp.common_v2 import ETLV2
+from plugins.wfp.common import ETL
 from plugins.wfp.models import Beneficiary
 
 
@@ -46,8 +46,8 @@ class Pbwg:
             Name for the IASO Task log entry.
         """
         code = entity_type_code or self.ENTITY_TYPE_CODE
-        elt_v2 = ETLV2(code)
-        account = elt_v2.get_account()
+        elt = ETL(code)
+        account = elt.get_account()
 
         page_size = self.PAGE_SIZE
         paginator = Paginator(updated_entity_ids, page_size)
@@ -58,7 +58,7 @@ class Pbwg:
         )
 
         for page in pages:
-            submissions, page_info = ETLV2._retrieve_submissions(
+            submissions, page_info = ETL._retrieve_submissions(
                 code, updated_entity_ids, page_size=page_size, page_number=page
             )
             logger.info(f"Processing {len(page_info.object_list)} entities on page {page} for {account}")
@@ -80,7 +80,7 @@ class Pbwg:
                 entity_count += 1
 
                 entity_subs = list(entity_submissions)
-                result = elt_v2._process_entity(
+                result = elt._process_entity(
                     self.PROGRAMME_TYPE,
                     entity_id,
                     entity_subs,
@@ -114,7 +114,7 @@ class Pbwg:
                 account=account,
                 status="QUEUED",
             )
-            elt_v2._save_all(
+            elt._save_all(
                 all_beneficiaries,
                 all_journeys,
                 all_visits,

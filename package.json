@@ -105,10 +105,11 @@
         "react-router-dom": "^6.22.3",
         "react-table": "^7.7.0",
         "recharts": "^2.2",
-        "sass-loader": "^16.0.5",
         "sass": "^1.89.2",
+        "sass-loader": "^16.0.5",
         "typescript": "^5.7.2",
         "url-search-params-polyfill": "^8.2.5",
+        "use-debounce": "^10.1.1",
         "video.js": "^7.20.3",
         "yup": "^0.32.9"
     },

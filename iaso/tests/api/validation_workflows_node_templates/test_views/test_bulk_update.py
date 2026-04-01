@@ -372,3 +372,25 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 ],
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_uniqueness_validator(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new first node", "can_skip_previous_nodes": True},
+                {
+                    "slug": self.second_node.slug,
+                    "name": "new third node",
+                    "description": "some description",
+                    "color": "#ebebeb",
+                },
+            ],
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "Names must be unique.")

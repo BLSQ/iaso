@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.settings import api_settings
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.validation_workflow.templates import PositionChoices
@@ -324,3 +325,42 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(
                 list(self.second_node.next_node_templates.values_list("pk", flat=True)), [last_created_node.pk]
             )
+
+    def test_uniqueness_validator(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            ),
+            data={
+                "name": "Random node",
+                "description": "Random description",
+                "color": "#377760",
+                "roles_required": [self.user_role.pk],
+                "position": PositionChoices.child_of,
+                "parent_node_templates": [self.first_node.slug],
+                "can_skip_previous_nodes": True,
+            },
+        )
+
+        self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            ),
+            data={
+                "name": "Random node",
+                "description": "Random description",
+                "color": "#377760",
+                "roles_required": [self.user_role.pk],
+                "position": PositionChoices.child_of,
+                "parent_node_templates": [self.first_node.slug],
+                "can_skip_previous_nodes": True,
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(
+            res_data, api_settings.NON_FIELD_ERRORS_KEY, "The fields name, workflow must make a unique set."
+        )

@@ -183,7 +183,7 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             res = self.client.patch(
                 reverse(
                     "validation_node_templates-detail",
@@ -192,3 +192,40 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
                 data={"name": "test", "roles_required": [self.user_role.pk]},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_uniqueness_validator(self):
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": self.node.name, "roles_required": [self.user_role.pk]},
+        )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        # create another node
+        second_node = ValidationNodeTemplate.objects.create(name="second node", workflow=self.validation_workflow)
+
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": second_node.name, "roles_required": [self.user_role.pk]},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "name", "This field must be unique.")
+
+        # try to update to a node name from another account
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": self.other_node.name, "roles_required": [self.user_role.pk]},
+        )
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)

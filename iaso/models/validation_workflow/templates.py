@@ -47,7 +47,18 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         return self.name
 
     class Meta:
-        unique_together = [("account", "slug"), ("account", "name")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["account", "slug"],
+                condition=Q(deleted_at__isnull=True),
+                name="unique_account_slug_if_not_deleted",
+            ),
+            models.UniqueConstraint(
+                fields=["account", "name"],
+                condition=Q(deleted_at__isnull=True),
+                name="unique_account_name_if_not_deleted",
+            ),
+        ]
 
     def is_artifact_allowed(self, instance):
         if self.form_set.count():

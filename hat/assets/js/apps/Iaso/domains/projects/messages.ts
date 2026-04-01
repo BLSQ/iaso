@@ -404,6 +404,14 @@ const MESSAGES = defineMessages({
     mobile_validation_workflow: {
       id: "iaso.projets.featureflag.mobile_enable_validation_workflow",
       defaultMessage: "Mobile: Enable validation workflow"
+    },
+    mobile_synchronize_with_zip_tooltip: {
+      id: "iaso.projets.featureflag.tooltip.mobile_synchronize_with_zip",
+      defaultMessage: "Sends the data to the server in ZIP files, making it faster, and more efficient."
+    },
+    mobile_synchronize_with_zip: {
+      id: "iaso.projets.featureflag.mobile_synchronize_with_zip",
+      defaultMessage: "Mobile: Synchronize via ZIP files"
     }
 });
 

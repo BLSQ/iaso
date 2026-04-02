@@ -785,6 +785,7 @@ AXES_COOLOFF_TIME = lambda request: timedelta(seconds=AUTH_RATE_LIMIT_COOLOFF_SE
 AXES_FAILURE_LIMIT = AUTH_RATE_LIMIT_MAX_FAILURES
 AXES_LOCKOUT_PARAMETERS = ["username"]
 AXES_COOLOFF_MESSAGE = "Too many login attempts. Please try again later."
+AXES_HTTP_RESPONSE_CODE = 429
 AXES_HANDLER = "axes.handlers.cache.AxesCacheHandler"
 if IN_TESTS:
     AXES_HANDLER = "axes.handlers.dummy.AxesDummyHandler"

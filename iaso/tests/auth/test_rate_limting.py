@@ -55,7 +55,8 @@ class AxesRateLimitTests(TestCase):
         self.client.post(self.login_url, self.login_payload, format="multipart")
 
         resp3 = self.client.post(self.login_url, self.login_payload, format="multipart")
-        self.assertEqual(resp3.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+        self.assertEqual(resp3.status_code, status.HTTP_200_OK)
+        self.assertContains(resp3, "Too many login attempts. Please try again later.")
 
     def test_admin_login_rate_limit(self):
         """Test that /admin/login/ has rate limiting"""
@@ -66,4 +67,5 @@ class AxesRateLimitTests(TestCase):
         self.assertEqual(resp2.status_code, status.HTTP_200_OK)
 
         resp3 = self.client.post(self.admin_login_url, self.login_payload, format="multipart")
-        self.assertEqual(resp3.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+        self.assertEqual(resp3.status_code, status.HTTP_200_OK)
+        self.assertContains(resp3, "Too many login attempts. Please try again later.")

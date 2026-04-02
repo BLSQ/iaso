@@ -41,10 +41,20 @@ else:
             path("login/", TemplateView.as_view(template_name=login_template), name="login"),
         ]
     else:
+        from iaso.auth.forms import AxesAuthenticationForm
+
         login_template = "iaso/login.html"
         urlpatterns = [
-            path("admin/login/", auth.views.LoginView.as_view(template_name=login_template), name="admin-login"),
-            path("login/", auth.views.LoginView.as_view(template_name=login_template), name="login"),
+            path(
+                "admin/login/",
+                auth.views.LoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
+                name="admin-login",
+            ),
+            path(
+                "login/",
+                auth.views.LoginView.as_view(template_name=login_template, authentication_form=AxesAuthenticationForm),
+                name="login",
+            ),
         ]
 
     if settings.ACTIVATE_SOCIAL_ACCOUNT:

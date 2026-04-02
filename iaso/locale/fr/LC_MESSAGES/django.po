@@ -1235,3 +1235,7 @@ msgstr "Erreur lors de l'analyse"
 
 #~ msgid "Invalid phone number"
 #~ msgstr "Numéro de téléphone invalide"
+
+msgid "Too many login attempts. Please try again later."
+msgstr "Trop de tentatives de connexion. Veuillez réessayer plus tard."
+

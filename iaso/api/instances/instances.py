@@ -1047,10 +1047,8 @@ def import_data(instances, user, app_id):
         if existing_instances:
             if all(
                 existing_instance.general_validation_status
-                in [
-                    ValidationWorkflowArtefactStatus.REJECTED,
-                    ValidationWorkflowArtefactStatus.PENDING,
-                ]
+                in [ValidationWorkflowArtefactStatus.REJECTED, ValidationWorkflowArtefactStatus.PENDING]
+                + Instance._meta.get_field("general_validation_status").empty_values
                 for existing_instance in existing_instances
             ):
                 rtn_instances.append(existing_instances.first())
@@ -1147,7 +1145,11 @@ def import_data(instances, user, app_id):
 
     for instance in rtn_instances:
         validation_workflow = getattr(instance.form, "validation_workflow", None)
-        if validation_workflow and getattr(validation_workflow, "node_templates", None):
+        if (
+            validation_workflow
+            and not validation_workflow.deleted_at
+            and getattr(validation_workflow, "node_templates", None)
+        ):
             try:
                 ValidationWorkflowEngine.start(
                     instance.form.validation_workflow, user if user.is_authenticated else None, instance

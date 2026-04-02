@@ -33,6 +33,16 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             account=self.account,
         )
 
+        self.other_validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name 2",
+            description="Random description",
+            account=self.account_2,
+        )
+
+        self.other_node = ValidationNodeTemplate.objects.create(
+            name="other node", description="other node description", workflow=self.other_validation_workflow
+        )
+
         # create some nodes
         self.first_node = ValidationNodeTemplate.objects.create(
             name="First node", workflow=self.validation_workflow, description="first node desc", color="#ffffff"
@@ -52,6 +62,45 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.second_node.roles_required.add(self.user_role)
 
         self.other_user_role = UserRole.objects.create(group=self.other_group, account=self.account_2)
+
+    def test_check_validation_workflow_parent_slug_access(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
+            ),
+            data=[
+                {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                {
+                    "slug": self.second_node.slug,
+                    "name": "new third node",
+                    "description": "some description",
+                    "color": "#ebebeb",
+                },
+            ],
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data,
+            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+            "The slugs provided don't match the existing ones",
+        )
+
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
+            ),
+            data=[{"slug": self.other_node.slug, "name": "new first node"}],
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data,
+            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+            "The slugs provided don't match the existing ones",
+        )
 
     def test_uniqueness_of_slug(self):
         self.client.force_authenticate(self.john_wick)

@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -13,6 +14,7 @@ class ColorsQueryParamsSerializer(serializers.Serializer):
     )
 
 
+@extend_schema(tags=["Colors"])
 @api_view(["GET"])
 # public API to avoid breaking embedded pages
 @permission_classes([])

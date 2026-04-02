@@ -400,6 +400,7 @@ class OutgoingStockMovementPatchSerializer(OutgoingStockMovementSerializer):
     alternative_campaign = serializers.CharField(source="non_obr_name", required=False, allow_blank=True)
 
 
+@extend_schema(tags=["Polio - Outgoing stock movements"])
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     model_class = OutgoingStockMovement
     permission_classes = [
@@ -499,6 +500,7 @@ class IncidentReportSerializer(ModelWithFileSerializer):
         return ret
 
 
+@extend_schema(tags=["Polio - Inicdent reports"])
 class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
     model_class = IncidentReport
@@ -549,6 +551,7 @@ class DestructionReportSerializer(ModelWithFileSerializer):
         return ret
 
 
+@extend_schema(tags=["Polio - Destruction reports"])
 class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
     model_class = DestructionReport
@@ -686,6 +689,7 @@ class EarmarkedStockFilter(FilterSet):
         fields = ["vaccine_stock"]
 
 
+@extend_schema(tags=["Polio - EAR marked stocks"])
 class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
@@ -707,6 +711,7 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
         )
 
 
+@extend_schema(tags=["Polio - Vaccine stock management"])
 class VaccineStockManagementViewSet(ModelViewSet):
     """
     ViewSet for managing Vaccine Stock data.

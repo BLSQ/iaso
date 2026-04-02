@@ -5,6 +5,7 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -265,6 +266,7 @@ class SetupAccountSerializer(serializers.Serializer):
         return validated_data
 
 
+@extend_schema(tags=["Setup account"])
 class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSuperUser]
     serializer_class = SetupAccountSerializer

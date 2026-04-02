@@ -32,3 +32,14 @@ class RoundedDecimalFieldTestCase(TestCase):
         with self.assertRaises(ValidationError) as error:
             field.to_internal_value("100.22")
         self.assertIn("Ensure that there are no more than 2 digits before the decimal point.", error.exception.detail)
+
+        field = RoundedDecimalField(max_digits=2, coerce_max_value=1, decimal_places=1)
+        self.assertEqual(field.to_internal_value("2.19"), decimal.Decimal("1"))
+
+        field = RoundedDecimalField(max_digits=None, coerce_max_value=99, decimal_places=1)
+        self.assertEqual(field.to_internal_value("102.4"), decimal.Decimal("99"))
+
+        field = RoundedDecimalField(max_digits=3, coerce_max_value=99, decimal_places=1)
+        with self.assertRaises(ValidationError) as error:
+            field.to_internal_value("102.4")
+        self.assertIn("Ensure that there are no more than 2 digits before the decimal point.", error.exception.detail)

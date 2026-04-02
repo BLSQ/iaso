@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
@@ -39,6 +40,7 @@ class LinkSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+@extend_schema(tags=["Links"])
 class LinkViewSet(viewsets.ViewSet):
     f"""Links API
 

@@ -1,5 +1,6 @@
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters
 
 from hat.audit.models import Modification
@@ -10,6 +11,7 @@ from iaso.api.profile_logs.serializers import ProfileLogListSerializer, ProfileL
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION
 
 
+@extend_schema(tags=["User logs", "Profile logs"])
 class ProfileLogsViewSet(ModelViewSet):
     permission_classes = [HasPermission(CORE_USERS_ADMIN_PERMISSION)]
     filter_backends = [

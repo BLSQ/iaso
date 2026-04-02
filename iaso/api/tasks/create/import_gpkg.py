@@ -7,6 +7,7 @@ and a task that refer to this model
 
 import logging
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.mixins import CreateModelMixin
@@ -48,6 +49,7 @@ class ImportGpkgSerializer(serializers.ModelSerializer):
 
 
 # noinspection PyMethodMayBeStatic
+@extend_schema(tags=["GPKG", "Tasks"])
 class ImportGPKGViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_SOURCE_PERMISSION)]  # type: ignore
     serializer_class = ImportGpkgSerializer

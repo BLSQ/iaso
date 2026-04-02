@@ -1,4 +1,5 @@
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 
 from iaso.models import MatchingAlgorithm, Project
@@ -12,6 +13,7 @@ class AlgorithmsSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at"]
 
 
+@extend_schema(tags=["Algorithms"])
 class AlgorithmsViewSet(viewsets.ModelViewSet):
     f"""Algorithms API
 

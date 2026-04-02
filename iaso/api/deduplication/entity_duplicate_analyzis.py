@@ -104,6 +104,7 @@ class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Entity duplicates", "Entity duplicates analysis"])
 class EntityDuplicateAnalyzisViewSet(ModelViewSet):
     """
     Entity Duplicates API

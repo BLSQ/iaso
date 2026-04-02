@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
@@ -9,6 +10,7 @@ class PowerBIRefreshSerializer(serializers.Serializer):
     data_set_id = serializers.UUIDField()
 
 
+@extend_schema(tags=["Polio - Launch PowerBi refresh"])
 class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
     serializer_class = PowerBIRefreshSerializer
     # Open to all to make it work while calling this api from a iframe in RRT

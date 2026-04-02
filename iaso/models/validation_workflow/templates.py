@@ -16,6 +16,12 @@ from iaso.utils.models.color import ColorField
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 
 
+class PositionChoices(models.TextChoices):
+    last = "last", "Last"
+    first = "first", "First"
+    child_of = "child_of", "Child Of"
+
+
 class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     """
     Static definition of a workflow
@@ -82,52 +88,99 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
 
         node.delete()
 
-    @staticmethod
     @transaction.atomic
-    def insert_node_template(node):
+    def insert_node_template(self, node, position=PositionChoices.last, parent_node_templates=None):
         """
         Function to insert a node in the workflow
         """
 
-        previous_nodes = list(node.previous_node_templates.values_list("pk", flat=True))
-        next_nodes = list(node.next_node_templates.values_list("pk", flat=True))
+        if position == PositionChoices.last:
+            node.previous_node_templates.set(
+                self.node_templates.filter(next_node_templates__isnull=True).exclude(pk=node.pk)
+            )
 
-        # future previous nodes should be updated and get their next nodes removed
-        through_table = node.next_node_templates.through
+        if position == PositionChoices.first:
+            node.next_node_templates.set(
+                self.node_templates.filter(previous_node_templates__isnull=True).exclude(pk=node.pk)
+            )
 
-        to_delete = Q()
-        for prev in previous_nodes:
-            for nxt in next_nodes:
-                to_delete |= Q(
-                    from_validationnodetemplate_id=prev,
-                    to_validationnodetemplate_id=nxt,
-                )
-        if to_delete:
-            through_table.objects.filter(to_delete).delete()
+        if position == PositionChoices.child_of:
+            if not parent_node_templates:
+                raise ValueError("parent_nodes is required")
 
-        # update the related previous nodes to point to the current inserted node and update the next nodes so their previous node is current inserted node
-        through_table.objects.bulk_create(
-            [
-                through_table(
-                    from_validationnodetemplate_id=prev,
-                    to_validationnodetemplate_id=node.id,
-                )
-                for prev in previous_nodes
-            ]
-            + [
-                through_table(from_validationnodetemplate_id=node.id, to_validationnodetemplate_id=nxt)
-                for nxt in next_nodes
-            ],
-            ignore_conflicts=True,
-        )
+            previous_nodes = [x.pk for x in parent_node_templates]
+
+            next_nodes = list(
+                ValidationNodeTemplate.objects.filter(previous_node_templates__pk__in=previous_nodes)
+                .values_list("pk", flat=True)
+                .distinct("pk")
+            )
+
+            # future previous nodes should be updated and get their next nodes removed
+            through_table = node.next_node_templates.through
+
+            to_delete = Q()
+            for prev in previous_nodes:
+                for nxt in next_nodes:
+                    to_delete |= Q(
+                        from_validationnodetemplate_id=prev,
+                        to_validationnodetemplate_id=nxt,
+                    )
+            if to_delete:
+                through_table.objects.filter(to_delete).delete()
+
+            # update the related previous nodes to point to the current inserted node and update the next nodes so their previous node is current inserted node
+            through_table.objects.bulk_create(
+                [
+                    through_table(
+                        from_validationnodetemplate_id=prev,
+                        to_validationnodetemplate_id=node.id,
+                    )
+                    for prev in previous_nodes
+                ]
+                + [
+                    through_table(from_validationnodetemplate_id=node.id, to_validationnodetemplate_id=nxt)
+                    for nxt in next_nodes
+                ],
+                ignore_conflicts=True,
+            )
 
     @transaction.atomic
-    def move_node_template(self, node, new_previous_nodes=None, new_next_nodes=None):
-        new_previous_nodes = [n.pk for n in new_previous_nodes or []]
-        new_next_nodes = [n.pk for n in new_next_nodes or []]
+    def move_node_template(self, node, position=None, parent_node_templates=None):
+        if not position:
+            raise ValueError("Position is required")
 
-        if not new_next_nodes and not new_previous_nodes:
-            raise ValueError
+        if position == PositionChoices.last and not node.next_node_templates:
+            # nothing to do , node is already last
+            return
+
+        if position == PositionChoices.first and not node.previous_node_templates:
+            # nothing to do , node is already first
+            return
+
+        if position == PositionChoices.child_of and not parent_node_templates:
+            raise ValueError("parent_nodes is required")
+
+        new_previous_nodes = []
+        new_next_nodes = []
+
+        if position == PositionChoices.first:
+            new_next_nodes = list(
+                set(self.node_templates.filter(previous_node_templates__isnull=True).values_list("pk", flat=True))
+            )
+
+        if position == PositionChoices.last:
+            new_previous_nodes = list(
+                set(self.node_templates.filter(next_node_templates__isnull=True).values_list("pk", flat=True))
+            )
+
+        if position == PositionChoices.child_of:
+            new_next_nodes = list(
+                ValidationNodeTemplate.objects.filter(previous_node_templates__in=parent_node_templates)
+                .values_list("pk", flat=True)
+                .distinct()
+            )
+            new_previous_nodes = [x.pk for x in parent_node_templates]
 
         old_previous = list(node.previous_node_templates.values_list("pk", flat=True))
         old_next = list(node.next_node_templates.values_list("pk", flat=True))

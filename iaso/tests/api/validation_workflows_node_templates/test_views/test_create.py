@@ -1,9 +1,9 @@
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.settings import api_settings
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models.validation_workflow.templates import PositionChoices
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
 
@@ -33,7 +33,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         )
 
         self.other_validation_workflow = ValidationWorkflow.objects.create(
-            name="Random other name",
+            name="Random other name 2",
             description="Random description",
             created_by=self.john_doe,
             account=self.account_2,
@@ -72,115 +72,65 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-    def test_validation(self):
+    def test_check_validation_workflow_parent_slug_access(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
             reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+                "validation_node_templates-list",
+                kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
+            ),
+            data={"name": "random"},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data, "workflow", f"Object with slug={self.other_validation_workflow.slug} does not exist."
+        )
+
+    def test_num_queries_insert_first(self):
+        self.client.force_authenticate(self.john_wick)
+
+        with self.assertNumQueries(16):
+            res = self.client.post(
+                reverse(
+                    "validation_node_templates-list",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                ),
+                data={
+                    "name": "Random name 2",
+                    "description": "Random description",
+                    "color": "#377760",
+                    "rolesRequired": [self.user_role.pk],
+                    "position": PositionChoices.first,
+                    "canSkipPreviousNodes": True,
+                },
             )
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "name", "This field is required.")
 
-        res = self.client.post(
-            reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
-            ),
-            data={"name": "Random name"},
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data,
-            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
-            "You must specify either next node templates or previous node templates.",
-        )
+            self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
-        res = self.client.post(
-            reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
-            ),
-            data={"name": "Random name", "rolesRequired": [222]},
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "rolesRequired", 'Invalid pk "222" - object does not exist.')
-
-        res = self.client.post(
-            reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
-            ),
-            data={
-                "name": "Random name",
-                "previousNodeTemplates": [self.outer_workflow_node.slug],
-                "nextNodeTemplates": [self.outer_workflow_node.slug],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data, "previousNodeTemplates", f"Object with slug={self.outer_workflow_node.slug} does not exist."
-        )
-        self.assertHasError(
-            res_data, "nextNodeTemplates", f"Object with slug={self.outer_workflow_node.slug} does not exist."
-        )
-
-        res = self.client.post(
-            reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
-            ),
-            data={
-                "name": "Random name",
-                "previousNodeTemplates": [self.first_node.slug, self.first_node.slug],
-                "nextNodeTemplates": [self.first_node.slug, self.first_node.slug],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "previousNodeTemplates", "Duplicate nodes are not allowed.")
-        self.assertHasError(res_data, "nextNodeTemplates", "Duplicate nodes are not allowed.")
-
-        res = self.client.post(
-            reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
-            ),
-            data={
-                "name": "Random name",
-                "previousNodeTemplates": [self.first_node.slug, self.second_node.slug],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "previousNodeTemplates", "One node maximum allowed.")
-
-        res = self.client.post(
-            reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
-            ),
-            data={
-                "name": "Random name",
-                "nextNodeTemplates": [self.first_node.slug, self.second_node.slug],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "nextNodeTemplates", "One node maximum allowed.")
-
-        res = self.client.post(
-            reverse(
-                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
-            ),
-            data={
-                "name": "Random name",
-                "previousNodeTemplates": [self.first_node.slug],
-                "nextNodeTemplates": [self.first_node.slug],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data,
-            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
-            "There are duplicate nodes in previous and next node templates.",
-        )
-
-    def test_num_queries(self):
+    def test_num_queries_insert_last(self):
         self.client.force_authenticate(self.john_wick)
-        # todo : could we reduce the num of queries ?
-        with self.assertNumQueries(24):
+
+        with self.assertNumQueries(16):
+            res = self.client.post(
+                reverse(
+                    "validation_node_templates-list",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+                ),
+                data={
+                    "name": "Random name 3",
+                    "description": "Random description",
+                    "color": "#377760",
+                    "rolesRequired": [self.user_role.pk],
+                    "position": PositionChoices.last,
+                    "canSkipPreviousNodes": True,
+                },
+            )
+
+            self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+    def test_num_queries_insert_between(self):
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -191,8 +141,8 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "description": "Random description",
                     "color": "#377760",
                     "rolesRequired": [self.user_role.pk],
-                    "previousNodeTemplates": [self.first_node.slug],
-                    "nextNodeTemplates": [self.second_node.slug],
+                    "position": PositionChoices.child_of,
+                    "parentNodeTemplates": [self.first_node.slug],
                     "canSkipPreviousNodes": True,
                 },
             )
@@ -210,8 +160,8 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 "description": "Random description",
                 "color": "#377760",
                 "rolesRequired": [self.user_role.pk],
-                "previousNodeTemplates": [self.first_node.slug],
-                "nextNodeTemplates": [self.second_node.slug],
+                "position": PositionChoices.child_of,
+                "parentNodeTemplates": [self.first_node.slug],
                 "canSkipPreviousNodes": True,
             },
         )
@@ -251,8 +201,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random starting node",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
-                    "nextNodeTemplates": [self.first_node.slug],
+                    "position": PositionChoices.first,
                     "canSkipPreviousNodes": True,
                 },
             )
@@ -311,8 +260,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random last node",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
-                    "previousNodeTemplates": [self.second_node.slug],
+                    "position": PositionChoices.last,
                     "canSkipPreviousNodes": True,
                 },
             )

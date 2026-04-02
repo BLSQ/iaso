@@ -22,6 +22,7 @@ workflow_version_id_param = OpenApiParameter(
 )
 
 
+@extend_schema(tags=["Workflow followup"])
 class WorkflowFollowupViewSet(ModelViewSet):
     """Workflow Followup API
 

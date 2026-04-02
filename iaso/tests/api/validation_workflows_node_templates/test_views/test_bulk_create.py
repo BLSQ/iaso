@@ -31,6 +31,12 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             created_by=self.john_doe,
             account=self.account,
         )
+        self.other_validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name 2",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account_2,
+        )
 
     def test_permissions(self):
         res = self.client.post(
@@ -58,6 +64,33 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             )
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+    def test_check_validation_workflow_parent_slug_access(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
+            ),
+            data=[
+                {
+                    "name": "First node",
+                    "color": "#740d54",
+                    "description": "Here we should check something",
+                },
+                {
+                    "name": "First-node",
+                    "color": "#fdd75b",
+                    "canSkipPreviousNodes": True,
+                    "rolesRequired": [self.user_role.pk],
+                },
+            ],
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        for error in res_data:
+            self.assertHasError(
+                error, "workflow", f"Object with slug={self.other_validation_workflow.slug} does not exist."
+            )
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)

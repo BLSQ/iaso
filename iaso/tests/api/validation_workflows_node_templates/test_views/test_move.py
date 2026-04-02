@@ -1,9 +1,9 @@
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.settings import api_settings
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models.validation_workflow.templates import PositionChoices
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
 
@@ -32,12 +32,43 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
             account=self.account,
         )
 
+        self.other_validation_workflow = ValidationWorkflow.objects.create(
+            name="Random other name 2",
+            description="Random description",
+            created_by=self.john_doe,
+            account=self.account_2,
+        )
+
+        self.other_node = ValidationNodeTemplate.objects.create(
+            name="First node 2", workflow=self.other_validation_workflow
+        )
+        self.other_second_node = ValidationNodeTemplate.objects.create(
+            name="Second node 2", workflow=self.other_validation_workflow
+        )
+        self.other_second_node.previous_node_templates.add(self.other_node)
+
         # create some nodes
         self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
         self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
         self.third_node = ValidationNodeTemplate.objects.create(name="Third node", workflow=self.validation_workflow)
         self.second_node.previous_node_templates.add(self.first_node)
         self.second_node.next_node_templates.add(self.third_node)
+
+    def test_check_validation_workflow_parent_slug_access(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-move",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.other_validation_workflow.slug,
+                    "slug": self.other_node.slug,
+                },
+            ),
+            data={
+                "position": PositionChoices.first,
+            },
+        )
+        self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)
 
     def test_happy_flow(self):
         self.client.force_authenticate(self.john_wick)
@@ -46,9 +77,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={
-                "newNextNodes": [self.first_node.slug],
-            },
+            data={"position": PositionChoices.first},
         )
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -62,10 +91,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={
-                "newPreviousNodes": [self.first_node.slug],
-                "newNextNodes": [self.third_node.slug],
-            },
+            data={"position": PositionChoices.child_of, "parentNodeTemplates": [self.first_node.slug]},
         )
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -76,9 +102,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={
-                "newPreviousNodes": [self.third_node.slug],
-            },
+            data={"position": PositionChoices.last},
         )
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -90,9 +114,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={
-                "newNextNodes": [self.first_node.slug],
-            },
+            data={"position": PositionChoices.first},
         )
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -103,9 +125,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={
-                "newNextNodes": [self.first_node.slug],
-            },
+            data={"position": PositionChoices.first},
         )
 
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
@@ -116,58 +136,10 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={
-                "newNextNodes": [self.first_node.slug],
-            },
+            data={"position": PositionChoices.first},
         )
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_validation(self):
-        self.client.force_authenticate(self.john_wick)
-
-        res = self.client.put(
-            reverse(
-                "validation_node_templates-move",
-                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
-            )
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(
-            res_data,
-            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
-            "You must provide one of those : new_next_nodes, new_previous_nodes.",
-        )
-
-        res = self.client.put(
-            reverse(
-                "validation_node_templates-move",
-                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
-            ),
-            data={
-                "newPreviousNodes": [self.second_node.slug],
-                "newNextNodes": [self.second_node.slug],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-
-        self.assertHasError(res_data, "newPreviousNodes", "Object with slug=second-node does not exist.")
-        self.assertHasError(res_data, "newNextNodes", "Object with slug=second-node does not exist.")
-
-        res = self.client.put(
-            reverse(
-                "validation_node_templates-move",
-                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
-            ),
-            data={
-                "newPreviousNodes": ["wrong"],
-                "newNextNodes": ["wrong"],
-            },
-        )
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-
-        self.assertHasError(res_data, "newPreviousNodes", "Object with slug=wrong does not exist.")
-        self.assertHasError(res_data, "newNextNodes", "Object with slug=wrong does not exist.")
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
@@ -176,9 +148,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 "validation_node_templates-move",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.second_node.slug},
             ),
-            data={
-                "newNextNodes": [self.first_node.slug],
-            },
+            data={"position": PositionChoices.first},
         )
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -196,10 +166,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                         "slug": self.second_node.slug,
                     },
                 ),
-                data={
-                    "newPreviousNodes": [self.first_node.slug],
-                    "newNextNodes": [self.third_node.slug],
-                },
+                data={"position": PositionChoices.child_of, "parentNodeTemplates": [self.first_node.slug]},
             )
 
             self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)

@@ -2,6 +2,7 @@ import django_filters
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count, F, Prefetch, Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.mixins import ListModelMixin
 
@@ -13,6 +14,7 @@ from iaso.api.serializers import AppIdSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 
 
+@extend_schema(tags=["Org unit changes", "Org units", "Mobile"])
 class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [HasOrgUnitsChangeRequestPermission]
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
@@ -22,15 +24,11 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
 
     def _user_for_scoped_queries(self):
         """One row with joins; avoids extra profile/account queries on this view."""
-        cached = getattr(self, "_cached_user_for_scoped_queries", None)
-        if cached is not None:
-            return cached
         User = get_user_model()
-        self._cached_user_for_scoped_queries = User.objects.select_related(
+        return User.objects.select_related(
             "iaso_profile__account",
             "iaso_profile__account__default_version",
         ).get(pk=self.request.user.pk)
-        return self._cached_user_for_scoped_queries
 
     def get_queryset(self):
         cached_qs = getattr(self, "_cached_mobile_change_requests_queryset", None)

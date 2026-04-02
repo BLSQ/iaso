@@ -1,5 +1,6 @@
 from django.db.models import Prefetch
 from django.http import Http404
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
@@ -9,6 +10,7 @@ from ..common import ModelViewSet
 from .serializers import AppSerializer
 
 
+@extend_schema(tags=["Apps"])
 class AppsViewSet(ModelViewSet):
     """Apps API
 

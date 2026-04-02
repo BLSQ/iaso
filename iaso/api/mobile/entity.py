@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
@@ -130,6 +131,7 @@ class MobileEntitiesSetPagination(Paginator):
         return int(request.query_params.get(self.page_query_param, 1))
 
 
+@extend_schema(tags=["Mobile", "Entities"])
 class MobileEntityViewSet(ModelViewSet):
     f"""Entity API for mobile
 
@@ -205,6 +207,7 @@ class DeletedMobileEntitySerializer(serializers.ModelSerializer):
             return entity.merged_to.uuid
 
 
+@extend_schema(tags=["Entities", "Mobile"])
 class MobileEntityDeletedViewSet(ModelViewSet):
     """Entity API for mobile
 

@@ -15,11 +15,9 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-// @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
-// @ts-ignore
-import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
-import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
@@ -106,10 +104,6 @@ const Filters: FunctionComponent<Props> = ({
     const { data: selectedTeam } = useGetTeam(
         filters?.submitterTeamId ? parseInt(filters.submitterTeamId, 10) : 0,
     );
-    const { data: usersOptions } = useGetProfilesDropdown({
-        team: selectedTeam,
-        errorMessage: MESSAGES.projectsError,
-    });
     const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
     const sourceVersionId = currentUser?.account?.default_version?.id;
     const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
@@ -132,7 +126,7 @@ const Filters: FunctionComponent<Props> = ({
     }, [searchEnabled, getParams, params, filters, redirectTo]);
 
     const handleChange = useCallback(
-        (key, value) => {
+        (key: string, value: any) => {
             setFiltersUpdated(true);
             if (key === 'location') {
                 setInitialOrgUnitId(value);
@@ -145,7 +139,7 @@ const Filters: FunctionComponent<Props> = ({
         [filters],
     );
     const handleTeamChange = useCallback(
-        (key, value) => {
+        (key: string, value: any) => {
             setFiltersUpdated(true);
             setFilters({
                 ...filters,
@@ -266,14 +260,18 @@ const Filters: FunctionComponent<Props> = ({
                         label={MESSAGES.submitterTeam}
                         options={teamOptions}
                     />
-                    <InputComponent
-                        keyValue="submitterId"
-                        onChange={handleChange}
-                        value={filters.submitterId}
-                        type="select"
-                        label={MESSAGES.submitter}
-                        options={usersOptions}
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="submitterId"
+                            handleChange={handleChange}
+                            filterUsers={filters.submitterId}
+                            multi={false}
+                            label={MESSAGES.submitter}
+                            additionalFilters={{
+                                teams: selectedTeam?.id,
+                            }}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
 

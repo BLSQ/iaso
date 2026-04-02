@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
@@ -65,6 +66,7 @@ class PageFilter(FilterSet):
         return queryset
 
 
+@extend_schema(tags=["Pages"])
 class PagesViewSet(ModelViewSet):
     permission_classes = [PagesPermission]
     serializer_class = PagesSerializer

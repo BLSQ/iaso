@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for_round
 
 
+@extend_schema(tags=["Polio - Dashboards - Preparedness"])
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     http_method_names = ["get"]
     filterset_class = PreparednessDashboardFilter

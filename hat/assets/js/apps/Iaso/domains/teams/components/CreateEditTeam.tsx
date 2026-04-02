@@ -10,14 +10,13 @@ import {
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
-import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import { useGetColors } from 'Iaso/hooks/useGetColors';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from 'Iaso/libs/validation';
-import { DropdownOptions } from 'Iaso/types/utils';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
@@ -84,8 +83,6 @@ const CreateEditTeam: FunctionComponent<Props> = ({
             },
             id,
         );
-    const { data: profilesDropdown, isFetching: isFetchingProfiles } =
-        useGetProfilesDropdown();
 
     const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
@@ -135,9 +132,13 @@ const CreateEditTeam: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
 
-    const onChange = (keyValue, value) => {
+    const onChange = (keyValue: string, value: any) => {
         setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
+        if (keyValue === 'users') {
+            setFieldValue(keyValue, commaSeparatedIdsToArray(value));
+        } else {
+            setFieldValue(keyValue, value);
+        }
     };
 
     const getErrors = useTranslatedErrors({
@@ -198,19 +199,15 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     label={MESSAGES.name}
                     required
                 />
-                <InputComponent
-                    type="select"
-                    keyValue="manager"
-                    onChange={onChange}
-                    value={values.manager}
-                    errors={getErrors('manager')}
-                    label={MESSAGES.manager}
-                    required
-                    options={
-                        profilesDropdown as any as DropdownOptions<number>[]
-                    }
-                    loading={isFetchingProfiles}
-                />
+                <Box mt={2}>
+                    <UserAsyncSelect
+                        keyValue="manager"
+                        handleChange={onChange}
+                        filterUsers={`${values.manager}`}
+                        label={MESSAGES.manager}
+                        multi={false}
+                    />
+                </Box>
                 <InputComponent
                     type="select"
                     keyValue="project"
@@ -259,21 +256,15 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     )}
                 </Box>
                 {values.type === TEAM_OF_USERS && (
-                    <InputComponent
-                        type="select"
-                        keyValue="users"
-                        onChange={(key, value) =>
-                            onChange(key, commaSeparatedIdsToArray(value))
-                        }
-                        value={values.users}
-                        errors={getErrors('users')}
-                        label={MESSAGES.users}
-                        options={
-                            profilesDropdown as any as DropdownOptions<number>[]
-                        }
-                        loading={isFetchingProfiles}
-                        multi
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="users"
+                            handleChange={onChange}
+                            filterUsers={values.users.join(',')}
+                            label={MESSAGES.users}
+                            multi
+                        />
+                    </Box>
                 )}
                 {values.type === TEAM_OF_TEAMS && (
                     <InputComponent

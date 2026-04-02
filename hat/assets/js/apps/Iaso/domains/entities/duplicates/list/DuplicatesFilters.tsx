@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
-import { default as ENTITY_MESSAGE } from 'Iaso/domains/entities/messages';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import {
     useCheckBoxFilter,
     useFilterState,
@@ -73,8 +72,6 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         useGetTeamsDropdown({
             type: TeamType.TEAM_OF_USERS,
         });
-    const { data: usersDropdown, isFetching: isFetchingUsers } =
-        useGetProfilesDropdown({ errorMessage: ENTITY_MESSAGE.projectsError });
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetEntityTypesDropdown();
@@ -154,16 +151,15 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        keyValue="submitter"
-                        value={filters.submitter}
-                        onChange={handleChange}
-                        onEnterPressed={handleSearch}
-                        label={MESSAGES.submitter}
-                        options={usersDropdown}
-                        loading={isFetchingUsers}
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="submitter"
+                            handleChange={handleChange}
+                            filterUsers={filters.submitter}
+                            multi={false}
+                            label={MESSAGES.submitter}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -186,6 +182,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.similarity}
                         options={similarityDropdown}
                         renderOption={(props, option) => {
+                            // @ts-ignore
                             const label = props.label || option.label;
                             return (
                                 <div {...props}>

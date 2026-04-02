@@ -12,6 +12,8 @@ class ValidationNodeStatus(models.TextChoices):
     REJECTED = "REJECTED", _("Rejected")
     SKIPPED = "SKIPPED", _("Skipped")
     UNKNOWN = "UNKNOWN", _("Unknown")
+    SUBMISSION = "SUBMISSION", _("Submission")
+    NEW_VERSION = "NEW_VERSION", _("New version")
 
 
 class ValidationNodeQuerySet(models.QuerySet):

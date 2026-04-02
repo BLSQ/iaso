@@ -17,27 +17,21 @@ class ValidationWorkflowEngine:
         workflow_template,
         user,
         artifact: ValidationWorkflowArtefact,
-        parent_artifact: Optional[ValidationWorkflowArtefact] = None,
     ):
         update_fields = ["general_validation_status"]
         if artifact and not workflow_template.is_artifact_allowed(artifact):
             raise ValidationWorkflowEngineException("Invalid artifact type")
 
+        resubmit = False
+
         if artifact.has_workflow(workflow_template):
-            raise ValidationWorkflowEngineException("Artifact is already attached to a related workflow")
-
-        if parent_artifact:
-            if not workflow_template.is_artifact_allowed(parent_artifact):
-                raise ValidationWorkflowEngineException("Invalid parent artifact type")
-
-            if not parent_artifact.has_workflow(workflow_template):
-                raise ValidationWorkflowEngineException("Invalid parent artifact: no related workflow")
-
-            if parent_artifact.general_validation_status != ValidationWorkflowArtefactStatus.REJECTED:
-                raise ValidationWorkflowEngineException("Invalid parent artifact: workflow is in incorrect status")
-
-            artifact.parent_artefact_for_validation = parent_artifact
-            update_fields.append("parent_artefact_for_validation")
+            if artifact.general_validation_status not in [
+                ValidationWorkflowArtefactStatus.REJECTED,
+                ValidationWorkflowArtefactStatus.PENDING,
+            ]:
+                raise ValidationWorkflowEngineException("Artifact is already attached to a related workflow")
+            # resubmit
+            resubmit = True
 
         artifact.general_validation_status = ValidationWorkflowArtefactStatus.PENDING
         artifact.save(update_fields=update_fields)
@@ -47,11 +41,36 @@ class ValidationWorkflowEngine:
         if starting_node is None:
             raise ValidationWorkflowEngineException("Workflow has no starting node")
 
-        return ValidationWorkflowEngine._activate_node(starting_node, artifact, user)
+        if resubmit and artifact.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
+            # we must delete the previous pending nodes
+            artifact.validationnode_set.filter(
+                node__workflow=workflow_template, status=ValidationNodeStatus.UNKNOWN
+            ).delete()
+
+        return ValidationWorkflowEngine._activate_node(starting_node, artifact, user, start=True, resubmit=resubmit)
 
     @staticmethod
-    def _activate_node(node: ValidationNodeTemplate, instance: ValidationWorkflowArtefact, user):
-        ValidationNode.objects.create(node=node, instance=instance, created_by=user)
+    def _activate_node(
+        node: ValidationNodeTemplate,
+        instance: ValidationWorkflowArtefact,
+        user,
+        start: Optional[bool] = False,
+        resubmit: Optional[bool] = False,
+    ):
+        if start:
+            ValidationNode.objects.bulk_create(
+                [
+                    ValidationNode(
+                        node=node,
+                        instance=instance,
+                        created_by=user,
+                        status=ValidationNodeStatus.SUBMISSION if not resubmit else ValidationNodeStatus.NEW_VERSION,
+                    ),
+                    ValidationNode(node=node, instance=instance, created_by=user),
+                ]
+            )
+        else:
+            ValidationNode.objects.create(node=node, instance=instance, created_by=user)
 
     @staticmethod
     @transaction.atomic
@@ -172,6 +191,9 @@ class ValidationWorkflowEngine:
         if validation_node.node.workflow.account != user.iaso_profile.account:
             raise PermissionDenied
 
+        if validation_node.status in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]:
+            raise PermissionDenied
+
         if getattr(user, "is_superuser", False):
             return
 
@@ -209,6 +231,9 @@ class ValidationWorkflowEngine:
 
         if validation_node.status == ValidationNodeStatus.REJECTED:
             raise ValidationWorkflowEngineException("Cannot undo rejected node")
+
+        if validation_node.status in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]:
+            raise ValidationWorkflowEngineException("Cannot undo this node")
 
         if validation_node.status != ValidationNodeStatus.ACCEPTED:
             raise ValidationWorkflowEngineException("Cannot undo node that isn't accepted")

@@ -30,6 +30,11 @@ export const DEFAULT_ORG_UNIT_COLUMNS = [
     'created_at',
     'updated_at',
     'actions',
+    // those 4 are required to display tha map icon in the table row and link directly to the map tab details pages
+    'has_geo_json',
+    'latitude',
+    'longitude',
+    'altitude',
 ];
 
 export const NON_SELECTABLE_COLUMNS = ['actions', 'selection'];
@@ -49,25 +54,20 @@ const getCleanFields = (fields?: string | string[]): string | undefined => {
 type Props = {
     params: ApiParams;
     callback?: () => void;
-    isSearchActive: boolean;
-    enabled?: boolean;
 };
 
 type PropsLocation = {
     params: ApiParams;
     searches: Search[];
-    isSearchActive: boolean;
     enabled?: boolean;
 };
 
 export const useGetOrgUnits = ({
     params,
-    isSearchActive,
     callback = () => null,
-    enabled = false,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
-    const apiParams = {
+    const apiParams: ApiParams = {
         ...params,
         fields: getCleanFields(params.fields),
     };
@@ -76,16 +76,9 @@ export const useGetOrgUnits = ({
         queryKey: ['orgunits', apiParams],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
-            enabled,
             staleTime: Infinity,
             keepPreviousData: true,
             onSuccess,
-            select: data => {
-                if (isSearchActive) {
-                    return data;
-                }
-                return undefined;
-            },
         },
     });
 };
@@ -93,7 +86,6 @@ export const useGetOrgUnits = ({
 export const useGetOrgUnitsLocations = ({
     params,
     searches,
-    isSearchActive,
     enabled = false,
 }: PropsLocation): UseQueryResult<Locations | undefined, Error> => {
     const queryString = new URLSearchParams(params);
@@ -104,7 +96,7 @@ export const useGetOrgUnitsLocations = ({
             enabled,
             staleTime: Infinity,
             select: data => {
-                if (isSearchActive) {
+                if (data) {
                     return mapOrgUnitByLocation(data, searches);
                 }
                 return undefined;

@@ -123,14 +123,11 @@ export const OrgUnits: FunctionComponent = () => {
     );
 
     const onSearch = useCallback(
-        newParams => {
+        (newParams: OrgUnitParams) => {
             const tempParams = {
                 ...newParams,
                 searches: JSON.stringify(newParams.searches),
             };
-            if (newParams.searchActive !== 'true') {
-                tempParams.searchActive = true;
-            }
             navigate(makeRedirectionUrl(baseUrl, tempParams), {
                 replace: true,
             });
@@ -139,7 +136,7 @@ export const OrgUnits: FunctionComponent = () => {
     );
     // TABS
     const handleChangeTab = useCallback(
-        newtab => {
+        (newtab: string) => {
             setTab(newtab);
             const newParams = {
                 ...params,

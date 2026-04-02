@@ -31,6 +31,7 @@ class ProjectsViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["app_id", "name"]
+    ordering = ["id"]
     serializer_class = ProjectSerializer
     results_key = "projects"
     http_method_names = ["get", "head", "options", "trace"]

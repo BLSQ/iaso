@@ -119,6 +119,7 @@ else:
             auth.views.PasswordResetCompleteView.as_view(template_name="iaso/reset_password_complete.html"),
             name="reset_password_complete",
         ),
+        path("api_import/", include("hat.api_import.urls")),
         path("sync/", include("hat.sync.urls")),
         path("models/", ModelDataView.as_view(), name="models"),
     ]

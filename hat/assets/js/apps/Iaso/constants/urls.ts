@@ -628,6 +628,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'value_to',
         ],
     },
+    adminApiImport: {
+        url: 'settings/apiImports',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'createdBy',
+            'importType',
+            'hasProblem',
+            'appId',
+            'appVersion',
+        ],
+    },
     hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
@@ -740,6 +752,7 @@ type IasoBaseUrls = {
     error500: string;
     login: string;
     apiLogs: string;
+    adminApiImport: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

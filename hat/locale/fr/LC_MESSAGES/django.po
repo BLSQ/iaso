@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 16:04+0000\n"
+"POT-Creation-Date: 2026-04-07 12:16+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
+
+#: hat/api_import/filters.py
+msgid "User ID"
+msgstr "ID utilisateur"
 
 #: hat/settings.py
 msgid "French"
@@ -148,7 +152,9 @@ msgstr "Conseils de sécurité"
 #: hat/templates/iaso/reset_password_confirmation.html
 msgid ""
 "Use at least 8 characters, a combination of numbers and letters is best."
-msgstr "Utilisez au moins 8 caractères, une combinaison de nombres et de lettres est mieux."
+msgstr ""
+"Utilisez au moins 8 caractères, une combinaison de nombres et de lettres est "
+"mieux."
 
 #: hat/templates/iaso/reset_password_confirmation.html
 msgid "Do not use the same password for multiple online accounts."
@@ -159,8 +165,9 @@ msgid ""
 "Do not use dictionary words, your name, email address, birth date or other "
 "personal information that can be easily obtained."
 msgstr ""
-"N'utilisez pas de mots du dictionnaire, votre nom, votre adresse email, votre date de naissance ou autre "
-"information personnelle qui peut être facilement obtenue."
+"N'utilisez pas de mots du dictionnaire, votre nom, votre adresse email, "
+"votre date de naissance ou autre information personnelle qui peut être "
+"facilement obtenue."
 
 #: hat/templates/iaso/reset_password_confirmation.html
 msgid ""
@@ -609,7 +616,6 @@ msgstr "Réinitialisation du mot de passe sur %(site_name)s"
 
 #~ msgid "Reject Org unit"
 #~ msgstr "Statut de validation modifié avec succès"
-
 
 #, python-format
 #~ msgid ""

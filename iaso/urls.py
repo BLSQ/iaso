@@ -84,6 +84,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules import ModulesViewSet
+from .api.notifications.views import NotificationViewSet
 from .api.openhexa.views import OpenHexaPipelinesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUnitChangeRequestConfigurationViewSet
@@ -261,6 +262,7 @@ router.register(r"stockrulesversions", StockRulesVersionViewSet, basename="stock
 router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, basename="mobilestockkeepingunits")
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
+router.register(r"notifications", NotificationViewSet, basename="notifications")
 
 router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
     r"node-templates",

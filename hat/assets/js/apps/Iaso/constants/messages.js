@@ -238,6 +238,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Setup a new account',
         id: 'iaso.setup.accountSetup',
     },
+    apiImport: {
+        defaultMessage: 'APIImport',
+        id: 'iaso.label.apiimport',
+    },
     skus: {
         defaultMessage: 'Stock Keeping Units',
         id: 'iaso.label.stockkeepingunits',

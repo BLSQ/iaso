@@ -136,8 +136,6 @@ class ProcessMobileBulkUploadTestCase(TestCase):
 
 
 class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
-    fixtures = ["user.yaml", "orgunit.yaml", "forms"]
-
     def setUp(self):
         self.api_import = APIImport.objects.create(
             user=self.user,

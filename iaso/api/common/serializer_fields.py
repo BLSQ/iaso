@@ -56,7 +56,6 @@ class JSONSchemaField(serializers.JSONField):
         kwargs.setdefault("help_text", f"JSON object matching schema: {schema}")
 
         kwargs.setdefault("allow_null", False)
-        kwargs.setdefault("allow_blank", False)
 
         super().__init__(*args, **kwargs)
         self.validators = [JSONSchemaFieldValidator(schema=schema)]

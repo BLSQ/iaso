@@ -61,7 +61,10 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
     @extend_schema_field(NestedHistorySerializer(many=True))
     def get_history(self, obj):
         return NestedHistorySerializer(
-            obj.get_all_validation_nodes().select_related("created_by", "updated_by", "node"), many=True
+            obj.get_all_validation_nodes()
+            .exclude(status__in=[ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION])
+            .select_related("created_by", "updated_by", "node"),
+            many=True,
         ).data
 
     @extend_schema_field({"type": "string", "nullable": True})

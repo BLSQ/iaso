@@ -297,7 +297,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        self.assertEqual(len(instance_data["history"]), 1)
+        self.assertEqual(len(instance_data["history"]), 2)
 
         history_item = instance_data["history"][0]
         for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
@@ -307,6 +307,15 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertHasField(history_item, "updated_at", float)
 
         self.assertEqual(history_item["status"], ValidationNodeStatus.UNKNOWN)
+        self.assertEqual(history_item["comment"], "")
+        self.assertIsNone(history_item["updated_by"])
+        self.assertEqual(history_item["created_by"], self.john_wick.username)
+        self.assertEqual(history_item["color"], "#FFFFFF")
+        self.assertEqual(history_item["level"], "First node")
+
+        history_item = instance_data["history"][1]
+
+        self.assertEqual(history_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(history_item["comment"], "")
         self.assertIsNone(history_item["updated_by"])
         self.assertEqual(history_item["created_by"], self.john_wick.username)
@@ -333,7 +342,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        self.assertEqual(len(instance_data["history"]), 3)
+        self.assertEqual(len(instance_data["history"]), 4)
 
         for history_item in instance_data["history"]:
             for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
@@ -359,13 +368,20 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
 
-        last_item = instance_data["history"][2]
-        self.assertEqual(last_item["status"], ValidationNodeStatus.ACCEPTED)
+        third_item = instance_data["history"][2]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
         self.assertEqual(last_item["color"], "#FFFFFF")
-        self.assertEqual(last_item["comment"], "LGTM 0")
+        self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
-        self.assertEqual(last_item["updated_by"], self.john_wick.username)
 
     def test_data_approved(self):
         self.client.force_authenticate(self.john_wick)
@@ -387,7 +403,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        self.assertEqual(len(instance_data["history"]), 3)
+        self.assertEqual(len(instance_data["history"]), 4)
 
         for history_item in instance_data["history"]:
             for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
@@ -413,13 +429,20 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
 
-        last_item = instance_data["history"][2]
-        self.assertEqual(last_item["status"], ValidationNodeStatus.ACCEPTED)
+        third_item = instance_data["history"][2]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
         self.assertEqual(last_item["color"], "#FFFFFF")
-        self.assertEqual(last_item["comment"], "LGTM 0")
+        self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
-        self.assertEqual(last_item["updated_by"], self.john_wick.username)
 
     def test_data_reject(self):
         self.client.force_authenticate(self.john_wick)
@@ -443,7 +466,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        self.assertEqual(len(instance_data["history"]), 2)
+        self.assertEqual(len(instance_data["history"]), 3)
 
         for history_item in instance_data["history"]:
             for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
@@ -462,13 +485,93 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
 
-        last_item = instance_data["history"][1]
-        self.assertEqual(last_item["status"], ValidationNodeStatus.ACCEPTED)
+        third_item = instance_data["history"][1]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
         self.assertEqual(last_item["color"], "#FFFFFF")
-        self.assertEqual(last_item["comment"], "LGTM 0")
+        self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
-        self.assertEqual(last_item["updated_by"], self.john_wick.username)
+
+    def test_resubmit(self):
+        self.client.force_authenticate(self.john_wick)
+        self.setup_reject()
+        self.setup_start()
+
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        instance_data = res_data["results"][0]
+
+        self.assertEqual(instance_data["instance_id"], self.instance.uuid)
+        self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+        self.assertIsNone(instance_data["rejection_comment"])
+        self.assertEqual(instance_data["name"], self.form.name)
+
+        self.assertHasField(instance_data, "created_at", float)
+        self.assertHasField(instance_data, "updated_at", float)
+
+        self.assertHasField(instance_data, "history", list)
+
+        self.assertEqual(len(instance_data["history"]), 5)
+
+        for history_item in instance_data["history"]:
+            for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
+                self.assertIn(f, history_item)
+
+            self.assertHasField(history_item, "created_at", float)
+            self.assertHasField(history_item, "updated_at", float)
+
+        # checking order, should be from leaves to root (graph wise)
+
+        second_item = instance_data["history"][0]
+        self.assertEqual(second_item["status"], ValidationNodeStatus.UNKNOWN)
+        self.assertEqual(second_item["level"], "First node")
+        self.assertEqual(second_item["color"], "#FFFFFF")
+        self.assertEqual(second_item["comment"], "")
+        self.assertEqual(second_item["created_by"], self.john_wick.username)
+        self.assertIsNone(second_item["updated_by"])
+
+        second_item = instance_data["history"][1]
+        self.assertEqual(second_item["status"], ValidationNodeStatus.NEW_VERSION)
+        self.assertEqual(second_item["level"], "First node")
+        self.assertEqual(second_item["color"], "#FFFFFF")
+        self.assertEqual(second_item["comment"], "")
+        self.assertEqual(second_item["created_by"], self.john_wick.username)
+        self.assertIsNone(second_item["updated_by"])
+
+        second_item = instance_data["history"][2]
+        self.assertEqual(second_item["status"], ValidationNodeStatus.REJECTED)
+        self.assertEqual(second_item["level"], "Second node")
+        self.assertEqual(second_item["color"], "#12FA4B")
+        self.assertEqual(second_item["comment"], "Nope")
+        self.assertEqual(second_item["created_by"], self.john_wick.username)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+
+        third_item = instance_data["history"][3]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
+        self.assertEqual(last_item["level"], "First node")
+        self.assertEqual(last_item["color"], "#FFFFFF")
+        self.assertEqual(last_item["comment"], "")
+        self.assertEqual(last_item["created_by"], self.john_wick.username)
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)

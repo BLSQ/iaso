@@ -130,7 +130,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
         other_validation_workflow.form_set.add(other_form)
         ValidationWorkflowEngine.start(other_validation_workflow, stranger, other_instance)
 
-        self.assertEqual(other_node.validationnode_set.count(), 1)
+        self.assertEqual(other_node.validationnode_set.count(), 2)
 
         self.client.force_authenticate(self.john_wick)
 
@@ -140,4 +140,4 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
-        self.assertEqual(other_node.validationnode_set.count(), 1)
+        self.assertEqual(other_node.validationnode_set.count(), 2)

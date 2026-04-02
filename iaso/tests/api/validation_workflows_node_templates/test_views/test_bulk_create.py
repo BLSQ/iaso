@@ -235,3 +235,57 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
         self.assertEqual(list(third_node.roles_required.values_list("pk", flat=True)), [self.user_role.pk])
         self.assertEqual(list(third_node.previous_node_templates.values_list("pk", flat=True)), [second_node.pk])
         self.assertFalse(third_node.next_node_templates.exists())
+
+    def test_uniqueness_validator(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {
+                    "name": "First node",
+                    "color": "#740d54",
+                    "description": "Here we should check something",
+                },
+                {"name": "Second node", "color": "#fdd75a"},
+                {
+                    "name": "First node",
+                    "color": "#fdd75b",
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
+                },
+            ],
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "Names must be unique.")
+
+        ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
+
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {
+                    "name": "First node",
+                    "color": "#740d54",
+                    "description": "Here we should check something",
+                },
+                {"name": "Second node", "color": "#fdd75a"},
+                {
+                    "name": "Third node",
+                    "color": "#fdd75b",
+                    "can_skip_previous_nodes": True,
+                    "roles_required": [self.user_role.pk],
+                },
+            ],
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data[0], api_settings.NON_FIELD_ERRORS_KEY, "The fields name, workflow must make a unique set."
+        )

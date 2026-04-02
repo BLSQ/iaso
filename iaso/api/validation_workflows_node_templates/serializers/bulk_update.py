@@ -73,6 +73,10 @@ class ValidationNodeTemplateBulkUpdateListSerializer(serializers.ListSerializer)
         if set(slugs) != set(self.instance.values_list("slug", flat=True)):
             raise ValidationError("The slugs provided don't match the existing ones")
 
+        names = [x["name"] for x in attrs]
+        if len(set(names)) != len(list(names)):
+            raise ValidationError("Names must be unique.")
+
         return attrs
 
 

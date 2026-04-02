@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import HiddenSlugRelatedField, ModelSerializer
 from iaso.api.validation_workflows_node_templates.serializers.common import ValidationWorkflowContextDefault
@@ -65,7 +66,16 @@ class ValidationNodeTemplateCreateSerializer(ModelSerializer):
             ].child_relation.queryset = ValidationNodeTemplate.objects.select_related(
                 "workflow", "workflow__account"
             ).filter(workflow__account=user.iaso_profile.account)
+
             self.fields["workflow"].queryset = ValidationWorkflow.objects.filter(account=user.iaso_profile.account)
+            self.validators = [
+                UniqueTogetherValidator(
+                    queryset=ValidationNodeTemplate.objects.select_related("workflow", "workflow__account").filter(
+                        workflow__account=user.iaso_profile.account
+                    ),
+                    fields=["name", "workflow"],
+                )
+            ]
 
     def validate_parent_node_templates(self, data):
         ids = [item.id for item in data]

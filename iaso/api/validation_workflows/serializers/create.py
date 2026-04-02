@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
 from iaso.api.validation_workflows.serializers.common import CurrentAccountDefault
@@ -16,6 +17,12 @@ class ValidationWorkflowCreateSerializer(ModelSerializer):
         model = ValidationWorkflow
         fields = ["name", "description", "slug", "account", "created_by", "forms"]
         extra_kwargs = {"name": {"write_only": True}, "description": {"write_only": True}, "slug": {"read_only": True}}
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ValidationWorkflow.objects.all(),
+                fields=["name", "account"],
+            )
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

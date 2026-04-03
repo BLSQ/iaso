@@ -390,16 +390,17 @@ def extract_gender(data):
 
 
 def extract_guidelines(submission):
-    """Extract U5 Guidelines wich is automatically "OLD" for the forms in NEW_GUIDE_LINES_FORMS
-    and NEW for  "Anthropometric visit child_2,child_antropometric_followUp_otp_2 and child_antropometric_followUp_tsfp_2"""
+    """Extract U5 Guidelines.
+    Returns 'NEW' for the forms in NEW_GUIDE_LINES_FORMS,
+    'OLD' for forms in OLD_GUIDE_LINES_FORMS,
+    otherwise defaults to the value stored in the field 'guidelines' from submission json."""
     form_id = submission.get("form__form_id")
     data = submission.get("json")
-    guidelines = data.get("guidelines")
     if form_id in NEW_GUIDE_LINES_FORMS:
         return "NEW"
     if form_id in OLD_GUIDE_LINES_FORMS:
         return "OLD"
-    return guidelines
+    return data.get("guidelines")
 
 
 def extract_pbwg_physiology(data):

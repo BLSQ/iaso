@@ -58,23 +58,23 @@ ENABLE_CORS = get_env_var_or_default("ENABLE_CORS", "true").lower() == "true"
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 
 DNS_DOMAIN = get_env_var_or_default("DNS_DOMAIN", "localhost:8081")
-TESTING = os.environ.get("TESTING", "").lower() == "true"
+TESTING = get_env_var_or_default("TESTING", "").lower() == "true"
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
-PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
+PLUGINS = os.environ["PLUGINS"].split(",") if get_env_var_or_default("PLUGINS", "") else []
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = get_env_var_or_default("SECRET_KEY", None)
 
 # SECURITY WARNING: keep the encryption key used in production secret!
-ENCRYPTED_TEXT_FIELD_KEY = os.environ.get("ENCRYPTED_TEXT_FIELD_KEY")
+ENCRYPTED_TEXT_FIELD_KEY = get_env_var_or_default("ENCRYPTED_TEXT_FIELD_KEY", None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "").lower() == "true"
-USE_S3 = os.getenv("USE_S3", "").lower() == "true"
-USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE", "").lower() == "true"
+DEBUG = get_env_var_or_default("DEBUG", "").lower() == "true"
+USE_S3 = get_env_var_or_default("USE_S3", "").lower() == "true"
+USE_AZURE_STORAGE = get_env_var_or_default("USE_AZURE_STORAGE", "").lower() == "true"
 # Storage provider configuration
 STORAGE_PROVIDER = get_env_var_or_default("STORAGE_PROVIDER", "local")  # local, s3, azure
 if USE_S3:
@@ -88,29 +88,29 @@ elif USE_AZURE_STORAGE:
 # S3 in a seperate process, and a CDN (Cloudfront) is in front of
 # it. So we parse out the hostname, and then set that as the
 # CDN_URL, so that Django knows where to fetch them from.
-static_url = os.environ.get("STATIC_URL")
+static_url = get_env_var_or_default("STATIC_URL", None)
 if static_url:
     CDN_URL = urlparse(static_url).hostname
 else:
     CDN_URL = None
 
-DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
+DEV_SERVER = get_env_var_or_default("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = get_env_var_or_default("SENTRY_ENVIRONMENT", "development").lower()
-SENTRY_URL = os.environ.get("SENTRY_URL", "")
+SENTRY_URL = get_env_var_or_default("SENTRY_URL", "")
 SENTRY_FRONT_ENABLED = get_env_var_or_default("SENTRY_FRONT_ENABLED", "false").lower() == "true"
 AVAILABLE_LANGUAGES = get_env_var_or_default("AVAILABLE_LANGUAGES", "en,fr")
 
-PRODUCT_FRUITS_WORKSPACE_CODE = os.environ.get("PRODUCT_FRUITS_WORKSPACE_CODE", "")
+PRODUCT_FRUITS_WORKSPACE_CODE = get_env_var_or_default("PRODUCT_FRUITS_WORKSPACE_CODE", "")
 
 LEARN_MORE_URL = get_env_var_or_default("LEARN_MORE_URL", None)
 
 # Documentation and help resources
-USER_MANUAL_PATH = os.environ.get("USER_MANUAL_PATH", "")
-FORUM_PATH = os.environ.get("FORUM_PATH", "")
+USER_MANUAL_PATH = get_env_var_or_default("USER_MANUAL_PATH", "")
+FORUM_PATH = get_env_var_or_default("FORUM_PATH", "")
 
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
-USE_CELERY = os.environ.get("USE_CELERY", "")
+USE_CELERY = get_env_var_or_default("USE_CELERY", "")
 DATASET_ID = get_env_var_or_default("DATASET_ID", None)
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
@@ -129,7 +129,7 @@ ALLOWED_HOSTS = ["*"]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
+AWS_STORAGE_BUCKET_NAME = get_env_var_or_default("AWS_STORAGE_BUCKET_NAME", "")
 
 # Default site for django contrib site framework
 SITE_ID = 1
@@ -531,7 +531,7 @@ if USE_S3:
     AWS_S3_SIGNATURE_VERSION = "s3v4"
     AWS_S3_HOST = "s3.%s.amazonaws.com" % AWS_S3_REGION_NAME
     AWS_DEFAULT_ACL = None
-    S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
+    S3_ENDPOINT_URL = get_env_var_or_default("AWS_S3_ENDPOINT_URL", None)
 
     # s3 static settings
     if CDN_URL:
@@ -609,7 +609,7 @@ elif USE_AZURE_STORAGE:
     STATICFILES_STORAGE = "iaso.storage.AzureStaticStorage"
     DEFAULT_FILE_STORAGE = "iaso.storage.AzureMediaStorage"
 else:
-    SERVER_URL = os.environ.get("SERVER_URL", "")
+    SERVER_URL = get_env_var_or_default("SERVER_URL", "")
     MEDIA_URL = SERVER_URL + MEDIA_URL_PREFIX
     STATIC_URL = "/static/"
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -629,7 +629,7 @@ WEBPACK_LOADER = {
             "assets/webpack",
             (
                 "webpack-stats.json"
-                if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
+                if (DEBUG and not get_env_var_or_default("TEST_PROD", None) and not USE_S3)
                 else "webpack-stats-prod.json"
             ),
         ),
@@ -816,13 +816,13 @@ if WFP_AUTH_CLIENT_ID:
     # activate the wfp_auth plugin only if needed
     index = INSTALLED_APPS.index("allauth.socialaccount")
     INSTALLED_APPS.insert(index + 1, "plugins.wfp_auth")
-    iaso_account = os.environ.get("WFP_AUTH_ACCOUNT", "")
+    iaso_account = get_env_var_or_default("WFP_AUTH_ACCOUNT", "")
     if not iaso_account:
         raise ImproperlyConfigured("need a WFP_AUTH_ACCOUNT to associate a tenant to the auth server")
     SOCIALACCOUNT_PROVIDERS["wfp"] = {
         "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
         "APP": {
-            "client_id": os.environ.get("WFP_AUTH_CLIENT_ID"),
+            "client_id": get_env_var_or_default("WFP_AUTH_CLIENT_ID", None),
             "secret": None,  # Secret is not accepted since we use PKCE
         },
         "OAUTH_PKCE_ENABLED": True,

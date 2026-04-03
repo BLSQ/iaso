@@ -31,6 +31,10 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
         ).get(pk=self.request.user.pk)
 
     def get_queryset(self):
+        cached_qs = getattr(self, "_cached_mobile_change_requests_queryset", None)
+        if cached_qs is not None:
+            return cached_qs
+
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         user = self._user_for_scoped_queries()
 
@@ -78,4 +82,5 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
             .distinct()
         )
 
+        self._cached_mobile_change_requests_queryset = change_requests
         return change_requests

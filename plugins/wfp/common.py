@@ -104,6 +104,19 @@ ASSISTANCE_FORMS = frozenset(
 )
 EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
 
+
+OLD_GUIDE_LINES_FORMS = [
+    "Anthropometric visit child",
+    "child_antropometric_followUp_otp",
+    "child_antropometric_followUp_tsfp",
+]
+NEW_GUIDE_LINES_FORMS = [
+    "Anthropometric visit child_2",
+    "child_antropometric_followUp_otp_2",
+    "child_antropometric_followUp_tsfp_2",
+]
+
+
 # ---------------------------------------------------------------------------
 # Field extraction helpers
 # ---------------------------------------------------------------------------
@@ -374,6 +387,19 @@ def extract_gender(data):
     if raw in ("M", "Male"):
         return "Male"
     return raw
+
+
+def extract_guidelines(submission):
+    """Extract U5 Guidelines wich is automatically "OLD" for the forms in NEW_GUIDE_LINES_FORMS
+    and NEW for  "Anthropometric visit child_2,child_antropometric_followUp_otp_2 and child_antropometric_followUp_tsfp_2"""
+    form_id = submission.get("form__form_id")
+    data = submission.get("json")
+    guidelines = data.get("guidelines")
+    if form_id in NEW_GUIDE_LINES_FORMS:
+        return "NEW"
+    if form_id in OLD_GUIDE_LINES_FORMS:
+        return "OLD"
+    return guidelines
 
 
 def extract_pbwg_physiology(data):
@@ -806,6 +832,7 @@ class ETL:
 
             gender = extract_gender(data)
             physiology = extract_pbwg_physiology(data)
+            guidelines = extract_guidelines(sub)
             if physiology:
                 info["physiology"] = physiology
                 info["gender"] = None
@@ -814,11 +841,8 @@ class ETL:
             birth_date = calculate_birth_date(data)
             if birth_date is not None:
                 info["birth_date"] = birth_date
-
-            guidelines = data.get("guidelines")
             if guidelines:
                 info["guidelines"] = guidelines
-
         return info
 
     @staticmethod

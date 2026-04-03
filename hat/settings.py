@@ -31,13 +31,25 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
 
-MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
+def get_env_var_or_default(env_var, default):
+    """
+    When an environment variable is not set, docker compose can initialize it with a blank string
+    instead of letting it unset, which overrides the default value from os.environ.get().
+    This function returns the value if the environment variable is set, or the passed default value.
+    """
+    value = os.environ.get(env_var)
+    if value in ["", None]:
+        return default
+    return value
+
+
+MAINTENANCE_MODE = get_env_var_or_default("MAINTENANCE_MODE", "false").lower() == "true"
 
 # security settings
-CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() == "true"
-CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"
-SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
-ENABLE_CORS = os.environ.get("ENABLE_CORS", "true").lower() == "true"
+CSRF_COOKIE_HTTPONLY = get_env_var_or_default("CSRF_COOKIE_HTTPONLY", "false").lower() == "true"
+CSRF_COOKIE_SECURE = get_env_var_or_default("CSRF_COOKIE_SECURE", "false").lower() == "true"
+SESSION_COOKIE_SECURE = get_env_var_or_default("SESSION_COOKIE_SECURE", "false").lower() == "true"
+ENABLE_CORS = get_env_var_or_default("ENABLE_CORS", "true").lower() == "true"
 
 # This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
@@ -45,8 +57,7 @@ ENABLE_CORS = os.environ.get("ENABLE_CORS", "true").lower() == "true"
 #
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 
-
-DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
+DNS_DOMAIN = get_env_var_or_default("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
@@ -62,10 +73,10 @@ ENCRYPTED_TEXT_FIELD_KEY = os.environ.get("ENCRYPTED_TEXT_FIELD_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
-USE_S3 = os.getenv("USE_S3") == "true"
-USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE") == "true"
+USE_S3 = os.getenv("USE_S3", "").lower() == "true"
+USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE", "").lower() == "true"
 # Storage provider configuration
-STORAGE_PROVIDER = os.environ.get("STORAGE_PROVIDER", "local")  # local, s3, azure
+STORAGE_PROVIDER = get_env_var_or_default("STORAGE_PROVIDER", "local")  # local, s3, azure
 if USE_S3:
     STORAGE_PROVIDER = "s3"
 elif USE_AZURE_STORAGE:
@@ -84,14 +95,14 @@ else:
     CDN_URL = None
 
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
-ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
+ENVIRONMENT = get_env_var_or_default("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
-SENTRY_FRONT_ENABLED = os.environ.get("SENTRY_FRONT_ENABLED", "false").lower() == "true"
-AVAILABLE_LANGUAGES = os.environ.get("AVAILABLE_LANGUAGES", "en,fr")
+SENTRY_FRONT_ENABLED = get_env_var_or_default("SENTRY_FRONT_ENABLED", "false").lower() == "true"
+AVAILABLE_LANGUAGES = get_env_var_or_default("AVAILABLE_LANGUAGES", "en,fr")
 
 PRODUCT_FRUITS_WORKSPACE_CODE = os.environ.get("PRODUCT_FRUITS_WORKSPACE_CODE", "")
 
-LEARN_MORE_URL = os.environ.get("LEARN_MORE_URL", None)
+LEARN_MORE_URL = get_env_var_or_default("LEARN_MORE_URL", None)
 
 # Documentation and help resources
 USER_MANUAL_PATH = os.environ.get("USER_MANUAL_PATH", "")
@@ -100,17 +111,17 @@ FORUM_PATH = os.environ.get("FORUM_PATH", "")
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
 USE_CELERY = os.environ.get("USE_CELERY", "")
-DATASET_ID = os.environ.get("DATASET_ID", None)
+DATASET_ID = get_env_var_or_default("DATASET_ID", None)
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
-DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() == "true"
+DISABLE_PASSWORD_LOGINS = get_env_var_or_default("DISABLE_PASSWORD_LOGINS", "").lower() == "true"
 
 # env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
 # to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
-CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
-CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
-CACHE_MAX_ENTRIES = os.environ.get("CACHE_MAX_ENTRIES", 300)
-ENABLE_ANALYTICS = os.environ.get("ENABLE_ANALYTICS", "false").lower() == "true"
+CACHE_BACKEND = get_env_var_or_default("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
+CACHE_LOCATION = get_env_var_or_default("CACHE_LOCATION", "django_cache_table")
+CACHE_MAX_ENTRIES = get_env_var_or_default("CACHE_MAX_ENTRIES", 300)
+ENABLE_ANALYTICS = get_env_var_or_default("ENABLE_ANALYTICS", "false").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -125,7 +136,7 @@ SITE_ID = 1
 
 # Logging
 
-LOGGING_LEVEL = os.getenv("DJANGO_LOGGING_LEVEL", "INFO")
+LOGGING_LEVEL = get_env_var_or_default("DJANGO_LOGGING_LEVEL", "INFO")
 if TESTING:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
@@ -233,7 +244,7 @@ if USE_CELERY:
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
-ENABLE_GZIP = os.environ.get("ENABLE_GZIP", "false").lower() == "true"
+ENABLE_GZIP = get_env_var_or_default("ENABLE_GZIP", "false").lower() == "true"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -311,12 +322,11 @@ WSGI_APPLICATION = "hat.wsgi.application"
 
 # Database
 
-DB_NAME = os.environ.get("RDS_DB_NAME", "iaso")
-DB_USERNAME = os.environ.get("RDS_USERNAME", "postgres")
-DB_PASSWORD = os.environ.get("RDS_PASSWORD", None)
-DB_HOST = os.environ.get("RDS_HOSTNAME", "db")
-DB_PORT = os.environ.get("RDS_PORT", 5432)
-SNS_NOTIFICATION_TOPIC = os.environ.get("SNS_NOTIFICATION_TOPIC", None)
+DB_NAME = get_env_var_or_default("RDS_DB_NAME", "iaso")
+DB_USERNAME = get_env_var_or_default("RDS_USERNAME", "postgres")
+DB_PASSWORD = get_env_var_or_default("RDS_PASSWORD", None)
+DB_HOST = get_env_var_or_default("RDS_HOSTNAME", "db")
+DB_PORT = get_env_var_or_default("RDS_PORT", 5432)
 
 DATABASES = {
     "default": {
@@ -352,12 +362,12 @@ if "test" in sys.argv and DEBUG:
     INSTALLED_APPS.append("django_sql_dashboard_export")
     # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
     DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
-elif os.environ.get("DB_READONLY_USERNAME"):
+elif get_env_var_or_default("DB_READONLY_USERNAME", None):
     DATABASES["dashboard"] = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": DB_NAME,
-        "USER": os.environ.get("DB_READONLY_USERNAME"),
-        "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
+        "USER": get_env_var_or_default("DB_READONLY_USERNAME", None),
+        "PASSWORD": get_env_var_or_default("DB_READONLY_PASSWORD", None),
         "HOST": DB_HOST,
         "PORT": DB_PORT,
         # type: ignore
@@ -492,7 +502,7 @@ SPECTACULAR_SETTINGS = {
         "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
         "tagsSorter": "alpha",  # sorting tags by alphanumeric
     },
-    "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
+    "DISABLE_ERRORS_AND_WARNINGS": get_env_var_or_default("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],
     "COMPONENT_NO_READ_ONLY_REQUIRED": True,
 }
@@ -507,9 +517,9 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
 }
 
-AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_S3_REGION_NAME = get_env_var_or_default("AWS_S3_REGION_NAME", "eu-central-1")
+AWS_ACCESS_KEY_ID = get_env_var_or_default("AWS_ACCESS_KEY_ID", None)
+AWS_SECRET_ACCESS_KEY = get_env_var_or_default("AWS_SECRET_ACCESS_KEY", None)
 
 MEDIA_URL_PREFIX = "/media/"
 if USE_S3:
@@ -570,11 +580,11 @@ elif USE_AZURE_STORAGE:
     # - Without custom domain: https://account.blob.core.windows.net/iaso/static/ and https://account.blob.core.windows.net/iaso/media/
     # - With CDN: Uses STATIC_URL environment variable
 
-    AZURE_STORAGE_ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME")
-    AZURE_STORAGE_ACCOUNT_KEY = os.environ.get("AZURE_STORAGE_ACCOUNT_KEY")
-    AZURE_CONTAINER_NAME = os.environ.get("AZURE_CONTAINER_NAME", "iaso")
-    AZURE_CONNECTION_STRING = os.environ.get("AZURE_CONNECTION_STRING")
-    AZURE_CUSTOM_DOMAIN = os.environ.get("AZURE_CUSTOM_DOMAIN")
+    AZURE_STORAGE_ACCOUNT_NAME = get_env_var_or_default("AZURE_STORAGE_ACCOUNT_NAME", None)
+    AZURE_STORAGE_ACCOUNT_KEY = get_env_var_or_default("AZURE_STORAGE_ACCOUNT_KEY", None)
+    AZURE_CONTAINER_NAME = get_env_var_or_default("AZURE_CONTAINER_NAME", "iaso")
+    AZURE_CONNECTION_STRING = get_env_var_or_default("AZURE_CONNECTION_STRING", None)
+    AZURE_CUSTOM_DOMAIN = get_env_var_or_default("AZURE_CUSTOM_DOMAIN", None)
 
     # Azure storage settings
     AZURE_ACCOUNT_NAME = AZURE_STORAGE_ACCOUNT_NAME
@@ -636,7 +646,7 @@ except Exception as e:
 
 
 def get_env_as_float(variable_name: str, default_str: str) -> float:
-    var_str: str = os.environ.get(variable_name, default_str)
+    var_str: str = get_env_var_or_default(variable_name, default_str)
     try:
         return float(var_str)
     except ValueError:
@@ -704,13 +714,13 @@ if SENTRY_URL:
 # Workers configuration
 #
 # Define if this environment is a worker (not in use)
-IS_BACKGROUND_WORKER = bool(os.environ.get("WORKER", False))
+IS_BACKGROUND_WORKER = bool(get_env_var_or_default("WORKER", False))
 
 # Define the backend to be used:
 #   Needs to be one of: POSTGRES, SQS
 #   Defaulting to SQS in production and Postgres in DEBUG
 DEFAULT_BACKGROUND_BACKEND = "POSTGRES" if DEBUG else "SQS"
-BACKGROUND_BACKEND = os.environ.get("BACKGROUND_TASK_SERVICE", DEFAULT_BACKGROUND_BACKEND)
+BACKGROUND_BACKEND = get_env_var_or_default("BACKGROUND_TASK_SERVICE", DEFAULT_BACKGROUND_BACKEND)
 
 if BACKGROUND_BACKEND == "POSTGRES":
     # Postgres backed background jobs
@@ -720,15 +730,15 @@ elif BACKGROUND_BACKEND == "SQS":
     # SQS backed background jobs, SQS will send job payloads to `tasks/task`
     BEANSTALK_WORKER = IS_BACKGROUND_WORKER  # Used to expose extra URLs
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.TaskService"
-    BEANSTALK_SQS_URL = os.environ.get(
+    BEANSTALK_SQS_URL = get_env_var_or_default(
         "BEANSTALK_SQS_URL",
         "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue",
     )
-    BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
+    BEANSTALK_SQS_REGION = get_env_var_or_default("BEANSTALK_SQS_REGION", "eu-central-1")
 else:
     raise Exception("BACKGROUND_TASK_SERVICE needs to one of: POSTGRES, SQS")
 
-DISABLE_SSL_REDIRECT = bool(os.environ.get("DISABLE_SSL_REDIRECT", False))
+DISABLE_SSL_REDIRECT = bool(get_env_var_or_default("DISABLE_SSL_REDIRECT", False))
 SSL_ON = not (DEBUG or BEANSTALK_WORKER or DISABLE_SSL_REDIRECT)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
@@ -738,24 +748,24 @@ SECURE_REDIRECT_EXEMPT = [r"_health/$"]
 
 # Email configuration
 
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Iaso <no-reply@iaso.bluesquare.org>")
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "mail.smtpbucket.com")
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
-EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"
+DEFAULT_FROM_EMAIL = get_env_var_or_default("DEFAULT_FROM_EMAIL", "Iaso <no-reply@iaso.bluesquare.org>")
+EMAIL_BACKEND = get_env_var_or_default("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = get_env_var_or_default("EMAIL_HOST", "mail.smtpbucket.com")
+EMAIL_HOST_USER = get_env_var_or_default("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = get_env_var_or_default("EMAIL_HOST_PASSWORD", "")
+EMAIL_PORT = get_env_var_or_default("EMAIL_PORT", "8025")
+EMAIL_USE_TLS = get_env_var_or_default("EMAIL_TLS", "true") == "true"
 
 # Application customizations
-APP_TITLE = os.environ.get("APP_TITLE", "IASO")
-FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
-LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
-LOGIN_LOGO_PATH = os.environ.get("LOGIN_LOGO_PATH", None)
-THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
-THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#ff7961")
-THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
-SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
-HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
+APP_TITLE = get_env_var_or_default("APP_TITLE", "IASO")
+FAVICON_PATH = get_env_var_or_default("FAVICON_PATH", "images/iaso-favicon.png")
+LOGO_PATH = get_env_var_or_default("LOGO_PATH", "images/logo.png")
+LOGIN_LOGO_PATH = get_env_var_or_default("LOGIN_LOGO_PATH", None)
+THEME_PRIMARY_COLOR = get_env_var_or_default("THEME_PRIMARY_COLOR", "#006699")
+THEME_SECONDARY_COLOR = get_env_var_or_default("THEME_SECONDARY_COLOR", "#ff7961")
+THEME_PRIMARY_BACKGROUND_COLOR = get_env_var_or_default("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
+SHOW_NAME_WITH_LOGO = get_env_var_or_default("SHOW_NAME_WITH_LOGO", "yes")
+HIDE_BASIC_NAV_ITEMS = get_env_var_or_default("HIDE_BASIC_NAV_ITEMS", "no")
 
 # https://docs.djangoproject.com/fr/4.2/topics/auth/customizing/#specifying-authentication-backends
 # When somebody calls `django.contrib.auth.authenticate()`, Django tries authenticating
@@ -788,7 +798,7 @@ if IN_TESTS:
     AXES_HANDLER = "axes.handlers.dummy.AxesDummyHandler"
 
 # stricter mode where no public except white listed one
-AUTHENTICATION_ENFORCED = os.environ.get("AUTHENTICATION_ENFORCED", "false") == "true"
+AUTHENTICATION_ENFORCED = get_env_var_or_default("AUTHENTICATION_ENFORCED", "false") == "true"
 
 SITE_ID = 1
 
@@ -798,7 +808,7 @@ CODE_CHALLENGE = generate_pkce()
 
 SOCIALACCOUNT_PROVIDERS = {}
 
-WFP_AUTH_CLIENT_ID = os.environ.get("WFP_AUTH_CLIENT_ID", False)
+WFP_AUTH_CLIENT_ID = get_env_var_or_default("WFP_AUTH_CLIENT_ID", False)
 # for now, only WFP uses social_accounts
 ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False
 if WFP_AUTH_CLIENT_ID:
@@ -818,7 +828,7 @@ if WFP_AUTH_CLIENT_ID:
         "OAUTH_PKCE_ENABLED": True,
         # To which tenant this is linked
         "IASO_ACCOUNT_NAME": iaso_account,
-        "EMAIL_RECIPIENTS_NEW_ACCOUNT": os.environ.get("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
+        "EMAIL_RECIPIENTS_NEW_ACCOUNT": get_env_var_or_default("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
 
 CACHES = {
@@ -830,8 +840,8 @@ CACHES = {
 }
 
 # sample celery configuration
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+CELERY_BROKER_URL = get_env_var_or_default("CELERY_BROKER_URL", "redis://localhost:6379")
+CELERY_RESULT_BACKEND = get_env_var_or_default("CELERY_RESULT_BACKEND", "redis://localhost:6379")
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
 
@@ -840,14 +850,14 @@ DRF_NESTED_MULTIPART_PARSER = {
 }
 
 # Superset dashboard/chart embedding configuration
-SUPERSET_URL = os.environ.get("SUPERSET_URL", None)
-SUPERSET_ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", None)
-SUPERSET_ADMIN_PASSWORD = os.environ.get("SUPERSET_ADMIN_PASSWORD", None)
+SUPERSET_URL = get_env_var_or_default("SUPERSET_URL", None)
+SUPERSET_ADMIN_USERNAME = get_env_var_or_default("SUPERSET_ADMIN_USERNAME", None)
+SUPERSET_ADMIN_PASSWORD = get_env_var_or_default("SUPERSET_ADMIN_PASSWORD", None)
 
 # ClamAV - Antivirus configuration
-CLAMAV_ACTIVE = os.environ.get("CLAMAV_ACTIVE", "false").lower() == "true"
-CLAMAV_FQDN = os.environ.get("CLAMAV_FQDN", "www.some-url.com")  # FQDN, not full URL
-CLAMAV_PORT = os.environ.get("CLAMAV_PORT", "3310")
+CLAMAV_ACTIVE = get_env_var_or_default("CLAMAV_ACTIVE", "false").lower() == "true"
+CLAMAV_FQDN = get_env_var_or_default("CLAMAV_FQDN", "www.some-url.com")  # FQDN, not full URL
+CLAMAV_PORT = get_env_var_or_default("CLAMAV_PORT", "3310")
 CLAMAV_CONFIGURATION = {
     "address": f"{CLAMAV_FQDN}:{CLAMAV_PORT}",
     "backend": "clamd",  # Using ClamAV daemon
@@ -903,5 +913,5 @@ if IN_TESTS:
     if not ENCRYPTED_TEXT_FIELD_KEY:
         ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="
 
-ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
-SETUPER_SANDBOX_PASSWORD = os.environ.get("SETUPER_SANDBOX_PASSSWORD", "district")
+ENABLE_SETUPER_SANDBOX = get_env_var_or_default("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
+SETUPER_SANDBOX_PASSWORD = get_env_var_or_default("SETUPER_SANDBOX_PASSSWORD", "district")

@@ -11,7 +11,7 @@ const uploadCsv = (values: BulkImportPayload) => {
     const cleanDefaults = Object.entries(defaultValues).reduce(
         (acc, [key, value]) => {
             if (value && (Array.isArray(value) ? value.length > 0 : true)) {
-                acc[key] = value;
+                acc[key] = 1;
             }
             return acc;
         },
@@ -31,5 +31,6 @@ export const useUploadCsv = (): UseMutationResult => {
         invalidateQueryKey: 'profiles',
         snackErrorMsg: MESSAGES.uploadError,
         snackSuccessMessage: MESSAGES.uploadSuccess,
+        ignoreErrorCodes: [400],
     });
 };

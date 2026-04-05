@@ -24,6 +24,7 @@ from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
+from .api.bulk_create_users.views import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.colors import colors_list
 from .api.comment import CommentViewSet
@@ -96,7 +97,6 @@ from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions.permissions import PermissionsViewSet
-from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet

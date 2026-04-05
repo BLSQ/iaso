@@ -12,7 +12,7 @@ from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from iaso import models as m
-from iaso.api.profiles.bulk_create_users import BulkCreateUserSerializer
+from iaso.api.bulk_create_users.serializers import BulkCreateUserSerializer
 from iaso.models import BulkCreateUserCsvFile, Profile, Team, UserRole
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
@@ -883,6 +883,14 @@ class BulkCreateCsvTestCase(APITestCase):
             fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
+
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+
+        for row in csv_content.split("\n"):
+            writer.writerow(row.split(","))
+
+        csv_content = buffer.getvalue()
 
         test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
 

@@ -1,4 +1,5 @@
 import jsonschema
+import magic
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -31,3 +32,24 @@ class JSONSchemaFieldValidator:
             self.schema_validator.validate(value)
         except jsonschema.exceptions.ValidationError as e:
             raise ValidationError(self.message, code=self.code, params={"error": e.message})
+
+
+class FileTypeValidator:
+    message = _("Unsupported file type.")
+    code = "invalid_file_type"
+
+    def __init__(self, allowed_mimetypes=None, message=None, code=None):
+        if allowed_mimetypes is not None:
+            allowed_mimetypes = [allowed_mimetype.lower() for allowed_mimetype in allowed_mimetypes]
+        self.allowed_mimetypes = allowed_mimetypes
+
+        if message is not None:
+            self.message = message
+        if code is not None:
+            self.code = code
+
+    def __call__(self, value):
+        file_mime_type = magic.from_buffer(value.read(1024), mime=True)
+        value.seek(0)
+        if file_mime_type not in self.allowed_mimetypes:
+            raise ValidationError(code=self.code, message=self.message)

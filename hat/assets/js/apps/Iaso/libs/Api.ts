@@ -57,7 +57,7 @@ export const iasoFetch = async (
     const method = init?.method ?? 'GET';
 
     try {
-        response = await fetch(resource, {
+        response = await fetch(url, {
             ...init,
             credentials: 'same-origin',
         });

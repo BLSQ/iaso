@@ -211,3 +211,4 @@ iaso-enketo/
 
 # eslint
 .eslintcache
+/hat/assets/js/apps/Iaso/api/

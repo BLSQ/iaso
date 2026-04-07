@@ -28,6 +28,14 @@ export const SubmissionValidation = () => {
     const params: ParamsWithAccountId & Partial<UrlParams> = useParamsObject(
         baseUrls.instanceValidation,
     );
+    if (params?.page) {
+        params.page = parseInt(params?.page);
+    }
+
+    if (params?.pageSize) {
+        params.pageSize = parseInt(params?.pageSize);
+    }
+
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const { data: workflows, isFetching: isLoadingWorkflows } =

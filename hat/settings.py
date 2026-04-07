@@ -459,6 +459,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": None,
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
+    "SERVE_INCLUDE_SCHEMA": False,
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
@@ -482,6 +483,7 @@ SPECTACULAR_SETTINGS = {
     "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
     "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],
+    "COMPONENT_NO_READ_ONLY_REQUIRED": True,
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {

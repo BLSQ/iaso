@@ -14,7 +14,7 @@
         "test:coverage": "vitest run --coverage --config vitest.config.ts",
         "test:smoke": "playwright test --project=smoke",
         "test:e2e": "playwright test --project=e2e",
-        "build": "npm run webpack",
+        "build": "orval && npm run webpack",
         "webpack": "webpack --config ./hat/webpack.dev.js",
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
         "webpack-server": "webpack serve --config ./hat/webpack.dev.js",
@@ -108,7 +108,8 @@
         "typescript": "^5.7.2",
         "url-search-params-polyfill": "^8.2.5",
         "video.js": "^7.20.3",
-        "yup": "^0.32.9"
+        "yup": "^0.32.9",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
         "@babel/core": "^7.0.1",
@@ -164,6 +165,7 @@
         "mock-require": "^3.0.3",
         "nock": "^13.0.4",
         "nyc": "^15.1.0",
+        "orval": "^8.6.2",
         "sinon": "^18.0.0",
         "sinon-chai": "^3.7.0",
         "source-map-loader": "^5.0.0",

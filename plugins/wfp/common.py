@@ -421,7 +421,7 @@ def extract_assistance(data):
 
     # --- Medicines ---
     med = data.get("medicine_given")
-    if med is not None:
+    if med not in (None, ""):
         items.append({"type": med, "quantity": 1})
 
     medication = data.get("medication")

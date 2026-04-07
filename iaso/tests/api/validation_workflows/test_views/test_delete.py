@@ -9,6 +9,7 @@ from iaso.tests.api.validation_workflows.test_views.common import BaseValidation
 class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
     def setUp(self):
         self.account = Account.objects.create(name="account")
+        self.enable_validation_workflow_feature_flag(self.account)
         self.john_doe = self.create_user_with_profile(username="john.doe", account=self.account)
 
         self.john_wick = self.create_user_with_profile(
@@ -22,17 +23,22 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
             created_by=self.john_doe,
             updated_by=self.john_wick,
         )
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
     def test_perform_delete(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.delete(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, 204)
 
-        self.assertEqual(ValidationWorkflow.objects.all().count(), 0)
+        self.assertEqual(ValidationWorkflow.objects.all().count(), 1)  # the one without feature flag remains
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.delete(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
             )
@@ -49,3 +55,9 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.john_wick)
         res = self.client.delete(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, 204)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.delete(
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_without_feature_flag.slug})
+        )
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)

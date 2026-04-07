@@ -1,5 +1,5 @@
 from django.core.cache import cache
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -20,6 +20,7 @@ class AxesRateLimitTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
+        self.django_client = Client()
 
         cache.clear()
 
@@ -51,21 +52,28 @@ class AxesRateLimitTests(TestCase):
 
     def test_login_rate_limit(self):
         """Test that /login/ has rate limiting."""
-        self.client.post(self.login_url, self.login_payload, format="multipart")
-        self.client.post(self.login_url, self.login_payload, format="multipart")
+        response = self.django_client.post(self.login_url, data=self.login_payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotContains(response, "Too many login attempts. Please try again later.")
 
-        resp3 = self.client.post(self.login_url, self.login_payload, format="multipart")
-        self.assertEqual(resp3.status_code, status.HTTP_200_OK)
-        self.assertContains(resp3, "Too many login attempts. Please try again later.")
+        response = self.django_client.post(self.login_url, data=self.login_payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotContains(response, "Too many login attempts. Please try again later.")
+
+        response = self.django_client.post(self.login_url, data=self.login_payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, "Too many login attempts. Please try again later.")
 
     def test_admin_login_rate_limit(self):
         """Test that /admin/login/ has rate limiting"""
-        resp1 = self.client.post(self.admin_login_url, self.login_payload, format="multipart")
-        self.assertEqual(resp1.status_code, status.HTTP_200_OK)
+        response = self.django_client.post(self.admin_login_url, data=self.login_payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotContains(response, "Too many login attempts. Please try again later.")
 
-        resp2 = self.client.post(self.admin_login_url, self.login_payload, format="multipart")
-        self.assertEqual(resp2.status_code, status.HTTP_200_OK)
+        response = self.django_client.post(self.admin_login_url, data=self.login_payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotContains(response, "Too many login attempts. Please try again later.")
 
-        resp3 = self.client.post(self.admin_login_url, self.login_payload, format="multipart")
-        self.assertEqual(resp3.status_code, status.HTTP_200_OK)
-        self.assertContains(resp3, "Too many login attempts. Please try again later.")
+        response = self.django_client.post(self.admin_login_url, data=self.login_payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, "Too many login attempts. Please try again later.")

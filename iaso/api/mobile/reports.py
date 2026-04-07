@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 
 from iaso.api.common import ModelViewSet, TimestampField
@@ -18,6 +19,7 @@ class MobileReportSerializer(serializers.ModelSerializer):
     url = serializers.CharField(read_only=True, source="published_version.file.url")
 
 
+@extend_schema(tags=["Reports", "Mobile"])
 class MobileReportsViewSet(ModelViewSet):
     """
     api/mobile/reports

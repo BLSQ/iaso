@@ -4,9 +4,10 @@ from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from django.db.models import BooleanField, Case, Count, Exists, Max, OuterRef, Prefetch, Q, When
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Subquery
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -14,6 +15,7 @@ from rest_framework.request import Request
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
+from iaso.api.common import is_field_referenced
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
@@ -24,11 +26,13 @@ from iaso.models import (
     Form,
     FormAttachment,
     FormVersion,
+    Instance,
     OrgUnit,
     OrgUnitType,
     Project,
     ProjectFeatureFlags,
 )
+from iaso.models.base import Mapping
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
@@ -238,23 +242,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return form
 
 
-# empty fields then do return true assume it's give me all the fields like the forms page list
-# if specified fields contains :all or field_name then do return True
-# else False
-def is_field_referenced(field_name, requested_fields, order):
-    result = False
-
-    if (
-        not requested_fields
-        or ":all" in requested_fields.split(",")
-        or field_name in requested_fields.split(",")
-        or field_name in order
-    ):
-        result = True
-
-    return result
-
-
+@extend_schema(tags=["Forms"])
 class FormsViewSet(ModelViewSet):
     f"""Forms API
 
@@ -316,19 +304,13 @@ class FormsViewSet(ModelViewSet):
         requested_fields = self.request.query_params.get("fields")
 
         is_request_from_manifest = self.request.path.endswith("/manifest/")
-        default_order = "id" if is_request_from_manifest or self.action == "retrieve" else "instance_updated_at"
+        default_order = "id" if is_request_from_manifest else "name"
 
         order = self.request.query_params.get("order", default_order).split(",")
 
         if is_field_referenced("has_mappings", requested_fields, order):
-            queryset = queryset.annotate(
-                mapping_count=Count("mapping"),
-                has_mappings=Case(
-                    When(mapping_count__gt=0, then=True),
-                    default=False,
-                    output_field=BooleanField(),
-                ),
-            )
+            mappings_exist = Mapping.objects.filter(form_id=OuterRef("pk"))
+            queryset = queryset.annotate(has_mappings=Exists(mappings_exist))
 
         if is_field_referenced("has_attachments", requested_fields, order) and not is_request_from_manifest:
             attachment_exists = FormAttachment.objects.filter(form_id=OuterRef("pk"))
@@ -340,7 +322,8 @@ class FormsViewSet(ModelViewSet):
             profile = False
 
         if is_field_referenced("instance_updated_at", requested_fields, order) and not is_request_from_manifest:
-            queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+            latest_instance = Instance.objects.filter(form=OuterRef("pk")).order_by("-updated_at")
+            queryset = queryset.annotate(instance_updated_at=Subquery(latest_instance.values("updated_at")[:1]))
 
         enable_count = is_field_referenced("instances_count", requested_fields, order) and not is_request_from_manifest
 
@@ -394,15 +377,11 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # spare 8 or more sql when not needed
         if not is_request_from_manifest:
             # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
             # TODO
             #  - be smarter cfr is_field_referenced
-            #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
-
             prefetch_relations = [
-                "form_versions",
                 "projects",
                 "projects__feature_flags",
                 "reference_of_org_unit_types",
@@ -499,6 +478,7 @@ class FormsViewSet(ModelViewSet):
         form = self.get_object()
         return generate_manifest_for_form(form, request)
 
+    @extend_schema(tags=["Enketo"])
     @action(detail=True, methods=["get"], permission_classes=[ReadOnly])
     def manifest_enketo(self, request, pk, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
@@ -564,6 +544,7 @@ def generate_manifest_structure(content: list[str]) -> str:
     )
 
 
+@extend_schema(tags=["Mobile", "Forms"])
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):

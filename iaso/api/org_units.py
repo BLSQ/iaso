@@ -16,13 +16,14 @@ from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit import models as audit_models
-from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, is_field_referenced, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
@@ -98,6 +99,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 
 # noinspection PyMethodMayBeStatic
+@extend_schema(tags=["Org units"])
 class OrgUnitViewSet(viewsets.ViewSet):
     f"""Org units API
 
@@ -204,9 +206,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
+        requested_fields = request.query_params.get("fields", None)
+
+        order = request.query_params.get("order", "name").split(",")
         # Annotate number of instance per org unit to sort by it
-        order_by_instance_count = "instances_count" in order or "-instances_count" in order
-        count_instances = order_by_instance_count or is_export
+        if requested_fields is None:
+            count_instances = True
+        else:
+            count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
+
+        if with_shapes or as_location or parquet_format:
+            count_instances = False
         count_per_form = csv_format or xlsx_format
         # add annotation(s) if needed
         queryset = annotate_query(queryset, count_instances, count_per_form, forms)
@@ -276,7 +286,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res = {
                     "count": paginator.count,
                     "counts": counts,
-                    "orgunits": serializer(page.object_list, many=True).data,
+                    "orgunits": serializer(
+                        page.object_list,
+                        many=True,
+                        context={"request": request},
+                    ).data,
                     "has_next": page.has_next(),
                     "has_previous": page.has_previous(),
                     "page": page_offset,
@@ -607,7 +621,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 errors.append(
                     {
                         "errorKey": "validation_status",
-                        "errorMessage": _(f"Invalid validation status : {validation_status}"),
+                        "errorMessage": _("Invalid validation status : {validation_status}").format(
+                            validation_status=validation_status
+                        ),
                     }
                 )
 

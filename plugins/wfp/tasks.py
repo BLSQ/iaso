@@ -2,20 +2,12 @@ import logging
 
 from celery import shared_task
 from django.core.management import call_command
-from django.db import connection
 
-from iaso.management.commands import unique_indexes
 from iaso.management.commands.clean_up_duplicate_submissions import DRY_RUN_ARG
 from iaso.models.base import ExternalCredentials
+from plugins.wfp.aggregator import Aggregator
 from plugins.wfp.common import ETL
 
-from .management.commands.ethiopia.Under5 import ET_Under5
-from .management.commands.nigeria.Pbwg import NG_PBWG
-from .management.commands.nigeria.Under5 import NG_Under5
-from .management.commands.south_sudan.Dhis2 import Dhis2
-from .management.commands.south_sudan.Pbwg import PBWG
-from .management.commands.south_sudan.Screening import Screening
-from .management.commands.south_sudan.Under5 import Under5
 from .models import *
 
 
@@ -32,27 +24,20 @@ logger = logging.getLogger(__name__)
 #
 # docker compose --profile celery up
 # docker compose run iaso start_celery_worker
-# then go in admin http://localhost:8081/admin/wfp/beneficiary/
-#   - select (or create a first beneficiary if it's empty)
-#   - and select action "Create indexes on UUID field (non-blocking)"
+# then go in admin http://localhost:8081/admin/iaso/account/
+#   - select any account (doesn't matter which)
+#   - and select action "Create indexes too heavy for the migration process (celery)"
+@shared_task()
+def create_out_of_band_indexes():
+    logger.info("Starting task to create indexes.")
+    call_command("unique_indexes")
+
+
+# Kept for historical reasons
 @shared_task()
 def create_index_on_instance_uuid():
     print("Starting task to create index on iaso_instance.uuid and others")
-
-    for index in unique_indexes.INDEXES:
-        logger.info(f"Starting task to create index: {index.name()}")
-        old_autocommit = connection.get_autocommit()
-        try:
-            connection.set_autocommit(True)
-            # We explicitly set autocommit to True for this connection.
-            with connection.cursor() as cursor:
-                index.apply(cursor)
-                logger.info(f"create index: {index.name()}) done.")
-        except Exception as e:
-            logger.error(f"Error creating index on iaso_instance(uuid): {e}", exc_info=True)
-            raise
-        finally:
-            connection.set_autocommit(old_autocommit)
+    call_command("unique_indexes")
 
 
 # how to test this task manually:
@@ -83,6 +68,9 @@ def etl_ng(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
 
+    from .management.commands.nigeria.Pbwg import NG_PBWG
+    from .management.commands.nigeria.Under5 import NG_Under5
+
     task_name = "plugins.wfp.tasks.etl_ng"
     last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
 
@@ -101,91 +89,29 @@ def etl_ng(all_data=None):
     logger.info("Starting ETL for Nigeria")
     entity_type_U5_code = "nigeria_under5"
     etl_u5 = ETL(entity_type_U5_code)
-    etl = ETL()
-    account = etl_u5.account_related_to_entity_type()
+    account = etl_u5.get_account()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=account, entity_id__in=updated_U5_beneficiaries).delete()
-
-    NG_Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
+    NG_Under5().run(updated_U5_beneficiaries, entity_type_U5_code, task_name)
     logger.info(
         f"----------------------------- Aggregating journey for {account} per org unit, admission and period(month and year) -----------------------------"
     )
-    org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
-    MonthlyStatistics.objects.filter(
-        account=account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
-    ).delete()
-    etl.journey_with_visit_and_steps_per_visit(account, "U5", org_units_with_updated_data)
+    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(account, "U5", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(account, org_units, "U5")
+
     entity_type_pbwg_code = "nigeria_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
-    pbwg_account = etl_pbwg.account_related_to_entity_type()
+    pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    NG_PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
+    Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
+    NG_PBWG().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.filter(
-        account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
-    ).delete()
-    etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
-
-
-@shared_task()
-def etl_ssd(all_data=None):
-    """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
-    from django_celery_results.models import TaskResult
-
-    task_name = "plugins.wfp.tasks.etl_ssd"
-    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
-
-    if last_success_task:
-        # A task was found, use its creation date
-        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
-    else:
-        # No successful task was found (first run case)
-        # Define a safe default date
-        last_success_task_date = None  # Example default: Unix Epoch start date
-
-    # Allow to re-run on the whole data
-    if all_data is not None:
-        last_success_task_date = None
-    logger.info("Starting ETL for South Sudan")
-    entity_type_U5_code = "ssd_under5"
-    etl_u5 = ETL(entity_type_U5_code)
-    etl = ETL()
-    child_account = etl_u5.account_related_to_entity_type()
-    updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
-    Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
-
-    logger.info(
-        f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
-    )
-    org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
-    MonthlyStatistics.objects.filter(
-        account=child_account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
-    ).delete()
-    etl.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
-
-    entity_type_pbwg_code = "ssd_pbwg"
-    etl_pbwg = ETL(entity_type_pbwg_code)
-    pbwg_account = etl_pbwg.account_related_to_entity_type()
-    updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
-    logger.info(
-        f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
-    )
-
-    MonthlyStatistics.objects.filter(
-        account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
-    ).delete()
-    etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
-
-    Screening().run(child_account, last_success_task_date)
-
-    # print("len(connection.queries)", len(connection.queries))  # Uncomment this line to see the number of SQL queries executed
-    # print(connection.queries) # Uncomment this line to see the SQL queries executed
+    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")
 
 
 @shared_task()
@@ -193,7 +119,8 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
     from django_celery_results.models import TaskResult
 
     last_success_task = TaskResult.objects.filter(
-        task_name="plugins.wfp.tasks.ssd_aggregate_and_push_data_to_dhis2", status="SUCCESS"
+        task_name="plugins.wfp.tasks.ssd_aggregate_and_push_data_to_dhis2",
+        status="SUCCESS",
     ).first()
     if last_success_task:
         last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
@@ -205,9 +132,8 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
         last_success_task_date = None
 
     etl = ETL("ssd_under5")
-    account = etl.account_related_to_entity_type()
-    org_units_with_updated_data = etl.get_org_unit_ids_with_updated_data(last_success_task_date)
-
+    account = etl.get_account()
+    org_units = etl.get_org_unit_and_period_with_updated_data(last_success_task_date)
     external_credential = ExternalCredentials.objects.filter(account=account).first()
     if external_credential is not None and (
         external_credential.url is not None
@@ -215,13 +141,9 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
         and external_credential.password is not None
     ):
         logger.info(
-            f"----------------------------- Aggregating monthly data to push to DHIS2 for {len(org_units_with_updated_data)} org unit on {account} -----------------------------"
+            f"----------------------------- Aggregating monthly data to push to DHIS2 for {account} -----------------------------"
         )
-        monthly_data = etl.aggregating_data_to_push_to_dhis2(account, org_units_with_updated_data)
-        pushed_data = Dhis2().save_dhis2_sync_results(external_credential, account, monthly_data)
-        logger.info(
-            f"----------------------------- Pushed to DHIS2 on U5 and PBW for {len(pushed_data)} rows aggregated per year and month -----------------------------"
-        )
+        Aggregator().aggregate_by_nutrition_program(account, org_units, external_credential)
     else:
         logger.info(
             f"----------------------------- No DHIS2 credentials found for {account} -----------------------------"
@@ -229,9 +151,70 @@ def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
 
 
 @shared_task()
+def etl_ssd(all_data=None):
+    """ETL for South Sudan Under-5 children and PBWG.
+
+    This is a rewrite of the Under-5 part of etl_ssd with key fixes:
+    - Supports unlimited journeys per beneficiary (v1 limited to 2)
+    - Correctly tracks weight per journey
+    - Does not mutate source submission data
+    - Handles defaulters as journey-ending events
+    - Cleaner journey boundary detection
+    """
+    from django_celery_results.models import TaskResult
+
+    from .management.commands.south_sudan.Pbwg import Pbwg
+    from .management.commands.south_sudan.Screening import Screening
+    from .management.commands.south_sudan.Under5 import Under5
+
+    task_name = "plugins.wfp.tasks.etl_ssd"
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
+
+    if last_success_task:
+        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+    else:
+        last_success_task_date = None
+
+    if all_data is not None:
+        last_success_task_date = None
+
+    logger.info("Starting ETL for South Sudan")
+
+    entity_type_u5_code = "ssd_under5"
+    etl_u5 = ETL(entity_type_u5_code)
+    child_account = etl_u5.get_account()
+    updated_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
+    Beneficiary.objects.filter(account=child_account, entity_id__in=updated_beneficiaries).delete()
+
+    Under5().run(updated_beneficiaries, entity_type_u5_code, task_name)
+
+    logger.info(f"Aggregating Children under 5 journey for {child_account} per org unit, admission and period")
+    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
+
+    entity_type_pbwg_code = "ssd_pbwg"
+    etl_pbwg = ETL(entity_type_pbwg_code)
+    pbwg_account = etl_pbwg.get_account()
+    updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
+    Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
+    Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
+
+    logger.info(f"Aggregating PBWG journey for {pbwg_account} per org unit, admission and period")
+    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")
+
+    Screening().run(child_account, last_success_task_date)
+
+
+@shared_task()
 def etl_ethiopia(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     from django_celery_results.models import TaskResult
+
+    from .management.commands.ethiopia.Under5 import ET_Under5
+    from .management.commands.south_sudan.Pbwg import Pbwg
 
     task_name = "plugins.wfp.tasks.etl_ethiopia"
     last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
@@ -251,32 +234,28 @@ def etl_ethiopia(all_data=None):
     logger.info("Starting ETL for Ethiopia")
     entity_type_U5_code = "ethiopia_under5"
     etl_u5 = ETL(entity_type_U5_code)
-    etl = ETL()
-    child_account = etl_u5.account_related_to_entity_type()
+    child_account = etl_u5.get_account()
     updated_U5_beneficiaries = etl_u5.get_updated_entity_ids(last_success_task_date)
     Beneficiary.objects.filter(account=child_account, entity_id__in=updated_U5_beneficiaries).delete()
-    ET_Under5().run(entity_type_U5_code, updated_U5_beneficiaries, task_name)
+    ET_Under5().run(updated_U5_beneficiaries, entity_type_U5_code, task_name)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    org_units_with_updated_data = etl_u5.get_org_unit_ids_with_updated_data(last_success_task_date)
-    MonthlyStatistics.objects.filter(
-        account=child_account, programme_type="U5", org_unit_id__in=org_units_with_updated_data
-    ).delete()
-    etl.journey_with_visit_and_steps_per_visit(child_account, "U5", org_units_with_updated_data)
+    org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
 
     entity_type_pbwg_code = "ethiopia_pbwg"
     etl_pbwg = ETL(entity_type_pbwg_code)
-    pbwg_account = etl_pbwg.account_related_to_entity_type()
+    pbwg_account = etl_pbwg.get_account()
     updated_pbwg_beneficiaries = etl_pbwg.get_updated_entity_ids(last_success_task_date)
-    Beneficiary.objects.filter(entity_id__in=updated_pbwg_beneficiaries).delete()
-    PBWG().run(entity_type_pbwg_code, updated_pbwg_beneficiaries, task_name)
+    Beneficiary.objects.filter(account=pbwg_account, entity_id__in=updated_pbwg_beneficiaries).delete()
+    Pbwg().run(updated_pbwg_beneficiaries, entity_type_pbwg_code, task_name)
 
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.filter(
-        account=pbwg_account, programme_type="PLW", org_unit_id__in=org_units_with_updated_data
-    ).delete()
-    etl.journey_with_visit_and_steps_per_visit(pbwg_account, "PLW", org_units_with_updated_data)
+    pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+    Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
+    Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")

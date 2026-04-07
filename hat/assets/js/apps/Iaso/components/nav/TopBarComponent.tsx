@@ -1,22 +1,30 @@
 import React, { useContext, FunctionComponent } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
+import {
+    Box,
+    Grid,
+    IconButton,
+    SxProps,
+    Theme,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
+import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
 import { useSidebar } from '../../domains/app/contexts/SideBarContext';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext';
 import { LangSwitch } from '../../domains/home/components/LangSwitch';
 import { useFindCustomComponent } from '../../plugins/hooks/customComponents';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { CurrentUserInfos } from './CurrentUser/index.tsx';
-import { HomePageButton } from './HomePageButton.tsx';
-import { LogoutButton } from './LogoutButton.tsx';
-import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { CurrentUserInfos } from './CurrentUser/index';
+import { HomePageButton } from './HomePageButton';
+import { LogoutButton } from './LogoutButton';
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     menuButton: {
         [theme.breakpoints.up('md')]: {
             marginRight: `${theme.spacing(2)} !important`,
@@ -48,6 +56,7 @@ type Props = {
     goBack?: () => void;
     displayMenuButton?: boolean;
     disableShadow?: boolean;
+    sx?: SxProps;
 };
 
 const TopBar: FunctionComponent<Props> = ({
@@ -57,6 +66,7 @@ const TopBar: FunctionComponent<Props> = ({
     goBack = () => null,
     displayMenuButton = true,
     disableShadow = false,
+    sx = {},
 }) => {
     const classes = useStyles();
 
@@ -71,13 +81,14 @@ const TopBar: FunctionComponent<Props> = ({
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const Disclaimer = useFindCustomComponent('topbar.disclaimer');
+
     return (
         <AppBar
             position="relative"
             color="primary"
             id="top-bar"
-            sx={{ zIndex: 10 }}
             elevation={disableShadow ? 0 : 4}
+            sx={{ zIndex: 10, ...sx }}
         >
             <Toolbar className={classes.root}>
                 {Disclaimer && (

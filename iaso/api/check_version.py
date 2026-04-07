@@ -1,6 +1,5 @@
 from django.utils.datastructures import MultiValueDictKeyError
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -13,6 +12,7 @@ from iaso.api.query_params import APP_ID, APP_VERSION
 from iaso.models import Project
 
 
+@extend_schema(tags=["Mobile", "Check version"])
 class CheckVersionViewSet(ViewSet):
     """Check Version API
 
@@ -27,29 +27,29 @@ class CheckVersionViewSet(ViewSet):
     http_method_names = ["get", "head", "options"]
     lookup_url_kwarg = [APP_ID, APP_VERSION]
 
-    app_id_param = openapi.Parameter(
-        name=APP_ID,
-        in_=openapi.IN_QUERY,
-        required=True,
-        description="Application id",
-        type=openapi.TYPE_STRING,
-    )
-    app_version_param = openapi.Parameter(
-        name=APP_VERSION,
-        in_=openapi.IN_QUERY,
-        required=True,
-        description="Version to be tested",
-        type=openapi.TYPE_INTEGER,
-    )
-
-    @swagger_auto_schema(
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name=APP_ID,
+                description="Application id",
+                required=True,
+                type=str,
+                location=OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                name=APP_VERSION,
+                description="Version to be tested",
+                required=True,
+                type=int,
+                location=OpenApiParameter.QUERY,
+            ),
+        ],
         responses={
             204: "version provided for given app id is valid",
             400: f"parameters '{APP_ID}' or '{APP_VERSION}' were not provided or '{APP_VERSION}' is not an integer",
             404: "project for given app id doesn't exist",
             426: "version provided for given app id is **not** valid",
         },
-        manual_parameters=[app_id_param, app_version_param],
     )
     def list(self, request: Request, *args, **kwargs):
         # region input validation

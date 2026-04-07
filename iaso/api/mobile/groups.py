@@ -1,7 +1,7 @@
 from django.db.models import BooleanField, ExpressionWrapper, Q, Value
 from django.db.models.query import QuerySet
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin
@@ -27,6 +27,7 @@ class MobileGroupSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Groups", "Mobile"])
 class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
     """Groups API for Mobile.
 
@@ -40,30 +41,30 @@ class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
     permission_classes = [AuthenticationEnforcedPermission, permissions.AllowAny]
     serializer_class = MobileGroupSerializer
 
-    app_id_param = openapi.Parameter(
+    app_id_param = OpenApiParameter(
         name=APP_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Application id (`Project.app_id`)",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
 
-    show_deleted_param = openapi.Parameter(
+    show_deleted_param = OpenApiParameter(
         name=SHOW_DELETED,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=False,
         description="Include deleted groups",
-        type=openapi.TYPE_BOOLEAN,
+        type=OpenApiTypes.BOOL,
         default=False,
     )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             200: f"List of groups for the given '{APP_ID}'.",
             400: f"Parameter '{APP_ID}' is required.",
             404: f"Project for given '{APP_ID}' doesn't exist.",
         },
-        manual_parameters=[app_id_param, show_deleted_param],
+        parameters=[app_id_param, show_deleted_param],
     )
     def list(self, request: Request, *args, **kwargs) -> Response:
         return super().list(request, *args, **kwargs)

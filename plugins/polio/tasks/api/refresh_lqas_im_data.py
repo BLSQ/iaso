@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -93,6 +94,7 @@ class CustomTaskSearchFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+@extend_schema(tags=["Polio - tasks - Refresh LQAS IM"])
 class RefreshLQASIMDataViewset(ExternalTaskModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated,

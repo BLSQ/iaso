@@ -6,14 +6,13 @@ import phonenumbers
 
 from django.conf import settings
 from django.contrib.auth.models import Permission, User
-from django.contrib.auth.password_validation import validate_password
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Q
 from django.http import FileResponse
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -47,11 +46,11 @@ BULK_CREATE_USER_COLUMNS_LIST = [
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
-    default_permissions = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_projects = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_user_roles = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_org_units = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
-    default_teams = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    default_permissions = serializers.JSONField(write_only=True, required=False)
+    default_projects = serializers.JSONField(write_only=True, required=False)
+    default_user_roles = serializers.JSONField(write_only=True, required=False)
+    default_org_units = serializers.JSONField(write_only=True, required=False)
+    default_teams = serializers.JSONField(write_only=True, required=False)
 
     class Meta:
         model = BulkCreateUserCsvFile
@@ -344,13 +343,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
             if not password and email:
                 # Email invitation mode - no password validation
                 pass
-            elif password:
-                try:
-                    temp_user = User(username=username)
-                    validate_password(password, temp_user)
-                except ValidationError as e:
-                    row_errors["password"] = f"Invalid password: {'; '.join(e.messages)}"
-            else:
+            elif not password and not email:
                 # Error: need either password or email
                 row_errors["password"] = "Either password or email required for user creation"
 
@@ -562,6 +555,7 @@ class HasUserPermission(permissions.BasePermission):
         return False
 
 
+@extend_schema(tags=["Profiles", "Users"])
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
     """API endpoint to bulk create users and profiles from a CSV file.
 
@@ -932,7 +926,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 source=f"{PROFILE_API_BULK}_create",
             )
 
-    @swagger_auto_schema(request_body=no_body)
+    @extend_schema(request=None)
     @action(detail=False, methods=["get"], url_path="getsample")
     def download_sample_csv(self, request):
         return FileResponse(open("iaso/api/fixtures/sample_bulk_user_creation.csv", "rb"))

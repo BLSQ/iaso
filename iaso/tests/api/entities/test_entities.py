@@ -4,10 +4,15 @@ import io
 import json
 import uuid
 
+from datetime import timedelta
+
 import pytz
 import time_machine
 
 from django.core.files import File
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
@@ -111,8 +116,8 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response = self.client.get("/api/entities/", format="json")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
+        res_json = self.assertJSONResponse(response, 200)
+        self.assertValidListData(list_data=res_json, expected_length=2, results_key="result")
 
     def test_retrieve_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
@@ -164,52 +169,73 @@ class WebEntityAPITestCase(EntityAPITestCase):
         """
         Test the 'search' filter of /api/entities
 
-        This parameter allows to filter either by name, UUID or attributes (of the reference form)
+        This parameter allows to filter either by name, UUID, attributes (of the reference form),
+        as well as explicit ids: and uuids: prefixes.
         """
         self.client.force_authenticate(self.yoda)
 
         instance = Instance.objects.create(
             org_unit=self.ou_country,
             form=self.form_1,
+            uuid=uuid.uuid4(),
             json={"name": "c", "age": 30, "gender": "F"},
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        entity_1 = Entity.objects.create(
+            name="New Client",
+            entity_type=self.entity_type,
+            account=self.yoda.iaso_profile.account,
+            attributes=instance,
+        )
 
-        self.client.post("/api/entities/", data=payload, format="json")
+        second_instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
 
-        newly_added_entity = Entity.objects.last()
+        entity_2 = Entity.objects.create(
+            name="Client Old",
+            entity_type=self.entity_type,
+            account=self.yoda.iaso_profile.account,
+            attributes=second_instance,
+        )
 
-        # Case 1: search by entity name
-        response = self.client.get("/api/entities/?search=Client", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        the_result = response.json()["result"][0]
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # search by entity name - make sure it's case-insensitive and ignores white space
+        response = self.client.get("/api/entities/", data={"search": " cLiEnT "}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 2)
 
-        # Case 2: search by entity name - make sure it's case-insensitive
-        response = self.client.get("/api/entities/?search=cLiEnT", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        the_result = response.json()["result"][0]
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # Search by entity UUID
+        response = self.client.get("/api/entities/", data={"search": entity_1.uuid}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_1.id)
 
-        # Case 3: search by entity UUID
-        response = self.client.get(f"/api/entities/?search={newly_added_entity.uuid}", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # Search by JSON attribute
+        response = self.client.get("/api/entities/", data={"search": "30"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        # Both entities share the same instance attributes in this setup
+        self.assertEqual(len(data["result"]), 2)
 
-        # Case 4: search by JSON attribute
-        response = self.client.get("/api/entities/?search=age", format="json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["result"]), 1)
-        self.assertEqual(the_result["id"], newly_added_entity.id)
+        # Multi-word search. "client new" should match "New Client"
+        response = self.client.get("/api/entities/", data={"search": "client new"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_1.id)
+
+        # 'ids:' prefix search
+        response = self.client.get("/api/entities/", data={"search": f"ids:{entity_2.id}"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_2.id)
+
+        # 'uuids:' prefix search
+        response = self.client.get("/api/entities/", data={"search": f"uuids:{entity_2.uuid}"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["result"]), 1)
+        self.assertEqual(data["result"][0]["id"], entity_2.id)
 
     def test_list_entities_annotate_duplicates(self):
         """
@@ -232,13 +258,49 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(10):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0]["id"], entities[0].id)
-        self.assertTrue(result[0]["has_duplicates"])
+        target_result = next(item for item in result if item["id"] == entities[0].id)
+        self.assertTrue(target_result["has_duplicates"])
+
+    def test_list_entities_annotate_last_saved_at(self):
+        """Test `last_saved_instance` is annotated correctly without n+1 queries"""
+
+        expensive_annotation = """MAX(COALESCE("iaso_instance"."source_created_at", "iaso_instance"."created_at"))"""
+
+        self.client.force_authenticate(self.yoda)
+        source_created_at = timezone.make_aware(datetime.datetime(2025, 2, 3))
+
+        for i in range(3):
+            entity = Entity.objects.create(entity_type=self.entity_type, account=self.yoda.iaso_profile.account)
+            Instance.objects.create(
+                entity=entity,
+                form=self.form_1,
+                source_created_at=source_created_at + timedelta(days=i),
+            )
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get("/api/entities/", data={"order": "id"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        result = data["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["last_saved_instance"], "2025-02-03T00:00:00Z")
+
+        self.assertEqual(len(ctx.captured_queries), 8)
+        self.assertNotIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get("/api/entities/", data={"order": "-last_saved_instance"}, format="json")
+        data = self.assertJSONResponse(response, 200)
+        result = data["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["last_saved_instance"], "2025-02-05T00:00:00Z")
+
+        self.assertEqual(len(ctx.captured_queries), 6)
+        self.assertIn(expensive_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):
@@ -249,7 +311,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # We expect the intersection of the form's possible_fields
         # and the entity type's field_list_view to show up as columns
-        # in the export. Other propreties should be ignored.
+        # in the export. Other properties should be ignored.
 
         possible_fields = [
             {"name": "first_name", "type": "text", "label": "First Name"},
@@ -303,13 +365,28 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # Test the extra columns in the CSV export
         response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
-        response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        data = list(csv.reader(io.StringIO(response_string), delimiter=","))
-        row_to_test = data[len(data) - 1]
+        # utf-8-sig automatically strips the \ufeff BOM
+        response_csv = response.getvalue().decode("utf-8-sig")
+        data = list(csv.reader(io.StringIO(response_csv), delimiter=","))
 
+        expected_headers = [
+            "ID",
+            "UUID",
+            "Entity Type",
+            "Creation Date",
+            "HC",
+            "HC ID",
+            "Last Update",
+            # dynamic columns:
+            "First Name",
+            "Middle Name",
+            "Last Name",
+        ]
+        self.assertEqual(data[0], expected_headers)
+
+        row_to_test = data[-1]
         expected_row = [
             str(entity.id),
             str(entity.uuid),
@@ -317,7 +394,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
             instance.org_unit.name,
             str(instance.org_unit.id),
-            "",
+            "2021-07-18 14:57:00",
             "Jean",
             "M.",
             "Dupont",
@@ -525,7 +602,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 2)
-        self.assertEqual([r["id"] for r in results], [entity1.id, entity2.id])
+        self.assertEqual(set(r["id"] for r in results), set((entity1.id, entity2.id)))
 
         # Search on only from date
         response = self.client.get(f"/api/entities/?dateFrom={date2_str}")
@@ -841,22 +918,22 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # export all entities type as csv
         response = self.client.get("/api/entities/?csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         # export all entities type as xlsx
         response = self.client.get("/api/entities/?xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
 
         # export specific entity type as xlsx
         response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
 
         # export specific entity type as csv
         response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
 
         # Check the contents of the last CSV file
         response_csv = response.getvalue().decode("utf-8")
@@ -871,9 +948,28 @@ class WebEntityAPITestCase(EntityAPITestCase):
             entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
             instance.org_unit.name,
             str(instance.org_unit.id),
-            "",
+            "2021-07-18 14:57:00",
         ]
         self.assertEqual(row_to_test, expected_row)
+
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
+    def test_entities_empty_export(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/entities/?csv=true/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.csv"')
+
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+
+        self.assertEqual(response_string, "\ufeff")
+
+        response = self.client.get("/api/entities/?xlsx=true/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), 'attachment; filename="entities-2021-07-18-14-57.xlsx"')
+
+        response_xlsx = response.getvalue()
+        self.assertEqual(response_xlsx, b"")
 
     def test_handle_export_entity_type_empty_field_list(self):
         self.client.force_authenticate(self.yoda)

@@ -12,6 +12,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
@@ -855,6 +856,7 @@ class VaccineRequestFormFilterSet(django_filters.FilterSet):
         }
 
 
+@extend_schema(tags=["Polio - Vaccine request forms"])
 class VaccineRequestFormViewSet(ModelViewSet):
     """
     GET /api/polio/vaccine/request_forms/ to get the list of all request_forms

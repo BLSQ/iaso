@@ -10,6 +10,7 @@ export type ApiParams = {
     searches: string;
     asLocation?: string;
     locationLimit: string;
+    fields?: string;
 };
 
 type Result = {
@@ -41,6 +42,7 @@ export const useGetApiParams = (
         page: params.page ? params.page : '1',
         searches: JSON.stringify(tempSearches),
         locationLimit: params.locationLimit,
+        fields: params.fields,
     };
 
     if (asLocation) {

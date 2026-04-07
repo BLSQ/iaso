@@ -82,7 +82,9 @@ export const Assignments: FunctionComponent = () => {
                         >
                             {planning.org_unit_details?.name}
                             <ChevronRight sx={{ fontSize: 40, px: 1 }} />
-                            {planning.target_org_unit_type_details?.name}
+                            {planning.target_org_unit_type_details
+                                ?.map(t => t.name)
+                                .join(', ')}
                         </Typography>
                         <DeleteDialog
                             iconColor="error"

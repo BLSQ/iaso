@@ -219,7 +219,8 @@ INSTALLED_APPS += [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
-    "drf_yasg",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_json_widget",
     "phonenumber_field",
 ]
@@ -257,8 +258,12 @@ MIDDLEWARE += [
 ]
 if DEBUG:
     MIDDLEWARE += [
-        "querycount.middleware.QueryCountMiddleware",
+        "iaso.middlewares.query_count.SafeQueryCountMiddleware",
     ]
+
+MIDDLEWARE += [
+    "iaso.middlewares.camel_case.CustomCamelCaseMiddleWare",
+]
 
 ROOT_URLCONF = "hat.urls"
 
@@ -276,6 +281,7 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             "./hat/templates",
+            os.path.join(BASE_DIR, "iaso", "templates"),
             "./django_sql_dashboard_export/templates",
         ],
         "APP_DIRS": True,
@@ -458,11 +464,50 @@ REST_FRAMEWORK = {
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
-        "rest_framework.renderers.JSONRenderer",
-        "rest_framework.renderers.BrowsableAPIRenderer",
+        "rest_framework.renderers.JSONRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseJSONRenderer
+        "rest_framework.renderers.BrowsableAPIRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer
         "rest_framework_csv.renderers.CSVRenderer",
     ),
+    # in the future:
+    # 'DEFAULT_PARSER_CLASSES': (
+    #     'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    # ),
+    "JSON_UNDERSCOREIZE": {
+        "no_underscore_before_number": True,
+    },
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "TITLE": "Iaso",
+    "DESCRIPTION": "Iaso Swagger",
+    "VERSION": "v1",
+    "SERVE_PERMISSIONS": [
+        "rest_framework.permissions.IsAdminUser",
+        "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
+    ],
+    "TAGS": [
+        {"name": "Mobile", "description": "Endpoints used by the mobile application"},
+        {"name": "v2", "description": "Version 2 of the API"},
+    ],
+    "POSTPROCESSING_HOOKS": [
+        "iaso.drf_spectacular_utils.post_processing_hooks.selective_camelize_serializer_fields",
+    ],
+    "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
+        "defaultModelsExpandDepth": 0,  # collapsing schemas by default
+        "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
+        "tagsSorter": "alpha",  # sorting tags by alphanumeric
+    },
+    "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
+    in ["true", "1"],
+}
+
+REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {
+    "iaso.utils.models.color.ColorField": "iaso.utils.serializer.color.ColorFieldSerializer"
 }
 
 SIMPLE_JWT = {

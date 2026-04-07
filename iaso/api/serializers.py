@@ -3,7 +3,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso.api.common import TimestampField
+from iaso.api.common import DynamicFieldsModelSerializer, TimestampField
 from iaso.api.query_params import APP_ID
 from iaso.models import Group, OrgUnit, OrgUnitType
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
@@ -190,7 +190,7 @@ class OrgUnitDropdownSerializer(OrgUnitSerializer):
 
 
 # noinspection PyMethodMayBeStatic
-class OrgUnitSearchSerializer(OrgUnitSerializer):
+class OrgUnitSearchSerializer(OrgUnitSerializer, DynamicFieldsModelSerializer):
     parent = OrgUnitSearchParentSerializer()
     instances_count = serializers.SerializerMethodField()
     creator = serializers.SerializerMethodField()

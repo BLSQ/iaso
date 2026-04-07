@@ -1,5 +1,6 @@
 from django.db.models import Min, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 
 from iaso.api.common import (
@@ -21,6 +22,7 @@ from plugins.polio.preparedness.spreadsheet_manager import (
 )
 
 
+@extend_schema(tags=["Polio - Campaign calendar", "v2"])
 class CampaignCalendarViewSet(ModelViewSet):
     """Main endpoint for campaign calendar.
 
@@ -82,6 +84,7 @@ class CampaignCalendarViewSet(ModelViewSet):
         return campaigns
 
 
+@extend_schema(tags=["Polio - Integrated campaigns", "v2"])
 class IntegratedCampaignsViewSet(CampaignCalendarViewSet):
     """Endpoint for integrated campaigns.
 

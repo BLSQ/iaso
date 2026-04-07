@@ -1,5 +1,5 @@
 from django.db.models.expressions import Subquery
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,7 +10,7 @@ from plugins.polio.models import Campaign, Round
 from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
-@swagger_auto_schema(tags=["rounds"], request_body=LqasDistrictsUpdateSerializer)
+@extend_schema(tags=["Polio - Rounds"], request=LqasDistrictsUpdateSerializer)
 class RoundViewSet(ModelViewSet):
     # Patch should be in the list to allow updatelqasfields to work
     http_method_names = ["patch"]

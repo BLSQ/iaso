@@ -1,0 +1,16 @@
+{
+    "include": [
+        "**/*.py"
+    ],
+    "extraPaths": [
+        "."
+    ],
+    "typeCheckingMode": "basic",
+    "reportAttributeAccessIssue": "none",
+    "reportOptionalMemberAccess": "none",
+    "reportOptionalCall": "none",
+    "reportArgumentType": "none",
+    "reportOptionalSubscript": "none",
+    "reportOptionalIterable": "none",
+    "reportAssignmentType": "none"
+}

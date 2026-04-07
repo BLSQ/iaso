@@ -292,10 +292,12 @@ def _convert_exit_type(exit_type):
 def extract_weight(data):
     """Extract weight from form data (kg)."""
     weight = data.get("weight_kgs")
-    if weight is not None and weight != "":
-        return _safe_float(weight)
+
     if weight == "":
         return 0.0
+
+    if weight not in (None, ""):
+        return _safe_float(weight)
     prev_weight = data.get("previous_weight_kgs__decimal__")
     if prev_weight is not None:
         return _safe_float(prev_weight)

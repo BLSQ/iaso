@@ -175,13 +175,14 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     root = _xmlfile_to_element(att1.file)
 
     for field_name, e_id in merge_def.items():
-        the_val = lookup[e_id].json[field_name]
-        try:
-            the_field = root.find(".//" + field_name)
-            if the_field is not None:
-                the_field.text = the_val
-        except Exception as e:
-            logger.exception("Error updating xml field %s: %s", field_name, e)
+        the_val = lookup[e_id].json.get(field_name, None)
+        if the_val is not None:
+            try:
+                the_field = root.find(".//" + field_name)
+                if the_field is not None:
+                    the_field.text = the_val
+            except Exception as e:
+                logger.exception("Error updating xml field %s: %s", field_name, e)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:
@@ -225,7 +226,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
         meta_instance_id.text = "uuid:" + str(new_uuid)
 
     new_xml_string = ET.tostring(root, encoding="utf-8", xml_declaration=False)
-    new_xml_content = ContentFile(new_xml_string.decode("utf-8"))
+    new_xml_content = ContentFile(new_xml_string)  # .decode("utf-8")
 
     new_inst.pk = None
     new_inst.entity = new_entity

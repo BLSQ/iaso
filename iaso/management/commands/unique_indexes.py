@@ -1,4 +1,47 @@
+"""Out-of-band index creation."""
+
+import logging
+
 from datetime import datetime, timedelta
+
+from django.core.management.base import BaseCommand
+from django.db import connection
+
+
+logger = logging.getLogger(__name__)
+
+
+class Command(BaseCommand):
+    help = "Create indexes that are too heavy for the regular migration process"
+
+    def handle(self, *args, **options):
+        self.stdout.write("Starting to apply indexes...")
+
+        for index in INDEXES:
+            index_name = index.name()
+            self.stdout.write(f"Applying index: {index_name}...")
+
+            old_autocommit = connection.get_autocommit()
+            try:
+                # Override django default behavior as CREATE INDEX CONCURRENTLY
+                # cannot run inside a transaction.
+                connection.set_autocommit(True)
+
+                with connection.cursor() as cursor:
+                    index.apply(cursor)
+
+                self.stdout.write(self.style.SUCCESS(f"Successfully applied: {index_name}"))
+
+            except Exception as e:
+                error_msg = f"Error creating index {index_name}: {e}"
+                self.stderr.write(self.style.ERROR(error_msg))
+                logger.error(error_msg, exc_info=True)
+                raise e
+
+            finally:
+                connection.set_autocommit(old_autocommit)
+
+        self.stdout.write(self.style.SUCCESS("All indexes applied successfully."))
 
 
 class OrgUnitUniqueUUIDIndex:
@@ -142,9 +185,41 @@ class EntityUniqueUUIDIndex:
         cursor.execute("DROP INDEX CONCURRENTLY IF EXISTS iaso_entity_uuidx_unicity_newer;")
 
 
+class InstanceFormIdUpdatedAtIndex:
+    """
+    Composite index on Instances to efficiently retrieve the latest Instance for each Form.
+
+    refs: IA-4870
+    """
+
+    def name(self):
+        return "iaso_instance_form_id_updated_at_composite"
+
+    def apply(self, cursor):
+        cursor.execute(f"CREATE INDEX CONCURRENTLY IF NOT EXISTS {self.name()} ON iaso_instance (form_id, updated_at);")
+
+    def reverse(self, cursor):
+        cursor.execute(f"DROP INDEX CONCURRENTLY IF EXISTS {self.name()};")
+
+
+class EntityCreatedAtIndex:
+    """Index on Entity `created_at` to enable efficient sorting on that field."""
+
+    def name(self):
+        return "iaso_entity_created_at"
+
+    def apply(self, cursor):
+        cursor.execute(f"CREATE INDEX CONCURRENTLY IF NOT EXISTS {self.name()} ON iaso_entity (created_at);")
+
+    def reverse(self, cursor):
+        cursor.execute(f"DROP INDEX CONCURRENTLY IF EXISTS {self.name()};")
+
+
 INDEXES = [
     InstanceNormalUUIDIndex(),
     InstanceUniqueUUIDIndex(),
     OrgUnitUniqueUUIDIndex(),
     EntityUniqueUUIDIndex(),
+    InstanceFormIdUpdatedAtIndex(),
+    EntityCreatedAtIndex(),
 ]

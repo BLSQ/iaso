@@ -15,4 +15,6 @@ class HasValidationWorkflowPermission(BasePermission):
 
 class HasAccountFeatureFlag(BasePermission):
     def has_permission(self, request, view):
+        if not request.user.iaso_profile:
+            return False
         return request.user.iaso_profile.account.feature_flags.filter(code="SUBMISSION_VALIDATION_WORKFLOW").exists()

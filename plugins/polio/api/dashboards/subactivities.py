@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.api.common import EtlModelViewset
@@ -15,6 +16,7 @@ class SubActivityDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema(tags=["Polio - Dashboards - Sub activities"])
 class SubActivityDashboardViewSet(EtlModelViewset):
     """
     GET /api/polio/dashboards/subactivities/
@@ -53,6 +55,7 @@ class SubActivityScopeDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema(tags=["Polio - Dashboards - Sub activity scopes"])
 class SubActivityScopeDashboardViewSet(EtlModelViewset):
     """
     GET /api/polio/dashboards/subactivityscopes/

@@ -490,7 +490,18 @@ SPECTACULAR_SETTINGS = {
         "rest_framework.permissions.IsAdminUser",
         "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
     ],
-    "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
+    "TAGS": [
+        {"name": "Mobile", "description": "Endpoints used by the mobile application"},
+        {"name": "v2", "description": "Version 2 of the API"},
+    ],
+    "POSTPROCESSING_HOOKS": [
+        "iaso.drf_spectacular_utils.post_processing_hooks.selective_camelize_serializer_fields",
+    ],
+    "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
+        "defaultModelsExpandDepth": 0,  # collapsing schemas by default
+        "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
+        "tagsSorter": "alpha",  # sorting tags by alphanumeric
+    },
     "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],
 }

@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, permissions, serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import LimitOffsetPagination
@@ -85,6 +86,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return attrs
 
 
+@extend_schema(tags=["Comments"])
 class CommentViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):
     """Comment API
 

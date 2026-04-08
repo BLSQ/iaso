@@ -11,6 +11,7 @@ from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -52,6 +53,7 @@ from plugins.polio.preparedness.spreadsheet_manager import (
 )
 
 
+@extend_schema(tags=["Polio - Campaigns"])
 class CampaignViewSet(ModelViewSet):
     """Main endpoint for campaign.
 

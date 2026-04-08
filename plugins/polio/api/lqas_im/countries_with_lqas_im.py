@@ -7,7 +7,7 @@ from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models import OrgUnit
 
 
-@extend_schema(tags=["lqasimcountries"])
+@extend_schema(tags=["Polio - Lqas IM countries"])
 class CountriesWithLqasIMConfigViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

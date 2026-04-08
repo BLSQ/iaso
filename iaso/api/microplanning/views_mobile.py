@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.api.common import (
@@ -9,6 +10,7 @@ from iaso.models.microplanning import Planning
 from .serializers import MobilePlanningSerializer
 
 
+@extend_schema(tags=["Micro plannings", "Mobile", "Plannings"])
 class MobilePlanningViewSet(ModelViewSet):
     """Planning for mobile, contrary to the more general API.
     it only returns the Planning where the user has assigned OrgUnit

@@ -1,3 +1,5 @@
+from autoslug import AutoSlugField
+from autoslug.utils import crop_slug, get_prepopulated_value
 from django.db import models
 from django.db.models import Case, IntegerField, When
 from django.utils.translation import gettext_lazy as _
@@ -26,20 +28,24 @@ class ValidationWorkflowArtefact(models.Model):
     def has_workflow(self, workflow):
         return self.validationnode_set.filter(node__workflow=workflow).exists()
 
-    def get_general_validation_status(self, workflow):
+    def get_general_validation_status(self, workflow=None):
         from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
         if self.validationnode_set.filter(
-            final=True, status=ValidationNodeStatus.ACCEPTED, node__workflow=workflow
+            final=True, status=ValidationNodeStatus.ACCEPTED, **{"node__workflow": workflow} if workflow else {}
         ).exists():
             return ValidationWorkflowArtefactStatus.APPROVED
 
-        if self.validationnode_set.filter(status=ValidationNodeStatus.REJECTED, node__workflow=workflow).exists():
+        if self.validationnode_set.filter(
+            status=ValidationNodeStatus.REJECTED, **{"node__workflow": workflow} if workflow else {}
+        ).exists():
             return ValidationWorkflowArtefactStatus.REJECTED
-        if self.validationnode_set.filter(status=ValidationNodeStatus.UNKNOWN, node__workflow=workflow).exists():
+        if self.validationnode_set.filter(
+            status=ValidationNodeStatus.UNKNOWN, **{"node__workflow": workflow} if workflow else {}
+        ).exists():
             return ValidationWorkflowArtefactStatus.PENDING
         if self.validationnode_set.filter(
-            final=False, status=ValidationNodeStatus.ACCEPTED, node__workflow=workflow
+            final=False, status=ValidationNodeStatus.ACCEPTED, **{"node__workflow": workflow} if workflow else {}
         ).exists():
             return ValidationWorkflowArtefactStatus.PENDING
 
@@ -60,7 +66,7 @@ class ValidationWorkflowArtefact(models.Model):
 
         return pks
 
-    def get_all_validation_nodes(self, workflow):
+    def get_all_validation_nodes(self, workflow=None):
         """
         Function to recursively get all validation nodes (including parent) and order them
         """
@@ -74,7 +80,51 @@ class ValidationWorkflowArtefact(models.Model):
         )
 
         return (
-            ValidationNode.objects.filter(node__workflow=workflow, instance_id__in=artefact_pks)
+            ValidationNode.objects.filter(
+                instance_id__in=artefact_pks, **{"node__workflow": workflow} if workflow else {}
+            )
             .annotate(_order=order)
             .order_by("-_order", "-created_at")
         )
+
+
+class BulkAutoSlugField(AutoSlugField):
+    def generate_slug_for_bulk_create(self, instance, existing_slugs=None):
+        if existing_slugs is None:
+            existing_slugs = set()
+
+        value = self.value_from_object(instance)
+
+        # autopopulate
+        if self.always_update or (self.populate_from and not value):
+            value = get_prepopulated_value(self, instance)
+
+            # pragma: nocover
+            if __debug__ and not value and not self.blank:
+                print(
+                    "Failed to populate slug %s.%s from %s"
+                    % (instance._meta.object_name, self.name, self.populate_from)
+                )
+
+        slug = None
+        if value:
+            slug = self.slugify(value)
+        if not slug:
+            slug = None
+
+            if not self.blank:
+                slug = instance._meta.model_name
+            elif not self.null:
+                slug = ""
+
+        if slug:
+            slug = self.slugify(crop_slug(self, slug))
+
+        # ensure the slug is unique
+        if self.unique or self.unique_with:
+            base_slug = slug
+            i = 1
+            while slug in existing_slugs:
+                slug = f"{base_slug}-{i}"
+                i += 1
+        return slug

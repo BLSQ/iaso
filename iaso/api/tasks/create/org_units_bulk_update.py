@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
@@ -6,6 +7,7 @@ from iaso.api.tasks.serializers import TaskSerializer
 from iaso.tasks.org_units_bulk_update import org_units_bulk_update
 
 
+@extend_schema(tags=["Org units", "Tasks"])
 class OrgUnitsBulkUpdate(viewsets.ViewSet):
     """Bulk update OrgUnits"""
 

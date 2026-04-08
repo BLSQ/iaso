@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
-import { useGetProfilesDropdown } from 'Iaso/domains/users/hooks/useGetProfilesDropdown';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../components/forms/InputComponent';
 import FullStarsSvg from '../../../components/stars/FullStarsSvgComponent';
@@ -42,8 +42,6 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
     const { data: runs, isLoading: isLoadingRuns } =
         useGetAlgorithmRunsOptions();
     const statuses = useStatusOptions();
-    const { data: validators, isLoading: isLoadingValidators } =
-        useGetProfilesDropdown();
     const { data: sources, isLoading: isLoadingSources } = useGetDataSources();
     const sourceOptions = useSourceOptions(sources);
     const { options: originVersionOptions, disabled: originVersionDisabled } =
@@ -57,7 +55,7 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
     });
 
     const handleSourceUpdate = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: any) => {
             if (keyValue === 'origin') {
                 const newFilters = {
                     ...filters,
@@ -150,17 +148,15 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                     options={statuses}
                 />
                 {/* validator */}
-                <InputComponent
-                    keyValue="validatorId"
-                    label={MESSAGES.validator}
-                    type="select"
-                    multi={false}
-                    onChange={handleChange}
-                    value={filters.validatorId}
-                    dataTestId="links-validator-filter"
-                    options={validators}
-                    loading={isLoadingValidators}
-                />
+                <Box mt={2}>
+                    <UserAsyncSelect
+                        keyValue="validatorId"
+                        handleChange={handleChange}
+                        filterUsers={filters.validatorId}
+                        label={MESSAGES.validator}
+                        multi={false}
+                    />
+                </Box>
                 {/* org unit types */}
                 <InputComponent
                     keyValue="orgUnitTypeId"

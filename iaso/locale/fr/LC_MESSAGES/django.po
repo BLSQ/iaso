@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-11 17:08+0000\n"
+"POT-Creation-Date: 2026-04-01 10:44+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -26,6 +26,11 @@ msgstr "Le modèle {value} n'existe pas."
 #: iaso/api/comment.py
 msgid "Invalid value."
 msgstr "Valeur invalide"
+
+#: iaso/api/common/validators.py
+#, python-format
+msgid "Invalid data for schema: %(error)s"
+msgstr "Données invalides pour le schéma : %(error)s"
 
 #: iaso/api/custom_translations.py
 msgid "Account id is required."
@@ -1098,6 +1103,10 @@ msgstr "Gérer les rôles utilisateurs"
 msgid "Workflows"
 msgstr "Flux de travail"
 
+#: iaso/permissions/core_permissions.py
+msgid "Validation workflows"
+msgstr "Circuit de validation"
+
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py
 msgid "Starting"
@@ -1157,7 +1166,7 @@ msgstr ""
 "%(account_name)s, vous pouvez ignorer cet e-mail - aucun mot de passe ne "
 "sera créé. Cordialement, L'équipe %(domain)s."
 
-#: iaso/utils/colors.py
+#: iaso/utils/colors.py iaso/utils/serializer/color.py
 msgid "Color must be a valid hex code (#RRGGBB)."
 msgstr "La couleur doit être un code hexadécimal valide (#RRGGBB)."
 

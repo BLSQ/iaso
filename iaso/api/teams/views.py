@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ from .filters import (
 from .serializers import AuditTeamSerializer, TeamDropdownSerializer, TeamSerializer
 
 
+@extend_schema(tags=["Teams"])
 class TeamViewSet(AuditMixin, ModelViewSet):
     """Api for teams
 

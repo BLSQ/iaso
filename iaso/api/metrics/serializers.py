@@ -3,11 +3,11 @@ import pandas as pd
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from iaso.api.common.serializer_fields import JSONSchemaField
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
 from iaso.utils.org_units import get_valid_org_units_with_geography
-from iaso.utils.serializer.json_schema_field import JSONSchemaField
 
 
 class MetricTypeSerializer(serializers.ModelSerializer):

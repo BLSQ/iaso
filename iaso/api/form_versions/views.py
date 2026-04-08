@@ -1,6 +1,7 @@
 from django.db.models import BooleanField, CharField, Count, F, TextField, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import Concat
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, parsers
 
 from iaso.api.common import ModelViewSet
@@ -11,6 +12,7 @@ from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, FormVersion, Project
 
 
+@extend_schema(tags=["Form versions"])
 class FormVersionsViewSet(ModelViewSet):
     f"""Form versions API
 

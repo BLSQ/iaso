@@ -1,5 +1,6 @@
 from django.db.models import Min, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 
 from iaso.api.common import (
@@ -19,6 +20,7 @@ from plugins.polio.preparedness.spreadsheet_manager import (
 )
 
 
+@extend_schema(tags=["Polio - Dashboards - Campaigns", "v2"])
 class CampaignsForDashboardsViewSet(EtlModelViewset):
     """
     API endpoint for consumption by ETL tools like Openhexa.

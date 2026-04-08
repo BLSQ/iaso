@@ -1,6 +1,7 @@
 import django_filters
 
 from django.db.models import Count, Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, viewsets
 from rest_framework.decorators import action
 
@@ -17,6 +18,7 @@ class OrgUnitTreeQuerystringSerializer(serializers.Serializer):
     validation_status = serializers.MultipleChoiceField(choices=OrgUnit.VALIDATION_STATUS_CHOICES)
 
 
+@extend_schema(tags=["Org units"])
 class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     """
     This viewset is a bit unusual because it serves two purposes:

@@ -27,6 +27,7 @@ class MobileGroupSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Groups", "Mobile"])
 class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
     """Groups API for Mobile.
 

@@ -1,4 +1,5 @@
 from django.db.models import Prefetch, Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -24,6 +25,7 @@ from .serializers import (
 DEFAULT_ORDER = "name"
 
 
+@extend_schema(tags=["Org unit types"])
 class OrgUnitTypeViewSet(ModelViewSet):
     """Org unit types API (deprecated)
 
@@ -81,6 +83,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
         return context
 
 
+@extend_schema(tags=["Org unit types", "v2"])
 class OrgUnitTypeViewSetV2(ModelViewSet):
     """Org unit types API
 

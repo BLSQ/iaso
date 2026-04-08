@@ -14,6 +14,7 @@ from iaso.models import WorkflowVersion
 from iaso.permissions.core_permissions import CORE_WORKFLOW_PERMISSION
 
 
+@extend_schema(tags=["Workflow versions"])
 class WorkflowVersionViewSet(ModelViewSet):
     """Workflow API
     GET /api/workflowversions/

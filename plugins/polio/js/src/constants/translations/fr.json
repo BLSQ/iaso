@@ -899,5 +899,7 @@
     "iaso.polio.validation.onsetAfterNotificationError": "La date de début doit précéder la date de notification virus",
     "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "La date de début doit précéder la date de déclaration de l'épidémie",
     "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "La date de notification virus doit précéder la déclaration de l'épidémie",
+    "iaso.projets.featureflag.submission_validation_workflow": "Web: Workflows de validation",
+    "iaso.projets.featureflag.tooltip.submission_validation_workflow": "Voir et éditer les workflows de validation dans l'interface web",
     "iaso.task.label.gotoLqasForCountry": "Voir la page LQAS"
 }

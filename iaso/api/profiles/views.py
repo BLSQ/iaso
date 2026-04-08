@@ -19,6 +19,7 @@ from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
@@ -55,6 +56,7 @@ from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_
 from iaso.utils import is_mobile_request
 
 
+@extend_schema(tags=["Profiles", "Users"])
 class ProfilesViewSet(ModelViewSet):
     f"""Profiles API
 
@@ -82,7 +84,6 @@ class ProfilesViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
 
-    filter_backends = [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = ["id", "user__username", "annotated_first_user_role"]

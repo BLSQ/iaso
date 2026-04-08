@@ -4,6 +4,7 @@ from django.db.models import F
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -21,6 +22,7 @@ class NotificationPagination(Paginator):
     page_size = 20
 
 
+@extend_schema(tags=["Polio - Notifications"])
 class NotificationViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = NotificationFilter

@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
 
-import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { baseUrls } from 'Iaso/constants/urls';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { orderOrgUnitsByDepth } from 'Iaso/utils/map/mapUtils';
 import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
 import MESSAGES from './messages.ts';
-import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 
 export const getLatestOrgUnitLevelId = levels => {
     if (levels) {
@@ -143,12 +143,15 @@ export const useGetStatusMessage = () => {
     return getStatusMessage;
 };
 export const getOrgUnitGroups = (orgUnit: OrgUnit) => {
-    return <span>
-        {orgUnit.groups &&
-            orgUnit.groups.length > 0 &&
-            orgUnit.groups.map(g => g.name).join(', ')}
-        {(!orgUnit.groups || orgUnit.groups.length === 0) && textPlaceholder}
-    </span>
+    return (
+        <span>
+            {orgUnit.groups &&
+                orgUnit.groups.length > 0 &&
+                orgUnit.groups.map(g => g.name).join(', ')}
+            {(!orgUnit.groups || orgUnit.groups.length === 0) &&
+                textPlaceholder}
+        </span>
+    );
 };
 
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
@@ -180,6 +183,6 @@ export const useFilterOrgUnitsByGroupUrl = () => {
     const defaultColor = getColor(0, colors).replace('#', '');
     return groupId =>
         `/${baseUrls.orgUnits}/locationLimit/3000/order/id` +
-        `/pageSize/50/page/1/searchTabIndex/0/searchActive/true` +
+        `/pageSize/50/page/1/searchTabIndex/0` +
         `/searches/[{"validation_status":"all", "color":"${defaultColor}", "group":"${groupId}", "source": null}]`;
 };

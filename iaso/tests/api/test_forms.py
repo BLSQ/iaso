@@ -876,7 +876,7 @@ class FormsAPITestCase(APITestCase):
             self.assertNotIn(MAX_QUERY_INSTANCE_UPDATED_AT, sql, f"Found unexpected query: {sql}")
             self.assertNotIn(COUNT_QUERY_INSTANCE, sql, f"Found unexpected query: {sql}")
 
-        self.assertEqual(len(ctx.captured_queries), 10)
+        self.assertEqual(len(ctx.captured_queries), 9)
 
     def test_form_details_full_details(self):
         self.client.force_authenticate(self.yoda)
@@ -896,4 +896,4 @@ class FormsAPITestCase(APITestCase):
                 at_least_one_query_with_max_and_count = True
 
         self.assertTrue(at_least_one_query_with_max_and_count)
-        self.assertEqual(len(ctx.captured_queries), 11)
+        self.assertEqual(len(ctx.captured_queries), 10)

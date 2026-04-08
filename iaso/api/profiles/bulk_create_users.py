@@ -555,6 +555,7 @@ class HasUserPermission(permissions.BasePermission):
         return False
 
 
+@extend_schema(tags=["Profiles", "Users"])
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
     """API endpoint to bulk create users and profiles from a CSV file.
 

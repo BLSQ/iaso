@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.models import Device, DeviceOwnership, Instance
@@ -29,6 +30,7 @@ class DeviceSerializer(serializers.ModelSerializer):
         return owner.user.iaso_profile.as_short_dict() if owner else None
 
 
+@extend_schema(tags=["Devices"])
 class DevicesViewSet(ModelViewSet):
     f"""Iaso Devices API
 

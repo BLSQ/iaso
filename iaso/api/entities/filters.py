@@ -5,6 +5,8 @@ from datetime import datetime
 from uuid import UUID
 
 from django.db.models import Exists, OuterRef, Q
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Lower, Trim
 from django.utils import timezone
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet, UUIDFilter
 from rest_framework import filters
@@ -69,10 +71,23 @@ class EntityFilterSet(FilterSet):
         except ValueError:
             pass
 
+        queryset = queryset.annotate(
+            clean_first_name=Lower(Trim(KeyTextTransform("first_name", "attributes__json"))),
+            clean_post_name=Lower(Trim(KeyTextTransform("post_name", "attributes__json"))),
+            clean_last_name=Lower(Trim(KeyTextTransform("last_name", "attributes__json"))),
+            clean_mother_name=Lower(Trim(KeyTextTransform("mother_last_name", "attributes__json"))),
+        )
+
         q = Q()
-        for token in value.split():
-            q &= Q(name__icontains=token) | Q(attributes__json__icontains=token)
-        q |= Q(uuid__icontains=value)
+        for token in value.lower().split():
+            q &= (
+                Q(clean_first_name=token)
+                | Q(clean_last_name=token)
+                | Q(clean_mother_name=token)
+                | Q(clean_post_name=token)
+            )
+
+        # q |= Q(uuid__icontains=value) # not used in trypelim
 
         return queryset.filter(q)
 

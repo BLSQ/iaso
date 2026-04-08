@@ -16,7 +16,7 @@ from submissions import (
 
 def define_health_facility_reference_form(iaso_client):
     org_unit_types = iaso_client.get(
-        "/api/v2/orgunittypes/?with_units_count=true&fields=id,name,units_count,projects,sub_unit_types,allow_creating_sub_unit_types"
+        "/api/v2/orgunittypes/?with_units_count=true&fields=id,name,units_count,projects,sub_unit_types,allow_creating_sub_unit_types&search=Health facility/Formation sanitaire - HF"
     )["orgUnitTypes"]
     health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
         0

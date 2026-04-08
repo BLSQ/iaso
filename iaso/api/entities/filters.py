@@ -29,6 +29,8 @@ class EntityFilterSet(FilterSet):
 
     show_deleted = BooleanFilter(field_name="deleted_at", lookup_expr="isnull", exclude=True)
     orgUnitId = CharFilter(method="filter_org_unit")
+    residentOrgUnitId = CharFilter(method="filter_org_unit_resident")
+
     fields_search = CharFilter(method="filter_fields_search")
     search = CharFilter(method="filter_search")
 
@@ -40,6 +42,14 @@ class EntityFilterSet(FilterSet):
         try:
             parent = OrgUnit.objects.get(id=value)
             return queryset.filter(attributes__org_unit__path__descendants=parent.path)
+        except OrgUnit.DoesNotExist:
+            return queryset.none()
+
+    def filter_org_unit_resident(self, queryset, name, value):
+        """Trypelim-specific search for the entity's detected residency location."""
+        try:
+            parent = OrgUnit.objects.get(id=value)
+            return queryset.filter(entityvillagestats__org_unit__path__descendants=parent.path)
         except OrgUnit.DoesNotExist:
             return queryset.none()
 

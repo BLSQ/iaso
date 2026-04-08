@@ -13,6 +13,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         self.account = Account.objects.create(name="account")
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -38,6 +39,12 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
             created_by=self.john_doe,
             account=self.account_2,
         )
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+            self.node_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
         self.other_node = ValidationNodeTemplate.objects.create(
             name="First node 2", workflow=self.other_validation_workflow
@@ -81,6 +88,21 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         )
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-move",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow_without_feature_flag.slug,
+                    "slug": self.node_without_feature_flag.slug,
+                },
+            ),
+            data={"position": PositionChoices.first},
+        )
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(self.john_wick)
 
         # check that it was moved to first node
         self.validation_workflow.refresh_from_db()
@@ -157,7 +179,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         self.validation_workflow.refresh_from_db()
         self.assertEqual(self.validation_workflow.dump_nodes(), ["second-node", "first-node", "third-node"])
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-move",

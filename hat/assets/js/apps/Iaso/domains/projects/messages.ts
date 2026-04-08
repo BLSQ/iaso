@@ -1,4 +1,4 @@
-import { defineMessages } from "react-intl";
+import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     projects: {
@@ -397,14 +397,32 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Ethiopian calendar',
     },
     mobile_validation_workflow_tooltip: {
-      id: "iaso.projets.featureflag.tooltip.mobile_enable_validation_workflow",
-      defaultMessage:
-        "On the mobile interface, shows the validation workflow tab and retrieve the validation histories"
+        id: 'iaso.projets.featureflag.tooltip.mobile_enable_validation_workflow',
+        defaultMessage:
+            'On the mobile interface, shows the validation workflow tab and retrieve the validation histories',
     },
     mobile_validation_workflow: {
-      id: "iaso.projets.featureflag.mobile_enable_validation_workflow",
-      defaultMessage: "Mobile: Enable validation workflow"
-    }
+        id: 'iaso.projets.featureflag.mobile_enable_validation_workflow',
+        defaultMessage: 'Mobile: Enable validation workflow',
+    },
+    mobile_synchronize_with_zip_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_synchronize_with_zip',
+        defaultMessage:
+            'Sends the data to the server in ZIP files, making it faster, and more efficient.',
+    },
+    mobile_synchronize_with_zip: {
+        id: 'iaso.projets.featureflag.mobile_synchronize_with_zip',
+        defaultMessage: 'Mobile: Synchronize via ZIP files',
+    },
+    submission_validation_workflow_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.submission_validation_workflow',
+        defaultMessage:
+            'See and edit validation workflows on the web interface',
+    },
+    submission_validation_workflow: {
+        id: 'iaso.projets.featureflag.submission_validation_workflow',
+        defaultMessage: 'Web: Validation workflows',
+    },
 });
 
 export default MESSAGES;

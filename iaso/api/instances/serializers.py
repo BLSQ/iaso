@@ -10,7 +10,8 @@ from iaso.utils.serializer.rounded_decimal_field import RoundedDecimalField
 
 class InstanceImportAccuracySerializer(serializers.Serializer):
     accuracy = RoundedDecimalField(
-        max_digits=7,
+        coerce_max_value=99999,
+        max_digits=None,
         decimal_places=2,
         rounding=decimal.ROUND_HALF_UP,
         allow_null=True,

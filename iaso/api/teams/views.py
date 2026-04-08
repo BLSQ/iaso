@@ -1,6 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
-from rest_framework import filters, permissions, status
+from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -9,7 +9,6 @@ from iaso.api.common import (
     DeletionFilterBackend,
     ModelViewSet,
     ReadOnlyOrHasPermission,
-    is_field_referenced,
 )
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION

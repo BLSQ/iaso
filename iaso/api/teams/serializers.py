@@ -53,39 +53,16 @@ class TeamDropdownSerializer(ModelSerializer):
 
 class TeamSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
-        requested_fields = kwargs.pop("fields", None)
         super().__init__(*args, **kwargs)
-
-        if requested_fields is not None:
-            allowed = set(requested_fields)
-            existing = set(self.fields.keys())
-            for field_name in existing - allowed:
-                self.fields.pop(field_name, None)
-
-        request = self.context.get("request")
-        if request and request.user and request.user.is_authenticated:
-            user = request.user
-            account = user.iaso_profile.account
-            active_fields = self.fields
-
-            if "project" in active_fields:
-                active_fields["project"].queryset = account.project_set.all()
-
-            user_heavy_fields = {"manager", "users"}
-            if any(f in active_fields for f in user_heavy_fields):
-                users_in_account = User.objects.filter(iaso_profile__account=account)
-                if "manager" in active_fields:
-                    active_fields["manager"].queryset = users_in_account
-                if "users" in active_fields:
-                    active_fields["users"].child_relation.queryset = users_in_account
-
-            team_heavy_fields = {"sub_teams", "parent"}
-            if any(f in active_fields for f in team_heavy_fields):
-                user_teams = Team.objects.filter_for_user(user)
-                if "sub_teams" in active_fields:
-                    active_fields["sub_teams"].child_relation.queryset = user_teams
-                if "parent" in active_fields:
-                    active_fields["parent"].queryset = user_teams
+        user = self.context["request"].user
+        account = user.iaso_profile.account
+        teams = Team.objects.filter_for_user(user)
+        users_in_account = User.objects.filter(iaso_profile__account=account)
+        self.fields["project"].queryset = account.project_set.all()
+        self.fields["manager"].queryset = users_in_account
+        self.fields["users"].child_relation.queryset = users_in_account
+        self.fields["sub_teams"].child_relation.queryset = teams
+        self.fields["parent"].queryset = teams
 
     class Meta:
         model = Team

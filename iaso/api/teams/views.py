@@ -60,50 +60,11 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return self.queryset.none()
-
-        queryset = self.queryset.filter_for_user(user).select_related("project")
-        requested_fields = self.request.query_params.get("fields")
-        order = self.request.query_params.get("order", "").split(",")
-
-        if is_field_referenced("users_details", requested_fields, order) or is_field_referenced(
-            "users", requested_fields, order
-        ):
-            queryset = queryset.prefetch_related("users", "users__iaso_profile")
-
-        if is_field_referenced("sub_teams_details", requested_fields, order) or is_field_referenced(
-            "sub_teams", requested_fields, order
-        ):
-            queryset = queryset.prefetch_related("sub_teams")
-
-        return queryset
-
-    def get_serializer(self, *args, **kwargs):
-        request = getattr(self, "request", None)
-        is_writing = "data" in kwargs
-        fields_param = request.query_params.get("fields") if request and not is_writing else None
-
-        if fields_param:
-            kwargs["fields"] = fields_param.split(",")
-
-        return super().get_serializer(*args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        instance = serializer.instance
-        requested_fields = request.query_params.get("fields")
-        if requested_fields:
-            return Response(
-                TeamSerializer(
-                    instance,
-                    fields=requested_fields.split(","),
-                    context={"request": request},
-                ).data,
-                status=status.HTTP_201_CREATED,
-            )
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return (
+            self.queryset.filter_for_user(user)
+            .select_related("project")
+            .prefetch_related("users", "users__iaso_profile", "sub_teams")
+        )
 
     @action(
         detail=False,

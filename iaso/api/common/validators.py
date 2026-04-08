@@ -49,6 +49,7 @@ class FileTypeValidator:
             self.code = code
 
     def __call__(self, value):
+        value.seek(0)
         file_mime_type = magic.from_buffer(value.read(1024), mime=True)
         value.seek(0)
         if file_mime_type not in self.allowed_mimetypes:

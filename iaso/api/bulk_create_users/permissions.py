@@ -10,3 +10,11 @@ class HasUserPermission(permissions.BasePermission):
         ):
             return True
         return False
+
+
+def has_only_user_managed_permission(user):
+    if not user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()) and user.has_perm(
+        CORE_USERS_MANAGED_PERMISSION.full_name()
+    ):
+        return True
+    return False

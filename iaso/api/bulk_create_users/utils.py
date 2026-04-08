@@ -1,14 +1,16 @@
 def detect_multi_field_value_splitter(dialect, value):
-    if dialect.delimiter == ";":
-        if "," in value:
-            return ","
-        return "|"
-    if dialect.delimiter == ",":
-        if ";" in value:
-            return ";"
-        return "|"
-    if dialect.delimiter == "|":
-        if "," in value:
-            return ","
-        return ";"
-    raise ValueError
+    delimiter = dialect.delimiter
+    alternatives = {
+        ";": [",", "|"],
+        ",": [";", "|"],
+        "|": [",", ";"],
+    }
+
+    if delimiter not in alternatives:
+        raise ValueError
+
+    for alt in alternatives[delimiter]:
+        if alt in value:
+            return alt
+
+    return delimiter

@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 import pytz
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.encoding import smart_str
 from django.utils.timezone import make_aware
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
@@ -59,3 +61,24 @@ class JSONSchemaField(serializers.JSONField):
 
         super().__init__(*args, **kwargs)
         self.validators = [JSONSchemaFieldValidator(schema=schema)]
+
+
+class AccountPrefixedSlugRelatedField(serializers.SlugRelatedField):
+    def to_internal_value(self, data):
+        account_id = self.context["account_id"]
+        prefixed_name = f"{account_id}_{data}"
+        return super().to_internal_value(prefixed_name)
+
+
+class SlugOrPrimaryKeyRelatedField(serializers.SlugRelatedField):
+    def to_internal_value(self, data):
+        if isinstance(data, int):
+            queryset = self.get_queryset()
+            try:
+                return queryset.get(pk=data)
+            except ObjectDoesNotExist:
+                self.fail("does_not_exist", slug_name="pk", value=smart_str(data))
+            except (TypeError, ValueError):
+                self.fail("invalid")
+        else:
+            return super().to_internal_value(data)

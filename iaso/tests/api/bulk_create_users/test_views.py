@@ -1,18 +1,18 @@
 import csv
 import io
-import json
 
+from unittest import mock
 from unittest.mock import patch
 
 import jsonschema
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, User
-from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework import status
 
 from iaso import models as m
-from iaso.api.bulk_create_users.serializers import BulkCreateUserSerializer
 from iaso.models import BulkCreateUserCsvFile, Profile, Team, UserRole
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
@@ -112,7 +112,58 @@ class BulkCreateCsvTestCase(APITestCase):
         default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
         super().setUp()
 
+        patcher = mock.patch("magic.from_buffer", return_value="text/csv")
+        self.mock_from_buffer = patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_upload_valid_csv(self):
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        context = {"org_unit_type_id": self.org_unit_type_region.id}
+
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
+        )
+
+        test_file = SimpleUploadedFile(
+            "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
+        )
+
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+
+        users = User.objects.all()
+        profiles = Profile.objects.all()
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertEqual(len(users), 8)
+        self.assertEqual(len(profiles), 8)
+        new_user_1 = users.get(username="broly")
+        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
+        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_1.first_name, "broly")
+        self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_1.iaso_profile.language, "fr")
+        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(org_unit_ids, [9999])
+
+        # Checking that the file was uploaded to the right location
+        file_upload = m.BulkCreateUserCsvFile.objects.first()
+        # The API endpoint changes the file name after processing - doing this with file.save() generates a random suffix
+        # This means that it's impossible to check for strict equality
+        expected_file_name = f"{self.account1.short_sanitized_name}_{self.account1.id}/bulk_create_user_csv/{file_upload.created_at.strftime('%Y_%m')}/test_user_bulk_create_valid.csv"
+        self.assertEqual(file_upload.file.name, expected_file_name)
+
+        # Verify default options are stored as empty when not provided
+        self.assertEqual(file_upload.default_profile_language, "")
+        self.assertEqual(file_upload.default_organization, "")
+        self.assertEqual(file_upload.default_permissions.count(), 0)
+        self.assertEqual(file_upload.default_user_roles.count(), 0)
+        self.assertEqual(file_upload.default_projects.count(), 0)
+        self.assertEqual(file_upload.default_org_units.count(), 0)
+        self.assertEqual(file_upload.default_teams.count(), 0)
+
+    def test_num_queries(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
@@ -129,59 +180,43 @@ class BulkCreateCsvTestCase(APITestCase):
         with self.assertNumQueries(37):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
-        users = User.objects.all()
-        profiles = Profile.objects.all()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(users), 8)
-        self.assertEqual(len(profiles), 8)
-        new_user_1 = users.get(username="broly")
-        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
-        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
-        self.assertEqual(new_user_1.first_name, "broly")
-        self.assertEqual(new_user_1.last_name, "bio")
-        self.assertEqual(new_user_1.iaso_profile.language, "fr")
-        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
-        self.assertEqual(org_unit_ids, [9999])
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
-        # Checking that the file was uploaded to the right location
-        file_upload = m.BulkCreateUserCsvFile.objects.first()
-        # The API endpoint changes the file name after processing - doing this with file.save() generates a random suffix
-        # This means that it's impossible to check for strict equality
-        expected_file_name = f"{self.account1.short_sanitized_name}_{self.account1.id}/bulk_create_user_csv/{file_upload.created_at.strftime('%Y_%m')}/{file_upload.id}"
-        self.assertTrue(file_upload.file.name.startswith(expected_file_name))
+    def test_num_queries_with_perms(self):
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
 
-        # Verify default options are stored as empty when not provided
-        self.assertEqual(file_upload.default_profile_language, "")
-        self.assertEqual(file_upload.default_organization, "")
-        self.assertEqual(file_upload.default_permissions.count(), 0)
-        self.assertEqual(file_upload.default_user_roles.count(), 0)
-        self.assertEqual(file_upload.default_projects.count(), 0)
-        self.assertEqual(file_upload.default_org_units.count(), 0)
-        self.assertEqual(file_upload.default_teams.count(), 0)
+        self.account1.modules = self.MODULES
+        self.account1.save()
 
-    def test_upload_valid_csv_with_perms(self):
-        with self.assertNumQueries(45):
-            self.client.force_authenticate(self.yoda)
-            self.source.projects.set([self.project])
-
-            iaso_forms = Permission.objects.get(codename="iaso_forms")
-            iaso_submissions = Permission.objects.get(codename="iaso_submissions")
-
-            self.account1.modules = self.MODULES
-            self.account1.save()
-
-            self.account1.refresh_from_db()
+        self.account1.refresh_from_db()
+        with self.assertNumQueries(43):
             with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
-            pollux = User.objects.get(username="pollux")
-            pollux_perms = pollux.user_permissions.all()
-            has_perms = False
-            if iaso_forms and iaso_submissions in pollux_perms:
-                has_perms = True
+    def test_upload_valid_csv_with_perms(self):
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
 
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(has_perms, True)
+        iaso_forms = Permission.objects.get(codename="iaso_forms")
+        iaso_submissions = Permission.objects.get(codename="iaso_submissions")
+
+        self.account1.modules = self.MODULES
+        self.account1.save()
+
+        self.account1.refresh_from_db()
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+
+        pollux = User.objects.get(username="pollux")
+        pollux_perms = pollux.user_permissions.all()
+        has_perms = False
+        if iaso_forms and iaso_submissions in pollux_perms:
+            has_perms = True
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertEqual(has_perms, True)
 
     def test_upload_invalid_mail_csv(self):
         self.client.force_authenticate(self.yoda)
@@ -190,11 +225,12 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
         self.assertEqual(len(validation_errors), 1)
         self.assertEqual(int(validation_errors[0]["row"]), 3)
-        self.assertIn("email", validation_errors[0]["errors"])
+        self.assertIn("email", validation_errors[0]["details"])
 
     def test_upload_without_mail_must_work(self):
         self.client.force_authenticate(self.yoda)
@@ -203,8 +239,10 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_no_mail.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["Accounts created"], 3)
+        self.assertJSONResponse(response, 201)
+        usernames = ["broly", "ferdinand", "rsfg"]
+
+        self.assertEqual(get_user_model().objects.filter(username__in=usernames).count(), 3)
 
     def test_upload_invalid_orgunit_id(self):
         self.client.force_authenticate(self.yoda)
@@ -213,21 +251,22 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
         # Row 1 has invalid orgunit ID, rows 2-3 have invalid source_ref
         self.assertEqual(len(validation_errors), 3)
 
         # Check first error - invalid orgunit ID
         self.assertEqual(int(validation_errors[0]["row"]), 1)
-        self.assertIn("orgunit", validation_errors[0]["errors"])
-        self.assertIn("99998", validation_errors[0]["errors"]["orgunit"])
+        self.assertIn("orgunit", validation_errors[0]["details"])
+        self.assertIn("99998", validation_errors[0]["details"]["orgunit"][0])
 
         # Check second and third errors - invalid source_ref
         self.assertEqual(int(validation_errors[1]["row"]), 2)
-        self.assertIn("orgunit__source_ref", validation_errors[1]["errors"])
+        self.assertIn("orgunit__source_ref", validation_errors[1]["details"])
         self.assertEqual(int(validation_errors[2]["row"]), 3)
-        self.assertIn("orgunit__source_ref", validation_errors[2]["errors"])
+        self.assertIn("orgunit__source_ref", validation_errors[2]["details"])
 
     def test_upload_user_already_exists(self):
         self.client.force_authenticate(self.yoda)
@@ -241,12 +280,13 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
         # Should have error for existing username
-        username_error = next((e for e in validation_errors if "username" in e.get("errors", {})), None)
+        username_error = next((e for e in validation_errors if "username" in e.get("details", {})), None)
         self.assertIsNotNone(username_error)
-        self.assertIn("broly", username_error["errors"]["username"])
+        self.assertEqual(username_error["details"]["username"], ["This field must be unique."])
 
     def test_upload_invalid_csv_dont_create_entries(self):
         self.client.force_authenticate(self.yoda)
@@ -258,8 +298,9 @@ class BulkCreateCsvTestCase(APITestCase):
         users = User.objects.all()
         profiles = Profile.objects.all()
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
         self.assertTrue(len(validation_errors) > 0)
         self.assertEqual(len(users), 5)
         self.assertEqual(len(profiles), 5)
@@ -271,7 +312,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
     def test_cant_create_user_not_org_unit_in_the_pyramid_with_managed_geo_limit_permission(self):
         self.client.force_authenticate(self.user_managed_geo_limit)
@@ -282,7 +323,11 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
+        for ve in validation_errors:
+            self.assertEqual(ve["details"], {"orgunit": ["Object with pk=1112 does not exist."]})
 
     def test_user_cant_access_without_permission(self):
         self.client.force_authenticate(self.obi)
@@ -290,15 +335,15 @@ class BulkCreateCsvTestCase(APITestCase):
 
         response = self.client.get(f"{BASE_URL}")
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_can_access_with_managed_geo_limit_permission(self):
         self.client.force_authenticate(self.user_managed_geo_limit)
         self.source.projects.set([self.project])
 
-        response = self.client.get(f"{BASE_URL}")
+        response = self.client.post(f"{BASE_URL}")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_password_delete_after_import(self):
         self.client.force_authenticate(self.yoda)
@@ -331,7 +376,7 @@ class BulkCreateCsvTestCase(APITestCase):
             i += 1
 
         self.assertEqual(pswd_deleted, True)
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
     # def test_upload_invalid_password(self):
     #     self.client.force_authenticate(self.yoda)
@@ -360,7 +405,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         login_data = {"username": "broly", "password": "yodnj!30dln"}
 
@@ -375,11 +420,12 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_ou_name.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
-        orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
+        orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("details", {})), None)
         self.assertIsNotNone(orgunit_error)
-        self.assertIn("Bazarre", orgunit_error["errors"]["orgunit"])
+        self.assertIn("Bazarre", orgunit_error["details"]["orgunit"][0])
 
     def test_users_profiles_have_right_ou(self):
         self.client.force_authenticate(self.yoda)
@@ -410,7 +456,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(ou_list, [9999])
         self.assertCountEqual(ou_f_list, [self.org_unit1.id, self.org_unit2.id, 9999])
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
     def test_cant_create_user_without_access_to_ou(self):
         self.client.force_authenticate(self.yoda)
@@ -427,7 +473,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
-        self.assertEqual(response.status_code, 400)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_cant_create_user_without_ou_profile(self):
         self.client.force_authenticate(self.yoda)
@@ -435,12 +481,13 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_creator_no_access_to_ou.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
-        orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("errors", {})), None)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
+        orgunit_error = next((e for e in validation_errors if "orgunit" in e.get("details", {})), None)
         self.assertIsNotNone(orgunit_error)
         # The error should indicate access issue or invalid org unit
-        self.assertIn("10244", orgunit_error["errors"]["orgunit"])
+        self.assertIn("10244", orgunit_error["details"]["orgunit"][0])
 
     def test_upload_duplicate_ou_names(self):
         # This test detects if in case there is multiple OU with same name in different sources the right OU is taken.
@@ -454,7 +501,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         created_user = User.objects.get(username="jan")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(len(created_user.iaso_profile.org_units.all()), 1)
         self.assertEqual(created_user.iaso_profile.org_units.all()[0].name, "chiloe")
         self.assertEqual(created_user.iaso_profile.org_units.all()[0].id, 10244)
@@ -468,7 +515,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_user_access_to_child_ou.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.filter(username="jan").exists(), True)
 
         created_user = User.objects.get(username="jan")
@@ -487,7 +534,7 @@ class BulkCreateCsvTestCase(APITestCase):
         users = User.objects.all()
         profiles = Profile.objects.all()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(len(users), 7)
         self.assertEqual(len(profiles), 7)
         new_user_1 = users.get(username="broly")
@@ -504,18 +551,14 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
 
-        self.assertEqual(response.data["Accounts created"], 2)
-
     def test_upload_csv_with_missing_column(self):
         self.client.force_authenticate(self.yoda)
 
         with open("iaso/tests/fixtures/test_user_bulk_missing_columns.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("error", response.data)
-        self.assertIn("file", response.data["error"])
-        self.assertIn("Missing required column(s): permissions", response.data["error"]["file"][0])
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content", {"general": "Missing required column(s): permissions"})
 
     def test_create_user_with_roles(self):
         self.client.force_authenticate(self.yoda)
@@ -533,7 +576,7 @@ class BulkCreateCsvTestCase(APITestCase):
         users = User.objects.all()
         profiles = Profile.objects.all()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(len(users), 7)
         self.assertEqual(len(profiles), 7)
         new_user_1 = users.get(username="broly")
@@ -560,7 +603,6 @@ class BulkCreateCsvTestCase(APITestCase):
             [user_role.group for user_role in new_user_2_user_roles],
             [group for group in new_user_2.groups.all()],
         )
-        self.assertEqual(response.data["Accounts created"], 2)
 
     def test_create_user_with_projects(self):
         self.client.force_authenticate(self.yoda)
@@ -568,6 +610,8 @@ class BulkCreateCsvTestCase(APITestCase):
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         users = User.objects.all()
         profiles = Profile.objects.all()
         profile_1 = Profile.objects.get(user__username="broly")
@@ -575,7 +619,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(profile_1.projects.all()[0].name, "Project name")
         self.assertEqual(profile_2.projects.all()[0].name, "Project name")
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(len(users), 7)
         self.assertEqual(len(profiles), 7)
         new_user_1 = users.get(username="broly")
@@ -591,7 +635,6 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
-        self.assertEqual(response.data["Accounts created"], 2)
 
     def test_create_user_with_project_restrictions(self):
         self.source.projects.set([self.project, self.project2])
@@ -623,7 +666,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.user_managed_geo_limit)
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
-            self.assertEqual(response.status_code, 200)
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         # The current project restrictions of a `user` without the admin perm should be applied.
         # That means that projects in the CSV should've been skipped and new profiles should
@@ -646,7 +690,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
-            self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         # A `user` with the admin perm should be able to bypass project restrictions.
         # Here, the CSV content should be applied.
@@ -701,35 +745,13 @@ class BulkCreateCsvTestCase(APITestCase):
         csv_file = SimpleUploadedFile("users.csv", csv_bytes)
 
         response = self.client.post(f"{BASE_URL}", {"file": csv_file}, format="multipart")
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         new_user = User.objects.get(email="john@foo.com")
         self.assertEqual(new_user.iaso_profile.account, self.account1)
         self.assertEqual(new_user.iaso_profile.org_units.count(), 1)
         self.assertEqual(new_user.iaso_profile.org_units.first(), org_unit_a)
         self.assertEqual(org_unit_a.version_id, self.account1.default_version_id)
-
-    def test_valid_phone_number(self):
-        phone_number = "+12345678912"
-        expected_output = "+12345678912"
-        result = BulkCreateUserSerializer._format_phone_number(phone_number)
-        self.assertEqual(result, expected_output)
-
-    def test_invalid_phone_number(self):
-        invalid_phone_number = "+12345"
-
-        with self.assertRaises(ValidationError) as raisedException:
-            BulkCreateUserSerializer._format_phone_number(invalid_phone_number)
-
-        self.assertIn("Invalid phone number", str(raisedException.exception))
-
-    def test_number_parse_exception(self):
-        phone_number = "This is not a phone number"
-
-        with self.assertRaises(ValidationError) as raisedException:
-            BulkCreateUserSerializer._format_phone_number(phone_number)
-
-        self.assertIn("Invalid phone number format", str(raisedException.exception))
 
     def test_audit_log_on_save(self):
         self.client.force_authenticate(self.yoda)
@@ -747,11 +769,11 @@ class BulkCreateCsvTestCase(APITestCase):
 
         with open("iaso/tests/fixtures/test_user_bulk_create_all_fields.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/logs/?contentType=iaso.profile&fields=past_value,new_value")
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         logs_for_new_users = [logs[0], logs[1], logs[2]]  # There's 3 users in the csv so we take the last 3 logs
 
@@ -802,7 +824,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         user = User.objects.get(username="rsfg")
         self.assertEqual(user.teams.count(), 1)
@@ -828,7 +850,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         user = User.objects.get(username="rsfg")
         self.assertEqual(user.teams.count(), 2)
@@ -855,14 +877,14 @@ class BulkCreateCsvTestCase(APITestCase):
 
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
-        response_data = response.json()
-        self.assertIn("error", response_data)
-        validation_errors = response_data["error"]["file"]["csv_validation_errors"]
+        self.assertHasError(res_data, "file_content")
+
+        validation_errors = res_data["file_content"]
         self.assertEqual(len(validation_errors), 1)
-        self.assertIn("teams", validation_errors[0]["errors"])
-        self.assertIn(invalid_team_name, validation_errors[0]["errors"]["teams"])
+        self.assertIn("teams", validation_errors[0]["details"])
+        self.assertIn(invalid_team_name, validation_errors[0]["details"]["teams"][0])
 
     def test_bulk_create_user_cannot_assign_team_from_another_account(self):
         self.client.force_authenticate(self.yoda)
@@ -896,15 +918,14 @@ class BulkCreateCsvTestCase(APITestCase):
 
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        response_data = response.json()
-        self.assertIn("error", response_data)
-        validation_errors = response_data["error"]["file"]["csv_validation_errors"]
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
         self.assertEqual(len(validation_errors), 1)
-        self.assertIn("teams", validation_errors[0]["errors"])
-        self.assertIn(secret_team_name, validation_errors[0]["errors"]["teams"])
+        self.assertIn("teams", validation_errors[0]["details"])
+        self.assertIn(secret_team_name, validation_errors[0]["details"]["teams"][0])
 
-    @patch("iaso.api.profiles.bulk_create_users.send_bulk_email_invitations")
+    @patch("iaso.api.bulk_create_users.serializers.send_bulk_email_invitations")
     def test_email_invitations_sent_for_users_without_password(self, mock_send_emails):
         """Test that email invitations are sent only for users without passwords."""
         self.client.force_authenticate(self.yoda)
@@ -913,8 +934,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_email_no_password.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["Accounts created"], 2)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         # Verify that send_bulk_email_invitations was called
         mock_send_emails.assert_called_once()
@@ -930,7 +950,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(invite1.email, "invite1@test.com")
         self.assertEqual(invite2.email, "invite2@test.com")
 
-    @patch("iaso.api.profiles.bulk_create_users.send_bulk_email_invitations")
+    @patch("iaso.api.bulk_create_users.serializers.send_bulk_email_invitations")
     def test_email_invitations_mixed_scenario_with_fixture(self, mock_send_emails):
         """Test email invitations in mixed scenario."""
         self.client.force_authenticate(self.yoda)
@@ -939,8 +959,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_mixed_email.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["Accounts created"], 4)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         # Verify that send_bulk_email_invitations was called
         mock_send_emails.assert_called_once()
@@ -986,17 +1005,16 @@ class BulkCreateCsvTestCase(APITestCase):
                     "file": csv_file,
                     "default_profile_language": "fr",
                     "default_organization": "UNICEF",
-                    "default_permissions": json.dumps([iaso_forms_perm.id]),
-                    "default_user_roles": json.dumps([manager_role.id]),
-                    "default_projects": json.dumps([self.project.id]),
-                    "default_org_units": json.dumps([self.org_unit1.id, self.org_unit2.id]),
-                    "default_teams": json.dumps([bulk_team.id]),
+                    "default_permissions": [iaso_forms_perm.id],
+                    "default_user_roles": [manager_role.id],
+                    "default_projects": [self.project.id],
+                    "default_org_units": [self.org_unit1.id, self.org_unit2.id],
+                    "default_teams": [bulk_team.id],
                 },
                 format="multipart",
             )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["Accounts created"], 3)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         # Verify default options are stored in BulkCreateUserCsvFile (now M2M fields)
         csv_file_record = BulkCreateUserCsvFile.objects.last()
@@ -1079,11 +1097,13 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_permission.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+
+        validation_errors = res_data["file_content"]
         self.assertEqual(len(validation_errors), 1)
-        self.assertIn("permissions", validation_errors[0]["errors"])
-        self.assertIn("iaso_fake_permission", validation_errors[0]["errors"]["permissions"])
+        self.assertIn("permissions", validation_errors[0]["details"])
+        self.assertIn("iaso_fake_permission", validation_errors[0]["details"]["permissions"][0])
 
     def test_upload_invalid_language(self):
         """Test that CSV with invalid language returns validation error."""
@@ -1093,11 +1113,13 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_language.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertEqual(response.status_code, 400)
-        validation_errors = response.json()["error"]["file"]["csv_validation_errors"]
-        self.assertEqual(len(validation_errors), 1)
-        self.assertIn("profile_language", validation_errors[0]["errors"])
-        self.assertIn("invalid_lang", validation_errors[0]["errors"]["profile_language"])
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "file_content")
+
+        self.assertEqual(len(res_data["file_content"]), 1)
+        self.assertIn("profile_language", res_data["file_content"][0]["details"])
+        self.assertIn("invalid_lang", res_data["file_content"][0]["details"]["profile_language"][0])
 
     def test_create_user_with_project_by_id(self):
         """Test that CSV with project ID works correctly."""
@@ -1114,9 +1136,8 @@ class BulkCreateCsvTestCase(APITestCase):
 
         test_file = SimpleUploadedFile("test.csv", csv_content.encode("utf-8"), content_type="text/csv")
         response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["Accounts created"], 1)
+        res_json = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertEqual(res_json, {})
 
         user = User.objects.get(username="projectid_user")
         self.assertEqual(user.iaso_profile.projects.count(), 1)

@@ -10,18 +10,24 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import Permission, User
-from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.validators import FileExtensionValidator
 from django.db import transaction
-from django.db.models import Q
 from rest_framework import serializers
+from rest_framework.fields import CurrentUserDefault
+from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
 
 from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.bulk_create_users.permissions import has_only_user_managed_permission
+from iaso.api.bulk_create_users.utils import detect_multi_field_value_splitter
+from iaso.api.common import ModelSerializer
+from iaso.api.common.serializer_fields import AccountPrefixedSlugRelatedField, SlugOrPrimaryKeyRelatedField
 from iaso.api.common.validators import FileTypeValidator
 from iaso.api.validation_workflows.serializers.common import CurrentAccountDefault
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_MANAGED_PERMISSION
+from iaso.tasks.bulk_create_users_email import send_bulk_email_invitations
 
 
 logger = logging.getLogger(__name__)
@@ -41,15 +47,48 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
     password = serializers.CharField(required=False, allow_blank=True, write_only=True, allow_null=True)
     permissions = serializers.SlugRelatedField(
         slug_field="codename",
-        queryset=Permission.objects.all(),
+        queryset=Permission.objects.none(),
         required=False,
         many=True,
         allow_null=True,
         allow_empty=True,
     )
     profile_language = serializers.ChoiceField(
-        required=False, allow_null=True, allow_blank=True, source="language", choices=settings.LANGUAGES
+        required=False, allow_null=True, allow_blank=True, choices=settings.LANGUAGES
     )
+
+    user_roles = AccountPrefixedSlugRelatedField(
+        slug_field="group__name",
+        queryset=UserRole.objects.none(),
+        required=False,
+        many=True,
+        allow_null=True,
+        allow_empty=True,
+    )
+    teams = SlugRelatedField(
+        slug_field="name", queryset=Team.objects.none(), required=False, many=True, allow_null=True, allow_empty=True
+    )
+    editable_org_unit_types = serializers.PrimaryKeyRelatedField(
+        queryset=OrgUnitType.objects.none(), required=False, many=True, allow_null=True, allow_empty=True
+    )
+
+    projects = SlugOrPrimaryKeyRelatedField(
+        slug_field="name", queryset=Project.objects.none(), required=False, many=True, allow_null=True, allow_empty=True
+    )
+
+    orgunit = SlugOrPrimaryKeyRelatedField(
+        slug_field="name", queryset=Project.objects.none(), required=False, many=True, allow_null=True, allow_empty=True
+    )
+
+    orgunit__source_ref = SlugRelatedField(
+        slug_field="source_ref",
+        queryset=OrgUnit.objects.none(),
+        allow_null=True,
+        allow_empty=True,
+        many=True,
+        required=False,
+    )
+    phone_number = serializers.CharField(allow_null=True, allow_blank=True, required=False)
 
     class Meta:
         model = Profile
@@ -76,35 +115,94 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
         if not attrs.get("email") and not attrs.get("password"):
             raise serializers.ValidationError("Either password or email required for user creation")
 
-        if not attrs.get("orgunit") and not attrs.get("orgunit__source_ref"):
+        if (
+            not attrs.get("orgunit")
+            and not attrs.get("orgunit__source_ref")
+            and has_only_user_managed_permission(self.context["request"].user)
+        ):
             raise serializers.ValidationError(
                 f"A User with {CORE_USERS_MANAGED_PERMISSION.full_name()} permission must create users with OrgUnits"
             )
+
         return attrs
 
     def __init__(self, *args, **kwargs):
-        default_permissions = kwargs.get("default_permissions")
-        default_projects = kwargs.get("default_projects")
-        default_user_roles = kwargs.get("default_user_roles")
-        default_profile_language = kwargs.get("default_profile_language")
-        default_organization = kwargs.get("default_organization")
-        default_org_units = kwargs.get("default_org_units")
-        default_teams = kwargs.get("default_teams")
+        default_permissions = kwargs.pop("default_permissions", None)
+        default_projects = kwargs.pop("default_projects", None)
+        default_user_roles = kwargs.pop("default_user_roles", None)
+        default_profile_language = kwargs.pop("default_profile_language", None)
+        default_organization = kwargs.pop("default_organization", None)
+        default_org_units = kwargs.pop("default_org_units", None)
+        default_teams = kwargs.pop("default_teams", None)
 
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
         importer_user = request.user
+        self.context["account_id"] = request.user.iaso_profile.account_id
 
+        # enable defaults
         if default_profile_language:
             self.fields["profile_language"].default = default_profile_language
 
         if default_permissions:
             self.fields["permissions"].default = default_permissions
 
+        if default_user_roles:
+            self.fields["user_roles"].default = default_user_roles
+
+        if default_teams:
+            self.fields["teams"].default = default_teams
+
+        if default_organization:
+            self.fields["organization"].default = default_organization
+
+        if default_projects:
+            self.fields["projects"].default = default_projects
+
+        if default_org_units:
+            self.fields["orgunit"].default = default_org_units
+
+        # enable querysets
+        self.fields["permissions"].child_relation.queryset = Permission.objects.filter(
+            codename__in=importer_user.iaso_profile.account.permissions_from_active_modules
+        )
+        self.fields["user_roles"].child_relation.queryset = UserRole.objects.filter(
+            account=importer_user.iaso_profile.account
+        )
+        self.fields["teams"].child_relation.queryset = Team.objects.filter_for_user(importer_user)
+        self.fields["editable_org_unit_types"].child_relation.queryset = OrgUnitType.objects.prefetch_related(
+            "projects__account"
+        ).filter(projects__account=importer_user.iaso_profile.account)
+
+        if request.user.iaso_profile.projects_ids and has_only_user_managed_permission(importer_user):
+            available_projects = Project.objects.filter(
+                account=request.user.iaso_profile.account
+            ).filter_on_user_projects(importer_user)
+        else:
+            available_projects = Project.objects.filter(account=request.user.iaso_profile.account)
+
+        self.fields["projects"].child_relation.queryset = available_projects
+
+        self.fields["orgunit"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(importer_user)
+        self.fields["orgunit__source_ref"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(
+            importer_user
+        )
+
+    def validate_phone_number(self, data):
+        if data:
+            try:
+                parsed_number = phonenumbers.parse(data, None)
+                if not phonenumbers.is_valid_number(parsed_number):
+                    raise serializers.ValidationError(f"Invalid phone number: {data}")
+                return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+            except phonenumbers.NumberParseException:
+                raise serializers.ValidationError(f"Invalid phone number format: {data}")
+        return data
+
     def create(self, validated_data) -> (AbstractBaseUser, Profile, bool):
         user_model = get_user_model()(
             username=validated_data["username"],
-            email=validated_data["email"],
+            email=validated_data.get("email", ""),
             first_name=validated_data["first_name"],
             last_name=validated_data["last_name"],
             is_active=True,
@@ -129,28 +227,79 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
             phone_number=validated_data.get("phone_number", ""),
         )
 
-        # bulk
+        # m2m
+        org_units = []
+        org_units_editable_types = []
+        teams = []
+        permissions = []
+        projects = []
+        user_roles = []
+        user_groups = []
 
-        return user_model, profile, send_invitation
+        if validated_data.get("orgunit", None):
+            for ou in validated_data.get("orgunit", []) or []:
+                org_units.append(Profile.org_units.through(profile=profile, orgunit=ou))
+
+        if validated_data.get("orgunit__source_ref", None):
+            for ou in validated_data.get("orgunit__source_ref", []) or []:
+                if ou not in org_units:
+                    org_units.append(Profile.org_units.through(profile=profile, orgunit=ou))
+
+        if validated_data.get("teams", None):
+            for team in validated_data.get("teams", []) or []:
+                teams.append(Team.users.through(team=team, user=user_model))
+
+        if validated_data.get("permissions", None):
+            for permission in validated_data.get("permissions", []) or []:
+                permissions.append(get_user_model().user_permissions.through(user=user_model, permission=permission))
+
+        if validated_data.get("editable_org_unit_types", None):
+            for editable in validated_data.get("editable_org_unit_types", []) or []:
+                org_units_editable_types.append(
+                    Profile.editable_org_unit_types.through(profile=profile, orgunittype=editable)
+                )
+
+        if validated_data.get("projects", None):
+            for project in validated_data.get("projects", []) or []:
+                projects.append(Profile.projects.through(profile=profile, project=project))
+
+        if validated_data.get("user_roles", None):
+            for user_role in validated_data.get("user_roles", []) or []:
+                user_roles.append(Profile.user_roles.through(profile=profile, userrole=user_role))
+                user_groups.append(get_user_model().groups.through(user=user_model, group=user_role.group))
+
+        return (
+            user_model,
+            profile,
+            user_model if send_invitation else None,
+            org_units,
+            teams,
+            permissions,
+            org_units_editable_types,
+            user_roles,
+            projects,
+            user_groups,
+        )
 
 
-class BulkCreateUserSerializer(serializers.ModelSerializer):
+class BulkCreateUserSerializer(ModelSerializer):
     default_permissions = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=Permission.objects.all(), allow_empty=True
+        many=True, allow_null=True, queryset=Permission.objects.all(), allow_empty=True, write_only=True
     )
     default_projects = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=Project.objects.none(), allow_empty=True
+        many=True, allow_null=True, queryset=Project.objects.none(), allow_empty=True, write_only=True
     )
     default_user_roles = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=UserRole.objects.none(), allow_empty=True
+        many=True, allow_null=True, queryset=UserRole.objects.none(), allow_empty=True, write_only=True
     )
     default_org_units = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=OrgUnit.objects.none(), allow_empty=True
+        many=True, allow_null=True, queryset=OrgUnit.objects.none(), allow_empty=True, write_only=True
     )
     default_teams = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=Team.objects.none(), allow_empty=True
+        many=True, allow_null=True, queryset=Team.objects.none(), allow_empty=True, write_only=True
     )
-    account = serializers.HiddenField(default=CurrentAccountDefault())
+    account = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
+    created_by = serializers.HiddenField(default=CurrentUserDefault(), write_only=True)
 
     class Meta:
         model = BulkCreateUserCsvFile
@@ -164,15 +313,12 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
             "default_org_units",
             "default_teams",
             "account",
-        ]
-        read_only_fields = [
             "created_by",
-            "created_at",
-            "account",
         ]
 
         extra_kwargs = {
             "file": {
+                "write_only": True,
                 "validators": [
                     FileTypeValidator(allowed_mimetypes=["text/csv"]),
                     FileExtensionValidator(allowed_extensions=["csv"]),
@@ -188,22 +334,10 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
         self.dialect = None
 
-        # Cache for validated objects
-        self.csv_objects_cache = {
-            "permissions": [],
-            "projects": [],
-            "user_roles": [],
-            "org_units": [],
-            "teams": [],
-        }
-
-        # Cache for CSV row validation data
-        self.csv_data_cache = {}
-
         # init querysets for primary key related fields
 
         # default projects
-        if request.user.iaso_profile.projects_ids:
+        if request.user.iaso_profile.projects_ids and has_only_user_managed_permission(importer_user):
             available_projects = Project.objects.filter(account=importer_account).filter_on_user_projects(importer_user)
         else:
             available_projects = Project.objects.filter(account=importer_account)
@@ -250,43 +384,16 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                 {"file_content": [{"general": f"Missing required column(s): {', '.join(sorted(missing_columns))}"}]}
             )
 
-        validation_errors, self.csv_data_cache = self._validate_csv_users(reader)
-
-        if validation_errors:
-            raise serializers.ValidationError({"file_content": validation_errors})
+        self._validate_csv_users(reader)
 
         return value
 
-    @staticmethod
-    def _format_phone_number(phone_number):
-        """Format phone number using E.164 format or raise ValidationError."""
-        try:
-            parsed_number = phonenumbers.parse(phone_number, None)
-            if not phonenumbers.is_valid_number(parsed_number):
-                raise ValidationError(f"Invalid phone number: {phone_number}")
-            return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
-        except phonenumbers.NumberParseException:
-            raise ValidationError(f"Invalid phone number format: {phone_number}")
-
     def _validate_csv_users(self, user_data):
-        importer_user = self.context.get("request").user
-
-        validation_errors = []
-        validation_context = {
-            "permissions_by_row": {},
-            "projects_by_row": {},
-            "user_roles_by_row": {},
-            "teams_by_row": {},
-            "org_units_by_row": {},
-            "editable_org_unit_types_by_row": {},
-            "phone_numbers_by_row": {},
-        }
-
         # Get existing data for uniqueness checks
         usernames = [data.get("username") for data in user_data if data.get("username")]
 
         if len(set(usernames)) != len(usernames):
-            raise ValidationError(
+            raise serializers.ValidationError(
                 {
                     "file_content": [
                         {
@@ -296,230 +403,167 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
                 }
             )
 
-        importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user).only("id")
+        return user_data
 
-        for row_index, data in enumerate(user_data):
-            row_errors = {}
-            row_num = data.get("_row_number", "unknown")
+    def _filter_out_sensitive_data(self, file):
+        file.seek(0)
+        reader = csv.DictReader(io.StringIO(file.read().decode("utf-8")), dialect=self.dialect)
+        for row in reader:
+            if row.get("password", ""):
+                row["password"] = "*" * 6  # put 6 there so we can't guess really the password length if there is one
 
-            # Validate OrgUnits
-            org_unit_list = data.get("orgunit") or []
-            org_unit_source_refs = data.get("orgunit__source_ref") or []
-            has_any_org_unit = org_unit_list or org_unit_source_refs
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=reader.fieldnames)
+        writer.writeheader()
+        writer.writerows(list(reader))
+        output.seek(0)
+        return SimpleUploadedFile(
+            name=file.name,
+            content=output.getvalue().encode("utf-8"),
+            content_type="text/csv",
+        )
 
-            if not has_any_org_unit:
-                row_errors["orgunit"] = (
-                    f"A User with {CORE_USERS_MANAGED_PERMISSION.full_name()} permission "
-                    "must create users with OrgUnits"
-                )
-            else:
-                valid_org_units = []
+    def _send_bulk_email_invitations(self, users):
+        """Queue background task to send email invitations to users without passwords."""
+        user_ids = [
+            user.id
+            for user in users
+            if user.email and not user.has_usable_password()  # Only users with unusable passwords need invitations
+        ]
 
-                # Resolve org units by ID/name
-                if org_unit_list:
-                    resolved, invalid_org_units, inaccessible_org_units = self._resolve_org_units_for_user(
-                        org_unit_list, importer_access_ou, importer_user.iaso_profile.account
+        if not user_ids:
+            return
+
+        send_bulk_email_invitations(user_ids, self.context["request"].is_secure(), user=self.context["request"].user)
+
+    def _pre_process_row(self, row):
+        """
+        Split the values by delimiter if needed
+        Transform the integer strings into real integers
+        """
+
+        for k, v in list(row.items()):
+            if k in [
+                "teams",
+                "permissions",
+                "user_roles",
+                "orgunit",
+                "projects",
+                "orgunit__source_ref",
+                "editable_org_unit_types",
+            ]:
+                row[k] = list(
+                    map(
+                        lambda x: int(x) if isinstance(x, str) and x.isdigit() else x,
+                        filter(
+                            lambda x: bool(x),
+                            [i.strip() for i in v.split(detect_multi_field_value_splitter(self.dialect, v))]
+                            if isinstance(v, str)
+                            else (v or []),
+                        ),
                     )
-                    if invalid_org_units:
-                        row_errors["orgunit"] = f"Invalid OrgUnit: {', '.join(invalid_org_units)}"
-                    elif inaccessible_org_units:
-                        row_errors["orgunit"] = f"You don't have access to OrgUnit: {', '.join(inaccessible_org_units)}"
-                    else:
-                        valid_org_units.extend(resolved)
-
-                # Resolve org units by source_ref
-                if org_unit_source_refs and "orgunit" not in row_errors:
-                    invalid_source_refs = []
-                    for ou_ref in org_unit_source_refs:
-                        ou = OrgUnit.objects.filter(
-                            pk__in=importer_access_ou,
-                            version_id=importer_user.iaso_profile.account.default_version_id,
-                            source_ref=ou_ref,
-                        ).first()
-                        if ou:
-                            if ou not in valid_org_units:
-                                valid_org_units.append(ou)
-                        else:
-                            invalid_source_refs.append(ou_ref)
-
-                    if invalid_source_refs:
-                        row_errors["orgunit__source_ref"] = (
-                            f"Invalid or inaccessible OrgUnit source_ref: {', '.join(invalid_source_refs)}"
-                        )
-
-                if "orgunit" not in row_errors and "orgunit__source_ref" not in row_errors:
-                    validation_context["org_units_by_row"][row_index] = valid_org_units
-
-            # Validate permissions
-            permission_names = data.get("permissions", [])
-            if permission_names:
-                module_permissions = [
-                    perm.codename for perm in importer_user.iaso_profile.account.permissions_from_active_modules
-                ]
-                invalid_permissions = [pn for pn in permission_names if pn not in module_permissions]
-                if invalid_permissions:
-                    row_errors["permissions"] = f"Invalid permissions: {', '.join(invalid_permissions)}"
-                else:
-                    valid_permissions = Permission.objects.filter(
-                        codename__in=[pn for pn in permission_names if pn in module_permissions]
-                    )
-                    validation_context["permissions_by_row"][row_index] = list(valid_permissions)
-
-            # Validate user roles
-            role_names = data.get("user_roles", [])
-            if role_names:
-                existing_roles = UserRole.objects.filter(
-                    account=importer_user.iaso_profile.account,
-                    group__name__in=[f"{importer_user.iaso_profile.account_id}_{role}" for role in role_names],
                 )
-                existing_role_names = set(existing_roles.values_list("group__name", flat=True))
-                invalid_roles = [
-                    role
-                    for role in role_names
-                    if f"{importer_user.iaso_profile.account_id}_{role}" not in existing_role_names
-                ]
-                if invalid_roles:
-                    row_errors["user_roles"] = f"Invalid user roles: {', '.join(invalid_roles)}"
-                else:
-                    validation_context["user_roles_by_row"][row_index] = list(existing_roles)
+            if k in ["profile_language"]:
+                if v:
+                    row[k] = v.lower()  # e.g to map FR to fr
+        return {k: v for k, v in row.items() if v}
 
-            # Validate projects
-            project_refs = data.get("projects", [])
-            if project_refs:
-                # Separate numeric IDs from names
-                project_ids = [int(ref) for ref in project_refs if ref.isdigit()]
-                project_names = [ref for ref in project_refs if not ref.isdigit()]
-
-                # Build a single query matching either IDs or names
-                project_query = Q()
-                if project_ids:
-                    project_query |= Q(id__in=project_ids)
-                if project_names:
-                    project_query |= Q(name__in=project_names)
-
-                user_has_project_restrictions = bool(importer_user.iaso_profile.projects_ids)
-
-                if user_has_project_restrictions:
-                    matched_projects = Project.objects.filter(
-                        project_query, account=importer_user.iaso_profile.account
-                    ).filter_on_user_projects(importer_user)
-
-                    if matched_projects.exists():
-                        validation_context["projects_by_row"][row_index] = list(matched_projects)
-                    else:
-                        available_projects = Project.objects.filter(
-                            account=importer_user.iaso_profile.account
-                        ).filter_on_user_projects(importer_user)
-                        validation_context["projects_by_row"][row_index] = list(available_projects)
-                else:
-                    available_projects = Project.objects.filter(
-                        project_query, account=importer_user.iaso_profile.account
-                    )
-                    found_ids = set(available_projects.values_list("id", flat=True))
-                    found_names = set(available_projects.values_list("name", flat=True))
-                    invalid_projects = [str(pid) for pid in project_ids if pid not in found_ids] + [
-                        pname for pname in project_names if pname not in found_names
-                    ]
-                    if invalid_projects:
-                        row_errors["projects"] = f"Invalid projects: {', '.join(invalid_projects)}"
-                    else:
-                        validation_context["projects_by_row"][row_index] = list(available_projects)
-
-            # Validate teams
-            team_names = data.get("teams", [])
-            if team_names:
-                existing_teams = Team.objects.filter(
-                    name__in=team_names, project__account=importer_user.iaso_profile.account
-                )
-                existing_team_names = set(existing_teams.values_list("name", flat=True))
-                invalid_teams = [team for team in team_names if team not in existing_team_names]
-                if invalid_teams:
-                    row_errors["teams"] = f"Row {row_num}: Team '{invalid_teams[0]}' does not exist."
-                else:
-                    validation_context["teams_by_row"][row_index] = list(existing_teams)
-
-            # Validate editable org unit types
-            editable_org_unit_type_ids = data.get("editable_org_unit_types", [])
-            if editable_org_unit_type_ids:
-                available_org_unit_types = OrgUnitType.objects.filter(
-                    projects__account=importer_user.iaso_profile.account, id__in=editable_org_unit_type_ids
-                ).distinct()
-                validation_context["editable_org_unit_types_by_row"][row_index] = list(available_org_unit_types)
-
-            # Validate and format phone number
-            phone_number = data.get("phone_number", "").strip()
-            formatted_phone = ""
-            if phone_number:
-                try:
-                    formatted_phone = self._format_phone_number(phone_number)
-                except ValidationError:
-                    # Silent correction: invalid phones become empty string
-                    formatted_phone = ""
-            validation_context["phone_numbers_by_row"][row_index] = formatted_phone
-
-        return validation_errors, validation_context
-
-    def _resolve_org_units_for_user(self, org_unit_refs, importer_access_ou, importer_account):
-        """Resolve org unit references to OrgUnit objects."""
-        valid_org_units = []
-        invalid_refs = []
-        inaccessible_refs = []
-
-        accessible_ou_ids = set(importer_access_ou.values_list("id", flat=True))
-        accessible_ou_dict = {ou.id: ou for ou in importer_access_ou}
-
-        for ou_ref in org_unit_refs:
-            if ou_ref.isdigit():
-                ou_id = int(ou_ref)
-                if ou_id not in accessible_ou_dict:
-                    if not OrgUnit.objects.filter(id=ou_id).exists():
-                        invalid_refs.append(ou_ref)
-                    else:
-                        inaccessible_refs.append(ou_ref)
-                else:
-                    valid_org_units.append(accessible_ou_dict[ou_id])
-            else:
-                # Check org unit by name within accessible org units
-                ou = (
-                    OrgUnit.objects.filter(
-                        pk__in=importer_access_ou,
-                        version_id=importer_account.default_version_id,
-                        name=ou_ref,
-                    )
-                    .order_by("-version_id")
-                    .first()
-                )
-
-                if ou:
-                    valid_org_units.append(ou)
-                else:
-                    invalid_refs.append(ou_ref)
-
-        return valid_org_units, invalid_refs, inaccessible_refs
-
-    @transaction.atomic
     def create(self, validated_data):
-        # bulk create first
-        # users
-        users = []
-        profiles = []
-        csv_reader = csv.DictReader(validated_data["csv_file"].read(), dialect=self.dialect)
+        validation_errors = []
 
-        for row in csv_reader:
-            serializer = BulkCreateItemSerializer(data=row)
+        bulk_users = []
+        bulk_profiles = []
+        bulk_org_units = []
+        bulk_teams = []
+        bulk_permissions = []
+        bulk_org_units_editable_types = []
+        bulk_user_roles = []
+        bulk_projects = []
+        bulk_user_groups = []
+        email_invitations = []
+
+        validated_data["file"].seek(0)
+        csv_reader = csv.DictReader(validated_data["file"].read().decode("utf-8").splitlines(), dialect=self.dialect)
+
+        for idx, row in enumerate(csv_reader):
+            serializer = BulkCreateItemSerializer(
+                data=self._pre_process_row(row),
+                context=self.context,
+                default_user_roles=validated_data.get("default_user_roles", None),
+                default_teams=validated_data.get("default_teams", None),
+                default_projects=validated_data.get("default_projects", None),
+                default_permissions=validated_data.get("default_permissions", None),
+                default_org_units=validated_data.get("default_org_units", None),
+                default_profile_language=validated_data.get("default_profile_language", None),
+                default_organization=validated_data.get("default_organization", None),
+            )
             if serializer.is_valid():
-                user, profile, invitation = serializer.save()
-                users.append(user)
-                profiles.append(profile)
+                (
+                    user,
+                    profile,
+                    invitation,
+                    org_units,
+                    teams,
+                    permissions,
+                    org_units_editable_types,
+                    user_roles,
+                    projects,
+                    user_groups,
+                ) = serializer.save()
+                bulk_users.append(user)
+                bulk_profiles.append(profile)
+                if invitation:
+                    email_invitations.append(invitation)
 
-        # create
-        get_user_model().objects.bulk_create(users)
-        Profile.objects.bulk_create(profiles)
+                if org_units:
+                    bulk_org_units.extend(org_units)
 
-        # profile
+                if teams:
+                    bulk_teams.extend(teams)
 
-        # update the validated_data to contain all the data in csv
+                if permissions:
+                    bulk_permissions.extend(permissions)
 
-        instance = super().create(validated_data)
+                if org_units_editable_types:
+                    bulk_org_units_editable_types.extend(org_units_editable_types)
 
-        return instance
+                if user_roles:
+                    bulk_user_roles.extend(user_roles)
+
+                if projects:
+                    bulk_projects.extend(projects)
+
+                if user_groups:
+                    bulk_user_groups.extend(user_groups)
+            else:
+                validation_errors.append({"row": idx + 1, "details": serializer.errors})
+
+        if validation_errors:
+            raise serializers.ValidationError({"file_content": validation_errors})
+
+        # bulk create data
+        with transaction.atomic():
+            get_user_model().objects.bulk_create(bulk_users)
+            Profile.objects.bulk_create(bulk_profiles)
+
+            # bulk create m2m
+            Profile.org_units.through.objects.bulk_create(bulk_org_units, ignore_conflicts=True)
+            Team.users.through.objects.bulk_create(bulk_teams, ignore_conflicts=True)
+            get_user_model().user_permissions.through.objects.bulk_create(bulk_permissions, ignore_conflicts=True)
+            Profile.editable_org_unit_types.through.objects.bulk_create(
+                bulk_org_units_editable_types, ignore_conflicts=True
+            )
+            Profile.user_roles.through.objects.bulk_create(bulk_user_roles, ignore_conflicts=True)
+            Profile.projects.through.objects.bulk_create(bulk_projects, ignore_conflicts=True)
+            get_user_model().groups.through.objects.bulk_create(bulk_user_groups, ignore_conflicts=True)
+
+            # save the instance, but filter out all sensitive data like password
+            if validated_data.get("file", None):
+                validated_data["file"] = self._filter_out_sensitive_data(validated_data["file"])
+
+            instance = super().create(validated_data)
+
+        if email_invitations:
+            self._send_bulk_email_invitations(email_invitations)
+
+        return instance, bulk_users, bulk_profiles

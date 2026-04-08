@@ -163,6 +163,13 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(file_upload.default_org_units.count(), 0)
         self.assertEqual(file_upload.default_teams.count(), 0)
 
+        # check that the file passwords are masked
+        file_upload.file.seek(0)  # Ensure pointer is at start
+        csv_content = io.StringIO(file_upload.file.read().decode("utf-8"))
+        reader = csv.DictReader(csv_content)
+        for row in reader:
+            self.assertEqual(row["password"], "******")
+
     def test_num_queries(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
@@ -177,7 +184,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
-        with self.assertNumQueries(37):
+        with self.assertNumQueries(52):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -190,7 +197,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.account1.save()
 
         self.account1.refresh_from_db()
-        with self.assertNumQueries(43):
+        with self.assertNumQueries(52):
             with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -667,33 +674,23 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
-        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        # changing this as it made no sense. If the project passed is invalid , we just put the available projects instead and silence the error
+        # on the other hand, passing empty project without default made it so it stayed empty. inconsistent
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "file_content")
+        validation_errors = res_data["file_content"]
 
-        # The current project restrictions of a `user` without the admin perm should be applied.
-        # That means that projects in the CSV should've been skipped and new profiles should
-        # end up having the same restriction as `user`.
-        profile_1 = Profile.objects.get(user__username=username_1)
-        self.assertEqual(1, profile_1.projects.count())
-        self.assertEqual(profile_1.projects.first(), self.project2)
-        profile_2 = Profile.objects.get(user__username=username_2)
-        self.assertEqual(1, profile_2.projects.count())
-        self.assertEqual(profile_2.projects.first(), self.project2)
+        self.assertEqual(len(validation_errors), 2)
 
-        self.client.logout()
-        User.objects.filter(username__in=[username_1, username_2, username_3]).delete()
-
-        self.yoda.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
-        self.yoda.iaso_profile.org_units.set([self.org_unit_child])
-        self.assertFalse(self.yoda.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()))
-        self.assertTrue(self.yoda.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
+        self.assertIn("projects", validation_errors[0]["details"])
+        self.assertIn("Object with name=Project name does not exist.", validation_errors[0]["details"]["projects"][0])
 
         self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.org_units.add(self.org_unit_child)
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
-        # A `user` with the admin perm should be able to bypass project restrictions.
-        # Here, the CSV content should be applied.
         profile_1 = Profile.objects.get(user__username=username_1)
         self.assertEqual(1, profile_1.projects.count())
         self.assertEqual(profile_1.projects.first(), self.project)

@@ -3,6 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
+from rest_framework_csv.renderers import CSVRenderer
 
 from hat.audit.models import PROFILE_API_BULK
 from iaso.api.bulk_create_users.permissions import HasUserPermission
@@ -43,10 +44,6 @@ class BulkCreateUserFromCsvViewSet(CreateModelMixin, GenericViewSet):
         - default_profile_language: language code, e.g. "en" or "fr"
         - default_organization: organization name, e.g. "WHO"
 
-    Sample CSV:
-        username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,teams,phone_number,editable_org_unit_types
-        john,SecurePass123!,john@example.com,John,Doe,123,,,en,,iaso_forms,manager,Project1,Team1,+1234567890,1
-
     Notes:
         - CSV field values take precedence over default values
         - Use org unit IDs instead of names when possible (less error-prone)
@@ -64,16 +61,28 @@ class BulkCreateUserFromCsvViewSet(CreateModelMixin, GenericViewSet):
 
     def _audit(self, created_profiles, audit_logger, importer_user):
         """Log created users"""
-        for profile in created_profiles:
-            audit_logger.log_modification(
-                instance=profile,
-                old_data_dump=None,
-                request_user=importer_user,
-                source=f"{PROFILE_API_BULK}_create",
-            )
+        audit_logger.bulk_log_modifications(
+            items=[
+                {
+                    "instance": profile,
+                    "old_data_dump": None,
+                    "source": f"{PROFILE_API_BULK}_create",
+                }
+                for profile in created_profiles
+            ],
+            request_user=importer_user,
+        )
 
-    @extend_schema(request=None)
-    @action(detail=False, methods=["get"], url_path="getsample")
+    @extend_schema(
+        request=None,
+        responses={(200, CSVRenderer.media_type): bytes},
+        description=(
+            "Returns a sample CSV file with content:\n"
+            "username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,teams,phone_number,editable_org_unit_types\n"
+            "john,SecurePass123!,john@example.com,John,Doe,123,,,en,,iaso_forms,manager,Project1,Team1,+1234567890,1"
+        ),
+    )
+    @action(detail=False, methods=["get"], url_path="getsample", renderer_classes=[CSVRenderer])
     def download_sample_csv(self, request):
         return FileResponse(
             open("iaso/api/fixtures/sample_bulk_user_creation.csv", "rb"), content_type="text/csv", as_attachment=True

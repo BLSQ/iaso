@@ -77,7 +77,7 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
     )
 
     orgunit = SlugOrPrimaryKeyRelatedField(
-        slug_field="name", queryset=Project.objects.none(), required=False, many=True, allow_null=True, allow_empty=True
+        slug_field="name", queryset=OrgUnit.objects.none(), required=False, many=True, allow_null=True, allow_empty=True
     )
 
     orgunit__source_ref = SlugRelatedField(
@@ -134,6 +134,7 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
         default_organization = kwargs.pop("default_organization", None)
         default_org_units = kwargs.pop("default_org_units", None)
         default_teams = kwargs.pop("default_teams", None)
+        qs_cache = kwargs.pop("qs_cache", {})
 
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
@@ -163,30 +164,54 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
             self.fields["orgunit"].default = default_org_units
 
         # enable querysets
-        self.fields["permissions"].child_relation.queryset = Permission.objects.filter(
-            codename__in=importer_user.iaso_profile.account.permissions_from_active_modules
-        )
-        self.fields["user_roles"].child_relation.queryset = UserRole.objects.filter(
-            account=importer_user.iaso_profile.account
-        )
-        self.fields["teams"].child_relation.queryset = Team.objects.filter_for_user(importer_user)
-        self.fields["editable_org_unit_types"].child_relation.queryset = OrgUnitType.objects.prefetch_related(
-            "projects__account"
-        ).filter(projects__account=importer_user.iaso_profile.account)
-
-        if request.user.iaso_profile.projects_ids and has_only_user_managed_permission(importer_user):
-            available_projects = Project.objects.filter(
-                account=request.user.iaso_profile.account
-            ).filter_on_user_projects(importer_user)
+        if qs_cache.get("permissions", None):
+            self.fields["permissions"].child_relation.queryset = qs_cache.get("permissions")
         else:
-            available_projects = Project.objects.filter(account=request.user.iaso_profile.account)
+            self.fields["permissions"].child_relation.queryset = Permission.objects.filter(
+                codename__in=importer_user.iaso_profile.account.permissions_from_active_modules
+            )
 
-        self.fields["projects"].child_relation.queryset = available_projects
+        if qs_cache.get("user_roles", None):
+            self.fields["user_roles"].child_relation.queryset = qs_cache.get("user_roles")
+        else:
+            self.fields["user_roles"].child_relation.queryset = UserRole.objects.filter(
+                account=importer_user.iaso_profile.account
+            )
 
-        self.fields["orgunit"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(importer_user)
-        self.fields["orgunit__source_ref"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(
-            importer_user
-        )
+        if qs_cache.get("teams", None):
+            self.fields["teams"].child_relation.queryset = qs_cache.get("teams")
+        else:
+            self.fields["teams"].child_relation.queryset = Team.objects.filter_for_user(importer_user)
+
+        if qs_cache.get("editable_org_unit_types", None):
+            self.fields["editable_org_unit_types"].child_relation.queryset = qs_cache.get("editable_org_unit_types")
+        else:
+            self.fields["editable_org_unit_types"].child_relation.queryset = OrgUnitType.objects.prefetch_related(
+                "projects__account"
+            ).filter(projects__account=importer_user.iaso_profile.account)
+
+        if qs_cache.get("projects", None):
+            self.fields["projects"].child_relation.queryset = qs_cache["projects"]
+        else:
+            if request.user.iaso_profile.projects_ids and has_only_user_managed_permission(importer_user):
+                available_projects = Project.objects.filter(
+                    account=request.user.iaso_profile.account
+                ).filter_on_user_projects(importer_user)
+            else:
+                available_projects = Project.objects.filter(account=request.user.iaso_profile.account)
+            self.fields["projects"].child_relation.queryset = available_projects
+
+        if qs_cache.get("orgunit", None):
+            self.fields["orgunit"].child_relation.queryset = qs_cache.get("orgunit")
+        else:
+            self.fields["orgunit"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(importer_user)
+
+        if qs_cache.get("orgunit__source_ref", None):
+            self.fields["orgunit__source_ref"].child_relation.queryset = qs_cache.get("orgunit__source_ref")
+        else:
+            self.fields["orgunit__source_ref"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(
+                importer_user
+            ).filter(version_id=importer_user.iaso_profile.account.default_version_id)
 
     def validate_phone_number(self, data):
         if data:
@@ -284,19 +309,19 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
 
 class BulkCreateUserSerializer(ModelSerializer):
     default_permissions = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=Permission.objects.all(), allow_empty=True, write_only=True
+        many=True, allow_null=True, queryset=Permission.objects.all(), allow_empty=True, write_only=True, required=False
     )
     default_projects = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=Project.objects.none(), allow_empty=True, write_only=True
+        many=True, allow_null=True, queryset=Project.objects.none(), allow_empty=True, write_only=True, required=False
     )
     default_user_roles = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=UserRole.objects.none(), allow_empty=True, write_only=True
+        many=True, allow_null=True, queryset=UserRole.objects.none(), allow_empty=True, write_only=True, required=False
     )
     default_org_units = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=OrgUnit.objects.none(), allow_empty=True, write_only=True
+        many=True, allow_null=True, queryset=OrgUnit.objects.none(), allow_empty=True, write_only=True, required=False
     )
     default_teams = serializers.PrimaryKeyRelatedField(
-        many=True, allow_null=True, queryset=Team.objects.none(), allow_empty=True, write_only=True
+        many=True, allow_null=True, queryset=Team.objects.none(), allow_empty=True, write_only=True, required=False
     )
     account = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
     created_by = serializers.HiddenField(default=CurrentUserDefault(), write_only=True)
@@ -323,7 +348,11 @@ class BulkCreateUserSerializer(ModelSerializer):
                     FileTypeValidator(allowed_mimetypes=["text/csv"]),
                     FileExtensionValidator(allowed_extensions=["csv"]),
                 ],
-            }
+            },
+            "default_profile_language": {
+                "write_only": True,
+            },
+            "default_organization": {"write_only": True},
         }
 
     def __init__(self, *args, **kwargs):
@@ -337,7 +366,7 @@ class BulkCreateUserSerializer(ModelSerializer):
         # init querysets for primary key related fields
 
         # default projects
-        if request.user.iaso_profile.projects_ids and has_only_user_managed_permission(importer_user):
+        if has_only_user_managed_permission(importer_user):
             available_projects = Project.objects.filter(account=importer_account).filter_on_user_projects(importer_user)
         else:
             available_projects = Project.objects.filter(account=importer_account)
@@ -485,6 +514,33 @@ class BulkCreateUserSerializer(ModelSerializer):
         validated_data["file"].seek(0)
         csv_reader = csv.DictReader(validated_data["file"].read().decode("utf-8").splitlines(), dialect=self.dialect)
 
+        # we do that so we avoid the BulkCreateItemSerializer serializer to hit the db every init for the querysets in m2m fields
+        account = self.context["request"].user.iaso_profile.account
+
+        if self.context["request"].user.iaso_profile.projects_ids and has_only_user_managed_permission(
+            self.context["request"].user
+        ):
+            available_projects = Project.objects.filter(account=account).filter_on_user_projects(
+                self.context["request"].user
+            )
+        else:
+            available_projects = Project.objects.filter(account=account)
+
+        # to avoid hitting the DB everytime in the BulkCreateItemSerializer __init__ method
+        qs_cache = {
+            "permissions": Permission.objects.filter(codename__in=account.permissions_from_active_modules),
+            "user_roles": UserRole.objects.filter(account=account),
+            "teams": Team.objects.filter_for_user(self.context["request"].user),
+            "editable_org_unit_types": OrgUnitType.objects.prefetch_related("projects__account").filter(
+                projects__account=account
+            ),
+            "projects": available_projects,
+            "orgunit": OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user),
+            "orgunit__source_ref": OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user).filter(
+                version_id=account.default_version_id
+            ),
+        }
+
         for idx, row in enumerate(csv_reader):
             serializer = BulkCreateItemSerializer(
                 data=self._pre_process_row(row),
@@ -496,6 +552,7 @@ class BulkCreateUserSerializer(ModelSerializer):
                 default_org_units=validated_data.get("default_org_units", None),
                 default_profile_language=validated_data.get("default_profile_language", None),
                 default_organization=validated_data.get("default_organization", None),
+                qs_cache=qs_cache,
             )
             if serializer.is_valid():
                 (

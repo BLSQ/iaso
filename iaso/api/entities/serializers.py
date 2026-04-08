@@ -146,7 +146,9 @@ class EntityListSerializer(serializers.ModelSerializer):
     latitude = serializers.FloatField(source="attributes.location.y", default=None, read_only=True)
     entity_type = serializers.CharField(source="entity_type.name", default=None, read_only=True)
     name = serializers.SerializerMethodField()
-    last_saved_instance = serializers.SerializerMethodField()
+    last_saved_instance = serializers.DateTimeField(
+        source="entityvillagestats.latest_instance", default=None, read_only=True
+    )
     has_duplicates = serializers.SerializerMethodField()
 
     def get_last_saved_instance(self, obj):

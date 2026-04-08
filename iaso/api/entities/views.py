@@ -112,6 +112,11 @@ class EntityViewSet(ModelViewSet):
             or self.request.query_params.get(api_settings.ORDERING_PARAM)
             or ""
         )
+
+        # Trypelim-specific
+        # Swap last_saved_instance for entityvillagestats lastest_intance
+        order_param = order_param.replace("last_saved_instance", "entityvillagestats__latest_instance")
+
         return {field.strip().lstrip("-") for field in order_param.split(",") if field.strip()}
 
     def get_queryset(self):
@@ -126,6 +131,7 @@ class EntityViewSet(ModelViewSet):
         queryset = queryset.select_related(
             "attributes__org_unit",
             "attributes__created_by",
+            "entityvillagestats",
             "entity_type",
         ).prefetch_related(
             "attributes__created_by__teams",

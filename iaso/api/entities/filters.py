@@ -130,6 +130,10 @@ class EntityOrderingFilter(filters.OrderingFilter):
         # Accept either parameter, for legacy API compatibility
         ordering = request.query_params.get("order_columns") or request.query_params.get("order")
 
+        # Trypelim-specific
+        # Swap last_saved_instance for entityvillagestats lastest_intance
+        ordering = ordering.replace("last_saved_instance", "entityvillagestats__latest_instance")
+
         if not ordering:
             return super().get_ordering(request, queryset, view)
 

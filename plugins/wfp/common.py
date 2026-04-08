@@ -592,24 +592,21 @@ def _extract_next_visit_info(data):
     )
 
     next_visit_days = _first_of(data, "next_visit_days", "number_of_days__int__")
-
-    if next_visit_days in (None, ""):
-        for field in (
-            "OTP_next_visit",
-            "TSFP_next_visit",
-            "tsfp_next_visit",
-            "otp_next_visit",
-        ):
-            val = data.get(field)
-            if val not in (None, "", "--"):
-                next_visit_days = val
-                break
-
-    if next_visit_days in (None, ""):
-        val = data.get("number_of_days__int__")
+    interval_days_fields = [
+        "next_visit_days",
+        "number_of_days__int__",
+        "OTP_next_visit",
+        "TSFP_next_visit",
+        "tsfp_next_visit",
+        "otp_next_visit",
+    ]
+    next_visit_days = None
+    for field in interval_days_fields:
+        val = data.get(field)
         if val not in (None, "", "--"):
             next_visit_days = val
 
+            break
     return next_visit_date, _safe_int(next_visit_days, 0)
 
 

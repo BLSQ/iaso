@@ -100,8 +100,11 @@ export const Entities: FunctionComponent = () => {
     }, [data]);
 
     const hasCursor = !!(next || previous);
+
+    const requiresCount = !isFetching && hasCursor;
+
     const { data: countData, isFetching: isFetchingCount } =
-        useGetEntitiesCount(params, hasCursor);
+        useGetEntitiesCount(params, requiresCount);
 
     const lengthResults = data?.result?.length ?? 0;
     const totalCount = countData?.count ?? lengthResults;
@@ -121,7 +124,7 @@ export const Entities: FunctionComponent = () => {
         redirectTo(baseUrl, {
             ...params,
             pageSize: newPageSize.toString(),
-            cursor: "null",
+            cursor: 'null',
         });
     };
 

@@ -138,7 +138,7 @@ export const useGetEntitiesLocations = (
 
 export const useGetEntitiesCount = (
     params: Params,
-    hasCursor: boolean,
+    enabled: boolean,
 ): UseQueryResult<{ count: number }, Error> => {
     // strip attributes that shouldn't affect the count cache or api
     const { cursor, page, pageSize, order, ...countParams } = params;
@@ -154,7 +154,7 @@ export const useGetEntitiesCount = (
         queryKey: ['entities-count', countParams],
         queryFn: () => getRequest(countUrl),
         options: {
-            enabled: hasCursor && apiParams.tab === 'list',
+            enabled: enabled && apiParams.tab === 'list',
             staleTime: 1000 * 60 * 5,
             cacheTime: 1000 * 60 * 10,
         },

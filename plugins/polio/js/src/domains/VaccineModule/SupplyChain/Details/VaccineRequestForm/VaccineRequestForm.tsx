@@ -288,32 +288,24 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 </Grid>
                             </Grid>
                             <Grid container item xs={12} spacing={2}>
+                                <Grid item xs={12} lg={6}>
+                                    <InputComponent
+                                        type="textarea"
+                                        keyValue="vrf.comment"
+                                        value={values?.vrf?.comment ?? ''}
+                                        // errors={errors.comment ? errors.comment : []}
+                                        label={MESSAGES.comments}
+                                        onChange={onCommentChange}
+                                        disabled={isFieldDisabledEdit(vrfData)}
+                                        withMarginTop={false}
+                                    />
+                                </Grid>
                                 <Grid item xs={6} md={3}>
                                     <Field
                                         label={formatMessage(
                                             MESSAGES.date_vrf_submission_dg,
                                         )}
                                         name="vrf.date_vrf_submitted_to_dg"
-                                        component={DateInput}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                    />
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Field
-                                        label={formatMessage(
-                                            MESSAGES.quantities_approved_by_dg_in_doses,
-                                        )}
-                                        name="vrf.quantities_approved_by_dg_in_doses"
-                                        component={NumberInput}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                    />
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Field
-                                        label={formatMessage(
-                                            MESSAGES.date_dg_approval,
-                                        )}
-                                        name="vrf.date_dg_approval"
                                         component={DateInput}
                                         disabled={isFieldDisabledEdit(vrfData)}
                                     />
@@ -350,7 +342,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     </Box>
                                 </Grid>
                             </Grid>
-                            <Grid container item xs={12} spacing={2}>
+                            {/* <Grid container item xs={12} spacing={2}>
                                 <Grid item xs={12} lg={6}>
                                     <InputComponent
                                         type="textarea"
@@ -363,7 +355,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         withMarginTop={false}
                                     />
                                 </Grid>
-                            </Grid>
+                            </Grid> */}
                         </>
                     )}
                 </Grid>

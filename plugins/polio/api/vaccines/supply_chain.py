@@ -575,8 +575,6 @@ class VaccineRequestFormDetailSerializer(ModelWithFileSerializer):
             "date_vrf_submission_to_orpg",
             "quantities_approved_by_orpg_in_doses",
             "date_rrt_orpg_approval",
-            "date_vrf_submitted_to_dg",
-            "quantities_approved_by_dg_in_doses",
             "comment",
             "country_name",
             "country_id",

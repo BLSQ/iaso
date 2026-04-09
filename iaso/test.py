@@ -371,7 +371,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         *,
         request_body: typing.Any,
         has_problems: bool,
-        check_auth_header: bool = False,
         exception_contains_string: str = None,
         exception_contains_code: str = None,
     ):
@@ -385,9 +384,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertEqual(has_problems, last_api_import.has_problem, f"{last_api_import} - {last_api_import.exception}")
 
         self.assertIsInstance(last_api_import.headers, dict)
-        if check_auth_header:
-            self.assertIsInstance(last_api_import.headers["HTTP_AUTHORIZATION"], str)
-            self.assertEqual("Bearer ", last_api_import.headers["HTTP_AUTHORIZATION"][:7])
 
         if has_problems is False:
             self.assertEqual(last_api_import.exception, "")

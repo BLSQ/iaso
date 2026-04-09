@@ -173,7 +173,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
 
                 self.assertHasField(res_data, "history", list)
 
-                self.assertEqual(len(res_data["history"]), 1)
+                self.assertEqual(len(res_data["history"]), 2)
 
                 history_item = res_data["history"][0]
                 for f in [
@@ -238,7 +238,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
 
                 self.assertHasField(res_data, "history", list)
 
-                self.assertEqual(len(res_data["history"]), 3)
+                self.assertEqual(len(res_data["history"]), 4)
 
                 self.assertEqual(res_data["next_tasks"], [])
 
@@ -272,13 +272,23 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 self.assertEqual(second_item["created_by"], self.john_wick.username)
                 self.assertEqual(second_item["updated_by"], self.john_wick.username)
 
-                last_item = res_data["history"][2]
-                self.assertEqual(last_item["status"], ValidationNodeStatus.ACCEPTED)
+                third_item = res_data["history"][2]
+                self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+                self.assertEqual(third_item["level"], "First node")
+                self.assertEqual(third_item["color"], "#FFFFFF")
+                self.assertEqual(third_item["comment"], "LGTM 0")
+                self.assertEqual(third_item["created_by"], self.john_wick.username)
+                self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+                self.assertEqual(res_data["next_bypass"], [])
+
+                last_item = res_data["history"][3]
+                self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
                 self.assertEqual(last_item["level"], "First node")
                 self.assertEqual(last_item["color"], "#FFFFFF")
-                self.assertEqual(last_item["comment"], "LGTM 0")
+                self.assertEqual(last_item["comment"], "")
                 self.assertEqual(last_item["created_by"], self.john_wick.username)
-                self.assertEqual(last_item["updated_by"], self.john_wick.username)
+                self.assertIsNone(last_item["updated_by"])
 
                 self.assertEqual(res_data["next_bypass"], [])
 
@@ -299,7 +309,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 self.assertHasField(res_data, "history", list)
                 self.assertEqual(res_data["next_tasks"], [])
 
-                self.assertEqual(len(res_data["history"]), 2)
+                self.assertEqual(len(res_data["history"]), 3)
 
                 for history_item in res_data["history"]:
                     for f in [
@@ -331,5 +341,15 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 self.assertEqual(last_item["comment"], "LGTM 0")
                 self.assertEqual(last_item["created_by"], self.john_wick.username)
                 self.assertEqual(last_item["updated_by"], self.john_wick.username)
+
+                self.assertEqual(res_data["next_bypass"], [])
+
+                last_item = res_data["history"][2]
+                self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
+                self.assertEqual(last_item["level"], "First node")
+                self.assertEqual(last_item["color"], "#FFFFFF")
+                self.assertEqual(last_item["comment"], "")
+                self.assertEqual(last_item["created_by"], self.john_wick.username)
+                self.assertIsNone(last_item["updated_by"])
 
                 self.assertEqual(res_data["next_bypass"], [])

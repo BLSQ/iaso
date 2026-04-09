@@ -59,6 +59,7 @@ from iaso.models import (
     OrgUnitChangeRequest,
     Project,
 )
+from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
@@ -1042,7 +1043,15 @@ def import_data(instances, user, app_id):
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
-        if Instance.objects.filter(uuid=uuid).exists():
+        existing_instances = Instance.objects.filter(uuid=uuid)
+        if existing_instances:
+            if all(
+                existing_instance.general_validation_status
+                in [ValidationWorkflowArtefactStatus.REJECTED, ValidationWorkflowArtefactStatus.PENDING]
+                + Instance._meta.get_field("general_validation_status").empty_values
+                for existing_instance in existing_instances
+            ):
+                rtn_instances.append(existing_instances.first())
             continue
 
         # Get or create instance based on file_name - this "get or create" logic is important:
@@ -1136,7 +1145,11 @@ def import_data(instances, user, app_id):
 
     for instance in rtn_instances:
         validation_workflow = getattr(instance.form, "validation_workflow", None)
-        if validation_workflow and getattr(validation_workflow, "node_templates", None):
+        if (
+            validation_workflow
+            and not validation_workflow.deleted_at
+            and getattr(validation_workflow, "node_templates", None)
+        ):
             try:
                 ValidationWorkflowEngine.start(
                     instance.form.validation_workflow, user if user.is_authenticated else None, instance

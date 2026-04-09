@@ -1,7 +1,7 @@
 from autoslug import AutoSlugField
 from autoslug.utils import crop_slug, get_prepopulated_value
 from django.db import models
-from django.db.models import Case, IntegerField, Q, When
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 
@@ -20,7 +20,6 @@ class ValidationWorkflowArtefactStatus(models.TextChoices):
 
 
 class ValidationWorkflowArtefact(models.Model):
-    parent_artefact_for_validation = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)
     general_validation_status = models.CharField(
         choices=ValidationWorkflowArtefactStatus.choices, blank=True, default="", max_length=20
     )
@@ -38,36 +37,15 @@ class ValidationWorkflowArtefact(models.Model):
             status=ValidationNodeStatus.UNKNOWN, **{"node__workflow": workflow} if workflow else {}
         )
 
-    def _collect_artefact_pks(self):
-        pks = []
-
-        if self.parent_artefact_for_validation:
-            pks.extend(self.parent_artefact_for_validation._collect_artefact_pks())
-
-        pks.append(self.pk)
-
-        return pks
-
     def get_all_validation_nodes(self, workflow=None):
         """
-        Function to recursively get all validation nodes (including parent) and order them
+        Function to recursively get all validation nodes and order them
         """
         from iaso.models import ValidationNode
 
-        artefact_pks = self._collect_artefact_pks()
-
-        order = Case(
-            *[When(instance_id=pk, then=pos) for pos, pk in enumerate(artefact_pks)],
-            output_field=IntegerField(),
-        )
-
-        return (
-            ValidationNode.objects.filter(
-                instance_id__in=artefact_pks, **{"node__workflow": workflow} if workflow else {}
-            )
-            .annotate(_order=order)
-            .order_by("-_order", "-created_at")
-        )
+        return ValidationNode.objects.filter(
+            instance_id=self.pk, **{"node__workflow": workflow} if workflow else {}
+        ).order_by("-created_at")
 
     def get_next_bypass_nodes(self, workflow=None):
         from iaso.models import ValidationNodeTemplate

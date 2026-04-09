@@ -138,13 +138,20 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         self.instance.refresh_from_db()
         self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
 
-        self.assertEqual(self.instance.validationnode_set.count(), 1)
+        self.assertEqual(self.instance.validationnode_set.count(), 2)
         validation_node = self.instance.validationnode_set.first()
 
         self.assertEqual(validation_node.comment, "Nope")
         self.assertEqual(validation_node.created_by, self.john_wick)
         self.assertEqual(validation_node.updated_by, self.john_wick)
         self.assertEqual(validation_node.status, ValidationNodeStatus.REJECTED)
+
+        validation_node = self.instance.validationnode_set.last()
+
+        self.assertEqual(validation_node.comment, "")
+        self.assertEqual(validation_node.created_by, self.john_wick)
+        self.assertIsNone(validation_node.updated_by)
+        self.assertEqual(validation_node.status, ValidationNodeStatus.SUBMISSION)
 
     def test_approve(self):
         self.base_test_approve(self.john_wick)
@@ -166,9 +173,15 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         # check db
         self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
 
-        self.assertEqual(self.instance.validationnode_set.count(), 2)
+        self.assertEqual(self.instance.validationnode_set.count(), 3)
         validation_node = self.instance.validationnode_set.last()
 
+        self.assertEqual(validation_node.comment, "")
+        self.assertEqual(validation_node.created_by, self.john_wick)
+        self.assertIsNone(validation_node.updated_by)
+        self.assertEqual(validation_node.status, ValidationNodeStatus.SUBMISSION)
+
+        validation_node = self.instance.validationnode_set.all()[1]
         self.assertEqual(validation_node.comment, "LGTM")
         self.assertEqual(validation_node.created_by, self.john_wick)
         self.assertEqual(validation_node.updated_by, user)
@@ -209,7 +222,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         other_validation_workflow.form_set.add(other_form)
         ValidationWorkflowEngine.start(other_validation_workflow, stranger, other_instance)
 
-        self.assertEqual(other_node.validationnode_set.count(), 1)
+        self.assertEqual(other_node.validationnode_set.count(), 2)
 
         node_pk = other_node.validationnode_set.first().pk
 
@@ -227,4 +240,4 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
-        self.assertEqual(other_node.validationnode_set.count(), 1)
+        self.assertEqual(other_node.validationnode_set.count(), 2)

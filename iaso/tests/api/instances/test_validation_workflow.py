@@ -1,6 +1,6 @@
 import logging
 
-from unittest import mock, skip
+from unittest import mock
 from uuid import uuid4
 
 from iaso.models import (
@@ -16,13 +16,11 @@ from iaso.models import (
     ValidationWorkflow,
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
+from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase
 
 
-@skip(
-    "TODO; for whatever reason, this makes the test test_list_should_be_filtered_by_project_via_new_reference_instances_when_instance_project_is_null crash and i don't have time to fix it."
-)
 class InstancesAPITestCase(APITestCase):
     def tearDown(self):
         super().tearDown()
@@ -185,3 +183,117 @@ class InstancesAPITestCase(APITestCase):
         instance = Instance.objects.get(uuid=instance_uuid)
 
         self.assertEqual(instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
+
+    def test_trigger_validation_workflow_resubmit(self):
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.org_unit.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 15.5,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "name": "test_accuracy",
+            }
+        ]
+        self.client.post("/api/instances/?app_id=agriculture.hydroponics", data=body, format="json")
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        self.assertEqual(instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
+        self.assertEqual(instance.validationnode_set.count(), 2)
+
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153705,
+                "updated_at": 1565258153710,
+                "orgUnitId": self.org_unit.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 15.5,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "name": "test_accuracy",
+            }
+        ]
+        self.client.post("/api/instances/?app_id=agriculture.hydroponics", data=body, format="json")
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        self.assertEqual(instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
+        self.assertEqual(instance.validationnode_set.count(), 3)
+
+        self.assertEqual(instance.validationnode_set.first().status, ValidationNodeStatus.UNKNOWN)
+        self.assertEqual(instance.validationnode_set.all()[1].status, ValidationNodeStatus.NEW_VERSION)
+        self.assertEqual(instance.validationnode_set.last().status, ValidationNodeStatus.SUBMISSION)
+
+    def test_trigger_validation_workflow_resubmit_when_no_workflow_before(self):
+        self.validation_workflow.delete()
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.org_unit.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 15.5,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "name": "test_accuracy",
+            }
+        ]
+        self.client.post("/api/instances/?app_id=agriculture.hydroponics", data=body, format="json")
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        self.assertEqual(instance.general_validation_status, "")
+        self.assertEqual(instance.validationnode_set.count(), 0)
+
+        self.validation_workflow.deleted_at = None
+        self.validation_workflow.save()
+
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153705,
+                "updated_at": 1565258153710,
+                "orgUnitId": self.org_unit.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 15.5,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "name": "test_accuracy",
+            }
+        ]
+        self.client.post("/api/instances/?app_id=agriculture.hydroponics", data=body, format="json")
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        self.assertEqual(instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
+        self.assertEqual(instance.validationnode_set.count(), 2)
+
+        self.assertEqual(instance.validationnode_set.first().status, ValidationNodeStatus.UNKNOWN)
+        self.assertEqual(instance.validationnode_set.last().status, ValidationNodeStatus.SUBMISSION)

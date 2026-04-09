@@ -1,10 +1,11 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import BasePermission
 
-from hat.api_import.filters import APIImportFilterSet
 from hat.api_import.models import APIImport
-from hat.api_import.serializers import APIImportSerializer
+from iaso.api.api_import.filters import APIImportFilterSet
+from iaso.api.api_import.serializers import APIImportSerializer
 from iaso.api.common import Paginator
 from iaso.models import Project
 
@@ -22,7 +23,7 @@ class IsAdminOrSuperUserPermission(BasePermission):
         return bool(request.user and (request.user.is_staff or request.user.is_superuser))
 
 
-class APIImportViewSet(viewsets.ModelViewSet):
+class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     permission_classes = [IsAdminOrSuperUserPermission]
     serializer_class = APIImportSerializer

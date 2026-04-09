@@ -23,6 +23,7 @@ from plugins.router import router as plugins_router
 from .api.accounts import AccountViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
+from .api.api_import.views import APIImportViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
 from .api.bulk_create_users.views import BulkCreateUserFromCsvViewSet
@@ -262,6 +263,7 @@ router.register(r"stockrulesversions", StockRulesVersionViewSet, basename="stock
 router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, basename="mobilestockkeepingunits")
 router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
 router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
+router.register(r"api_import", APIImportViewSet, basename="api_import")
 router.register(r"notifications", NotificationViewSet, basename="notifications")
 
 router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(

@@ -46,59 +46,63 @@ class APIImportViewSetTest(APITestCase):
         apiimport.created_at = datetime(2026, 4, 12)
         apiimport.save()
 
+    def test_retrieve_anonymous(self):
+        response = self.client.get("/api/api_import/1/")
+        self.assertEqual(response.status_code, 404)
+
     def test_get_anonymous(self):
-        response = self.client.get("/api_import/list/")
+        response = self.client.get("/api/api_import/")
         self.assertJSONResponse(response, expected_status_code=401)
 
     def test_get_simple_user(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api_import/list/")
+        response = self.client.get("/api/api_import/")
         self.assertJSONResponse(response, expected_status_code=403)
 
     def test_get_superuser(self):
         self.client.force_authenticate(self.superuser)
-        response = self.client.get("/api_import/list/")
+        response = self.client.get("/api/api_import/")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 3)
 
     def test_get_staff(self):
         self.client.force_authenticate(self.staff)
-        response = self.client.get("/api_import/list/")
+        response = self.client.get("/api/api_import/")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 6)
 
     def test_get_filter_app_id(self):
         self.client.force_authenticate(self.staff)
-        response = self.client.get("/api_import/list/?app_id=P1")
+        response = self.client.get("/api/api_import/?app_id=P1")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 3)
 
     def test_get_filter_from_date(self):
         self.client.force_authenticate(self.staff)
-        response = self.client.get("/api_import/list/?from_date=2026-04-09")
+        response = self.client.get("/api/api_import/?from_date=2026-04-09")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 4)
 
     def test_get_filter_to_date(self):
         self.client.force_authenticate(self.staff)
-        response = self.client.get("/api_import/list/?to_date=2026-04-09")
+        response = self.client.get("/api/api_import/?to_date=2026-04-09")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 3)
 
     def test_get_filter_has_problem(self):
         self.client.force_authenticate(self.staff)
-        response = self.client.get("/api_import/list/?has_problem=true")
+        response = self.client.get("/api/api_import/?has_problem=true")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 1)
 
     def test_get_filter_import_type(self):
         self.client.force_authenticate(self.staff)
-        response = self.client.get("/api_import/list/?import_type=bulk")
+        response = self.client.get("/api/api_import/?import_type=bulk")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 2)
 
     def test_get_filter_user_id(self):
         self.client.force_authenticate(self.staff)
-        response = self.client.get(f"/api_import/list/?user_id={self.user.id}")
+        response = self.client.get(f"/api/api_import/?user_id={self.user.id}")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 2)

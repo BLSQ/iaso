@@ -34,7 +34,7 @@ export const useGetApiImports = (
         limit: params.pageSize || '10',
         page: params.page || '1',
     };
-    const url = makeUrlWithParams('/api_import/list/', apiParams);
+    const url = makeUrlWithParams('/api/api_import/', apiParams);
     return useSnackQuery({
         queryKey: ['apiimports', params],
         queryFn: () => getRequest(url),

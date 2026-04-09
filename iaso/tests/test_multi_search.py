@@ -41,7 +41,7 @@ class MultiSearchTestCase(TestCase):
         p.save()
         self.link = user
         self.link_client = APIClient()
-        self.link_client.login(username="link", password="tiredofplayingthesameagain")
+        self.link_client.force_login(self.link)
 
         OrgUnit.objects.create(
             name="Akkala",

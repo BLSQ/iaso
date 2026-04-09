@@ -26,6 +26,7 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Case, CharField, Count, DateField, F, FloatField, Func, IntegerField, Q, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Concat, Extract, ExtractMonth, ExtractYear, Substr
@@ -1203,17 +1204,18 @@ class ETL:
         """
         task.save()
         try:
-            Beneficiary.objects.bulk_create(beneficiaries)
-            Journey.objects.bulk_create(journeys)
-            Visit.objects.bulk_create(visits)
-            Step.objects.bulk_create(steps)
-            status = "SUCCESS"
-            logger.info(
-                f"Saved: {len(beneficiaries)} beneficiaries, "
-                f"{len(journeys)} journeys, "
-                f"{len(visits)} visits, "
-                f"{len(steps)} steps"
-            )
+            with transaction.atomic():
+                Beneficiary.objects.bulk_create(beneficiaries)
+                Journey.objects.bulk_create(journeys)
+                Visit.objects.bulk_create(visits)
+                Step.objects.bulk_create(steps)
+                status = "SUCCESS"
+                logger.info(
+                    f"Saved: {len(beneficiaries)} beneficiaries, "
+                    f"{len(journeys)} journeys, "
+                    f"{len(visits)} visits, "
+                    f"{len(steps)} steps"
+                )
         except Exception as err:
             sentry_sdk.capture_exception(err)
             task.result = {
@@ -1643,7 +1645,26 @@ class ETL:
             .exclude(nutrition_programme__in=EXCLUDED_PROGRAMMES)
             .annotate(
                 orgUnitId=F("org_unit__id"),
-                new_case=Sum("admission_type_new_case"),
+                # When nutrition_programme=BSFP, in admission or followup forms, there is no admission type,
+                # So we need to aggregate all other muac + whz score cases as new_case
+                new_case=Sum(
+                    Case(
+                        When(
+                            nutrition_programme="BSFP",
+                            then=(
+                                F("muac_under_11_5")
+                                + F("muac_11_5_12_4")
+                                + F("muac_above_12_5")
+                                + F("muac_under_23")
+                                + F("muac_above_23")
+                                + F("whz_score_2")
+                                + F("whz_score_3")
+                                + F("whz_score_3_2")
+                            ),
+                        ),
+                        default=F("admission_type_new_case"),
+                    )
+                ),
                 relapse=Sum("admission_type_relapse"),
                 returned_defaulter=Sum("admission_type_returned_defaulter"),
                 returned_referral=Sum("admission_type_returned_referral"),
@@ -1775,7 +1796,9 @@ class ETL:
         )
         query_set = (
             (
-                Instance.objects.filter(entity__entity_type__code=self.entity_type).annotate(
+                Instance.objects.filter(entity__entity_type__code=self.entity_type)
+                .select_related("entity__entity_type")
+                .annotate(
                     year=Cast(ExtractYear(visit_date), CharField()),
                     month=Cast(ExtractMonth(visit_date), CharField()),
                     yearMonth=Concat(

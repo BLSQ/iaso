@@ -14,6 +14,13 @@ jobs:
   smoke_test:
     runs-on: ubuntu-22.04
     steps:
+      - name: Configuration output
+        run: |
+          echo "LOGIN_PASSWORD: $LOGIN_PASSWORD"
+          echo "LOGIN_USERNAME: $LOGIN_USERNAME"
+          echo "GIT_TAG: $GIT_TAG"
+          echo "SAVE_SMOKE_TEST_SCREENSHOT: $SAVE_SMOKE_TEST_SCREENSHOT"
+          echo "SMOKE_TEST_MONITOR_CONSOLE_ERRORS: $SMOKE_TEST_MONITOR_CONSOLE_ERRORS"
 
       - name: Use node.js 22.x
         uses: actions/setup-node@v4
@@ -26,6 +33,7 @@ jobs:
 
       - name: install dependencies
         run: npm ci
+
       - name: install playwright
         run: npx playwright install --with-deps
 
@@ -36,7 +44,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: | 
+          path: |
             playwright-report/
             test-results/
           retention-days: 15

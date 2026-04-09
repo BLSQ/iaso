@@ -86,7 +86,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "sub_teams": [x["id"] for x in teams],
         },
     )
-    forms = iaso_client.get("/api/forms")["forms"]
+    forms = iaso_client.get("/api/forms/")["forms"]
     planning_form = [form for form in forms if form["form_id"] == "SAMPLE_FORM_new5"][0]
 
     source_id = manager["account"]["default_version"]["data_source"]["id"]

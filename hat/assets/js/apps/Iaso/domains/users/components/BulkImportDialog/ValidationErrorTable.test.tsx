@@ -42,7 +42,7 @@ describe('ValidationErrorTable', () => {
                 errors={[
                     {
                         row: 1,
-                        errors: { name: 'Required field' },
+                        details: { name: 'Required field' },
                     },
                 ]}
             />,
@@ -69,7 +69,7 @@ describe('ValidationErrorTable', () => {
                 errors={[
                     {
                         row: 2,
-                        errors: {
+                        details: {
                             name: 'Required',
                             email: 'Invalid',
                         },
@@ -92,7 +92,7 @@ describe('ValidationErrorTable', () => {
                     { general: 'Global error' },
                     {
                         row: 3,
-                        errors: { field1: 'Error 1' },
+                        details: { field1: ['Error 1'] },
                     },
                 ]}
             />,

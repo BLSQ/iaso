@@ -32,7 +32,7 @@ describe('ValidationErrorTable accessibility', () => {
                     { general: 'Global error' },
                     {
                         row: 3,
-                        errors: { field1: 'Error 1' },
+                        details: { field1: 'Error 1' },
                     },
                 ]}
             />,

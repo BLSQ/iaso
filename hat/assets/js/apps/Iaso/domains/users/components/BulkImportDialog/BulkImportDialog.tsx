@@ -149,11 +149,13 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                 />
             </Box>
 
-            <Collapse in={showDefaults}>
+            <Collapse in={showDefaults} unmountOnExit={false}>
                 <Box mt={1}>
                     <DefaultValuesSection
                         defaults={defaults}
                         onChange={setDefaults}
+                        errors={errors}
+                        setFieldTouched={setFieldTouched}
                     />
                 </Box>
             </Collapse>

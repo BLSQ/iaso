@@ -16,7 +16,7 @@ import MESSAGES from '../../messages';
 
 type ValidationErrorRow = {
     row: number;
-    errors: Record<string, string>;
+    details: Record<string, string | string[]>;
 };
 
 type ValidationErrorGeneral = {
@@ -83,7 +83,7 @@ export const ValidationErrorTable = ({ errors }: ValidationErrorTableProps) => {
                             {errors
                                 .filter(error => isValidationErrorRow(error))
                                 .flatMap(error =>
-                                    Object.entries(error.errors).map(
+                                    Object.entries(error.details).map(
                                         ([field, message], idx) => (
                                             <TableRow
                                                 key={`${error.row}-${field}`}
@@ -92,7 +92,7 @@ export const ValidationErrorTable = ({ errors }: ValidationErrorTableProps) => {
                                                     <TableCell
                                                         rowSpan={
                                                             Object.keys(
-                                                                error.errors,
+                                                                error.details,
                                                             ).length
                                                         }
                                                         sx={{

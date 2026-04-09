@@ -26,6 +26,7 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Case, CharField, Count, DateField, F, FloatField, Func, IntegerField, Q, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Concat, Extract, ExtractMonth, ExtractYear, Substr
@@ -292,10 +293,12 @@ def _convert_exit_type(exit_type):
 def extract_weight(data):
     """Extract weight from form data (kg)."""
     weight = data.get("weight_kgs")
-    if weight is not None and weight != "":
-        return _safe_float(weight)
+
     if weight == "":
         return 0.0
+
+    if weight not in (None, ""):
+        return _safe_float(weight)
     prev_weight = data.get("previous_weight_kgs__decimal__")
     if prev_weight is not None:
         return _safe_float(prev_weight)
@@ -419,7 +422,7 @@ def extract_assistance(data):
 
     # --- Medicines ---
     med = data.get("medicine_given")
-    if med is not None:
+    if med not in (None, ""):
         items.append({"type": med, "quantity": 1})
 
     medication = data.get("medication")
@@ -590,24 +593,21 @@ def _extract_next_visit_info(data):
     )
 
     next_visit_days = _first_of(data, "next_visit_days", "number_of_days__int__")
-
-    if next_visit_days in (None, ""):
-        for field in (
-            "OTP_next_visit",
-            "TSFP_next_visit",
-            "tsfp_next_visit",
-            "otp_next_visit",
-        ):
-            val = data.get(field)
-            if val not in (None, "", "--"):
-                next_visit_days = val
-                break
-
-    if next_visit_days in (None, ""):
-        val = data.get("number_of_days__int__")
+    interval_days_fields = [
+        "next_visit_days",
+        "number_of_days__int__",
+        "OTP_next_visit",
+        "TSFP_next_visit",
+        "tsfp_next_visit",
+        "otp_next_visit",
+    ]
+    next_visit_days = None
+    for field in interval_days_fields:
+        val = data.get(field)
         if val not in (None, "", "--"):
             next_visit_days = val
 
+            break
     return next_visit_date, _safe_int(next_visit_days, 0)
 
 
@@ -1204,17 +1204,18 @@ class ETL:
         """
         task.save()
         try:
-            Beneficiary.objects.bulk_create(beneficiaries)
-            Journey.objects.bulk_create(journeys)
-            Visit.objects.bulk_create(visits)
-            Step.objects.bulk_create(steps)
-            status = "SUCCESS"
-            logger.info(
-                f"Saved: {len(beneficiaries)} beneficiaries, "
-                f"{len(journeys)} journeys, "
-                f"{len(visits)} visits, "
-                f"{len(steps)} steps"
-            )
+            with transaction.atomic():
+                Beneficiary.objects.bulk_create(beneficiaries)
+                Journey.objects.bulk_create(journeys)
+                Visit.objects.bulk_create(visits)
+                Step.objects.bulk_create(steps)
+                status = "SUCCESS"
+                logger.info(
+                    f"Saved: {len(beneficiaries)} beneficiaries, "
+                    f"{len(journeys)} journeys, "
+                    f"{len(visits)} visits, "
+                    f"{len(steps)} steps"
+                )
         except Exception as err:
             sentry_sdk.capture_exception(err)
             task.result = {
@@ -1644,7 +1645,26 @@ class ETL:
             .exclude(nutrition_programme__in=EXCLUDED_PROGRAMMES)
             .annotate(
                 orgUnitId=F("org_unit__id"),
-                new_case=Sum("admission_type_new_case"),
+                # When nutrition_programme=BSFP, in admission or followup forms, there is no admission type,
+                # So we need to aggregate all other muac + whz score cases as new_case
+                new_case=Sum(
+                    Case(
+                        When(
+                            nutrition_programme="BSFP",
+                            then=(
+                                F("muac_under_11_5")
+                                + F("muac_11_5_12_4")
+                                + F("muac_above_12_5")
+                                + F("muac_under_23")
+                                + F("muac_above_23")
+                                + F("whz_score_2")
+                                + F("whz_score_3")
+                                + F("whz_score_3_2")
+                            ),
+                        ),
+                        default=F("admission_type_new_case"),
+                    )
+                ),
                 relapse=Sum("admission_type_relapse"),
                 returned_defaulter=Sum("admission_type_returned_defaulter"),
                 returned_referral=Sum("admission_type_returned_referral"),
@@ -1776,7 +1796,9 @@ class ETL:
         )
         query_set = (
             (
-                Instance.objects.filter(entity__entity_type__code=self.entity_type).annotate(
+                Instance.objects.filter(entity__entity_type__code=self.entity_type)
+                .select_related("entity__entity_type")
+                .annotate(
                     year=Cast(ExtractYear(visit_date), CharField()),
                     month=Cast(ExtractMonth(visit_date), CharField()),
                     yearMonth=Concat(

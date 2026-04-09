@@ -1,25 +1,39 @@
-name: smoke_tests.yml
+name: smoke_tests
+
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      GIT_TAG:
+        type: string
+        description: Git tag expected by health check endpoints to verify the deployed version.
+        required: false
+      SAVE_SMOKE_TEST_SCREENSHOT:
+        type: boolean
+        description: When enabled, smoke tests will capture and store screenshots (useful for debugging, as Playwright already captures screenshots automatically on test failures).
+        required: false
+      SMOKE_TEST_MONITOR_CONSOLE_ERRORS:
+        type: boolean
+        description: When enabled, tests will fail if any console.error is detected in the browser.
+        required: false
+      HEALTH_ENV:
+        description: List of environments to run health checks against. If not provided, all environments will be checked by default.
+        required: false
+
 env:
-  LOGIN_PASSWORD: ${{ vars.ENV_LOGIN_PASSWORD }}
-  LOGIN_USERNAME: ${{ vars.ENV_LOGIN_USERNAME }}
-  GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || vars.ENV_GIT_TAG }}
-  SAVE_SMOKE_TEST_SCREENSHOT: ${{ vars.ENV_SAVE_SMOKE_TEST_SCREENSHOT }}
-  SMOKE_TEST_MONITOR_CONSOLE_ERRORS: ${{ vars.ENV_SMOKE_TEST_MONITOR_CONSOLE_ERRORS }}
-  HEALTH_ENV: ${{ vars.ENV_HEALTH_ENV }}
+  GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || github.event.inputs.GIT_TAG }}
+  SAVE_SMOKE_TEST_SCREENSHOT: ${{ github.event.inputs.SAVE_SMOKE_TEST_SCREENSHOT}}
+  SMOKE_TEST_MONITOR_CONSOLE_ERRORS: ${{ github.event.inputs.SMOKE_TEST_MONITOR_CONSOLE_ERRORS }}
+  HEALTH_ENV: ${{ github.event.inputs.HEALTH_ENV }}
   CI: true
 
 jobs:
   smoke_test:
     permissions:
-      contents: write
+      contents: read
     runs-on: ubuntu-22.04
     steps:
       - name: Configuration output
         run: |
-          echo "LOGIN_PASSWORD: $LOGIN_PASSWORD"
-          echo "LOGIN_USERNAME: $LOGIN_USERNAME"
           echo "GIT_TAG: $GIT_TAG"
           echo "SAVE_SMOKE_TEST_SCREENSHOT: $SAVE_SMOKE_TEST_SCREENSHOT"
           echo "SMOKE_TEST_MONITOR_CONSOLE_ERRORS: $SMOKE_TEST_MONITOR_CONSOLE_ERRORS"

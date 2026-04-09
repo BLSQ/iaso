@@ -1,0 +1,44 @@
+name: smoke_tests.yml
+on:
+  workflow_dispatch
+env:
+  LOGIN_PASSWORD: ${{ vars.ENV_LOGIN_PASSWORD }}
+  LOGIN_USERNAME: ${{ vars.ENV_LOGIN_USERNAME }}
+  GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || vars.ENV_GIT_TAG }}
+  SAVE_SMOKE_TEST_SCREENSHOT: ${{ vars.ENV_SAVE_SMOKE_TEST_SCREENSHOT }}
+  SMOKE_TEST_MONITOR_CONSOLE_ERRORS: ${{ vars.ENV_SMOKE_TEST_MONITOR_CONSOLE_ERRORS }}
+  HEALTH_ENV: ${{ vars.ENV_HEALTH_ENV }}
+  CI: true
+
+jobs:
+  smoke_test:
+    runs-on: ubuntu-22.04
+    steps:
+
+      - name: Use node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: upgrade npm
+        run: |
+          npm install --global npm@latest
+
+      - name: install dependencies
+        run: npm ci
+      - name: install playwright
+        run: npx playwright install --with-deps
+
+      - name: run tests
+        run: npm run test:smoke
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: | 
+            playwright-report/
+            test-results/
+          retention-days: 15
+
+

@@ -12,6 +12,8 @@ env:
 
 jobs:
   smoke_test:
+    permissions:
+      contents: write
     runs-on: ubuntu-22.04
     steps:
       - name: Configuration output

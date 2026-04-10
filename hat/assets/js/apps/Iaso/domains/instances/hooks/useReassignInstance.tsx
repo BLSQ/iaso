@@ -5,6 +5,8 @@ import { useSnackMutation } from '../../../libs/apiHooks';
 const reassignInstance = (currentInstance, body) => {
     const effectivePayload = { ...body };
     if (!body.period) delete effectivePayload.period;
+    if (!body.org_unit) delete effectivePayload.org_unit;
+    if (!body.source_created_at) delete effectivePayload.source_created_at;
     return patchRequest(
         `/api/instances/${currentInstance.id}/`,
         effectivePayload,
@@ -19,12 +21,22 @@ export type ReassignInstancePayload = {
     };
     period?: string;
     org_unit?: number;
+    source_created_at?: number;
 };
 
 export const useReassignInstance = <T extends ReassignInstancePayload>() =>
     useSnackMutation<void, Error, T>({
-        mutationFn: ({ currentInstance, period, org_unit }: T) =>
-            reassignInstance(currentInstance, { period, org_unit }),
+        mutationFn: ({
+            currentInstance,
+            period,
+            org_unit,
+            source_created_at,
+        }: T) =>
+            reassignInstance(currentInstance, {
+                period,
+                org_unit,
+                source_created_at,
+            }),
         snackErrorMsg: MESSAGES.assignInstanceError,
         invalidateQueryKey: ['instance'],
     });

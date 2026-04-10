@@ -48,7 +48,7 @@ class InstanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Instance
-        fields = ["org_unit", "period", "deleted", "last_modified_by"]
+        fields = ["org_unit", "period", "deleted", "last_modified_by", "source_created_at"]
 
     def validate_org_unit(self, value):
         """Check if user has access to this org_unit."""

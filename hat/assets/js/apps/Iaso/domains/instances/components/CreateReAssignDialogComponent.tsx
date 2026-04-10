@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import UpdateIcon from '@mui/icons-material/Update';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -163,7 +163,7 @@ const CreateReAssignDialog = makeFullModal(
 
 export const ReAssignDialog = makeFullModal(
     CreateReAssignDialogComponent,
-    UpdateIcon,
+    HomeWorkIcon,
 );
 
 export { CreateReAssignDialog, CreateReAssignDialogProps };

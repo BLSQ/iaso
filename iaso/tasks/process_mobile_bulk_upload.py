@@ -206,9 +206,12 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     continue
 
                 # Check if this entity has any prior positive confirmation
-                has_prior_conf = positive_instance_qs(Instance.objects).filter(
-                    entity_id=conf.entity_id
-                ).exclude(id__in=instance_ids).exists()
+                has_prior_conf = (
+                    positive_instance_qs(Instance.objects)
+                    .filter(entity_id=conf.entity_id)
+                    .exclude(id__in=instance_ids)
+                    .exists()
+                )
 
                 if not has_prior_conf:
                     novel_confirmation_ids.append(conf.id)
@@ -343,7 +346,8 @@ def duplicate_instance_files(new_instance_files):
     count = 0
     for instance_file in new_instance_files:
         if "serie_id" in instance_file.instance.json and instance_file.instance.json["serie_id"]:
-            for i in Instance.objects.filter(json__serie_id=instance_file.instance.json["serie_id"]).exclude(
+            serie_id = instance_file.instance.json["serie_id"]
+            for i in Instance.objects.filter(json__contains={"serie_id": serie_id}).exclude(
                 id=instance_file.instance_id,
             ):
                 instance_file.pk = None  # trick to duplicate model

@@ -406,6 +406,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit the answers in Enketo',
         id: 'iaso.instance.instanceEditAction',
     },
+    instanceEditSourceCreatedAt: {
+        defaultMessage: 'Edit the created on device date',
+        id: 'iaso.instance.instanceEditSourceCreatedAt',
+    },
     instanceReAssignAction: {
         defaultMessage: 'Edit attached OrgUnit or period',
         id: 'iaso.instance.instanceReAssignAction',

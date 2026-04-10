@@ -443,6 +443,7 @@
     "iaso.instance.instanceCreationDialogTitle": "Create submission",
     "iaso.instance.instanceDeleteAction": "Delete instance",
     "iaso.instance.instanceEditAction": "Edit the answers in Enketo",
+    "iaso.instance.instanceEditSourceCreatedAt": "Edit the created on device date",
     "iaso.instance.instanceExportAction": "Export instance",
     "iaso.instance.instanceReAssignAction": "Edit attached OrgUnit or period",
     "iaso.instance.instanceRestoreAction": "Restore instance",

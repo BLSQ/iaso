@@ -444,6 +444,7 @@
     "iaso.instance.instanceCreationDialogTitle": "Créer une soumission",
     "iaso.instance.instanceDeleteAction": "Effacer la soumission",
     "iaso.instance.instanceEditAction": "Modifier les réponses via Enketo",
+    "iaso.instance.instanceEditSourceCreatedAt": "Modifier la date de création sur appareil",
     "iaso.instance.instanceExportAction": "Exporter la soumission",
     "iaso.instance.instanceReAssignAction": "Modifier la période et/ou l'unité d'organisation",
     "iaso.instance.instanceRestoreAction": "Récupérer l'instance",

@@ -76,10 +76,11 @@ logger = logging.getLogger(__name__)
 class InstanceSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
     period = serializers.CharField(max_length=9, allow_blank=True)
+    source_created_at = TimestampField(required=False, allow_null=True)
 
     class Meta:
         model = Instance
-        fields = ["org_unit", "period", "deleted", "last_modified_by"]
+        fields = ["org_unit", "period", "deleted", "last_modified_by", "source_created_at"]
 
     def validate_org_unit(self, value):
         """Check if user has access to this org_unit."""

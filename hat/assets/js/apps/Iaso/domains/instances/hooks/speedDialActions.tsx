@@ -8,6 +8,7 @@ import { DialogContentText } from '@mui/material';
 import { ExportButton, useSafeIntl } from 'bluesquare-components';
 import React, { ReactElement, useMemo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Nullable } from '../../../types/utils';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
@@ -36,6 +37,9 @@ export const useBaseActions = (
     >,
     formDef?: FormDef,
 ): SpeedDialAction[] => {
+    const EditSourceCreatedAtDialog = useFindCustomComponent(
+        'instances.edit_source_created_at',
+    );
     return useMemo(() => {
         return [
             {
@@ -71,8 +75,21 @@ export const useBaseActions = (
                 ),
                 disabled: currentInstance && currentInstance.deleted,
             },
+            {
+                id: 'instanceEditSourceCreatedAt',
+                icon: (
+                    // @ts-ignore
+                    <EditSourceCreatedAtDialog
+                        titleMessage={MESSAGES.instanceEditSourceCreatedAt}
+                        confirmMessage={MESSAGES.ok}
+                        currentInstance={currentInstance}
+                        onCreateOrReAssign={reassignInstance}
+                    />
+                ),
+                disabled: currentInstance && currentInstance.deleted,
+            },
         ];
-    }, [currentInstance, formDef, reassignInstance]);
+    }, [EditSourceCreatedAtDialog, currentInstance, formDef, reassignInstance]);
 };
 
 export const useEditLocationWithGpsAction = (

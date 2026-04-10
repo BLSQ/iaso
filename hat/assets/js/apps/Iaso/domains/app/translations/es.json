@@ -396,6 +396,7 @@
     "iaso.instance.instanceCreationDialogTitle": "Crear envío",
     "iaso.instance.instanceDeleteAction": "Eliminar instancia",
     "iaso.instance.instanceEditAction": "Editar las respuestas en Enketo",
+    "iaso.instance.instanceEditSourceCreatedAt": "Editar fecha de creación en dispositivo",
     "iaso.instance.instanceExportAction": "Exportar instancia",
     "iaso.instance.instanceReAssignAction": "Editar unidad organizativa o período adjunto",
     "iaso.instance.instanceRestoreAction": "Restaurar instancia",

@@ -70,7 +70,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
             const permissionIds = selectedIds.map(Number);
             setFieldValue(_key, permissionIds, true);
         },
-        [defaults, setFieldValue],
+        [setFieldValue],
     );
 
     const handleUserRolesChange = useCallback(
@@ -79,7 +79,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
             const roleIds = selectedIds.map(Number);
             setFieldValue(_key, roleIds, true);
         },
-        [defaults, setFieldValue],
+        [setFieldValue],
     );
 
     const handleProjectsChange = useCallback(
@@ -88,14 +88,14 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
             const projectIds = selectedIds.map(Number);
             setFieldValue(_key, projectIds, true);
         },
-        [defaults, setFieldValue],
+        [setFieldValue],
     );
 
     const handleLanguageChange = useCallback(
         (_key: string, value: string) => {
             setFieldValue(_key, value, true);
         },
-        [defaults, setFieldValue],
+        [setFieldValue],
     );
 
     const handleTeamsChange = useCallback(
@@ -104,14 +104,14 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
             const teamIds = selectedIds.map(Number);
             setFieldValue(_key, teamIds, true);
         },
-        [defaults, setFieldValue],
+        [setFieldValue],
     );
 
     const handleOrganizationChange = useCallback(
         (_key: string, value: string) => {
             setFieldValue(_key, value, true);
         },
-        [defaults, setFieldValue],
+        [setFieldValue],
     );
 
     return (

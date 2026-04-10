@@ -403,7 +403,7 @@ def extract_guidelines(submission):
         return "NEW"
     if form_id in OLD_GUIDE_LINES_FORMS:
         return "OLD"
-    return data.get("guidelines")
+    return data.get("guidelines", "OLD")
 
 
 def extract_pbwg_physiology(data):

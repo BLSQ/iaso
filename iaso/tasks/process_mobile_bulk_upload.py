@@ -197,15 +197,28 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
         # Trypelim-specific
         # Trigger a task to notify relevant coordinations of confirmed cases
         if instance_ids := created_objects_ids["instance"]:
-            confirmation_ids = (
-                positive_instance_qs(Instance.objects).filter(id__in=instance_ids).values_list("id", flat=True)
-            )
-            logger.info(f"Bulk upload id={api_import_id} imported {len(confirmation_ids)} confirmations.")
-            if confirmation_ids and user:
-                notify_coordinations(user, confirmation_ids)
+            confirmations = positive_instance_qs(Instance.objects).filter(id__in=instance_ids).only("id", "entity_id")
+
+            novel_confirmation_ids = []
+            for conf in confirmations:
+                if not conf.entity_id:
+                    novel_confirmation_ids.append(conf.id)
+                    continue
+
+                # Check if this entity has any prior positive confirmation
+                has_prior_conf = positive_instance_qs(Instance.objects).filter(
+                    entity_id=conf.entity_id
+                ).exclude(id__in=instance_ids).exists()
+
+                if not has_prior_conf:
+                    novel_confirmation_ids.append(conf.id)
+
+            logger.info(f"Bulk upload id={api_import_id} imported {len(novel_confirmation_ids)} confirmations.")
+            if novel_confirmation_ids and user:
+                notify_coordinations(user, novel_confirmation_ids)
 
             # Add confirmation stats to the task message
-            message += f"Number of imported positive confirmation tests: {len(confirmation_ids)}\n"
+            message += f"Number of imported positive confirmation tests: {len(novel_confirmation_ids)}\n"
 
         # Notify a SNS topic with basic import stats
         try:

@@ -30,9 +30,9 @@ class PlanningTestCase(APITestCase):
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=user)
         Team.objects.create(project=project2, name="team2", manager=user)
         other_account = Account.objects.create(name="other account")
-        other_user = cls.create_user_with_profile(username="user", account=other_account)
+        cls.other_user = cls.create_user_with_profile(username="user", account=other_account)
         cls.other_project = other_account.project_set.create(name="other_project")
-        cls.other_team = Team.objects.create(name="other team", project=cls.other_project, manager=other_user)
+        cls.other_team = Team.objects.create(name="other team", project=cls.other_project, manager=cls.other_user)
         source = DataSource.objects.create(name="Evil Empire")
         source.projects.add(project1)
         version = SourceVersion.objects.create(data_source=source, number=1)
@@ -58,6 +58,14 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(len(r), 1)
 
     maxDiff = None
+
+    def test_permissions(self):
+        res = self.client.get("/api/microplanning/plannings/")
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.other_user)
+        res = self.client.get("/api/microplanning/plannings/")
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_query_id(self):
         self.client.force_authenticate(self.user)

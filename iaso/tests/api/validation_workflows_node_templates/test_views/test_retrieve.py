@@ -12,6 +12,7 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
         self.account = Account.objects.create(name="account")
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -23,6 +24,12 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
         self.john_wick = self.create_user_with_profile(
             username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
         )
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+            self.node_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name",
@@ -95,10 +102,22 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
         )
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow_without_feature_flag.slug,
+                    "slug": self.node_without_feature_flag.slug,
+                },
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+
     def test_number_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             res = self.client.get(
                 reverse(
                     "validation_node_templates-detail",

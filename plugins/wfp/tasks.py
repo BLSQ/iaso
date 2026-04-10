@@ -2,9 +2,7 @@ import logging
 
 from celery import shared_task
 from django.core.management import call_command
-from django.db import connection
 
-from iaso.management.commands import unique_indexes
 from iaso.management.commands.clean_up_duplicate_submissions import DRY_RUN_ARG
 from iaso.models.base import ExternalCredentials
 from plugins.wfp.aggregator import Aggregator
@@ -26,27 +24,20 @@ logger = logging.getLogger(__name__)
 #
 # docker compose --profile celery up
 # docker compose run iaso start_celery_worker
-# then go in admin http://localhost:8081/admin/wfp/beneficiary/
-#   - select (or create a first beneficiary if it's empty)
-#   - and select action "Create indexes on UUID field (non-blocking)"
+# then go in admin http://localhost:8081/admin/iaso/account/
+#   - select any account (doesn't matter which)
+#   - and select action "Create indexes too heavy for the migration process (celery)"
+@shared_task()
+def create_out_of_band_indexes():
+    logger.info("Starting task to create indexes.")
+    call_command("unique_indexes")
+
+
+# Kept for historical reasons
 @shared_task()
 def create_index_on_instance_uuid():
     print("Starting task to create index on iaso_instance.uuid and others")
-
-    for index in unique_indexes.INDEXES:
-        logger.info(f"Starting task to create index: {index.name()}")
-        old_autocommit = connection.get_autocommit()
-        try:
-            connection.set_autocommit(True)
-            # We explicitly set autocommit to True for this connection.
-            with connection.cursor() as cursor:
-                index.apply(cursor)
-                logger.info(f"create index: {index.name()}) done.")
-        except Exception as e:
-            logger.error(f"Error creating index on iaso_instance(uuid): {e}", exc_info=True)
-            raise
-        finally:
-            connection.set_autocommit(old_autocommit)
+    call_command("unique_indexes")
 
 
 # how to test this task manually:

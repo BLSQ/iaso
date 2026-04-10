@@ -1,14 +1,10 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Alert, Box, Grid } from '@mui/material';
-import {
-    useSafeIntl,
-    InputWithInfos,
-    BaseCountryData,
-} from 'bluesquare-components';
+import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
+import { SxStyles } from 'Iaso/types/general';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import InputComponent from '../../../components/forms/InputComponent';
-import { SxStyles } from '../../../types/general';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useAppLocales } from '../../app/constants';
 
 import { useSavePassword } from '../hooks/useSavePassword';
@@ -196,6 +192,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         phoneInputOptions={{
                             country:
                                 currentUser.country_code?.value ?? undefined,
+                            countryCodeEditable: true,
                         }}
                         label={MESSAGES.phoneNumber}
                     />

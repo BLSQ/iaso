@@ -19,7 +19,7 @@ class ModelDataViewTestCase(APITestCase):
 
     def test_should_work_when_authenticated(self):
         # force auth doesn't work it's a simple view
-        self.client.login(username=self.user.username, password=KNOWN_PASSWORD)
+        self.client.force_login(self.user)
 
         resp = self.client.get("/models/")
 

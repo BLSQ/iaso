@@ -342,20 +342,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     </Box>
                                 </Grid>
                             </Grid>
-                            {/* <Grid container item xs={12} spacing={2}>
-                                <Grid item xs={12} lg={6}>
-                                    <InputComponent
-                                        type="textarea"
-                                        keyValue="vrf.comment"
-                                        value={values?.vrf?.comment ?? ''}
-                                        // errors={errors.comment ? errors.comment : []}
-                                        label={MESSAGES.comments}
-                                        onChange={onCommentChange}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                        withMarginTop={false}
-                                    />
-                                </Grid>
-                            </Grid> */}
                         </>
                     )}
                 </Grid>

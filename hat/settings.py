@@ -654,7 +654,7 @@ def get_env_as_float(variable_name: str, default_str: str) -> float:
 
 
 if SENTRY_URL:
-    traces_sample_rate = get_env_as_float("SENTRY_TRACES_SAMPLE_RATE", 0.1)
+    traces_sample_rate = get_env_as_float("SENTRY_TRACES_SAMPLE_RATE", "0.1")
 
     # from OpenHexa
     # Exclude /_health/ from sentry  as it fill the quota
@@ -675,9 +675,9 @@ if SENTRY_URL:
 
     ignore_logger("django.security.DisallowedHost")
 
-    errors_sample_rate = get_env_as_float("SENTRY_ERRORS_SAMPLE_RATE", 1.0)
+    errors_sample_rate = get_env_as_float("SENTRY_ERRORS_SAMPLE_RATE", "1.0")
 
-    httperror_errors_sample_rate = get_env_as_float("SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE", 0.8)
+    httperror_errors_sample_rate = get_env_as_float("SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE", "0.8")
 
     # Helps reducing sentry quota usage when bad request/connectivity issue with external api
     def sentry_error_sampler(_, hint):

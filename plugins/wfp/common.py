@@ -105,6 +105,19 @@ ASSISTANCE_FORMS = frozenset(
 )
 EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
 
+
+OLD_GUIDE_LINES_FORMS = [
+    "Anthropometric visit child",
+    "child_antropometric_followUp_otp",
+    "child_antropometric_followUp_tsfp",
+]
+NEW_GUIDE_LINES_FORMS = [
+    "Anthropometric visit child_2",
+    "child_antropometric_followUp_otp_2",
+    "child_antropometric_followUp_tsfp_2",
+]
+
+
 # ---------------------------------------------------------------------------
 # Field extraction helpers
 # ---------------------------------------------------------------------------
@@ -312,7 +325,7 @@ def extract_visit_date(submission):
 
 def extract_muac(data):
     """Extract MUAC measurement from form data."""
-    return _first_of(data, "muac", "muac_size")
+    return _first_of(data, "muac", "muac_size", "mother_muac")
 
 
 def extract_visit_entry_point(submission):
@@ -377,6 +390,20 @@ def extract_gender(data):
     if raw in ("M", "Male"):
         return "Male"
     return raw
+
+
+def extract_guidelines(submission):
+    """Extract U5 Guidelines.
+    Returns 'NEW' for the forms in NEW_GUIDE_LINES_FORMS,
+    'OLD' for forms in OLD_GUIDE_LINES_FORMS,
+    otherwise defaults to the value stored in the field 'guidelines' from submission json."""
+    form_id = submission.get("form__form_id")
+    data = submission.get("json")
+    if form_id in NEW_GUIDE_LINES_FORMS:
+        return "NEW"
+    if form_id in OLD_GUIDE_LINES_FORMS:
+        return "OLD"
+    return data.get("guidelines", "OLD")
 
 
 def extract_pbwg_physiology(data):
@@ -806,6 +833,7 @@ class ETL:
 
             gender = extract_gender(data)
             physiology = extract_pbwg_physiology(data)
+            guidelines = extract_guidelines(sub)
             if physiology:
                 info["physiology"] = physiology
                 info["gender"] = None
@@ -814,11 +842,8 @@ class ETL:
             birth_date = calculate_birth_date(data)
             if birth_date is not None:
                 info["birth_date"] = birth_date
-
-            guidelines = data.get("guidelines")
             if guidelines:
                 info["guidelines"] = guidelines
-
         return info
 
     @staticmethod

@@ -1,14 +1,15 @@
 require('dotenv').config();
 
+const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || "http"}://${process.env.ORVAL_TARGET_URL_DOMAIN || "localhost:8000"}`
 module.exports = {
 
     api: {
 
         input: {
-            target: `${process.env.ORVAL_TARGET_URL_PROTOCOL || "http"}://${process.env.ORVAL_TARGET_URL_DOMAIN || "localhost:8000"}/swagger/?format=json`,
+            target: new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
             filters: {
                 tags: ['Validation workflows'],
-                schemas: [/Validation/],
+                schemas: [/Validation/, /NestedHistory/],
             },
             parserOptions: {
                 headers: [
@@ -27,10 +28,16 @@ module.exports = {
             mode: 'tags-split',
             client: 'react-query',
             clean: true,
+            baseUrl: ORVAL_TARGET,
             workspace: './hat/assets/js/apps/Iaso/api',
             override: {
                 query: {
                     runtimeValidation: true,
+                    shouldSplitQueryKey: true,
+                    useOperationIdAsQueryKey: true
+                },
+                fetch: {
+                    runtimeValidation: true
                 },
                 zod: {
                     strict: {
@@ -42,13 +49,26 @@ module.exports = {
                     },
                 },
             },
-            formatter: 'prettier',
+            mock: {
+                type: 'msw',
+                preferredContentType: 'application/json'
+            },
             target: './endpoints',
             schemas: {
                 type: 'zod',
-                path: './models',
+                path: './models'
             },
         },
+
+        hooks: {
+            afterAllFilesWrite: [
+                {
+                    command: 'cp ./hat/assets/js/apps/Iaso/api/models/index.zod.ts ./hat/assets/js/apps/Iaso/api/models/index.ts',
+                    injectGeneratedDirsAndFiles: false,
+                },
+                'eslint --cache --fix'
+            ]
+        }
     },
 
 };

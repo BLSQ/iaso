@@ -1,19 +1,34 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useGetSubmissionValidationWorkflows } from 'Iaso/domains/instances/validationWorkflow/api/Get';
+import { useApiValidationWorkflowsList } from 'Iaso/api';
 import { QueryClientWrapper } from '../../../../../../tests/helpers';
 
 describe('useGetSubmissionValidationWorkflows', () => {
-    it('fetches workflows from the real backend', async () => {
+    it('test orval rendered', async () => {
         const { result } = renderHook(
-            () => useGetSubmissionValidationWorkflows({ limit: 5 }),
+            () =>
+                useApiValidationWorkflowsList(
+                    { search: 'x' },
+                    {
+                        query: {
+                            retry: false,
+                        },
+                        fetch: {
+                            headers: {
+                                Authorization: `Bearer ${process.env.API_TOKEN}`,
+                            },
+                        },
+                    },
+                ),
             { wrapper: QueryClientWrapper },
         );
 
-        // Wait until the query is successful
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        await waitFor(() =>
+            expect(result.current.isSuccess || result.current.isError).toBe(
+                true,
+            ),
+        );
 
+        expect(result.current.isError).toBeFalsy();
         expect(result.current.data).toBeDefined();
-        // expect(Array.isArray(result.current.data.items)).toBe(true);
-        // console.log(result.current.data.items); // Optional: inspect data
     });
 });

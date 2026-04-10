@@ -18,11 +18,9 @@ import { useFormik } from 'formik';
 import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
 import { useApiErrorValidation } from 'Iaso/libs/validation';
 import MESSAGES from '../../messages';
-import { BulkImportDefaults } from '../../types';
 import { BulkImportButton } from './BulkImportButton';
 import { DefaultValuesSection } from './DefaultValuesSection';
 import { useBulkUserValidation } from './hooks/useBulkUserValidation';
-import { useErrorProcessor } from './hooks/useErrorProcessor';
 import { useUploadCsv } from './hooks/useUploadCsv';
 import { ValidationErrorTable } from './ValidationErrorTable';
 
@@ -46,9 +44,8 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
 
     // State for default values toggle and values
     const [showDefaults, setShowDefaults] = useState(false);
-    const [defaults, setDefaults] = useState<BulkImportDefaults>({});
 
-    const { mutateAsync: upload, isLoading } = useUploadCsv();
+    const { mutateAsync: upload, isLoading, error: error } = useUploadCsv();
 
     const {
         apiErrors,
@@ -67,15 +64,11 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         validateOnBlur: true,
         enableReinitialize: true,
         onSubmit: async (values, helpers) => {
-            const uploadPayload = showDefaults
-                ? { ...values, ...defaults }
-                : values;
-            save(uploadPayload, helpers);
+            save(values, helpers);
         },
     });
 
     const {
-        touched,
         errors,
         values,
         setFieldValue,
@@ -85,13 +78,8 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         isValid,
     } = formik;
 
-    const { csvValidationErrors, simpleErrors } = useErrorProcessor(
-        apiErrors,
-        errors.file,
-    );
-
-    const allowConfirm = isValid && Boolean(touched.file) && !isLoading;
-    const Buttons = ({ closeDialog: close }) => {
+    const allowConfirm = isValid && !isLoading;
+    const Buttons = ({ closeDialog: close }: { closeDialog: () => void }) => {
         return (
             <FileUploadButtons
                 allowConfirm={allowConfirm}
@@ -105,10 +93,15 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         );
     };
 
+    // as formik error parsing flats everything as a string, we need to access this in a "raw" way
+    const fileContentErrors = React.useMemo(() => {
+        return error?.details?.file_content;
+    }, [error?.details]);
+
     return (
         <SimpleModal
             titleMessage={titleMessage}
-            maxWidth={csvValidationErrors.length > 0 ? 'lg' : 'sm'}
+            maxWidth={fileContentErrors?.length > 0 ? 'lg' : 'sm'}
             open={isOpen}
             closeDialog={closeDialog}
             id={id ?? 'bulk-user-create'}
@@ -116,7 +109,6 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
             onClose={() => {
                 resetForm();
                 setShowDefaults(false);
-                setDefaults({});
             }}
             buttons={Buttons}
         >
@@ -132,7 +124,7 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                     }}
                     required
                     multi={false}
-                    errors={simpleErrors}
+                    errors={errors?.file ? [errors?.file] : undefined}
                     placeholder={formatMessage(MESSAGES.selectCsvFile)}
                 />
             </Box>
@@ -150,16 +142,17 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                 />
             </Box>
 
-            <Collapse in={showDefaults}>
+            <Collapse in={showDefaults} unmountOnExit={false}>
                 <Box mt={1}>
                     <DefaultValuesSection
-                        defaults={defaults}
-                        onChange={setDefaults}
+                        defaults={values}
+                        errors={errors}
+                        setFieldValue={setFieldValue}
                     />
                 </Box>
             </Collapse>
 
-            {csvValidationErrors.length > 0 && (
+            {fileContentErrors?.length > 0 && (
                 <Box mt={2}>
                     <Alert severity="error" sx={{ mb: 2 }}>
                         <Typography variant="subtitle1">
@@ -167,11 +160,11 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                         </Typography>
                         <Typography variant="body2">
                             {formatMessage(MESSAGES.fixErrorsAndRetry, {
-                                count: csvValidationErrors.length,
+                                count: fileContentErrors.length,
                             })}
                         </Typography>
                     </Alert>
-                    <ValidationErrorTable errors={csvValidationErrors} />
+                    <ValidationErrorTable errors={fileContentErrors} />
                 </Box>
             )}
 

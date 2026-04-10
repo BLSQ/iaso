@@ -33,7 +33,7 @@ export default defineConfig({
             '**/*.test.{ts,tsx}',
             '__tests__/integration/**/*.integration.test.{ts,tsx}'
         ],
-        setupFiles: ['./hat/assets/js/tests/setup.ts'],
+        setupFiles: ['./hat/assets/js/tests/setup.ts', 'dotenv/config'],
         exclude: [...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**'],
         coverage: {
             provider: 'v8',

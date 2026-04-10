@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 require('dotenv').config();
 
 const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || "http"}://${process.env.ORVAL_TARGET_URL_DOMAIN || "localhost:8000"}`
@@ -8,6 +10,8 @@ module.exports = {
         input: {
             target: new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
             filters: {
+                // mode: 'exclude',
+                // tags: ['Mobile'],
                 tags: ['Validation workflows'],
                 schemas: [/Validation/, /NestedHistory/],
             },
@@ -31,14 +35,30 @@ module.exports = {
             baseUrl: ORVAL_TARGET,
             workspace: './hat/assets/js/apps/Iaso/api',
             override: {
+                requestOptions: {
+                    credentials: 'same-origin'
+                },
                 query: {
                     runtimeValidation: true,
                     shouldSplitQueryKey: true,
-                    useOperationIdAsQueryKey: true
+                    useOperationIdAsQueryKey: true,
+                    queryOptions: {
+                        path: './hat/assets/js/orval/mutator/custom-query-options.ts',
+                        name: 'useCustomQueryOptions'
+                    },
+                    mutationOptions: {
+                        path: './hat/assets/js/orval/mutator/custom-mutation-options.ts',
+                        name: 'useDefaultOpenApiMutationOptions'
+                    }
                 },
-                fetch: {
+                mutator: {
+                    path: '../../../orval/client/custom-fetch.ts',
+                    name: 'customInstance',
                     runtimeValidation: true
                 },
+                // fetch: {
+                //     runtimeValidation: true
+                // },
                 zod: {
                     strict: {
                         response: true,

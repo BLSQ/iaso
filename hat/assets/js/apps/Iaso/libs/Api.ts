@@ -6,7 +6,7 @@ import { Nullable, Optional } from '../types/utils';
 import { FETCHING_ABORTED } from './constants';
 
 export class ApiError extends Error {
-    private status: any;
+    public status: any;
 
     public details: any;
 

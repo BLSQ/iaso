@@ -11,8 +11,11 @@ describe('useGetSubmissionValidationWorkflows', () => {
                     {
                         query: {
                             retry: false,
+                            staleTime: Infinity,
+                            cacheTime: Infinity,
+                            keepPreviousData: true,
                         },
-                        fetch: {
+                        request: {
                             headers: {
                                 Authorization: `Bearer ${process.env.API_TOKEN}`,
                             },

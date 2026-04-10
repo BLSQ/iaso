@@ -1,6 +1,5 @@
 import { UseQueryResult } from 'react-query';
 import z from 'zod';
-import { ApiValidationWorkflowsListParams } from 'Iaso/api/models/apiValidationWorkflowsListParams.zod';
 import { PaginatedValidationWorkflowListList } from 'Iaso/api/models/paginatedValidationWorkflowListList.zod';
 import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
 import {
@@ -24,10 +23,8 @@ const defaults = {
 const getSubmissionsWorkflows = async (
     params: FormattedApiParams,
 ): Promise<z.infer<typeof PaginatedValidationWorkflowListList>> => {
-    ApiValidationWorkflowsListParams.parse(params);
     const queryString = new URLSearchParams(params).toString();
-    const data = await getRequest(`${API_URL}?${queryString}`);
-    return PaginatedValidationWorkflowListList.parse(data);
+    return await getRequest(`${API_URL}?${queryString}`);
 };
 
 export const useGetSubmissionValidationWorkflows = (

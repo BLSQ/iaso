@@ -8,6 +8,11 @@ import {
     UrlParams,
     useSafeIntl,
 } from 'bluesquare-components';
+import {
+    ApiValidationWorkflowsListParams,
+    PaginatedValidationWorkflowListList,
+    useApiValidationWorkflowsList,
+} from 'Iaso/api';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -16,7 +21,6 @@ import {
     useParamsObject,
 } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../messages';
-import { useGetSubmissionValidationWorkflows } from './api/Get';
 import { useWorkflowsTableColumns } from './columns';
 import { Filters } from './Filters';
 
@@ -38,8 +42,18 @@ export const SubmissionValidation = () => {
 
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    ApiValidationWorkflowsListParams.parse(params);
     const { data: workflows, isFetching: isLoadingWorkflows } =
-        useGetSubmissionValidationWorkflows(params);
+        useApiValidationWorkflowsList(params, {
+            query: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        });
+    PaginatedValidationWorkflowListList.parse(workflows);
+
     const columns = useWorkflowsTableColumns();
     return (
         <>

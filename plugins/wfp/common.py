@@ -322,7 +322,7 @@ def extract_visit_date(submission):
 
 def extract_muac(data):
     """Extract MUAC measurement from form data."""
-    return _first_of(data, "muac", "muac_size")
+    return _first_of(data, "muac", "muac_size", "mother_muac")
 
 
 def extract_visit_entry_point(submission):

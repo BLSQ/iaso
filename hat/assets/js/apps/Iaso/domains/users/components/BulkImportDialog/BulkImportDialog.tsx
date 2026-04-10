@@ -18,7 +18,6 @@ import { useFormik } from 'formik';
 import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
 import { useApiErrorValidation } from 'Iaso/libs/validation';
 import MESSAGES from '../../messages';
-import { BulkImportDefaults } from '../../types';
 import { BulkImportButton } from './BulkImportButton';
 import { DefaultValuesSection } from './DefaultValuesSection';
 import { useBulkUserValidation } from './hooks/useBulkUserValidation';
@@ -45,7 +44,6 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
 
     // State for default values toggle and values
     const [showDefaults, setShowDefaults] = useState(false);
-    const [defaults, setDefaults] = useState<BulkImportDefaults>({});
 
     const { mutateAsync: upload, isLoading, error: error } = useUploadCsv();
 
@@ -66,15 +64,11 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         validateOnBlur: true,
         enableReinitialize: true,
         onSubmit: async (values, helpers) => {
-            const uploadPayload = showDefaults
-                ? { ...values, ...defaults }
-                : values;
-            save(uploadPayload, helpers);
+            save(values, helpers);
         },
     });
 
     const {
-        touched,
         errors,
         values,
         setFieldValue,
@@ -84,7 +78,7 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         isValid,
     } = formik;
 
-    const allowConfirm = isValid && Boolean(touched.file) && !isLoading;
+    const allowConfirm = isValid && !isLoading;
     const Buttons = ({ closeDialog: close }: { closeDialog: () => void }) => {
         return (
             <FileUploadButtons
@@ -115,7 +109,6 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
             onClose={() => {
                 resetForm();
                 setShowDefaults(false);
-                setDefaults({});
             }}
             buttons={Buttons}
         >
@@ -152,10 +145,9 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
             <Collapse in={showDefaults} unmountOnExit={false}>
                 <Box mt={1}>
                     <DefaultValuesSection
-                        defaults={defaults}
-                        onChange={setDefaults}
+                        defaults={values}
                         errors={errors}
-                        setFieldTouched={setFieldTouched}
+                        setFieldValue={setFieldValue}
                     />
                 </Box>
             </Collapse>

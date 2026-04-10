@@ -2,6 +2,7 @@ from django.http import FileResponse
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin
+from rest_framework.parsers import MultiPartParser
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_csv.renderers import CSVRenderer
 
@@ -53,6 +54,7 @@ class BulkCreateUserFromCsvViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = [HasUserPermission]
     model = BulkCreateUserCsvFile
     serializer_class = BulkCreateUserSerializer
+    parser_classes = [MultiPartParser]
 
     def perform_create(self, serializer):
         instance, created_users, created_profiles = serializer.save()

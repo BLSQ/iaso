@@ -10,20 +10,17 @@ import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/u
 import { useGetPermissionsDropDown } from 'Iaso/domains/users/hooks/useGetPermissionsDropdown';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../../messages';
-import { BulkImportDefaults } from '../../types';
 
 interface DefaultValuesSectionProps {
-    defaults: BulkImportDefaults;
-    onChange: (newDefaults: BulkImportDefaults) => void;
+    defaults: ReturnType<typeof useFormikContext>['values'];
     errors?: Record<string, string>;
-    setFieldTouched: ReturnType<typeof useFormikContext>['setFieldTouched'];
+    setFieldValue: ReturnType<typeof useFormikContext>['setFieldValue'];
 }
 
 export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
     defaults,
-    onChange,
     errors,
-    setFieldTouched,
+    setFieldValue,
 }) => {
     const [selectedOrgUnits, setSelectedOrgUnits] = useState<OrgUnit[]>([]);
 
@@ -71,71 +68,50 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const permissionIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_permissions: permissionIds,
-            });
-            setFieldTouched('default_permissions', true);
+            setFieldValue(_key, permissionIds, true);
         },
-        [defaults, onChange, setFieldTouched],
+        [defaults, setFieldValue],
     );
 
     const handleUserRolesChange = useCallback(
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const roleIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_user_roles: roleIds,
-            });
-            setFieldTouched('default_user_roles', true);
+            setFieldValue(_key, roleIds, true);
         },
-        [defaults, onChange, setFieldTouched],
+        [defaults, setFieldValue],
     );
 
     const handleProjectsChange = useCallback(
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const projectIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_projects: projectIds,
-            });
-            setFieldTouched('default_projects', true);
+            setFieldValue(_key, projectIds, true);
         },
-        [defaults, onChange, setFieldTouched],
+        [defaults, setFieldValue],
     );
 
     const handleLanguageChange = useCallback(
         (_key: string, value: string) => {
-            onChange({
-                ...defaults,
-                default_profile_language: value,
-            });
-            setFieldTouched('default_profile_language', true);
+            setFieldValue(_key, value, true);
         },
-        [defaults, onChange, setFieldTouched],
+        [defaults, setFieldValue],
     );
 
     const handleTeamsChange = useCallback(
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const teamIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_teams: teamIds,
-            });
-            setFieldTouched('default_teams', true);
+            setFieldValue(_key, teamIds, true);
         },
-        [defaults, onChange, setFieldTouched],
+        [defaults, setFieldValue],
     );
 
     const handleOrganizationChange = useCallback(
         (_key: string, value: string) => {
-            onChange({ ...defaults, default_organization: value });
-            setFieldTouched('default_organization', true);
+            setFieldValue(_key, value, true);
         },
-        [defaults, onChange, setFieldTouched],
+        [defaults, setFieldValue],
     );
 
     return (
@@ -230,11 +206,8 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                                   parseInt(ou.id as string, 10),
                               )
                             : [];
-                        onChange({
-                            ...defaults,
-                            default_org_units: orgUnitIds,
-                        });
-                        setFieldTouched('default_org_units', true);
+
+                        setFieldValue('default_org_units', orgUnitIds, true);
                     }}
                     multiselect
                     initialSelection={selectedOrgUnits}

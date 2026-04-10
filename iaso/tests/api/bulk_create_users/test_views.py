@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 
 from unittest import mock
 from unittest.mock import patch
@@ -184,7 +185,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
-        with self.assertNumQueries(52):
+        with self.assertNumQueries(47):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -197,7 +198,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.account1.save()
 
         self.account1.refresh_from_db()
-        with self.assertNumQueries(52):
+        with self.assertNumQueries(47):
             with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -1002,11 +1003,11 @@ class BulkCreateCsvTestCase(APITestCase):
                     "file": csv_file,
                     "default_profile_language": "fr",
                     "default_organization": "UNICEF",
-                    "default_permissions": [iaso_forms_perm.id],
-                    "default_user_roles": [manager_role.id],
-                    "default_projects": [self.project.id],
-                    "default_org_units": [self.org_unit1.id, self.org_unit2.id],
-                    "default_teams": [bulk_team.id],
+                    "default_permissions": json.dumps([iaso_forms_perm.id]),
+                    "default_user_roles": json.dumps([manager_role.id]),
+                    "default_projects": json.dumps([self.project.id]),
+                    "default_org_units": json.dumps([self.org_unit1.id, self.org_unit2.id]),
+                    "default_teams": json.dumps([bulk_team.id]),
                 },
                 format="multipart",
             )

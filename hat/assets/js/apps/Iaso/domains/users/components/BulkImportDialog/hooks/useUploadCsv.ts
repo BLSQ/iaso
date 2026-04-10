@@ -11,7 +11,7 @@ const uploadCsv = (values: BulkImportPayload) => {
     const cleanDefaults = Object.entries(defaultValues).reduce(
         (acc, [key, value]) => {
             if (value && (Array.isArray(value) ? value.length > 0 : true)) {
-                acc[key] = 1;
+                acc[key] = value;
             }
             return acc;
         },

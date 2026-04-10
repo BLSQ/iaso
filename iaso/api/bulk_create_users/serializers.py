@@ -22,7 +22,11 @@ from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.bulk_create_users.permissions import has_only_user_managed_permission
 from iaso.api.bulk_create_users.utils import detect_multi_field_value_splitter
 from iaso.api.common import ModelSerializer
-from iaso.api.common.serializer_fields import AccountPrefixedSlugRelatedField, SlugOrPrimaryKeyRelatedField
+from iaso.api.common.serializer_fields import (
+    AccountPrefixedSlugRelatedField,
+    PrimaryKeyRelatedFieldFromJSON,
+    SlugOrPrimaryKeyRelatedField,
+)
 from iaso.api.common.validators import FileTypeValidator
 from iaso.api.validation_workflows.serializers.common import CurrentAccountDefault
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
@@ -252,77 +256,36 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
             phone_number=validated_data.get("phone_number", ""),
         )
 
-        # m2m
-        org_units = []
-        org_units_editable_types = []
-        teams = []
-        permissions = []
-        projects = []
-        user_roles = []
-        user_groups = []
-
-        if validated_data.get("orgunit", None):
-            for ou in validated_data.get("orgunit", []) or []:
-                org_units.append(Profile.org_units.through(profile=profile, orgunit=ou))
-
-        if validated_data.get("orgunit__source_ref", None):
-            for ou in validated_data.get("orgunit__source_ref", []) or []:
-                if ou not in org_units:
-                    org_units.append(Profile.org_units.through(profile=profile, orgunit=ou))
-
-        if validated_data.get("teams", None):
-            for team in validated_data.get("teams", []) or []:
-                teams.append(Team.users.through(team=team, user=user_model))
-
-        if validated_data.get("permissions", None):
-            for permission in validated_data.get("permissions", []) or []:
-                permissions.append(get_user_model().user_permissions.through(user=user_model, permission=permission))
-
-        if validated_data.get("editable_org_unit_types", None):
-            for editable in validated_data.get("editable_org_unit_types", []) or []:
-                org_units_editable_types.append(
-                    Profile.editable_org_unit_types.through(profile=profile, orgunittype=editable)
-                )
-
-        if validated_data.get("projects", None):
-            for project in validated_data.get("projects", []) or []:
-                projects.append(Profile.projects.through(profile=profile, project=project))
-
-        if validated_data.get("user_roles", None):
-            for user_role in validated_data.get("user_roles", []) or []:
-                user_roles.append(Profile.user_roles.through(profile=profile, userrole=user_role))
-                user_groups.append(get_user_model().groups.through(user=user_model, group=user_role.group))
-
-        return (
-            user_model,
-            profile,
-            user_model if send_invitation else None,
-            org_units,
-            teams,
-            permissions,
-            org_units_editable_types,
-            user_roles,
-            projects,
-            user_groups,
-        )
+        return {
+            "user_model": user_model,
+            "profile": profile,
+            "send_invitation": user_model if send_invitation else None,
+            "org_units": list(set(validated_data.get("orgunit", []) + validated_data.get("orgunit__source_ref", []))),
+            "teams": validated_data.get("teams", []),
+            "permissions": validated_data.get("permissions", []),
+            "org_units_editable_types": validated_data.get("editable_org_unit_types", []),
+            "user_roles": validated_data.get("user_roles", []),
+            "projects": validated_data.get("projects", []),
+        }
 
 
 class BulkCreateUserSerializer(ModelSerializer):
-    default_permissions = serializers.PrimaryKeyRelatedField(
+    default_permissions = PrimaryKeyRelatedFieldFromJSON(
         many=True, allow_null=True, queryset=Permission.objects.all(), allow_empty=True, write_only=True, required=False
     )
-    default_projects = serializers.PrimaryKeyRelatedField(
+    default_projects = PrimaryKeyRelatedFieldFromJSON(
         many=True, allow_null=True, queryset=Project.objects.none(), allow_empty=True, write_only=True, required=False
     )
-    default_user_roles = serializers.PrimaryKeyRelatedField(
+    default_user_roles = PrimaryKeyRelatedFieldFromJSON(
         many=True, allow_null=True, queryset=UserRole.objects.none(), allow_empty=True, write_only=True, required=False
     )
-    default_org_units = serializers.PrimaryKeyRelatedField(
+    default_org_units = PrimaryKeyRelatedFieldFromJSON(
         many=True, allow_null=True, queryset=OrgUnit.objects.none(), allow_empty=True, write_only=True, required=False
     )
-    default_teams = serializers.PrimaryKeyRelatedField(
+    default_teams = PrimaryKeyRelatedFieldFromJSON(
         many=True, allow_null=True, queryset=Team.objects.none(), allow_empty=True, write_only=True, required=False
     )
+
     account = serializers.HiddenField(default=CurrentAccountDefault(), write_only=True)
     created_by = serializers.HiddenField(default=CurrentUserDefault(), write_only=True)
 
@@ -500,16 +463,7 @@ class BulkCreateUserSerializer(ModelSerializer):
     def create(self, validated_data):
         validation_errors = []
 
-        bulk_users = []
-        bulk_profiles = []
-        bulk_org_units = []
-        bulk_teams = []
-        bulk_permissions = []
-        bulk_org_units_editable_types = []
-        bulk_user_roles = []
-        bulk_projects = []
-        bulk_user_groups = []
-        email_invitations = []
+        items = []
 
         validated_data["file"].seek(0)
         csv_reader = csv.DictReader(validated_data["file"].read().decode("utf-8").splitlines(), dialect=self.dialect)
@@ -555,43 +509,7 @@ class BulkCreateUserSerializer(ModelSerializer):
                 qs_cache=qs_cache,
             )
             if serializer.is_valid():
-                (
-                    user,
-                    profile,
-                    invitation,
-                    org_units,
-                    teams,
-                    permissions,
-                    org_units_editable_types,
-                    user_roles,
-                    projects,
-                    user_groups,
-                ) = serializer.save()
-                bulk_users.append(user)
-                bulk_profiles.append(profile)
-                if invitation:
-                    email_invitations.append(invitation)
-
-                if org_units:
-                    bulk_org_units.extend(org_units)
-
-                if teams:
-                    bulk_teams.extend(teams)
-
-                if permissions:
-                    bulk_permissions.extend(permissions)
-
-                if org_units_editable_types:
-                    bulk_org_units_editable_types.extend(org_units_editable_types)
-
-                if user_roles:
-                    bulk_user_roles.extend(user_roles)
-
-                if projects:
-                    bulk_projects.extend(projects)
-
-                if user_groups:
-                    bulk_user_groups.extend(user_groups)
+                items.append(serializer.save())
             else:
                 validation_errors.append({"row": idx + 1, "details": serializer.errors})
 
@@ -600,19 +518,82 @@ class BulkCreateUserSerializer(ModelSerializer):
 
         # bulk create data
         with transaction.atomic():
-            get_user_model().objects.bulk_create(bulk_users)
-            Profile.objects.bulk_create(bulk_profiles)
+            users = get_user_model().objects.bulk_create([item["user_model"] for item in items])
+
+            profiles = Profile.objects.bulk_create([item["profile"] for item in items])
 
             # bulk create m2m
-            Profile.org_units.through.objects.bulk_create(bulk_org_units, ignore_conflicts=True)
-            Team.users.through.objects.bulk_create(bulk_teams, ignore_conflicts=True)
-            get_user_model().user_permissions.through.objects.bulk_create(bulk_permissions, ignore_conflicts=True)
-            Profile.editable_org_unit_types.through.objects.bulk_create(
-                bulk_org_units_editable_types, ignore_conflicts=True
-            )
-            Profile.user_roles.through.objects.bulk_create(bulk_user_roles, ignore_conflicts=True)
-            Profile.projects.through.objects.bulk_create(bulk_projects, ignore_conflicts=True)
-            get_user_model().groups.through.objects.bulk_create(bulk_user_groups, ignore_conflicts=True)
+
+            bulk_org_units = []
+            bulk_teams = []
+            bulk_permissions = []
+            bulk_org_units_editable_types = []
+            bulk_user_roles = []
+            bulk_projects = []
+            bulk_user_groups = []
+            email_invitations = [item["send_invitation"] for item in items if item["send_invitation"]]
+
+            for i, item in enumerate(items):
+                profile = profiles[i]
+                user = users[i]
+
+                bulk_org_units.extend(
+                    [
+                        Profile.org_units.through(
+                            profile_id=profile.id,
+                            orgunit_id=ou.id,
+                        )
+                        for ou in item["org_units"]
+                    ]
+                )
+
+                bulk_permissions.extend(
+                    [
+                        get_user_model().user_permissions.through(user_id=user.id, permission_id=permission.id)
+                        for permission in item["permissions"]
+                    ]
+                )
+
+                bulk_teams.extend([Team.users.through(team_id=team.id, user_id=user.id) for team in item["teams"]])
+
+                bulk_projects.extend(
+                    [
+                        Profile.projects.through(project_id=project.id, profile_id=profile.id)
+                        for project in item["projects"]
+                    ]
+                )
+
+                bulk_org_units_editable_types.extend(
+                    [
+                        Profile.editable_org_unit_types.through(profile_id=profile.id, orgunittype_id=ou_type.id)
+                        for ou_type in item["org_units_editable_types"]
+                    ]
+                )
+
+                bulk_user_roles.extend(
+                    [
+                        Profile.user_roles.through(profile_id=profile.id, userrole_id=user_role.id)
+                        for user_role in item["user_roles"]
+                    ]
+                )
+
+                bulk_user_groups.extend(
+                    [
+                        get_user_model().groups.through(user_id=user.id, group_id=user_role.group_id)
+                        for user_role in item["user_roles"]
+                    ]
+                )
+
+            Profile.org_units.through.objects.bulk_create(bulk_org_units)
+            get_user_model().user_permissions.through.objects.bulk_create(bulk_permissions)
+
+            Team.users.through.objects.bulk_create(bulk_teams)
+            Profile.projects.through.objects.bulk_create(bulk_projects)
+
+            Profile.editable_org_unit_types.through.objects.bulk_create(bulk_org_units_editable_types)
+            Profile.user_roles.through.objects.bulk_create(bulk_user_roles)
+
+            get_user_model().groups.through.objects.bulk_create(bulk_user_groups)
 
             # save the instance, but filter out all sensitive data like password
             if validated_data.get("file", None):
@@ -623,4 +604,4 @@ class BulkCreateUserSerializer(ModelSerializer):
         if email_invitations:
             self._send_bulk_email_invitations(email_invitations)
 
-        return instance, bulk_users, bulk_profiles
+        return instance, users, profiles

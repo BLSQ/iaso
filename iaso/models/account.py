@@ -22,7 +22,7 @@ class AccountFeatureFlag(models.Model):
 
 
 class Account(models.Model):
-    """Account represent a tenant (=roughly a client organisation or a country)"""
+    """Account represent a tenant (=roughly a client organization or a country)"""
 
     name = models.TextField(unique=True, validators=[MinLengthValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
@@ -38,6 +38,7 @@ class Account(models.Model):
     # specific analytics setup for a specific account
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
+    enforce_password_validation = models.BooleanField(default=False)
 
     @property
     def short_sanitized_name(self):

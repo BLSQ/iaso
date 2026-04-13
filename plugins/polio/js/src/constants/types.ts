@@ -232,6 +232,7 @@ type CalendarRound = {
     target_population: Nullable<number>;
     vaccine_names: string;
     is_planned: boolean;
+    on_hold: boolean;
 };
 
 export type CalendarSubActivity = {

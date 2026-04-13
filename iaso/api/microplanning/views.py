@@ -15,6 +15,7 @@ from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
 from iaso.api.common import (
     DeletionFilterBackend,
+    HasPermission,
     ModelViewSet,
     ReadOnlyOrHasPermission,
 )
@@ -97,7 +98,7 @@ class PlanningOrgunitsViewSet(AuditMixin, ViewSet):
 @extend_schema(tags=["Micro plannings", "Plannings"])
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [AuthenticationEnforcedPermission, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
+    permission_classes = [AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     queryset = Planning.objects.all()
     filter_backends = [
         filters.OrderingFilter,

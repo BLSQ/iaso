@@ -1,8 +1,11 @@
 from typing import Any, List, Union
 
+import django.core.exceptions as django_exceptions
+
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import Permission
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import transaction
@@ -18,7 +21,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, status
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
@@ -187,13 +190,21 @@ class ProfilesViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        password = serializer.validated_data["password"]
         user = instance.user
+        account = instance.account
+
+        try:
+            if account.enforce_password_validation:
+                validate_password(password=password, user=user)
+        except django_exceptions.ValidationError as e:
+            raise serializers.ValidationError({"password": e.messages})
 
         if TenantUser.is_multi_account_user(user):
-            self.perform_update_password(user.tenant_user.main_user, serializer.validated_data["password"])
+            self.perform_update_password(user.tenant_user.main_user, password)
             user.tenant_user.main_user.save()
         else:
-            self.perform_update_password(user, serializer.validated_data["password"])
+            self.perform_update_password(user, password)
             user.save()
 
         if self.request.user == user:

@@ -38,7 +38,7 @@ class Account(models.Model):
     # specific analytics setup for a specific account
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
-    enforce_password_validation = models.BooleanField(default=False)
+    enforce_password_validation = models.BooleanField(default=True)
 
     @property
     def short_sanitized_name(self):

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0374_auto_20260407_1915"),
     ]
@@ -13,6 +12,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="account",
             name="enforce_password_validation",
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(default=True),
         ),
     ]

@@ -207,6 +207,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                         {
                             "id": next_task.pk,
                             "name": next_task.node.name,
+                            "node_template_slug": "first-node",
                             "user_roles": [{"id": self.user_role.id, "name": self.user_role.group.name}],
                         }
                     ],

@@ -1,11 +1,13 @@
 import { faker } from '@faker-js/faker';
 import { Factory } from 'fishery';
+import moment from 'moment';
 import {
     History,
     NextByPass,
     NextTasks,
     ValidationNodeRetrieveResponse,
 } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { apiMobileDateFormat } from 'Iaso/utils/dates';
 
 type ValidationNodeRetrieveResponseFactoryTransientParams = {
     withHistory?: boolean;
@@ -20,17 +22,20 @@ const historyFactory = Factory.define<History>(() => ({
     id: faker.number.int(250),
     level: faker.word.noun(5),
     color: faker.color.rgb({ format: 'hex' }) as `#${string}`,
-    created_at: faker.date.anytime().valueOf(),
-    updated_at: faker.date.anytime().valueOf(),
+    created_at: moment(faker.date.anytime()).format(apiMobileDateFormat),
+    updated_at: moment(faker.date.anytime()).format(apiMobileDateFormat),
     status: faker.helpers.arrayElement([
         'ACCEPTED',
         'REJECTED',
         'SKIPPED',
         'UNKNOWN',
+        'SUBMISSION',
+        'NEW_VERSION',
     ]),
     updated_by: faker.person.fullName(),
     created_by: faker.person.fullName(),
     comment: faker.lorem.lines(2),
+    node_template_slug: faker.lorem.slug(5),
 }));
 
 const userRolesFactory = Factory.define<{ id: number; name: string }>(() => ({
@@ -42,6 +47,7 @@ const nextTasksFactory = Factory.define<NextTasks>(() => ({
     id: faker.number.int(250),
     name: faker.word.noun({ length: 10, strategy: 'closest' }),
     user_roles: userRolesFactory.buildList(2),
+    node_template_slug: faker.lorem.slug(5),
 }));
 
 const nextByPassFactory = Factory.define<NextByPass>(() => ({

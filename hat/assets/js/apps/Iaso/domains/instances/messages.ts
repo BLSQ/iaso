@@ -858,6 +858,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validation',
         id: 'iaso.label.validation',
     },
+    validationNodeStatusNewVersion: {
+        defaultMessage: 'New version',
+        id: 'iaso.validationNode.status.newVersion',
+    },
+    validationNodeStatusSubmission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.validationNode.status.submission',
+    },
 });
 
 export default MESSAGES;

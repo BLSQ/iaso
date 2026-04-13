@@ -480,6 +480,9 @@ SPECTACULAR_SETTINGS = {
         "rest_framework.permissions.IsAdminUser",
         "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
     ],
+    "SWAGGER_UI_SETTINGS": {
+        "displayOperationId": bool(DEBUG),
+    },
     "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
     "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],

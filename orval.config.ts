@@ -1,5 +1,3 @@
-import moment from 'moment';
-
 require('dotenv').config();
 
 const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || "http"}://${process.env.ORVAL_TARGET_URL_DOMAIN || "localhost:8000"}`
@@ -35,6 +33,7 @@ module.exports = {
             baseUrl: ORVAL_TARGET,
             workspace: './hat/assets/js/apps/Iaso/api',
             override: {
+                // operations: OperationConfig.operations,
                 requestOptions: {
                     credentials: 'same-origin'
                 },

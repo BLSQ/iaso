@@ -8,14 +8,10 @@ import {
     UrlParams,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    ApiValidationWorkflowsListParams,
-    PaginatedValidationWorkflowListList,
-    useApiValidationWorkflowsList,
-} from 'Iaso/api';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useCustomApiValidationWorkflowsList } from 'Iaso/domains/instances/validationWorkflow/api/Get';
 import {
     ParamsWithAccountId,
     useParamsObject,
@@ -32,27 +28,12 @@ export const SubmissionValidation = () => {
     const params: ParamsWithAccountId & Partial<UrlParams> = useParamsObject(
         baseUrls.instanceValidation,
     );
-    if (params?.page) {
-        params.page = parseInt(params?.page);
-    }
-
-    if (params?.pageSize) {
-        params.pageSize = parseInt(params?.pageSize);
-    }
 
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    ApiValidationWorkflowsListParams.parse(params);
+
     const { data: workflows, isFetching: isLoadingWorkflows } =
-        useApiValidationWorkflowsList(params, {
-            query: {
-                retry: false,
-                staleTime: Infinity,
-                cacheTime: Infinity,
-                keepPreviousData: true,
-            },
-        });
-    PaginatedValidationWorkflowListList.parse(workflows);
+        useCustomApiValidationWorkflowsList(params);
 
     const columns = useWorkflowsTableColumns();
     return (

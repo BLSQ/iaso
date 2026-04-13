@@ -1,6 +1,9 @@
 import { UseQueryResult } from 'react-query';
-import z from 'zod';
-import { PaginatedValidationWorkflowListList } from 'Iaso/api/models/paginatedValidationWorkflowListList.zod';
+import {
+    PaginatedMobileValidationWorkflowListList,
+    useApiValidationWorkflowsList,
+} from 'Iaso/api';
+import { ApiValidationWorkflowsListParams } from 'Iaso/api/models';
 import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
 import {
     ValidationWorkflowListDropdownResponse,
@@ -8,7 +11,7 @@ import {
     ValidationWorkflowRetrieveResponseItem,
     ValidationWorkflowRetrieveResponseItemWithOrderedNodes,
 } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
-import { FormattedApiParams, useApiParams } from 'Iaso/hooks/useApiParams';
+import { useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
@@ -20,28 +23,29 @@ const defaults = {
     page: 1,
 };
 
-const getSubmissionsWorkflows = async (
-    params: FormattedApiParams,
-): Promise<z.infer<typeof PaginatedValidationWorkflowListList>> => {
-    const queryString = new URLSearchParams(params).toString();
-    return await getRequest(`${API_URL}?${queryString}`);
-};
-
-export const useGetSubmissionValidationWorkflows = (
+export const useCustomApiValidationWorkflowsList = (
     params: Record<string, any>,
+    options?: Record<string, any>,
 ): UseQueryResult<ValidationWorkflowListResponse, Error> => {
+    // we do that so we can validate through zod
     const safeParams = useUrlParams(params, defaults);
     const apiParams = useApiParams(safeParams);
-    return useSnackQuery({
-        queryKey: [WF_BASE_QUERYKEY, apiParams],
-        queryFn: () => getSubmissionsWorkflows(apiParams),
-        options: {
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            keepPreviousData: true,
-            retry: false,
-        },
-    });
+
+    ApiValidationWorkflowsListParams.parse(apiParams);
+
+    const { data, ...other } = useApiValidationWorkflowsList(
+        apiParams,
+        options,
+    );
+
+    if (data) {
+        PaginatedMobileValidationWorkflowListList.parse(data);
+    }
+
+    return {
+        data,
+        ...other,
+    };
 };
 
 const getWorkflowDetails = async (

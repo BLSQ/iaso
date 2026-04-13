@@ -3,6 +3,7 @@ import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar } from 'Iaso/constants/snackBars';
 import { ApiError } from 'Iaso/libs/Api';
 import { MESSAGES } from 'Iaso/libs/apiHooks';
+import { OperationConfig } from '../apiConfiguration';
 
 const isApiError = (error: unknown): error is ApiError => {
     return typeof error === 'object' && error !== null && 'status' in error;
@@ -21,6 +22,12 @@ export const useCustomQueryOptions = <TOptions, TError>(
     UseQueryOptions<TOptions, TError>,
     'dispatchOnError' | 'ignoreErrorCodes' | 'snackErrorMsg'
 > => {
+    // workaround for orval not injecting overrides when using a custom query
+    const defaults =
+        // @ts-ignore
+        (OperationConfig?.operations?.[options?.queryKey?.[0]]?.query
+            ?.options as UseQueryOptions<TOptions, TError>) ?? {};
+
     const {
         dispatchOnError = true,
         ignoreErrorCodes,
@@ -28,7 +35,6 @@ export const useCustomQueryOptions = <TOptions, TError>(
         onError: optionsOnError,
         ...newOptions
     } = options;
-
     return {
         onError: (error: TError) => {
             if (
@@ -42,6 +48,7 @@ export const useCustomQueryOptions = <TOptions, TError>(
                 optionsOnError(error);
             }
         },
+        ...defaults,
         ...(newOptions as TOptions),
     } as const;
 };

@@ -169,6 +169,7 @@ class UserRoleAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         expected_name = self.user_role.group.name.removeprefix(f"{self.account.id}_")
         self.assertEqual(r["name"], expected_name)
+        self.assertEqual(self.group.name, f"{self.account.id}_user role modified")
 
     def test_partial_update_permissions_modification(self):
         self.client.force_authenticate(self.user)

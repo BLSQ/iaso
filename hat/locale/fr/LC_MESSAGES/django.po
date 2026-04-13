@@ -18,6 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
+#: plugins/active_list/templates/patient_search.html
+msgid "Recherche de patients"
+msgstr "Recherche de patients"
+
+#: plugins/active_list/templates/patient_search.html
+msgid "Entrez un code identifiant"
+msgstr "Entrez un code identifiant"
+
+
 #: hat/settings.py
 msgid "French"
 msgstr "Français"

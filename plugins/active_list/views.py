@@ -846,6 +846,9 @@ def get_human_readable_value(model_instance, field_name):
     try:
         field = model_instance._meta.get_field(field_name)
         if field.choices:
+            raw = getattr(model_instance, field_name)
+            if raw is None or raw == "":
+                return ""
             method_name = f"get_{field_name}_display"
             return getattr(model_instance, method_name)()
         if isinstance(field, models.BooleanField):
@@ -1544,7 +1547,7 @@ def import_data(file, the_import):
 
     # Map values in column `stable`
     df["stable"] = df["stable"].replace({"Oui": True, "Non": False})
-    df["sex"] = df["sex"].replace({"F": "FEMALE", "M": "MALE"})
+    df["sex"] = df["sex"].replace({"F": "FEMALE", "M": "MALE", "H": "MALE", math.nan: None})
     df["treatment_line"] = df["treatment_line"].replace(
         {
             "Ligne 1": TREATMENT_1STLINE,

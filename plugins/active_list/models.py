@@ -177,7 +177,7 @@ class Record(models.Model):
     facility_name = models.TextField(null=False, verbose_name="Nom de l'établissement")
     period = models.TextField(db_index=True, verbose_name="Période")
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="records")
-    sex = models.TextField(choices=SEX_CHOICES, verbose_name="Sexe")
+    sex = models.TextField(choices=SEX_CHOICES, null=True, blank=True, verbose_name="Sexe")
     age = models.IntegerField(verbose_name="Âge")
     weight = models.IntegerField(null=True, verbose_name="Poids")
     new_inclusion = models.BooleanField(verbose_name="Nouvelle inclusion")

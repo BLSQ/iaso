@@ -12,7 +12,15 @@ from beanstalk_worker import task_decorator
 from hat.sync.views import process_instance_file
 from iaso.api.instances.instances import import_data
 from iaso.models import Form, FormVersion, Instance
-from plugins.active_list.models import TREATMENT_1STLINE, TREATMENT_2NDLINE, TREATMENT_3RDLINE, Patient, Record
+from plugins.active_list.models import (
+    SEX_FEMALE,
+    SEX_MALE,
+    TREATMENT_1STLINE,
+    TREATMENT_2NDLINE,
+    TREATMENT_3RDLINE,
+    Patient,
+    Record,
+)
 
 
 logger = getLogger(__name__)
@@ -229,7 +237,12 @@ def create_registration(patient):
         code_enfant = ""
 
     # Patient data mapping
-    genre = "m" if patient.last_record.sex == "H" else "f"
+    if patient.last_record.sex == SEX_MALE:
+        genre = "m"
+    elif patient.last_record.sex == SEX_FEMALE:
+        genre = "f"
+    else:
+        genre = ""
     tb_vih = 1 if patient.last_record.tb_hiv else 0
     hiv_type = HIV_MAPPING.get(patient.last_record.hiv_type, "1")
 
@@ -319,7 +332,9 @@ def convert_to_xml_schema(original_dict):
         return 1 if value else 0
 
     def format_sex_code(sex_str):
-        """Converts sex string: 'MALE' to 'm', 'FEMALE' to 'f'."""
+        """Converts sex string: 'MALE' to 'm', 'FEMALE' to 'f'; empty if unknown."""
+        if sex_str is None or sex_str == "":
+            return ""
         if isinstance(sex_str, str):
             if sex_str.upper() == "MALE":
                 return "m"

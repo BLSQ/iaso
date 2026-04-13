@@ -9,8 +9,8 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from django_filters.rest_framework import FilterSet, NumberFilter
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -55,11 +55,11 @@ class CampaignCategory(str, Enum):
     REGULAR = "REGULAR"
 
 
-vaccine_stock_id_param = openapi.Parameter(
+vaccine_stock_id_param = OpenApiParameter(
     name="vaccine_stock",
-    in_=openapi.IN_QUERY,
+    location=OpenApiParameter.QUERY,
     description="The Vaccine Stock id related to the current object",
-    type=openapi.TYPE_INTEGER,
+    type=OpenApiTypes.INT,
     required=False,
 )
 
@@ -201,8 +201,8 @@ class VaccineStockSubitemBase(ModelViewSet):
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
     model_class = None
 
-    @swagger_auto_schema(
-        manual_parameters=[vaccine_stock_id_param],
+    @extend_schema(
+        parameters=[vaccine_stock_id_param],
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -400,6 +400,7 @@ class OutgoingStockMovementPatchSerializer(OutgoingStockMovementSerializer):
     alternative_campaign = serializers.CharField(source="non_obr_name", required=False, allow_blank=True)
 
 
+@extend_schema(tags=["Polio - Outgoing stock movements"])
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     model_class = OutgoingStockMovement
     permission_classes = [
@@ -499,6 +500,7 @@ class IncidentReportSerializer(ModelWithFileSerializer):
         return ret
 
 
+@extend_schema(tags=["Polio - Inicdent reports"])
 class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
     model_class = IncidentReport
@@ -549,6 +551,7 @@ class DestructionReportSerializer(ModelWithFileSerializer):
         return ret
 
 
+@extend_schema(tags=["Polio - Destruction reports"])
 class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
     model_class = DestructionReport
@@ -686,6 +689,7 @@ class EarmarkedStockFilter(FilterSet):
         fields = ["vaccine_stock"]
 
 
+@extend_schema(tags=["Polio - EAR marked stocks"])
 class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
@@ -707,6 +711,7 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
         )
 
 
+@extend_schema(tags=["Polio - Vaccine stock management"])
 class VaccineStockManagementViewSet(ModelViewSet):
     """
     ViewSet for managing Vaccine Stock data.

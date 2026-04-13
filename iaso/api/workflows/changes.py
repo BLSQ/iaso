@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
-from drf_yasg import openapi
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions
 from rest_framework.response import Response
 
@@ -12,15 +12,16 @@ from iaso.models import WorkflowChange
 from iaso.permissions.core_permissions import CORE_WORKFLOW_PERMISSION
 
 
-version_id_param = openapi.Parameter(
+version_id_param = OpenApiParameter(
     name="version_id",
-    in_=openapi.IN_QUERY,
+    location=OpenApiParameter.QUERY,
     description="The workflow version id for which we create or delete a change",
-    type=openapi.TYPE_STRING,
+    type=OpenApiTypes.STR,
     required=True,
 )
 
 
+@extend_schema(tags=["Workflow changes"])
 class WorkflowChangeViewSet(ModelViewSet):
     """Workflow Changes API
 
@@ -43,9 +44,9 @@ class WorkflowChangeViewSet(ModelViewSet):
     serializer_class = ser.WorkflowChangeSerializer
     http_method_names = ["get", "post", "delete", "put"]
 
-    @swagger_auto_schema(
-        manual_parameters=[version_id_param],
-        request_body=ser.WorkflowChangeCreateSerializer,
+    @extend_schema(
+        parameters=[version_id_param],
+        request=ser.WorkflowChangeCreateSerializer,
     )
     def get_queryset(self):
         orders = self.request.query_params.get("order", "updated_at").split(",")
@@ -85,7 +86,7 @@ class WorkflowChangeViewSet(ModelViewSet):
 
         return Response(serializer.data, status=200)
 
-    @swagger_auto_schema(request_body=no_body)
+    @extend_schema(request=None)
     def destroy(self, request, *args, **kwargs):
         id_to_deleted = kwargs.get("pk")
 

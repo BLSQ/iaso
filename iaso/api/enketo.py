@@ -15,6 +15,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -83,6 +84,7 @@ def _enketo_url_for_creation(form, instance, request, return_url):
 
 
 # Used by Create submission in Iaso Dashboard
+@extend_schema(tags=["Enketo"])
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
 def enketo_create_url(request):
@@ -121,6 +123,7 @@ def enketo_create_url(request):
         return JsonResponse({"error": str(error)}, status=409)
 
 
+@extend_schema(tags=["Enketo"])
 @api_view(["GET"])
 @permission_classes([permissions.AllowAny])
 def enketo_public_create_url(request):
@@ -289,6 +292,7 @@ def _build_url_for_edition(request, instance, user_id=None):
     return edit_url
 
 
+@extend_schema(tags=["Enketo"])
 @api_view(["GET"])
 @permission_classes([HasPermission(CORE_SUBMISSIONS_UPDATE_PERMISSION)])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
@@ -309,6 +313,7 @@ def enketo_edit_url(request, instance_uuid):
     return JsonResponse({"edit_url": edit_url}, status=201)
 
 
+@extend_schema(tags=["Enketo"])
 @api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_list(request):
@@ -357,6 +362,7 @@ def enketo_form_list(request):
     return HttpResponse(content_type="application/xml")
 
 
+@extend_schema(tags=["Enketo"])
 @api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_download(request):
@@ -380,6 +386,7 @@ def enketo_form_download(request):
     return HttpResponse(injected_xml, content_type="application/xml")
 
 
+@extend_schema(tags=["Enketo"])
 @api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_instance_files(request, instance_file_id, file_name):
@@ -408,6 +415,7 @@ def enketo_instance_files(request, instance_file_id, file_name):
     return response
 
 
+@extend_schema(tags=["Enketo"])
 class EnketoSubmissionAPIView(APIView):
     permission_classes = [permissions.AllowAny]
     http_method_names = ["post", "head", "get"]

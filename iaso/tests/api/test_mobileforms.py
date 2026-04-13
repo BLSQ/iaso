@@ -111,7 +111,7 @@ class MobileFormsAPITestCase(APITestCase):
             "updated_at",
             "reference_form_of_org_unit_types",
         ]
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(13):
             response = self.client.get(
                 f"/api/mobile/forms/?fields={','.join(custom_fields)}", headers={"Content-Type": "application/json"}
             )

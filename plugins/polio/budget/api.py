@@ -4,7 +4,7 @@ from django.db.models import F, Q, QuerySet
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -40,7 +40,7 @@ from plugins.polio.models import Campaign, Round
 from plugins.polio.permissions import POLIO_BUDGET_ADMIN_PERMISSION, POLIO_BUDGET_PERMISSION
 
 
-@swagger_auto_schema(tags=["budget"])
+@extend_schema(tags=["Polio - Budget"])
 class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
     """
     Budget information endpoint.
@@ -188,7 +188,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         return Response(available_rounds.as_ui_dropdown_data()["rounds"], status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(tags=["budget"])
+@extend_schema(tags=["Polio - Budget steps"])
 class BudgetStepViewSet(ModelViewSet):
     """
     Step on a budget process, to progress the budget workflow.
@@ -262,7 +262,7 @@ class BudgetStepViewSet(ModelViewSet):
 
 
 # noinspection PyMethodMayBeStatic
-@swagger_auto_schema(tags=["budget"])
+@extend_schema(tags=["Polio - workflows"])
 class WorkflowViewSet(ViewSet):
     """
     Info on the budge workflow

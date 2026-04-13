@@ -1,0 +1,18 @@
+BULK_CREATE_USER_COLUMNS_LIST = [
+    "username",
+    "password",
+    "email",
+    "first_name",
+    "last_name",
+    "orgunit",
+    "orgunit__source_ref",
+    "profile_language",
+    "dhis2_id",
+    "organization",
+    "permissions",
+    "user_roles",
+    "projects",
+    "teams",
+    "phone_number",
+    "editable_org_unit_types",
+]

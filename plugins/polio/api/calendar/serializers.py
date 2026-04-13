@@ -64,13 +64,8 @@ class ListRoundSerializer(RoundSerializer):
             "vaccine_names",
             "target_population",
             "is_planned",
+            "on_hold",
         ]
-
-    def to_representation(self, instance):
-        # Skip rounds on hold
-        if instance.on_hold:
-            return None
-        return super().to_representation(instance)
 
 
 class CampaignScopeSerializer(serializers.ModelSerializer):

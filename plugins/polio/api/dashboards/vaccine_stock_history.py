@@ -2,6 +2,7 @@ import django_filters
 
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -38,10 +39,10 @@ class VaccineStockHistoryFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(round__id=value)
 
 
+@extend_schema(tags=["Polio - Dashboards - Vaccine stock history"])
 class VaccineStockHistoryDashboardViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/vaccine_stock_history/
-    Returns all Preparedness sheet snapshots
     Simple endpoint that returns all model fields to facilitate data manipulation by OpenHexa or PowerBI
     """
 

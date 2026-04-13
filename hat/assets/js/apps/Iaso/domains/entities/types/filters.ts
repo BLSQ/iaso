@@ -17,4 +17,5 @@ export type Params = Filters & {
     pageSize: string;
     tab: string;
     isSearchActive: string;
+    cursor: string;
 };

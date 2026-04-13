@@ -15,7 +15,9 @@ from submissions import (
 
 
 def define_health_facility_reference_form(iaso_client):
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")["orgUnitTypes"]
+    org_unit_types = iaso_client.get(
+        "/api/v2/orgunittypes/?with_units_count=true&fields=id,name,units_count,projects,sub_unit_types,allow_creating_sub_unit_types&search=Health facility/Formation sanitaire - HF"
+    )["orgUnitTypes"]
     health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
         0
     ]
@@ -31,7 +33,7 @@ def define_health_facility_reference_form(iaso_client):
     health_facility_type["allow_creating_sub_unit_type_ids"] = [
         sub_unit_type["id"] for sub_unit_type in health_facility_type["allow_creating_sub_unit_types"]
     ]
-    update_reference_forms = iaso_client.put(
+    update_reference_forms = iaso_client.patch(
         f"/api/v2/orgunittypes/{health_facility_type['id']}/", json=health_facility_type
     )
     form_ids = [form["id"] for form in update_reference_forms.get("reference_forms")]
@@ -51,7 +53,11 @@ def create_submission_with_picture(account_name, iaso_client):
     limit = form["number_of_org_units"]
     orgunits = iaso_client.get(
         "/api/orgunits/",
-        params={"limit": limit, "orgUnitTypeId": form["org_unit_type_id"]},
+        params={
+            "limit": limit,
+            "orgUnitTypeId": form["org_unit_type_id"],
+            "fields": "id,longitude,latitude,altitude,org_unit_type_name",
+        },
     )["orgunits"]
     current_datetime = int(datetime.now().timestamp())
 

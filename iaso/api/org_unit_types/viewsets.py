@@ -1,8 +1,10 @@
 from django.db.models import Prefetch, Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.api.org_unit_types.permissions import HasOrgUnitTypeWritePermission
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
@@ -23,6 +25,7 @@ from .serializers import (
 DEFAULT_ORDER = "name"
 
 
+@extend_schema(tags=["Org unit types"])
 class OrgUnitTypeViewSet(ModelViewSet):
     """Org unit types API (deprecated)
 
@@ -30,12 +33,16 @@ class OrgUnitTypeViewSet(ModelViewSet):
     application
 
     Confusingly in this version  `sub_unit_types` map to allow_creating_sub_unit_types.
-    This API is open to anonymous users.
+    Read: any authenticated user. Write: CORE_ORG_UNITS_TYPES_PERMISSION (staff/superuser bypass).
 
     GET /api/orgunittypes/
     """
 
-    permission_classes = [AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired]
+    permission_classes = [
+        AuthenticationEnforcedPermission,
+        IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
+        HasOrgUnitTypeWritePermission,
+    ]
     serializer_class = OrgUnitTypeSerializerV1
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
@@ -76,15 +83,20 @@ class OrgUnitTypeViewSet(ModelViewSet):
         return context
 
 
+@extend_schema(tags=["Org unit types", "v2"])
 class OrgUnitTypeViewSetV2(ModelViewSet):
     """Org unit types API
 
-    This API is open to anonymous users.
+    Read: any authenticated user. Write: CORE_ORG_UNITS_TYPES_PERMISSION (staff/superuser bypass).
 
     GET /api/v2/orgunittypes/
     """
 
-    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [
+        AuthenticationEnforcedPermission,
+        permissions.IsAuthenticatedOrReadOnly,
+        HasOrgUnitTypeWritePermission,
+    ]
     serializer_class = OrgUnitTypeSerializerV2
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
@@ -117,7 +129,6 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         return queryset.order_by("depth").distinct().order_by(*orders)
 
     @action(
-        permission_classes=[AuthenticationEnforcedPermission, IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
         detail=False,
         methods=["GET"],
         serializer_class=OrgUnitTypesDropdownSerializer,
@@ -139,7 +150,6 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         return Response(serializer.data)
 
     @action(
-        permission_classes=[IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
         detail=True,
         methods=["GET"],
         serializer_class=OrgUnitTypeHierarchySerializer,

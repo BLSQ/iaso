@@ -12,8 +12,8 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -175,13 +175,14 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     root = _xmlfile_to_element(att1.file)
 
     for field_name, e_id in merge_def.items():
-        the_val = lookup[e_id].json[field_name]
-        try:
-            the_field = root.find(".//" + field_name)
-            if the_field is not None:
-                the_field.text = the_val
-        except Exception as e:
-            logger.exception("Error updating xml field %s: %s", field_name, e)
+        the_val = lookup[e_id].json.get(field_name, None)
+        if the_val is not None:
+            try:
+                the_field = root.find(".//" + field_name)
+                if the_field is not None:
+                    the_field.text = the_val
+            except Exception as e:
+                logger.exception("Error updating xml field %s: %s", field_name, e)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:
@@ -225,7 +226,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
         meta_instance_id.text = "uuid:" + str(new_uuid)
 
     new_xml_string = ET.tostring(root, encoding="utf-8", xml_declaration=False)
-    new_xml_content = ContentFile(new_xml_string.decode("utf-8"))
+    new_xml_content = ContentFile(new_xml_string)  # .decode("utf-8")
 
     new_inst.pk = None
     new_inst.entity = new_entity
@@ -390,15 +391,16 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         }
 
 
-duplicate_detail_entities_param = openapi.Parameter(
+duplicate_detail_entities_param = OpenApiParameter(
     name="entities",
-    in_=openapi.IN_QUERY,
-    description="Comma separeted list of 2 entities ids to to retrieve the duplicate about",
-    type=openapi.TYPE_STRING,
+    location=OpenApiParameter.QUERY,
+    description="Comma separated list of 2 entity ids to retrieve the duplicate about",
     required=True,
+    type=OpenApiTypes.STR,
 )
 
 
+@extend_schema(tags=["Entity duplicates"])
 class EntityDuplicateViewSet(ModelViewSet):
     """
     Entity Duplicates API.
@@ -435,7 +437,7 @@ class EntityDuplicateViewSet(ModelViewSet):
         user_account = self.request.user.iaso_profile.account
         return EntityDuplicate.objects.filter_for_account(user_account)
 
-    @swagger_auto_schema(manual_parameters=[duplicate_detail_entities_param])
+    @extend_schema(parameters=[duplicate_detail_entities_param])
     @action(detail=False, methods=["get"], url_path="detail", pagination_class=None, filter_backends=[])
     def detail_view(self, request):
         """
@@ -561,7 +563,7 @@ class EntityDuplicateViewSet(ModelViewSet):
 
         return JsonResponse(return_data, safe=False)
 
-    @swagger_auto_schema(request_body=EntityDuplicatePostSerializer(many=False))
+    @extend_schema(request=EntityDuplicatePostSerializer)
     def create(self, request, pk=None, *args, **kwargs):
         """
         POST /api/entityduplicates/

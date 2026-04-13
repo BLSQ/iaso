@@ -170,6 +170,9 @@ def jsonlogic_to_q(
         # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
+    if isinstance(value, str):
+        value = value.strip()
+
     lookup = EXTENDED_OPERATOR_LOOKUPS[op]
 
     f = f"{field_name}{extract}__{lookup}"

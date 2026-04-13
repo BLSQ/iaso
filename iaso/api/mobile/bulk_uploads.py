@@ -3,8 +3,8 @@ import logging
 from traceback import format_exc
 
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import MultiPartParser
@@ -41,32 +41,35 @@ class ZipFileSerializer(serializers.Serializer):
         raise ValueError("Zip file not valid")
 
 
+@extend_schema(tags=["Mobile"])
 class MobileBulkUploadsViewSet(ViewSet):
     parser_classes = [MultiPartParser]
     permission_classes = [AuthenticationEnforcedPermission, MobileBulkUploadsPermission]
 
-    app_id_param = openapi.Parameter(
+    app_id_param = OpenApiParameter(
         name=APP_ID,
-        in_=openapi.IN_QUERY,
+        location=OpenApiParameter.QUERY,
         required=True,
         description="Application id",
-        type=openapi.TYPE_STRING,
+        type=OpenApiTypes.STR,
     )
-    zip_file_param = openapi.Parameter(
-        name="zip_file",
-        in_=openapi.IN_FORM,
-        required=True,
-        description="file to import",
-        type=openapi.TYPE_FILE,
-    )
+    # todo : this should be a serializer
+    # zip_file_param = OpenApiParameter(
+    #     name="zip_file",
+    #     location=OpenApiParameter.FORM,
+    #     required=True,
+    #     description="file to import",
+    #     type=OpenApiTypes.BINARY,
+    # )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             204: "Import was successful",
             400: f"parameters '{APP_ID}' was not provided or post didn't contain an zip",
             404: "project for given app id doesn't exist",
         },
-        manual_parameters=[app_id_param, zip_file_param],
+        parameters=[app_id_param],
+        request=OpenApiTypes.BINARY,
     )
     def create(self, request):
         request.upload_handlers = [TemporaryFileUploadHandler(request)]
@@ -90,6 +93,8 @@ class MobileBulkUploadsViewSet(ViewSet):
                 json_body={
                     "user_agent": request.META.get("HTTP_USER_AGENT"),
                 },
+                app_id=request.GET.get("app_id", default=""),
+                app_version=request.GET.get("app_version", default=""),
             )
 
             process_mobile_bulk_upload(

@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.api.common import EtlModelViewset, HasPermission
@@ -31,6 +32,7 @@ class BudgetDashboardSerializer(serializers.ModelSerializer):
         return filtered_queryset.first().campaign.obr_name
 
 
+@extend_schema(tags=["Polio - Dashboards - Budget"])
 class BudgetDashboardViewSet(EtlModelViewset):
     """
     GET /api/polio/dashboards/budgets/

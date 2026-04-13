@@ -1,4 +1,12 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useState } from 'react';
+import {
+    Box,
+    FormControlLabel,
+    Checkbox,
+    Collapse,
+    Alert,
+    Typography,
+} from '@mui/material';
 import {
     useSafeIntl,
     makeFullModal,
@@ -6,14 +14,15 @@ import {
     SimpleModal,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box } from '@mui/material';
 import { useFormik } from 'formik';
+import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
+import { useApiErrorValidation } from 'Iaso/libs/validation';
 import MESSAGES from '../../messages';
 import { BulkImportButton } from './BulkImportButton';
+import { DefaultValuesSection } from './DefaultValuesSection';
 import { useBulkUserValidation } from './hooks/useBulkUserValidation';
-import { useApiErrorValidation } from '../../../../libs/validation';
 import { useUploadCsv } from './hooks/useUploadCsv';
-import { FileUploadButtons } from '../../../../components/Buttons/FileUploadButtons';
+import { ValidationErrorTable } from './ValidationErrorTable';
 
 type Props = {
     closeDialog: () => void;
@@ -33,7 +42,10 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const titleMessage = formatMessage(MESSAGES.createUsersFromFile);
 
-    const { mutateAsync: upload, isLoading } = useUploadCsv();
+    // State for default values toggle and values
+    const [showDefaults, setShowDefaults] = useState(false);
+
+    const { mutateAsync: upload, isLoading, error: error } = useUploadCsv();
 
     const {
         apiErrors,
@@ -57,7 +69,6 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
     });
 
     const {
-        touched,
         errors,
         values,
         setFieldValue,
@@ -67,23 +78,8 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         isValid,
     } = formik;
 
-    // custom logic to show both api and formik errors.
-    // No translation is possible for the backend as it needs to be refactored to send translation keys
-    const formikAndApiErrors = useMemo(() => {
-        const result: string[] = [];
-        const formikError = errors.file;
-        const apiError = apiErrors.error;
-        if (formikError) {
-            result.push(formikError);
-        }
-        if (apiError) {
-            result.push(apiError);
-        }
-        return result;
-    }, [apiErrors.error, errors.file]);
-
-    const allowConfirm = isValid && Boolean(touched.file) && !isLoading;
-    const Buttons = ({ closeDialog: close }) => {
+    const allowConfirm = isValid && !isLoading;
+    const Buttons = ({ closeDialog: close }: { closeDialog: () => void }) => {
         return (
             <FileUploadButtons
                 allowConfirm={allowConfirm}
@@ -97,19 +93,30 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         );
     };
 
+    // as formik error parsing flats everything as a string, we need to access this in a "raw" way
+    const fileContentErrors = React.useMemo(() => {
+        return error?.details?.file_content;
+    }, [error?.details]);
+
     return (
         <SimpleModal
             titleMessage={titleMessage}
-            maxWidth="sm"
+            maxWidth={fileContentErrors?.length > 0 ? 'lg' : 'sm'}
             open={isOpen}
             closeDialog={closeDialog}
             id={id ?? 'bulk-user-create'}
             dataTestId="test-bulk-user-create"
-            onClose={() => resetForm()}
+            onClose={() => {
+                resetForm();
+                setShowDefaults(false);
+            }}
             buttons={Buttons}
         >
             <Box mt={2}>
                 <FilesUpload
+                    accept={{
+                        'text/csv': ['.csv'],
+                    }}
                     files={values.file ?? []}
                     onFilesSelect={files => {
                         setFieldTouched('file', true);
@@ -117,12 +124,55 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                     }}
                     required
                     multi={false}
-                    errors={formikAndApiErrors}
+                    errors={errors?.file ? [errors?.file] : undefined}
                     placeholder={formatMessage(MESSAGES.selectCsvFile)}
                 />
             </Box>
+
+            <Box mt={2}>
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={showDefaults}
+                            onChange={e => setShowDefaults(e.target.checked)}
+                            data-testid="default-values-toggle"
+                        />
+                    }
+                    label={formatMessage(MESSAGES.setDefaultValues)}
+                />
+            </Box>
+
+            <Collapse in={showDefaults} unmountOnExit={false}>
+                <Box mt={1}>
+                    <DefaultValuesSection
+                        defaults={values}
+                        errors={errors}
+                        setFieldValue={setFieldValue}
+                    />
+                </Box>
+            </Collapse>
+
+            {fileContentErrors?.length > 0 && (
+                <Box mt={2}>
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        <Typography variant="subtitle1">
+                            {formatMessage(MESSAGES.validationFailed)}
+                        </Typography>
+                        <Typography variant="body2">
+                            {formatMessage(MESSAGES.fixErrorsAndRetry, {
+                                count: fileContentErrors.length,
+                            })}
+                        </Typography>
+                    </Alert>
+                    <ValidationErrorTable errors={fileContentErrors} />
+                </Box>
+            )}
+
             {/* The loading spinner is set so users can still close the modal when the users are loading */}
             {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
+            <Box mt={2} sx={{ fontSize: '12px' }}>
+                {formatMessage(MESSAGES.bulkImportDialogDescription)}
+            </Box>
         </SimpleModal>
     );
 };

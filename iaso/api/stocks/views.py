@@ -2,6 +2,7 @@ from datetime import datetime
 
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -44,6 +45,7 @@ from iaso.models import (
 )
 
 
+@extend_schema(tags=["Stock keeping units"])
 class StockKeepingUnitViewSet(viewsets.ModelViewSet):
     """StockKeepingUnit API
 
@@ -102,6 +104,7 @@ class StockKeepingUnitViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 
+@extend_schema(tags=["Stock items"])
 class StockItemViewSet(viewsets.ModelViewSet):
     """StockItemView API
 
@@ -182,6 +185,7 @@ class StockItemViewSet(viewsets.ModelViewSet):
         return response
 
 
+@extend_schema(tags=["Stock ledger items"])
 class StockLedgerItemViewSet(viewsets.ModelViewSet):
     """StockLedgerItemView API
 
@@ -235,6 +239,7 @@ class StockLedgerItemViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 
+@extend_schema(tags=["Stock item rules"])
 class StockItemRuleViewSet(viewsets.ModelViewSet):
     """StockItemRuleView API
 
@@ -304,6 +309,7 @@ class StockItemRuleViewSet(viewsets.ModelViewSet):
         return super().perform_destroy(instance)
 
 
+@extend_schema(tags=["Stock rule versions"])
 class StockRulesVersionViewSet(viewsets.ModelViewSet):
     """StockItemRuleView API
 

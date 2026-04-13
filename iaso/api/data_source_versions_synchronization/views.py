@@ -1,5 +1,6 @@
 import django_filters
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -19,6 +20,7 @@ from iaso.models import DataSourceVersionsSynchronization
 from iaso.tasks.data_source_versions_synchronization import synchronize_source_versions_async
 
 
+@extend_schema(tags=["Data sources", "Data sources synchronization"])
 class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = DataSourceVersionsSynchronizationFilter

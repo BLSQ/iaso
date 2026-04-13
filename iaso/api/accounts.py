@@ -1,6 +1,7 @@
 """This api is only there so the default version on an account can be modified"""
 
 from django.contrib.auth import login
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -48,6 +49,7 @@ class HasAccountPermission(permissions.BasePermission):
         return False
 
 
+@extend_schema(tags=["Accounts"])
 class AccountViewSet(ModelViewSet):
     f"""Account API
 

@@ -100,9 +100,9 @@ export type OrgUnitParams = UrlParams & {
     locationLimit: string;
     tab?: string;
     searchTabIndex: string;
-    searchActive?: string;
     searches: string;
     isClusterActive?: string;
+    fields: string;
 };
 
 export type OrgUnitsApi = {

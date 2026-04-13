@@ -10,7 +10,7 @@ def instance_details_by_id(instanceId, iaso_client):
 def setup_review_change_proposal(account_name, iaso_client):
     print("-- Setting up review change proposals")
     org_unit_groups = iaso_client.get("/api/groups/")["groups"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
     health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
         0
     ]
@@ -21,9 +21,14 @@ def setup_review_change_proposal(account_name, iaso_client):
 
     # fetch orgunit ids
     limit = 12
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]})[
-        "orgunits"
-    ]
+    orgunits = iaso_client.get(
+        "/api/orgunits/",
+        params={
+            "limit": limit,
+            "orgUnitTypeId": health_facility_type["id"],
+            "fields": "id,longitude,latitude,altitude,name",
+        },
+    )["orgunits"]
     org_unit_group_ids = [org_unit_group["id"] for org_unit_group in org_unit_groups]
     for org_unit in orgunits:
         location = [None, {**org_unit_gps_point(org_unit)}]

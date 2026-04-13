@@ -7,6 +7,7 @@ import typing
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
 from django.test import SimpleTestCase
+from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from hat.audit.models import Modification
@@ -16,6 +17,9 @@ from iaso.models import OrgUnit, OrgUnitType
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.test import APITestCase
 from iaso.utils.gis import simplify_geom
+
+
+COUNT_INSTANCES = 'COUNT(DISTINCT "iaso_instance"."id")'.lower()
 
 
 class OrgUnitAPIUtilsTestCase(SimpleTestCase):
@@ -859,6 +863,56 @@ class OrgUnitAPITestCase(APITestCase):
         parent_instances_count = response_parent.json()["instances_count"]
         self.assertEqual(parent_instances_count, 2)
 
+    def test_org_unit_performance_optimization_no_instance_count(self):
+        """Test if instances_count is NOT queried when not in 'fields'"""
+        self.client.force_authenticate(self.yoda)
+
+        # Request without 'instances_count'
+        url = "/api/orgunits/?fields=id,name,org_unit_type_name&limit=10"
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(url)
+
+            self.assertJSONResponse(response, 200)
+            data = response.json()["orgunits"]
+
+            self.assertNotIn("instances_count", data[0])
+
+        # Ensure none of the executed SQL queries contain the heavy computations
+        for q in ctx.captured_queries:
+            sql = q["sql"].lower()
+            self.assertNotIn(COUNT_INSTANCES, sql, f"Found unexpected query: {sql}")
+            self.assertNotIn("instances_count", sql, f"Found unexpected query: {sql}")
+
+    def test_org_unit_requested_instances_count_success(self):
+        """Verify that instances_count is correctly returned when requested"""
+        self.client.force_authenticate(self.yoda)
+
+        # Explicitly request instances_count
+        url = "/api/orgunits/?fields=id,name,instances_count&limit=10&order=id"
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(url)
+        self.assertJSONResponse(response, 200)
+
+        # Ensure none of the executed SQL queries contain the heavy computations
+        at_least_one_instances_count_query = False
+        for q in ctx.captured_queries:
+            sql = q["sql"].lower()
+            if COUNT_INSTANCES in sql:
+                at_least_one_instances_count_query = True
+
+        self.assertTrue(
+            at_least_one_instances_count_query,
+            "Expected at least one query with instances_count computation : " + COUNT_INSTANCES,
+        )
+
+        corruscant = next(ou for ou in response.json()["orgunits"] if ou["id"] == self.jedi_council_corruscant.id)
+
+        # Corruscant has: 1 reference + 1 non-reference + 3 study instances = 5 total
+        self.assertIn("instances_count", corruscant)
+        self.assertEqual(corruscant["instances_count"], 5)
+
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -1601,6 +1655,58 @@ class OrgUnitAPITestCase(APITestCase):
             self.instance_not_related_to_reference_form,
             old_ou.reference_instances.all(),
         )
+
+    def test_org_unit_patch_requested_fields(self):
+        """Test that partial update correctly modify only the requested fields"""
+        self.client.force_authenticate(self.yoda)
+        ou = self.jedi_council_corruscant
+
+        old_code = ou.code
+        old_source_ref = ou.source_ref
+        old_version = ou.version
+        old_org_unit_type = ou.org_unit_type
+        old_created_at = ou.created_at
+        previous_updated_at = ou.updated_at
+
+        requested_fields = [
+            "id",
+            "name",
+            "validation_status",
+            "aliases",
+            "latitude",
+            "longitude",
+            "org_unit_type_id",
+            "updated_at",
+        ]
+
+        url = f"/api/orgunits/{ou.id}/?fields={','.join(requested_fields)}"
+
+        payload = {
+            "name": "Updated Jedi HQ",
+            "validation_status": "VALID",
+            "aliases": ["Old Temple", "New Base"],
+            "latitude": 12.34,
+            "longitude": 56.78,
+            "altitude": 90.0,
+        }
+
+        response = self.client.patch(url, data=payload, format="json")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        ou.refresh_from_db()
+
+        self.assertEqual(set(data.keys()), set(requested_fields))
+        self.assertEqual(ou.name, "Updated Jedi HQ")
+        self.assertEqual(ou.validation_status, "VALID")
+
+        self.assertEqual(ou.code, old_code)
+        self.assertEqual(ou.source_ref, old_source_ref)
+        self.assertEqual(ou.version, old_version)
+        self.assertEqual(ou.org_unit_type, old_org_unit_type)
+        self.assertEqual(ou.created_at, old_created_at)
+
+        self.assertGreater(ou.updated_at, previous_updated_at)
 
     def set_up_org_unit_partial_update(self):
         ou = m.OrgUnit(version=self.sw_version_1)
@@ -2475,7 +2581,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         jedi_squad_endor_2_children.save()
 
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(5):
             response = self.client.get(
                 f"/api/orgunits/?&parent_id={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=true"
             )

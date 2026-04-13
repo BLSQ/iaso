@@ -32,12 +32,9 @@ export default defineConfig({
       testDir: './hat/assets/js/__tests__/playwright/smoke',
       testMatch: '**/*.test.ts',
       use: (() => {
-        loadEnv('smoke', ['LOGIN_USERNAME', 'LOGIN_PASSWORD']);
+        loadEnv('smoke', ['LOGIN_USERNAME', 'LOGIN_PASSWORD', 'GIT_TAG']);
         return {
           ...devices['Desktop Chrome'],
-          ...devices['Desktop Firefox'],
-          ...devices['Desktop Safari'],
-          ...devices['iPhone 12'],
           screenshot: 'only-on-failure'
         };
       })()
@@ -48,9 +45,6 @@ export default defineConfig({
       testMatch: '**/*.test.ts',
       use: {
         ...devices['Desktop Chrome'],
-        // ...devices['Desktop Firefox'],
-        // ...devices['Desktop Safari'],
-        // ...devices['iPhone 12'],
         screenshot: 'only-on-failure'
       },
     }

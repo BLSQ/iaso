@@ -81,14 +81,14 @@ def show_missing_entities_in_analytics(request, account_id, entity_type):
 
 
 @staff_member_required
-def delete_beneficiaries_analytics(request):
+def delete_beneficiaries_analytics(request, account_id):
     if request.method == "POST":
-        ETL().delete_beneficiaries()
+        ETL().delete_beneficiaries(account_id)
         return HttpResponse("ok")
 
     template = loader.get_template("delete_beneficiaries_analytics.html")
 
-    return HttpResponse(template.render({}, request))
+    return HttpResponse(template.render({"account_id": account_id}, request))
 
 
 @staff_member_required

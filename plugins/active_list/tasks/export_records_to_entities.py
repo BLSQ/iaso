@@ -17,6 +17,17 @@ from plugins.active_list.models import TREATMENT_1STLINE, TREATMENT_2NDLINE, TRE
 
 logger = getLogger(__name__)
 
+
+def _xml_as_upload_file(xml: str, file_name: str) -> ContentFile:
+    """Build a ContentFile for S3 upload.
+
+    Django's ContentFile(str) uses StringIO; django-storages/boto3 expect a stable
+    binary stream for PutObject + Content-MD5. UTF-8 bytes + BytesIO avoids
+    BadDigest mismatches seen with in-memory XML from this task.
+    """
+    return ContentFile(xml.encode("utf-8"), name=file_name)
+
+
 HIV_MAPPING = {
     "HIV 1&2": "12",
     "HIV1": "1",
@@ -157,7 +168,7 @@ def export_records_to_entities(task=None):
 
                 the_uuid = str(uuid.uuid4())
                 file_name = f"xls_import_from_xls{the_uuid}.xml"
-                instance_file = ContentFile(xml_result, name=file_name)
+                instance_file = _xml_as_upload_file(xml_result, file_name)
 
                 timestamp = int(record.import_source.creation_date.timestamp() * 1000)
                 instance_body = [
@@ -261,7 +272,7 @@ def create_registration(patient):
     }
 
     instance_xml = xml.format(**variables)
-    instance_file = ContentFile(instance_xml, name=file_name)
+    instance_file = _xml_as_upload_file(instance_xml, file_name)
 
     timestamp = int(patient.last_record.import_source.creation_date.timestamp() * 1000)
     instance_body = [

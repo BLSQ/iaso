@@ -647,7 +647,6 @@ except Exception as e:
 
 def get_env_as_float(variable_name: str, default_str: str) -> float:
     var_str: str = get_env_var_or_default(variable_name, default_str)
-    var_str = var_str.strip().strip('"').strip("'")
     try:
         return float(var_str)
     except ValueError:

@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import { validationNodeRetrieveResponseFactory } from '../../../../../../__tests__/factories/validationWorkflows/validationNodes';
 import { validationWorkflowRetrieveFactory } from '../../../../../../__tests__/factories/validationWorkflows/validationWorkflow';
-import { QueryClientWrapper } from '../../../../../../tests/helpers';
+import { QueryClientWrapperWithIntlProvider } from '../../../../../../tests/helpers';
 import { useValidationTimeline } from './useValidationTimeline';
 
 const { mockUserHasOneOfRoles } = vi.hoisted(() => {
@@ -117,7 +117,7 @@ describe('useValidationTimeline', () => {
 
         const { result } = renderHook(
             () => useValidationTimeline({ data, nodes }),
-            { wrapper: QueryClientWrapper },
+            { wrapper: QueryClientWrapperWithIntlProvider },
         );
 
         expect(result.current).toEqual([

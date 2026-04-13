@@ -3,6 +3,15 @@
 from django.db import migrations, models
 
 
+def migrate_data_forward(apps, schema_editor):
+    Account = apps.get_model("iaso", "Account")
+    accounts = Account.objects.all()
+
+    for account in accounts:
+        account.enforce_password_validation = False
+        account.save()
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("iaso", "0374_auto_20260407_1915"),
@@ -14,4 +23,5 @@ class Migration(migrations.Migration):
             name="enforce_password_validation",
             field=models.BooleanField(default=True),
         ),
+        migrations.RunPython(migrate_data_forward, migrations.RunPython.noop, elidable=True),
     ]

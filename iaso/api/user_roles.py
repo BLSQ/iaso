@@ -92,6 +92,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
                 permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
                 group.permissions.add(permission)
 
+        group.name = group_name
         group.save()
         user_role.save()
         user_role.editable_org_unit_types.set(editable_org_unit_types)

@@ -18,6 +18,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
+#: iaso/api/api_import/filters.py iaso/api/pages.py iaso/api/payments/views.py
+msgid "User ID"
+msgstr "ID utilisateur"
+
 #: iaso/api/comment.py
 #, python-brace-format
 msgid "Model {value} does not exist."
@@ -190,6 +194,11 @@ msgstr "Aucune assignation à effacer"
 #, python-format
 msgid "Successfully deleted %(count)s assignments"
 msgstr "%(count)s assignations ont été supprimées avec succès"
+
+#: iaso/api/notifications/views.py
+#, python-format
+msgid "There is %(count)d failing import needing your attention."
+msgstr "Il y a %(count)d importation en échec nécessitant votre attention."
 
 #: iaso/api/openhexa/views.py
 msgid "Failed to retrieve pipelines"
@@ -390,10 +399,6 @@ msgstr "Limiter les résultats par nom ou slug"
 #: iaso/api/pages.py
 msgid "Limit on authentication required or not"
 msgstr "Limiter selon si l'authentification est requise ou non"
-
-#: iaso/api/pages.py iaso/api/payments/views.py
-msgid "User ID"
-msgstr "ID utilisateur"
 
 #: iaso/api/pages.py
 msgid "User Role IDs"

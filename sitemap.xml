@@ -201,6 +201,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/how_to/run_smoke_tests/run_smoke_tests.html</loc>
+        <lastmod>2026-04-14</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/setup_dev_env/setup_dev_env.html</loc>
         <lastmod>2026-04-14</lastmod>
         <changefreq>daily</changefreq>
@@ -745,6 +753,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html</loc>
+        <lastmod>2026-04-14</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/how_to/setup_dev_env/setup_dev_env.html</loc>
         <lastmod>2026-04-14</lastmod>
         <changefreq>daily</changefreq>
@@ -1287,6 +1303,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/run_docs_locally/run_docs_locally.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html</loc>
+        <lastmod>2026-04-14</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/run_smoke_tests/run_smoke_tests.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/setup_dev_env/setup_dev_env.html</loc>

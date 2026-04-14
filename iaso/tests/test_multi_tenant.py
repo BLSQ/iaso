@@ -233,7 +233,7 @@ class MultiTenantTestCase(APITestCase):
 
     def test_profile_access(self):
         response = self.raccoon_client.get(
-            reverse("profiles-list", kwargs={"version": "v2"}), accept="application/json"
+            reverse("profiles-list", kwargs={"version": "v2"}), data={"fields": ":all"}, accept="application/json"
         )
         content = json.loads(response.content)
         self.assertEqual(content["results"][0]["userName"], "raccoon")

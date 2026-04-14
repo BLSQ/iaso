@@ -17,7 +17,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         """GET /profiles/ with auth (user has read only permissions)"""
         self.client.force_authenticate(self.jane)
         with self.assertNumQueries(13):
-            response = self.client.get(reverse("profiles-list", kwargs={"version": "v2", "fields": ":all"}))
+            response = self.client.get(reverse("profiles-list", kwargs={"version": "v2"}), data={"fields": ":all"})
         self.assertJSONResponse(response, 200)
 
     def test_profile_list_ok(self):

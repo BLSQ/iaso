@@ -1,5 +1,6 @@
 from typing import Tuple
 
+from django.utils.translation import gettext as _
 from lxml import etree  # type: ignore
 from lxml.etree import XMLParser
 
@@ -14,6 +15,8 @@ ORG_UNIT_INJECTABLE_QUESTION_NAMES = [
     "current_ou_type_id",
     "current_ou_type_name",
     "current_ou_is_root",
+    "serie_id",
+    "trypelim_profile",
 ]
 
 for parent_index in range(1, 10):
@@ -55,6 +58,14 @@ def build_substitutions(instance):
 
             parent = parent.parent
             parent_index += 1
+
+    if instance and instance.json:
+        if instance.json.get("serie_id"):
+            substitutions[".//serie_id"] = instance.json.get("serie_id")
+        if instance.json.get("trypelim_profile"):
+            substitutions[".//trypelim_profile"] = instance.json.get("trypelim_profile")
+        if instance.json.get("infection_location_village_name"):
+            substitutions[".//infection_location_village_name"] = _("<Il n'est pas nécessaire de remplir ce champ>")
 
     return substitutions
 

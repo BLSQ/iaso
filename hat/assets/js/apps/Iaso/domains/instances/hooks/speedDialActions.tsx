@@ -199,23 +199,12 @@ export const useLockAction = (currentInstance: Instance): SpeedDialAction => {
 
 export const useEnketoAction = (currentInstance: Instance): SpeedDialAction => {
     return useMemo(() => {
-        // Trypelim-specific
-        // Constrain enketo edits to a few select forms types
-        const enketo_whitelist = [
-            'confirmed_case',
-            'probable_case',
-            'trypelim_lab_samples',
-        ];
-        const form_editable = enketo_whitelist.includes(
-            currentInstance?.form_descriptor?.id_string,
-        );
-
         return {
             id: 'instanceEditAction',
             icon: <EnketoIcon />,
-            disabled: currentInstance?.deleted || !form_editable,
+            disabled: currentInstance?.deleted,
         };
-    }, [currentInstance?.deleted, currentInstance?.form_descriptor?.id_string]);
+    }, [currentInstance?.deleted]);
 };
 
 type LinkToActionParams = {

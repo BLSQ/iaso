@@ -181,6 +181,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                 <InputComponent
                                     keyValue="year"
                                     onChange={handleChange}
+                                    clearable
                                     value={currentPeriod && currentPeriod.year}
                                     type="select"
                                     options={yearOptions}
@@ -232,6 +233,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                             (currentPeriod &&
                                                 !currentPeriod.year)
                                         }
+                                        clearable
                                         value={
                                             currentPeriod &&
                                             currentPeriod.quarter
@@ -246,6 +248,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                     <InputComponent
                                         keyValue="semester"
                                         onChange={handleChange}
+                                        clearable
                                         disabled={
                                             !currentPeriod ||
                                             (currentPeriod &&
@@ -265,6 +268,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                         keyValue="week"
                                         onChange={handleChange}
                                         disabled={!currentPeriod?.year}
+                                        clearable
                                         value={currentPeriod?.week}
                                         type="select"
                                         options={weekOptions}

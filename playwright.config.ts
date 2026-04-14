@@ -32,7 +32,7 @@ export default defineConfig({
       testDir: './hat/assets/js/__tests__/playwright/smoke',
       testMatch: '**/*.test.ts',
       use: (() => {
-        loadEnv('smoke', ['LOGIN_USERNAME', 'LOGIN_PASSWORD', 'GIT_TAG']);
+        loadEnv('smoke', ['GIT_TAG']);
         return {
           ...devices['Desktop Chrome'],
           screenshot: 'only-on-failure'

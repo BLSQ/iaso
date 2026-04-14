@@ -87,10 +87,13 @@ class UserRoleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"name": "User role already exists"})
 
         if permissions is not None:
-            group.permissions.clear()
-            for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
-                group.permissions.add(permission)
+            permission_objects = Permission.objects.filter(codename__startswith="iaso_", codename__in=permissions)
+            found_codenames = set(permission_objects.values_list("codename", flat=True))
+            invalid = [p for p in permissions if p not in found_codenames]
+            invalid_str = ", ".join(invalid)
+            if invalid:
+                raise serializers.ValidationError({"permissions": f"Invalid permission codenames: {invalid_str}"})
+            group.permissions.set(permission_objects)
 
         group.name = group_name
         group.save()

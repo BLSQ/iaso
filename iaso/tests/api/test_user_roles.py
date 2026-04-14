@@ -41,6 +41,9 @@ class UserRoleAPITestCase(APITestCase):
         cls.permission_not_allowable = Permission.objects.create(
             name="admin permission", content_type_id=1, codename="admin_permission1"
         )
+        cls.permission_not_allowable2 = Permission.objects.create(
+            name="admin permission", content_type_id=2, codename="admin_permission2"
+        )
         cls.group = Group.objects.create(name=str(account.id) + "user role")
 
         cls.group.permissions.add(cls.permission)
@@ -189,17 +192,18 @@ class UserRoleAPITestCase(APITestCase):
     def test_partial_update_not_allowable_permissions_modification(self):
         self.client.force_authenticate(self.user)
 
+        invalid_perms = self.permission_not_allowable.codename, self.permission_not_allowable2.codename
+
         payload = {
             "name": self.user_role.group.name,
-            "permissions": [self.permission_not_allowable.codename],
+            "permissions": invalid_perms,
         }
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 404)
-        self.assertEqual(
-            r["detail"],
-            "Not found.",
-        )
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("permissions", r)
+        expected_error_message = "Invalid permission codenames: admin_permission1, admin_permission2"
+        self.assertIn(expected_error_message, r["permissions"])
 
     def test_delete_user_role(self):
         self.client.force_authenticate(self.user)

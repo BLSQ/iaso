@@ -12,10 +12,29 @@ from beanstalk_worker import task_decorator
 from hat.sync.views import process_instance_file
 from iaso.api.instances.instances import import_data
 from iaso.models import Form, FormVersion, Instance
-from plugins.active_list.models import TREATMENT_1STLINE, TREATMENT_2NDLINE, TREATMENT_3RDLINE, Patient, Record
+from plugins.active_list.models import (
+    SEX_FEMALE,
+    SEX_MALE,
+    TREATMENT_1STLINE,
+    TREATMENT_2NDLINE,
+    TREATMENT_3RDLINE,
+    Patient,
+    Record,
+)
 
 
 logger = getLogger(__name__)
+
+
+def _xml_as_upload_file(xml: str, file_name: str) -> ContentFile:
+    """Build a ContentFile for S3 upload.
+
+    Django's ContentFile(str) uses StringIO; django-storages/boto3 expect a stable
+    binary stream for PutObject + Content-MD5. UTF-8 bytes + BytesIO avoids
+    BadDigest mismatches seen with in-memory XML from this task.
+    """
+    return ContentFile(xml.encode("utf-8"), name=file_name)
+
 
 HIV_MAPPING = {
     "HIV 1&2": "12",
@@ -157,7 +176,7 @@ def export_records_to_entities(task=None):
 
                 the_uuid = str(uuid.uuid4())
                 file_name = f"xls_import_from_xls{the_uuid}.xml"
-                instance_file = ContentFile(xml_result, name=file_name)
+                instance_file = _xml_as_upload_file(xml_result, file_name)
 
                 timestamp = int(record.import_source.creation_date.timestamp() * 1000)
                 instance_body = [
@@ -218,7 +237,12 @@ def create_registration(patient):
         code_enfant = ""
 
     # Patient data mapping
-    genre = "m" if patient.last_record.sex == "H" else "f"
+    if patient.last_record.sex == SEX_MALE:
+        genre = "m"
+    elif patient.last_record.sex == SEX_FEMALE:
+        genre = "f"
+    else:
+        genre = ""
     tb_vih = 1 if patient.last_record.tb_hiv else 0
     hiv_type = HIV_MAPPING.get(patient.last_record.hiv_type, "1")
 
@@ -261,7 +285,7 @@ def create_registration(patient):
     }
 
     instance_xml = xml.format(**variables)
-    instance_file = ContentFile(instance_xml, name=file_name)
+    instance_file = _xml_as_upload_file(instance_xml, file_name)
 
     timestamp = int(patient.last_record.import_source.creation_date.timestamp() * 1000)
     instance_body = [
@@ -308,7 +332,9 @@ def convert_to_xml_schema(original_dict):
         return 1 if value else 0
 
     def format_sex_code(sex_str):
-        """Converts sex string: 'MALE' to 'm', 'FEMALE' to 'f'."""
+        """Converts sex string: 'MALE' to 'm', 'FEMALE' to 'f'; empty if unknown."""
+        if sex_str is None or sex_str == "":
+            return ""
         if isinstance(sex_str, str):
             if sex_str.upper() == "MALE":
                 return "m"

@@ -47,6 +47,10 @@ msgstr ""
 "Il y a plusieurs soumissions pour cette période et cette unité "
 "organisationnelle, veuillez vous connecter au tableau de bord pour corriger."
 
+#: iaso/enketo/enketo_xml.py:68
+msgid "<No need to edit this field>"
+msgstr "<Il n'est pas nécessaire de remplir ce champ>"
+
 #: iaso/api/group_sets/filters.py
 msgid "Search by groupset's name"
 msgstr "Rechercher par nom de groupe"

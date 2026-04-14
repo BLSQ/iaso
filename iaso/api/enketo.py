@@ -34,8 +34,9 @@ from iaso.enketo import (
 )
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.enketo.enketo_xml import collect_values, inject_xml_find_uuid, parse_to_structured_dict
-from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
+from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User, WorkflowChange
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_UPDATE_PERMISSION
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.utils.encryption import calculate_md5
 
 
@@ -428,6 +429,40 @@ class EnketoSubmissionAPIView(APIView):
             main_file = request.FILES["xml_submission_file"]
             xml = main_file.read()
             soup = Soup(xml, "xml")
+
+            # Trypelim-specific: validate village ID
+            resolved_villages = {}
+            if is_trypelim_plugin_active():
+                village_ref_keys = (
+                    "st_fixe_traveller_village_id",
+                    "st_fixe_referral_structure_id",
+                    "traveller_village_id",
+                    "infection_location_village_id",
+                )
+                from plugins.trypelim.common.utils import is_numeric, is_uuid
+                from plugins.trypelim.geo.merge_villages import get_canonical_org_unit
+
+                for key in village_ref_keys:
+                    tag = soup.find(key)
+                    if tag and tag.string:
+                        village_id = tag.string.strip()
+                        if village_id:
+                            village = None
+                            try:
+                                if is_numeric(village_id):
+                                    village = get_canonical_org_unit(id=int(village_id))
+                                elif is_uuid(village_id):
+                                    village = get_canonical_org_unit(uuid=village_id)
+                            except Exception:
+                                pass
+
+                            if not village:
+                                return Response(
+                                    {"error": f"Invalid village ID: {village_id}"},
+                                    status=status.HTTP_400_BAD_REQUEST,
+                                )
+                            resolved_villages[key] = village
+
             # should we add form_id criteria or instanceID is enough ?
 
             for c in soup:
@@ -456,6 +491,47 @@ class EnketoSubmissionAPIView(APIView):
             # copy-pasted from the "create" code
             try:
                 instance.get_and_save_json_of_xml()
+
+                if is_trypelim_plugin_active():
+                    # Trypelim-specific:
+                    # Normalize enketo's "true" and "false" values to ones and zeros (like the mobile app)
+                    data = instance.json
+                    if isinstance(data, dict):
+                        for key, value in data.items():
+                            if value == "true":
+                                data[key] = "1"
+                            elif value == "false":
+                                data[key] = "0"
+
+                    # Trypelim-specific: autofill village name in json
+                    for key, village in resolved_villages.items():
+                        path = []
+                        current = village
+                        while current:
+                            path.append(current.name)
+                            current = current.parent
+                        village_name = "/".join(reversed(path))
+                        name_key = key.replace("_id", "_name")
+                        instance.json[name_key] = village_name
+
+                    # Trypelim-specific: Revert workflow-mapped fields if editing the registration form
+                    from plugins.trypelim.constants import REGISTRATION_FORM_ID
+
+                    if instance.form.form_id == REGISTRATION_FORM_ID:
+                        workflow_changes = WorkflowChange.objects.filter(
+                            workflow_version__workflow__entity_type__reference_form=instance.form,
+                            workflow_version__status="PUBLISHED",
+                        )
+                        mapped_fields = set()
+                        for change in workflow_changes:
+                            mapped_fields.update(change.mapping.values())
+
+                        for field in mapped_fields:
+                            if field in original.json:
+                                instance.json[field] = original.json[field]
+
+                    instance.save(update_fields=["json"])
+
                 try:
                     instance.convert_location_from_field()
                     instance.convert_device()
@@ -465,7 +541,35 @@ class EnketoSubmissionAPIView(APIView):
                 pass
 
             used_files = collect_values(parse_to_structured_dict(xml))
-            deprecated_files = instance.instancefile_set.exclude(name__in=used_files)
+            newly_uploaded_files = [f for f in request.FILES if f != "xml_submission_file"]
+            newly_uploaded_basenames = {os.path.splitext(f)[0] for f in newly_uploaded_files}
+
+            existing_instance_files = instance.instancefile_set.filter(deleted=False)
+            deprecated_files = []
+            for instance_file in existing_instance_files:
+                basename = os.path.splitext(instance_file.name)[0]
+
+                # If a new file (same basename as old one) is being uploaded, deprecate the old one
+                # (allow overwrite)
+                if basename in newly_uploaded_basenames:
+                    deprecated_files.append(instance_file)
+                    continue
+
+                # If the file is directly referenced in the xml, keep it.
+                # This handles cases where a submission with existing uploads is edited in enketo
+                # as enketo doesn't resubmit the existing files but just keeps their references in the xml
+                if instance_file.name in used_files:
+                    continue
+
+                # Keep files even if there's an extension mismatch
+                # This is because the files uploaded through the mobile app can
+                # have a different extension that the file reference in the xml
+                maching_basename = any(os.path.splitext(used_file)[0] == basename for used_file in used_files)
+                if maching_basename:
+                    continue
+
+                # If the file is not referenced in the XML at all, deprecate it
+                deprecated_files.append(instance_file)
 
             for file_name in request.FILES:
                 if file_name != "xml_submission_file":

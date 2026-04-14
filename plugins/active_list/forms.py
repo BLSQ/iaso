@@ -43,8 +43,6 @@ class ActivePatientsListForm(forms.ModelForm):
             "death",
             "art_stoppage",
             "served_elsewhere",
-            "instance",
-            "created_at",
         ]
         widgets = {
             "received_arv": forms.HiddenInput(),

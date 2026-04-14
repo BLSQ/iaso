@@ -10,6 +10,8 @@ import { Pagination } from 'Iaso/types/general';
 import { DjangoError } from 'Iaso/types/general';
 import { Profile } from 'Iaso/utils/usersUtils';
 
+export const DEFAULT_PROFILE_COLUMNS = ['id', 'user_id', 'user_display'];
+
 export const useGetProfilesApiParams = params => {
     const apiParams = params
         ? {
@@ -26,6 +28,7 @@ export const useGetProfilesApiParams = params => {
               user_roles: params.userRoles,
               teams: params.teamsIds,
               managedUsersOnly: params.managedUsersOnly,
+              fields: params.fields,
           }
         : {};
 

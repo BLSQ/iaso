@@ -1,23 +1,42 @@
 import React, { useMemo } from 'react';
 import {
+    Column,
     IconButton,
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useCreateExportMobileSetup } from 'Iaso/domains/users/hooks/useCreateExportMobileSetup';
+import { useDeleteProfile } from 'Iaso/domains/users/hooks/useDeleteProfile';
+import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
-import * as Permission from '../../utils/permissions.ts';
+import * as Permission from '../../utils/permissions';
 import { ProjectChips } from '../projects/components/ProjectChips';
-import { EditUserWithIconDialog } from './components/EditUserDialog.tsx';
-import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
-import PermissionCheckBoxes from './components/PermissionCheckBoxes.tsx';
-import PermissionTooltip from './components/PermissionTooltip.tsx';
-import { UserRolePermissions } from './components/UserRolePermissions.tsx';
-import MESSAGES from './messages.ts';
-import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
+import { EditUserWithIconDialog } from './components/EditUserDialog';
+import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog';
+import PermissionCheckBoxes from './components/PermissionCheckBoxes';
+import PermissionTooltip from './components/PermissionTooltip';
+import { UserRolePermissions } from './components/UserRolePermissions';
+import MESSAGES from './messages';
+import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages';
 import { userHasOneOfPermissions } from './utils';
+
+type UseUsersTableColumnsProps = {
+    canBypassProjectRestrictions: boolean;
+    currentUser: ReturnType<typeof useCurrentUser>;
+    params: {
+        pageSize?: string;
+        search?: string;
+    };
+    deleteProfile: ReturnType<typeof useDeleteProfile>['mutate'];
+    saveProfile: ReturnType<typeof useSaveProfile>['mutate'];
+    exportMobileSetup: ReturnType<
+        typeof useCreateExportMobileSetup
+    >['mutateAsync'];
+};
 
 export const useUsersTableColumns = ({
     deleteProfile,
@@ -26,10 +45,16 @@ export const useUsersTableColumns = ({
     saveProfile,
     exportMobileSetup,
     canBypassProjectRestrictions,
-}) => {
+}: UseUsersTableColumnsProps): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
+            {
+                Header: formatMessage(MESSAGES.user),
+                id: 'user_display',
+                sortable: false,
+                accessor: 'user_display',
+            },
             {
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects__name',

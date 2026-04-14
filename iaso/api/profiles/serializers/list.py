@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iaso.api.common import ModelSerializer
+from iaso.api.common import DynamicFieldsModelSerializer, ModelSerializer
 from iaso.models import Profile, Project, UserRole
 
 
@@ -22,7 +22,7 @@ class NestedUserRoleSerializer(ModelSerializer):
         return tail if sep else obj.group.name
 
 
-class ProfileListSerializer(ModelSerializer):
+class ProfileListSerializer(DynamicFieldsModelSerializer):
     first_name = serializers.SerializerMethodField(read_only=True)
     user_name = serializers.SerializerMethodField(read_only=True)
     last_name = serializers.SerializerMethodField(read_only=True)
@@ -30,6 +30,7 @@ class ProfileListSerializer(ModelSerializer):
     phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True)
     user_roles = NestedUserRoleSerializer(many=True, read_only=True)
     projects = RelatedProjectSerializer(many=True, read_only=True)
+    user_display = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Profile
@@ -43,7 +44,9 @@ class ProfileListSerializer(ModelSerializer):
             "phone_number",
             "user_roles",
             "projects",
+            "user_display",
         ]
+        default_fields = ["id", "user_id", "user_display"]
 
     # todo : cache this ?
     def _get_user_infos(self, obj):
@@ -63,3 +66,16 @@ class ProfileListSerializer(ModelSerializer):
 
     def get_email(self, obj):
         return self._get_user_infos(obj).email
+
+    def get_user_display(self, obj):
+        if not obj.user:
+            return None
+
+        username = obj.user.username
+
+        if not obj.user.first_name and not obj.user.last_name:
+            return username or ""
+
+        full_name = obj.user.get_full_name()
+
+        return f"{obj.user.username} ({full_name})" if full_name else obj.user.username

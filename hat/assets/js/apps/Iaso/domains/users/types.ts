@@ -132,6 +132,7 @@ export type ProfileListResponseItem = {
     last_name: string;
     email: string;
     user_id: number | string;
+    user_display: string;
     phone_number: string;
     user_roles: NestedUserRole[];
     projects: NestedProject[];

@@ -22,7 +22,6 @@ class NestedDataSourceSerializer(ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     url = serializers.CharField(source="credentials__url", read_only=True)
-    # versions = serializers.SerializerMethodField()
 
     class Meta:
         model = DataSource
@@ -33,13 +32,8 @@ class NestedDataSourceSerializer(ModelSerializer):
             "url",
             "created_at",
             "updated_at",
-            # "versions",
             "tree_config_status_fields",
         ]
-
-    # def get_versions(self, obj):
-    #     versions = SourceVersion.objects.filter(data_source_id=obj.id)
-    #     return [v.as_dict_without_data_source() for v in versions]
 
 
 class NestedDefaultVersionSerializer(ModelSerializer):
@@ -242,7 +236,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
     user_roles_editable_org_unit_type_ids = serializers.ListField(
         source="get_user_roles_editable_org_unit_type_ids", read_only=True
     )
-    account = NestedAccountExtendedSerializer(read_only=True)  # todo : Account.as_small_dict
+    account = NestedAccountExtendedSerializer(read_only=True)
     org_units = NestedOrgUnitSerializer(many=True, source="get_ordered_org_units")
 
     class Meta:

@@ -23,7 +23,7 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_ROLES_PERMISSION,
 )
 from iaso.test import APITestCase
-from iaso.tests.api.test_profiles import PROFILE_LOG_SCHEMA
+from iaso.tests.api.profiles.test_views.common import PROFILE_LOG_SCHEMA
 
 
 BASE_URL = "/api/bulkcreateuser/"

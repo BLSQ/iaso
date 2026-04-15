@@ -72,7 +72,7 @@ def etl_ng(all_data=None):
     from .management.commands.nigeria.Under5 import NG_Under5
 
     task_name = "plugins.wfp.tasks.etl_ng"
-    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").order_by("-id").first()
 
     if last_success_task:
         # A task was found, use its creation date
@@ -118,10 +118,14 @@ def etl_ng(all_data=None):
 def ssd_aggregate_and_push_data_to_dhis2(all_data=None):
     from django_celery_results.models import TaskResult
 
-    last_success_task = TaskResult.objects.filter(
-        task_name="plugins.wfp.tasks.ssd_aggregate_and_push_data_to_dhis2",
-        status="SUCCESS",
-    ).first()
+    last_success_task = (
+        TaskResult.objects.filter(
+            task_name="plugins.wfp.tasks.ssd_aggregate_and_push_data_to_dhis2",
+            status="SUCCESS",
+        )
+        .order_by("-id")
+        .first()
+    )
     if last_success_task:
         last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
     else:
@@ -168,7 +172,7 @@ def etl_ssd(all_data=None):
     from .management.commands.south_sudan.Under5 import Under5
 
     task_name = "plugins.wfp.tasks.etl_ssd"
-    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").order_by("-id").first()
 
     if last_success_task:
         last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
@@ -190,6 +194,7 @@ def etl_ssd(all_data=None):
 
     logger.info(f"Aggregating Children under 5 journey for {child_account} per org unit, admission and period")
     org_units = etl_u5.get_org_unit_and_period_with_updated_data(last_success_task_date)
+
     Aggregator.reset_monthly_statistics(child_account, "U5", org_units)
     Aggregator.aggregate_monthly_data_by_org_unit(child_account, org_units, "U5")
 
@@ -202,6 +207,7 @@ def etl_ssd(all_data=None):
 
     logger.info(f"Aggregating PBWG journey for {pbwg_account} per org unit, admission and period")
     pbwg_org_units = etl_pbwg.get_org_unit_and_period_with_updated_data(last_success_task_date)
+
     Aggregator.reset_monthly_statistics(pbwg_account, "PLW", pbwg_org_units)
     Aggregator.aggregate_monthly_data_by_org_unit(pbwg_account, pbwg_org_units, "PLW")
 
@@ -217,7 +223,7 @@ def etl_ethiopia(all_data=None):
     from .management.commands.south_sudan.Pbwg import Pbwg
 
     task_name = "plugins.wfp.tasks.etl_ethiopia"
-    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").first()
+    last_success_task = TaskResult.objects.filter(task_name=task_name, status="SUCCESS").order_by("-id").first()
 
     if last_success_task:
         # A task was found, use its creation date

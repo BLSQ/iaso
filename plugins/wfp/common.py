@@ -1501,7 +1501,7 @@ class ETL:
 
         for row in aggregated_data:
             # Check if there is any value in the row
-            has_data = any((row.get(field)) > 0 for field in row if field not in fields_to_ignore)
+            has_data = any((row.get(field) or 0) > 0 for field in row if field not in fields_to_ignore)
             # Skip the row if all needed columns are 0
             if not has_data:
                 continue

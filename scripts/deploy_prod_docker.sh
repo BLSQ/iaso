@@ -86,9 +86,3 @@ python "scripts/eb_deploy.py" "${EB_ENVIRONMENT}"
 
 # Timestamp
 date
-
-# If you're migrating to Docker, and you get this error:
-# Invalid option specification (Namespace: 'aws:elasticbeanstalk:environment:proxy:staticfiles', OptionName: '/static'): Unknown configuration setting.
-# This one means that the django.config from .ebextensions already created the static files config, so we need to remove it from the environment.
-# Run this command to remove it:
-# aws elasticbeanstalk update-environment --environment-name "${EB_ENVIRONMENT}" --options-to-remove Namespace=aws:elasticbeanstalk:environment:proxy:staticfiles,OptionName=/static

@@ -489,7 +489,6 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Iaso Swagger",
     "VERSION": "v1",
     "SERVE_PERMISSIONS": [
-        "rest_framework.permissions.IsAdminUser",
         "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
     ],
     "TAGS": [

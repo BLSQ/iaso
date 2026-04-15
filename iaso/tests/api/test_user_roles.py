@@ -64,6 +64,20 @@ class UserRoleAPITestCase(APITestCase):
         self.assertIsNotNone(r["id"])
         self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id])
 
+    def test_create_user_role_no_allowable_permissions(self):
+        self.client.force_authenticate(self.user)
+
+        payload = {
+            "name": "New user role name",
+            "permissions": [self.permission_not_allowable.codename, self.permission_not_allowable2.codename],
+        }
+        response = self.client.post("/api/userroles/", data=payload, format="json")
+
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("permissions", result)
+        expected_error_message = "Invalid permission codenames: admin_permission1, admin_permission2"
+        self.assertIn(expected_error_message, result["permissions"])
+
     def test_create_user_role_without_name(self):
         self.client.force_authenticate(self.user)
 

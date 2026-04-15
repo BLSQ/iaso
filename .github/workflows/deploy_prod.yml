@@ -1,0 +1,117 @@
+name: deploy_prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      # Branch is chosen by default in github manual actions
+      environment:
+        description: playground, staging, demo or prod for worker and web or exact Env name like iaso-stg-worker. Using `upgrade` for now to test
+        required: true
+        default: upgrade
+      slack_channel:
+        description: Slack Channel for notification (iasops by default)
+        required: false
+        default: cloud-alerts
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      # Merge the workflow_dispatch config with some default for deployment via the on:push
+      - name: Set configs
+        id: config
+        env:
+            DEFAULT_GIT_REFERENCE: main
+            DEFAULT_ENVIRONMENT: upgrade
+            DEFAULT_SLACK_CHANNEL: cloud-alerts
+        run: |
+          echo "GIT_REFERENCE=${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}" >> $GITHUB_OUTPUT
+          echo "ENVIRONMENT=${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}" >> $GITHUB_OUTPUT
+          echo "SLACK_CHANNEL=${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.config.outputs.GIT_REFERENCE }}
+          fetch-depth: 0
+      - name: Deployment of ${{ github.ref_name }} on ${{ steps.config.outputs.ENVIRONMENT }}
+        id: version
+        run: |
+          export GITHUB_BRANCH=${GITHUB_REF##*heads/}
+          echo $GITHUB_BRANCH
+          git describe --tags
+          echo "VERSION_NAME=$(git describe --tags --match "v[[:digit:]]*")" >> $GITHUB_OUTPUT
+      - name: Slack deployment start
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.TEST_SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
+          SLACK_COLOR: ""
+          SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_TITLE: Started deployement of  ${{ steps.version.outputs.VERSION_NAME }} on ${{ steps.config.outputs.ENVIRONMENT }} ...
+          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          MSG_MINIMAL: true
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build docker image
+        run: |
+          docker build -t blsq/iaso:latest -t blsq/iaso:${{ steps.version.outputs.VERSION_NAME }} -f docker/prod/Dockerfile .
+
+      - name: Push docker image
+        run: |
+          docker push blsq/iaso:latest
+          docker push blsq/iaso:${{ steps.version.outputs.VERSION_NAME }}
+
+      - name: Swap to prod docker config
+        run: |
+          # Replace docker-compose with prod version
+          cp docker/prod/docker-compose.prod.yml docker-compose.yml
+          git add -f docker-compose.yml
+
+          # Replace .platform with prod version
+          rm -rf .platform
+          cp -r docker/prod/.platform .platform
+          git add -f .platform
+
+          # Remove dev ebextensions from staged files
+          git rm -r --cached --quiet .ebextensions
+
+      - name: Deploy to beanstalk (docker)
+        run: bash scripts/deploy_prod_docker.sh ${{ steps.config.outputs.ENVIRONMENT }}
+        env:
+          IMAGE_TAG: ${{ steps.version.outputs.VERSION_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "eu-central-1"
+
+      - name: Slack deployement success notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.TEST_SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_TITLE: Iaso ${{ steps.version.outputs.VERSION_NAME }} successfully deployed on ${{ steps.config.outputs.ENVIRONMENT }}
+          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          SLACK_FOOTER: "-"
+          MSG_MINIMAL: true
+        if: success()
+      - name: Slack deployement failure notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.TEST_SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
+          SLACK_USERNAME: ${{ steps.config.outputs.ENVIRONMENT }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_TITLE: Deployment failure Iaso ${{ steps.version.outputs.VERSION_NAME }} - ${{ steps.config.outputs.ENVIRONMENT }}
+          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+          SLACK_FOOTER: "-"
+          MSG_MINIMAL: true
+        if: failure()

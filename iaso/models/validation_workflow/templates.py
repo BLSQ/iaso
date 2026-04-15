@@ -28,7 +28,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     """
 
     name = models.CharField(max_length=256)
-    slug = AutoSlugField(populate_from="name", unique=True, always_update=True, unique_with="account_id")
+    slug = AutoSlugField(populate_from="name", unique=True, unique_with="account_id")
 
     account = models.ForeignKey("Account", on_delete=models.CASCADE)
 

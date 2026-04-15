@@ -91,7 +91,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 
         self.assertEqual(self.validation_workflow.description, "Random new description")
         self.assertEqual(self.validation_workflow.name, "Random new name")
-        self.assertEqual(self.validation_workflow.slug, "random-new-name")
+        self.assertEqual(self.validation_workflow.slug, "random-name")
         self.assertEqual(self.validation_workflow.account, self.account)
         self.assertEqual(self.validation_workflow.updated_by, user)
         self.assertCountEqual(
@@ -101,7 +101,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertEqual(
             res_data,
             {
-                "slug": "random-new-name",
+                "slug": "random-name",
             },
         )
 
@@ -116,7 +116,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 
         self.assertEqual(self.validation_workflow.description, "Random new description")
         self.assertEqual(self.validation_workflow.name, "Random new name")
-        self.assertEqual(self.validation_workflow.slug, "random-new-name")
+        self.assertEqual(self.validation_workflow.slug, "random-name")
         self.assertEqual(self.validation_workflow.account, self.account)
         self.assertEqual(self.validation_workflow.updated_by, user)
         self.assertCountEqual(

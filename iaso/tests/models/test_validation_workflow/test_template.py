@@ -6,13 +6,13 @@ from iaso.models.validation_workflow.templates import ValidationWorkflow
 
 
 class TestValidationWorkflow(TransactionTestCase):
-    def test_ensure_slug_is_updating(self):
+    def test_ensure_slug_is_not_updating(self):
         d1 = ValidationWorkflow.objects.create(name="test", account=Account.objects.create(name="test"))
         slug_1 = d1.slug
         d1.name = "new test"
         d1.save()
         d1.refresh_from_db()
-        self.assertNotEqual(slug_1, d1.slug)
+        self.assertEqual(slug_1, d1.slug)
 
     def test_slug_is_not_none_with_special_characters(self):
         sentences = [

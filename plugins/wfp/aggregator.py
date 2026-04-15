@@ -116,7 +116,7 @@ class Aggregator:
                 org_unit_ids = page_info.object_list
                 logger.info(f"Processing data for {len(org_unit_ids)} org unit on page {page} for {account}")
 
-                if rows is None:
+                if rows is None or len(org_unit_ids) == 0:
                     continue
 
                 records = ETL._process_monthly_data(programme_type, rows, account)
@@ -151,7 +151,7 @@ class Aggregator:
 
     @staticmethod
     def _map_fields(entry, program_name, mapper):
-        """Extracts valid data values based on the dhis2 mapper file."""
+        """Extracts valid data values based on the dhis2 mapper file and excludes o values in the datavalues"""
         data_values = []
         target_group = entry.get("target_group")
 
@@ -159,16 +159,20 @@ class Aggregator:
             prog = "screening_reporting"
             for group in ["Male", "Female", "pregnant", "breastfeeding"]:
                 mapping_template = mapper.get(prog, {}).get(group, {}).get(field)
+                if not mapping_template:
+                    continue
                 data_value = entry.get(prog, {}).get(group, {}).get(field)
-                if data_value is not None and mapping_template:
+                if data_value and data_value > 0:
                     data_values.append({**mapping_template, "value": data_value})
 
         nutrition_fields = [(DEFAULT_FIELDS, program_name), (HEALTH_WORKERS_FIELDS, "community_health_worker")]
         for fields, prog in nutrition_fields:
             for field in fields:
                 mapping_template = mapper.get(prog, {}).get(target_group, {}).get(field)
+                if not mapping_template:
+                    continue
                 data_value = entry.get(field)
-                if data_value is not None and mapping_template:
+                if data_value and data_value > 0:
                     data_values.append({**mapping_template, "value": data_value})
         return data_values
 

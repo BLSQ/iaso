@@ -1483,8 +1483,29 @@ class ETL:
     # ------------------------------------------------------------------
     @staticmethod
     def _process_monthly_data(program_type, aggregated_data, account):
+        """Processing monthly data by excluding rows with 0 values in the needed columns."""
         all_journeys = []
+        fields_to_ignore = {
+            "org_unit_id",
+            "year",
+            "month",
+            "dhis2_id",
+            "period",
+            "gender",
+            "physiology_status",
+            "nutrition_programme",
+            "programme_type",
+            "total_beneficiaries",
+            "number_visits",
+        }
+
         for row in aggregated_data:
+            # Check if there is any value in the row
+            has_data = any((row.get(field)) > 0 for field in row if field not in fields_to_ignore)
+            # Skip the row if all needed columns are 0
+            if not has_data:
+                continue
+
             journey_by_org_unit_period = MonthlyStatistics(
                 account=account,
                 programme_type=program_type,

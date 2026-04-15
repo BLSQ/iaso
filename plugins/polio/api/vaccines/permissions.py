@@ -6,6 +6,30 @@ from rest_framework import permissions
 from plugins.polio.models import VaccineStock
 from plugins.polio.permissions import PolioPermission
 
+TEMPORARY_FORM_A_COMPLETION_FIELDS = {"status", "form_a_reception_date", "file", "comment"}
+
+
+def is_within_edit_window(the_date, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN, now=None):
+    if the_date is None:
+        return False
+    if now is None:
+        now = timezone.now()
+    return the_date >= now - datetime.timedelta(days=days_open)
+
+
+def is_temporary_form_a_completion_edit(request, obj):
+    if request.method not in ["PUT", "PATCH"]:
+        return False
+
+    if obj.__class__.__name__ != "OutgoingStockMovement":
+        return False
+
+    if getattr(obj, "status", None) != "temporary":
+        return False
+
+    requested_fields = set(getattr(request, "data", {}).keys())
+    return requested_fields.issubset(TEMPORARY_FORM_A_COMPLETION_FIELDS)
+
 
 def can_edit_helper(
     user,
@@ -15,15 +39,11 @@ def can_edit_helper(
     read_only_perm: PolioPermission,
     days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
 ):
-    if the_date is None:
-        return False
-
     if user.has_perm(admin_perm.full_name()):
         return True
 
     if user.has_perm(non_admin_perm.full_name()):
-        end_of_open_time = timezone.now() - datetime.timedelta(days=days_open)
-        return the_date >= end_of_open_time
+        return is_within_edit_window(the_date, days_open=days_open)
 
     if user.has_perm(read_only_perm.full_name()):
         return False
@@ -91,8 +111,13 @@ class VaccineStockPermission(permissions.BasePermission):
                     return (
                         True  # There are multiple objects in one request for those so this is checked in the serializer
                     )
-                one_week_ago = self.datetime_now_today() - datetime.timedelta(days=self.days_open)
-                return getattr(obj, self.datetime_field) >= one_week_ago
+                if is_within_edit_window(
+                    getattr(obj, self.datetime_field),
+                    days_open=self.days_open,
+                    now=self.datetime_now_today(),
+                ):
+                    return True
+                return is_temporary_form_a_completion_edit(request, obj)
 
         return False
 
@@ -160,7 +185,10 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
                 "delete_arrival_reports",
             ]:
                 return True  # There are multiple objects in one request for those so this is checked in the serializer
-            one_week_ago = self.datetime_now_today() - datetime.timedelta(days=self.days_open)
-            return getattr(obj, self.datetime_field) >= one_week_ago
+            return is_within_edit_window(
+                getattr(obj, self.datetime_field),
+                days_open=self.days_open,
+                now=self.datetime_now_today(),
+            )
 
         return False

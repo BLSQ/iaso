@@ -40,25 +40,25 @@ export const useUsersTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.userName),
                 id: 'user__username',
-                sortable: false,
+                sortable: true,
                 accessor: 'user_name',
             },
             {
                 Header: formatMessage(MESSAGES.firstName),
                 id: 'user__first_name',
-                sortable: false,
+                sortable: true,
                 accessor: 'first_name',
             },
             {
                 Header: formatMessage(MESSAGES.lastName),
                 id: 'user__last_name',
-                sortable: false,
+                sortable: true,
                 accessor: 'last_name',
             },
             {
                 Header: formatMessage(MESSAGES.phoneNumber),
                 id: 'phone_number',
-                sortable: false,
+                sortable: true,
                 accessor: 'phone_number',
                 Cell: settings =>
                     settings.value ? (
@@ -70,7 +70,7 @@ export const useUsersTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.email),
                 id: 'user__email',
-                sortable: false,
+                sortable: true,
                 accessor: 'email',
                 Cell: settings =>
                     settings.value ? (
@@ -85,6 +85,7 @@ export const useUsersTableColumns = ({
                 Header: formatMessage(MESSAGES.userRoles),
                 id: 'annotated_first_user_role',
                 accessor: 'user_roles',
+                sortable: true,
                 Cell: settings =>
                     settings.value
                         ?.map(user_role => user_role.name)

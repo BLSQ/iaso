@@ -7,7 +7,7 @@ from hat.menupermissions.constants import (
 )
 from iaso import models as m
 from iaso.modules import MODULES
-from iaso.test import APITestCase, PasswordValidationTestMixin
+from iaso.test import APITestCase
 
 
 class SetupAccountApiTestCase(APITestCase):

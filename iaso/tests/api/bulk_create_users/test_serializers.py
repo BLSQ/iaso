@@ -2,7 +2,7 @@ from django.test import RequestFactory
 
 from iaso.api.bulk_create_users.serializers import BulkCreateItemSerializer
 from iaso.models import Account
-from iaso.test import TestCase, PasswordValidationTestMixin
+from iaso.test import PasswordValidationTestMixin, TestCase
 
 
 class Test(TestCase):

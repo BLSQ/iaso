@@ -833,17 +833,16 @@ class ETL:
 
             gender = extract_gender(data)
             physiology = extract_pbwg_physiology(data)
-            guidelines = extract_guidelines(sub)
+
             if physiology:
                 info["physiology"] = physiology
                 info["gender"] = None
             elif gender in ("Male", "Female"):
                 info["gender"] = gender
+                info["guidelines"] = extract_guidelines(sub)
             birth_date = calculate_birth_date(data)
             if birth_date is not None:
                 info["birth_date"] = birth_date
-            if guidelines:
-                info["guidelines"] = guidelines
         return info
 
     @staticmethod

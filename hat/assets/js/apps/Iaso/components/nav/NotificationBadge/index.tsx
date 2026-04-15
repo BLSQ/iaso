@@ -30,7 +30,7 @@ export const NotificationBadge: FunctionComponent = () => {
     const anchorRef = useRef<HTMLDivElement>(null);
     const classes = useStyles();
     const { data, isFetching } = useGetNotifications();
-    const redirect = useRedirectToReplace();
+    const redirectToReplace = useRedirectToReplace();
     if (isFetching || data?.length == 0) {
         return <></>;
     }
@@ -41,7 +41,7 @@ export const NotificationBadge: FunctionComponent = () => {
                 notification.level == 'CRITICAL',
         ) != null
             ? 'error'
-            : 'normal';
+            : 'inherit';
     return (
         <>
             <IconButton
@@ -89,9 +89,9 @@ export const NotificationBadge: FunctionComponent = () => {
                                                     notification.type ==
                                                     'APIIMPORT'
                                                 ) {
-                                                    redirect(
+                                                    redirectToReplace(
                                                         baseUrls.adminApiImport,
-                                                        { hasProblem: true },
+                                                        { hasProblem: 'true' },
                                                     );
                                                 }
                                             }}

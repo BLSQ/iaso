@@ -1,13 +1,10 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { Grid, Button } from '@mui/material';
+import { Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    commonStyles,
-    useSafeIntl,
-    useRedirectToReplace,
-} from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Params } from 'Iaso/domains/apiimports/types/filters';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
@@ -21,40 +18,19 @@ type Props = {
 };
 
 const Filters: FunctionComponent<Props> = ({ params }) => {
-    const [filtersUpdated, setFiltersUpdated] = useState(false);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const redirectToReplace = useRedirectToReplace();
-    const [filters, setFilters] = useState({
-        createdBy: params.createdBy,
-        importType: params.importType,
-        hasProblem: params.hasProblem,
-        appId: params.appId,
-        appVersion: params.appVersion,
-    });
-
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
-            setFiltersUpdated(false);
-            const tempParams: Params = {
-                ...params,
-                ...filters,
-            };
-            tempParams.page = '1';
-            redirectToReplace(baseUrl, tempParams);
-        }
-    }, [filtersUpdated, params, filters, redirectToReplace]);
-
-    const handleChange = useCallback(
-        (key: string, value: any) => {
-            setFiltersUpdated(true);
-            setFilters({
-                ...filters,
-                [key]: value,
-            });
-        },
-        [filters],
+    const { filters, handleSearch, handleChange, filtersUpdated } =
+        useFilterState({ baseUrl: baseUrl, params });
+    const typeOptions = useMemo(
+        () => [
+            { value: 'bulk', label: 'Bulk Org Units and Instances' },
+            { value: 'instance', label: 'Form instance' },
+            { value: 'orgUnit', label: 'Org Unit' },
+            { value: 'storageLog', label: 'Storage Logs' },
+        ],
+        [],
     );
 
     return (
@@ -62,7 +38,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid item xs={12} sm={6} md={3}>
                 <InputComponent
                     keyValue="appId"
-                    onChange={handleChange}
+                    onChange={(_key, value) => handleChange('appId', value)}
                     value={filters.appId}
                     type="search"
                     label={MESSAGES.app_id}
@@ -74,26 +50,22 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid item xs={12} md={3}>
                 <InputComponent
                     keyValue="importType"
-                    onChange={handleChange}
+                    onChange={(_key, value) =>
+                        handleChange('importType', value)
+                    }
                     value={filters.importType}
                     type="select"
                     label={MESSAGES.import_type}
                     onEnterPressed={handleSearch}
-                    options={[
-                        {
-                            value: 'bulk',
-                            label: 'Bulk Org Units and Instances',
-                        },
-                        { value: 'instance', label: 'Form instance' },
-                        { value: 'orgUnit', label: 'Org Unit' },
-                        { value: 'storageLog', label: 'Storage Logs' },
-                    ]}
+                    options={typeOptions}
                 />
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent
                     keyValue="hasProblem"
-                    onChange={handleChange}
+                    onChange={(_key, value) =>
+                        handleChange('hasProblem', value)
+                    }
                     value={filters.hasProblem}
                     type="select"
                     label={MESSAGES.has_problem}

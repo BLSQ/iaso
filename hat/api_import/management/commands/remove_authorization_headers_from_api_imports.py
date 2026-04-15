@@ -31,7 +31,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Starting clean-up with a batch size of {batch_size}..."))
 
         # .iterator() fetches records in chunks to save memory
-        iterator = APIImport.objects.filter(headers__isnull=False).all().iterator(chunk_size=batch_size)
+        iterator = APIImport.objects.filter(headers__isnull=False).iterator(chunk_size=batch_size)
         for obj in iterator:
             modified = False
 

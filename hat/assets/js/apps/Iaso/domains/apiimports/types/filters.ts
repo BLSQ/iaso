@@ -1,3 +1,5 @@
+import { PaginationParams } from 'Iaso/types/general';
+
 export type Filters = {
     createdBy?: string;
     importType?: string;
@@ -6,9 +8,4 @@ export type Filters = {
     appVersion?: string;
 };
 
-export type Params = Filters & {
-    order: string;
-    page: string;
-    pageSize: string;
-    tab: string;
-};
+export type Params = Filters & PaginationParams;

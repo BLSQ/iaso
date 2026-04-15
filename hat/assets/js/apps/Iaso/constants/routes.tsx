@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 
-import { Apiimports } from 'Iaso/domains/apiimports';
+import { ApiImports } from 'Iaso/domains/apiimports';
 import { WorkflowConfiguration } from 'Iaso/domains/instances/validationWorkflow/details/WorkflowConfiguration';
 import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
 import { PipelineList } from 'Iaso/domains/openHexa';
@@ -493,7 +493,7 @@ export const adminApiImportPath = {
     baseUrl: baseUrls.adminApiImport,
     routerUrl: `${baseUrls.adminApiImport}/*`,
     permissions: [],
-    element: <Apiimports />,
+    element: <ApiImports />,
 };
 export const page401 = {
     baseUrl: baseUrls.error401,

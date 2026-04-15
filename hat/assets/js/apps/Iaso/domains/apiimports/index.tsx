@@ -4,11 +4,10 @@ import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     LoadingSpinner,
-    Table,
-    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { Filters } from 'Iaso/domains/apiimports/components/Filters';
 import { baseUrl } from 'Iaso/domains/apiimports/config';
 import { useColumns } from 'Iaso/domains/apiimports/config';
@@ -21,11 +20,10 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Apiimports: FunctionComponent = () => {
+export const ApiImports: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const redirectTo = useRedirectTo();
 
     const { data, isFetching } = useGetApiImports(params);
     const columns = useColumns();
@@ -38,7 +36,7 @@ export const Apiimports: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
-                <Table
+                <TableWithDeepLink
                     expanded={{}}
                     getObjectId={obj => obj.id}
                     data={data?.results ?? []}
@@ -48,7 +46,6 @@ export const Apiimports: FunctionComponent = () => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    onTableParamsChange={p => redirectTo(baseUrl, p)}
                 />
             </Box>
         </>

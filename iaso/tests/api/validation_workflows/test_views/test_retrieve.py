@@ -67,11 +67,6 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
 
         self.node_template.next_node_templates.add(self.second_node_template)
         self.node_template.save()
-        (
-            self.account_without_feature_flag,
-            self.user_without_feature_flag,
-            self.validation_workflow_without_feature_flag,
-        ) = self.create_no_feature_flag_data()
 
     def test_permissions(self):
         res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))

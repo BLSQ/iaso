@@ -263,7 +263,6 @@ if DEBUG:
     ]
 
 MIDDLEWARE += [
-    "iaso.middlewares.camel_case.CustomCamelCaseMiddleWare",
     "axes.middleware.AxesMiddleware",
 ]
 

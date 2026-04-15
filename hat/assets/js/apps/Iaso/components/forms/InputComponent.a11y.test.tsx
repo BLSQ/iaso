@@ -3,9 +3,8 @@ import { faker } from '@faker-js/faker';
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event/dist/cjs/index.js';
 import { axe } from 'jest-axe';
-import { IntlProvider } from 'react-intl';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { renderWithTheme } from '../../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
 
 const Wrapper = () => {
     const [value, setValue] = React.useState(null);
@@ -25,11 +24,7 @@ const Wrapper = () => {
 
 describe('Phone InputComponent accessibility', () => {
     it('has no accessibility violations', async () => {
-        const { container } = renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <Wrapper />
-            </IntlProvider>,
-        );
+        const { container } = renderWithThemeAndIntlProvider(<Wrapper />);
 
         const user = userEvent.setup();
 

@@ -26,11 +26,6 @@ class ValidationWorkflowAPICreateTestCase(BaseValidationWorkflowAPITestCase):
         self.form_2.save()
 
         self.form_3 = Form.objects.create(name="form_3")
-        (
-            self.account_without_feature_flag,
-            self.user_without_feature_flag,
-            self.validation_workflow_without_feature_flag,
-        ) = self.create_no_feature_flag_data()
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)

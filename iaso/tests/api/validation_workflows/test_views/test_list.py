@@ -51,11 +51,6 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.validation_workflow_multiple_forms.save()
 
         self.out_of_account_vw = ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
-        (
-            self.account_without_feature_flag,
-            self.user_without_feature_flag,
-            self.validation_workflow_without_feature_flag,
-        ) = self.create_no_feature_flag_data()
 
     def test_output_fields(self):
         for user in [self.john_wick, self.superuser]:

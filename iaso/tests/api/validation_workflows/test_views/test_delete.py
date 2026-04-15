@@ -17,11 +17,6 @@ class ValidationWorkflowAPIDeleteTestCase(BaseValidationWorkflowAPITestCase):
             created_by=self.john_doe,
             updated_by=self.john_wick,
         )
-        (
-            self.account_without_feature_flag,
-            self.user_without_feature_flag,
-            self.validation_workflow_without_feature_flag,
-        ) = self.create_no_feature_flag_data()
 
     def base_test_perform_delete(self, user):
         self.client.force_authenticate(user)

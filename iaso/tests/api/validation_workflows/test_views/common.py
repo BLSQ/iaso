@@ -21,6 +21,14 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
             is_superuser=True,
         )
 
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
+
+        self.enable_validation_workflow_feature_flag(self.account)
+
     def create_no_feature_flag_data(self):
         account_without_feature_flag = Account.objects.create(name="account_without_feature_flag")
         user_without_feature_flag = self.create_user_with_profile(

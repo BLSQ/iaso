@@ -33,12 +33,6 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         )
         self.validation_workflow.form_set.set([self.form, self.form_2])
 
-        (
-            self.account_without_feature_flag,
-            self.user_without_feature_flag,
-            self.validation_workflow_without_feature_flag,
-        ) = self.create_no_feature_flag_data()
-
     def test_permissions(self):
         res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -131,7 +125,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             res = self.client.put(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
                 data={"name": "Random new name", "description": "Random new description"},

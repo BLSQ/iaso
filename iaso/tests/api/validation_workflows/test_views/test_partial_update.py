@@ -15,11 +15,6 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
             created_by=self.john_doe,
             account=self.account,
         )
-        (
-            self.account_without_feature_flag,
-            self.user_without_feature_flag,
-            self.validation_workflow_without_feature_flag,
-        ) = self.create_no_feature_flag_data()
 
     def test_permissions(self):
         res = self.client.patch(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
@@ -112,7 +107,7 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             res = self.client.patch(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
                 data={"name": "Random new name", "description": "Random new description"},

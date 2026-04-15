@@ -90,8 +90,8 @@ class UserRoleSerializer(serializers.ModelSerializer):
             permission_objects = Permission.objects.filter(codename__startswith="iaso_", codename__in=permissions)
             found_codenames = set(permission_objects.values_list("codename", flat=True))
             invalid = [p for p in permissions if p not in found_codenames]
-            invalid_str = ", ".join(invalid)
             if invalid:
+                invalid_str = ", ".join(invalid)
                 raise serializers.ValidationError({"permissions": f"Invalid permission codenames: {invalid_str}"})
             group.permissions.set(permission_objects)
 

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Group, Permission
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_USERS_ROLES_PERMISSION
@@ -42,7 +43,7 @@ class UserRoleAPITestCase(APITestCase):
             name="admin permission", content_type_id=1, codename="admin_permission1"
         )
         cls.permission_not_allowable2 = Permission.objects.create(
-            name="admin permission", content_type_id=2, codename="admin_permission2"
+            name="admin permission", content_type_id=1, codename="admin_permission2"
         )
         cls.group = Group.objects.create(name=str(account.id) + "user role")
 
@@ -192,7 +193,7 @@ class UserRoleAPITestCase(APITestCase):
     def test_partial_update_not_allowable_permissions_modification(self):
         self.client.force_authenticate(self.user)
 
-        invalid_perms = self.permission_not_allowable.codename, self.permission_not_allowable2.codename
+        invalid_perms = [self.permission_not_allowable.codename, self.permission_not_allowable2.codename]
 
         payload = {
             "name": self.user_role.group.name,
@@ -200,10 +201,10 @@ class UserRoleAPITestCase(APITestCase):
         }
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 400)
-        self.assertIn("permissions", r)
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("permissions", result)
         expected_error_message = "Invalid permission codenames: admin_permission1, admin_permission2"
-        self.assertIn(expected_error_message, r["permissions"])
+        self.assertIn(expected_error_message, result["permissions"])
 
     def test_delete_user_role(self):
         self.client.force_authenticate(self.user)

@@ -1,24 +1,26 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Grid } from '@mui/material';
+import { useFormikContext } from 'formik';
+import { useAppLocales } from 'Iaso/domains/app/constants';
+import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
+import { useGetTeamsDropdown } from 'Iaso/domains/teams/hooks/requests/useGetTeams';
+import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
+import { useGetPermissionsDropDown } from 'Iaso/domains/users/hooks/useGetPermissionsDropdown';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { useAppLocales } from '../../../app/constants';
-import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
-import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
-import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
-import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
-import { useGetPermissionsDropDown } from '../../hooks/useGetPermissionsDropdown';
 import MESSAGES from '../../messages';
-import { BulkImportDefaults } from '../../types';
 
 interface DefaultValuesSectionProps {
-    defaults: BulkImportDefaults;
-    onChange: (newDefaults: BulkImportDefaults) => void;
+    defaults: ReturnType<typeof useFormikContext>['values'];
+    errors?: Record<string, string>;
+    setFieldValue: ReturnType<typeof useFormikContext>['setFieldValue'];
 }
 
 export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
     defaults,
-    onChange,
+    errors,
+    setFieldValue,
 }) => {
     const [selectedOrgUnits, setSelectedOrgUnits] = useState<OrgUnit[]>([]);
 
@@ -51,80 +53,65 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
     }));
 
     const selectedUserRoleIds = useMemo(() => {
-        return defaults.default_user_roles?.map(String) ?? [];
+        return defaults.default_user_roles?.map(Number) ?? [];
     }, [defaults.default_user_roles]);
 
     const selectedProjectIds = useMemo(() => {
-        return defaults.default_projects?.map(String) ?? [];
+        return defaults.default_projects?.map(Number) ?? [];
     }, [defaults.default_projects]);
 
     const selectedTeamIds = useMemo(() => {
-        return defaults.default_teams?.map(String) ?? [];
+        return defaults.default_teams?.map(Number) ?? [];
     }, [defaults.default_teams]);
 
     const handlePermissionChange = useCallback(
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const permissionIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_permissions: permissionIds,
-            });
+            setFieldValue(_key, permissionIds, true);
         },
-        [defaults, onChange],
+        [setFieldValue],
     );
 
     const handleUserRolesChange = useCallback(
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const roleIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_user_roles: roleIds,
-            });
+            setFieldValue(_key, roleIds, true);
         },
-        [defaults, onChange],
+        [setFieldValue],
     );
 
     const handleProjectsChange = useCallback(
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const projectIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_projects: projectIds,
-            });
+            setFieldValue(_key, projectIds, true);
         },
-        [defaults, onChange],
+        [setFieldValue],
     );
 
     const handleLanguageChange = useCallback(
         (_key: string, value: string) => {
-            onChange({
-                ...defaults,
-                default_profile_language: value,
-            });
+            setFieldValue(_key, value, true);
         },
-        [defaults, onChange],
+        [setFieldValue],
     );
 
     const handleTeamsChange = useCallback(
         (_key: string, value: string) => {
             const selectedIds = value ? value.split(',') : [];
             const teamIds = selectedIds.map(Number);
-            onChange({
-                ...defaults,
-                default_teams: teamIds,
-            });
+            setFieldValue(_key, teamIds, true);
         },
-        [defaults, onChange],
+        [setFieldValue],
     );
 
     const handleOrganizationChange = useCallback(
         (_key: string, value: string) => {
-            onChange({ ...defaults, default_organization: value });
+            setFieldValue(_key, value, true);
         },
-        [defaults, onChange],
+        [setFieldValue],
     );
 
     return (
@@ -199,6 +186,11 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                     label={MESSAGES.organization}
                     value={defaults.default_organization || ''}
                     onChange={handleOrganizationChange}
+                    errors={
+                        errors?.default_organization
+                            ? [errors?.default_organization]
+                            : undefined
+                    }
                 />
             </Grid>
 
@@ -214,10 +206,8 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                                   parseInt(ou.id as string, 10),
                               )
                             : [];
-                        onChange({
-                            ...defaults,
-                            default_org_units: orgUnitIds,
-                        });
+
+                        setFieldValue('default_org_units', orgUnitIds, true);
                     }}
                     multiselect
                     initialSelection={selectedOrgUnits}

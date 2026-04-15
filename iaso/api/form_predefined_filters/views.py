@@ -13,6 +13,7 @@ from iaso.models import Form, FormPredefinedFilter, Project
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 
 
+@extend_schema(tags=["Form predefined filters"])
 class FormPredefinedFiltersViewSet(ModelViewSet):
     f"""Form Predefined Filters API
 

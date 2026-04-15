@@ -6,6 +6,7 @@ from typing import Any, List, Tuple, Union
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, permissions, serializers, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
@@ -220,6 +221,7 @@ def device_generate_export(
     return response
 
 
+@extend_schema(tags=["Storage"])
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_STORAGE_PERMISSION)]
     serializer_class = StorageSerializer
@@ -343,6 +345,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness
+@extend_schema(tags=["Storages", "Storage logs", "Mobile"])
 class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
     """This ViewSet gives access to the storage log entries"""
 
@@ -479,6 +482,7 @@ def logs_for_device_generate_export(
     return response
 
 
+@extend_schema(tags=["Storage logs"])
 @api_view()
 @permission_classes([IsAuthenticated, HasPermission(CORE_STORAGE_PERMISSION)])
 def logs_per_device(request, storage_id: str, storage_type: str):
@@ -575,6 +579,7 @@ class StorageSerializerForBlacklisted(serializers.ModelSerializer):
         )
 
 
+@extend_schema(tags=["Storages", "Storage devices", "Mobile"])
 class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
     serializer_class = StorageSerializerForBlacklisted

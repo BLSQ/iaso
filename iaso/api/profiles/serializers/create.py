@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.api.profiles.serializers.common import CountryAwarePhoneNumberField
+from iaso.api.common.serializer_fields import CountryAwarePhoneNumberField
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 
@@ -21,7 +21,12 @@ class ProfileCreateSerializer(ModelSerializer):
     send_email_invitation = serializers.BooleanField(default=False, write_only=True)
     user_name = serializers.CharField(required=True, write_only=True)
     user_roles = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, many=True, queryset=UserRole.objects.all(), required=False
+        allow_empty=True,
+        allow_null=True,
+        many=True,
+        queryset=UserRole.objects.none(),
+        required=False,
+        error_messages={"does_not_exist": _("One or more user roles do not belong to the provided account.")},
     )
     projects = serializers.PrimaryKeyRelatedField(
         allow_empty=True, allow_null=True, queryset=Project.objects.none(), required=False, many=True
@@ -71,36 +76,27 @@ class ProfileCreateSerializer(ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        if user and user.is_authenticated:
-            account = self._get_account()
+        account = self._get_account()
+        if account:
             self.fields["projects"].child_relation.queryset = Project.objects.filter(account=account)
+            self.fields["user_roles"].child_relation.queryset = UserRole.objects.filter(account=account)
+
+            module_permission_codenames = {perm.codename for perm in account.permissions_from_active_modules}
+            self.fields["user_permissions"].child_relation.queryset = Permission.objects.filter(
+                codename__in=list(module_permission_codenames)
+            )
 
     def _get_account(self):
         request = self.context["request"]
-        current_profile = request.user.iaso_profile
-        return current_profile.account
+        user = getattr(request, "user", None)
+        current_profile = getattr(user, "iaso_profile", None)
+        return getattr(current_profile, "account", None)
 
     def validate_dhis2_id(self, value):
         return value or None
 
-    def validate_user_roles(self, data):
-        account = self._get_account()
-
-        if not data:
-            return data
-
-        data = set(data)
-
-        if UserRole.objects.filter(pk__in=[user_role.pk for user_role in data]).exclude(account=account).exists():
-            raise serializers.ValidationError(_("One or more user roles do not belong to the provided account."))
-
-        return data
-
     def validate(self, data):
         self._validate_password_if_no_send_email(data)
-        data["user_permissions"] = self._validate_user_permissions(data)
         return data
 
     @staticmethod
@@ -110,19 +106,6 @@ class ProfileCreateSerializer(ModelSerializer):
 
         if data.get("send_email_invitation") and not data.get("email"):
             raise serializers.ValidationError({"email": _("This field is required.")})
-
-    def _validate_user_permissions(self, data):
-        account = self._get_account()
-        user_permissions = data.get("user_permissions")
-
-        if not account or not user_permissions:
-            return []
-
-        module_permission_codenames = {perm.codename for perm in account.permissions_from_active_modules}
-
-        valid_permissions = [perm for perm in user_permissions if perm.codename in module_permission_codenames]
-
-        return valid_permissions
 
     def set_user_password(self, user, password, send_email_invitation, email):
         if password:

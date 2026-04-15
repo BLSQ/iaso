@@ -14,6 +14,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from drf_spectacular.utils import extend_schema
 from requests import HTTPError
 from rest_framework import viewsets
 
@@ -164,6 +165,7 @@ def handle_ona_request_with_key(request, key, country_id=None):
     return JsonResponse(res, safe=False)
 
 
+@extend_schema(tags=["Polio - Vaccine stocks"])
 class VaccineStocksViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.

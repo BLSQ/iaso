@@ -17,6 +17,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
@@ -24,9 +25,9 @@ from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
+from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, ModelViewSet
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.profiles.constants import PK_ME
 from iaso.api.profiles.filters import ProfileListFilter
 from iaso.api.profiles.pagination import ProfileDropdownPagination, ProfilePagination
@@ -52,6 +53,7 @@ from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_
 from iaso.utils import is_mobile_request
 
 
+@extend_schema(tags=["Profiles", "Users"])
 class ProfilesViewSet(ModelViewSet):
     f"""Profiles API
 

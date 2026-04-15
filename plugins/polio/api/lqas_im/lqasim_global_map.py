@@ -11,7 +11,7 @@ from plugins.polio.api.lqas_im.lqasim_zoom_in_map import get_latest_active_campa
 from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
-@extend_schema(tags=["lqasglobal"])
+@extend_schema(tags=["Polio - Lqas IM global map"])
 class LQASIMGlobalMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
     permission_classes = [ReadOnlyOrHasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]

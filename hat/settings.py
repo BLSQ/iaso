@@ -223,6 +223,7 @@ INSTALLED_APPS += [
     "drf_spectacular_sidecar",
     "django_json_widget",
     "phonenumber_field",
+    "axes",
 ]
 
 if USE_CELERY:
@@ -260,6 +261,11 @@ if DEBUG:
     MIDDLEWARE += [
         "iaso.middlewares.query_count.SafeQueryCountMiddleware",
     ]
+
+MIDDLEWARE += [
+    "iaso.middlewares.camel_case.CustomCamelCaseMiddleWare",
+    "axes.middleware.AxesMiddleware",
+]
 
 ROOT_URLCONF = "hat.urls"
 
@@ -476,10 +482,17 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Iaso Swagger",
     "VERSION": "v1",
     "SERVE_PERMISSIONS": [
-        "rest_framework.permissions.IsAdminUser",
         "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
     ],
-    "TAGS": [{"name": "polio-configs", "description": "Polio configuration"}],
+    "TAGS": [
+        {"name": "Mobile", "description": "Endpoints used by the mobile application"},
+        {"name": "v2", "description": "Version 2 of the API"},
+    ],
+    "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
+        "defaultModelsExpandDepth": 0,  # collapsing schemas by default
+        "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
+        "tagsSorter": "alpha",  # sorting tags by alphanumeric
+    },
     "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],
 }
@@ -749,10 +762,30 @@ HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
 # across all of its authentication backends. If the first authentication method fails,
 # Django tries the second one, and so on…
 AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
     "iaso.auth.backends.MultiTenantAuthBackend",
     "django.contrib.auth.backends.ModelBackend",  # ModelBackend is explicitly required in DHIS2 and token authentication.
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+# Login rate limit configuration
+
+# The API will rate limit login attempts based on 2 parameters:
+# - AUTH_RATE_LIMIT_MAX_FAILURES:
+#  Number of failed login attempts allowed before the user is locked out temporarily
+# - AUTH_RATE_LIMIT_COOLOFF_SECONDS:
+#  Sets the duration of the lockout period *and* the TTL of the failure counter
+#  (See AxesCacheHandler for more information)
+AUTH_RATE_LIMIT_MAX_FAILURES = int(get_env_as_float("AUTH_RATE_LIMIT_MAX_FAILURES", "10"))
+AUTH_RATE_LIMIT_COOLOFF_SECONDS = get_env_as_float("AUTH_RATE_LIMIT_COOLOFF_SECONDS", "30")
+AXES_COOLOFF_TIME = lambda request: timedelta(seconds=AUTH_RATE_LIMIT_COOLOFF_SECONDS)
+AXES_FAILURE_LIMIT = AUTH_RATE_LIMIT_MAX_FAILURES
+AXES_LOCKOUT_PARAMETERS = ["username"]
+AXES_COOLOFF_MESSAGE = "Too many login attempts. Please try again later."
+AXES_HTTP_RESPONSE_CODE = 429
+AXES_HANDLER = "axes.handlers.cache.AxesCacheHandler"
+if IN_TESTS:
+    AXES_HANDLER = "axes.handlers.dummy.AxesDummyHandler"
 
 # stricter mode where no public except white listed one
 AUTHENTICATION_ENFORCED = os.environ.get("AUTHENTICATION_ENFORCED", "false") == "true"

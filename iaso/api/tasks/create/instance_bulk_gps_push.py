@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
@@ -7,6 +8,7 @@ from iaso.api.tasks.serializers import TaskSerializer
 from iaso.tasks.instance_bulk_gps_push import instance_bulk_gps_push
 
 
+@extend_schema(tags=["Instances", "GPKG", "Tasks"])
 class InstanceBulkGpsPushViewSet(viewsets.ViewSet):
     """Bulk push gps location from Instances to their related OrgUnit.
 

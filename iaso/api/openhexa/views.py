@@ -5,6 +5,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.utils import extend_schema
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from rest_framework import status
@@ -27,6 +28,7 @@ from iaso.utils.tokens import get_user_token
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(tags=["OpenHexa Pipelines", "OpenHexa"])
 class OpenHexaPipelinesViewSet(ViewSet):
     """
     OpenHexa Pipelines API

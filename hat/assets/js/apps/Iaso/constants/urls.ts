@@ -171,7 +171,6 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
             'tab',
             'searchTabIndex',
-            'searchActive',
             'searches',
             'isClusterActive',
             'fields',

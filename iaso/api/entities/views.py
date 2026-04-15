@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, renderers, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -36,6 +37,7 @@ from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 logger = getLogger(__name__)
 
 
+@extend_schema(tags=["Entities"])
 class EntityViewSet(ModelViewSet):
     """Entity API
 

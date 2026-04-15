@@ -7,19 +7,23 @@ from django.http import HttpRequest
 from iaso.admin.base import IasoJSONEditorWidget
 
 from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, ScreeningData, Step, Visit
-from .tasks import clean_up_duplicate_instances, clean_up_duplicate_instances_dry_run, create_index_on_instance_uuid
+from .tasks import (
+    clean_up_duplicate_instances,
+    clean_up_duplicate_instances_dry_run,
+    create_out_of_band_indexes,
+)
 
 
-@admin.action(description="Create indexes on UUID field (non-blocking)")
-def create_uuid_index_action(modeladmin, request: HttpRequest, queryset):
+@admin.action(description="Create indexes too heavy for the migration process (celery)")
+def create_indexes_celery_action(modeladmin, request: HttpRequest, queryset):
     """
     Admin action to trigger the Celery task for creating the index on iaso_instance.uuid and others
     """
-    create_index_on_instance_uuid.delay()
+    create_out_of_band_indexes.delay()
 
     modeladmin.message_user(
         request,
-        "Task to create the index has been launched. You can monitor its progress on the Tasks Results page.",
+        "Task to create indexes has been launched. You can monitor its progress on the Tasks Results page.",
     )
 
 
@@ -62,6 +66,19 @@ class ProgrammeType(SimpleListFilter):
         return queryset
 
 
+class PhysiologyStatus(SimpleListFilter):
+    title = "Physiology status"
+    parameter_name = "physiology_status"
+
+    def lookups(self, request, modeladmin):
+        return Journey._meta.get_field("physiology_status").choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(journey__physiology_status=self.value()).distinct()
+        return queryset
+
+
 class Year(SimpleListFilter):
     title = "Year"
     parameter_name = "year"
@@ -100,9 +117,9 @@ class Month(SimpleListFilter):
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender", "account", "guidelines", ProgrammeType)
+    list_filter = ("birth_date", "gender", PhysiologyStatus, "account", "guidelines", ProgrammeType)
     list_display = ("id", "birth_date", "gender", "account", "guidelines")
-    actions = [create_uuid_index_action, clean_up_duplicates_action, clean_up_duplicates_action_dry_run]
+    actions = [clean_up_duplicates_action, clean_up_duplicates_action_dry_run]
 
 
 @admin.register(Journey)
@@ -154,7 +171,7 @@ class JourneyAdmin(admin.ModelAdmin):
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "number", "muac_size", "whz_color", "org_unit", "journey")
+    list_display = ("id", "date", "number", "entry_point", "oedema", "muac_size", "whz_color", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",
@@ -186,11 +203,9 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "month",
         "year",
         "gender",
-        "admission_criteria",
-        "admission_type",
+        "physiology_status",
         "nutrition_programme",
         "programme_type",
-        "exit_type",
     )
     list_display = (
         "id",
@@ -201,36 +216,46 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "year",
         "period",
         "gender",
-        "admission_criteria",
-        "admission_type",
-        "beneficiary_with_admission_type",
+        "physiology_status",
         "nutrition_programme",
         "programme_type",
         "muac_under_11_5",
         "muac_11_5_12_4",
         "muac_above_12_5",
+        "muac_under_23",
+        "muac_above_23",
+        "oedema",
         "whz_score_3_2",
         "whz_score_2",
         "whz_score_3",
-        "oedema",
-        "muac_under_23",
-        "muac_above_23",
-        "exit_type",
-        "beneficiary_with_exit_type",
+        "community_health_worker_muac_under_11_5",
+        "community_health_worker_muac_11_5_12_4",
+        "community_health_worker_oedema",
+        "community_health_worker_muac_under_23",
+        "community_health_worker_muac_above_23",
+        "admission_type_new_case",
+        "admission_type_admission_sc_itp_otp",
+        "admission_type_relapse",
+        "admission_type_returned_defaulter",
+        "admission_type_returned_referral",
+        "admission_type_transfer_from_other_tsfp",
+        "admission_type_transfer_sc_itp_otp",
+        "exit_type_cured",
+        "exit_type_death",
+        "exit_type_defaulter",
+        "exit_type_non_respondent",
+        "exit_type_transfer_in_from_other_tsfp",
+        "total_beneficiaries",
         "number_visits",
-        "given_sachet_rusf",
-        "given_sachet_rutf",
-        "given_quantity_csb",
-        "given_ration_cbt",
     )
     search_fields = (
         "account__name",
         "org_unit__id",
         "org_unit__name",
         "dhis2_id",
-        "admission_type",
         "nutrition_programme",
         "programme_type",
+        "physiology_status__icontains",
         "gender__icontains",
         "month__icontains",
         "year__icontains",

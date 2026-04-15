@@ -1,5 +1,6 @@
 import typing
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers
 
 from iaso.dhis2.derived_instance_generator import generate_instances  # type: ignore
@@ -45,6 +46,7 @@ class DerivedInstanceSerializer(serializers.Serializer):
         return instance
 
 
+@extend_schema(tags=["Derived instances"])
 class DerivedInstancesViewSet(ModelViewSet):
     f"""Derived instances API
 

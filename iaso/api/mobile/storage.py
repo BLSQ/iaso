@@ -21,6 +21,7 @@ class MobileStoragePasswordSerializer(serializers.ModelSerializer):
     updated_at = TimestampField()
 
 
+@extend_schema(tags=["Storages", "Storage passwords", "Mobile"])
 class MobileStoragePasswordViewSet(ModelViewSet):
     """
     Storage passwords API used by the mobile application

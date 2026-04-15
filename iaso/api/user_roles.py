@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q, QuerySet
-from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.response import Response
 
@@ -60,17 +60,20 @@ class UserRoleSerializer(serializers.ModelSerializer):
         if Group.objects.filter(name__iexact=group_name).exists():
             raise serializers.ValidationError({"name": "User role already exists"})
 
-        group = Group(name=group_name)
-        group.save()
+        if permissions is not None:
+            permission_objects = Permission.objects.filter(codename__startswith="iaso_", codename__in=permissions)
+            found_codenames = set(permission_objects.values_list("codename", flat=True))
+            invalid = [p for p in permissions if p not in found_codenames]
+            if invalid:
+                invalid_str = ", ".join(invalid)
+                raise serializers.ValidationError({"permissions": f"Invalid permission codenames: {invalid_str}"})
 
-        if group.id and len(permissions) > 0:
-            for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
-                group.permissions.add(permission)
-            group.save()
+        group = Group.objects.create(name=group_name)
+
+        if permission_objects:
+            group.permissions.set(permission_objects)
 
         user_role = UserRole.objects.create(group=group, account=account)
-        user_role.save()
         user_role.editable_org_unit_types.set(editable_org_unit_types)
         return user_role
 
@@ -86,11 +89,15 @@ class UserRoleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"name": "User role already exists"})
 
         if permissions is not None:
-            group.permissions.clear()
-            for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
-                group.permissions.add(permission)
+            permission_objects = Permission.objects.filter(codename__startswith="iaso_", codename__in=permissions)
+            found_codenames = set(permission_objects.values_list("codename", flat=True))
+            invalid = [p for p in permissions if p not in found_codenames]
+            if invalid:
+                invalid_str = ", ".join(invalid)
+                raise serializers.ValidationError({"permissions": f"Invalid permission codenames: {invalid_str}"})
+            group.permissions.set(permission_objects)
 
+        group.name = group_name
         group.save()
         user_role.save()
         user_role.editable_org_unit_types.set(editable_org_unit_types)
@@ -107,6 +114,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
         return editable_org_unit_types
 
 
+@extend_schema(tags=["User roles"])
 class UserRolesViewSet(ModelViewSet):
     f"""Roles API
 

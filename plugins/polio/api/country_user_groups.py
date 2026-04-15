@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers
 from rest_framework.fields import Field
 
@@ -34,6 +35,7 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema(tags=["Polio - Country user groups"])
 class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer
     results_key = "country_users_group"

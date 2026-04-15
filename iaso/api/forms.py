@@ -7,6 +7,7 @@ from xml.sax.saxutils import escape
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Subquery
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -243,6 +244,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return form
 
 
+@extend_schema(tags=["Forms"])
 class FormsViewSet(ModelViewSet):
     f"""Forms API
 
@@ -478,6 +480,7 @@ class FormsViewSet(ModelViewSet):
         form = self.get_object()
         return generate_manifest_for_form(form, request)
 
+    @extend_schema(tags=["Enketo"])
     @action(detail=True, methods=["get"], permission_classes=[ReadOnly])
     def manifest_enketo(self, request, pk, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
@@ -543,6 +546,7 @@ def generate_manifest_structure(content: list[str]) -> str:
     )
 
 
+@extend_schema(tags=["Mobile", "Forms"])
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):

@@ -29,6 +29,8 @@ def safe_api_import(key: str, fallback_status=200):
             if not request.user.is_anonymous:
                 api_import.user = request.user
             api_import.import_type = key
+            api_import.app_id = request.GET.get("app_id", default="")
+            api_import.app_version = request.GET.get("app_version", default="")
             api_import.headers = {
                 request_key: request.META.get(request_key) for request_key in REQUEST_HEADER_INFO_KEYS
             }

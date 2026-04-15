@@ -3,6 +3,7 @@ import csv
 from django.db import transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -25,6 +26,7 @@ from .serializers import (
 )
 
 
+@extend_schema(tags=["Metric types"])
 class MetricTypeViewSet(viewsets.ModelViewSet):
     serializer_class = MetricTypeSerializer
     ordering_fields = ["id", "name"]
@@ -74,6 +76,7 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=["Metric values"])
 class MetricValueViewSet(viewsets.ModelViewSet):
     serializer_class = MetricValueSerializer
     queryset = MetricValue.objects.all()
@@ -133,6 +136,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema(tags=["Metrics", "Org units"])
 class MetricOrgUnitsViewSet(viewsets.ModelViewSet):
     """
     This viewset is used to retrieve the org units for a given metric type.

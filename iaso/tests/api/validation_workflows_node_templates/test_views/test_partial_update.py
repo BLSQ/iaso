@@ -11,6 +11,7 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.other_group = Group.objects.create(name="Group 2")
@@ -24,6 +25,12 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             created_by=self.john_doe,
             account=self.account_2,
         )
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+            self.node_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
         self.other_node = ValidationNodeTemplate.objects.create(
             name="First node 2", workflow=self.other_validation_workflow
@@ -122,6 +129,18 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             )
         )
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={
+                    "parent_lookup_workflow__slug": self.validation_workflow_without_feature_flag.slug,
+                    "slug": self.node_without_feature_flag.slug,
+                },
+            )
+        )
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from iaso.api.common import ModelViewSet
 from iaso.api.validation_workflows.filters import ValidationWorkflowListFilter
 from iaso.api.validation_workflows.pagination import ValidationWorkflowPagination
-from iaso.api.validation_workflows.permissions import HasValidationWorkflowPermission
+from iaso.api.validation_workflows.permissions import HasAccountFeatureFlag, HasValidationWorkflowPermission
 from iaso.api.validation_workflows.serializers.create import ValidationWorkflowCreateSerializer
 from iaso.api.validation_workflows.serializers.dropdown import ValidationWorkflowDropdownSerializer
 from iaso.api.validation_workflows.serializers.list import ValidationWorkflowListSerializer
@@ -20,7 +20,7 @@ from iaso.models import ValidationWorkflow
 
 @extend_schema(tags=["Validation workflows"])
 class ValidationWorkflowViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasValidationWorkflowPermission]
+    permission_classes = [permissions.IsAuthenticated, HasValidationWorkflowPermission, HasAccountFeatureFlag]
     filter_backends = [OrderingFilter, DjangoFilterBackend]
     pagination_class = ValidationWorkflowPagination
     http_method_names = ["get", "post", "put", "patch", "delete"]

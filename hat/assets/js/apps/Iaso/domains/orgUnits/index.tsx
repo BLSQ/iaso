@@ -77,10 +77,6 @@ export const OrgUnits: FunctionComponent = () => {
     const searches: [Search] = useMemo(() => {
         return decodeSearch(decodeURI(params.searches));
     }, [params.searches]);
-    const isSearchActive: boolean = useMemo(
-        () => params.searchActive === 'true',
-        [params.searchActive],
-    );
     // MEMO
 
     // CUSTOM HOOKS
@@ -98,8 +94,6 @@ export const OrgUnits: FunctionComponent = () => {
     const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
         useGetOrgUnits({
             params: apiParams,
-            isSearchActive,
-            enabled: isSearchActive, // this is required to count result in search tab
         });
     const {
         data: orgUnitsDataLocation,
@@ -107,8 +101,7 @@ export const OrgUnits: FunctionComponent = () => {
     } = useGetOrgUnitsLocations({
         params: apiParamsLocations,
         searches,
-        isSearchActive,
-        enabled: tab === 'map' && isSearchActive,
+        enabled: tab === 'map',
     });
     // REQUESTS HOOKS
     const { data: colors } = useGetColors(true);
@@ -130,14 +123,11 @@ export const OrgUnits: FunctionComponent = () => {
     );
 
     const onSearch = useCallback(
-        newParams => {
+        (newParams: OrgUnitParams) => {
             const tempParams = {
                 ...newParams,
                 searches: JSON.stringify(newParams.searches),
             };
-            if (newParams.searchActive !== 'true') {
-                tempParams.searchActive = true;
-            }
             navigate(makeRedirectionUrl(baseUrl, tempParams), {
                 replace: true,
             });
@@ -146,7 +136,7 @@ export const OrgUnits: FunctionComponent = () => {
     );
     // TABS
     const handleChangeTab = useCallback(
-        newtab => {
+        (newtab: string) => {
             setTab(newtab);
             const newParams = {
                 ...params,
@@ -208,11 +198,7 @@ export const OrgUnits: FunctionComponent = () => {
                             value="list"
                             label={formatMessage(MESSAGES.list)}
                         />
-                        <Tab
-                            value="map"
-                            label={formatMessage(MESSAGES.map)}
-                            disabled={!isSearchActive}
-                        />
+                        <Tab value="map" label={formatMessage(MESSAGES.map)} />
                     </Tabs>
                     {tab === 'list' && (
                         <TableList

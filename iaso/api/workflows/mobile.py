@@ -62,6 +62,7 @@ app_id_param = OpenApiParameter(
 )
 
 
+@extend_schema(tags=["Workflows", "Mobile"])
 class MobileWorkflowViewSet(GenericViewSet):
     """Mobile workflow API
 

@@ -63,7 +63,11 @@ export type InputComponentProps = {
     keyValue: string;
     value?: any;
     errors?: string[];
-    onChange?: (key: string, value: any, countryData?: BaseCountryData) => void;
+    onChange?: (
+        key: string | null,
+        value: any,
+        countryData?: BaseCountryData,
+    ) => void;
     onBlur?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
     onFocus?:
         | FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>

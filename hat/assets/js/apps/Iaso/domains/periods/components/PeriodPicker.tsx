@@ -81,7 +81,15 @@ const PeriodPicker: FunctionComponent<Props> = ({
 
     useEffect(() => {
         if (activePeriodString && Period.getPeriodType(activePeriodString)) {
-            setCurrentPeriod(Period.parse(activePeriodString)[1]);
+            const newPeriod = Period.parse(activePeriodString)[1];
+            setCurrentPeriod(newPeriod);
+            onChange(
+                getPeriodPickerString(
+                    periodType,
+                    newPeriod,
+                    activePeriodString,
+                ),
+            );
         } else {
             setCurrentPeriod(null);
         }
@@ -157,7 +165,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         {title}
                     </FormLabel>
 
-                    <Grid container spacing={2}>
+                    <Grid container spacing={1}>
                         {![PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
                             periodType as string,
                         ) && (
@@ -167,7 +175,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                     periodType === PERIOD_TYPE_YEAR ||
                                     periodType === PERIOD_TYPE_FINANCIAL_NOV
                                         ? 12
-                                        : 4
+                                        : 5
                                 }
                             >
                                 <InputComponent
@@ -196,7 +204,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             periodType === PERIOD_TYPE_QUARTER_NOV ||
                             periodType === PERIOD_TYPE_SIX_MONTH ||
                             periodType === PERIOD_TYPE_WEEK) && (
-                            <Grid item sm={8}>
+                            <Grid item sm={7}>
                                 {periodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"

@@ -18,6 +18,7 @@ import iaso.management.commands.unique_indexes as unique_indexes
 
 from hat.audit.models import DJANGO_ADMIN
 from iaso.models.json_config import Config  # type: ignore
+from iaso.plugins import is_wfp_plugin_active
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
@@ -1200,10 +1201,14 @@ def create_indexes_action(modeladmin, request, queryset):
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    actions = [create_indexes_action]
     search_fields = ["name", "id"]
     list_display = ["name", "created_at", "updated_at"]
     autocomplete_fields = ["default_version"]
+    actions = [create_indexes_action]
+    if is_wfp_plugin_active():
+        from plugins.wfp.admin import create_indexes_celery_action
+
+        actions.append(create_indexes_celery_action)
 
 
 @admin.register(UserRole)

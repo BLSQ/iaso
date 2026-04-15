@@ -118,7 +118,7 @@ class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
     write_perm = POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION
 
 
-@extend_schema(tags=["vaccineauthorizations"])
+@extend_schema(tags=["Polio - vaccine authorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
     """
     Vaccine Authorizations API

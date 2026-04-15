@@ -17,6 +17,7 @@ from django.db.models import Case, Count, F, Prefetch, Q, QuerySet, TextField, V
 from django.db.models.functions import Cast, Concat, JSONObject, Replace
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -198,6 +199,7 @@ class LockAnnotation(TypedDict):
 PERMISSION_CLASSES_RW = [AuthenticationEnforcedPermission, permissions.IsAuthenticated, HasInstancePermission]
 
 
+@extend_schema(tags=["Instances"])
 class InstancesViewSet(viewsets.ViewSet):
     f"""Instances API
 

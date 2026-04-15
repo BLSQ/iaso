@@ -7,7 +7,7 @@ from plugins.polio.api.rounds.round_date_history.serializers import RoundDateHis
 from plugins.polio.models import RoundDateHistoryEntry
 
 
-@extend_schema(tags=["datelogs"])
+@extend_schema(tags=["Polio - Date logs"])
 class RoundDateHistoryEntryViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

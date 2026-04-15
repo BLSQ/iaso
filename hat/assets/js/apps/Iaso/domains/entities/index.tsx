@@ -12,9 +12,10 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { CountLabel } from './components/CountLabel';
+import { CursorPagination } from './components/CursorPagination';
 import { Filters } from './components/Filters';
 import { ListMap } from './components/ListMap';
-import { CursorPagination } from './components/CursorPagination';
 import { useColumns, baseUrl, defaultSorted } from './config';
 import {
     useGetEntitiesLocations,
@@ -23,8 +24,8 @@ import {
     useGetEntityTypesDropdown,
 } from './hooks/requests';
 import MESSAGES from './messages';
+import type { Params } from './types/filters';
 import { DisplayedLocation } from './types/locations';
-import { CountLabel } from './components/CountLabel';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -37,23 +38,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    tab?: string;
-    search?: string;
-    entityTypes?: string;
-    entityTypeIds?: string;
-    locationLimit?: string;
-    groups?: string;
-    fieldsSearch?: string;
-    isSearchActive?: string;
-    cursor?: string;
-};
-
 export const Entities: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.entities) as Params;
+    const params = useParamsObject(baseUrls.entities) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const [displayedLocation, setDisplayedLocation] =
         useState<DisplayedLocation>('submissions');
@@ -121,11 +107,11 @@ export const Entities: FunctionComponent = () => {
         redirectTo(baseUrl, {
             ...params,
             pageSize: newPageSize.toString(),
-            cursor: "null",
+            cursor: 'null',
         });
     };
 
-    const { cursor, ...tableParams } = params;
+    const { cursor: _cursor, ...tableParams } = params;
 
     const columns = useColumns(entityTypeIds, extraColumns || []);
 

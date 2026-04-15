@@ -11,6 +11,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
@@ -66,6 +67,11 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
 
         self.node_template.next_node_templates.add(self.second_node_template)
         self.node_template.save()
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
     def test_permissions(self):
         res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
@@ -82,6 +88,12 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.get(
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_without_feature_flag.slug})
+        )
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
     def test_404(self):
         self.client.force_authenticate(self.john_wick)
@@ -179,7 +191,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             res = self.client.get(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
             )

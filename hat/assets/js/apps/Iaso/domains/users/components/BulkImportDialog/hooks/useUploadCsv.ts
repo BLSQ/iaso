@@ -1,5 +1,5 @@
 import { UseMutationResult } from 'react-query';
-import { postRequest } from '../../../../../libs/Api';
+import { ApiError, postRequest } from '../../../../../libs/Api';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
 import MESSAGES from '../../../messages';
 import { BulkImportPayload } from '../../../types';
@@ -26,10 +26,11 @@ const uploadCsv = (values: BulkImportPayload) => {
 };
 
 export const useUploadCsv = (): UseMutationResult => {
-    return useSnackMutation<any, any, any, any>({
+    return useSnackMutation<any, ApiError, any, any>({
         mutationFn: (payload: BulkImportPayload) => uploadCsv(payload),
         invalidateQueryKey: 'profiles',
         snackErrorMsg: MESSAGES.uploadError,
         snackSuccessMessage: MESSAGES.uploadSuccess,
+        ignoreErrorCodes: [400],
     });
 };

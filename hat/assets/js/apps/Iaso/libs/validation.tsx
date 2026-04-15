@@ -100,7 +100,7 @@ export const useApiErrorValidation = <
                     setApiErrors(apiErrorsDict);
                     if (onError) onError();
                 },
-            }).catch(e => {
+            })?.catch(e => {
                 if (e.status >= 500) throw e;
                 if (onCatch) onCatch();
             });

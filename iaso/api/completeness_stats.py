@@ -44,6 +44,7 @@ from django.db.models import OrderBy, Q, QuerySet
 from django.db.models.expressions import RawSQL
 from django_cte import With
 from django_cte.raw import raw_cte_sql
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -337,6 +338,7 @@ def has_children(row_ou):
     return True if children_count > 0 else False
 
 
+@extend_schema(tags=["Completeness statistics", "v2"])
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 

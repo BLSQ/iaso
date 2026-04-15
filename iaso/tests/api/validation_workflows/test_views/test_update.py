@@ -10,6 +10,7 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.form = Form.objects.create(name="form")
         self.form.projects.add(self.project)
@@ -32,6 +33,12 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         )
         self.validation_workflow.form_set.set([self.form, self.form_2])
 
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
+
     def test_permissions(self):
         res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -47,6 +54,12 @@ class ValidationWorkflowAPIUpdateTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.superuser)
         res = self.client.put(reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}))
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.put(
+            reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow_without_feature_flag.slug})
+        )
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)

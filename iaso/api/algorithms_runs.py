@@ -2,6 +2,7 @@ import importlib
 
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, permissions, viewsets
 from rest_framework.response import Response
 
@@ -9,6 +10,7 @@ from iaso.models import AlgorithmRun, DataSource, MatchingAlgorithm, SourceVersi
 from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 
 
+@extend_schema(tags=["Algorithm runs"])
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
     f"""Algorithms runs API
 

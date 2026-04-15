@@ -40,7 +40,7 @@ from plugins.polio.models import Campaign, Round
 from plugins.polio.permissions import POLIO_BUDGET_ADMIN_PERMISSION, POLIO_BUDGET_PERMISSION
 
 
-@extend_schema(tags=["budget"])
+@extend_schema(tags=["Polio - Budget"])
 class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
     """
     Budget information endpoint.
@@ -188,7 +188,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         return Response(available_rounds.as_ui_dropdown_data()["rounds"], status=status.HTTP_200_OK)
 
 
-@extend_schema(tags=["budget"])
+@extend_schema(tags=["Polio - Budget steps"])
 class BudgetStepViewSet(ModelViewSet):
     """
     Step on a budget process, to progress the budget workflow.
@@ -262,7 +262,7 @@ class BudgetStepViewSet(ModelViewSet):
 
 
 # noinspection PyMethodMayBeStatic
-@extend_schema(tags=["budget"])
+@extend_schema(tags=["Polio - workflows"])
 class WorkflowViewSet(ViewSet):
     """
     Info on the budge workflow

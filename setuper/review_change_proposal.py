@@ -10,7 +10,7 @@ def instance_details_by_id(instanceId, iaso_client):
 def setup_review_change_proposal(account_name, iaso_client):
     print("-- Setting up review change proposals")
     org_unit_groups = iaso_client.get("/api/groups/")["groups"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
     health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
         0
     ]

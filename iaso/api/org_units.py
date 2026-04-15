@@ -16,6 +16,7 @@ from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -98,6 +99,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 
 # noinspection PyMethodMayBeStatic
+@extend_schema(tags=["Org units"])
 class OrgUnitViewSet(viewsets.ViewSet):
     f"""Org units API
 
@@ -772,6 +774,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 audit_models.log_modification(
                     original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
                 )
+
+                requested_fields = request.query_params.get("fields")
+                if requested_fields:
+                    serializer = OrgUnitSearchSerializer(
+                        org_unit, fields=requested_fields.split(","), context={"request": request}
+                    )
+                    return Response(serializer.data)
 
                 res = org_unit.as_dict_with_parents()
                 res["geo_json"] = None

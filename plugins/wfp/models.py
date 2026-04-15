@@ -27,6 +27,7 @@ NUTRITION_PROGRAMMES = [
     ("OTP", _("OTP")),
     ("OTP - Under 6", _("OTP - Under 6")),
     ("BSFP", _("BSFP")),
+    ("Not Eligible", _("Not Eligible")),
 ]
 PHYSIOLOGY_STATUS = [
     ("breastfeeding", _("Breastfeeding")),
@@ -72,6 +73,11 @@ class Beneficiary(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     guidelines = models.CharField(max_length=8, null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["account", "id"]),
+        ]
+
 
 class Journey(models.Model):
     beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, null=True, blank=True)
@@ -104,6 +110,12 @@ class Journey(models.Model):
     exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True, db_index=True)
     instance_id = models.IntegerField(null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["programme_type", "beneficiary", "nutrition_programme"]),
+            models.Index(fields=["physiology_status"]),
+        ]
+
 
 class Visit(models.Model):
     date = models.DateTimeField(null=True, blank=True, db_index=True)
@@ -112,9 +124,15 @@ class Visit(models.Model):
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
     muac_size = models.CharField(max_length=10, null=True, db_index=True)
     whz_color = models.CharField(max_length=10, null=True, db_index=True)
-    oedema = models.FloatField(null=True)
+    oedema = models.IntegerField(null=True)
     entry_point = models.TextField(null=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["org_unit", "date", "journey"]),
+            models.Index(fields=["muac_size", "whz_color", "oedema"]),
+        ]
 
 
 class Step(models.Model):
@@ -133,29 +151,37 @@ class MonthlyStatistics(models.Model):
     year = models.CharField(max_length=6, null=True, blank=True)
     period = models.CharField(max_length=8, null=True, blank=True)
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
-    admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
-    admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
-    exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True)
-    nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
     physiology_status = models.CharField(max_length=255, choices=PHYSIOLOGY_STATUS, null=True, blank=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
-    number_visits = models.IntegerField(default=0)
-    given_sachet_rusf = models.FloatField(null=True, blank=True)
-    given_sachet_rutf = models.FloatField(null=True, blank=True)
-    given_quantity_csb = models.FloatField(null=True, blank=True)
-    given_ration_cbt = models.CharField(max_length=255, choices=RATION_SIZE, null=True, blank=True)
-    oedema = models.FloatField(null=True)
-    muac_under_11_5 = models.FloatField(null=True)  # MUAC < 11.5cm
-    muac_11_5_12_4 = models.FloatField(null=True)  # MUAC between 11.5 and 12.4 cm
-    muac_above_12_5 = models.FloatField(null=True)  # MUAC > 12.5 cm
-    muac_under_23 = models.FloatField(null=True)  # MUAC < 23 cm for PBWG
-    muac_above_23 = models.FloatField(null=True)  # MUAC > 23 cm for PBWG
-    whz_score_2 = models.CharField(max_length=10, null=True)  # WHZ greater than -2 (green)
-    whz_score_3 = models.CharField(max_length=10, null=True)  # WHZ less than -3 (red)
-    whz_score_3_2 = models.CharField(max_length=10, null=True)  # WHZ between -2 and -3 (yellow)
-    beneficiary_with_admission_type = models.FloatField(null=True)
-    beneficiary_with_nutrition_programme = models.FloatField(null=True)
-    beneficiary_with_exit_type = models.FloatField(null=True)
+    nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
+    oedema = models.IntegerField(null=True)
+    muac_under_11_5 = models.IntegerField(null=True)  # MUAC < 11.5cm
+    muac_11_5_12_4 = models.IntegerField(null=True)  # MUAC between 11.5 and 12.4 cm
+    muac_above_12_5 = models.IntegerField(null=True)  # MUAC > 12.5 cm
+    muac_under_23 = models.IntegerField(null=True)  # MUAC < 23 cm for PBWG
+    muac_above_23 = models.IntegerField(null=True)  # MUAC > 23 cm for PBWG
+    whz_score_2 = models.IntegerField(null=True)  # WHZ greater than -2 (green)
+    whz_score_3 = models.IntegerField(null=True)  # WHZ less than -3 (red)
+    whz_score_3_2 = models.IntegerField(null=True)  # WHZ between -2 and -3 (yellow)
+    community_health_worker_muac_under_11_5 = models.IntegerField(null=True)
+    community_health_worker_muac_11_5_12_4 = models.IntegerField(null=True)
+    community_health_worker_oedema = models.IntegerField(null=True)
+    community_health_worker_muac_under_23 = models.IntegerField(null=True)
+    community_health_worker_muac_above_23 = models.IntegerField(null=True)
+    admission_type_new_case = models.IntegerField(null=True)
+    admission_type_relapse = models.IntegerField(null=True)
+    admission_type_returned_defaulter = models.IntegerField(null=True)
+    admission_type_returned_referral = models.IntegerField(null=True)
+    admission_type_transfer_from_other_tsfp = models.IntegerField(null=True)
+    admission_type_admission_sc_itp_otp = models.IntegerField(null=True)
+    admission_type_transfer_sc_itp_otp = models.IntegerField(null=True)
+    exit_type_transfer_in_from_other_tsfp = models.IntegerField(null=True)
+    exit_type_cured = models.IntegerField(null=True)
+    exit_type_death = models.IntegerField(null=True)
+    exit_type_defaulter = models.IntegerField(null=True)
+    exit_type_non_respondent = models.IntegerField(null=True)
+    total_beneficiaries = models.IntegerField(null=True)
+    number_visits = models.IntegerField(null=True)
 
 
 class Dhis2SyncResults(models.Model):

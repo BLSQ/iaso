@@ -14,7 +14,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     key = serializers.CharField(source="slug")
 
 
-@extend_schema(tags=["polio-configs"])
+@extend_schema(tags=["Polio - Configs"])
 class ConfigViewSet(ModelViewSet):
     http_method_names = ["get"]
     serializer_class = ConfigSerializer

@@ -10,17 +10,16 @@ class TestDRFSpectacular(TestCase):
     def setUp(self):
         account = Account.objects.create(name="account")
         self.user = get_user_model().objects.create(username="random user", password="random", email="random@test.com")
-        self.authenticated_super_user = get_user_model().objects.create(
-            username="random super user", password="random", email="randomsuperuser@test.com", is_superuser=True
-        )
         self.superuser_with_profile = self.create_user_with_profile(account=account, username="user 1")
         self.superuser_with_profile.is_superuser = True
         self.superuser_with_profile.is_staff = True
         self.superuser_with_profile.save()
 
+        self.user_with_profile = self.create_user_with_profile(account=account, username="user 3")
+
     def test_permissions(self):
         for url in ["swagger-ui", "redoc", "swagger-schema"]:
-            for user in [self.user, self.authenticated_super_user]:
+            for user in [self.user]:
                 with self.subTest(f"Accessing url {url} with user {user} should raise 403"):
                     self.client.force_login(user)
                     res = self.client.get(reverse(url))
@@ -31,13 +30,14 @@ class TestDRFSpectacular(TestCase):
                 res = self.client.get(reverse(url))
                 self.assertEqual(res.status_code, 401)
 
-            with self.subTest(f"Accessing url {url} with right user should work"):
-                self.client.force_login(self.superuser_with_profile)
-                res = self.client.get(reverse(url))
-                self.assertEqual(res.status_code, 200)
+            for user in [self.superuser_with_profile, self.user_with_profile]:
+                with self.subTest(f"Accessing url {url} with user {user} should work"):
+                    self.client.force_login(user)
+                    res = self.client.get(reverse(url))
+                    self.assertEqual(res.status_code, 200)
 
     def test_swagger_schema_view_is_working(self):
-        self.client.force_login(self.superuser_with_profile)
+        self.client.force_login(self.user_with_profile)
         response = self.client.get(reverse("swagger-schema"))
         self.assertEqual(response.status_code, 200)
 

@@ -9,6 +9,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def setUp(self):
         super().setUp()
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.form = Form.objects.create(name="form")
         Instance.objects.create(name="instance", form=self.form)
@@ -50,6 +51,11 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.validation_workflow_multiple_forms.save()
 
         self.out_of_account_vw = ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
     def test_output_fields(self):
         for user in [self.john_wick, self.superuser]:
@@ -164,7 +170,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_with_parameters_and_one_search_result(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.get(
                 reverse("validation_workflows-list"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
@@ -174,7 +180,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_without_parameters_and_multiple_search_results(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             self.client.force_authenticate(self.john_wick)
             res = self.client.get(reverse("validation_workflows-list"))
             res_json = self.assertJSONResponse(res, 200)
@@ -195,3 +201,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(reverse("validation_workflows-list"))
         self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.get(reverse("validation_workflows-list"))
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)

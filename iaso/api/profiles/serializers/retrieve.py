@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema_field
 from phonenumbers.phonenumberutil import region_code_for_number
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, TimestampField
-from iaso.models import Account, DataSource, OrgUnit, Profile, Project, SourceVersion, UserRole
+from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Profile, Project, SourceVersion, UserRole
 
 
 class RelatedProjectSerializer(ModelSerializer):
@@ -123,6 +124,12 @@ class NestedProjectSerializer(ModelSerializer):
         fields = ["id", "name", "app_id", "color"]
 
 
+class NestedEditableOrgUnitTypeSerializer(ModelSerializer):
+    class Meta:
+        model = OrgUnitType
+        fields = ["id", "name"]
+
+
 class NestedOrgUnitSerializer(ModelSerializer):
     source = serializers.CharField(source="version.data_source.name", read_only=True)
     source_id = serializers.IntegerField(source="version.data_source_id", read_only=True)
@@ -238,7 +245,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
 
     other_accounts = NestedAccountSerializer(many=True, read_only=True, source="user.tenant_user.get_other_accounts")
 
-    editable_org_unit_type_ids = serializers.SerializerMethodField()
+    editable_org_unit_types = serializers.SerializerMethodField()
     user_roles_editable_org_unit_type_ids = serializers.ListField(
         source="get_user_roles_editable_org_unit_type_ids", read_only=True
     )
@@ -268,7 +275,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
             "country_code",
             "projects",
             "other_accounts",
-            "editable_org_unit_type_ids",
+            "editable_org_unit_types",
             "user_roles_editable_org_unit_type_ids",
             "color",
             "account",
@@ -313,10 +320,11 @@ class ProfileRetrieveSerializer(ModelSerializer):
     def get_country_code(self, obj):
         return region_code_for_number(obj.phone_number).lower() if obj.phone_number else None
 
-    def get_editable_org_unit_type_ids(self, obj):
-        try:
-            editable_org_unit_type_ids = obj.annotated_editable_org_unit_types_ids
-        except AttributeError:
-            editable_org_unit_type_ids = [out.pk for out in obj.editable_org_unit_types.all()]
+    @extend_schema_field(NestedEditableOrgUnitTypeSerializer(many=True))
+    def get_editable_org_unit_types(self, obj):
+        editable_org_unit_types = [out for out in obj.editable_org_unit_types.all()]
 
-        return editable_org_unit_type_ids
+        return [
+            NestedEditableOrgUnitTypeSerializer(instance=editable_org_unit_type).data
+            for editable_org_unit_type in editable_org_unit_types
+        ]

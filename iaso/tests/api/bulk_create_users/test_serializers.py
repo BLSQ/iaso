@@ -2,7 +2,7 @@ from django.test import RequestFactory
 
 from iaso.api.bulk_create_users.serializers import BulkCreateItemSerializer
 from iaso.models import Account
-from iaso.test import TestCase
+from iaso.test import TestCase, PasswordValidationTestMixin
 
 
 class Test(TestCase):
@@ -50,15 +50,7 @@ class Test(TestCase):
         )
 
 
-class BulkCreateItemSerializerPasswordValidationTestCase(TestCase):
-    ERROR_PASSWORD_TOO_SHORT = "This password is too short. It must contain at least 8 characters."
-    ERROR_PASSWORD_TOO_COMMON = "This password is too common."
-    ERROR_PASSWORD_TOO_SIMILAR_USERNAME = "The password is too similar to the username."
-    ERROR_PASSWORD_TOO_SIMILAR_EMAIL = "The password is too similar to the email address."
-    ERROR_PASSWORD_TOO_SIMILAR_FIRST_NAME = "The password is too similar to the first name."
-    ERROR_PASSWORD_TOO_SIMILAR_LAST_NAME = "The password is too similar to the last name."
-    ERROR_PASSWORD_NUMERIC = "This password is entirely numeric."
-
+class BulkCreateItemSerializerPasswordValidationTestCase(TestCase, PasswordValidationTestMixin):
     def setUp(self):
         self.account, self.data_source, self.source_version, self.project = (
             self.create_account_datasource_version_project(

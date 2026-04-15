@@ -119,7 +119,7 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         password = attrs.get("password")
-        if not attrs.get("email") and password:
+        if not attrs.get("email") and not password:
             raise serializers.ValidationError("Either password or email required for user creation")
 
         if (

@@ -1,8 +1,10 @@
 import { renderHook } from '@testing-library/react';
+import moment from 'moment';
 import { describe, it, expect, vi } from 'vitest';
+import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import { validationNodeRetrieveResponseFactory } from '../../../../../../__tests__/factories/validationWorkflows/validationNodes';
 import { validationWorkflowRetrieveFactory } from '../../../../../../__tests__/factories/validationWorkflows/validationWorkflow';
-import { QueryClientWrapper } from '../../../../../../tests/helpers';
+import { QueryClientWrapperWithIntlProvider } from '../../../../../../tests/helpers';
 import { useValidationTimeline } from './useValidationTimeline';
 
 const { mockUserHasOneOfRoles } = vi.hoisted(() => {
@@ -32,7 +34,7 @@ describe('useValidationTimeline', () => {
                     description: 'desc1',
                     color: '#ff0000',
                     slug: 'node1',
-                    can_skip_previous_nodes: true,
+                    can_skip_previous_nodes: false,
                 },
                 {
                     name: 'Node2',
@@ -44,7 +46,8 @@ describe('useValidationTimeline', () => {
             ],
         });
 
-        const data = validationNodeRetrieveResponseFactory.build({
+        const date = moment(new Date()).format(apiMobileDateFormat);
+        let data = validationNodeRetrieveResponseFactory.build({
             history: [
                 {
                     level: 'Node1',
@@ -52,45 +55,285 @@ describe('useValidationTimeline', () => {
                     comment: 'ok',
                     updated_by: 'John',
                     created_by: 'John',
-                    updated_at: 123456,
-                    created_at: 123456,
+                    updated_at: date,
+                    created_at: date,
                     id: 1,
                     color: '#ff0000',
+                    node_template_slug: 'node1',
+                },
+                {
+                    level: 'Node1',
+                    status: 'NEW_VERSION',
+                    comment: '',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 3,
+                    color: '#ff0000',
+                    node_template_slug: 'node1',
+                },
+                {
+                    level: 'Node2',
+                    status: 'REJECTED',
+                    comment: 'Nope',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 2,
+                    color: '#00ff00',
+                    node_template_slug: 'node2',
+                },
+                {
+                    level: 'Node1',
+                    status: 'SUBMISSION',
+                    comment: '',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 1,
+                    color: '#ff0000',
+                    node_template_slug: 'node1',
                 },
             ],
             next_bypass: [
                 {
                     name: 'Node2',
-                    slug: 'node2-slug',
+                    slug: 'node2',
+                    user_roles: [{ id: 1, name: 'admin' }],
+                },
+            ],
+            next_tasks: [
+                {
+                    id: 3,
+                    name: 'Node2',
+                    node_template_slug: 'node2',
+                    user_roles: [{ id: 1, name: 'admin' }],
+                },
+            ],
+        });
+
+        const { result, rerender } = renderHook(
+            props => useValidationTimeline(props),
+            {
+                wrapper: QueryClientWrapperWithIntlProvider,
+                initialProps: { data, nodes },
+            },
+        );
+
+        expect(result.current).toEqual([
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: '',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'Submission',
+                nodeSlug: 'node1',
+                order: 1,
+                previous: true,
+                status: 'SUBMISSION',
+            },
+            {
+                color: '#00ff00',
+                content: {
+                    author: 'John',
+                    comment: 'Nope',
+                    date: date,
+                    description: 'desc2',
+                },
+                label: 'Node2',
+                nodeSlug: 'node2',
+                order: 2,
+                previous: true,
+                status: 'REJECTED',
+            },
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: '',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'New version',
+                nodeSlug: 'node1',
+                order: 1,
+                previous: true,
+                status: 'NEW_VERSION',
+            },
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: 'ok',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'Node1',
+                nodeSlug: 'node1',
+                order: 1,
+                status: 'ACCEPTED',
+            },
+            {
+                canValidate: true,
+                color: '#00ff00',
+                content: {
+                    description: 'desc2',
+                },
+                label: 'Node2',
+                nodeId: 3,
+                nodeSlug: 'node2',
+                order: 2,
+            },
+        ]);
+
+        data = validationNodeRetrieveResponseFactory.build({
+            history: [
+                {
+                    level: 'Node2',
+                    status: 'REJECTED',
+                    comment: 'Nope',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 5,
+                    color: '#00ff00',
+                    node_template_slug: 'node2',
+                },
+                {
+                    level: 'Node1',
+                    status: 'ACCEPTED',
+                    comment: 'ok',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 4,
+                    color: '#ff0000',
+                    node_template_slug: 'node1',
+                },
+                {
+                    level: 'Node1',
+                    status: 'NEW_VERSION',
+                    comment: '',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 3,
+                    color: '#ff0000',
+                    node_template_slug: 'node1',
+                },
+                {
+                    level: 'Node2',
+                    status: 'REJECTED',
+                    comment: 'Nope',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 2,
+                    color: '#00ff00',
+                    node_template_slug: 'node2',
+                },
+                {
+                    level: 'Node1',
+                    status: 'SUBMISSION',
+                    comment: '',
+                    updated_by: 'John',
+                    created_by: 'John',
+                    updated_at: date,
+                    created_at: date,
+                    id: 1,
+                    color: '#ff0000',
+                    node_template_slug: 'node1',
+                },
+            ],
+            next_bypass: [
+                {
+                    name: 'Node2',
+                    slug: 'node2',
                     user_roles: [{ id: 1, name: 'admin' }],
                 },
             ],
             next_tasks: [],
         });
-
-        const { result } = renderHook(
-            () => useValidationTimeline({ data, nodes }),
-            { wrapper: QueryClientWrapper },
-        );
+        rerender({ data, nodes });
 
         expect(result.current).toEqual([
             {
-                label: 'Node1',
-                content: {
-                    comment: 'ok',
-                    author: 'John',
-                    date: 123456,
-                },
-                status: 'ACCEPTED',
                 color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: '',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'Submission',
+                nodeSlug: 'node1',
+                order: 1,
+                previous: true,
+                status: 'SUBMISSION',
             },
             {
-                label: 'Node2',
-                content: { description: 'desc2' },
-                status: 'inactive',
                 color: '#00ff00',
-                nodeSlug: 'node2-slug',
-                canValidate: true,
+                content: {
+                    author: 'John',
+                    comment: 'Nope',
+                    date: date,
+                    description: 'desc2',
+                },
+                label: 'Node2',
+                nodeSlug: 'node2',
+                order: 2,
+                previous: true,
+                status: 'REJECTED',
+            },
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: '',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'New version',
+                nodeSlug: 'node1',
+                order: 1,
+                previous: true,
+                status: 'NEW_VERSION',
+            },
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: 'ok',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'Node1',
+                nodeSlug: 'node1',
+                order: 1,
+                status: 'ACCEPTED',
+            },
+            {
+                color: '#00ff00',
+                content: {
+                    author: 'John',
+                    comment: 'Nope',
+                    date: date,
+                    description: 'desc2',
+                },
+                label: 'Node2',
+                nodeSlug: 'node2',
+                order: 2,
+                status: 'REJECTED',
             },
         ]);
     });

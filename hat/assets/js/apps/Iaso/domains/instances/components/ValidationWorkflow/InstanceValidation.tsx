@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import SendIcon from '@mui/icons-material/Send';
 import {
     Box,
     Step,
@@ -13,34 +14,71 @@ import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validatio
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import MESSAGES from '../../messages';
 import { useGetNodesList } from './useGetSubmissionValidationStatus';
-import { useValidationTimeline } from './useValidationTimeline';
+import {
+    useValidationTimeline,
+    UseValidationTimelineResult,
+} from './useValidationTimeline';
 import { ValidateNodeModal } from './ValidationModal';
 
-const formatStepContent = stepContent => {
-    if ('description' in stepContent)
+const formatStepContent = (step: UseValidationTimelineResult) => {
+    if (step?.status === 'SUBMISSION' || step?.status === 'NEW_VERSION') {
         return (
-            <Typography variant="body2">{stepContent.description}</Typography>
+            <>
+                {step.content.author && (
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 'normal' }}
+                    >
+                        {step.content.author}
+                    </Typography>
+                )}
+                {step.content.date && (
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 'normal' }}
+                    >
+                        {moment(step.content.date, apiMobileDateFormat).format(
+                            'DD-MM-YYYY HH:mm:ss',
+                        )}
+                    </Typography>
+                )}
+            </>
         );
+    }
+
+    if (step?.status === 'ACCEPTED' || step?.status === 'REJECTED') {
+        return (
+            <>
+                {step?.content?.comment && (
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        {step.content.comment}
+                    </Typography>
+                )}
+                {step?.content?.author && (
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 'normal' }}
+                    >
+                        {step?.content?.author}
+                    </Typography>
+                )}
+                {step?.content?.date && (
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 'normal' }}
+                    >
+                        {moment(
+                            step?.content?.date,
+                            apiMobileDateFormat,
+                        ).format('DD-MM-YYYY HH:mm:ss')}
+                    </Typography>
+                )}
+            </>
+        );
+    }
+
     return (
-        <>
-            {stepContent.comment && (
-                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    {stepContent.comment}
-                </Typography>
-            )}
-            {stepContent.author && (
-                <Typography variant="subtitle2" sx={{ fontWeight: 'normal' }}>
-                    {stepContent.author}
-                </Typography>
-            )}
-            {stepContent.date && (
-                <Typography variant="subtitle2" sx={{ fontWeight: 'normal' }}>
-                    {moment(stepContent.date, apiMobileDateFormat).format(
-                        'DD-MM-YYYY HH:mm:ss',
-                    )}
-                </Typography>
-            )}
-        </>
+        <Typography variant="body2">{step?.content?.description}</Typography>
     );
 };
 
@@ -64,16 +102,32 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
             {(data?.history ?? []).length > 0 && (
                 <Stepper
                     orientation="vertical"
-                    activeStep={data?.history?.length - 1}
+                    activeStep={validationTimeline
+                        ?.slice()
+                        ?.reverse()
+                        ?.findIndex(step => step?.status === 'UNKNOWN')}
                     nonLinear
                     sx={{ margin: 'auto' }}
                 >
-                    {validationTimeline.map(step => {
+                    {validationTimeline?.map(step => {
                         return (
-                            <Step key={step.label} expanded>
+                            <Step
+                                key={`${step.label}-${step.status}-${step.content?.date}`}
+                                expanded
+                            >
                                 <StepLabel
-                                    error={step.status === 'REJECTED'}
+                                    icon={
+                                        ['NEW_VERSION', 'SUBMISSION'].includes(
+                                            step?.status ?? '',
+                                        ) ? (
+                                            <SendIcon fontSize={'small'} />
+                                        ) : (
+                                            step?.order
+                                        )
+                                    }
                                     StepIconProps={{
+                                        completed: step.status === 'ACCEPTED',
+                                        error: step.status === 'REJECTED',
                                         sx: {
                                             color: step.color,
                                         },
@@ -81,12 +135,12 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
                                 >
                                     <Box>{step.label}</Box>
                                     <StepContent sx={{ fontWeight: 'normal' }}>
-                                        {formatStepContent(step.content)}
+                                        {formatStepContent(step)}
                                         {step.canValidate && (
                                             <ValidateNodeModal
-                                                key={step.slug}
-                                                instanceId={id}
-                                                nodeSlug={step.slug}
+                                                key={step.nodeSlug}
+                                                instanceId={id as number}
+                                                nodeSlug={step.nodeSlug}
                                                 nodeId={step.nodeId}
                                                 iconProps={{
                                                     buttonText: `${formatMessage(MESSAGES.validate)}`,

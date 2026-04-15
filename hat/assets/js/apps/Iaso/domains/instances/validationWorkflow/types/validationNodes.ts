@@ -2,16 +2,24 @@ export type History = {
     id: number;
     level: string;
     color: `#${string}`;
-    created_at: number;
-    updated_at: number;
-    status: 'ACCEPTED' | 'REJECTED' | 'SKIPPED' | 'UNKNOWN';
+    created_at: string;
+    updated_at: string;
+    status:
+        | 'ACCEPTED'
+        | 'REJECTED'
+        | 'SKIPPED'
+        | 'UNKNOWN'
+        | 'NEW_VERSION'
+        | 'SUBMISSION';
     updated_by: string;
     created_by: string;
     comment?: string;
+    node_template_slug: string;
 };
 export type NextTasks = {
     id: number;
     name: string;
+    node_template_slug: string;
     user_roles?: Array<{ id: number; name: string }>;
 };
 export type NextByPass = {

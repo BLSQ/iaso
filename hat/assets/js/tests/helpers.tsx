@@ -32,6 +32,18 @@ export const QueryClientWrapper = ({
 }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
+
+export const QueryClientWrapperWithIntlProvider = ({
+    children,
+}: {
+    children: React.ReactNode;
+}) => (
+    <IntlProvider locale={'en'} messages={{}}>
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    </IntlProvider>
+);
 function Wrapper({ children }: { children: React.ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>

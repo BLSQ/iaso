@@ -1,6 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import moment from 'moment';
 import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest';
+import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import { InstanceValidation } from './InstanceValidation';
 
 vi.mock('bluesquare-components', () => ({
@@ -18,8 +20,9 @@ vi.mock('@mui/material', async () => {
         ),
         Step: ({ children }: any) => <div data-testid="step">{children}</div>,
 
-        StepLabel: ({ children, StepIconProps }: any) => (
+        StepLabel: ({ children, StepIconProps, icon }: any) => (
             <div data-testid="step-label" data-color={StepIconProps?.sx?.color}>
+                {icon}
                 {children}
             </div>
         ),
@@ -51,29 +54,73 @@ import { useValidationTimeline } from './useValidationTimeline';
 
 describe('InstanceValidation (Vitest)', () => {
     const mockNodes = [{ id: 1 }];
-
+    const date = moment(Date.now()).format(apiMobileDateFormat);
     const timeline = [
         {
-            label: 'Step 1',
-            status: 'APPROVED',
             color: '#bbbbbb',
-            slug: 'step-1',
-            nodeId: 1,
-            canValidate: false,
-            content: { description: 'desc 1' },
+            content: {
+                author: 'John',
+                comment: '',
+                date: date,
+                description: 'desc1',
+            },
+            label: 'Submission',
+            nodeSlug: 'node1',
+            order: 1,
+            previous: true,
+            status: 'SUBMISSION',
         },
         {
-            label: 'Step 2',
-            status: 'REJECTED',
             color: '#ffffff',
-            slug: 'step-2',
-            nodeId: 2,
-            canValidate: true,
             content: {
-                comment: 'comment',
-                author: 'author',
-                date: '2023-01-01',
+                author: 'John',
+                comment: 'Nope',
+                date: date,
+                description: 'desc2',
             },
+            label: 'Node2',
+            nodeSlug: 'node2',
+            order: 2,
+            previous: true,
+            status: 'REJECTED',
+        },
+        {
+            color: '#bbbbbb',
+            content: {
+                author: 'John',
+                comment: '',
+                date: date,
+                description: 'desc1',
+            },
+            label: 'New version',
+            nodeSlug: 'node1',
+            order: 1,
+            previous: true,
+            status: 'NEW_VERSION',
+        },
+        {
+            color: '#bbbbbb',
+            content: {
+                author: 'John',
+                comment: 'ok',
+                date: date,
+                description: 'desc1',
+            },
+            label: 'Node1',
+            nodeSlug: 'node1',
+            order: 1,
+            status: 'ACCEPTED',
+        },
+        {
+            canValidate: true,
+            color: '#ffffff',
+            content: {
+                description: 'desc2',
+            },
+            label: 'Node2',
+            nodeId: 3,
+            nodeSlug: 'node2',
+            order: 2,
         },
     ];
 
@@ -99,16 +146,82 @@ describe('InstanceValidation (Vitest)', () => {
         render(<InstanceValidation data={{ history: [{}, {}] } as any} />);
 
         expect(screen.getByTestId('stepper')).toBeInTheDocument();
-        expect(screen.getAllByTestId('step')).toHaveLength(2);
+        expect(screen.getAllByTestId('step')).toHaveLength(5);
+    });
+
+    it('renders submission and new version with a special icon', () => {
+        render(<InstanceValidation data={{ history: [{}, {}] } as any} />);
+        expect(screen.getAllByTestId('SendIcon')).toHaveLength(2);
     });
 
     it('renders timeline content correctly', () => {
         render(<InstanceValidation data={{ history: [{}, {}] } as any} />);
+        const steps = screen.getAllByTestId('step');
 
-        expect(screen.getByText('desc 1')).toBeInTheDocument();
-        expect(screen.getByText('comment')).toBeInTheDocument();
-        expect(screen.getByText('author')).toBeInTheDocument();
-        expect(screen.getByText(/01-01-2023/)).toBeInTheDocument();
+        // step 1
+        expect(within(steps[0]).getByText('Submission')).toBeInTheDocument();
+        expect(within(steps[0]).getByText('John')).toBeInTheDocument();
+        expect(
+            within(steps[0]).getByText(
+                moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
+            ),
+        ).toBeInTheDocument();
+        expect(within(steps[0]).getByTestId('SendIcon')).toBeInTheDocument();
+
+        // step 2
+        expect(within(steps[1]).queryByText('Submission')).toBeNull();
+        expect(within(steps[1]).getByText('John')).toBeInTheDocument();
+        expect(within(steps[1]).getByText('Nope')).toBeInTheDocument();
+        expect(within(steps[1]).getByText('Node2')).toBeInTheDocument();
+        expect(
+            within(steps[1]).getByText('2', { exact: true }),
+        ).toBeInTheDocument();
+        expect(
+            within(steps[1]).getByText(
+                moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
+            ),
+        ).toBeInTheDocument();
+        expect(within(steps[1]).queryByTestId('SendIcon')).toBeNull();
+
+        // step 3
+        expect(within(steps[2]).getByText('New version')).toBeInTheDocument();
+        expect(within(steps[2]).getByText('John')).toBeInTheDocument();
+        expect(
+            within(steps[2]).getByText(
+                moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
+            ),
+        ).toBeInTheDocument();
+        expect(within(steps[2]).getByTestId('SendIcon')).toBeInTheDocument();
+
+        // step 4
+        expect(within(steps[3]).queryByText('Submission')).toBeNull();
+        expect(within(steps[3]).getByText('John')).toBeInTheDocument();
+        expect(within(steps[3]).getByText('ok')).toBeInTheDocument();
+        expect(within(steps[3]).getByText('Node1')).toBeInTheDocument();
+        expect(
+            within(steps[3]).getByText('1', { exact: true }),
+        ).toBeInTheDocument();
+        expect(
+            within(steps[3]).getByText(
+                moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
+            ),
+        ).toBeInTheDocument();
+        expect(within(steps[3]).queryByTestId('SendIcon')).toBeNull();
+
+        // step 5
+        expect(within(steps[4]).queryByText('Submission')).toBeNull();
+        expect(within(steps[4]).queryByText('John')).toBeNull();
+        expect(within(steps[4]).getByText('Node2')).toBeInTheDocument();
+        expect(within(steps[4]).getByText('desc2')).toBeInTheDocument();
+        expect(
+            within(steps[4]).getByText('2', { exact: true }),
+        ).toBeInTheDocument();
+        expect(
+            within(steps[4]).queryByText(
+                moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
+            ),
+        ).toBeNull();
+        expect(within(steps[4]).queryByTestId('SendIcon')).toBeNull();
     });
 
     it('applies correct color to each step', () => {
@@ -116,8 +229,8 @@ describe('InstanceValidation (Vitest)', () => {
 
         const labels = screen.getAllByTestId('step-label');
 
-        expect(labels[0]).toHaveAttribute('data-color', '#bbbbbb');
-        expect(labels[1]).toHaveAttribute('data-color', '#ffffff');
+        expect(labels[3]).toHaveAttribute('data-color', '#bbbbbb');
+        expect(labels[4]).toHaveAttribute('data-color', '#ffffff');
     });
 
     it('renders validation modal only when allowed', () => {
@@ -125,7 +238,7 @@ describe('InstanceValidation (Vitest)', () => {
 
         const modals = screen.getAllByTestId('validate-modal');
         expect(modals).toHaveLength(1);
-        expect(modals[0]).toHaveTextContent('step-2');
+        expect(modals[0]).toHaveTextContent('node2');
     });
 
     it('calls hooks with correct args', () => {

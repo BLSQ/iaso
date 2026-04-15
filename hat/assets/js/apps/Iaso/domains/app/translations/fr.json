@@ -1768,6 +1768,8 @@
     "iaso.users.viewUser": "Afficher les détails de l'utilisateur",
     "iaso.users.warningModalMessage": "Vous êtes sur le point de sauvegarder un utilisateur sans permissions. Cet utilisateur aura accès à l'application mobile mais pas aux fonctionnalités de l'interface web.",
     "iaso.validation.label.rolesRequired": "Roles requis",
+    "iaso.validationNode.status.newVersion": "Nouvelle version",
+    "iaso.validationNode.status.submission": "Soumission",
     "iaso.versionsDialog.label.createdAt": "Création",
     "iaso.versionsDialog.label.datasource.noVersion": "Cette source est vide, veuillez créer une version avec l'un des boutons ci-dessous",
     "iaso.versionsDialog.label.description": "Description",

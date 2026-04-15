@@ -21,21 +21,34 @@ class NestedUserRoleSerializer(ModelSerializer):
 class NestedHistorySerializer(ModelSerializer):
     color = ColorFieldSerializer(source="node.color", read_only=True)
     level = serializers.CharField(read_only=True, source="node.name")
+    node_template_slug = serializers.CharField(read_only=True, source="node.slug")
     created_by = UserDisplayNameField()
     updated_by = UserDisplayNameField()
 
     class Meta:
         model = ValidationNode
-        fields = ["level", "color", "created_at", "updated_at", "status", "comment", "updated_by", "created_by", "id"]
+        fields = [
+            "level",
+            "color",
+            "created_at",
+            "updated_at",
+            "status",
+            "comment",
+            "updated_by",
+            "created_by",
+            "id",
+            "node_template_slug",
+        ]
 
 
 class NextTasksSerializer(ModelSerializer):
     user_roles = NestedUserRoleSerializer(read_only=True, many=True, source="node.roles_required")
     name = serializers.CharField(read_only=True, source="node.name")
+    node_template_slug = serializers.CharField(read_only=True, source="node.slug")
 
     class Meta:
         model = ValidationNode
-        fields = ["id", "name", "user_roles"]
+        fields = ["id", "name", "user_roles", "node_template_slug"]
 
 
 class NextByPassSerializer(ModelSerializer):

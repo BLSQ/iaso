@@ -75,6 +75,7 @@ def setup_account(account_name, server_url, username, password, create_main_org_
         ],
         "create_main_org_unit": create_main_org_unit,
         "create_demo_form": create_demo_form,
+        "enforce_password_validation": False,
     }
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)

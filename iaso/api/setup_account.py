@@ -234,7 +234,7 @@ class SetupAccountSerializer(serializers.Serializer):
             demo_form.projects.add(initial_project)
 
             # Create the first version of the form using the demo form file
-            with open("setuper/data/demo_form.xlsx", "rb") as demo_form_file:
+            with open("iaso/fixtures/demo_form.xlsx", "rb") as demo_form_file:
                 survey = parsing.parse_xls_form(demo_form_file)
                 demo_form_file.seek(0)  # Reset file pointer to beginning
                 FormVersion.objects.create_for_form_and_survey(

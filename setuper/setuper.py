@@ -196,4 +196,6 @@ if __name__ == "__main__":
     if not server_url or not username or not password:
         sys.exit("ERROR: Values for server url, user name and password are all required")
 
-    create_account(server_url, username, password, account_name, additional_projects, create_main_org_unit, create_demo_form)
+    create_account(
+        server_url, username, password, account_name, additional_projects, create_main_org_unit, create_demo_form
+    )

@@ -202,7 +202,7 @@ export const formatLabel = (field: Field): string => {
         return localizeLabel(field);
     if (!field.label.trim()) return field.name;
     if (field.label.includes(':')) return field.label.split(':')[0];
-    if (field.label.includes('$')) return field.label.split('$')[0];
+    // if (field.label.includes('$')) return field.label.split('$')[0];
     if (field.type === 'calculate') return `Σ ${field.label}`;
     return field.label;
 };

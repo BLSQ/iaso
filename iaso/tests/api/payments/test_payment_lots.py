@@ -353,7 +353,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         # Include a task on the extra lot — catches the task FK N+1 (null task skips the query).
         extra_task = m.Task.objects.create(launcher=self.user, account=self.user.iaso_profile.account, status="SUCCESS")
-        extra_lot = m.PaymentLot.objects.create(name="Extra lot", created_by=self.user, updated_by=self.user, task=extra_task)
+        extra_lot = m.PaymentLot.objects.create(
+            name="Extra lot", created_by=self.user, updated_by=self.user, task=extra_task
+        )
         extra_payment = m.Payment.objects.create(
             user=self.payment_beneficiary,
             payment_lot=extra_lot,

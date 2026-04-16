@@ -150,9 +150,11 @@ class PaymentLotsViewSet(ModelViewSet):
             change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
             payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0),
         )
-        queryset = queryset.filter(
-            created_by__iaso_profile__account=self.request.user.iaso_profile.account
-        ).select_related("created_by__iaso_profile", "task").distinct()
+        queryset = (
+            queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            .select_related("created_by__iaso_profile", "task")
+            .distinct()
+        )
 
         return queryset
 

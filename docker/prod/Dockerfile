@@ -68,6 +68,7 @@ RUN groupadd --gid 1001 appuser && \
 #  - postgresql-client: psql CLI (used in wait_for_dbs.sh)
 #  - gettext-base: envsubst (used for config templating)
 #  - gettext: compilemessages needs msgfmt at build, but also useful at runtime
+#  - libmagic1: used by python-magic
 RUN apt-get update && apt-get install --yes --no-install-recommends \
     libgdal28 \
     libpq5 \
@@ -75,6 +76,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     gettext \
     gettext-base \
     curl \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the virtualenv from builder

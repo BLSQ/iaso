@@ -291,8 +291,7 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
         if call["filename"] == "formattachments":
             _download_form_attachments(iaso_client, zipf, result["results"], app_id)
             for record in result["results"]:
-                # don't use _extract_filename_from_url to preserve subpath
-                record["file"] = "formattachments/" + urlparse(record["file"]).path.split("/form_attachments/")[-1]
+                record["file"] = f"formattachments/{record['form_id']}/{_extract_filename_from_url(record['file'])}"
 
         # trypelim-specific
         # SLEEP-1698: set `visited_at` attribute to null so that the instances are excluded from filters
@@ -335,6 +334,7 @@ def _download_form_attachments(iaso_client, zipf, resources, app_id):
     if len(resources) == 0:
         return
 
+    downloaded_manifests = set()
     for resource in resources:
         form_id = resource["form_id"]
         url = resource["file"]
@@ -348,22 +348,30 @@ def _download_form_attachments(iaso_client, zipf, resources, app_id):
         else:
             attachment_file = requests.get(url, headers=iaso_client.headers)
 
-        logger.info("\tDOWNLOAD manifest")
-        manifest_file = requests.get(
-            SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
-            headers=iaso_client.headers,
-        )
-
         with zipf.openb(os.path.join("formattachments", str(form_id), filename)) as f:
             f.write(attachment_file.content)
-        # For the manifest.xml, rewrite the `downloadUrl` to the local file path
-        with zipf.open(os.path.join("formattachments", str(form_id), "manifest.xml")) as f:
-            content = manifest_file.content.decode("utf-8")
-            url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
-            download_url = re.search(url_regex, content).group()
-            # don't use _extract_filename_from_url to preserve subpath
-            new_download_url = "formattachments/" + urlparse(download_url).path.split("/form_attachments/")[-1]
-            f.write(re.sub(url_regex, new_download_url, content))
+
+        if form_id not in downloaded_manifests:
+            # For the manifest.xml, rewrite the `downloadUrl` to the local file path
+            logger.info("\tDOWNLOAD manifest")
+            manifest_file = requests.get(
+                SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
+                headers=iaso_client.headers,
+            )
+
+            with zipf.open(os.path.join("formattachments", str(form_id), "manifest.xml")) as f:
+                content = manifest_file.content.decode("utf-8")
+                url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
+
+                def update_url(match):
+                    original_url = match.group()
+                    filename = original_url.split("/")[-1]
+                    return f"formattachments/{form_id}/{filename}"
+
+                updated_content = re.sub(url_regex, update_url, content)
+                f.write(updated_content)
+
+            downloaded_manifests.add(form_id)
 
 
 def _download_form_versions(iaso_client, zipf, form_versions):

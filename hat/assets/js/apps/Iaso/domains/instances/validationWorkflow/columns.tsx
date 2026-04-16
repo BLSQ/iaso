@@ -164,7 +164,7 @@ export const useWorkflowNodesColumns = (workFlowSlug?: string) => {
                                 titleMessage={MESSAGES.deleteNodeQuestion}
                                 onConfirm={() =>
                                     deleteNode({
-                                        workFlowSlug,
+                                        workflowSlug: workFlowSlug,
                                         nodeSlug: value,
                                     })
                                 }

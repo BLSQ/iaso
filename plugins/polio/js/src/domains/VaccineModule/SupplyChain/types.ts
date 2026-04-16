@@ -1,5 +1,5 @@
-import { FormikProps } from 'formik';
 import React from 'react';
+import { FormikProps } from 'formik';
 import { UseMutateAsyncFunction } from 'react-query';
 import {
     DropdownOptions,
@@ -28,8 +28,6 @@ export type VRF = {
     quantities_approved_by_orpg_in_doses?: number;
     date_rrt_orpg_approval?: string; // date in string form
     date_vrf_submitted_to_dg?: string; // date in string form
-    quantities_approved_by_dg_in_doses?: number;
-    date_dg_approval?: string; // date in string form
     target_population?: number;
     comments?: string;
     vrf_type: 'Normal' | 'Missing' | 'Not Required';

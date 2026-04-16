@@ -26,6 +26,7 @@ import sentry_sdk
 
 from dateutil.relativedelta import relativedelta
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Case, CharField, Count, DateField, F, FloatField, Func, IntegerField, Q, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Concat, Extract, ExtractMonth, ExtractYear, Substr
@@ -103,6 +104,19 @@ ASSISTANCE_FORMS = frozenset(
     ]
 )
 EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
+
+
+OLD_GUIDE_LINES_FORMS = [
+    "Anthropometric visit child",
+    "child_antropometric_followUp_otp",
+    "child_antropometric_followUp_tsfp",
+]
+NEW_GUIDE_LINES_FORMS = [
+    "Anthropometric visit child_2",
+    "child_antropometric_followUp_otp_2",
+    "child_antropometric_followUp_tsfp_2",
+]
+
 
 # ---------------------------------------------------------------------------
 # Field extraction helpers
@@ -292,10 +306,12 @@ def _convert_exit_type(exit_type):
 def extract_weight(data):
     """Extract weight from form data (kg)."""
     weight = data.get("weight_kgs")
-    if weight is not None and weight != "":
-        return _safe_float(weight)
+
     if weight == "":
         return 0.0
+
+    if weight not in (None, ""):
+        return _safe_float(weight)
     prev_weight = data.get("previous_weight_kgs__decimal__")
     if prev_weight is not None:
         return _safe_float(prev_weight)
@@ -309,7 +325,7 @@ def extract_visit_date(submission):
 
 def extract_muac(data):
     """Extract MUAC measurement from form data."""
-    return _first_of(data, "muac", "muac_size")
+    return _first_of(data, "muac", "muac_size", "mother_muac")
 
 
 def extract_visit_entry_point(submission):
@@ -376,6 +392,20 @@ def extract_gender(data):
     return raw
 
 
+def extract_guidelines(submission):
+    """Extract U5 Guidelines.
+    Returns 'NEW' for the forms in NEW_GUIDE_LINES_FORMS,
+    'OLD' for forms in OLD_GUIDE_LINES_FORMS,
+    otherwise defaults to the value stored in the field 'guidelines' from submission json."""
+    form_id = submission.get("form__form_id")
+    data = submission.get("json")
+    if form_id in NEW_GUIDE_LINES_FORMS:
+        return "NEW"
+    if form_id in OLD_GUIDE_LINES_FORMS:
+        return "OLD"
+    return data.get("guidelines", "OLD")
+
+
 def extract_pbwg_physiology(data):
     """Extract PBWG physiology status (pregnant or breastfeeding)."""
 
@@ -419,7 +449,7 @@ def extract_assistance(data):
 
     # --- Medicines ---
     med = data.get("medicine_given")
-    if med is not None:
+    if med not in (None, ""):
         items.append({"type": med, "quantity": 1})
 
     medication = data.get("medication")
@@ -590,24 +620,21 @@ def _extract_next_visit_info(data):
     )
 
     next_visit_days = _first_of(data, "next_visit_days", "number_of_days__int__")
-
-    if next_visit_days in (None, ""):
-        for field in (
-            "OTP_next_visit",
-            "TSFP_next_visit",
-            "tsfp_next_visit",
-            "otp_next_visit",
-        ):
-            val = data.get(field)
-            if val not in (None, "", "--"):
-                next_visit_days = val
-                break
-
-    if next_visit_days in (None, ""):
-        val = data.get("number_of_days__int__")
+    interval_days_fields = [
+        "next_visit_days",
+        "number_of_days__int__",
+        "OTP_next_visit",
+        "TSFP_next_visit",
+        "tsfp_next_visit",
+        "otp_next_visit",
+    ]
+    next_visit_days = None
+    for field in interval_days_fields:
+        val = data.get(field)
         if val not in (None, "", "--"):
             next_visit_days = val
 
+            break
     return next_visit_date, _safe_int(next_visit_days, 0)
 
 
@@ -806,6 +833,7 @@ class ETL:
 
             gender = extract_gender(data)
             physiology = extract_pbwg_physiology(data)
+            guidelines = extract_guidelines(sub)
             if physiology:
                 info["physiology"] = physiology
                 info["gender"] = None
@@ -814,11 +842,8 @@ class ETL:
             birth_date = calculate_birth_date(data)
             if birth_date is not None:
                 info["birth_date"] = birth_date
-
-            guidelines = data.get("guidelines")
             if guidelines:
                 info["guidelines"] = guidelines
-
         return info
 
     @staticmethod
@@ -1204,17 +1229,18 @@ class ETL:
         """
         task.save()
         try:
-            Beneficiary.objects.bulk_create(beneficiaries)
-            Journey.objects.bulk_create(journeys)
-            Visit.objects.bulk_create(visits)
-            Step.objects.bulk_create(steps)
-            status = "SUCCESS"
-            logger.info(
-                f"Saved: {len(beneficiaries)} beneficiaries, "
-                f"{len(journeys)} journeys, "
-                f"{len(visits)} visits, "
-                f"{len(steps)} steps"
-            )
+            with transaction.atomic():
+                Beneficiary.objects.bulk_create(beneficiaries)
+                Journey.objects.bulk_create(journeys)
+                Visit.objects.bulk_create(visits)
+                Step.objects.bulk_create(steps)
+                status = "SUCCESS"
+                logger.info(
+                    f"Saved: {len(beneficiaries)} beneficiaries, "
+                    f"{len(journeys)} journeys, "
+                    f"{len(visits)} visits, "
+                    f"{len(steps)} steps"
+                )
         except Exception as err:
             sentry_sdk.capture_exception(err)
             task.result = {
@@ -1644,7 +1670,26 @@ class ETL:
             .exclude(nutrition_programme__in=EXCLUDED_PROGRAMMES)
             .annotate(
                 orgUnitId=F("org_unit__id"),
-                new_case=Sum("admission_type_new_case"),
+                # When nutrition_programme=BSFP, in admission or followup forms, there is no admission type,
+                # So we need to aggregate all other muac + whz score cases as new_case
+                new_case=Sum(
+                    Case(
+                        When(
+                            nutrition_programme="BSFP",
+                            then=(
+                                F("muac_under_11_5")
+                                + F("muac_11_5_12_4")
+                                + F("muac_above_12_5")
+                                + F("muac_under_23")
+                                + F("muac_above_23")
+                                + F("whz_score_2")
+                                + F("whz_score_3")
+                                + F("whz_score_3_2")
+                            ),
+                        ),
+                        default=F("admission_type_new_case"),
+                    )
+                ),
                 relapse=Sum("admission_type_relapse"),
                 returned_defaulter=Sum("admission_type_returned_defaulter"),
                 returned_referral=Sum("admission_type_returned_referral"),
@@ -1776,7 +1821,9 @@ class ETL:
         )
         query_set = (
             (
-                Instance.objects.filter(entity__entity_type__code=self.entity_type).annotate(
+                Instance.objects.filter(entity__entity_type__code=self.entity_type)
+                .select_related("entity__entity_type")
+                .annotate(
                     year=Cast(ExtractYear(visit_date), CharField()),
                     month=Cast(ExtractMonth(visit_date), CharField()),
                     yearMonth=Concat(

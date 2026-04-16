@@ -113,6 +113,7 @@ class CampaignCalendarV2TestCase(APITestCase, PolioTestCaseMixin):
             self.assertEqual(rnd["started_at"], ref_round.started_at.strftime("%Y-%m-%d"))
             self.assertEqual(rnd["ended_at"], ref_round.ended_at.strftime("%Y-%m-%d"))
             self.assertEqual(rnd["id"], ref_round.pk)
+            self.assertEqual(rnd["on_hold"], ref_round.on_hold)
 
         round1 = rounds[0]
         round2 = rounds[1]

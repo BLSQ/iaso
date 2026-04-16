@@ -17,8 +17,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
-from djangorestframework_camel_case.render import CamelCaseBrowsableAPIRenderer, CamelCaseJSONRenderer
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import action
@@ -27,10 +25,9 @@ from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
+from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, ModelViewSet
-from iaso.api.filters import CamelCaseDjangoFilterBackend, CamelCaseOrderingFilter
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.profiles.constants import PK_ME
 from iaso.api.profiles.filters import ProfileListFilter
 from iaso.api.profiles.pagination import ProfileDropdownPagination, ProfilePagination
@@ -83,26 +80,10 @@ class ProfilesViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
-
+    filter_backends = [OrderingFilter, DjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = ["id", "user__username", "annotated_first_user_role"]
-
-    @property
-    def filter_backends(self):
-        if self.kwargs.get("version", "") == "v2":
-            return [CamelCaseOrderingFilter, CamelCaseDjangoFilterBackend]
-        return [OrderingFilter, DjangoFilterBackend]
-
-    def get_parsers(self):
-        if self.kwargs.get("version", "") == "v2":
-            return [CamelCaseJSONParser()]
-        return super().get_parsers()
-
-    def get_renderers(self):
-        if self.kwargs.get("version", "") == "v2":
-            return [CamelCaseJSONRenderer(), CamelCaseBrowsableAPIRenderer()]
-        return super().get_renderers()
 
     def get_serializer_class(self):
         if self.action == "retrieve":

@@ -64,6 +64,7 @@ class ListRoundSerializer(RoundSerializer):
             "vaccine_names",
             "target_population",
             "is_planned",
+            "on_hold",
         ]
 
 

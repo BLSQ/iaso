@@ -5,7 +5,8 @@ import React, {
     useCallback,
     useEffect,
 } from 'react';
-import { orderBy } from 'lodash';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     ConfirmCancelModal,
@@ -13,26 +14,22 @@ import {
     AddButton,
     LoadingSpinner,
 } from 'bluesquare-components';
-import uniqWith from 'lodash/uniqWith';
+import { orderBy } from 'lodash';
 import isEqual from 'lodash/isEqual';
+import uniqWith from 'lodash/uniqWith';
 
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { MappingTable } from './MappingTable';
-import { Popper } from './InfoPopper';
-
-import { useSaveWorkflowChange } from '../../hooks/requests/useSaveWorkflowChange';
-
-import MESSAGES from '../../messages';
-
-import { Change, Mapping, ReferenceForm } from '../../types';
-import { PossibleField } from '../../../forms/types/forms';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import { DropdownOptions } from '../../../../types/utils';
 import {
     FormVersion,
     useGetPossibleFieldsByFormVersion,
 } from '../../../forms/hooks/useGetPossibleFields';
-import { DropdownOptions } from '../../../../types/utils';
-import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import { PossibleField } from '../../../forms/types/forms';
+import { useSaveWorkflowChange } from '../../hooks/requests/useSaveWorkflowChange';
+import MESSAGES from '../../messages';
+import { Change, Mapping, ReferenceForm } from '../../types';
+import { Popper } from './InfoPopper';
+import { MappingTable } from './MappingTable';
 
 type Props = {
     isOpen: boolean;

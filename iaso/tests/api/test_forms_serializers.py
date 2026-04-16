@@ -70,6 +70,7 @@ class FormsSerializerTestCase(TestCase):
             ],
             "legend_threshold": self.form.legend_threshold,
             "change_request_mode": self.form.change_request_mode,
+            "validation_workflow": None,
         }
 
         with self.assertNumQueries(8):

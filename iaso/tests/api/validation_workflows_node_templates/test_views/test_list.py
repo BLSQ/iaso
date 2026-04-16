@@ -3,26 +3,18 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
 
 
 class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
     def setUp(self):
-        self.account = Account.objects.create(name="account")
+        super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
-
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name",
@@ -37,6 +29,12 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
             created_by=self.john_doe,
             account=self.account_2,
         )
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+            self.node_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
         self.other_node = ValidationNodeTemplate.objects.create(
             name="Other node", workflow=self.other_validation_workflow
@@ -80,6 +78,23 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
         )
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.get(
+            reverse(
+                "validation_node_templates-list",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow_without_feature_flag.slug},
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+
     def test_check_validation_workflow_parent_slug_access(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(
@@ -94,7 +109,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
     def test_number_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.get(
                 reverse(
                     "validation_node_templates-list",
@@ -103,8 +118,14 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
 
+    def test_happy_flow_as_superuser(self):
+        self.base_test_happy_flow(self.superuser)
+
     def test_happy_flow(self):
-        self.client.force_authenticate(self.john_wick)
+        self.base_test_happy_flow(self.john_wick)
+
+    def base_test_happy_flow(self, user):
+        self.client.force_authenticate(user)
 
         res = self.client.get(
             reverse(
@@ -115,7 +136,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=3)
 
-        fields = ["slug", "name", "description", "color", "rolesRequired", "canSkipPreviousNodes"]
+        fields = ["slug", "name", "description", "color", "roles_required", "can_skip_previous_nodes"]
 
         for data in res_data["results"]:
             for field in fields:

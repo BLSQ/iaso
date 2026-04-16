@@ -2,14 +2,14 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Form, Instance, ValidationWorkflow
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
 class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def setUp(self):
-        self.account = Account.objects.create(name="account")
+        super().setUp()
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.form = Form.objects.create(name="form")
         Instance.objects.create(name="instance", form=self.form)
@@ -18,14 +18,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.form_2 = Form.objects.create(name="form_2")
         self.form_3 = Form.objects.create(name="form_3")
 
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
-
+        self.vf_pk = None
         for i in range(15):
             v = ValidationWorkflow.objects.create(
                 name=f"name-{i}",
@@ -35,6 +28,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
                 updated_by=self.john_wick,
             )
             if i == 0:
+                self.vf_pk = v.pk
                 v.form_set.set([self.form_3])
                 v.save()
 
@@ -56,18 +50,20 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.validation_workflow_multiple_forms.form_set.set([self.form, self.form_2])
         self.validation_workflow_multiple_forms.save()
 
-        ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
+        self.out_of_account_vw = ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
 
     def test_output_fields(self):
-        self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validation_workflows-list"), data={"name": "multiple-forms"})
-        res_json = self.assertJSONResponse(res, 200)
+        for user in [self.john_wick, self.superuser]:
+            with self.subTest(f"with user {user}"):
+                self.client.force_authenticate(user)
+                res = self.client.get(reverse("validation_workflows-list"), data={"name": "multiple-forms"})
+                res_json = self.assertJSONResponse(res, 200)
 
-        item = res_json["results"][0]
+                item = res_json["results"][0]
 
-        self.assertEqual(item["formCount"], 2)
-        self.assertEqual(item["createdBy"], "John Doe")
-        self.assertEqual(item["updatedBy"], "john.wick")
+                self.assertEqual(item["form_count"], 2)
+                self.assertEqual(item["created_by"], "John Doe")
+                self.assertEqual(item["updated_by"], "john.wick")
 
     def test_filter_out_by_account(self):
         """
@@ -169,7 +165,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_with_parameters_and_one_search_result(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.get(
                 reverse("validation_workflows-list"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
@@ -179,7 +175,7 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_without_parameters_and_multiple_search_results(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             self.client.force_authenticate(self.john_wick)
             res = self.client.get(reverse("validation_workflows-list"))
             res_json = self.assertJSONResponse(res, 200)
@@ -191,8 +187,16 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
 
         self.client.force_authenticate(self.john_doe)
         res = self.client.get(reverse("validation_workflows-list"))
-        self.assertJSONResponse(res, 403)
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("validation_workflows-list"))
-        self.assertJSONResponse(res, 200)
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(reverse("validation_workflows-list"))
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.get(reverse("validation_workflows-list"))
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)

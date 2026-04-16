@@ -1,29 +1,22 @@
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.settings import api_settings
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.validation_workflow.templates import PositionChoices
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
 
 
 class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def setUp(self):
-        self.account = Account.objects.create(name="account")
+        super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
+        self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
         self.group = Group.objects.create(name="Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
-
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name",
@@ -38,6 +31,12 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             created_by=self.john_doe,
             account=self.account_2,
         )
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+            self.node_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
 
         # create some nodes
         self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
@@ -72,6 +71,23 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         )
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
+        self.client.force_authenticate(self.superuser)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.client.force_authenticate(self.user_without_feature_flag)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-list",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow_without_feature_flag.slug},
+            )
+        )
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+
     def test_check_validation_workflow_parent_slug_access(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.post(
@@ -89,7 +105,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def test_num_queries_insert_first(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -99,9 +115,9 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random name 2",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
+                    "roles_required": [self.user_role.pk],
                     "position": PositionChoices.first,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
 
@@ -110,7 +126,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def test_num_queries_insert_last(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -120,9 +136,9 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random name 3",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
+                    "roles_required": [self.user_role.pk],
                     "position": PositionChoices.last,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
 
@@ -130,7 +146,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
     def test_num_queries_insert_between(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(18):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -140,17 +156,23 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "name": "Random name",
                     "description": "Random description",
                     "color": "#377760",
-                    "rolesRequired": [self.user_role.pk],
+                    "roles_required": [self.user_role.pk],
                     "position": PositionChoices.child_of,
-                    "parentNodeTemplates": [self.first_node.slug],
-                    "canSkipPreviousNodes": True,
+                    "parent_node_templates": [self.first_node.slug],
+                    "can_skip_previous_nodes": True,
                 },
             )
 
             self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
     def test_happy_flow(self):
-        self.client.force_authenticate(self.john_wick)
+        self.base_test_happy_flow(self.john_wick)
+
+    def test_happy_flow_as_superuser(self):
+        self.base_test_happy_flow(self.superuser)
+
+    def base_test_happy_flow(self, user):
+        self.client.force_authenticate(user)
         res = self.client.post(
             reverse(
                 "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
@@ -159,10 +181,10 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 "name": "Random node",
                 "description": "Random description",
                 "color": "#377760",
-                "rolesRequired": [self.user_role.pk],
+                "roles_required": [self.user_role.pk],
                 "position": PositionChoices.child_of,
-                "parentNodeTemplates": [self.first_node.slug],
-                "canSkipPreviousNodes": True,
+                "parent_node_templates": [self.first_node.slug],
+                "can_skip_previous_nodes": True,
             },
         )
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
@@ -202,7 +224,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "description": "Random description",
                     "color": "#377760",
                     "position": PositionChoices.first,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
             self.assertJSONResponse(res, status.HTTP_201_CREATED)
@@ -261,7 +283,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                     "description": "Random description",
                     "color": "#377760",
                     "position": PositionChoices.last,
-                    "canSkipPreviousNodes": True,
+                    "can_skip_previous_nodes": True,
                 },
             )
             self.assertJSONResponse(res, status.HTTP_201_CREATED)
@@ -319,3 +341,42 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(
                 list(self.second_node.next_node_templates.values_list("pk", flat=True)), [last_created_node.pk]
             )
+
+    def test_uniqueness_validator(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            ),
+            data={
+                "name": "Random node",
+                "description": "Random description",
+                "color": "#377760",
+                "roles_required": [self.user_role.pk],
+                "position": PositionChoices.child_of,
+                "parent_node_templates": [self.first_node.slug],
+                "can_skip_previous_nodes": True,
+            },
+        )
+
+        self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+        res = self.client.post(
+            reverse(
+                "validation_node_templates-list", kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug}
+            ),
+            data={
+                "name": "Random node",
+                "description": "Random description",
+                "color": "#377760",
+                "roles_required": [self.user_role.pk],
+                "position": PositionChoices.child_of,
+                "parent_node_templates": [self.first_node.slug],
+                "can_skip_previous_nodes": True,
+            },
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(
+            res_data, api_settings.NON_FIELD_ERRORS_KEY, "The fields name, workflow must make a unique set."
+        )

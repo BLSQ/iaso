@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 10:44+0000\n"
+"POT-Creation-Date: 2026-04-09 06:31+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -31,6 +31,10 @@ msgstr "Valeur invalide"
 #, python-format
 msgid "Invalid data for schema: %(error)s"
 msgstr "Données invalides pour le schéma : %(error)s"
+
+#: iaso/api/common/validators.py
+msgid "Unsupported file type."
+msgstr "Type de fichier non pris en charge."
 
 #: iaso/api/custom_translations.py
 msgid "Account id is required."
@@ -927,6 +931,14 @@ msgstr "Accepté"
 msgid "Unknown"
 msgstr "Inconnu"
 
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Submission"
+msgstr "Soumission"
+
+#: iaso/models/validation_workflow/validation_node.py
+msgid "New version"
+msgstr "Nouvelle version"
+
 #: iaso/permissions/core_permissions.py
 msgid "Attributions"
 msgstr "Attributions"
@@ -1240,3 +1252,7 @@ msgstr "Erreur lors de l'analyse"
 
 #~ msgid "Invalid phone number"
 #~ msgstr "Numéro de téléphone invalide"
+
+msgid "Too many login attempts. Please try again later."
+msgstr "Trop de tentatives de connexion. Veuillez réessayer plus tard."
+

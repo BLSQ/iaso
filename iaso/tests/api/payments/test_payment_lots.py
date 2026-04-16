@@ -341,6 +341,84 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         # No new payment lot created, we find only the one from setup
         self.assertEqual(m.PaymentLot.objects.count(), 1)
 
+    def test_list_payment_lots_num_queries_constant(self):
+        self.client.force_authenticate(self.user)
+
+        self.client.get("/api/payments/lots/", format="json")
+
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/payments/lots/", format="json")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 1)
+
+        # Include a task on the extra lot — catches the task FK N+1 (null task skips the query).
+        extra_task = m.Task.objects.create(launcher=self.user, account=self.user.iaso_profile.account, status="SUCCESS")
+        extra_lot = m.PaymentLot.objects.create(name="Extra lot", created_by=self.user, updated_by=self.user, task=extra_task)
+        extra_payment = m.Payment.objects.create(
+            user=self.payment_beneficiary,
+            payment_lot=extra_lot,
+            status=PaymentStatuses.PENDING,
+            created_by=self.user,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Extra place",
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            payment=extra_payment,
+        )
+
+        # Same count with 2 lots — proves O(1), not O(N)
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/payments/lots/", format="json")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 2)
+
+    def test_list_payment_lots_response_structure(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/payments/lots/", format="json")
+        self.assertJSONResponse(response, 200)
+
+        results = response.data["results"]
+        self.assertEqual(len(results), 1)
+        lot = results[0]
+
+        self.assertEqual(lot["name"], "Test Payment Lot")
+        self.assertEqual(lot["status"], "new")
+        self.assertIsNone(lot["comment"])
+        self.assertIsNone(lot["task"])
+        self.assertIn("id", lot)
+        self.assertIn("created_at", lot)
+        self.assertIn("can_see_change_requests", lot)
+
+        created_by = lot["created_by"]
+        self.assertEqual(created_by["username"], "user")
+        self.assertIn("id", created_by)
+        self.assertIn("first_name", created_by)
+        self.assertIn("last_name", created_by)
+        self.assertIn("phone_number", created_by)
+
+        payments = lot["payments"]
+        self.assertEqual(len(payments), 2)
+        payment = payments[0]
+        self.assertEqual(payment["status"], "pending")
+        self.assertIn("id", payment)
+        self.assertIn("can_see_change_requests", payment)
+
+        user = payment["user"]
+        self.assertEqual(user["username"], "payment_beneficiary")
+        self.assertEqual(user["first_name"], "John")
+        self.assertEqual(user["last_name"], "Doe")
+        self.assertIn("id", user)
+        self.assertIn("phone_number", user)
+
+        change_requests = payment["change_requests"]
+        self.assertEqual(len(change_requests), 1)
+        change_request = change_requests[0]
+        self.assertEqual(change_request["org_unit_id"], self.org_unit.id)
+        self.assertIn("id", change_request)
+        self.assertIn("uuid", change_request)
+        self.assertIn("can_see_change_request", change_request)
+
     def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
         self.client.force_authenticate(self.geo_limited_user)
         response = self.client.get("/api/payments/lots/", format="json")

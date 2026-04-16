@@ -148,20 +148,100 @@ class MockZip:
         self.captured_files = {}
 
     def open(self, filename, *args, **kwargs):
-        return self._FileContext(self, filename)
+        return self._FileContext(self, filename, binary=False)
+
+    def openb(self, filename, *args, **kwargs):
+        return self._FileContext(self, filename, binary=True)
 
     class _FileContext:
-        def __init__(self, parent_mock, filename):
+        def __init__(self, parent_mock, filename, binary=False):
             self.parent_mock = parent_mock
             self.filename = filename
-            self.stream = io.StringIO()
+            self.binary = binary
+            self.stream = io.BytesIO() if binary else io.StringIO()
 
         def __enter__(self):
             return self.stream
 
         def __exit__(self, exc_type, exc_value, traceback):
-            self.parent_mock.captured_files[self.filename] = self.stream.getvalue()
+            val = self.stream.getvalue()
+            if self.binary:
+                self.parent_mock.captured_files[self.filename] = val
+            else:
+                self.parent_mock.captured_files[self.filename] = val.encode("utf-8")
             self.stream.close()
+
+
+class DownloadFormAttachmentsTest(TestCase):
+    def setUp(self):
+        self.iaso_client = mock.MagicMock()
+        self.iaso_client.headers = {"Authorization": "Bearer token"}
+        self.app_id = "org.test.app"
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user.requests.get")
+    def test_download_form_attachments(self, mock_requests_get):
+        from iaso.tasks.export_mobile_app_setup_for_user import _download_form_attachments
+
+        mock_attachment_response = mock.MagicMock()
+        mock_attachment_response.content = b"fake image content"
+
+        mock_manifest_response = mock.MagicMock()
+        mock_manifest_response.content = b"""<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+    <mediaFile>
+        <filename>1.png</filename>
+        <hash>md5:475c81d4f13517f01226a0640e86aa84</hash>
+        <downloadUrl>formattachments/catt/1.png</downloadUrl>
+    </mediaFile>
+</manifest>"""
+
+        def side_effect(url, headers=None):
+            if "/api/forms/" in url and "/manifest/" in url:
+                return mock_manifest_response
+            return mock_attachment_response
+
+        mock_requests_get.side_effect = side_effect
+
+        resources = [
+            {"form_id": 16, "file": "http://server/media/form_attachments/1.png"},
+            {"form_id": 16, "file": "http://server/media/form_attachments/2.png"},
+        ]
+
+        zipf = MockZip()
+        _download_form_attachments(self.iaso_client, zipf, resources, self.app_id)
+
+        self.assertIn("formattachments/16/1.png", zipf.captured_files)
+        self.assertIn("formattachments/16/2.png", zipf.captured_files)
+        self.assertIn("formattachments/16/manifest.xml", zipf.captured_files)
+
+        manifest_content = zipf.captured_files["formattachments/16/manifest.xml"].decode("utf-8")
+        self.assertIn("<downloadUrl>formattachments/16/1.png</downloadUrl>", manifest_content)
+        self.assertNotIn("formattachments/catt/1.png", manifest_content)
+
+        # Check that manifest was only downloaded once for form 16
+        manifest_calls = [call for call in mock_requests_get.call_args_list if "/api/forms/16/manifest/" in call[0][0]]
+        self.assertEqual(len(manifest_calls), 1)
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._call_endpoint")
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._download_form_attachments")
+    def test_get_resource_formattachments_paths(self, mock_download_form_attachments, mock_call_endpoint):
+        """Verify that formattachments.json has the correct local paths."""
+        iaso_client_mock = mock.MagicMock()
+        call = {
+            "filename": "formattachments",
+            "path": "/api/formattachments/",
+        }
+        mock_call_endpoint.return_value = {
+            "results": [
+                {"form_id": 16, "file": "http://server/media/form_attachments/catt/1.png"},
+            ]
+        }
+        zipf = MockZip()
+        _get_resource(iaso_client_mock, call, zipf, self.app_id, [], {})
+
+        self.assertIn("formattachments.json", zipf.captured_files)
+        result = json.loads(zipf.captured_files["formattachments.json"])
+        self.assertEqual(result["results"][0]["file"], "formattachments/16/1.png")
 
 
 class ExportMobileAppSetupTrypelimFeatures(TestCase):

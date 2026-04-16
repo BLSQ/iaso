@@ -355,8 +355,11 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         )
 
-    def _enforce_temporary_vials_immutability(self, data):
+    def _enforce_temporary_vials_immutability(self, data, resulting_status):
         if not self.instance or self.instance.status != OutgoingStockMovement.StatusChoices.TEMPORARY:
+            return
+
+        if resulting_status != OutgoingStockMovement.StatusChoices.TEMPORARY:
             return
 
         if "usable_vials_used" in data and data["usable_vials_used"] != self.instance.usable_vials_used:
@@ -364,9 +367,11 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
                 {"usable_vials_used": "usable_vials_used cannot be edited once a temporary Form A is created"}
             )
 
-    def _validate_temporary_after_window_allowed_fields(self):
-        # For received forms, edit-window enforcement is handled in permission classes.
-        if not self.instance or self.instance.status != OutgoingStockMovement.StatusChoices.TEMPORARY:
+    def _validate_temporary_after_window_allowed_fields(self, resulting_status):
+        if not self.instance:
+            return
+
+        if resulting_status != OutgoingStockMovement.StatusChoices.TEMPORARY:
             return
 
         if not self._is_after_edit_window():
@@ -398,15 +403,24 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             current_file = self.instance.file if self.instance else None
 
             status_value = data.get("status", current_status)
+            is_received_to_temporary = (
+                self.instance is not None
+                and current_status == OutgoingStockMovement.StatusChoices.RECEIVED
+                and status_value == OutgoingStockMovement.StatusChoices.TEMPORARY
+            )
             form_a_reception_date = data.get("form_a_reception_date", current_form_a_reception_date)
             uploaded_file = data.get("file", current_file)
+            if is_received_to_temporary:
+                # Transition normalization: received -> temporary clears reception metadata.
+                form_a_reception_date = None
+                uploaded_file = None
             # Validation precedence:
             # 1) lifecycle compatibility (temporary vs received field rules)
             # 2) temporary vials immutability
             # 3) temporary post-window completion-field allowlist
             self._validate_editable_fields_based_on_status(status_value, form_a_reception_date, uploaded_file)
-            self._enforce_temporary_vials_immutability(data)
-            self._validate_temporary_after_window_allowed_fields()
+            self._enforce_temporary_vials_immutability(data, status_value)
+            self._validate_temporary_after_window_allowed_fields(status_value)
 
         validated_data = super().validate(data)
         return validated_data
@@ -448,6 +462,16 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             instance.campaign = campaign
+        next_status = validated_data.get("status", instance.status)
+        is_received_to_temporary = (
+            instance.status == OutgoingStockMovement.StatusChoices.RECEIVED
+            and next_status == OutgoingStockMovement.StatusChoices.TEMPORARY
+        )
+        if is_received_to_temporary:
+            if instance.file:
+                instance.file.delete(save=False)
+            validated_data["file"] = None
+            validated_data["form_a_reception_date"] = None
         self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 

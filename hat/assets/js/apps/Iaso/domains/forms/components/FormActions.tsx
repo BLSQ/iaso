@@ -18,7 +18,7 @@ type Props = {
     settings: any;
     orgUnitId: number | string;
     baseUrls: any;
-    showDeleted: boolean;
+    onlyDeleted: boolean;
     hasDhis2Module: boolean;
     deleteForm: (body: { id: number }) => Promise<any>;
 };
@@ -27,7 +27,7 @@ export const FormActions: FunctionComponent<Props> = ({
     settings,
     orgUnitId,
     baseUrls,
-    showDeleted,
+    onlyDeleted,
     hasDhis2Module,
     deleteForm,
 }) => {
@@ -53,14 +53,14 @@ export const FormActions: FunctionComponent<Props> = ({
 
     return (
         <section>
-            {showDeleted && (
+            {onlyDeleted && (
                 <IconButton
                     onClick={() => restoreForm(settings.row.original.id)}
                     icon="restore-from-trash"
                     tooltipMessage={MESSAGES.restoreFormTooltip}
                 />
             )}
-            {!showDeleted && (
+            {!onlyDeleted && (
                 <>
                     <DisplayIfUserHasPerm
                         permissions={[

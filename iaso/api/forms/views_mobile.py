@@ -51,12 +51,12 @@ class MobileFormViewSet(ModelViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
         form_objects = Form.objects
-        if self.request.query_params.get("only_deleted", None):
+        if self.request.query_params.get("onlyDeleted") or self.request.query_params.get("only_deleted"):
             form_objects = Form.objects_only_deleted
 
         show_deleted = self.request.query_params.get("showDeleted", "false")
         if show_deleted == "true":
-            form_objects = Form.objects_only_deleted
+            form_objects = Form.objects_include_deleted
 
         queryset = form_objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get("app_id")

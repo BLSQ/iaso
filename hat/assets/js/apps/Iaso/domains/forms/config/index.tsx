@@ -136,14 +136,14 @@ const getActionsColWidth = (user: User): number => {
 
 type FormsTableColumnsProps = {
     orgUnitId: string;
-    showDeleted: boolean;
+    onlyDeleted: boolean;
     params: FormsParams;
     count: number;
 };
 
 export const useFormsTableColumns = ({
     orgUnitId,
-    showDeleted,
+    onlyDeleted,
     params,
     count,
 }: FormsTableColumnsProps): Column[] => {
@@ -215,7 +215,7 @@ export const useFormsTableColumns = ({
                             settings={settings}
                             orgUnitId={orgUnitId}
                             baseUrls={baseUrls}
-                            showDeleted={showDeleted}
+                            onlyDeleted={onlyDeleted}
                             hasDhis2Module={hasDhis2Module}
                             deleteForm={deleteForm}
                         />
@@ -223,7 +223,7 @@ export const useFormsTableColumns = ({
                 },
             },
         ];
-        if (showDeleted) {
+        if (onlyDeleted) {
             cols.splice(1, 0, {
                 Header: formatMessage(MESSAGES.deleted_at),
                 id: 'deleted_at',
@@ -232,14 +232,7 @@ export const useFormsTableColumns = ({
             });
         }
         return cols;
-    }, [
-        formatMessage,
-        user,
-        showDeleted,
-        orgUnitId,
-        hasDhis2Module,
-        deleteForm,
-    ]);
+    }, [formatMessage, user, onlyDeleted, orgUnitId, hasDhis2Module, deleteForm]);
 };
 
 export const requiredFields = [

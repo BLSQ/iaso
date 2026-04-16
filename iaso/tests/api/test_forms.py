@@ -232,12 +232,25 @@ class FormsAPITestCase(APITestCase):
         form_to_delete.delete()
 
         response = self.client.get(
-            "/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true",
+            "/api/forms/?&order=instance_updated_at&page=1&onlyDeleted=true&searchActive=true&all=true&limit=50&undefined=true",
             headers={"Content-Type": "application/json"},
         )
 
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 1)
+
+    def test_form_show_deleted_includes_deleted(self):
+        """GET /forms/ with showDeleted=true includes deleted forms without hiding active ones"""
+        self.client.force_authenticate(self.yoda)
+        self.form_2.delete()
+
+        response = self.client.get(
+            "/api/forms/?showDeleted=true",
+            headers={"Content-Type": "application/json"},
+        )
+
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""

@@ -1,5 +1,6 @@
 import { useSafeIntl } from 'bluesquare-components';
 import * as yup from 'yup';
+import { TEMPORARY } from '../../constants';
 import MESSAGES from '../../messages';
 
 yup.addMethod(
@@ -12,8 +13,8 @@ yup.addMethod(
             if (value) {
                 const regexp = /^\d*$/;
 
-                const valuesArray = Array.isArray(value)
-                    ? value
+                const valuesArray: string[] = Array.isArray(value)
+                    ? value.map((v: string | number) => `${v}`.trim())
                     : value
                           .split(',')
                           .map((v: string | number) => `${v}`.trim());
@@ -54,9 +55,14 @@ export const useFormAValidation = () => {
             .nullable(),
         form_a_reception_date: yup
             .date()
-            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable(),
+            .nullable()
+            .when('status', {
+                is: TEMPORARY,
+                then: schema => schema.notRequired(),
+                otherwise: schema =>
+                    schema.required(formatMessage(MESSAGES.requiredField)),
+            }),
         usable_vials_used: yup
             .number()
             .nullable()
@@ -67,7 +73,6 @@ export const useFormAValidation = () => {
         unusable_vials: yup
             .number()
             .nullable()
-            // .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),

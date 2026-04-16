@@ -8,7 +8,12 @@ export const INCIDENT = 'incident';
 export const CREATED = 'created';
 export const USED = 'used';
 export const RETURNED = 'returned';
-
+// Form A status
+export const TEMPORARY = 'temporary';
+export const RECEIVED = 'received';
+// Form A state transitions
+export const RECEIVED_TO_TEMPORARY = 'received-to-temporary';
+export const SESSION_TEMPORARY = 'session-temporary';
 // campaign category for on_hold/is_test
 export const REGULAR = 'REGULAR';
 export const TEST_CAMPAIGN = 'TEST_CAMPAIGN';

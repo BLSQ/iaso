@@ -101,6 +101,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "legend_threshold",
             "change_request_mode",
             "has_mappings",
+            "validation_workflow",
         ]
         fields = [
             "id",
@@ -132,6 +133,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "change_request_mode",
             "has_mappings",
             "possible_fields_with_latest_version",
+            "validation_workflow",
         ]
         read_only_fields = [
             "id",

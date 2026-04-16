@@ -45,6 +45,30 @@ const MESSAGES = defineMessages({
         defaultMessage: 'App Version',
         id: 'iaso.projects.appVersion',
     },
+    import_type_bulk: {
+        defaultMessage: 'Bulk Org Units and Instances',
+        id: 'iaso.apiimport.import_type_bulk',
+    },
+    import_type_instance: {
+        defaultMessage: 'Form instance',
+        id: 'iaso.apiimport.import_type_instance',
+    },
+    import_type_org_unit: {
+        defaultMessage: 'Org Unit',
+        id: 'iaso.apiimport.import_type_org_unit',
+    },
+    import_type_storage_logs: {
+        defaultMessage: 'Storage Logs',
+        id: 'iaso.apiimport.import_type_storage_logs',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.forms.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.forms.no',
+    },
 });
 
 export default MESSAGES;

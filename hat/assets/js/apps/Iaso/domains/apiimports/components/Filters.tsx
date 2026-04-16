@@ -25,12 +25,28 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl: baseUrl, params });
     const typeOptions = useMemo(
         () => [
-            { value: 'bulk', label: 'Bulk Org Units and Instances' },
-            { value: 'instance', label: 'Form instance' },
-            { value: 'orgUnit', label: 'Org Unit' },
-            { value: 'storageLog', label: 'Storage Logs' },
+            { value: 'bulk', label: formatMessage(MESSAGES.import_type_bulk) },
+            {
+                value: 'instance',
+                label: formatMessage(MESSAGES.import_type_instance),
+            },
+            {
+                value: 'orgUnit',
+                label: formatMessage(MESSAGES.import_type_org_unit),
+            },
+            {
+                value: 'storageLog',
+                label: formatMessage(MESSAGES.import_type_storage_logs),
+            },
         ],
-        [],
+        [formatMessage],
+    );
+    const yesNoOptions = useMemo(
+        () => [
+            { value: 'true', label: formatMessage(MESSAGES.yes) },
+            { value: 'false', label: formatMessage(MESSAGES.no) },
+        ],
+        [formatMessage],
     );
 
     return (
@@ -70,10 +86,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     type="select"
                     label={MESSAGES.has_problem}
                     onEnterPressed={handleSearch}
-                    options={[
-                        { value: 'true', label: 'Yes' },
-                        { value: 'false', label: 'No' },
-                    ]}
+                    options={yesNoOptions}
                 />
             </Grid>
 

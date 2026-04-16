@@ -58,18 +58,20 @@ class NestedPaymentSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def get_change_requests(self, obj):
-        change_requests = obj.change_requests.all()
+        change_requests = getattr(obj, "prefetched_change_requests", None)
+        if change_requests is None:
+            change_requests = obj.change_requests.all()
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def get_can_see_change_requests(self, obj):
-        change_requests = self.get_change_requests(obj)
-
-        blocked_change_requests = [
-            change_request for change_request in change_requests if change_request["can_see_change_request"] == False
-        ]
-        if blocked_change_requests:
-            return False
-        return True
+        user = self.context.get("request").user
+        if user.is_superuser:
+            return True
+        user_org_units = self.context.get("user_org_units")
+        change_requests = getattr(obj, "prefetched_change_requests", None)
+        if change_requests is None:
+            change_requests = obj.change_requests.all()
+        return all(cr.org_unit.id in user_org_units for cr in change_requests)
 
 
 class NestedTaskSerializer(serializers.ModelSerializer):
@@ -106,10 +108,14 @@ class PaymentLotSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if user.is_superuser:
             return True
-        change_requests_org_units_for_lot = obj.payments.values_list(
-            "change_requests__org_unit__id", flat=True
-        ).distinct()
-        return set(change_requests_org_units_for_lot).issubset(set(self.context["user_org_units"]))
+        org_unit_ids = []
+        for payment in obj.payments.all():
+            change_requests = getattr(payment, "prefetched_change_requests", None)
+            if change_requests is None:
+                change_requests = payment.change_requests.all()
+            for change_request in change_requests:
+                org_unit_ids.append(change_request.org_unit.id)
+        return set(org_unit_ids).issubset(set(self.context["user_org_units"]))
 
     def get_payments(self, obj):
         payments = obj.payments.all()

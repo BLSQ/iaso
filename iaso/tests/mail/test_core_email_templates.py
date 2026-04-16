@@ -50,9 +50,7 @@ class EmbedStaticLogoTest(SimpleTestCase):
                 THEME_PRIMARY_BACKGROUND_COLOR="#fff",
                 DEFAULT_FROM_EMAIL="a@b.co",
             ):
-                ctx = core_email_branding_context(
-                    protocol="https", domain="example.com", embed_static_logo=True
-                )
+                ctx = core_email_branding_context(protocol="https", domain="example.com", embed_static_logo=True)
             self.assertTrue(ctx["email_logo_url"].startswith("data:image/png;base64,"))
 
 

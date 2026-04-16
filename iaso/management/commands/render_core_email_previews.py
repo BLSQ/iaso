@@ -48,9 +48,7 @@ class Command(BaseCommand):
         domain = settings.DNS_DOMAIN
         protocol = "https"
 
-        brand = core_email_branding_context(
-            protocol=protocol, domain=domain, embed_static_logo=embed_logo
-        )
+        brand = core_email_branding_context(protocol=protocol, domain=domain, embed_static_logo=embed_logo)
         if embed_logo and not str(brand.get("email_logo_url", "")).startswith("data:"):
             self.stdout.write(
                 self.style.WARNING(
@@ -94,6 +92,4 @@ class Command(BaseCommand):
                 path.write_text(render_to_string(template, ctx), encoding="utf-8")
                 self.stdout.write(self.style.SUCCESS(f"Wrote {path}"))
 
-        self.stdout.write(
-            f"Done. Open files under: {out_dir.resolve()} (HTML in a browser, TXT in an editor)."
-        )
+        self.stdout.write(f"Done. Open files under: {out_dir.resolve()} (HTML in a browser, TXT in an editor).")

@@ -912,3 +912,4 @@ if IN_TESTS:
         ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="
 
 ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
+SETUPER_SANDBOX_PASSWORD = os.environ.get("SETUPER_SANDBOX_PASSSWORD", "district")

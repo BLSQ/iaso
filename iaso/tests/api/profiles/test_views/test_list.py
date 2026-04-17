@@ -193,7 +193,9 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
 
     def test_search_by_teams(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("profiles-list"), {"teams": f"{self.team1.pk},{self.team2.pk}", "fields": ":all"})
+        response = self.client.get(
+            reverse("profiles-list"), {"teams": f"{self.team1.pk},{self.team2.pk}", "fields": ":all"}
+        )
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 2)
         user_names = [item["user_name"] for item in response_data["results"]]
@@ -313,7 +315,9 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.john)
 
         # Test ascending order.
-        response = self.client.get(reverse("profiles-list"), {"order": "annotated_first_user_role", "limit": 10, "fields": ":all"})
+        response = self.client.get(
+            reverse("profiles-list"), {"order": "annotated_first_user_role", "limit": 10, "fields": ":all"}
+        )
         response_data = self.assertJSONResponse(response, 200)
 
         actual_order = []
@@ -341,7 +345,9 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
 
         # Test descending order.
 
-        response = self.client.get(reverse("profiles-list"), {"order": "-annotated_first_user_role", "limit": 10, "fields": ":all"})
+        response = self.client.get(
+            reverse("profiles-list"), {"order": "-annotated_first_user_role", "limit": 10, "fields": ":all"}
+        )
         response_data = self.assertJSONResponse(response, 200)
 
         actual_order = []

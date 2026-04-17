@@ -1,6 +1,7 @@
 import typing
 
 from django.contrib.auth.models import Group, Permission
+from django.urls import reverse
 
 from iaso import models as m
 from iaso.modules import MODULES
@@ -10,10 +11,10 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_ADMIN_PERMISSION,
     CORE_USERS_MANAGED_PERMISSION,
 )
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class BaseProfileAPITestCase(APITestCase):
+class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
         super().setUp()
         self.MODULES = [module.codename for module in MODULES]
@@ -148,12 +149,15 @@ class BaseProfileAPITestCase(APITestCase):
         for profile_data in list_data["results"]:
             self.assertValidProfileListItemData(profile_data)
 
-    def assertValidProfileData(self, project_data: typing.Mapping):
-        self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "first_name", str)
-        self.assertHasField(project_data, "last_name", str)
-        self.assertHasField(project_data, "email", str)
-        self.assertHasField(project_data, "color", str)
+    def get_profile_list_retrieve_schema(self):
+        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+        return res.json()["components"]["schemas"]["ProfileList"]
+
+    def assertValidProfileData(self, data: typing.Mapping):
+        self.assertResponseCompliantToSwagger(data, "ProfileRetrieve")
+
+    def assertValidProfileListItemData(self, data: typing.Mapping):
+        self.assertResponseCompliantToSwagger(data, "ProfileList")
 
     def assertValidProfileListItemData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
@@ -295,3 +299,5 @@ PROFILE_LOG_SCHEMA = {
     },
     "required": ["id", "user", "content_type", "source", "object_id", "created_at", "past_value", "new_value"],
 }
+
+PROFILE_RETRIEVE_SCHEMA = {}

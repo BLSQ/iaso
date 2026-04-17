@@ -6,6 +6,8 @@ import typing
 from cgi import parse_header
 from unittest import mock
 
+import jsonref
+import jsonschema
 import numpy as np
 import pandas as pd
 
@@ -16,9 +18,10 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
-from django.urls import clear_url_caches
+from django.urls import clear_url_caches, reverse
 from django.utils import timezone
 from jinja2 import Environment, FileSystemLoader
+from jsonschema import Draft202012Validator
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
@@ -163,6 +166,67 @@ class IasoTestCaseMixin:
         env = Environment(loader=FileSystemLoader(path_to_fixtures))
         template = env.get_template(fixture_name)
         return template.render(context)
+
+
+class SwaggerTestCaseMixin(BaseAPITestCase):
+    """
+    This mixin purpose is to be able to validate any response against the generated swagger schema
+    """
+
+    def get_openapi_schema(self):
+        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+        self.assertEqual(res.status_code, 200)
+        return res.json()
+
+    def resolve_refs(self, schema):
+        return jsonref.replace_refs(schema)
+
+    def normalize_schema(self, schema):
+        if isinstance(schema, dict):
+            if schema.get("nullable") is True:
+                t = schema.get("type")
+                if isinstance(t, str):
+                    schema["type"] = [t, "null"]
+                elif isinstance(t, list) and "null" not in t:
+                    schema["type"] = t + ["null"]
+                schema.pop("nullable", None)
+
+            for v in schema.get("properties", {}).values():
+                self.normalize_schema(v)
+
+            if "items" in schema:
+                self.normalize_schema(schema["items"])
+
+            for key in ("allOf", "oneOf", "anyOf"):
+                if key in schema:
+                    for sub in schema[key]:
+                        self.normalize_schema(sub)
+
+        return schema
+
+    def get_component_schema(self, openapi_schema, name: str):
+        return openapi_schema["components"]["schemas"][name]
+
+    def validate_openapi_response(self, data, schema_name: str):
+        openapi = self.get_openapi_schema()
+
+        # resolve refs first
+        resolved = self.resolve_refs(openapi)
+
+        # extract schema AFTER resolution
+        schema = self.get_component_schema(resolved, schema_name)
+
+        # normalize OpenAPI quirks
+        schema = self.normalize_schema(schema)
+
+        # validate
+        Draft202012Validator(schema).validate(data)
+
+    def assertResponseCompliantToSwagger(self, data, schema):
+        try:
+            self.validate_openapi_response(data, schema)
+        except jsonschema.ValidationError as ex:
+            self.fail(msg=str(ex))
 
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):

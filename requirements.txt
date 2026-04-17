@@ -69,6 +69,7 @@ python-dateutil==2.9.0 # https://github.com/dateutil/dateutil
 names-generator==0.2.0 # https://github.com/glentner/names_generator
 django-autoslug==1.9.9 # https://github.com/justinmayer/django-autoslug
 python-magic==0.4.27 # https://github.com/ahupp/python-magic
+jsonref==1.1.0 # https://github.com/gazpachoking/jsonref
 
 # Exporting tools.
 # ------------------------------------------------------------------------------

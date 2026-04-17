@@ -651,7 +651,7 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(user)
         data = {
             "user_name": "new_user_name",
-            "org_units": [self.org_unit_from_parent_type.pk, self.another_org_unit.pk],
+            "org_units": [self.another_org_unit.pk],
         }
         response = self.client.patch(
             reverse("profiles-detail", kwargs={"pk": profile_to_modify.id}), data=data, format="json"
@@ -662,6 +662,22 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             (
                 f"User with {CORE_USERS_MANAGED_PERMISSION} cannot assign an OrgUnit outside "
                 f"of their own health pyramid. Trying to assign {self.another_org_unit.pk}."
+            ),
+        )
+
+        data = {
+            "user_name": "new_user_name",
+            "org_units": [self.org_unit_from_parent_type.pk],
+        }
+        response = self.client.patch(
+            reverse("profiles-detail", kwargs={"pk": profile_to_modify.id}), data=data, format="json"
+        )
+        response_data = self.assertJSONResponse(response, 403)
+        self.assertEqual(
+            response_data["detail"],
+            (
+                f"User with {CORE_USERS_MANAGED_PERMISSION} cannot assign an OrgUnit outside "
+                f"of their own health pyramid. Trying to assign {self.org_unit_from_parent_type.pk}."
             ),
         )
 

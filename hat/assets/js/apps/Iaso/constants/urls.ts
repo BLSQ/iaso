@@ -87,7 +87,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
     instances: {
-        url: 'forms/submissions',
+        url: 'forms/submissions/list',
         params: [
             'accountId',
             'formIds',
@@ -124,6 +124,20 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     instanceDetail: {
         url: 'forms/submission',
         params: ['accountId', 'instanceId', 'referenceFormId'],
+    },
+    instanceValidation: {
+        url: 'forms/submissions/validation',
+        params: [
+            'accountId',
+            'forms',
+            'name',
+            'showDeleted',
+            ...paginationPathParams,
+        ],
+    },
+    instanceValidationDetail: {
+        url: 'forms/submissions/validation/detail',
+        params: ['accountId', 'slug'],
     },
     compareInstanceLogs: {
         url: 'forms/compareInstanceLogs',
@@ -627,7 +641,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
 export const extractUrls = (
     config: Record<string, RouteConfig>,
 ): Record<string, string> => {
-    const result = {};
+    const result: Record<string, string> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.url;
     });
@@ -638,7 +652,7 @@ export const extractUrls = (
 export const extractParams = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.entries(config).forEach(([key, value]) => {
         result[key] = value.params;
     });
@@ -649,7 +663,7 @@ export const extractParams = (
 export const extractParamsConfig = (
     config: Record<string, RouteConfig>,
 ): Record<string, string[]> => {
-    const result = {};
+    const result: Record<string, string[]> = {};
     Object.values(config).forEach(value => {
         result[value.url] = value.params;
     });
@@ -668,6 +682,8 @@ type IasoBaseUrls = {
     formsStats: string;
     instances: string;
     instanceDetail: string;
+    instanceValidation: string;
+    instanceValidationDetail: string;
     compareInstanceLogs: string;
     compareInstances: string;
     mappings: string;

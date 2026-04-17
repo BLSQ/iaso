@@ -6,10 +6,9 @@ import {
     within,
     act,
 } from '@testing-library/react';
-import { IntlProvider } from 'react-intl';
 import { vi } from 'vitest';
 import {
-    renderWithTheme,
+    renderWithThemeAndIntlProvider,
     selectFromComboBoxWithAsync,
 } from '../../../../../../tests/helpers';
 import { BulkImportDialogModal } from './BulkImportDialog';
@@ -111,13 +110,11 @@ describe('BulkImportDialogModal', () => {
     });
 
     it('renders the modal and file upload', () => {
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <BulkImportDialogModal
-                    isOpen={true}
-                    closeDialog={closeDialogMock}
-                />
-            </IntlProvider>,
+        renderWithThemeAndIntlProvider(
+            <BulkImportDialogModal
+                isOpen={true}
+                closeDialog={closeDialogMock}
+            />,
         );
         expect(
             screen.getByRole('dialog', { name: 'Create users from file' }),
@@ -129,13 +126,11 @@ describe('BulkImportDialogModal', () => {
     });
 
     it('handles file selection', async () => {
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <BulkImportDialogModal
-                    isOpen={true}
-                    closeDialog={closeDialogMock}
-                />
-            </IntlProvider>,
+        renderWithThemeAndIntlProvider(
+            <BulkImportDialogModal
+                isOpen={true}
+                closeDialog={closeDialogMock}
+            />,
         );
         const file = new File(
             ['username,email\njohn,john@example.com'],
@@ -154,13 +149,11 @@ describe('BulkImportDialogModal', () => {
     });
 
     it('toggles default values section', async () => {
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <BulkImportDialogModal
-                    isOpen={true}
-                    closeDialog={closeDialogMock}
-                />
-            </IntlProvider>,
+        renderWithThemeAndIntlProvider(
+            <BulkImportDialogModal
+                isOpen={true}
+                closeDialog={closeDialogMock}
+            />,
         );
         const checkbox = screen.getByTestId('default-values-toggle');
         fireEvent.click(checkbox);
@@ -198,13 +191,11 @@ describe('BulkImportDialogModal', () => {
             error,
         });
 
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <BulkImportDialogModal
-                    isOpen={true}
-                    closeDialog={closeDialogMock}
-                />
-            </IntlProvider>,
+        renderWithThemeAndIntlProvider(
+            <BulkImportDialogModal
+                isOpen={true}
+                closeDialog={closeDialogMock}
+            />,
         );
 
         expect(
@@ -225,13 +216,11 @@ describe('BulkImportDialogModal', () => {
             error: null,
         });
 
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <BulkImportDialogModal
-                    isOpen={true}
-                    closeDialog={closeDialogMock}
-                />
-            </IntlProvider>,
+        renderWithThemeAndIntlProvider(
+            <BulkImportDialogModal
+                isOpen={true}
+                closeDialog={closeDialogMock}
+            />,
         );
         expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
     });
@@ -244,13 +233,11 @@ describe('BulkImportDialogModal', () => {
             error: null,
         });
 
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <BulkImportDialogModal
-                    isOpen={true}
-                    closeDialog={closeDialogMock}
-                />
-            </IntlProvider>,
+        renderWithThemeAndIntlProvider(
+            <BulkImportDialogModal
+                isOpen={true}
+                closeDialog={closeDialogMock}
+            />,
         );
 
         const checkbox = screen.getByTestId('default-values-toggle');

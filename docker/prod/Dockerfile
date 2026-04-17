@@ -45,7 +45,7 @@ ENV PATH="/venv/bin:$PATH"
 # Install python dependencies + gunicorn
 COPY ../../requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir gunicorn py
+    pip install --no-cache-dir gunicorn
 
 # Strip the venv: remove caches and debug symbols
 RUN find /venv -type d -name "__pycache__" -exec rm -rf {} + && \

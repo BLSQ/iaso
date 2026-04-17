@@ -285,6 +285,7 @@ class FormsAPITestCase(APITestCase):
 
         returned_ids = {form["id"] for form in response.json()["forms"]}
         self.assertEqual(returned_ids, {self.form_1.id, self.form_2.id})
+
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
         self.client.force_authenticate(self.yoda)

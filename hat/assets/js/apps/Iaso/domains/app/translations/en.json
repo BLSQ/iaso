@@ -372,6 +372,7 @@
     "iaso.forms.searchToSeeOrgUnits": "Click \"Search\" button to see org units",
     "iaso.forms.searchToSeeSubmissions": "Click \"Search\" button to see submissions",
     "iaso.forms.shape": "Shape",
+    "iaso.forms.onlyDeleted": "Show only deleted",
     "iaso.forms.showDeleted": "Show only deleted",
     "iaso.forms.showInstancesCount": "Show instance count",
     "iaso.forms.source": "Source",

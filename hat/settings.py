@@ -110,8 +110,7 @@ FORUM_PATH = get_env_var_or_default("FORUM_PATH", "")
 
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
-USE_CELERY = get_env_var_or_default("USE_CELERY", "")
-DATASET_ID = get_env_var_or_default("DATASET_ID", None)
+USE_CELERY = os.environ.get("USE_CELERY", "")
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
 DISABLE_PASSWORD_LOGINS = get_env_var_or_default("DISABLE_PASSWORD_LOGINS", "").lower() == "true"

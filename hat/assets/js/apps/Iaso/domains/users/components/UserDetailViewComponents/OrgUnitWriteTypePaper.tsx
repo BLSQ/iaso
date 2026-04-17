@@ -5,11 +5,21 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from 'Iaso/domains/users/messages';
 import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+import { SxStyles } from 'Iaso/types/general';
 
 type Props = {
     savingProfile?: boolean;
     profile?: ProfileRetrieveResponseItem;
 };
+
+const styles: SxStyles = {
+    ouChip: {
+        backgroundColor: theme => theme.palette.secondary.main,
+        fontSize: '0.8rem',
+        color: 'white',
+    },
+};
+
 export const OrgUnitWriteTypePaper = ({ savingProfile, profile }: Props) => {
     const { formatMessage } = useSafeIntl();
 
@@ -32,11 +42,7 @@ export const OrgUnitWriteTypePaper = ({ savingProfile, profile }: Props) => {
                     {profile?.editable_org_unit_types?.map(orgUnitWriteType => (
                         <Box key={`orgUnitWriteType-${orgUnitWriteType.id}`}>
                             <Chip
-                                sx={{
-                                    backgroundColor: '#EA8418',
-                                    color: 'white',
-                                    fontSize: '0.8rem',
-                                }}
+                                sx={styles.ouChip}
                                 label={orgUnitWriteType.name}
                                 size={'small'}
                             />

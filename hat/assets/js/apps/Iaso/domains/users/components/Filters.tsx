@@ -9,7 +9,6 @@ import {
     InputWithInfos,
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { ColumnSelect } from 'Iaso/domains/users/components/ColumnSelect';
 import { stringToBoolean } from 'Iaso/utils/dataManipulation';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
@@ -28,14 +27,12 @@ type Props = {
     baseUrl?: string;
     params: Record<string, any>;
     canBypassProjectRestrictions?: boolean;
-    columnSelectProps: React.ComponentProps<typeof ColumnSelect>;
 };
 
 const Filters = ({
     baseUrl = '',
     params,
     canBypassProjectRestrictions = false,
-    columnSelectProps,
 }: Props) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
@@ -260,9 +257,6 @@ const Filters = ({
             </Grid>
             <Grid container item xs={12} md={12} justifyContent="flex-end">
                 <Box mt={2}>
-                    <Box mr={2} display={'inline-block'}>
-                        <ColumnSelect {...columnSelectProps} />
-                    </Box>
                     <Button
                         data-test="search-button"
                         disabled={textSearchError || !filtersUpdated}

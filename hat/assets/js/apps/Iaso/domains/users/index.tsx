@@ -15,7 +15,6 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 import { CreateUserDialog } from 'Iaso/domains/users/components/CreateUserDialog';
-import { useProfileColumnSelectDrawer } from 'Iaso/domains/users/hooks/useProfileColumnSelectDrawer';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
@@ -135,14 +134,6 @@ export const Users = () => {
         managedUsersOnly: apiParams?.apiParams?.managedUsersOnly ?? 'true',
     });
 
-    const {
-        visibleColumns,
-        options,
-        setOptions,
-        isDisabled,
-        handleApplyOptions,
-    } = useProfileColumnSelectDrawer(columns, params, baseUrl);
-
     return (
         <>
             <UsersMultiActionsDialog
@@ -161,12 +152,6 @@ export const Users = () => {
                     baseUrl={baseUrl}
                     params={params}
                     canBypassProjectRestrictions={canBypassProjectRestrictions}
-                    columnSelectProps={{
-                        options,
-                        setOptions,
-                        isDisabled,
-                        handleApplyOptions,
-                    }}
                 />
                 <DisplayIfUserHasPerm
                     permissions={[
@@ -207,7 +192,7 @@ export const Users = () => {
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'user__username', desc: false }]}
-                    columns={visibleColumns}
+                    columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
@@ -224,6 +209,9 @@ export const Users = () => {
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)
                     }
+                    columnSelectorEnabled
+                    columnSelectorButtonType="button"
+                    columnSelectorButtonDisabled={isLoading || !data?.count}
                 />
             </Box>
         </>

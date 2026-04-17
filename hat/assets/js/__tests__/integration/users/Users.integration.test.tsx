@@ -193,7 +193,14 @@ describe('User detail view integration test', () => {
         randomUser.permissions.forEach((perm: string) => {
             // @ts-ignore
             expect(
-                screen.getByText(PERMISSIONS_MESSAGES?.[perm]?.defaultMessage),
+                screen.getByText(
+                    (
+                        PERMISSIONS_MESSAGES as Record<
+                            string,
+                            { id: string; defaultMessage: string }
+                        >
+                    )?.[perm]?.defaultMessage,
+                ),
             ).toBeInTheDocument();
         });
 
@@ -213,6 +220,7 @@ describe('User list integration test', () => {
     it.todo('reloads the data upon successful edit');
     it.todo('deletes user and reload data');
     it.todo('reloads data upon successful create');
+    it.todo('allows selecting different columns');
     it.todo('allows ordering on columns');
 });
 

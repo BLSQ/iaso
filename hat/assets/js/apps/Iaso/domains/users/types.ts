@@ -91,31 +91,6 @@ type NestedOrgUnitWriteType = {
     name: string;
 };
 
-type NestedOrgUnit = {
-    name: string;
-    short_name: string;
-    id: string | number;
-    source: string;
-    source_id: number;
-
-    source_ref: null;
-    parent_id: null;
-    org_unit_type_id: null;
-    org_unit_type_name: null;
-    org_unit_type_depth: null;
-    created_at: null;
-    updated_at: null;
-    aliases: null;
-    validation_status: null;
-    latitude: null;
-    longitude: null;
-    altitude: null;
-    has_geo_json: null;
-    version: null;
-    opening_date: null;
-    closed_date: null;
-};
-
 type UserRolePermission = {
     id: string | number;
     name: string;
@@ -161,19 +136,11 @@ export type ProfileListResponseItem = {
     user_name: string;
     last_name: string;
     email: string;
-    language?: string;
     user_id: number | string;
+    user_display: string;
     phone_number: string;
-    country_code?: string;
-    editable_org_unit_type_ids: string[] | number[];
-    user_roles_editable_org_unit_type_ids: string[] | number[];
     user_roles: NestedUserRole[];
-    color: string;
     projects: NestedProject[];
-    user_permissions: string[];
-    is_staff: boolean;
-    is_superuser: boolean;
-    org_units: NestedOrgUnit[];
 };
 
 export type ProfileRetrieveResponseItem = {

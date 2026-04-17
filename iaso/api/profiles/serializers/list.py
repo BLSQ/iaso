@@ -1,8 +1,6 @@
-from phonenumbers import region_code_for_number
 from rest_framework import serializers
 
-from iaso.api.common import ModelSerializer
-from iaso.api.profiles.serializers.retrieve import NestedOrgUnitSerializer
+from iaso.api.common import DynamicFieldsModelSerializer, ModelSerializer
 from iaso.models import Profile, Project, UserRole
 
 
@@ -24,48 +22,31 @@ class NestedUserRoleSerializer(ModelSerializer):
         return tail if sep else obj.group.name
 
 
-class ProfileListSerializer(ModelSerializer):
+class ProfileListSerializer(DynamicFieldsModelSerializer):
     first_name = serializers.SerializerMethodField(read_only=True)
     user_name = serializers.SerializerMethodField(read_only=True)
     last_name = serializers.SerializerMethodField(read_only=True)
     email = serializers.SerializerMethodField(read_only=True)
-
-    country_code = serializers.SerializerMethodField()
     phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True)
-
-    editable_org_unit_type_ids = serializers.SerializerMethodField()
-    user_roles_editable_org_unit_type_ids = serializers.ReadOnlyField(
-        source="get_user_roles_editable_org_unit_type_ids"
-    )
     user_roles = NestedUserRoleSerializer(many=True, read_only=True)
     projects = RelatedProjectSerializer(many=True, read_only=True)
-    user_permissions = serializers.SerializerMethodField()
-    is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
-    is_superuser = serializers.BooleanField(source="user.is_superuser", read_only=True)
-    org_units = NestedOrgUnitSerializer(many=True, read_only=True)
+    user_display = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Profile
         fields = [
             "id",
+            "user_id",
             "first_name",
             "user_name",
             "last_name",
             "email",
-            "language",
-            "user_id",
             "phone_number",
-            "country_code",
-            "editable_org_unit_type_ids",
-            "user_roles_editable_org_unit_type_ids",
             "user_roles",
-            "color",
             "projects",
-            "user_permissions",
-            "is_staff",
-            "is_superuser",
-            "org_units",
+            "user_display",
         ]
+        default_fields = ["id", "user_id", "user_display"]
 
     # todo : cache this ?
     def _get_user_infos(self, obj):
@@ -86,16 +67,15 @@ class ProfileListSerializer(ModelSerializer):
     def get_email(self, obj):
         return self._get_user_infos(obj).email
 
-    def get_country_code(self, obj):
-        return region_code_for_number(obj.phone_number).lower() if obj.phone_number else None
+    def get_user_display(self, obj):
+        if not obj.user:
+            return None
 
-    def get_editable_org_unit_type_ids(self, obj):
-        try:
-            editable_org_unit_type_ids = obj.annotated_editable_org_unit_types_ids
-        except AttributeError:
-            editable_org_unit_type_ids = list(obj.editable_org_unit_types.values_list("id", flat=True))
+        username = obj.user.username
 
-        return editable_org_unit_type_ids
+        if not obj.user.first_name and not obj.user.last_name:
+            return username or ""
 
-    def get_user_permissions(self, obj):
-        return [p.codename for p in getattr(obj.user, "iaso_permissions", [])]
+        full_name = obj.user.get_full_name()
+
+        return f"{obj.user.username} ({full_name})" if full_name else obj.user.username

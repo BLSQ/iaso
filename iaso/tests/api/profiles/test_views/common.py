@@ -146,7 +146,7 @@ class BaseProfileAPITestCase(APITestCase):
         )
 
         for profile_data in list_data["results"]:
-            self.assertValidProfileData(profile_data)
+            self.assertValidProfileListItemData(profile_data)
 
     def assertValidProfileData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
@@ -154,6 +154,11 @@ class BaseProfileAPITestCase(APITestCase):
         self.assertHasField(project_data, "last_name", str)
         self.assertHasField(project_data, "email", str)
         self.assertHasField(project_data, "color", str)
+
+    def assertValidProfileListItemData(self, project_data: typing.Mapping):
+        self.assertHasField(project_data, "id", int)
+        self.assertHasField(project_data, "user_id", int)
+        self.assertHasField(project_data, "user_display", str)
 
     def get_new_user_data(self):
         user_name = "audit_user"

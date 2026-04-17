@@ -31,6 +31,7 @@ export const useGetProfilesApiParams = params => {
 
     const url = makeUrlWithParams(`/api/profiles/`, {
         ...apiParams,
+        fields: ':all',
         managedUsersOnly: apiParams.managedUsersOnly ?? 'true',
     });
 

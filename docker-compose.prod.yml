@@ -1,0 +1,155 @@
+services:
+  iaso:
+    #    image: blsq/iaso:${IMAGE_TAG:-latest}
+    ## If you want to run the prod docker compose locally
+    ## Comment the image line and uncomment the build line
+      build:
+        context: .
+        dockerfile: docker/prod/Dockerfile
+      ports:
+        - '8081:8081'
+      ## If you want to use a .env file with your own values
+      ##  Uncomment the env_file line
+      env_file:
+        - .env
+      #      environment:
+      #        APP_TITLE: ${APP_TITLE}
+      #        AUTHENTICATION_ENFORCED: ${AUTHENTICATION_ENFORCED}
+      #        AVAILABLE_LANGUAGES: ${AVAILABLE_LANGUAGES}
+      #        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      #        AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL}
+      #        AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME}
+      #        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      #        AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME}
+      #        AZURE_CONNECTION_STRING: ${AZURE_CONNECTION_STRING}
+      #        AZURE_CONTAINER_NAME: ${AZURE_CONTAINER_NAME}
+      #        AZURE_CUSTOM_DOMAIN: ${AZURE_CUSTOM_DOMAIN}
+      #        AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME}
+      #        AZURE_STORAGE_ACCOUNT_KEY: ${AZURE_STORAGE_ACCOUNT_KEY}
+      #        BACKGROUND_TASK_SERVICE: ${BACKGROUND_TASK_SERVICE}
+      #        BEANSTALK_SQS_REGION_NAME: ${BEANSTALK_SQS_REGION_NAME}
+      #        BEANSTALK_SQS_URL: ${BEANSTALK_SQS_URL}
+      #        CACHE_BACKEND: ${CACHE_BACKEND}
+      #        CACHE_LOCATION: ${CACHE_LOCATION}
+      #        CACHE_MAX_ENTRIES: ${CACHE_MAX_ENTRIES}
+      #        CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      #        CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      #        CLAMAV_ACTIVE: ${CLAMAV_ACTIVE}
+      #        CLAMAV_FQDN: ${CLAMAV_FQDN}
+      #        CLAMAV_PORT: ${CLAMAV_PORT}
+      #        CSRF_COOKIE_HTTPONLY: ${CSRF_COOKIE_HTTPONLY}
+      #        CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE}
+      #        DATASET_ID: ${DATASET_ID}
+      #        DB_READONLY_PASSWORD: ${DB_READONLY_PASSWORD}
+      #        DB_READONLY_USERNAME: ${DB_READONLY_USERNAME}
+      #        DEBUG: 'false'
+      #        DEBUG_SQL: ${DEBUG_SQL}
+      #        DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      #        DISABLE_PASSWORD_LOGINS: ${DISABLE_PASSWORD_LOGINS}
+      #        DISABLE_SSL_REDIRECT: ${DISABLE_SSL_REDIRECT:-false}
+      #        DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS: ${DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS}
+      #        DNS_DOMAIN: ${DNS_DOMAIN}
+      #        EMAIL_BACKEND: ${EMAIL_BACKEND}
+      #        EMAIL_HOST: ${EMAIL_HOST}
+      #        EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      #        EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      #        EMAIL_PORT: ${EMAIL_PORT}
+      #        EMAIL_USE_TLS: ${EMAIL_USE_TLS}
+      #        ENABLE_ANALYTICS: ${ENABLE_ANALYTICS:-false}
+      #        ENABLE_GZIP: ${ENABLE_GZIP:-true}
+      #        ENABLE_SETUPER_SANDBOX: ${ENABLE_SETUPER_SANDBOX}
+      #        ENCRYPTED_TEXT_FIELD_KEY: ${ENCRYPTED_TEXT_FIELD_KEY}
+      #        ENKETO_API_TOKEN: ${ENKETO_API_TOKEN}
+      #        ENKETO_DEV: ${ENKETO_DEV:-false}
+      #        ENKETO_SIGNING_SECRET: ${ENKETO_SIGNING_SECRET}
+      #        ENKETO_URL: ${ENKETO_URL}
+      #        FAVICON_PATH: ${FAVICON_PATH}
+      #        FORUM_PATH: ${FORUM_PATH}
+      #        GOOGLE_API_KEY_BASE64: ${GOOGLE_API_KEY_BASE64}
+      #        HIDE_BASIC_NAV_ITEMS: ${HIDE_BASIC_NAV_ITEMS}
+      #        LEARN_MORE_URL: ${LEARN_MORE_URL}
+      #        LIVE_COMPONENTS: ${LIVE_COMPONENTS}
+      #        LOGGING_LEVEL: ${LOGGING_LEVEL}
+      #        LOGIN_LOGO_PATH: ${LOGIN_LOGO_PATH}
+      #        LOGO_PATH: ${LOGO_PATH}
+      #        LQAS_PIPELINE: ${LQAS_PIPELINE}
+      #        LQAS_PIPELINE_VERSION: ${LQAS_PIPELINE_VERSION}
+      #        MAINTENANCE_MODE: ${MAINTENANCE_MODE}
+      #        OH_PIPELINE_TARGET: ${OH_PIPELINE_TARGET}
+      #        OPENHEXA_TOKEN: ${OPENHEXA_TOKEN}
+      #        OPENHEXA_URL: ${OPENHEXA_URL}
+      #        PLUGINS: ${PLUGINS}
+      #        PREPAREDNESS_TEMPLATE_FR_ID: ${PREPAREDNESS_TEMPLATE_FR_ID}
+      #        PREPAREDNESS_TEMPLATE_ID: ${PREPAREDNESS_TEMPLATE_ID}
+      #        PRODUCT_FRUITS_WORKSPACE_CODE: ${PRODUCT_FRUITS_WORKSPACE_CODE}
+      #        PYTHONUNBUFFERED: 'true'
+      #        RDS_DB_NAME: ${RDS_DB_NAME}
+      #        RDS_HOSTNAME: ${RDS_HOSTNAME}
+      #        RDS_PASSWORD: ${RDS_PASSWORD}
+      #        RDS_USERNAME: ${RDS_USERNAME}
+      #        SECRET_KEY: ${SECRET_KEY}
+      #        SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
+      #        SENTRY_FRONT_ENABLED: ${SENTRY_FRONT_ENABLED}
+      #        SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-"0.1"}
+      #        SENTRY_ERRORS_SAMPLE_RATE: ${SENTRY_ERRORS_SAMPLE_RATE:-"1.0"}
+      #        SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE: ${SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE:-"0.8"}
+      #        SENTRY_URL: ${SENTRY_URL}
+      #        SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE}
+      #        SERVER_URL: ${SERVER_URL}
+      #        SETUPER_SANDBOX_PASSSWORD: ${SETUPER_SANDBOX_PASSSWORD}
+      #        SHOW_NAME_WITH_LOGO: ${SHOW_NAME_WITH_LOGO}
+      #        STATIC_URL: ${STATIC_URL}
+      #        SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      #        SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME}
+      #        SUPERSET_URL: ${SUPERSET_URL}
+      #        TEST_PROD: ${TEST_PROD}
+      #        THEME_PRIMARY_BACKGROUND_COLOR: ${THEME_PRIMARY_BACKGROUND_COLOR:-#F5F5F5}
+      #        THEME_PRIMARY_COLOR: ${THEME_PRIMARY_COLOR:-#006699}
+      #        THEME_SECONDARY_COLOR: ${THEME_SECONDARY_COLOR:-#ff7961}
+      #        USER_MANUAL_PATH: ${USER_MANUAL_PATH}
+      #        USE_AZURE_STORAGE: ${USE_AZURE_STORAGE}
+      #        USE_CELERY: ${USE_CELERY}
+      #        USE_S3: ${USE_S3}
+      #        WFP_AUTH_ACCOUNT: ${WFP_AUTH_ACCOUNT}
+      #        WFP_AUTH_CLIENT_ID: ${WFP_AUTH_CLIENT_ID}
+      #        WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT: ${WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT}
+      #        WORKER: ${WORKER}
+
+      logging: &iaso_logging
+        driver: json-file
+        options:
+          max-size: 5k
+      volumes:
+        - "static-files:/opt/app/static"
+      stdin_open: true
+      tty: true
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - '80:80'
+    volumes:
+      - "./docker/prod/.platform/nginx/nginx.conf:/etc/nginx/nginx.conf"
+      - "static-files:/opt/app/static"
+    depends_on:
+      - iaso
+
+    # If you want to run the prod docker compose locally
+    # you will need a database in the same network
+    # and you will need your env variables to point to this database
+  db:
+    # https://registry.hub.docker.com/r/postgis/postgis
+    # Pinning specific minor versions of PostgreSQL and PostGIS is not easy.
+    # https://github.com/postgis/docker-postgis/issues/396
+    image: postgis/postgis:16-3.5
+    logging: *iaso_logging
+    ports:
+      - '5433:5432'
+    volumes:
+      - ../pgdata-iaso-16:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${RDS_DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+volumes:
+  static-files:

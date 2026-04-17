@@ -1,5 +1,6 @@
 from unittest.mock import Mock
 
+from django.http import QueryDict
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
@@ -24,7 +25,7 @@ class FormsSerializerTestCase(TestCase):
 
     def test_should_serialize_a_form(self):
         request = APIRequestFactory().get("/")
-        request.query_params = {}
+        request.query_params = QueryDict(mutable=True)
         serializer = FormSerializer(self.form, context={"request": request})
 
         expected_data = {

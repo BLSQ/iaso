@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
 from iaso.api.common import Paginator
 from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
 from plugins.polio.api.chronogram.permissions import HasChronogramPermission, HasChronogramRestrictedWritePermission
@@ -27,7 +28,11 @@ class ChronogramPagination(Paginator):
 
 @extend_schema(tags=["Polio - Chronograms"])
 class ChronogramViewSet(viewsets.ModelViewSet):
-    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filter_backends = [
+        filters.OrderingFilter,
+        django_filters.rest_framework.DjangoFilterBackend,
+        DynamicFieldsFilterBackend,
+    ]
     filterset_class = ChronogramFilter
     http_method_names = ["delete", "get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination

@@ -219,6 +219,7 @@ INSTALLED_APPS += [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
+    "dynamic_fields",
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "django_json_widget",

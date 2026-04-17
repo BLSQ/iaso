@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializer
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
 from plugins.polio.permissions import POLIO_CHRONOGRAM_PERMISSION, POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION
 

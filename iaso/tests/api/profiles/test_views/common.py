@@ -157,8 +157,8 @@ class BaseProfileAPITestCase(APITestCase):
 
     def assertValidProfileListItemData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "userId", int)
-        self.assertHasField(project_data, "userDisplay", str)
+        self.assertHasField(project_data, "user_id", int)
+        self.assertHasField(project_data, "user_display", str)
 
     def get_new_user_data(self):
         user_name = "audit_user"

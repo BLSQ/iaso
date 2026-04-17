@@ -39,6 +39,7 @@ export const useGetOrgUnitValidationStatus = (
             retry: false,
             enabled,
             keepPreviousData: true,
+            staleTime: Infinity,
             select: (data: OrgUnitStatus[]) => {
                 const options: DropdownOptions<string>[] = data.map(
                     (status: OrgUnitStatus) => ({

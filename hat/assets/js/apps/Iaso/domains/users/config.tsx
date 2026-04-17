@@ -50,12 +50,6 @@ export const useUsersTableColumns = ({
     return useMemo(
         () => [
             {
-                Header: formatMessage(MESSAGES.user),
-                id: 'user_display',
-                sortable: false,
-                accessor: 'user_display',
-            },
-            {
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects__name',
                 accessor: 'projects',

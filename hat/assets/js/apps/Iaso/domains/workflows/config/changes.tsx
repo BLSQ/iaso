@@ -1,13 +1,16 @@
+import React from 'react';
 import {
     Column,
     IconButton,
     IntlFormatMessage,
     useSafeIntl,
 } from 'bluesquare-components';
-import React from 'react';
 
 import { DateCell } from '../../../components/Cells/DateTimeCell';
+import { DropdownOptions } from '../../../types/utils';
 import { LinkToForm } from '../../forms/components/LinkToForm';
+import { FormVersion } from '../../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../../forms/types/forms';
 import { ChangesActionCell } from '../components/changes/ActionCell';
 import { HeadSourceCell } from '../components/changes/HeadSourceCell';
 import { HeadTargetCell } from '../components/changes/HeadTargetCell';
@@ -16,9 +19,6 @@ import { SourceCell } from '../components/changes/SourceCell';
 import { TargetCell } from '../components/changes/TargetCell';
 import MESSAGES from '../messages';
 
-import { DropdownOptions } from '../../../types/utils';
-import { FormVersion } from '../../forms/hooks/useGetPossibleFields';
-import { PossibleField } from '../../forms/types/forms';
 import {
     Change,
     ChangesOption,
@@ -104,18 +104,22 @@ export const useGetChangesColumns = (
 type Params = {
     sourceOptions: ChangesOption[];
     targetOptions: ChangesOption[];
-    handleUpdate: (key: keyof Mapping, value: string, index: number) => void;
+    handleUpdate: (
+        key: keyof Mapping,
+        value: string | undefined,
+        index: number,
+    ) => void;
     handleDelete: (index: number) => void;
     mappingArray: Mapping[];
     isFetchingSourcePossibleFields: boolean;
-    handleChangeForm: (_, value: string) => void;
+    handleChangeForm: (_: any, value: string) => void;
     changes?: Change[];
     change?: Change;
     form?: number;
-    handleChangeSourceVersion: (_, value: string) => void;
+    handleChangeSourceVersion: (_: any, value: string) => void;
     sourceVersion: string;
     sourceVersionsDropdownOptions: DropdownOptions<string>[];
-    handleChangeTargetVersion: (_, value: string) => void;
+    handleChangeTargetVersion: (_: any, value: string) => void;
     targetVersion: string;
     targetVersionsDropdownOptions: DropdownOptions<string>[];
     referenceForm?: ReferenceForm;

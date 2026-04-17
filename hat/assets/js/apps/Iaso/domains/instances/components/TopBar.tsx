@@ -17,8 +17,8 @@ const useStyles = makeStyles(theme => ({
 }));
 type Props = {
     formName: string;
-    tab: string;
-    handleChangeTab: (newTab: string) => void;
+    tab: 'list' | 'map' | 'files';
+    handleChangeTab: (newTab: 'list' | 'map' | 'files') => void;
     formIds: string[];
 };
 

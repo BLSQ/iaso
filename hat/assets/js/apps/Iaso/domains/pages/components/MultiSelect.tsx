@@ -1,5 +1,5 @@
-import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
+import { get } from 'lodash';
 import InputComponent from '../../../components/forms/InputComponent';
 import { DropdownOptions } from '../../../types/utils';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
@@ -17,6 +17,7 @@ type Props = {
     onChange?: (_keyValue: string, value: any) => void;
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
     returnFullObject?: boolean;
+    isLoading?: boolean;
 };
 
 export const MultiSelect: FunctionComponent<Props> = ({
@@ -26,6 +27,7 @@ export const MultiSelect: FunctionComponent<Props> = ({
     form,
     onChange,
     renderTags,
+    isLoading = false,
     disabled = false,
     clearable = true,
     withMarginTop = false,
@@ -46,6 +48,7 @@ export const MultiSelect: FunctionComponent<Props> = ({
             disabled={disabled}
             clearable={clearable}
             required={required}
+            loading={isLoading}
             labelString={label}
             renderTags={renderTags}
             onChange={(keyValue, value) => {

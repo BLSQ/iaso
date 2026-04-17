@@ -15,42 +15,42 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
         data = {
-            "userName": "unittest_user_name",
+            "user_name": "unittest_user_name",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertJSONResponse(response, 403)
 
     def test_create_profile_no_perm(self):
         self.client.force_authenticate(self.jane)
         data = {
-            "userName": "unittest_user_name",
+            "user_name": "unittest_user_name",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
         self.assertJSONResponse(response, 403)
 
     def test_create_user_with_user_roles_and_permissions(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "unittest_user_name",
+            "user_name": "unittest_user_name",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
             "email": "john.doe@test.com",
-            "userPermissions": [CORE_FORMS_PERMISSION.codename],
-            "userRoles": [self.user_role.id],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
+            "user_roles": [self.user_role.id],
         }
 
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
 
-        user_user_role = UserRole.objects.get(pk=response_data["userRoles"][0])
+        user_user_role = UserRole.objects.get(pk=response_data["user_roles"][0])
         self.assertEqual(user_user_role.id, self.user_role.id)
         self.assertEqual(user_user_role.group.name, self.group.name)
 
@@ -61,55 +61,57 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
     def test_create_user_with_not_allowed_user_roles(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "unittest_user_name",
+            "user_name": "unittest_user_name",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
             "email": "john.doe@test.com",
-            "userPermissions": [CORE_FORMS_PERMISSION.codename],
-            "userRoles": [self.user_role.id, self.user_role_another_account.id],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
+            "user_roles": [self.user_role.id, self.user_role_another_account.id],
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 400)
-        self.assertHasError(response_data, "userRoles", "One or more user roles do not belong to the provided account.")
+        self.assertHasError(
+            response_data, "user_roles", "One or more user roles do not belong to the provided account."
+        )
 
     def test_create_profile_duplicate_user(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "janedoe",
+            "user_name": "janedoe",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 400)
-        self.assertEqual(response_data["userName"], ["Username already exists for this account."])
+        self.assertEqual(response_data["user_name"], ["Username already exists for this account."])
 
     def test_create_profile_duplicate_user_with_capital_letters(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "JaNeDoE",
+            "user_name": "JaNeDoE",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "janedoe@test.com",
+            "first_name": "unittest_first_name",
+            "last_name": "janedoe@test.com",
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 400)
-        self.assertEqual(response_data["userName"], ["Username already exists for this account."])
+        self.assertEqual(response_data["user_name"], ["Username already exists for this account."])
 
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "unittest_user_name",
+            "user_name": "unittest_user_name",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
             "email": "john.doe@test.com",
-            "orgUnits": [self.org_unit_from_parent_type.id],
-            "userPermissions": [CORE_FORMS_PERMISSION.codename],
-            "editableOrgUnitTypeIds": [self.sub_unit_type.id],
+            "org_units": [self.org_unit_from_parent_type.id],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
+            "editable_org_unit_type_ids": [self.sub_unit_type.id],
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
 
         profile = Profile.objects.get(pk=response_data["id"])
@@ -117,10 +119,10 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.assertEqual(profile.editable_org_unit_types.first(), self.sub_unit_type)
 
         user = profile.user
-        self.assertEqual(user.username, data["userName"])
-        self.assertEqual(user.first_name, data["firstName"])
+        self.assertEqual(user.username, data["user_name"])
+        self.assertEqual(user.first_name, data["first_name"])
 
-        self.assertEqual(get_user_model().objects.filter(username=data["userName"]).count(), 1)
+        self.assertEqual(get_user_model().objects.filter(username=data["user_name"]).count(), 1)
         self.assertEqual(profile.account, self.account)
 
         self.assertQuerySetEqual(
@@ -136,15 +138,15 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jim)
         color = "#123abc"
         data = {
-            "userName": "color_user",
+            "user_name": "color_user",
             "password": "unittest_password",
-            "firstName": "color_first_name",
-            "lastName": "color_last_name",
+            "first_name": "color_first_name",
+            "last_name": "color_last_name",
             "email": "color@example.com",
             "color": color,
         }
 
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
 
         self.assertEqual(response_data["color"], color.upper())
@@ -156,16 +158,16 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
     def test_create_profile_with_send_email(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "userTest",
+            "user_name": "userTest",
             "password": "",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
-            "sendEmailInvitation": True,
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "send_email_invitation": True,
             "email": "test@test.com",
         }
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+            response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(len(callbacks), 1)
@@ -214,17 +216,17 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
     def test_create_profile_with_send_email_in_french(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "userTest",
+            "user_name": "userTest",
             "password": "",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
-            "sendEmailInvitation": True,
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "send_email_invitation": True,
             "email": "test@test.com",
             "language": "fr",
         }
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+            response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
         result = self.assertJSONResponse(response, 201)
         self.assertEqual(len(callbacks), 1)
@@ -269,15 +271,15 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
     def test_create_profile_with_no_password_and_not_send_email(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "userTest",
+            "user_name": "userTest",
             "password": "",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
-            "sendEmailInvitation": False,
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "send_email_invitation": False,
             "email": "test@test.com",
         }
 
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         result = self.assertJSONResponse(response, 400)
 
         self.assertHasError(result, "password", "This field is required.")
@@ -294,7 +296,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "user_permissions": [CORE_FORMS_PERMISSION.codename],
         }
 
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
 
         profile = Profile.objects.get(pk=response_data["id"])
@@ -324,7 +326,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "email": "john.doe@test.com",
             "user_permissions": [CORE_FORMS_PERMISSION.codename],
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
         self.assertJSONResponse(response, 403)
 
@@ -350,7 +352,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
             "projects": [project_2.id],
             "org_units": [self.org_unit_from_parent_type.id],
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
         self.assertJSONResponse(response, 403)
 
@@ -368,16 +370,16 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         """
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "invited_user_empty_password",
+            "user_name": "invited_user_empty_password",
             "password": "",
-            "firstName": "Invited",
-            "lastName": "User",
-            "sendEmailInvitation": True,
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
             "email": "invited1@test.com",
         }
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+            response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(len(callbacks), 1)
         self.assertJSONResponse(response, 201)
 
@@ -385,15 +387,15 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.assertTrue(user.has_usable_password(), "Invited user should have a usable password")
 
         data = {
-            "userName": "invited_user_missing_password",
-            "firstName": "Invited",
-            "lastName": "User",
-            "sendEmailInvitation": True,
+            "user_name": "invited_user_missing_password",
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
             "email": "invited2@test.com",
         }
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+            response = self.client.post(reverse("profiles-list"), data=data, format="json")
         self.assertEqual(len(callbacks), 1)
         self.assertJSONResponse(response, 201)
 
@@ -401,16 +403,16 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.assertTrue(user.has_usable_password())
 
         data = {
-            "userName": "invited_user_password_is_none",
+            "user_name": "invited_user_password_is_none",
             "password": None,
-            "firstName": "Invited",
-            "lastName": "User",
-            "sendEmailInvitation": True,
+            "first_name": "Invited",
+            "last_name": "User",
+            "send_email_invitation": True,
             "email": "invited3@test.com",
         }
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+            response = self.client.post(reverse("profiles-list"), data=data, format="json")
 
         self.assertJSONResponse(response, 201)
         self.assertEqual(len(callbacks), 1)
@@ -427,7 +429,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.john)
 
         data = self.get_new_user_data()
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
         new_profile_id = response_data["id"]
 
@@ -436,9 +438,9 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         response = self.client.get(
             reverse("logs-list"),
             {
-                "contentType": "iaso.profile",
+                "content_type": "iaso.profile",
                 "fields": ",".join(["past_value", "new_value"]),
-                "objectId": new_profile_id,
+                "object_id": new_profile_id,
             },
         )
         response_data = self.assertJSONResponse(response, 200)
@@ -454,20 +456,20 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.assertEqual(log["new_value"][0]["pk"], new_profile_id)
         new_profile = log["new_value"][0]["fields"]
         self.assertEqual(new_profile["user"], new_user_id)
-        self.assertEqual(new_profile["username"], data["userName"])
-        self.assertEqual(new_profile["first_name"], data["firstName"])
-        self.assertEqual(new_profile["last_name"], data["lastName"])
+        self.assertEqual(new_profile["username"], data["user_name"])
+        self.assertEqual(new_profile["first_name"], data["first_name"])
+        self.assertEqual(new_profile["last_name"], data["last_name"])
         self.assertEqual(new_profile["email"], data["email"])
         self.assertEqual(new_profile["organization"], data["organization"])
         self.assertEqual(len(new_profile["user_permissions"]), 1)
-        self.assertEqual(new_profile["user_permissions"], data["userPermissions"])
+        self.assertEqual(new_profile["user_permissions"], data["user_permissions"])
         self.assertTrue(new_profile["password_updated"])
         self.assertNotIn("password", new_profile.keys())
 
-        self.assertEqual(new_profile["dhis2_id"], data["dhis2Id"])
+        self.assertEqual(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEqual(new_profile["language"], data["language"])
-        self.assertEqual(new_profile["home_page"], data["homePage"])
-        self.assertEqual(new_profile["phone_number"], f"{data['phoneNumber']}")
+        self.assertEqual(new_profile["home_page"], data["home_page"])
+        self.assertEqual(new_profile["phone_number"], f"{data['phone_number']}")
         self.assertEqual(len(new_profile["org_units"]), 1)
         self.assertIn(self.org_unit_from_parent_type.id, new_profile["org_units"])
         self.assertEqual(len(new_profile["user_roles"]), 1)
@@ -478,27 +480,27 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
     def test_create_profile_then_delete(self):
         self.client.force_authenticate(self.jim)
         data = {
-            "userName": "unittest_user_name",
+            "user_name": "unittest_user_name",
             "password": "unittest_password",
-            "firstName": "unittest_first_name",
-            "lastName": "unittest_last_name",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
             "email": "jane.doe@test.com",
         }
-        response = self.client.post(reverse("profiles-list", kwargs={"version": "v2"}), data=data, format="json")
+        response = self.client.post(reverse("profiles-list"), data=data, format="json")
         response_data = self.assertJSONResponse(response, 201)
 
         profile = Profile.objects.get(pk=response_data["id"])
         user = profile.user
-        self.assertEqual(user.username, data["userName"])
-        self.assertEqual(user.first_name, data["firstName"])
+        self.assertEqual(user.username, data["user_name"])
+        self.assertEqual(user.first_name, data["first_name"])
         self.assertQuerySetEqual(user.user_permissions.all(), [])
-        self.assertEqual(get_user_model().objects.filter(username=data["userName"]).count(), 1)
+        self.assertEqual(get_user_model().objects.filter(username=data["user_name"]).count(), 1)
         # check that we have copied the account from the creator account
         self.assertEqual(profile.account, self.account)
 
         profile_id = profile.id
         user_id = user.id
-        response = self.client.delete(reverse("profiles-detail", kwargs={"pk": profile_id, "version": "v2"}))
+        response = self.client.delete(reverse("profiles-detail", kwargs={"pk": profile_id}))
 
         self.assertJSONResponse(response, 204)
         self.assertQuerySetEqual(get_user_model().objects.filter(id=user_id), [])

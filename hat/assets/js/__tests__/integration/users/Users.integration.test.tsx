@@ -1,11 +1,10 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
 import { screen } from '@testing-library/react';
-import { IntlProvider } from 'react-intl';
 import { Details } from 'Iaso/domains/users/details';
 import MESSAGES from 'Iaso/domains/users/messages';
 import PERMISSIONS_MESSAGES from 'Iaso/domains/users/permissionsMessages';
-import { renderWithTheme } from '../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
 import { randomLanguage } from '../../factories/language';
 
 // mocking hooks
@@ -147,11 +146,7 @@ describe('User detail view integration test', () => {
             error: null,
         });
 
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <Details />
-            </IntlProvider>,
-        );
+        renderWithThemeAndIntlProvider(<Details />);
 
         expect(
             screen.getByText(MESSAGES.generalInfo.defaultMessage),
@@ -208,6 +203,7 @@ describe('User list integration test', () => {
     it.todo('deletes user and reload data');
     it.todo('reloads data upon successful create');
     it.todo('allows selecting different columns');
+    it.todo('allows ordering on columns');
 });
 
 describe('User general integration test', () => {

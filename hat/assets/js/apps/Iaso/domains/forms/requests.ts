@@ -1,4 +1,5 @@
 import { UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../constants/snackBars';
 import {
@@ -13,22 +14,19 @@ import { Form } from './types/forms';
 export const useGetForm = (
     formId: number | string | undefined,
     enabled = Boolean(formId) && formId !== '0',
-    fields?: string | undefined,
+    fields?: string[] | undefined,
     appId?: string,
 ): UseQueryResult<Form, Error> => {
     const queryKey: any[] = ['forms', formId];
     if (fields) {
         queryKey.push(fields);
     }
-    let url = `/api/forms/${formId}`;
-    if (fields) {
-        url += `/?fields=${fields}`;
-        if (appId) {
-            url += `&app_id=${appId}`;
-        }
-    } else if (appId) {
-        url += `/?app_id=${appId}`;
-    }
+
+    const params = {
+        ...(appId ? { app_id: appId } : {}),
+        ...(fields ? { fields: fields } : {}),
+    };
+    const url = `/api/forms/${formId}?${createSearchParamsWithArray(params).toString()}`;
     return useSnackQuery({
         queryKey,
         queryFn: () => getRequest(url),

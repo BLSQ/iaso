@@ -186,6 +186,6 @@ export type FormsParams = {
     showDeleted?: string;
     planning?: string;
     projectsIds?: string;
-    fields?: string;
+    fields?: string[] | string;
     orgUnitId: string;
 };

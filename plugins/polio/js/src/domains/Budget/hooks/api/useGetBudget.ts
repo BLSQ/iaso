@@ -1,13 +1,14 @@
-import { groupBy } from 'lodash';
 import { useMemo } from 'react';
+import { groupBy } from 'lodash';
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import {
     DropdownOptions,
     Optional,
-} from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { getApiParamDateString } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+} from 'Iaso/types/utils';
+import { getApiParamDateString } from 'Iaso/utils/dates';
+import { createSearchParamsWithArray } from '../../../../utils';
 import { Budget, BudgetDetail, Workflow } from '../../types';
 
 type Option = {
@@ -78,13 +79,12 @@ export const useGetBudget = (
     id: number,
     onSuccess: (data: BudgetDetail) => void = () => null,
 ): UseQueryResult<BudgetDetail, Error> => {
+    const queryString = createSearchParamsWithArray({
+        fields: budgetDetailsFields,
+    }).toString();
+
     return useSnackQuery({
-        queryFn: () =>
-            getRequest(
-                `/api/polio/budget/${id}/?fields=${budgetDetailsFields.join(
-                    ',',
-                )}`,
-            ),
+        queryFn: () => getRequest(`/api/polio/budget/${id}/?${queryString}`),
         queryKey: ['budget', id],
         options: {
             enabled: Boolean(id),
@@ -103,8 +103,8 @@ const getBudgets = (params: any) => {
         filteredParams.push(['order', '-updated_at']);
     }
 
-    const queryString = new URLSearchParams(
-        Object.fromEntries(filteredParams) as Record<string, any>,
+    const queryString = createSearchParamsWithArray(
+        Object.fromEntries(filteredParams) as Record<string, string | any[]>,
     ).toString();
     return getRequest(`/api/polio/budget/?${queryString}`);
 };
@@ -128,7 +128,7 @@ export const useGetBudgets = (options: Option): any => {
         current_state_key: options.current_state_key,
         countries: options.countries,
         org_unit_groups: options.org_unit_groups,
-        fields: budgetFields.join(','),
+        fields: budgetFields,
     };
 
     return useSnackQuery({
@@ -164,7 +164,7 @@ export const useBudgetParams = (params: Param): any => {
 };
 
 const getBudgetForCampaign = (id: Optional<string>, params) => {
-    const queryString = new URLSearchParams(params).toString();
+    const queryString = createSearchParamsWithArray(params);
     return getRequest(`/api/polio/budget/${id}/?${queryString}`);
 };
 
@@ -172,7 +172,7 @@ export const useGetBudgetForCampaign = (
     id: Optional<string>,
 ): UseQueryResult<Partial<Budget>> => {
     const params = {
-        fields: 'id,obr_name,current_state,next_transitions,possible_transitions,rounds,timeline',
+        fields: ['id', 'obr_name', 'current_state', 'next_transitions', 'possible_transitions' ,'rounds' ,' timeline']
     };
 
     return useSnackQuery({

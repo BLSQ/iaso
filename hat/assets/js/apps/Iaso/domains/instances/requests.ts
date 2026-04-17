@@ -1,16 +1,26 @@
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import snackMessages from '../../components/snackBars/messages';
 import { getFileUrl, getFileCountUrl } from './utils';
 
-export const fetchFormDetailsForInstance = formId =>
-    getRequest(
-        `/api/forms/${formId}/?fields=name,period_type,label_keys,id,org_unit_type_ids`,
-    );
+export const fetchFormDetailsForInstance = (formId: number) => {
+    const queryString = createSearchParamsWithArray({
+        fields: [
+            'name',
+            'period_type',
+            'label_keys',
+            'id',
+            'org_unit_type_ids',
+        ],
+    }).toString();
 
-export const fetchInstancesAsDict = url => getRequest(url);
+    return getRequest(`/api/forms/${formId}/?${queryString}`);
+};
 
-export const fetchInstancesAsSmallDict = url => getRequest(url);
+export const fetchInstancesAsDict = (url: string) => getRequest(url);
+
+export const fetchInstancesAsSmallDict = (url: string) => getRequest(url);
 
 export const useGetInstancesFiles = (params, rowsPerPage, page, type) =>
     useSnackQuery(

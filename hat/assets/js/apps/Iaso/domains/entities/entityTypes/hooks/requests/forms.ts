@@ -1,5 +1,6 @@
 import { UseQueryResult } from 'react-query';
 
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 
@@ -11,14 +12,12 @@ export const useGetForms = (
     enabled: boolean,
     fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
-    const params = new URLSearchParams({
-        fields: (
-            fields ?? ['id', 'name', 'latest_form_version', 'form_id']
-        ).join(','),
+    const queryString = createSearchParamsWithArray({
+        fields: fields ? ['id', 'name', 'latest_form_version', 'form_id'] : [],
         order: 'name',
-    });
+    }).toString();
 
-    const url = `/api/forms/?${params}`;
+    const url = `/api/forms/?${queryString}`;
     return useSnackQuery({
         queryKey: ['entitiesForms', 'forms'],
         queryFn: () => getRequest(url),
@@ -47,7 +46,7 @@ export const useGetFormForEntityType = ({
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         enabled && Boolean(formId),
-        'possible_fields_with_latest_version,name,latest_form_version',
+        ['possible_fields_with_latest_version', 'name', 'latest_form_version'],
     );
     return {
         ...usePossibleFields(

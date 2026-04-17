@@ -185,7 +185,7 @@ export type FormsParams = {
     page: string;
     search?: string;
     showDeleted?: string;
-    onlyDeleted?: string
+    onlyDeleted?: string;
     planning?: string;
     projectsIds?: string;
     fields?: string;

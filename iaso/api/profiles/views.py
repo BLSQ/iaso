@@ -83,7 +83,15 @@ class ProfilesViewSet(ModelViewSet):
     filter_backends = [OrderingFilter, DjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
-    ordering_fields = ["id", "user__username", "annotated_first_user_role"]
+    ordering_fields = [
+        "id",
+        "user__username",
+        "annotated_first_user_role",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "phone_number",
+    ]
 
     def get_serializer_class(self):
         if self.action == "retrieve":

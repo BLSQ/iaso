@@ -195,6 +195,7 @@ describe('User list integration test', () => {
     it.todo('reloads the data upon successful edit');
     it.todo('deletes user and reload data');
     it.todo('reloads data upon successful create');
+    it.todo('allows ordering on columns');
 });
 
 describe('User general integration test', () => {

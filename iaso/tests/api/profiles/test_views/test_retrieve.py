@@ -17,6 +17,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         # no feature flag at first
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
         response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileData(response_data)
         self.assertIn("account", response_data)
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
@@ -25,6 +26,8 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
 
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
         response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileData(response_data)
+
         self.assertIn("account", response_data)
 
         self.assertEqual(response_data["account"]["feature_flags"], ["shape"])
@@ -33,6 +36,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.account.feature_flags.remove(aff)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
         response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileData(response_data)
         self.assertIn("account", response_data)
 
         self.assertEqual(response_data["account"]["feature_flags"], [])
@@ -68,6 +72,8 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(user)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
         response_data = self.assertJSONResponse(response, 200)
+        self.assertValidProfileData(response_data)
+
         for k in ["id", "first_name", "last_name", "user_name", "email", "phone_number", "organization", "projects"]:
             self.assertIn(k, response_data)
 
@@ -115,6 +121,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.john)
         response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
         response_data = self.assertJSONResponse(response, 200)
+
         self.assertValidProfileData(response_data)
         self.assertEqual(response_data["user_name"], "johndoe")
 

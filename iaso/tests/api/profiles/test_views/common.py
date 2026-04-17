@@ -1,10 +1,7 @@
 import typing
 
-import jsonschema
-
 from django.contrib.auth.models import Group, Permission
 from django.urls import reverse
-from jsonschema import Draft202012Validator, RefResolver
 
 from iaso import models as m
 from iaso.modules import MODULES
@@ -14,10 +11,10 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_ADMIN_PERMISSION,
     CORE_USERS_MANAGED_PERMISSION,
 )
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class BaseProfileAPITestCase(APITestCase):
+class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
         super().setUp()
         self.MODULES = [module.codename for module in MODULES]
@@ -152,33 +149,15 @@ class BaseProfileAPITestCase(APITestCase):
         for profile_data in list_data["results"]:
             self.assertValidProfileListItemData(profile_data)
 
-    def get_profile_retrieve_schema_validator(self):
-        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
-
-        resolver = RefResolver.from_schema(res.json())
-        profile_schema = res.json()["components"]["schemas"]["ProfileRetrieve"]
-        validator = Draft202012Validator(
-            profile_schema,
-            resolver=resolver,
-        )
-
-        return validator
-
     def get_profile_list_retrieve_schema(self):
         res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
         return res.json()["components"]["schemas"]["ProfileList"]
 
     def assertValidProfileData(self, data: typing.Mapping):
-        try:
-            self.get_profile_retrieve_schema_validator().validate(data)
-        except jsonschema.ValidationError as ex:
-            self.fail(msg=str(ex))
+        self.assertResponseCompliantToSwagger(data, "ProfileRetrieve")
 
-    def assertValidProfileListItemData(self, project_data: typing.Mapping):
-        try:
-            jsonschema.validate(project_data, self.get_profile_list_retrieve_schema())
-        except jsonschema.ValidationError as ex:
-            self.fail(msg=str(ex))
+    def assertValidProfileListItemData(self, data: typing.Mapping):
+        self.assertResponseCompliantToSwagger(data, "ProfileList")
 
     def get_new_user_data(self):
         user_name = "audit_user"

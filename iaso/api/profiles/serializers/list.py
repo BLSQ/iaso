@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
@@ -17,6 +18,7 @@ class NestedUserRoleSerializer(ModelSerializer):
         model = UserRole
         fields = ["id", "name"]
 
+    @extend_schema_field(serializers.CharField())
     def get_name(self, obj):
         head, sep, tail = obj.group.name.partition("_")
         return tail if sep else obj.group.name
@@ -61,5 +63,6 @@ class ProfileListSerializer(ModelSerializer):
     def get_first_name(self, obj):
         return self._get_user_infos(obj).first_name
 
+    @extend_schema_field(serializers.EmailField)
     def get_email(self, obj):
         return self._get_user_infos(obj).email

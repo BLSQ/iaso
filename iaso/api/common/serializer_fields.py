@@ -19,7 +19,7 @@ from rest_framework.relations import MANY_RELATION_KWARGS, ManyRelatedField
 from iaso.api.common.validators import JSONSchemaFieldValidator
 
 
-@extend_schema_field(OpenApiTypes.INT64)
+@extend_schema_field(OpenApiTypes.NUMBER)
 class TimestampField(serializers.Field):
     def to_representation(self, value: datetime):
         return value.timestamp()

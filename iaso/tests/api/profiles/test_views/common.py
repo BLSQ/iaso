@@ -159,6 +159,11 @@ class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def assertValidProfileListItemData(self, data: typing.Mapping):
         self.assertResponseCompliantToSwagger(data, "ProfileList")
 
+    def assertValidProfileListItemData(self, project_data: typing.Mapping):
+        self.assertHasField(project_data, "id", int)
+        self.assertHasField(project_data, "user_id", int)
+        self.assertHasField(project_data, "user_display", str)
+
     def get_new_user_data(self):
         user_name = "audit_user"
         pwd = "admin1234lol"

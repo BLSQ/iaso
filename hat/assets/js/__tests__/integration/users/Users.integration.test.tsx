@@ -112,6 +112,13 @@ const getRandomUserRole = () => {
     };
 };
 
+const getRandomOrgUnitWriteType = () => {
+    return {
+        id: faker.string.numeric(5),
+        name: faker.word.words(3),
+    };
+};
+
 const randomUser = {
     user_name: faker.internet.username(),
     first_name: faker.person.firstName(),
@@ -126,6 +133,10 @@ const randomUser = {
     org_units: [getRandomOrgUnit(), getRandomOrgUnit()],
     user_roles_permissions: [getRandomUserRole(), getRandomUserRole()],
     permissions: ['iaso_completeness', 'iaso_mappings'],
+    editable_org_unit_types: [
+        getRandomOrgUnitWriteType(),
+        getRandomOrgUnitWriteType(),
+    ],
 };
 
 // actual tests
@@ -163,6 +174,9 @@ describe('User detail view integration test', () => {
         expect(
             screen.getByText(MESSAGES.user_roles.defaultMessage),
         ).toBeInTheDocument();
+        expect(
+            screen.getByText(MESSAGES.orgUnitWriteTypes.defaultMessage),
+        ).toBeInTheDocument();
 
         randomUser.projects.forEach(({ name }) => {
             expect(screen.getByText(name)).toBeInTheDocument();
@@ -179,8 +193,19 @@ describe('User detail view integration test', () => {
         randomUser.permissions.forEach((perm: string) => {
             // @ts-ignore
             expect(
-                screen.getByText(PERMISSIONS_MESSAGES?.[perm]?.defaultMessage),
+                screen.getByText(
+                    (
+                        PERMISSIONS_MESSAGES as Record<
+                            string,
+                            { id: string; defaultMessage: string }
+                        >
+                    )?.[perm]?.defaultMessage,
+                ),
             ).toBeInTheDocument();
+        });
+
+        randomUser.editable_org_unit_types.forEach(({ name }) => {
+            expect(screen.getByText(name)).toBeInTheDocument();
         });
     });
     it.todo('deletes user and redirects to user list');
@@ -195,6 +220,7 @@ describe('User list integration test', () => {
     it.todo('reloads the data upon successful edit');
     it.todo('deletes user and reload data');
     it.todo('reloads data upon successful create');
+    it.todo('allows selecting different columns');
     it.todo('allows ordering on columns');
 });
 

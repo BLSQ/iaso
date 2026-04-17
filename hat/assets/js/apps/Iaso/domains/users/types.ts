@@ -86,6 +86,11 @@ type NestedProject = {
     color?: string;
 };
 
+type NestedOrgUnitWriteType = {
+    id: number;
+    name: string;
+};
+
 type UserRolePermission = {
     id: string | number;
     name: string;
@@ -132,6 +137,7 @@ export type ProfileListResponseItem = {
     last_name: string;
     email: string;
     user_id: number | string;
+    user_display: string;
     phone_number: string;
     user_roles: NestedUserRole[];
     projects: NestedProject[];
@@ -158,7 +164,7 @@ export type ProfileRetrieveResponseItem = {
     phone_number?: string;
     country_code?: string;
     other_account: Account[];
-    editable_org_unit_type_ids: string[] | number[];
+    editable_org_unit_types: NestedOrgUnitWriteType[];
     user_roles_editable_org_unit_type_ids: string[] | number[];
     account: Account & { modules: string[] };
     org_units: OrgUnit[];

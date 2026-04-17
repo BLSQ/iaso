@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useMemo,
-    useCallback,
-} from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -214,6 +209,9 @@ export const Users = () => {
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)
                     }
+                    columnSelectorEnabled
+                    columnSelectorButtonType="button"
+                    columnSelectorButtonDisabled={isLoading || !data?.count}
                 />
             </Box>
         </>

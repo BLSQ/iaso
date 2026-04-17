@@ -6,4 +6,6 @@ class DynamicFieldsConfig(AppConfig):
     verbose_name = "Dynamic Fields"
 
     def ready(self):
+        from . import config  # noqa
+
         super().ready()

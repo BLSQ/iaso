@@ -1,5 +1,5 @@
-import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
+import { get } from 'lodash';
 import InputComponent from '../../../components/forms/InputComponent';
 import { DropdownOptions } from '../../../types/utils';
 

@@ -63,6 +63,7 @@ const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 const PAYMENTS = 'iaso_payments';
 const STOCK_MANAGEMENT = 'iaso_stock_management';
 const METRIC_TYPES = 'iaso_metric_types';
+const VALIDATION_WORKFLOWS = 'iaso_validation_workflows';
 
 export {
     COMPLETENESS,
@@ -120,5 +121,6 @@ export {
     USERS_ADMIN,
     USERS_MANAGEMENT,
     USER_ROLES,
+    VALIDATION_WORKFLOWS,
     WORKFLOWS,
 };

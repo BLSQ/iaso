@@ -436,7 +436,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.patch(
-            f"/api/mobile/forms/{self.form_2.id}/?only_deleted=1",
+            f"/api/mobile/forms/{self.form_2.id}/?onlyDeleted=1",
             format="json",
             headers={"accept": "application/json"},
             data={

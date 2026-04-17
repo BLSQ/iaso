@@ -1,6 +1,10 @@
 import typing
 
+import jsonschema
+
 from django.contrib.auth.models import Group, Permission
+from django.urls import reverse
+from jsonschema import Draft202012Validator, RefResolver
 
 from iaso import models as m
 from iaso.modules import MODULES
@@ -148,21 +152,33 @@ class BaseProfileAPITestCase(APITestCase):
         for profile_data in list_data["results"]:
             self.assertValidProfileListItemData(profile_data)
 
-    def assertValidProfileData(self, project_data: typing.Mapping):
-        self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "first_name", str)
-        self.assertHasField(project_data, "last_name", str)
-        self.assertHasField(project_data, "email", str)
-        self.assertHasField(project_data, "color", str)
+    def get_profile_retrieve_schema_validator(self):
+        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+
+        resolver = RefResolver.from_schema(res.json())
+        profile_schema = res.json()["components"]["schemas"]["ProfileRetrieve"]
+        validator = Draft202012Validator(
+            profile_schema,
+            resolver=resolver,
+        )
+
+        return validator
+
+    def get_profile_list_retrieve_schema(self):
+        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+        return res.json()["components"]["schemas"]["ProfileList"]
+
+    def assertValidProfileData(self, data: typing.Mapping):
+        try:
+            self.get_profile_retrieve_schema_validator().validate(data)
+        except jsonschema.ValidationError as ex:
+            self.fail(msg=str(ex))
 
     def assertValidProfileListItemData(self, project_data: typing.Mapping):
-        self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "userId", int)
-        self.assertHasField(project_data, "firstName", str)
-        self.assertHasField(project_data, "lastName", str)
-        self.assertHasField(project_data, "email", str)
-        self.assertHasField(project_data, "userRoles", list)
-        self.assertHasField(project_data, "projects", list)
+        try:
+            jsonschema.validate(project_data, self.get_profile_list_retrieve_schema())
+        except jsonschema.ValidationError as ex:
+            self.fail(msg=str(ex))
 
     def get_new_user_data(self):
         user_name = "audit_user"
@@ -299,3 +315,5 @@ PROFILE_LOG_SCHEMA = {
     },
     "required": ["id", "user", "content_type", "source", "object_id", "created_at", "past_value", "new_value"],
 }
+
+PROFILE_RETRIEVE_SCHEMA = {}

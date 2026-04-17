@@ -6,6 +6,7 @@ from unittest import mock
 import time_machine
 
 from django.db.models import F
+from django.http import QueryDict
 from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
@@ -274,7 +275,7 @@ class BudgetProcessSerializerTestCase(TestCase):
         # Request.
         cls.request = APIRequestFactory().get("/")
         cls.request.user = cls.user
-        cls.request.query_params = {}
+        cls.request.query_params = QueryDict(mutable=True)
         # Campaign.
         cls.campaign = Campaign.objects.create(
             obr_name="Test Campaign",
@@ -452,7 +453,9 @@ class BudgetProcessSerializerTestCase(TestCase):
         )
 
         # Ask for a set of fields (this is done via `DynamicFieldsModelSerializer`).
-        self.request.query_params["fields"] = "id,who_sent_budget_at_WFEDITABLE,payment_mode,district_count"
+        self.request.query_params.setlist(
+            "fields", "id,who_sent_budget_at_WFEDITABLE,payment_mode,district_count".split(",")
+        )
         serializer = BudgetProcessSerializer(instance=budget_process, context={"request": self.request})
         self.assertEqual(
             serializer.data,

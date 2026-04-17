@@ -28,15 +28,20 @@ class ChronogramPagination(Paginator):
 
 @extend_schema(tags=["Polio - Chronograms"])
 class ChronogramViewSet(viewsets.ModelViewSet):
-    filter_backends = [
-        filters.OrderingFilter,
-        django_filters.rest_framework.DjangoFilterBackend,
-        DynamicFieldsFilterBackend,
-    ]
     filterset_class = ChronogramFilter
     http_method_names = ["delete", "get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackend,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -139,6 +144,16 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
     permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
     serializer_class = ChronogramTaskSerializer
 
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackend,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+
     def get_permissions(self):
         if self.request.user.has_perm(POLIO_CHRONOGRAM_PERMISSION.full_name()):
             return super().get_permissions()
@@ -173,6 +188,16 @@ class ChronogramTemplateTaskViewSet(viewsets.ModelViewSet):
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission]
     serializer_class = ChronogramTemplateTaskSerializer
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackend,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
     def get_queryset(self) -> QuerySet:
         account = self.request.user.iaso_profile.account

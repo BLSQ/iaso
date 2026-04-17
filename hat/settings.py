@@ -219,7 +219,6 @@ INSTALLED_APPS += [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
-    "dynamic_fields",
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "django_json_widget",
@@ -897,6 +896,8 @@ for plugin_name in PLUGINS:
             f"\tno plugin_settings.py file found for plugin {plugin_name}, appending plugins.{plugin_name} to INSTALLED_APPS"
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
+
+INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests
 # This allows faster tests and easier clean up of test files

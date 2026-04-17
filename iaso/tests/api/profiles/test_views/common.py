@@ -150,8 +150,8 @@ class BaseProfileAPITestCase(APITestCase):
 
     def assertValidProfileData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "firstName", str)
-        self.assertHasField(project_data, "lastName", str)
+        self.assertHasField(project_data, "first_name", str)
+        self.assertHasField(project_data, "last_name", str)
         self.assertHasField(project_data, "email", str)
         self.assertHasField(project_data, "color", str)
 
@@ -174,24 +174,24 @@ class BaseProfileAPITestCase(APITestCase):
         phone_number = "+32475888888"
         country_code = "be"
         data = {
-            "userName": user_name,
+            "user_name": user_name,
             "password": pwd,
-            "firstName": first_name,
-            "lastName": last_name,
-            "sendEmailInvitation": send_email_invitation,
+            "first_name": first_name,
+            "last_name": last_name,
+            "send_email_invitation": send_email_invitation,
             "email": email,
             "organization": organization,
             "language": language,
-            "homePage": home_page,
-            "dhis2Id": dhis2_id,
+            "home_page": home_page,
+            "dhis2_id": dhis2_id,
             "permissions": [],  # This looks legacy from an older version of the API
-            "userPermissions": user_permissions,
+            "user_permissions": user_permissions,
             "projects": projects,
-            "phoneNumber": phone_number,
-            "countryCode": country_code,
-            "userRoles": user_roles,
-            "userRolesPermissions": user_roles_permissions,
-            "orgUnits": org_units,
+            "phone_number": phone_number,
+            "country_code": country_code,
+            "user_roles": user_roles,
+            "user_roles_permissions": user_roles_permissions,
+            "org_units": org_units,
         }
         return data
 

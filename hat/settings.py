@@ -263,7 +263,6 @@ if DEBUG:
     ]
 
 MIDDLEWARE += [
-    "iaso.middlewares.camel_case.CustomCamelCaseMiddleWare",
     "axes.middleware.AxesMiddleware",
 ]
 
@@ -466,17 +465,10 @@ REST_FRAMEWORK = {
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
-        "rest_framework.renderers.JSONRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseJSONRenderer
-        "rest_framework.renderers.BrowsableAPIRenderer",  # in the future: djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_csv.renderers.CSVRenderer",
     ),
-    # in the future:
-    # 'DEFAULT_PARSER_CLASSES': (
-    #     'djangorestframework_camel_case.parser.CamelCaseJSONParser',
-    # ),
-    "JSON_UNDERSCOREIZE": {
-        "no_underscore_before_number": True,
-    },
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
@@ -489,15 +481,11 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Iaso Swagger",
     "VERSION": "v1",
     "SERVE_PERMISSIONS": [
-        "rest_framework.permissions.IsAdminUser",
         "iaso.drf_spectacular_utils.permissions.HasAccountAndProfile",
     ],
     "TAGS": [
         {"name": "Mobile", "description": "Endpoints used by the mobile application"},
         {"name": "v2", "description": "Version 2 of the API"},
-    ],
-    "POSTPROCESSING_HOOKS": [
-        "iaso.drf_spectacular_utils.post_processing_hooks.selective_camelize_serializer_fields",
     ],
     "SWAGGER_UI_SETTINGS": {  # see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
         "defaultModelsExpandDepth": 0,  # collapsing schemas by default
@@ -913,3 +901,4 @@ if IN_TESTS:
         ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="
 
 ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
+SETUPER_SANDBOX_PASSWORD = os.environ.get("SETUPER_SANDBOX_PASSSWORD", "district")

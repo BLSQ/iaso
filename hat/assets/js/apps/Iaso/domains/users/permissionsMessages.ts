@@ -823,7 +823,8 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_snt_scenario_permissions_tooltip: {
         id: 'iaso.permissions.iaso_snt_scenario_permissions_tooltip',
-        defaultMessage: 'Allows to create and update Scenarios. Basic = can edit only your own scenarios, Full = can edit all scenarios.',
+        defaultMessage:
+            'Allows to create and update Scenarios. Basic = can edit only your own scenarios, Full = can edit all scenarios.',
     },
     basic: {
         id: 'iaso.permissions.readEdit.basic',
@@ -839,8 +840,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_snt_settings_permissions_tooltip: {
         id: 'iaso.permissions.iaso_snt_settings_permissions_tooltip',
-        defaultMessage:
-            'Allows to view and edit global settings',
+        defaultMessage: 'Allows to view and edit global settings',
     },
     iaso_metric_types: {
         id: 'iaso.permissions.iaso_metric_types',
@@ -850,6 +850,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_metric_types_tooltip',
         defaultMessage:
             'Manage metric types: create, update and delete metric types',
+    },
+    iaso_validation_workflows: {
+        id: 'iaso.permissions.iaso_validation_workflows',
+        defaultMessage: 'Validation workflows',
+    },
+    iaso_validation_workflows_tooltip: {
+        id: 'iaso.permissions.iaso_validation_workflows_tooltip',
+        defaultMessage:
+            'Manage validation workflows: create, update and delete validation workflows',
     },
 });
 

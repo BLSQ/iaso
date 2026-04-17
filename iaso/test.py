@@ -318,7 +318,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, request_body)
         self.assertEqual(last_api_import.import_type, import_type)
-        self.assertEqual(has_problems, last_api_import.has_problem, last_api_import)
+        self.assertEqual(has_problems, last_api_import.has_problem, f"{last_api_import} - {last_api_import.exception}")
 
         self.assertIsInstance(last_api_import.headers, dict)
         if check_auth_header:

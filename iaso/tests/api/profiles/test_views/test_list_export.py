@@ -17,7 +17,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
         multi_user.teams.set([self.team1, self.team2])
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("profiles-export-csv", kwargs={"version": "v2"}))
+        response = self.client.get(reverse("profiles-export-csv"))
         self.assertEqual(response.status_code, 200)
 
         csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
@@ -39,7 +39,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("profiles-export-csv", kwargs={"version": "v2"}))
+        response = self.client.get(reverse("profiles-export-csv"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -83,7 +83,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(reverse("profiles-export-xlsx", kwargs={"version": "v2"}))
+        response = self.client.get(reverse("profiles-export-xlsx"))
         excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
         self.assertEqual(

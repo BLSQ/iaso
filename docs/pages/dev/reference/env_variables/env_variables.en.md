@@ -188,3 +188,9 @@ For detailed setup instructions, see [Plausible Analytics Setup](../analytics/pl
 | name | optional | default value | description |
 |------|----------|---------------|-------------|
 | AVAILABLE_LANGUAGES | true | `en,fr` | Comma-separated list of supported languages |
+
+## Form Copilot
+
+| name | optional | default value | description |
+|------|----------|---------------|-------------|
+| FORM_COPILOT_MODEL | true | `claude-opus-4-7` | Anthropic model used by the Form Copilot to generate XLSForms |

@@ -8,6 +8,7 @@ from typing import Optional
 import anthropic
 import openpyxl
 
+from django.conf import settings
 from pydantic import BaseModel
 from pyxform import create_survey_from_xls
 
@@ -174,7 +175,7 @@ def call_claude(message: str, conversation_history: list[dict], api_key: Optiona
     messages.append({"role": "user", "content": message})
 
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model=settings.FORM_COPILOT_MODEL,
         max_tokens=8192,
         system=XLSFORM_SYSTEM_PROMPT,
         messages=messages,

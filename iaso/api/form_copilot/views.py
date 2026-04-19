@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 from iaso.api.form_versions.serializers import FormVersionSerializer
 from iaso.models import Form, TemporaryForm
+from iaso.modules import MODULE_FORM_COPILOT
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 
 from .agent import build_xlsform, convert_to_xform_xml, generate_form, parse_xlsform_to_json, patch_xlsform_form_id
@@ -18,7 +19,12 @@ from .agent import build_xlsform, convert_to_xform_xml, generate_form, parse_xls
 
 class HasFormCopilotPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+        if not request.user.is_authenticated:
+            return False
+        if not request.user.has_perm(CORE_FORMS_PERMISSION.full_name()):
+            return False
+        account = request.user.iaso_profile.account
+        return MODULE_FORM_COPILOT.codename in (account.modules or [])
 
 
 logger = logging.getLogger(__name__)

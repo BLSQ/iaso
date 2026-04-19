@@ -9,6 +9,7 @@ from django.test import override_settings
 from iaso import models as m
 from iaso.api.form_copilot.agent import FormSettings, GeneratedForm, SurveyRow
 from iaso.models.form_copilot import TemporaryForm
+from iaso.modules import MODULE_FORM_COPILOT
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
@@ -34,8 +35,16 @@ class FormCopilotChatTestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.account = m.Account.objects.create(name="Test Account", anthropic_api_key="sk-test-key")
-        cls.account_no_key = m.Account.objects.create(name="Account Without Key")
+        cls.account = m.Account.objects.create(
+            name="Test Account",
+            anthropic_api_key="sk-test-key",
+            modules=[MODULE_FORM_COPILOT.codename],
+        )
+        cls.account_no_key = m.Account.objects.create(
+            name="Account Without Key",
+            modules=[MODULE_FORM_COPILOT.codename],
+        )
+        cls.account_no_module = m.Account.objects.create(name="Account Without Module")
 
         cls.user = cls.create_user_with_profile(
             username="user_with_perm", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
@@ -43,6 +52,9 @@ class FormCopilotChatTestCase(APITestCase):
         cls.user_no_perm = cls.create_user_with_profile(username="user_no_perm", account=cls.account)
         cls.user_no_key = cls.create_user_with_profile(
             username="user_no_key", account=cls.account_no_key, permissions=[CORE_FORMS_PERMISSION]
+        )
+        cls.user_no_module = cls.create_user_with_profile(
+            username="user_no_module", account=cls.account_no_module, permissions=[CORE_FORMS_PERMISSION]
         )
 
     def _mock_generate_form(self, with_form=True):
@@ -61,6 +73,11 @@ class FormCopilotChatTestCase(APITestCase):
 
     def test_no_permission_returns_403(self):
         self.client.force_authenticate(self.user_no_perm)
+        response = self.client.post(self.url, {"message": "hi"}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_module_disabled_returns_403(self):
+        self.client.force_authenticate(self.user_no_module)
         response = self.client.post(self.url, {"message": "hi"}, format="json")
         self.assertEqual(response.status_code, 403)
 
@@ -136,7 +153,11 @@ class FormCopilotChatTestCase(APITestCase):
 class FormCopilotLoadFormTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.account = m.Account.objects.create(name="Test Account", anthropic_api_key="sk-test-key")
+        cls.account = m.Account.objects.create(
+            name="Test Account",
+            anthropic_api_key="sk-test-key",
+            modules=[MODULE_FORM_COPILOT.codename],
+        )
 
         cls.user = cls.create_user_with_profile(
             username="user_with_perm", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
@@ -201,8 +222,15 @@ class FormCopilotLoadFormTestCase(APITestCase):
 class FormCopilotDownloadTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.account = m.Account.objects.create(name="Test Account", anthropic_api_key="sk-test-key")
-        cls.other_account = m.Account.objects.create(name="Other Account")
+        cls.account = m.Account.objects.create(
+            name="Test Account",
+            anthropic_api_key="sk-test-key",
+            modules=[MODULE_FORM_COPILOT.codename],
+        )
+        cls.other_account = m.Account.objects.create(
+            name="Other Account",
+            modules=[MODULE_FORM_COPILOT.codename],
+        )
 
         cls.user = cls.create_user_with_profile(
             username="user_with_perm", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
@@ -265,8 +293,15 @@ class FormCopilotSaveTestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.account = m.Account.objects.create(name="Test Account", anthropic_api_key="sk-test-key")
-        cls.other_account = m.Account.objects.create(name="Other Account")
+        cls.account = m.Account.objects.create(
+            name="Test Account",
+            anthropic_api_key="sk-test-key",
+            modules=[MODULE_FORM_COPILOT.codename],
+        )
+        cls.other_account = m.Account.objects.create(
+            name="Other Account",
+            modules=[MODULE_FORM_COPILOT.codename],
+        )
 
         source = m.DataSource.objects.create(name="Test Source")
         source_version = m.SourceVersion.objects.create(data_source=source, number=1)

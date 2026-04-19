@@ -21,6 +21,7 @@ import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/Duplic
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
+import FormCopilot from '../domains/formCopilot';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
@@ -101,6 +102,13 @@ export const formsPath = {
     ],
     element: <Forms />,
     isRootUrl: true,
+};
+
+export const formCopilotPath = {
+    baseUrl: baseUrls.formCopilot,
+    routerUrl: `${baseUrls.formCopilot}/*`,
+    permissions: [Permission.FORMS],
+    element: <FormCopilot />,
 };
 
 export const pagesPath = {
@@ -525,6 +533,7 @@ export const page500 = {
 
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
+    formCopilotPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,

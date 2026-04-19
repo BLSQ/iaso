@@ -93,6 +93,7 @@ from ..models import (
     WorkflowVersion,
 )
 from ..models.data_store import JsonDataStore
+from ..models.form_copilot import TemporaryForm
 from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
 from ..models.team import Team
 from ..models.validation_workflow import ValidationNode
@@ -1328,6 +1329,15 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
         )
 
 
+class TemporaryFormAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "account", "created_at")
+    list_filter = ("account",)
+    search_fields = ("uuid", "user__username", "user__email")
+    raw_id_fields = ("user", "account")
+    readonly_fields = ("uuid", "created_at")
+
+
+admin.site.register(TemporaryForm, TemporaryFormAdmin)
 admin.site.register(AccountFeatureFlag)
 admin.site.register(Device)
 admin.site.register(DeviceOwnership)

@@ -97,7 +97,11 @@ export const MESSAGES = defineMessages({
     snt_malaria: {
         defaultMessage: 'SNT Malaria',
         id: 'iaso.modules.snt_malaria',
-    }
+    },
+    form_copilot: {
+        defaultMessage: 'Form Copilot',
+        id: 'iaso.modules.form_copilot',
+    },
 });
 
 export default MESSAGES;

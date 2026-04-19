@@ -90,6 +90,7 @@ services:
             SUPERSET_ADMIN_USERNAME:
             SUPERSET_URL:
             TEST_PROD:
+            ANTHROPIC_API_KEY:
             THEME_PRIMARY_BACKGROUND_COLOR: #OpenHexa API token
             THEME_PRIMARY_COLOR:
             THEME_SECONDARY_COLOR:

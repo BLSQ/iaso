@@ -123,6 +123,7 @@ class Account(models.Model):
     # specific analytics setup for a specific account
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
+    anthropic_api_key = models.TextField(null=True, blank=True, help_text="Anthropic API key used by the Form Copilot")
 
     @property
     def short_sanitized_name(self):

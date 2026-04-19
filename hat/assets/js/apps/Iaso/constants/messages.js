@@ -26,6 +26,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    formCopilot: {
+        defaultMessage: 'Form Copilot',
+        id: 'iaso.formCopilot.title',
+    },
     formList: {
         defaultMessage: 'Form List',
         id: 'iaso.label.formList',

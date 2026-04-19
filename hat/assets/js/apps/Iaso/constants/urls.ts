@@ -66,6 +66,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    formCopilot: {
+        url: 'forms/copilot',
+        params: ['accountId'],
+    },
     pipelineList: {
         url: 'pipelines/',
         params: ['accountId'],
@@ -676,6 +680,7 @@ type IasoBaseUrls = {
     setupAccountSettings: string;
     home: string;
     forms: string;
+    formCopilot: string;
     formDetail: string;
     pipelineDetails: string;
     pipelineList: string;

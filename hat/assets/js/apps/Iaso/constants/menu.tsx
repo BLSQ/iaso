@@ -4,6 +4,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BookIcon from '@mui/icons-material/Book';
 import CategoryIcon from '@mui/icons-material/Category';
 import CompareArrows from '@mui/icons-material/CompareArrows';
@@ -197,6 +198,12 @@ const menuItems = (
                     permissions: paths.formsPath.permissions,
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.formCopilot),
+                    permissions: paths.formCopilotPath.permissions,
+                    key: 'copilot',
+                    icon: props => <AutoFixHighIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.submissionsTitle),

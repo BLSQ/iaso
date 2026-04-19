@@ -1,26 +1,19 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import {
-    Autocomplete,
-    Box,
-    Button,
-    Snackbar,
-    Alert,
-    TextField,
-} from '@mui/material';
+import { Autocomplete, Box, Button, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import { useQueryClient } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { ChatPanel } from './components/ChatPanel';
 import { FormPreview } from './components/FormPreview';
 import { SaveFormDialog } from './components/SaveFormDialog';
-import { useGetFormsList } from './hooks/useGetFormsList';
-import { useLoadForm } from './hooks/useLoadForm';
-import { useSendMessage } from './hooks/useSendMessage';
+import { useGetFormsList } from './hooks/requests/useGetFormsList';
+import { useLoadForm } from './hooks/requests/useLoadForm';
+import { useSendMessage } from './hooks/requests/useSendMessage';
 import MESSAGES from './messages';
+import { ConversationEntry, SaveVersionResponse } from './types';
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -58,11 +51,6 @@ type Message = {
     content: string;
 };
 
-type ConversationEntry = {
-    role: 'user' | 'assistant';
-    content: string;
-};
-
 type FormOption = {
     id: number;
     name: string;
@@ -71,7 +59,6 @@ type FormOption = {
 
 const FormCopilot: FunctionComponent = () => {
     const classes = useStyles();
-    const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const [messages, setMessages] = useState<Message[]>([]);
     const [conversationHistory, setConversationHistory] = useState<
@@ -90,11 +77,6 @@ const FormCopilot: FunctionComponent = () => {
         useState<FormOption | null>(null);
     const [saveDialogOpen, setSaveDialogOpen] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-    const [snackbar, setSnackbar] = useState<{
-        open: boolean;
-        message: string;
-        severity: 'success' | 'error';
-    }>({ open: false, message: '', severity: 'success' });
 
     const { mutate: sendMessage, isLoading } = useSendMessage();
     const { data: formsData } = useGetFormsList();
@@ -124,8 +106,7 @@ const FormCopilot: FunctionComponent = () => {
                     const displayMsg =
                         `Form "${data.form_name}"` +
                         ` (version ${data.version_id})` +
-                        ` loaded. You can now ask me` +
-                        ` to modify it.`;
+                        ` loaded. You can now ask me to modify it.`;
 
                     setMessages(prev => [
                         ...prev,
@@ -135,86 +116,51 @@ const FormCopilot: FunctionComponent = () => {
                     const userCtx =
                         `I'm loading an existing form` +
                         ` called "${data.form_name}"` +
-                        ` (ODK form_id:` +
-                        ` "${data.form_odk_id}",` +
+                        ` (ODK form_id: "${data.form_odk_id}",` +
                         ` version: "${data.version_id}").` +
-                        ` Here is its current XLSForm` +
-                        ` structure in JSON:` +
+                        ` Here is its current XLSForm structure in JSON:` +
                         `\n\n${formJson}\n\n` +
-                        `Please remember this form` +
-                        ` structure. When I ask you to` +
-                        ` modify it, return the COMPLETE` +
-                        ` updated form in the standard` +
-                        ` JSON format.`;
+                        `Please remember this form structure. When I ask you to` +
+                        ` modify it, return the COMPLETE updated form in the` +
+                        ` standard JSON format.`;
                     const assistantCtx =
-                        `I've loaded the form` +
-                        ` "${data.form_name}"` +
+                        `I've loaded the form "${data.form_name}"` +
                         ` (version ${data.version_id}).` +
-                        ` I can see its complete structure` +
-                        ` with all questions, choices,` +
-                        ` and settings. What changes` +
-                        ` would you like me to make?`;
+                        ` I can see its complete structure with all questions,` +
+                        ` choices, and settings. What changes would you like me` +
+                        ` to make?`;
                     setConversationHistory(prev => [
                         ...prev,
                         { role: 'user', content: userCtx },
-                        {
-                            role: 'assistant',
-                            content: assistantCtx,
-                        },
+                        { role: 'assistant', content: assistantCtx },
                     ]);
-                },
-                onError: () => {
-                    setSnackbar({
-                        open: true,
-                        message: 'Failed to load form',
-                        severity: 'error',
-                    });
                 },
             });
         },
         [loadForm],
     );
 
-    const handleSaveNewVersion = useCallback((message: string) => {
+    const handleSaveNewVersion = useCallback((result: SaveVersionResponse) => {
         setHasUnsavedChanges(false);
-        setSnackbar({
-            open: true,
-            message,
-            severity: 'success',
-        });
-        setMessages(prev => [...prev, { role: 'assistant', content: message }]);
+        const msg = `Saved as version ${result.version_id}`;
+        setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
     }, []);
 
     const handleSaveNewForm = useCallback(
-        (result: {
-            formId: number;
-            formName: string;
-            formOdkId: string;
-            message: string;
-        }) => {
-            if (result.formId) {
-                setSelectedFormId(result.formId);
-                setSelectedFormName(result.formName);
-                setSelectedFormOdkId(result.formOdkId || null);
-                setSelectedFormOption({
-                    id: result.formId,
-                    name: result.formName,
-                    label: result.formName,
-                });
-                setHasUnsavedChanges(false);
-                queryClient.invalidateQueries(['formCopilotFormsList']);
-            }
-            setSnackbar({
-                open: true,
-                message: result.message,
-                severity: result.formId ? 'success' : 'error',
+        (formId: number, formName: string, formOdkId: string) => {
+            setSelectedFormId(formId);
+            setSelectedFormName(formName);
+            setSelectedFormOdkId(formOdkId || null);
+            setSelectedFormOption({
+                id: formId,
+                name: formName,
+                label: formName,
             });
-            setMessages(prev => [
-                ...prev,
-                { role: 'assistant', content: result.message },
-            ]);
+            setHasUnsavedChanges(false);
+            const msg = `Created form "${formName}"`;
+            setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
         },
-        [queryClient],
+        [],
     );
 
     const handleSendMessage = useCallback(
@@ -236,11 +182,9 @@ const FormCopilot: FunctionComponent = () => {
                                 content: data.assistant_message,
                             },
                         ]);
-
                         if (data.conversation_history) {
                             setConversationHistory(data.conversation_history);
                         }
-
                         if (data.xform_xml) {
                             setXformXml(data.xform_xml);
                             setHasUnsavedChanges(true);
@@ -350,15 +294,6 @@ const FormCopilot: FunctionComponent = () => {
                     onSaveNewVersion={handleSaveNewVersion}
                 />
             )}
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={4000}
-                onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-            >
-                <Alert severity={snackbar.severity} variant="filled">
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
         </>
     );
 };

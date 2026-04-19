@@ -1,5 +1,5 @@
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from '../../../../libs/apiHooks';
 
 export const useGetFormsList = () => {
     return useSnackQuery({

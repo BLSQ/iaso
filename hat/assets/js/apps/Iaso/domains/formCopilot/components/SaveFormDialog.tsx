@@ -15,16 +15,10 @@ import {
 import Autocomplete from '@mui/material/Autocomplete';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetProjectsDropdownOptions } from '../../../domains/projects/hooks/requests';
-import { useSaveFormVersion } from '../hooks/useLoadForm';
-import { useCreateForm } from '../hooks/useSaveNewForm';
+import { useCreateForm } from '../hooks/requests/useCreateForm';
+import { useSaveFormVersion } from '../hooks/requests/useSaveFormVersion';
 import MESSAGES from '../messages';
-
-type SaveResult = {
-    formId: number;
-    formName: string;
-    formOdkId: string;
-    message: string;
-};
+import { SaveVersionResponse } from '../types';
 
 type Props = {
     open: boolean;
@@ -32,8 +26,12 @@ type Props = {
     xlsformUuid: string;
     selectedFormId: number | null;
     selectedFormName: string | null;
-    onSaveNewForm: (result: SaveResult) => void;
-    onSaveNewVersion: (message: string) => void;
+    onSaveNewVersion: (result: SaveVersionResponse) => void;
+    onSaveNewForm: (
+        formId: number,
+        formName: string,
+        formOdkId: string,
+    ) => void;
 };
 
 export const SaveFormDialog: FunctionComponent<Props> = ({
@@ -42,8 +40,8 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
     xlsformUuid,
     selectedFormId,
     selectedFormName,
-    onSaveNewForm,
     onSaveNewVersion,
+    onSaveNewForm,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [tab, setTab] = useState(selectedFormId ? 0 : 1);
@@ -60,7 +58,6 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
 
     const isSaving = isCreating || isSavingVersion;
 
-    // Reset tab when dialog opens based on whether a form is selected
     const handleEnter = useCallback(() => {
         setTab(selectedFormId ? 0 : 1);
     }, [selectedFormId]);
@@ -72,18 +69,15 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                 formId: selectedFormId,
                 xlsformUuid,
             });
-            onSaveNewVersion(result.message);
+            onSaveNewVersion(result);
             onClose();
-        } catch (err: any) {
-            const detail =
-                err?.details?.error || err?.message || 'Unknown error';
-            onSaveNewVersion(`Failed to save version: ${detail}`);
+        } catch {
+            // error already displayed by useSnackMutation
         }
     }, [selectedFormId, xlsformUuid, saveVersion, onSaveNewVersion, onClose]);
 
     const handleSaveNewForm = useCallback(async () => {
         if (!formName.trim() || selectedProjects.length === 0) return;
-
         try {
             const newForm = await createForm({
                 name: formName.trim(),
@@ -93,42 +87,26 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                 periods_after_allowed: 0,
                 single_per_period: false,
             });
-
             const versionResult = await saveVersion({
                 formId: newForm.id,
                 xlsformUuid,
                 formOdkId: formOdkId.trim() || undefined,
             });
-
-            const msg =
-                `Created form "${formName.trim()}"` +
-                ` with version ${versionResult.version_id}`;
-            onSaveNewForm({
-                formId: newForm.id,
-                formName: formName.trim(),
-                formOdkId: formOdkId.trim(),
-                message: msg,
-            });
+            onSaveNewForm(newForm.id, formName.trim(), formOdkId.trim());
             onClose();
             setFormName('');
             setFormOdkId('');
             setSelectedProjects([]);
-        } catch (err: any) {
-            const detail =
-                err?.details?.error || err?.message || 'Unknown error';
-
-            console.error('Save new form error:', err);
-            onSaveNewForm({
-                formId: 0,
-                formName: '',
-                formOdkId: '',
-                message: `Failed to create form: ${detail}`,
-            });
+            // satisfy the linter — versionResult is used via onSaveNewForm callback
+            void versionResult;
+        } catch {
+            // error already displayed by useSnackMutation
         }
     }, [
         formName,
         selectedProjects,
         xlsformUuid,
+        formOdkId,
         createForm,
         saveVersion,
         onSaveNewForm,

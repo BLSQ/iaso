@@ -469,6 +469,17 @@ export const useMenuItems = (): MenuItems => {
         );
     }
 
+    // Hide Form Copilot in the main menu, under Forms when FORM_COPILOT module is not activated
+    const hasFormCopilotModule = userHasAccessToModule(
+        'FORM_COPILOT',
+        currentUser,
+    );
+    if (!hasFormCopilotModule && basicItems?.length > 0) {
+        basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
+            item => item.key !== 'copilot',
+        );
+    }
+
     // add feature flags
     if (
         hasFeatureFlag(currentUser, SHOW_PAGES) &&

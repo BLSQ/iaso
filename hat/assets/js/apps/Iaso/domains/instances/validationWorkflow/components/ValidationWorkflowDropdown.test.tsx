@@ -156,4 +156,19 @@ describe('ValidationWorkflowDropdown', () => {
 
         expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(false);
     });
+
+    it('does not pass initialValue when user has no permissions', () => {
+        mockCurrentUser.mockReturnValue({ id: 1 });
+        mockUserHasPermission.mockReturnValue(false);
+
+        mockUseGetWorkflowOptions.mockReturnValue({});
+
+        renderWithThemeAndIntlProvider(
+            <ValidationWorkflowDropdown keyValue={'vf'} value={1} />,
+        );
+
+        expect(
+            screen.queryByText('Value not found in possible options'),
+        ).not.toBeInTheDocument();
+    });
 });

@@ -23,7 +23,7 @@ export const ValidationWorkflowDropdown = ({
     const { data: workflowOptions, isFetching: isFetchingWorkflows } =
         useGetWorkflowOptions(hasPermission);
     const { formatMessage } = useSafeIntl();
-    const { loading, disabled, ...newProps } = props;
+    const { loading, disabled, value, ...newProps } = props;
 
     const isLoading = loading || isFetchingWorkflows;
     const isDisabled = disabled || !hasPermission;
@@ -35,6 +35,7 @@ export const ValidationWorkflowDropdown = ({
             options={workflowOptions || []}
             loading={isLoading}
             disabled={isDisabled}
+            value={hasPermission ? value : null}
             {...newProps}
         />
     );

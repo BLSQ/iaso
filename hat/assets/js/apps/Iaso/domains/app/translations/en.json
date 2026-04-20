@@ -988,6 +988,7 @@
     "iaso.mappings.useInstanceProperty": "Use instance property to fill in this answer",
     "iaso.mappings.willNeverMap": "Will never map",
     "iaso.matching.title": "Matching",
+    "iaso.missingPermissions": "You're missing the following permission(s): {permissions}",
     "iaso.modules.completeness_per_period": "Completeness per Period",
     "iaso.modules.data_collection_forms": "Data collection - Forms",
     "iaso.modules.data_validation": "Data validation",

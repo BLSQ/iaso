@@ -121,7 +121,7 @@ def form_copilot_load_form(request, form_id):
     plus the XForm XML for preview.
     """
     try:
-        form = Form.objects.filter_for_user_and_app_id(request.user, None).get(id=form_id)
+        form = Form.objects.filter_for_user_and_app_id(request.user, None).distinct().get(id=form_id)
     except Form.DoesNotExist:
         return Response({"error": "Form not found"}, status=status.HTTP_404_NOT_FOUND)
 

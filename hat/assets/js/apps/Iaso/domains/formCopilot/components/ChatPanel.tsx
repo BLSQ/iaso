@@ -17,6 +17,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 
 type Message = {
@@ -30,6 +31,79 @@ type Props = {
     onSendMessage: (message: string) => void;
 };
 
+const styles: SxStyles = {
+    paper: {
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+    },
+    messagesArea: {
+        flex: 1,
+        overflowY: 'auto',
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+    },
+    emptyState: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        color: 'text.secondary',
+    },
+    messageRow: (role: 'user' | 'assistant') => ({
+        display: 'flex',
+        gap: 1,
+        alignItems: 'flex-start',
+        flexDirection: role === 'user' ? 'row-reverse' : 'row',
+    }),
+    avatar: (role: 'user' | 'assistant') => ({
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: role === 'user' ? 'primary.main' : 'grey.300',
+        color: role === 'user' ? 'primary.contrastText' : 'text.primary',
+        flexShrink: 0,
+    }),
+    bubble: (role: 'user' | 'assistant') => ({
+        p: 1.5,
+        maxWidth: '80%',
+        bgcolor: role === 'user' ? 'primary.light' : 'grey.100',
+        color: role === 'user' ? 'primary.contrastText' : 'text.primary',
+        borderRadius: 2,
+    }),
+    loadingAvatar: {
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'grey.300',
+        flexShrink: 0,
+    },
+    loadingRow: {
+        display: 'flex',
+        gap: 1,
+        alignItems: 'center',
+    },
+    inputArea: {
+        p: 2,
+        borderTop: '1px solid #e0e0e0',
+        display: 'flex',
+        gap: 1,
+    },
+    sendButton: {
+        minWidth: 'auto',
+        px: 2,
+    },
+};
+
 export const ChatPanel: FunctionComponent<Props> = ({
     messages,
     isLoading,
@@ -39,13 +113,9 @@ export const ChatPanel: FunctionComponent<Props> = ({
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, []);
-
     useEffect(() => {
-        scrollToBottom();
-    }, [messages, scrollToBottom]);
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const handleSend = useCallback(() => {
         const trimmed = inputValue.trim();
@@ -66,36 +136,10 @@ export const ChatPanel: FunctionComponent<Props> = ({
     );
 
     return (
-        <Paper
-            elevation={1}
-            sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-            }}
-        >
-            {/* Messages area */}
-            <Box
-                sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                }}
-            >
+        <Paper elevation={1} sx={styles.paper}>
+            <Box sx={styles.messagesArea}>
                 {messages.length === 0 && (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: '100%',
-                            color: 'text.secondary',
-                        }}
-                    >
+                    <Box sx={styles.emptyState}>
                         <Typography variant="body1">
                             {formatMessage(MESSAGES.placeholder)}
                         </Typography>
@@ -103,56 +147,18 @@ export const ChatPanel: FunctionComponent<Props> = ({
                 )}
                 {messages.map((msg, index) => (
                     <Box
-                        key={`msg-${index}`}
-                        sx={{
-                            display: 'flex',
-                            gap: 1,
-                            alignItems: 'flex-start',
-                            flexDirection:
-                                msg.role === 'user' ? 'row-reverse' : 'row',
-                        }}
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={index}
+                        sx={styles.messageRow(msg.role)}
                     >
-                        <Box
-                            sx={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                bgcolor:
-                                    msg.role === 'user'
-                                        ? 'primary.main'
-                                        : 'grey.300',
-                                color:
-                                    msg.role === 'user'
-                                        ? 'primary.contrastText'
-                                        : 'text.primary',
-                                flexShrink: 0,
-                            }}
-                        >
+                        <Box sx={styles.avatar(msg.role)}>
                             {msg.role === 'user' ? (
                                 <PersonIcon sx={{ fontSize: 18 }} />
                             ) : (
                                 <SmartToyIcon sx={{ fontSize: 18 }} />
                             )}
                         </Box>
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                p: 1.5,
-                                maxWidth: '80%',
-                                bgcolor:
-                                    msg.role === 'user'
-                                        ? 'primary.light'
-                                        : 'grey.100',
-                                color:
-                                    msg.role === 'user'
-                                        ? 'primary.contrastText'
-                                        : 'text.primary',
-                                borderRadius: 2,
-                            }}
-                        >
+                        <Paper elevation={0} sx={styles.bubble(msg.role)}>
                             <Typography
                                 variant="body2"
                                 sx={{ whiteSpace: 'pre-wrap' }}
@@ -163,25 +169,8 @@ export const ChatPanel: FunctionComponent<Props> = ({
                     </Box>
                 ))}
                 {isLoading && (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            gap: 1,
-                            alignItems: 'center',
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                bgcolor: 'grey.300',
-                                flexShrink: 0,
-                            }}
-                        >
+                    <Box sx={styles.loadingRow}>
+                        <Box sx={styles.loadingAvatar}>
                             <SmartToyIcon sx={{ fontSize: 18 }} />
                         </Box>
                         <CircularProgress size={20} />
@@ -190,15 +179,7 @@ export const ChatPanel: FunctionComponent<Props> = ({
                 <div ref={messagesEndRef} />
             </Box>
 
-            {/* Input area */}
-            <Box
-                sx={{
-                    p: 2,
-                    borderTop: '1px solid #e0e0e0',
-                    display: 'flex',
-                    gap: 1,
-                }}
-            >
+            <Box sx={styles.inputArea}>
                 <TextField
                     fullWidth
                     multiline
@@ -214,7 +195,7 @@ export const ChatPanel: FunctionComponent<Props> = ({
                     variant="contained"
                     onClick={handleSend}
                     disabled={isLoading || !inputValue.trim()}
-                    sx={{ minWidth: 'auto', px: 2 }}
+                    sx={styles.sendButton}
                 >
                     <SendIcon />
                 </Button>

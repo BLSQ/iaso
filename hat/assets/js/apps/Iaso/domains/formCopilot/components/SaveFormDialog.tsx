@@ -14,18 +14,32 @@ import {
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import { useGetProjectsDropdownOptions } from '../../../domains/projects/hooks/requests';
 import { useCreateForm } from '../hooks/requests/useCreateForm';
 import { useSaveFormVersion } from '../hooks/requests/useSaveFormVersion';
 import MESSAGES from '../messages';
 import { SaveVersionResponse } from '../types';
 
+const sanitizeOdkId = (value: string): string =>
+    value.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+
+const styles: SxStyles = {
+    newFormFields: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        pt: 1,
+    },
+    tabs: { mb: 2 },
+};
+
 type Props = {
     open: boolean;
     onClose: () => void;
     xlsformUuid: string;
-    selectedFormId: number | null;
-    selectedFormName: string | null;
+    selectedFormId: number | undefined;
+    selectedFormName: string | undefined;
     onSaveNewVersion: (result: SaveVersionResponse) => void;
     onSaveNewForm: (
         formId: number,
@@ -44,7 +58,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
     onSaveNewForm,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [tab, setTab] = useState(selectedFormId ? 0 : 1);
+    const [tab, setTab] = useState<number>(selectedFormId ? 0 : 1);
     const [formName, setFormName] = useState('');
     const [formOdkId, setFormOdkId] = useState('');
     const [selectedProjects, setSelectedProjects] = useState<
@@ -87,7 +101,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                 periods_after_allowed: 0,
                 single_per_period: false,
             });
-            const versionResult = await saveVersion({
+            await saveVersion({
                 formId: newForm.id,
                 xlsformUuid,
                 formOdkId: formOdkId.trim() || undefined,
@@ -97,8 +111,6 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
             setFormName('');
             setFormOdkId('');
             setSelectedProjects([]);
-            // satisfy the linter — versionResult is used via onSaveNewForm callback
-            void versionResult;
         } catch {
             // error already displayed by useSnackMutation
         }
@@ -129,7 +141,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                 <Tabs
                     value={tab}
                     onChange={(_e, v) => setTab(v)}
-                    sx={{ mb: 2 }}
+                    sx={styles.tabs}
                 >
                     <Tab
                         label={formatMessage(MESSAGES.saveAsNewVersion)}
@@ -146,14 +158,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                 )}
 
                 {tab === 1 && (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
-                            pt: 1,
-                        }}
-                    >
+                    <Box sx={styles.newFormFields}>
                         <TextField
                             label={formatMessage(MESSAGES.formName)}
                             value={formName}
@@ -165,11 +170,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.formOdkId)}
                             value={formOdkId}
                             onChange={e =>
-                                setFormOdkId(
-                                    e.target.value
-                                        .toLowerCase()
-                                        .replace(/[^a-z0-9_]/g, '_'),
-                                )
+                                setFormOdkId(sanitizeOdkId(e.target.value))
                             }
                             fullWidth
                             helperText={formatMessage(MESSAGES.formOdkIdHelp)}

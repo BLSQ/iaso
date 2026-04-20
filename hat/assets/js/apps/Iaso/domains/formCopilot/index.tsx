@@ -2,20 +2,20 @@ import React, { FunctionComponent, useCallback, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { Autocomplete, Box, Button, TextField } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
+import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
 import { ChatPanel } from './components/ChatPanel';
 import { FormPreview } from './components/FormPreview';
 import { SaveFormDialog } from './components/SaveFormDialog';
-import { useGetFormsList } from './hooks/requests/useGetFormsList';
 import { useLoadForm } from './hooks/requests/useLoadForm';
 import { useSendMessage } from './hooks/requests/useSendMessage';
 import MESSAGES from './messages';
 import { ConversationEntry, SaveVersionResponse } from './types';
 
-const useStyles = makeStyles(() => ({
+const styles: SxStyles = {
     container: {
         width: '100%',
         height: 'calc(100vh - 65px)',
@@ -29,7 +29,7 @@ const useStyles = makeStyles(() => ({
         padding: '8px',
         boxSizing: 'border-box',
         display: 'flex',
-        flexDirection: 'column' as const,
+        flexDirection: 'column',
     },
     previewSide: {
         width: '60%',
@@ -44,7 +44,18 @@ const useStyles = makeStyles(() => ({
         padding: '8px',
         flexShrink: 0,
     },
-}));
+    chatArea: {
+        flex: 1,
+        overflow: 'hidden',
+    },
+    saveButton: {
+        position: 'fixed',
+        bottom: 16,
+        right: 16,
+        zIndex: 1000,
+    },
+    formDropdown: { flex: 1 },
+};
 
 type Message = {
     role: 'user' | 'assistant';
@@ -53,42 +64,46 @@ type Message = {
 
 type FormOption = {
     id: number;
-    name: string;
     label: string;
 };
 
 const FormCopilot: FunctionComponent = () => {
-    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [messages, setMessages] = useState<Message[]>([]);
     const [conversationHistory, setConversationHistory] = useState<
         ConversationEntry[]
     >([]);
-    const [xformXml, setXformXml] = useState<string | null>(null);
-    const [xlsformUuid, setXlsformUuid] = useState<string | null>(null);
-    const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
-    const [selectedFormName, setSelectedFormName] = useState<string | null>(
-        null,
+    const [xformXml, setXformXml] = useState<string | undefined>(undefined);
+    const [xlsformUuid, setXlsformUuid] = useState<string | undefined>(
+        undefined,
     );
-    const [selectedFormOdkId, setSelectedFormOdkId] = useState<string | null>(
-        null,
+    const [selectedFormId, setSelectedFormId] = useState<number | undefined>(
+        undefined,
     );
-    const [selectedFormOption, setSelectedFormOption] =
-        useState<FormOption | null>(null);
+    const [selectedFormName, setSelectedFormName] = useState<
+        string | undefined
+    >(undefined);
+    const [selectedFormOdkId, setSelectedFormOdkId] = useState<
+        string | undefined
+    >(undefined);
+    const [selectedFormOption, setSelectedFormOption] = useState<
+        FormOption | undefined
+    >(undefined);
     const [saveDialogOpen, setSaveDialogOpen] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const { mutate: sendMessage, isLoading } = useSendMessage();
-    const { data: formsData } = useGetFormsList();
+    const { data: forms } = useGetFormsDropdownOptions({
+        extraFields: ['form_id', 'latest_form_version'],
+    });
     const { mutate: loadForm, isLoading: isLoadingForm } = useLoadForm();
 
     const formOptions: FormOption[] =
-        formsData?.forms
-            ?.filter(f => f.latest_form_version?.xls_file)
+        forms
+            ?.filter(f => (f.original?.latest_form_version as any)?.xls_file)
             .map(f => ({
-                id: f.id,
-                name: f.name,
-                label: `${f.name} (${f.form_id || 'no id'})`,
+                id: f.value,
+                label: `${f.label} (${(f.original?.form_id as string) || 'no id'})`,
             })) ?? [];
 
     const handleLoadForm = useCallback(
@@ -150,12 +165,8 @@ const FormCopilot: FunctionComponent = () => {
         (formId: number, formName: string, formOdkId: string) => {
             setSelectedFormId(formId);
             setSelectedFormName(formName);
-            setSelectedFormOdkId(formOdkId || null);
-            setSelectedFormOption({
-                id: formId,
-                name: formName,
-                label: formName,
-            });
+            setSelectedFormOdkId(formOdkId || undefined);
+            setSelectedFormOption({ id: formId, label: formName });
             setHasUnsavedChanges(false);
             const msg = `Created form "${formName}"`;
             setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
@@ -213,16 +224,16 @@ const FormCopilot: FunctionComponent = () => {
     return (
         <>
             <TopBar title={formatMessage(MESSAGES.title)} />
-            <Box className={classes.container}>
-                <Box className={classes.chatSide}>
-                    <Box className={classes.toolbar}>
+            <Box sx={styles.container}>
+                <Box sx={styles.chatSide}>
+                    <Box sx={styles.toolbar}>
                         <Autocomplete
                             size="small"
                             options={formOptions}
                             getOptionLabel={option => option.label}
-                            value={selectedFormOption}
+                            value={selectedFormOption ?? null}
                             onChange={(_event, newValue) => {
-                                setSelectedFormOption(newValue);
+                                setSelectedFormOption(newValue ?? undefined);
                                 if (newValue) {
                                     handleLoadForm(newValue.id);
                                 }
@@ -234,7 +245,7 @@ const FormCopilot: FunctionComponent = () => {
                                     variant="outlined"
                                 />
                             )}
-                            sx={{ flex: 1 }}
+                            sx={styles.formDropdown}
                             isOptionEqualToValue={(option, value) =>
                                 option.id === value.id
                             }
@@ -252,7 +263,7 @@ const FormCopilot: FunctionComponent = () => {
                             </Button>
                         )}
                     </Box>
-                    <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                    <Box sx={styles.chatArea}>
                         <ChatPanel
                             messages={messages}
                             isLoading={isLoading || isLoadingForm}
@@ -260,10 +271,10 @@ const FormCopilot: FunctionComponent = () => {
                         />
                     </Box>
                 </Box>
-                <Box className={classes.previewSide}>
+                <Box sx={styles.previewSide}>
                     <FormPreview
-                        xlsformUuid={xlsformUuid}
-                        xformXml={xformXml}
+                        xlsformUuid={xlsformUuid ?? null}
+                        xformXml={xformXml ?? null}
                     />
                 </Box>
             </Box>
@@ -273,12 +284,7 @@ const FormCopilot: FunctionComponent = () => {
                     color="primary"
                     startIcon={<SaveIcon />}
                     onClick={() => setSaveDialogOpen(true)}
-                    sx={{
-                        position: 'fixed',
-                        bottom: 16,
-                        right: 16,
-                        zIndex: 1000,
-                    }}
+                    sx={styles.saveButton}
                 >
                     {formatMessage(MESSAGES.saveForm)}
                 </Button>

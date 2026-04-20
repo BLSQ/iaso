@@ -13,7 +13,7 @@ You only need to rebuild it when updating `@getodk/web-forms` or making changes 
 
 ```bash
 cd docker/odk-preview
-npm install
+npm ci
 npm run build
 ```
 
@@ -30,7 +30,7 @@ During development of the Vue app itself you can run the Vite dev server instead
 
 ```bash
 cd docker/odk-preview
-npm install
+npm ci
 npm run dev
 ```
 

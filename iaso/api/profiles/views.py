@@ -23,6 +23,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
 from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
@@ -80,7 +81,6 @@ class ProfilesViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
-    filter_backends = [OrderingFilter, DjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = [
@@ -92,6 +92,13 @@ class ProfilesViewSet(ModelViewSet):
         "user__last_name",
         "phone_number",
     ]
+    dynamic_fields_serializer_class = ProfileListSerializer
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [OrderingFilter, DjangoFilterBackend, DynamicFieldsFilterBackend]
+        return [OrderingFilter, DjangoFilterBackend]
 
     def get_serializer_class(self):
         if self.action == "retrieve":

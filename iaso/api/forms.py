@@ -279,12 +279,6 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
     FORM_PK = "form_pk"
 
-    # @property
-    # def filter_backends(self):
-    #     if self.action in ["list"]:
-    #         return [DjangoFilterBackend, DynamicFieldsFilterBackend]
-    #     return [DjangoFilterBackend]
-
     def get_queryset(self, mobile=False):
         form_objects = Form.objects
         if self.request.query_params.get("only_deleted", None):

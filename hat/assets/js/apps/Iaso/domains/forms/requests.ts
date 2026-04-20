@@ -26,7 +26,7 @@ export const useGetForm = (
         ...(appId ? { app_id: appId } : {}),
         ...(fields ? { fields: fields } : {}),
     };
-    const url = `/api/forms/${formId}?${createSearchParamsWithArray(params).toString()}`;
+    const url = `/api/forms/${formId}/?${createSearchParamsWithArray(params).toString()}`;
     return useSnackQuery({
         queryKey,
         queryFn: () => getRequest(url),

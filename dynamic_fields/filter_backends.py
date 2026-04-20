@@ -6,6 +6,11 @@ from dynamic_fields.serializer import DynamicFieldsModelSerializerMixin
 
 
 class DynamicFieldsFilterBackend(BaseFilterBackend):
+    """
+    The purpose of this filter is just to validate the "fields" query params and make it swagger compliant.
+    It doesn't actually filter anything like a classic DRF filter would.
+    """
+
     def filter_queryset(self, request, queryset, view):
         values = request.query_params.getlist(settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME)
         values = [v for v in values if v]  # filter out empty

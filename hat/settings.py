@@ -462,6 +462,7 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_METADATA_CLASS": "hat.api.metadata.IasoMetadata",
     "PAGE_SIZE": None,
+    "SERVE_INCLUDE_SCHEMA": False,
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
@@ -491,6 +492,7 @@ SPECTACULAR_SETTINGS = {
         "defaultModelsExpandDepth": 0,  # collapsing schemas by default
         "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
         "tagsSorter": "alpha",  # sorting tags by alphanumeric
+        "displayOperationId": bool(DEBUG),
     },
     "DISABLE_ERRORS_AND_WARNINGS": os.environ.get("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],

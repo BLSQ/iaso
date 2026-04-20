@@ -18,7 +18,7 @@ import {
 import { openSnackBar } from '../components/snackBars/EventDispatcher';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 
-const MESSAGES = defineMessages({
+export const MESSAGES = defineMessages({
     permissionError: {
         id: 'iaso.snackBar.permissionError',
         defaultMessage:
@@ -94,7 +94,7 @@ const getErrorFromDetails = (details: any) => {
     }
 };
 
-const getApiErrorMessage = (error: any) => {
+export const getApiErrorMessage = (error: any) => {
     let errorMsg = '';
 
     if (typeof error === 'string') {

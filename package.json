@@ -9,6 +9,7 @@
         "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
         "fix-lint-pre-commit": "eslint --cache --fix",
         "export-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" -f html -o ./hat/assets/js/lintErrors.html",
+        "orval": "orval",
         "test": "vitest --config vitest.config.ts --run",
         "test:watch": "vitest --config vitest.config.ts",
         "test:coverage": "vitest run --coverage --config vitest.config.ts",
@@ -110,7 +111,8 @@
         "typescript": "^5.7.2",
         "url-search-params-polyfill": "^8.2.5",
         "video.js": "^7.20.3",
-        "yup": "^0.32.9"
+        "yup": "^0.32.9",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
         "@babel/core": "^7.0.1",
@@ -164,8 +166,10 @@
         "json": "^11.0.0",
         "mini-css-extract-plugin": "^1.6.0",
         "mock-require": "^3.0.3",
+        "msw": "^2.13.4",
         "nock": "^13.0.4",
         "nyc": "^15.1.0",
+        "orval": "^8.8.0",
         "sinon": "^18.0.0",
         "sinon-chai": "^3.7.0",
         "source-map-loader": "^5.0.0",

@@ -6,8 +6,8 @@ from iaso.models import ValidationWorkflow
 
 
 class ValidationWorkflowListSerializer(ModelSerializer):
-    updated_by = UserDisplayNameField()
-    created_by = UserDisplayNameField()
+    updated_by = UserDisplayNameField(allow_null=True, allow_blank=True)
+    created_by = UserDisplayNameField(allow_null=True, allow_blank=True)
     form_count = serializers.IntegerField(read_only=True)
 
     class Meta:

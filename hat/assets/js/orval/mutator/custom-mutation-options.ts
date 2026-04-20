@@ -14,14 +14,14 @@ const isApiError = (error: unknown): error is ApiError => {
     return typeof error === 'object' && error !== null && 'status' in error;
 };
 
-type ExtraMutationOptions<TData, TError, TVariables, TContext> = {
+type ExtraMutationOptions = {
     snackSuccessMessage?: IntlMessage;
     snackErrorMsg?: IntlMessage;
     showSuccessSnackBar?: boolean;
     ignoreErrorCodes?: number[];
     useApiErrorMessage?: boolean;
     invalidateQueryKey?: QueryKey;
-    successSnackBar: (msg: IntlMessage) => {
+    successSnackBar?: (msg: IntlMessage) => {
         messageKey: string;
         messageObject: any;
         options: {
@@ -29,14 +29,11 @@ type ExtraMutationOptions<TData, TError, TVariables, TContext> = {
             persist: boolean;
         };
     };
-    newMutationOptions: UseMutationOptions<TData, TError, TVariables, TContext>;
-    onError: (error: TError, variables: TVariables, context?: TContext) => void;
-    onSuccess: (data: TData, variables: TVariables, context?: TContext) => void;
 };
 
 type UseMutationOptionsWithExtra<TData, TError, TVariables, TContext> =
     UseMutationOptions<TData, TError, TVariables, TContext> &
-        ExtraMutationOptions<TData, TError, TVariables, TContext>;
+        ExtraMutationOptions;
 
 export const useDefaultOpenApiMutationOptions = <
     TData = unknown, // All unknown because this is function is used across all mutations.

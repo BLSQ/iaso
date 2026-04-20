@@ -17,6 +17,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submissions',
         id: 'iaso.instance.title',
     },
+
     formsStats: {
         defaultMessage: 'Form Stats',
         id: 'iaso.forms.stats.title',

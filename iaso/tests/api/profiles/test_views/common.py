@@ -1,6 +1,7 @@
 import typing
 
 from django.contrib.auth.models import Group, Permission
+from django.urls import reverse
 
 from iaso import models as m
 from iaso.modules import MODULES
@@ -10,10 +11,10 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_ADMIN_PERMISSION,
     CORE_USERS_MANAGED_PERMISSION,
 )
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class BaseProfileAPITestCase(APITestCase):
+class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
         super().setUp()
         self.MODULES = [module.codename for module in MODULES]
@@ -146,14 +147,22 @@ class BaseProfileAPITestCase(APITestCase):
         )
 
         for profile_data in list_data["results"]:
-            self.assertValidProfileData(profile_data)
+            self.assertValidProfileListItemData(profile_data)
 
-    def assertValidProfileData(self, project_data: typing.Mapping):
+    def get_profile_list_retrieve_schema(self):
+        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+        return res.json()["components"]["schemas"]["ProfileList"]
+
+    def assertValidProfileData(self, data: typing.Mapping):
+        self.assertResponseCompliantToSwagger(data, "ProfileRetrieve")
+
+    def assertValidProfileListItemData(self, data: typing.Mapping):
+        self.assertResponseCompliantToSwagger(data, "ProfileList")
+
+    def assertValidProfileListItemData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "firstName", str)
-        self.assertHasField(project_data, "lastName", str)
-        self.assertHasField(project_data, "email", str)
-        self.assertHasField(project_data, "color", str)
+        self.assertHasField(project_data, "user_id", int)
+        self.assertHasField(project_data, "user_display", str)
 
     def get_new_user_data(self):
         user_name = "audit_user"
@@ -174,24 +183,24 @@ class BaseProfileAPITestCase(APITestCase):
         phone_number = "+32475888888"
         country_code = "be"
         data = {
-            "userName": user_name,
+            "user_name": user_name,
             "password": pwd,
-            "firstName": first_name,
-            "lastName": last_name,
-            "sendEmailInvitation": send_email_invitation,
+            "first_name": first_name,
+            "last_name": last_name,
+            "send_email_invitation": send_email_invitation,
             "email": email,
             "organization": organization,
             "language": language,
-            "homePage": home_page,
-            "dhis2Id": dhis2_id,
+            "home_page": home_page,
+            "dhis2_id": dhis2_id,
             "permissions": [],  # This looks legacy from an older version of the API
-            "userPermissions": user_permissions,
+            "user_permissions": user_permissions,
             "projects": projects,
-            "phoneNumber": phone_number,
-            "countryCode": country_code,
-            "userRoles": user_roles,
-            "userRolesPermissions": user_roles_permissions,
-            "orgUnits": org_units,
+            "phone_number": phone_number,
+            "country_code": country_code,
+            "user_roles": user_roles,
+            "user_roles_permissions": user_roles_permissions,
+            "org_units": org_units,
         }
         return data
 
@@ -290,3 +299,5 @@ PROFILE_LOG_SCHEMA = {
     },
     "required": ["id", "user", "content_type", "source", "object_id", "created_at", "past_value", "new_value"],
 }
+
+PROFILE_RETRIEVE_SCHEMA = {}

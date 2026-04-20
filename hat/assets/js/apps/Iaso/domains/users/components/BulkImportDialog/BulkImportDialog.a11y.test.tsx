@@ -1,16 +1,13 @@
 import React from 'react';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { IntlProvider } from 'react-intl';
 import { BulkImportDialogModal } from 'Iaso/domains/users/components/BulkImportDialog/BulkImportDialog';
-import { renderWithTheme } from '../../../../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 
 describe('BulkImportDialog accessibility', () => {
     it('has no accessibility violations', async () => {
-        const { container } = renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <BulkImportDialogModal isOpen={true} closeDialog={() => {}} />
-            </IntlProvider>,
+        const { container } = renderWithThemeAndIntlProvider(
+            <BulkImportDialogModal isOpen={true} closeDialog={() => {}} />,
         );
         const checkbox = screen.getByTestId('default-values-toggle');
         fireEvent.click(checkbox);

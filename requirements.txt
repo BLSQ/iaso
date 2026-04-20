@@ -24,7 +24,6 @@ djangorestframework_simplejwt==5.3.1  # https://github.com/jazzband/djangorestfr
 drf-spectacular[sidecar]==0.29.0  # https://github.com/tfranzel/drf-spectacular
 pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 nested-multipart-parser==1.5.0 # https://github.com/remigermain/nested-multipart-parser
-djangorestframework-camel-case==1.4.2 # https://github.com/vbabiy/djangorestframework-camel-case
 drf-extensions==0.8.0 # https://github.com/chibisov/drf-extensions
 
 # Redis.
@@ -71,6 +70,7 @@ python-dateutil==2.9.0 # https://github.com/dateutil/dateutil
 names-generator==0.2.0 # https://github.com/glentner/names_generator
 django-autoslug==1.9.9 # https://github.com/justinmayer/django-autoslug
 python-magic==0.4.27 # https://github.com/ahupp/python-magic
+jsonref==1.1.0 # https://github.com/gazpachoking/jsonref
 
 # Exporting tools.
 # ------------------------------------------------------------------------------

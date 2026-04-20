@@ -17,12 +17,20 @@ L'application mobile IASO doit être configurée sur la partie web avant utilisa
 Ensuite, vous pouvez :
 
 - Télécharger [IASO App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) sur Google Play Store
-- Insérer l'URL du serveur : https://iaso.bluesquare.org (Attention, cet url peut varier en fonction du contexte des projets)
-- Puis, entrer l'App ID.
-
-Vous pouvez également configurer l'application mobile en scannant le QR code du projet correspondant sur le web. 
-
+- Sur IASO web, accéder à la partie Projets
 ![](attachments/iasomobileapplicationsetup.png)
+- Cliquez sur l'icône du QR code à droite de la ligne.
+![](attachments/iasomobileapplicationsetup2.png)
+- Scannez le QR code du projet avec l'application mobile. C'est prêt !
+
+Alternativement, vous pouvez aussi faire la configuration manuellement
+- Insérer l'URL du serveur : attention, cet url peut varier en fonction du contexte des projets
+-     https://app.openiaso.com
+-     https://iaso.bluesquare.org
+S'il s'agit d'un compte de démo:
+-     https://demo.openiaso.com
+- Puis, entrer l'App ID. Vous trouverez cet App ID également dans la partie Projets. 
+
 
 
 ## Aperçu des boutons

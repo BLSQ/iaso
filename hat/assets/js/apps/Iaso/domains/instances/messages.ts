@@ -770,6 +770,102 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.searchToSeeSubmissions',
         defaultMessage: 'Click "Search" button to see submissions',
     },
+    configureInstancesValidation: {
+        id: 'iaso.label.configureInstancesValidation',
+        defaultMessage: 'Configure validation of submissions',
+    },
+    addInstancesValidationWorkflow: {
+        id: 'iaso.label.addInstancesValidationWorkflow',
+        defaultMessage: 'Add validation workflow',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    updated_by: {
+        id: 'iaso.label.updated_by',
+        defaultMessage: 'Updated by',
+    },
+    deleteWorkflow: {
+        id: 'iaso.submissions.label.deleteWorkflow',
+        defaultMessage: 'Delete workflow',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.label.color',
+    },
+    slug: {
+        id: 'iaso.label.slug',
+        defaultMessage: 'Slug',
+    },
+    rolesRequired: {
+        id: 'iaso.validation.label.rolesRequired',
+        defaultMessage: 'Roles required',
+    },
+    description: {
+        id: 'iaso.form.label.description',
+        defaultMessage: 'Description',
+    },
+    nodes: {
+        id: 'iaso.form.label.nodes',
+        defaultMessage: 'node(s)',
+    },
+    saveOrder: {
+        id: 'iaso.workflows.saveOrder',
+        defaultMessage: 'Save order',
+    },
+    resetOrder: {
+        id: 'iaso.workflows.resetOrder',
+        defaultMessage: 'Reset order',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    deleteNodeQuestion: {
+        id: 'iaso.workflows.label.deleteNodeQuestion',
+        defaultMessage: 'Delete node?',
+    },
+    canSkipPreviousNodes: {
+        id: 'iaso.workflows.label.canSkipPreviousNodes',
+        defaultMessage: 'Can skip previous nodes',
+    },
+    create: {
+        defaultMessage: 'Create',
+        id: 'iaso.label.create',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    validateSubmission: {
+        id: 'iaso.submissions.title.validateSubmission',
+        defaultMessage: 'Validate submission',
+    },
+    validate: {
+        id: 'iaso.label.validate',
+        defaultMessage: 'Validate',
+    },
+    comment: {
+        id: 'iaso.label.comment',
+        defaultMessage: 'Comment',
+    },
+    validation: {
+        defaultMessage: 'Validation',
+        id: 'iaso.label.validation',
+    },
+    validationNodeStatusNewVersion: {
+        defaultMessage: 'New version',
+        id: 'iaso.validationNode.status.newVersion',
+    },
+    validationNodeStatusSubmission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.validationNode.status.submission',
+    },
 });
 
 export default MESSAGES;

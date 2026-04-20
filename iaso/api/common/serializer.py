@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "first_name", "last_name", "username", "full_name"]
 
 
-class ModelSerializer(serializers.ModelSerializer):
+class ModelSerializerFieldMappingMixin:
     @property
     def serializer_field_mapping(self):
         mapping = getattr(settings, "REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS", {})
@@ -27,6 +27,10 @@ class ModelSerializer(serializers.ModelSerializer):
             resolved_mapping[model_field_class] = serializer_field
 
         return {**serializers.ModelSerializer.serializer_field_mapping, **resolved_mapping}
+
+
+class ModelSerializer(ModelSerializerFieldMappingMixin, serializers.ModelSerializer):
+    pass
 
 
 class DropdownOptionsSerializer(serializers.Serializer):

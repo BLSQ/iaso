@@ -63,6 +63,7 @@ const defaultForm = {
     label_keys: [],
     legend_threshold: null,
     change_request_mode: CR_MODE_NONE,
+    validation_workflow: null,
 };
 
 const formatFormData = value => {
@@ -91,6 +92,7 @@ const formatFormData = value => {
         label_keys: form.label_keys ?? defaultForm.label_keys,
         legend_threshold: form.legend_threshold,
         change_request_mode: form.change_request_mode,
+        validation_workflow: form.validation_workflow,
     };
 };
 
@@ -119,6 +121,7 @@ const FormDetail: FunctionComponent = () => {
             'possible_fields',
             'legend_threshold',
             'change_request_mode',
+            'validation_workflow',
         ],
     );
     const [isLoading, setIsLoading] = useState(false);
@@ -200,7 +203,7 @@ const FormDetail: FunctionComponent = () => {
     }, [form, setFormState]);
 
     const onChange = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value) => {
             if (isSaved) setIsSaved(false);
             setFieldValue(keyValue, value);
             if (!isFieldValid(keyValue, value, detailRequiredFields)) {

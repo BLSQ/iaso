@@ -237,7 +237,7 @@ class DownloadFormAttachmentsTest(TestCase):
             ]
         }
         zipf = MockZip()
-        _get_resource(iaso_client_mock, call, zipf, self.app_id, [], {})
+        _get_resource(iaso_client_mock, call, zipf, self.app_id, [], {}, lambda _: _)
 
         self.assertIn("formattachments.json", zipf.captured_files)
         result = json.loads(zipf.captured_files["formattachments.json"])
@@ -284,7 +284,7 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
             "strip_visited_at": True,
         }
         zipf_mock = MockZip()
-        _get_resource(iaso_client_mock, self.call, zipf_mock, self.app_id, self.feature_flags, options)
+        _get_resource(iaso_client_mock, self.call, zipf_mock, self.app_id, self.feature_flags, options, lambda _: _)
         self.assertIn("entities-1.json", zipf_mock.captured_files)
         expected = {
             "instances": [

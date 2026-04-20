@@ -257,17 +257,16 @@ class InternalMobileEntityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
         queryset = queryset.filter(account=profile.account)
 
         if profile.org_units.exists():
-            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-            instance_orgunit_exists = Instance.objects.filter(entity=OuterRef("pk")).filter(org_unit__in=orgunits)
+            user_org_units = list(profile.org_units.only("path"))
+            orgunits = OrgUnit.objects.hierarchy(user_org_units)
+
+            instance_orgunit_exists = Instance.objects.filter(entity=OuterRef("pk"), org_unit__in=orgunits)
             queryset = queryset.filter(Exists(instance_orgunit_exists))
         else:
             # if no org units are defined for the user, we return no entities
             return Entity.objects.none()
 
-        queryset = queryset.filter(attributes_id__isnull=False)
-
-        has_attributes = Instance.objects.filter(id=OuterRef("attributes_id"), deleted=False).values("pk")
-        queryset = queryset.filter(Exists(has_attributes))
+        queryset = queryset.filter(attributes__isnull=False, attributes__deleted=False)
 
         p = Prefetch(
             "instances",

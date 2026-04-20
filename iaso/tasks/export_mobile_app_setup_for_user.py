@@ -45,6 +45,8 @@ logger = logging.getLogger(__name__)
 
 SERVER = f"https://{settings.DNS_DOMAIN}"
 
+DEFAULT_PAGE_SIZE = 1000
+
 
 @task_decorator(task_name="export_mobile_app_setup")
 def export_mobile_app_setup_for_user(
@@ -89,7 +91,11 @@ def export_mobile_app_setup_for_user(
                     progress_value=the_task.progress_value + 1,
                     progress_message=f"Fetching {call['filename']}",
                 )
-                _get_resource(iaso_client, call, zipf, project.app_id, feature_flags, options)
+                task_callback = lambda message: the_task.report_progress_and_stop_if_killed(
+                    progress_value=the_task.progress_value,
+                    progress_message=message,
+                )
+                _get_resource(iaso_client, call, zipf, project.app_id, feature_flags, options, task_callback)
 
         s3_object_name = _encrypt_and_upload_to_s3(tmp_dir, export_name, password)
 
@@ -184,7 +190,7 @@ class CursorState:
 
 def _get_cursor_pagination_metadata(iaso_client, call, app_id):
     """Retrieves total count for cursor pagination and calculates total pages."""
-    page_size = call.get("page_size", 1000)
+    page_size = call.get("page_size", DEFAULT_PAGE_SIZE)
 
     # Retrieve total count from the legacy url
     count_path = call["cursor_pagination"]["legacy_url"]
@@ -232,7 +238,7 @@ def _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state):
     return result, filename
 
 
-def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
+def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task_callback):
     if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
         logger.info(f"{call['filename']}: not writing, feature flag missing.")
         return
@@ -300,6 +306,11 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options):
                 for instance in entity.get("instances", []):
                     if "visited_at" in instance.get("json", []):
                         instance["json"]["visited_at"] = None
+
+        if page > 1 and page % 5 == 0:
+            # Provide a task update for long-running paginated resources.
+            count = call.get("page_size", DEFAULT_PAGE_SIZE) * page
+            task_callback(f"Fetching {call['filename']} ({count})...")
 
         with zipf.open(filename) as json_file:
             json.dump(result, json_file)

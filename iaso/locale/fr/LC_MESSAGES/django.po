@@ -935,6 +935,14 @@ msgstr "Accepté"
 msgid "Unknown"
 msgstr "Inconnu"
 
+#: iaso/models/validation_workflow/validation_node.py
+msgid "Submission"
+msgstr "Soumission"
+
+#: iaso/models/validation_workflow/validation_node.py
+msgid "New version"
+msgstr "Nouvelle version"
+
 #: iaso/permissions/core_permissions.py
 msgid "Attributions"
 msgstr "Attributions"

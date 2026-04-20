@@ -49,6 +49,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+type Tab = 'list' | 'map' | 'files';
+
 const Instances = () => {
     const params = useParamsObject(baseUrl);
 
@@ -59,7 +61,7 @@ const Instances = () => {
     const redirectToReplace = useRedirectToReplace();
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
-    const [tab, setTab] = useState(params.tab ?? 'list');
+    const [tab, setTab] = useState<Tab>((params.tab as Tab) ?? 'list');
 
     const [formIds, setFormIds] = useState(params.formIds?.split(','));
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
@@ -125,7 +127,7 @@ const Instances = () => {
     const orgUnitTypes = formDetails?.org_unit_type_ids ?? [];
 
     const handleChangeTab = useCallback(
-        newTab => {
+        (newTab: Tab) => {
             const newParams = {
                 ...params,
                 tab: newTab,
@@ -137,7 +139,7 @@ const Instances = () => {
     );
 
     const onSearch = useCallback(
-        newParams => {
+        (newParams: Record<string, string | undefined>) => {
             setSelection(selectionInitialState);
             redirectToReplace(baseUrl, newParams);
         },
@@ -157,7 +159,7 @@ const Instances = () => {
             <TopBar
                 formName={formName}
                 tab={tab}
-                handleChangeTab={newTab => handleChangeTab(newTab)}
+                handleChangeTab={(newTab: Tab) => handleChangeTab(newTab)}
                 formIds={formIds}
             />
             <Box className={classes.containerFullHeightPadded}>
@@ -197,6 +199,7 @@ const Instances = () => {
                                             periodType,
                                             id: params.formIds,
                                         }}
+                                        cancelMessage={undefined}
                                         orgUnitTypes={orgUnitTypes}
                                         onCreateOrReAssign={payload =>
                                             createInstance(payload)

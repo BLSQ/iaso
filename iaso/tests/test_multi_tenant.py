@@ -232,11 +232,9 @@ class MultiTenantTestCase(APITestCase):
         self.assertEqual(len(content["sources"]), 1)
 
     def test_profile_access(self):
-        response = self.raccoon_client.get(
-            reverse("profiles-list", kwargs={"version": "v2"}), accept="application/json"
-        )
+        response = self.raccoon_client.get(reverse("profiles-list"), data={"fields": ":all"}, accept="application/json")
         content = json.loads(response.content)
-        self.assertEqual(content["results"][0]["userName"], "raccoon")
+        self.assertEqual(content["results"][0]["user_name"], "raccoon")
 
         response = self.yoda_client.get(reverse("profiles-list"), accept="application/json")
         content = json.loads(response.content)

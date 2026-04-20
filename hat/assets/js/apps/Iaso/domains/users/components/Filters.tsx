@@ -1,20 +1,15 @@
-import React, {
-    useCallback,
-    useMemo,
-    useState,
-    FunctionComponent,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import InputComponent from 'Iaso/components/forms/InputComponent';
 import {
     commonStyles,
     useRedirectTo,
     useSafeIntl,
-    InputWithInfos
+    InputWithInfos,
 } from 'bluesquare-components';
-import { stringToBoolean } from '../../../utils/dataManipulation';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import { stringToBoolean } from 'Iaso/utils/dataManipulation';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
@@ -34,11 +29,11 @@ type Props = {
     canBypassProjectRestrictions?: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({
+const Filters = ({
     baseUrl = '',
     params,
     canBypassProjectRestrictions = false,
-}) => {
+}: Props) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
     const classes = useStyles();
@@ -98,9 +93,9 @@ const Filters: FunctionComponent<Props> = ({
     }, [baseUrl, filters, filtersUpdated, params, redirectTo]);
 
     const handleChange = useCallback(
-        (key, value) => {
+        (key: string, value) => {
             setFiltersUpdated(true);
-            let updatedFilters = {
+            const updatedFilters = {
                 ...filters,
                 [key]: value,
             };

@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Chip } from '@mui/material';
 import { Select } from 'bluesquare-components';
 import { FieldInputProps, FormikProps } from 'formik';
 
-import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetProfiles } from '../../users/hooks/useGetProfiles';
 
 type FormValues = {
@@ -17,13 +17,13 @@ type Props = {
     isNewPage?: boolean;
 };
 
-export const UsersSelect: FunctionComponent<Props> = ({
+export const UsersSelect = ({
     field,
     form,
     label = '',
     isNewPage = false,
     ...props
-} = {}) => {
+}: Props = {}) => {
     const currentUser = useCurrentUser();
     const value = useMemo(() => {
         if (isNewPage && (!field?.value || field?.value?.length === 0)) {
@@ -38,7 +38,7 @@ export const UsersSelect: FunctionComponent<Props> = ({
         if (!data) return [];
         return data.results.map(p => ({
             value: p.user_id,
-            label: getDisplayName(p),
+            label: p.user_display,
         }));
     }, [data]);
     const handleChange = useCallback(
@@ -79,6 +79,7 @@ export const UsersSelect: FunctionComponent<Props> = ({
                         : tagProps.onDelete;
                     return (
                         <Chip
+                            key={option?.label ?? ''}
                             disabled
                             color={isCurrentUser ? 'primary' : 'secondary'}
                             label={option?.label ? option.label : ''}

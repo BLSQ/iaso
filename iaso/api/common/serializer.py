@@ -50,6 +50,11 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
         # Don't pass the 'fields' arg up to the superclass
         requested_fields = request.query_params.get("fields", kwargs.pop("fields", ":default"))
+
+        # we tell drf-spectacular to use :all by default
+        if getattr(kwargs.get("context", {}).get("view"), "swagger_fake_view", False):
+            requested_fields = ":all"
+
         if requested_fields == ":all":
             fields = self.Meta.fields
         elif requested_fields == ":default":
@@ -73,7 +78,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             self.fields.pop(field_name)
 
 
-class ModelSerializer(serializers.ModelSerializer):
+class ModelSerializerFieldMappingMixin:
     @property
     def serializer_field_mapping(self):
         mapping = getattr(settings, "REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS", {})
@@ -88,6 +93,10 @@ class ModelSerializer(serializers.ModelSerializer):
             resolved_mapping[model_field_class] = serializer_field
 
         return {**serializers.ModelSerializer.serializer_field_mapping, **resolved_mapping}
+
+
+class ModelSerializer(ModelSerializerFieldMappingMixin, serializers.ModelSerializer):
+    pass
 
 
 class DropdownOptionsSerializer(serializers.Serializer):

@@ -37,6 +37,7 @@
                 fetchGuestToken: () =>
                     fetchGuestTokenFromBackend(config.dashboard_id),
                 dashboardUiConfig: config.dashboard_ui_config || {},
+                iframeSandboxExtras: ['allow-top-navigation', 'allow-popups-to-escape-sandbox'],
             });
 
             const iframe = containerRef.querySelector('iframe');

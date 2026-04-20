@@ -14,7 +14,7 @@ def migrate_data_forward(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0374_auto_20260407_1915"),
+        ("iaso", "0377_alter_validationworkflow_slug"),
     ]
 
     operations = [

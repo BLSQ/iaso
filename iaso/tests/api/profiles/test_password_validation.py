@@ -6,7 +6,7 @@ from iaso.test import APITestCase, PasswordValidationTestMixin
 
 
 class BaseProfilesPasswordValidationTests(APITestCase, PasswordValidationTestMixin):
-    BASE_URL = "/api/v2/profiles/"
+    BASE_URL = "/api/profiles/"
 
     def setUp(self):
         self.account, self.data_source, self.source_version, self.project = (
@@ -151,7 +151,7 @@ class UpdatePasswordValidationTests(BaseProfilesPasswordValidationTests):
 
     def test_happy_path(self):
         password = "this-is-a-very-long-password-with-lots-of-stuff-7777azertyuiop#@@012345"
-        payload = {"password": password, "confirmPassword": password}
+        payload = {"password": password, "confirm_password": password}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.UPDATE_URL, data=payload, format="json")
@@ -161,7 +161,7 @@ class UpdatePasswordValidationTests(BaseProfilesPasswordValidationTests):
         self.assertTrue(self.user.check_password(password))
 
     def test_update_password_validation_too_short_too_common(self):
-        payload = {"password": "a", "confirmPassword": "a"}
+        payload = {"password": "a", "confirm_password": "a"}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.UPDATE_URL, data=payload, format="json")
@@ -173,7 +173,7 @@ class UpdatePasswordValidationTests(BaseProfilesPasswordValidationTests):
         self._check_password_was_not_updated()
 
     def test_update_password_validation_too_similar_username(self):
-        payload = {"password": f"{self.user.username}2", "confirmPassword": f"{self.user.username}2"}
+        payload = {"password": f"{self.user.username}2", "confirm_password": f"{self.user.username}2"}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.UPDATE_URL, data=payload, format="json")
@@ -184,7 +184,7 @@ class UpdatePasswordValidationTests(BaseProfilesPasswordValidationTests):
         self._check_password_was_not_updated()
 
     def test_update_password_validation_too_similar_email(self):
-        payload = {"password": f"{self.user.email}2", "confirmPassword": f"{self.user.email}2"}
+        payload = {"password": f"{self.user.email}2", "confirm_password": f"{self.user.email}2"}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.UPDATE_URL, data=payload, format="json")
@@ -195,7 +195,7 @@ class UpdatePasswordValidationTests(BaseProfilesPasswordValidationTests):
         self._check_password_was_not_updated()
 
     def test_update_password_validation_too_similar_first_name(self):
-        payload = {"password": f"{self.user.first_name}2", "confirmPassword": f"{self.user.first_name}2"}
+        payload = {"password": f"{self.user.first_name}2", "confirm_password": f"{self.user.first_name}2"}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.UPDATE_URL, data=payload, format="json")
@@ -209,7 +209,7 @@ class UpdatePasswordValidationTests(BaseProfilesPasswordValidationTests):
         self.user.last_name = "azertyuiop"
         self.user.save()
 
-        payload = {"password": f"{self.user.last_name}2", "confirmPassword": f"{self.user.last_name}2"}
+        payload = {"password": f"{self.user.last_name}2", "confirm_password": f"{self.user.last_name}2"}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.UPDATE_URL, data=payload, format="json")
@@ -220,7 +220,7 @@ class UpdatePasswordValidationTests(BaseProfilesPasswordValidationTests):
         self._check_password_was_not_updated()
 
     def test_update_password_validation_not_only_numeric(self):
-        payload = {"password": "0123456789876543210", "confirmPassword": "0123456789876543210"}
+        payload = {"password": "0123456789876543210", "confirm_password": "0123456789876543210"}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(self.UPDATE_URL, data=payload, format="json")

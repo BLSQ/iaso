@@ -7,20 +7,17 @@ from iaso.test import APITestCase
 
 class APIImportViewSetTest(APITestCase):
     def setUp(self):
+        super().setUp()
         self.account1 = account1 = Account.objects.create(name="account1")
         self.account2 = account2 = Account.objects.create(name="account2")
 
         self.project1 = Project.objects.create(name="project1", app_id="P1", account=account1)
         self.project2 = Project.objects.create(name="project2", app_id="P2", account=account2)
 
-        self.staff = staff = self.create_user_with_profile(username="staff", account=account1, permissions=[])
-        staff.is_staff = True
-        staff.save()
-        self.superuser = superuser = self.create_user_with_profile(
-            username="superuser", account=account1, permissions=[]
+        self.staff = self.create_user_with_profile(username="staff", account=account1, permissions=[], is_staff=True)
+        self.superuser = self.create_user_with_profile(
+            username="superuser", account=account1, permissions=[], is_superuser=True
         )
-        superuser.is_superuser = True
-        superuser.save()
         self.user = user = self.create_user_with_profile(username="user", account=account1, permissions=[])
 
         apiimport = APIImport.objects.create(
@@ -106,3 +103,11 @@ class APIImportViewSetTest(APITestCase):
         response = self.client.get(f"/api/api_import/?user_id={self.user.id}")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 2)
+        self.assertEqual(json_response["results"][0]["user"]["id"], self.user.id)
+        self.assertEqual(json_response["results"][0]["user"]["username"], self.user.get_username())
+        self.assertEqual(json_response["results"][0]["import_type"], "orgUnit")
+        self.assertEqual(json_response["results"][0]["has_problem"], True)
+        self.assertEqual(json_response["results"][1]["user"]["id"], self.user.id)
+        self.assertEqual(json_response["results"][1]["user"]["username"], self.user.get_username())
+        self.assertEqual(json_response["results"][1]["import_type"], "bulk")
+        self.assertEqual(json_response["results"][1]["has_problem"], False)

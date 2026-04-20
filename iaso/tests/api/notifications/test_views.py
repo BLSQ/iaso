@@ -7,20 +7,22 @@ from iaso.models import Account, Project
 
 class TestNotificationsViewSet(test.APITestCase):
     def setUp(self):
+        super().setUp()
         self.account1 = account1 = Account.objects.create(name="account1")
         self.account2 = account2 = Account.objects.create(name="account2")
 
         self.project1 = Project.objects.create(name="project1", app_id="P1", account=account1)
         self.project2 = Project.objects.create(name="project2", app_id="P2", account=account2)
 
-        self.staff = staff = self.create_user_with_profile(username="staff", account=account1, permissions=[])
-        staff.is_staff = True
-        staff.save()
-        self.superuser = superuser = self.create_user_with_profile(
-            username="superuser", account=account1, permissions=[]
+        self.staff = staff = self.create_user_with_profile(
+            username="staff", account=account1, permissions=[], is_staff=True
         )
-        superuser.is_superuser = True
-        superuser.save()
+        self.superuser = superuser = self.create_user_with_profile(
+            username="superuser",
+            account=account1,
+            permissions=[],
+            is_superuser=True,
+        )
         self.user = self.create_user_with_profile(username="user", account=account1, permissions=[])
 
     def test_get_notifications_anonymously(self):
@@ -70,6 +72,10 @@ class TestNotificationsViewSet(test.APITestCase):
         response = self.client.get("/api/notifications/")
         json_response = self.assertJSONResponse(response, 200)
         self.assertEqual(len(json_response), 1)
+        self.assertJSONEqual(
+            response.content,
+            [{"level": "ERROR", "message": "There is 1 failing import needing your attention.", "type": "APIIMPORT"}],
+        )
 
     def test_get_notifications_staff_problem_older_than_30_days(self):
         apiimport = APIImport.objects.create(app_id="P1", has_problem=True, json_body={})

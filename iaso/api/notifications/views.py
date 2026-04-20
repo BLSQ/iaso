@@ -1,4 +1,4 @@
-from django.utils.translation import ngettext as _
+from django.utils.translation import ngettext
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 
@@ -17,7 +17,7 @@ class NotificationViewSet(viewsets.ViewSet):
             if apiimport_count:
                 notifications.append(
                     Notification(
-                        message=_(
+                        message=ngettext(
                             singular="There is %(count)d failing import needing your attention.",
                             plural="There are %(count)d failing imports needing your attention.",
                             number=apiimport_count,

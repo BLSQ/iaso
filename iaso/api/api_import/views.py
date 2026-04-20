@@ -4,18 +4,15 @@ from rest_framework.mixins import ListModelMixin
 
 from hat.api_import.models import APIImport
 from iaso.api.api_import.filters import APIImportFilterSet
+from iaso.api.api_import.paginations import APIImportPagination
 from iaso.api.api_import.serializers import APIImportSerializer
-from iaso.api.common import IsAdminOrSuperUser, Paginator
+from iaso.api.common.permissions import IsAdminOrSuperUserWithIasoProfile
 from iaso.models import Project
-
-
-class APIImportPagination(Paginator):
-    page_size = 20
 
 
 class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    permission_classes = [IsAdminOrSuperUser]
+    permission_classes = [IsAdminOrSuperUserWithIasoProfile]
     serializer_class = APIImportSerializer
     filterset_class = APIImportFilterSet
     pagination_class = APIImportPagination

@@ -1,8 +1,16 @@
+from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from hat.api_import.models import APIImport
 from iaso.api.common import TimestampField
-from iaso.api.form_versions.serializers import UserNestedSerializer
+
+
+class UserNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+        ref_name = "UserNestedSerializerForFormVersions"
 
 
 class APIImportSerializer(serializers.ModelSerializer):
@@ -25,6 +33,7 @@ class APIImportSerializer(serializers.ModelSerializer):
         ]
 
     @staticmethod
+    @extend_schema_field(serializers.JSONField())
     def get_headers(obj):
         """
         Method to remove the bearer tokens from the answer. We can safely remove it after we run the clean-up script.

@@ -32,7 +32,7 @@ msgid "Enter a valid phone number."
 msgstr "Veuillez saisir un numéro de téléphone valide."
 
 #: iaso/api/common/serializer_fields.py
-msgid "Both phone number and country code must be provided"
+msgid "Both the phone number and the country code must be provided"
 msgstr "Le numéro de téléphone et le code pays doivent être fournis"
 
 #: iaso/api/common/validators.py
@@ -1143,6 +1143,28 @@ msgstr "Copie des unités organisationnelles"
 #: iaso/tasks/copy_version.py
 msgid "Fixing parents"
 msgstr "Correction des parents"
+
+#: iaso/templates/emails/base_iaso_email.html
+msgid "Resources to get started"
+msgstr "Ressources pour commencer"
+
+#: iaso/templates/emails/base_iaso_email.html
+#, python-format
+msgid "%(title)s user guide"
+msgstr "Guide d'utilisation (%(title)s)"
+
+#: iaso/templates/emails/base_iaso_email.html
+msgid "Contact us"
+msgstr "Nous contacter"
+
+#: iaso/templates/emails/base_iaso_email.txt
+#, python-format
+msgid "User guide (%(title)s): %(url)s"
+msgstr "Guide d'utilisation (%(title)s): %(url)s"
+
+#: iaso/templates/emails/base_iaso_email.txt
+msgid "Contact us:"
+msgstr "Nous contacter:"
 
 #: iaso/templates/emails/create_password_email.html
 #, python-format

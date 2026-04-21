@@ -48,6 +48,7 @@ from iaso.api.profiles.serializers import (
 )
 from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
 from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer, ProfileUpdatePasswordSerializer
+from iaso.mail.branding import core_email_branding_context
 from iaso.models import OrgUnit, Profile, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
@@ -453,28 +454,18 @@ class ProfilesViewSet(ModelViewSet):
 
         email_subject = self.get_subject_by_language(language, domain)
 
-        with translation.override(language):
-            email_message = render_to_string(
-                "emails/create_password_email.txt",
-                context={
-                    "protocol": protocol,
-                    "domain": domain,
-                    "account_name": profile.account.name,
-                    "user_name": profile.user.username,
-                    "url": f"{protocol}://{domain}{create_password_path}",
-                },
-            )
+        invitation_context = {
+            **core_email_branding_context(protocol=protocol, domain=domain),
+            "protocol": protocol,
+            "domain": domain,
+            "account_name": profile.account.name,
+            "user_name": profile.user.username,
+            "url": f"{protocol}://{domain}{create_password_path}",
+        }
 
-            html_email_content = render_to_string(
-                "emails/create_password_email.html",
-                context={
-                    "protocol": protocol,
-                    "domain": domain,
-                    "account_name": profile.account.name,
-                    "user_name": profile.user.username,
-                    "url": f"{protocol}://{domain}{create_password_path}",
-                },
-            )
+        with translation.override(language):
+            email_message = render_to_string("emails/create_password_email.txt", invitation_context)
+            html_email_content = render_to_string("emails/create_password_email.html", invitation_context)
 
         send_mail(
             email_subject,

@@ -497,7 +497,9 @@ class ProfileUpdateAPITestCase(BaseProfileAPITestCase):
             reverse("profiles-detail", kwargs={"pk": profile_to_edit.id}), data=data, format="json"
         )
         response_data = self.assertJSONResponse(response, 400)
-        self.assertHasError(response_data, "phone_number", "Both phone number and country code must be provided")
+        self.assertHasError(
+            response_data, "phone_number", "Both the phone number and the country code must be provided"
+        )
 
         data = {
             "user_name": "new_name",

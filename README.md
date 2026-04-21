@@ -671,6 +671,22 @@ HIDE_BASIC_NAV_ITEMS="<'yes' or 'no'>"
 >
 > Those settings are optional and are using a default value if nothing is provided
 
+### Core transactional email previews (HTML)
+
+Core invitation and forgot-password emails share a Django template layout. To **generate static HTML and plain-text files** for local layout checks (default output: `var/email-previews/`, ignored by git), run:
+
+```bash
+docker compose exec iaso ./manage.py render_core_email_previews
+```
+
+Useful options:
+
+- `--only invite` or `--only reset` to render a subset
+- `--output var/my-previews` to change the output directory (relative to the repository root)
+- `--http-logo` to keep normal `http(s)` logo URLs; **by default** the logo is **embedded as a data URI** so images still load when you open the `.html` files from disk without a running server
+
+Open the generated `.html` files in a browser. The same branding variables as above (`APP_TITLE`, `LOGO_PATH`, theme colours, `DEFAULT_FROM_EMAIL`, optional `USER_MANUAL_PATH`) apply.
+
 ## Superset Dashboard Integration
 
 Iaso supports embedding [Superset](https://superset.apache.org/) dashboards for advanced analytics and reporting. To configure this integration, you need to set up the following environment variables:

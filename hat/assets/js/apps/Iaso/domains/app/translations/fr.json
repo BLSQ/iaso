@@ -1343,7 +1343,6 @@
     "iaso.plannings.label.samplingName": "Nom de l'échantillonage",
     "iaso.plannings.label.samplingResultDetailsTitle": "Résultat d'échantillonnage {id}",
     "iaso.plannings.label.samplingResultParameters": "Paramètres",
-    "iaso.plannings.label.samplingResultPipelineVersion": "Version du pipeline",
     "iaso.plannings.label.samplingResults": "Résultats d'échantillonnage",
     "iaso.plannings.label.seeSamplingResults": "Voir les résultats d'échantillonnage",
     "iaso.plannings.label.selectOrgUnit": "Zone géographique cible",

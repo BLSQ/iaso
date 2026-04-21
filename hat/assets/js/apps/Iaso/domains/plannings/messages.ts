@@ -224,24 +224,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Sampling name',
     },
     samplingResultCreatedBy: {
-        id: 'iaso.plannings.label.samplingResultCreatedBy',
+        id: 'iaso.forms.created_by',
         defaultMessage: 'Created by',
-    },
-    samplingResultDetailsTitle: {
-        id: 'iaso.plannings.label.samplingResultDetailsTitle',
-        defaultMessage: 'Sampling result {id}',
     },
     samplingResultParameters: {
         id: 'iaso.plannings.label.samplingResultParameters',
         defaultMessage: 'Parameters',
-    },
-    samplingResultPipelineVersion: {
-        id: 'iaso.plannings.label.samplingResultPipelineVersion',
-        defaultMessage: 'Pipeline version',
-    },
-    samplingResultTask: {
-        id: 'iaso.plannings.label.samplingResultTask',
-        defaultMessage: 'Task',
     },
     selectSamplingResult: {
         id: 'iaso.plannings.label.selectSamplingResult',

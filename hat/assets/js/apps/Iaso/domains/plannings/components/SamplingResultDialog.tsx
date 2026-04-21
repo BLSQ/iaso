@@ -12,12 +12,13 @@ import {
 } from '@mui/material';
 import {
     IconButton,
+    LoadingSpinner,
     makeFullModal,
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { convertToDateTimeRfc } from 'Iaso/components/Cells/DateTimeCell';
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import {
@@ -56,7 +57,7 @@ type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     samplingResult: SamplingResult;
-    planning?: Planning;
+    planning: Planning;
 };
 
 const SamplingResultDialog: FunctionComponent<Props> = ({
@@ -68,171 +69,109 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data: pipeline, isFetching: isFetchingPipeline } =
         useGetPipelineDetails(isOpen ? samplingResult.pipeline_id : undefined);
+
     const { data: configData } = useGetPipelineConfig();
     const config = configData?.config || {};
     const lQAS_code = config?.lqas_pipeline_code;
     const isLqasPipeline = Boolean(
         lQAS_code && pipeline?.code && pipeline.code === lQAS_code,
     );
-    const rawParameters = samplingResult.parameters || {};
+    const rawParameters = samplingResult.parameters;
     const hasParameters = Object.keys(rawParameters).length > 0;
-    const parameterValues = rawParameters as ParameterValues;
-    const parametersJson = hasParameters
-        ? JSON.stringify(samplingResult.parameters, null, 2)
-        : null;
 
-    const parentOrgUnitTypeId =
-        isOpen && planning?.org_unit_details?.org_unit_type != null
-            ? planning.org_unit_details.org_unit_type
-            : undefined;
     const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesHierarchy(parentOrgUnitTypeId ?? undefined);
+        useGetOrgUnitTypesHierarchy(
+            planning.org_unit_details?.org_unit_type ?? undefined,
+        );
     const orgunitTypes = useMemo(
         () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
         [orgUnitTypeHierarchy],
     );
 
-    const taskStatus = samplingResult.task_details.status;
-    const taskStatusMessage =
-        taskStatus && MESSAGES[taskStatus as keyof typeof MESSAGES]
-            ? MESSAGES[taskStatus as keyof typeof MESSAGES]
-            : null;
-
     return (
         <Dialog
-            data-test="sampling-result-dialog"
             fullWidth
-            id="sampling-result-dialog"
             maxWidth="sm"
             onClose={closeDialog}
             open={isOpen}
             scroll="body"
         >
-            <DialogTitle>
-                {formatMessage(MESSAGES.samplingResultDetailsTitle, {
-                    id: samplingResult.id,
-                })}
+            <DialogTitle color="primary">
+                {samplingResult.group_details?.name ?? textPlaceholder}
             </DialogTitle>
             <DialogContent>
-                <div id="sampling-result-dialog-content">
-                    {isOpen && (
-                        <Grid container spacing={2}>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(MESSAGES.samplingName)}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {samplingResult.group_details?.name ??
-                                        textPlaceholder}
-                                </Typography>
-                            </Grid>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(MESSAGES.created_at)}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {convertToDateTimeRfc(
-                                        samplingResult.created_at,
+                <Grid container spacing={2}>
+                    <Grid item sm={6} xs={12}>
+                        <Typography sx={styles.label} variant="body2">
+                            {formatMessage(MESSAGES.created_at)}
+                        </Typography>
+                        <Typography variant="body1">
+                            {DateTimeCell({
+                                value: samplingResult.created_at,
+                            })}
+                        </Typography>
+                    </Grid>
+                    <Grid item sm={6} xs={12}>
+                        <Typography sx={styles.label} variant="body2">
+                            {formatMessage(MESSAGES.pipeline)}
+                        </Typography>
+                        <Typography variant="body1">
+                            {samplingResult.pipeline_name || textPlaceholder}
+                        </Typography>
+                    </Grid>
+                    <Grid item sm={6} xs={12}>
+                        <Typography sx={styles.label} variant="body2">
+                            {formatMessage(MESSAGES.orgUnitsCount)}
+                        </Typography>
+                        <Typography variant="body1">
+                            {samplingResult.group_details?.org_unit_count ??
+                                textPlaceholder}
+                        </Typography>
+                    </Grid>
+                    <Grid item sm={6} xs={12}>
+                        <Typography sx={styles.label} variant="body2">
+                            {formatMessage(MESSAGES.samplingResultCreatedBy)}
+                        </Typography>
+                        <Typography variant="body1">
+                            {samplingResult.created_by_details?.username ??
+                                textPlaceholder}
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Typography sx={styles.label} variant="body2">
+                            {formatMessage(MESSAGES.samplingResultParameters)}
+                        </Typography>
+                        {isFetchingPipeline && (
+                            <Box position="relative" minHeight={50}>
+                                <LoadingSpinner absolute fixed={false} />
+                            </Box>
+                        )}
+                        {!isFetchingPipeline && (
+                            <>
+                                {isLqasPipeline &&
+                                    hasParameters &&
+                                    !isFetchingOrgunitTypes && (
+                                        <LQASRead
+                                            orgunitTypes={orgunitTypes}
+                                            parameterValues={
+                                                rawParameters as ParameterValues
+                                            }
+                                        />
                                     )}
-                                </Typography>
-                            </Grid>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(MESSAGES.pipeline)}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {samplingResult.pipeline_name ||
-                                        textPlaceholder}
-                                </Typography>
-                            </Grid>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(
-                                        MESSAGES.samplingResultPipelineVersion,
-                                    )}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {samplingResult.pipeline_version ||
-                                        textPlaceholder}
-                                </Typography>
-                            </Grid>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(MESSAGES.orgUnitsCount)}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {samplingResult.group_details
-                                        ?.org_unit_count ?? textPlaceholder}
-                                </Typography>
-                            </Grid>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(MESSAGES.samplingResultTask)}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {samplingResult.task_details.name}
-                                </Typography>
-                            </Grid>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(MESSAGES.status)}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {taskStatusMessage
-                                        ? formatMessage(taskStatusMessage)
-                                        : taskStatus}
-                                </Typography>
-                            </Grid>
-                            <Grid item sm={6} xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(
-                                        MESSAGES.samplingResultCreatedBy,
-                                    )}
-                                </Typography>
-                                <Typography variant="body1">
-                                    {samplingResult.created_by_details
-                                        ?.username ?? textPlaceholder}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Typography sx={styles.label} variant="body2">
-                                    {formatMessage(
-                                        MESSAGES.samplingResultParameters,
-                                    )}
-                                </Typography>
-                                {!isFetchingPipeline && (
-                                    <>
-                                        {isLqasPipeline &&
-                                            hasParameters &&
-                                            !isFetchingOrgunitTypes && (
-                                                <LQASRead
-                                                    orgunitTypes={orgunitTypes}
-                                                    parameterValues={
-                                                        parameterValues
-                                                    }
-                                                />
-                                            )}
-                                        {!isLqasPipeline && parametersJson && (
-                                            <Box
-                                                component="pre"
-                                                sx={styles.parameters}
-                                            >
-                                                {parametersJson}
-                                            </Box>
-                                        )}
-                                        {!hasParameters && (
-                                            <Typography variant="body1">
-                                                {formatMessage(
-                                                    MESSAGES.noParameters,
-                                                )}
-                                            </Typography>
-                                        )}
-                                    </>
+                                {!isLqasPipeline && hasParameters && (
+                                    <Box component="pre" sx={styles.parameters}>
+                                        {JSON.stringify(rawParameters, null, 2)}
+                                    </Box>
                                 )}
-                            </Grid>
-                        </Grid>
-                    )}
-                </div>
+                                {!hasParameters && (
+                                    <Typography variant="body1">
+                                        {formatMessage(MESSAGES.noParameters)}
+                                    </Typography>
+                                )}
+                            </>
+                        )}
+                    </Grid>
+                </Grid>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2 }}>
                 <Button color="primary" onClick={closeDialog} variant="text">

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
@@ -67,81 +67,81 @@ export const LQASRead: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const criteriaOptions = useGetCriteriaOptions();
 
-    const levels = useMemo(() => {
-        const ids = parameterValues?.org_unit_type_sequence_identifiers;
-        if (ids?.length) {
-            return ids;
-        }
-        return [];
-    }, [parameterValues?.org_unit_type_sequence_identifiers]);
-
-    const getCriteriaLabel = (value: Criteria | string | undefined) => {
+    const getCriteriaLabel = (value: Criteria | undefined) => {
         if (!value) return textPlaceholder;
         const opt = criteriaOptions.find(o => o.value === value);
-        return opt?.label ?? String(value);
+        return opt?.label ?? `${value}`;
     };
 
     return (
         <Paper elevation={0} sx={styles.paper}>
-            {levels.map((orgUnitTypeId, index) => {
-                const currentOrgUnitType = orgunitTypes?.find(
-                    o => o.value === orgUnitTypeId,
-                );
-                return (
-                    <Paper
-                        key={orgUnitTypeId}
-                        elevation={0}
-                        sx={styles.subPaper}
-                    >
-                        <Typography
-                            color="primary"
-                            sx={styles.levelHeading}
-                            variant="subtitle2"
+            {parameterValues.org_unit_type_sequence_identifiers.map(
+                (orgUnitTypeId, index) => {
+                    const currentOrgUnitType = orgunitTypes?.find(
+                        o => o.value === orgUnitTypeId,
+                    );
+                    return (
+                        <Paper
+                            key={orgUnitTypeId}
+                            elevation={0}
+                            sx={styles.subPaper}
                         >
-                            {`${formatMessage(MESSAGES.level)} ${
-                                index + 1
-                            }${currentOrgUnitType?.label ? ` — ${currentOrgUnitType.label}` : ''}`}
-                        </Typography>
-                        <Box sx={styles.dataRow}>
                             <Typography
-                                component="div"
-                                sx={styles.criteriaBlock}
-                                variant="body2"
+                                color="primary"
+                                sx={styles.levelHeading}
+                                variant="subtitle2"
                             >
-                                <Box component="span" sx={styles.fieldLabel}>
-                                    {formatMessage(MESSAGES.criteria)}
-                                </Box>
-                                {getCriteriaLabel(
-                                    parameterValues.org_unit_type_criteria[
-                                        index
-                                    ],
-                                )}
+                                {`${formatMessage(MESSAGES.level)} ${
+                                    index + 1
+                                }${currentOrgUnitType?.label ? ` — ${currentOrgUnitType.label}` : ''}`}
                             </Typography>
-                            <Typography
-                                component="div"
-                                sx={styles.quantityBlock}
-                                variant="body2"
-                            >
-                                <Box component="span" sx={styles.fieldLabel}>
-                                    {formatMessage(MESSAGES.quantity)}
-                                </Box>
-                                {
-                                    parameterValues.org_unit_type_quantities[
-                                        index
-                                    ]
-                                }
-                            </Typography>
-                        </Box>
-                        <Typography component="div" variant="body2">
-                            <Box component="span" sx={styles.fieldLabel}>
-                                {formatMessage(MESSAGES.excludedOrgUnits)}
+                            <Box sx={styles.dataRow}>
+                                <Typography
+                                    component="div"
+                                    sx={styles.criteriaBlock}
+                                    variant="body2"
+                                >
+                                    <Box
+                                        component="span"
+                                        sx={styles.fieldLabel}
+                                    >
+                                        {formatMessage(MESSAGES.criteria)}
+                                    </Box>
+                                    {getCriteriaLabel(
+                                        parameterValues.org_unit_type_criteria[
+                                            index
+                                        ],
+                                    )}
+                                </Typography>
+                                <Typography
+                                    component="div"
+                                    sx={styles.quantityBlock}
+                                    variant="body2"
+                                >
+                                    <Box
+                                        component="span"
+                                        sx={styles.fieldLabel}
+                                    >
+                                        {formatMessage(MESSAGES.quantity)}
+                                    </Box>
+                                    {
+                                        parameterValues
+                                            .org_unit_type_quantities[index]
+                                    }
+                                </Typography>
                             </Box>
-                            {parameterValues.org_unit_type_exceptions[index] ??
-                                textPlaceholder}
-                        </Typography>
-                    </Paper>
-                );
-            })}
+                            <Typography component="div" variant="body2">
+                                <Box component="span" sx={styles.fieldLabel}>
+                                    {formatMessage(MESSAGES.excludedOrgUnits)}
+                                </Box>
+                                {parameterValues.org_unit_type_exceptions[
+                                    index
+                                ] ?? textPlaceholder}
+                            </Typography>
+                        </Paper>
+                    );
+                },
+            )}
         </Paper>
     );
 };

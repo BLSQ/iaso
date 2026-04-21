@@ -1,5 +1,5 @@
 from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -62,7 +62,10 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
         )
         if round_qs.count() > 1:
             rounds_list = list(round_qs.values_list("id", flat=True))
-            raise Exception(f"Found more than one round for url: {rounds_list}")
+            return Response(
+                {"error": f"Found more than one round for url: {rounds_list}"},
+                status=status.HTTP_409_CONFLICT,
+            )
 
         round_obj = round_qs.first()
         obj.round_id = round_obj.id if round_obj else None

@@ -15,7 +15,7 @@ import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
-import { useGetWorkflowDetails } from '../api/Get';
+import { useCustomApiValidationWorkflowsRetrieve } from '../api/Get';
 import { useSaveNodeOrder } from '../api/PostPutPatch';
 import { useWorkflowNodesColumns } from '../columns';
 import { useSortableTableState } from '../useSortableTableState';
@@ -49,9 +49,8 @@ export const WorkflowConfiguration: FunctionComponent = () => {
     const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const { data: workflow, isFetching: isLoading } = useGetWorkflowDetails(
-        params.slug,
-    );
+    const { data: workflow, isFetching: isLoading } =
+        useCustomApiValidationWorkflowsRetrieve(params.slug);
     const {
         items,
         handleSortChange,

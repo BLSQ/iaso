@@ -1,5 +1,9 @@
 import { UseQueryResult } from 'react-query';
-import { useApiValidationWorkflowsList } from 'Iaso/api';
+import {
+    useApiValidationWorkflowsList,
+    useApiValidationWorkflowsRetrieve,
+    ValidationWorkflowRetrieve,
+} from 'Iaso/api';
 import {
     ApiValidationWorkflowsListParams,
     PaginatedMobileValidationWorkflowListList,
@@ -8,8 +12,6 @@ import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/v
 import {
     ValidationWorkflowListDropdownResponse,
     ValidationWorkflowListResponse,
-    ValidationWorkflowRetrieveResponseItem,
-    ValidationWorkflowRetrieveResponseItemWithOrderedNodes,
 } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 import { useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
@@ -48,38 +50,21 @@ export const useCustomApiValidationWorkflowsList = (
     };
 };
 
-const getWorkflowDetails = async (
-    slug?: string,
-): Promise<ValidationWorkflowRetrieveResponseItem> => {
-    return getRequest(`${API_URL}${slug}/`);
-};
-
-export const useGetWorkflowDetails = (
-    slug?: string,
-): UseQueryResult<ValidationWorkflowRetrieveResponseItem, Error> => {
-    return useSnackQuery({
-        queryKey: [WF_BASE_QUERYKEY, 'details', slug],
-        queryFn: () => getWorkflowDetails(slug),
-        options: {
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            keepPreviousData: true,
-            enabled: Boolean(slug),
-            select: (
-                data: ValidationWorkflowRetrieveResponseItem,
-            ): ValidationWorkflowRetrieveResponseItemWithOrderedNodes => {
-                if (!data) return data;
-                return {
-                    ...data,
-                    node_templates: data.node_templates?.map((node, index) => ({
-                        ...node,
-                        id: index + 1,
-                        order: index + 1,
-                    })),
-                };
-            },
-        },
-    });
+export const useCustomApiValidationWorkflowsRetrieve = (slug: string) => {
+    const { data, ...other } = useApiValidationWorkflowsRetrieve(
+        slug,
+        undefined,
+        { query: { enabled: !!slug } },
+    );
+    // once orval integrates zod , we won't really need this anymore
+    // also once orval fix the fact that custom-query options does not output the enabled: !!slug
+    if (data) {
+        ValidationWorkflowRetrieve.parse(data);
+    }
+    return {
+        data,
+        ...other,
+    };
 };
 
 const getNode = async ({

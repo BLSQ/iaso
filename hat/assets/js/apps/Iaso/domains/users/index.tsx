@@ -99,8 +99,6 @@ export const Users = () => {
     const { mutate: deleteProfile, isLoading: deletingProfile } =
         useDeleteProfile();
 
-    const { mutate: createProfile, isLoading: creatingProfile } =
-        useCreateProfile();
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
     const { mutateAsync: bulkSave, isLoading: savingProfiles } =
         useBulkSaveProfiles();
@@ -108,11 +106,7 @@ export const Users = () => {
     const { mutateAsync: exportMobileSetup } = useCreateExportMobileSetup();
 
     const isLoading =
-        fetchingProfiles ||
-        deletingProfile ||
-        creatingProfile ||
-        savingProfile ||
-        savingProfiles;
+        fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
     const apiParams = useGetProfilesApiParams(params);
     const columns = useUsersTableColumns({
@@ -168,7 +162,6 @@ export const Users = () => {
                     >
                         <CreateUserDialog
                             titleMessage={MESSAGES.create}
-                            createProfile={createProfile}
                             allowSendEmailInvitation
                             iconProps={{
                                 dataTestId: 'add-user-button',

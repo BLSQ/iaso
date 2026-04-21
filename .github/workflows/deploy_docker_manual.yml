@@ -83,9 +83,6 @@ jobs:
           cp -r docker/prod/.platform .platform
           git add -f .platform
 
-          # Remove dev ebextensions from staged files
-          git rm -r --cached --quiet .ebextensions
-
       - name: Deploy to beanstalk (docker)
         run: bash scripts/deploy_prod_docker.sh ${{ steps.config.outputs.ENVIRONMENT }}
         env:

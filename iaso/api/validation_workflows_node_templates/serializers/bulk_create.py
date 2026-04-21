@@ -1,5 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import HiddenSlugRelatedField, ModelSerializer
 from iaso.api.validation_workflows_node_templates.serializers.common import ValidationWorkflowContextDefault
@@ -10,13 +12,24 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
     class Meta:
         model = ValidationNodeTemplate
 
+    def validate(self, data):
+        names = [x["name"] for x in data]
+        if len(set(names)) != len(list(names)):
+            raise ValidationError("Names must be unique.")
+
+        return data
+
     @transaction.atomic
     def create(self, validated_data):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        iaso_profile = getattr(user, "iaso_profile", None)
+
         # pre generate slugs
         existing_slugs = set(
-            ValidationNodeTemplate.objects.filter(workflow__slug=self.context.get("workflow")).values_list(
-                "slug", flat=True
-            )
+            ValidationNodeTemplate.objects.filter(
+                workflow__slug=self.context.get("workflow"), workflow__account=iaso_profile.account
+            ).values_list("slug", flat=True)
         )
 
         slug_field = ValidationNodeTemplate._meta.get_field("slug")
@@ -92,3 +105,12 @@ class ValidationNodeTemplateBulkCreateSerializer(ModelSerializer):
                 account=user.iaso_profile.account
             )
             self.fields["workflow"].queryset = ValidationWorkflow.objects.filter(account=user.iaso_profile.account)
+
+            self.validators = [
+                UniqueTogetherValidator(
+                    queryset=ValidationNodeTemplate.objects.select_related("workflow", "workflow__account").filter(
+                        workflow__account=user.iaso_profile.account
+                    ),
+                    fields=["name", "workflow"],
+                )
+            ]

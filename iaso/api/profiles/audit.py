@@ -103,6 +103,49 @@ class ProfileAuditLogger(AuditLogger):
             source=source,
         )
 
+    def bulk_log_modifications(self, items, request_user):
+        """
+        items = [
+            {
+                "instance": <model_instance>,
+                "old_data_dump": <list or None>,
+                "source": <optional>
+            },
+            ...
+        ]
+        """
+
+        modifications = []
+        for item in items:
+            source = item.get("source", None)
+            old_data_dump = item.get("old_data_dump", None)
+            instance = item["instance"]
+
+            source = source if source else self.default_source
+
+            if not old_data_dump:
+                old_data_dump = []
+            new_value = self.serialize_instance(instance)
+            password_updated = (
+                old_data_dump[0]["fields"]["password"] != new_value[0]["fields"]["password"] if old_data_dump else True
+            )
+            if old_data_dump:
+                del old_data_dump[0]["fields"]["password"]
+            del new_value[0]["fields"]["password"]
+            new_value[0]["fields"]["password_updated"] = password_updated
+            modifications.append(
+                Modification(
+                    user=request_user,
+                    past_value=old_data_dump,
+                    new_value=new_value,
+                    content_object=instance,
+                    source=source,
+                )
+            )
+
+        if modifications:
+            Modification.objects.bulk_create(modifications)
+
     def log_hard_deletion(self, instance, request_user, source=None):
         source = source if source else self.default_source
         past_value = self.serialize_instance(instance)

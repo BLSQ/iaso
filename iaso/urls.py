@@ -17,6 +17,7 @@ from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReference
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
+from iaso.api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from plugins.router import router as plugins_router
 
 from .api.accounts import AccountViewSet
@@ -24,6 +25,7 @@ from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
+from .api.bulk_create_users.views import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.colors import colors_list
 from .api.comment import CommentViewSet
@@ -96,7 +98,6 @@ from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions.permissions import PermissionsViewSet
-from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
@@ -123,9 +124,10 @@ from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
+from .api.validation_workflow_instances.views import ValidationWorkflowInstanceViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
-from .api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
 from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
+from .api.validation_workflows_nodes.views import ValidationNodeViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
@@ -178,7 +180,7 @@ router.register(r"apitoken", APITokenViewSet, basename="apitoken")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")
 router.register(r"logs", LogsViewSet, basename="logs")
-router.register(r"(?:(?P<version>(v1|v2)+)/)?profiles", ProfilesViewSet, basename="profiles")
+router.register(r"profiles", ProfilesViewSet, basename="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
@@ -266,10 +268,19 @@ router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="va
     basename="validation_node_templates",
     parents_query_lookups=["workflow__slug"],
 )
+router.register(
+    r"validation-workflows/instance/(?P<instance_id>\d+)/nodes",
+    ValidationNodeViewSet,
+    basename="validation_workflow_nodes",
+)
 router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile_validation_workflows")
-
+router.register(
+    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
+)
 router.registry.extend(plugins_router.registry)
-
+router.register(
+    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
+)
 urlpatterns: URLList = [
     path(
         "fill/<form_uuid>/<org_unit_id>/<period>",

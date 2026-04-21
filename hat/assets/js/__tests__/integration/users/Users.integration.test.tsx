@@ -1,11 +1,10 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
 import { screen } from '@testing-library/react';
-import { IntlProvider } from 'react-intl';
 import { Details } from 'Iaso/domains/users/details';
 import MESSAGES from 'Iaso/domains/users/messages';
 import PERMISSIONS_MESSAGES from 'Iaso/domains/users/permissionsMessages';
-import { renderWithTheme } from '../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
 import { randomLanguage } from '../../factories/language';
 
 // mocking hooks
@@ -113,6 +112,13 @@ const getRandomUserRole = () => {
     };
 };
 
+const getRandomOrgUnitWriteType = () => {
+    return {
+        id: faker.string.numeric(5),
+        name: faker.word.words(3),
+    };
+};
+
 const randomUser = {
     user_name: faker.internet.username(),
     first_name: faker.person.firstName(),
@@ -127,6 +133,10 @@ const randomUser = {
     org_units: [getRandomOrgUnit(), getRandomOrgUnit()],
     user_roles_permissions: [getRandomUserRole(), getRandomUserRole()],
     permissions: ['iaso_completeness', 'iaso_mappings'],
+    editable_org_unit_types: [
+        getRandomOrgUnitWriteType(),
+        getRandomOrgUnitWriteType(),
+    ],
 };
 
 // actual tests
@@ -147,11 +157,7 @@ describe('User detail view integration test', () => {
             error: null,
         });
 
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <Details />
-            </IntlProvider>,
-        );
+        renderWithThemeAndIntlProvider(<Details />);
 
         expect(
             screen.getByText(MESSAGES.generalInfo.defaultMessage),
@@ -167,6 +173,9 @@ describe('User detail view integration test', () => {
         ).not.toBeNull();
         expect(
             screen.getByText(MESSAGES.user_roles.defaultMessage),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(MESSAGES.orgUnitWriteTypes.defaultMessage),
         ).toBeInTheDocument();
 
         randomUser.projects.forEach(({ name }) => {
@@ -184,25 +193,40 @@ describe('User detail view integration test', () => {
         randomUser.permissions.forEach((perm: string) => {
             // @ts-ignore
             expect(
-                screen.getByText(PERMISSIONS_MESSAGES?.[perm]?.defaultMessage),
+                screen.getByText(
+                    (
+                        PERMISSIONS_MESSAGES as Record<
+                            string,
+                            { id: string; defaultMessage: string }
+                        >
+                    )?.[perm]?.defaultMessage,
+                ),
             ).toBeInTheDocument();
         });
+
+        randomUser.editable_org_unit_types.forEach(({ name }) => {
+            expect(screen.getByText(name)).toBeInTheDocument();
+        });
     });
-    it('deletes user and redirects to user list', async () => {});
-    it('has all the initial fields filled in when updating the user', async () => {});
-    it('reloads the data upon successful edit', async () => {});
-    it("doesn't reload the page upon successful password modification", async () => {});
-    it('displays the user data', async () => {});
+    it.todo('deletes user and redirects to user list');
+    it.todo('has all the initial fields filled in when updating the user');
+    it.todo('reloads the data upon successful edit');
+    it.todo("doesn't reload the page upon successful password modification");
+    it.todo('displays the user data');
 });
 
 describe('User list integration test', () => {
-    it('has all the initial fields filled in when updating the user', async () => {});
-    it('reloads the data upon successful edit', async () => {});
-    it('deletes user and reload data', async () => {});
-    it('reloads data upon successful create', async () => {});
+    it.todo('has all the initial fields filled in when updating the user');
+    it.todo('reloads the data upon successful edit');
+    it.todo('deletes user and reload data');
+    it.todo('reloads data upon successful create');
+    it.todo('allows selecting different columns');
+    it.todo('allows ordering on columns');
 });
 
 describe('User general integration test', () => {
-    it('allows going to a user detail view from the list view by clicking on the icon', () => {});
-    it('allows going back to the user list from user detail view', () => {});
+    it.todo(
+        'allows going to a user detail view from the list view by clicking on the icon',
+    );
+    it.todo('allows going back to the user list from user detail view');
 });

@@ -231,9 +231,9 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
     def create(self, validated_data) -> (AbstractBaseUser, Profile, bool):
         user_model = get_user_model()(
             username=validated_data["username"],
-            email=validated_data.get("email", ""),
-            first_name=validated_data["first_name"],
-            last_name=validated_data["last_name"],
+            email=validated_data.get("email", "") or "",
+            first_name=validated_data.get("first_name", "") or "",
+            last_name=validated_data.get("last_name", "") or "",
             is_active=True,
         )
 
@@ -253,7 +253,7 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
             language=validated_data.get("profile_language", None),
             dhis2_id=validated_data.get("dhis2_id", None),
             organization=validated_data.get("organization", None),
-            phone_number=validated_data.get("phone_number", ""),
+            phone_number=validated_data.get("phone_number", "") or "",
         )
 
         return {

@@ -14,11 +14,26 @@ import { useRestoreForm } from '../hooks/useRestoreForm';
 import MESSAGES from '../messages';
 import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
 
+type ShouldShowRestoreActionArgs = {
+    onlyDeleted: boolean;
+    showDeleted: boolean;
+    deletedAt?: string | null;
+};
+
+export const shouldShowRestoreAction : ShouldShowRestoreActionArgs = ({
+    onlyDeleted,
+    showDeleted,
+    deletedAt,
+}) => {
+    onlyDeleted || (showDeleted && Boolean(deletedAt));
+    }
+
 type Props = {
     settings: any;
     orgUnitId: number | string;
     baseUrls: any;
     onlyDeleted: boolean;
+    showDeleted: boolean;
     hasDhis2Module: boolean;
     deleteForm: (body: { id: number }) => Promise<any>;
 };
@@ -28,6 +43,7 @@ export const FormActions: FunctionComponent<Props> = ({
     orgUnitId,
     baseUrls,
     onlyDeleted,
+    showDeleted,
     hasDhis2Module,
     deleteForm,
 }) => {
@@ -50,17 +66,22 @@ export const FormActions: FunctionComponent<Props> = ({
     const { mutateAsync: restoreForm } = useRestoreForm();
     const hasNoVersion = settings.row.original.latest_form_version === null;
     const { formatMessage } = useSafeIntl();
+    const shouldShowRestore = shouldShowRestoreAction({
+        onlyDeleted,
+        showDeleted,
+        deletedAt: settings.row.original.deleted_at,
+    });
 
     return (
         <section>
-            {onlyDeleted && (
+            {shouldShowRestore && (
                 <IconButton
                     onClick={() => restoreForm(settings.row.original.id)}
                     icon="restore-from-trash"
                     tooltipMessage={MESSAGES.restoreFormTooltip}
                 />
             )}
-            {!onlyDeleted && (
+            {!shouldShowRestore && (
                 <>
                     <DisplayIfUserHasPerm
                         permissions={[
@@ -165,8 +186,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                 <DeleteDialog
                                     titleMessage={MESSAGES.deleteFormTitle}
                                     onConfirm={closeDialog =>
-                                        deleteForm(
-                                            {id: settings.row.original.id},
+                                        deleteForm({
+                                            id: settings.row.original.id},
                                         ).then(closeDialog)
                                     }
                                 />

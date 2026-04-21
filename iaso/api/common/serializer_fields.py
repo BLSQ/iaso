@@ -120,7 +120,7 @@ class PrimaryKeyRelatedFieldFromJSON(serializers.PrimaryKeyRelatedField):
 class CountryAwarePhoneNumberField(serializers.CharField):
     default_error_messages = {
         "invalid": _("Enter a valid phone number."),
-        "both_required": _("Both phone number and country code must be provided"),
+        "both_required": _("Both the phone number and the country code must be provided"),
     }
 
     def __init__(self, country_code_field="country_code", **kwargs):

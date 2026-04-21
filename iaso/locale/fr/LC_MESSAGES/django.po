@@ -32,7 +32,7 @@ msgid "Enter a valid phone number."
 msgstr "Veuillez saisir un numéro de téléphone valide."
 
 #: iaso/api/common/serializer_fields.py
-msgid "Both phone number and country code must be provided"
+msgid "Both the phone number and the country code must be provided"
 msgstr "Le numéro de téléphone et le code pays doivent être fournis"
 
 #: iaso/api/common/validators.py

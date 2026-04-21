@@ -86,6 +86,7 @@ class ResetPasswordEmailTemplateTest(SimpleTestCase):
         self.assertIn("jdoe", html)
         self.assertIn("max-width:600px", html)
         self.assertIn("mailto:support@example.com", html)
+        self.assertIn("/reset-password-confirmation/MQ/reset-token/", html)
 
 
 class CreatePasswordEmailTemplateTest(SimpleTestCase):

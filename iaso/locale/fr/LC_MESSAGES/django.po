@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-20 13:17+0000\n"
+"POT-Creation-Date: 2026-04-21 09:22+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -537,6 +537,10 @@ msgstr "ID de Formulaire"
 #: iaso/api/stocks/filters.py
 msgid "Form Version ID"
 msgstr "ID de Version de Formulaire"
+
+#: iaso/api/validation_workflows/permissions.py
+msgid "This feature is disabled for your account."
+msgstr "Cette fonctionnalité est désactivée pour votre compte."
 
 #: iaso/auth/forms.py
 msgid "Too many login attempts. Please try again later."

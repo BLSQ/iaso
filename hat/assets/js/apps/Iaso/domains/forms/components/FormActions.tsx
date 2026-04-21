@@ -20,13 +20,12 @@ type ShouldShowRestoreActionArgs = {
     deletedAt?: string | null;
 };
 
-export const shouldShowRestoreAction : ShouldShowRestoreActionArgs = ({
+export const shouldShowRestoreAction = ({
     onlyDeleted,
     showDeleted,
     deletedAt,
-}) => {
+}: ShouldShowRestoreActionArgs): boolean =>
     onlyDeleted || (showDeleted && Boolean(deletedAt));
-    }
 
 type Props = {
     settings: any;

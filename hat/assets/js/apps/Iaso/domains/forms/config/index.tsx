@@ -142,12 +142,10 @@ type FormsTableColumnsProps = {
     count: number;
 };
 
-export const shouldShowDeletedColumn : boolean = (
+export const shouldShowDeletedColumn = (
     onlyDeleted: boolean,
     showDeleted: boolean,
-) => {
-        onlyDeleted || showDeleted;
-    } 
+): boolean => onlyDeleted || showDeleted;
 
 export const useFormsTableColumns = ({
     orgUnitId,

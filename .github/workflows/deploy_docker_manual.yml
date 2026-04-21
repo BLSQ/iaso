@@ -65,7 +65,7 @@ jobs:
 
       - name: Build docker image
         run: |
-          docker build -t blsq/iaso:latest -t blsq/iaso:${{ steps.version.outputs.VERSION_NAME }} -f docker/prod/Dockerfile .
+          docker build -t blsq/iaso:latest -f docker/prod/Dockerfile .
 
       - name: Push docker image
         run: |
@@ -82,6 +82,15 @@ jobs:
           rm -rf .platform
           cp -r docker/prod/.platform .platform
           git add -f .platform
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.14
+
+      - name: Setup beanstalk
+        run: |
+           pip install awsebcli==3.27.1 botocore==1.42.92 boto3==1.42.92
 
       - name: Deploy to beanstalk (docker)
         run: bash scripts/deploy_prod_docker.sh ${{ steps.config.outputs.ENVIRONMENT }}

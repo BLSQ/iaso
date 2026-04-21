@@ -1,0 +1,50 @@
+<?xml version='1.0' ?>
+<data id="file_active_admission" version="2025050101" xmlns:h="http://www.w3.org/1999/xhtml"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa"
+      xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms"
+      xmlns:odk="http://www.opendatakit.org/xforms">
+    <main_title>
+        <statut>
+            <adm_statut_patient>{adm_statut_patient}</adm_statut_patient>
+        </statut>
+        <group_entete>
+            <code_ets>{code_ets}</code_ets>
+            <adm_date_rapportage>{adm_date_rapportage}</adm_date_rapportage>
+            <adm_resp_ex>{adm_resp_ex}</adm_resp_ex>
+        </group_entete>
+        <group_identifiant>
+            <code_site>{code_site}</code_site>
+            <annee>{annee}</annee>
+            <num_ordre>{num_ordre}</num_ordre>
+            <enfant>{enfant}</enfant>
+            <code_enfant>{code_enfant}</code_enfant>
+        </group_identifiant>
+        <code>
+            <adm_code_patient>{adm_code_patient}</adm_code_patient>
+            <generated_note_name_26/>
+        </code>
+        <group_suivi_patient>
+            <adm_genre_patient>{adm_genre_patient}</adm_genre_patient>
+            <adm_age_patient>{adm_age_patient}</adm_age_patient>
+            <adm_poids_patient>{adm_poids_patient}</adm_poids_patient>
+            <adm_jours_disp>{adm_jours_disp}</adm_jours_disp>
+            <adm_regime>{adm_regime}</adm_regime>
+            <adm_stable>{adm_stable}</adm_stable>
+            <adm_tb_vih>{adm_tb_vih}</adm_tb_vih>
+            <adm_type_vih>{adm_type_vih}</adm_type_vih>
+            <adm_ligne_thera>{adm_ligne_thera}</adm_ligne_thera>
+        </group_suivi_patient>
+    </main_title>
+    <statut_patient>{statut_patient}</statut_patient>
+    <code_patient>{code_patient}</code_patient>
+    <genre_patient>{genre_patient}</genre_patient>
+    <age_patient>{age_patient}</age_patient>
+    <poids_patient>{poids_patient}</poids_patient>
+    <stable>{stable}</stable>
+    <tb_vih>{tb_vih}</tb_vih>
+    <type_vih>{type_vih}</type_vih>
+    <adm_is_done>{adm_is_done}</adm_is_done>
+    <meta>
+    <instanceID>uuid:{instanceID}</instanceID>
+    </meta>
+</data>

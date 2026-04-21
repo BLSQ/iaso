@@ -1,7 +1,5 @@
-import {
-    ValidationWorkflowRetrieveResponseItem,
-    ValidationWorkflowRetrieveResponseItemWithOrderedNodes,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api';
+import { ValidationWorkflowRetrieveResponseItemWithOrderedNodes } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 
 export const workflowsOperations = {
     apiValidationWorkflowsList: {
@@ -21,7 +19,7 @@ export const workflowsOperations = {
                 cacheTime: Infinity,
                 keepPreviousData: true,
                 select: (
-                    data: ValidationWorkflowRetrieveResponseItem,
+                    data: ValidationWorkflowRetrieve,
                 ): ValidationWorkflowRetrieveResponseItemWithOrderedNodes => {
                     if (!data) return data;
                     return {
@@ -42,7 +40,10 @@ export const workflowsOperations = {
 
 export const mutationInvalidates = [
     {
-        onMutations: [''],
-        invalidates: [''],
+        onMutations: ['apiValidationWorkflowsDestroy'],
+        invalidates: [
+            'apiValidationWorkflowsList',
+            { query: 'apiValidationWorkflowsRetrieve', params: ['slug'] },
+        ],
     },
 ];

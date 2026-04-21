@@ -4,8 +4,7 @@ import {
     succesfullSnackBar,
     useSafeIntl,
 } from 'bluesquare-components';
-import { isArray } from 'lodash';
-import { QueryKey, UseMutationOptions, useQueryClient } from 'react-query';
+import { UseMutationOptions } from 'react-query';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { ApiError } from 'Iaso/libs/Api';
 import { getApiErrorMessage, MESSAGES } from 'Iaso/libs/apiHooks';
@@ -20,7 +19,7 @@ type ExtraMutationOptions = {
     showSuccessSnackBar?: boolean;
     ignoreErrorCodes?: number[];
     useApiErrorMessage?: boolean;
-    invalidateQueryKey?: QueryKey;
+    // invalidateQueryKey?: QueryKey;
     successSnackBar?: (msg: IntlMessage) => {
         messageKey: string;
         messageObject: any;
@@ -35,7 +34,7 @@ type UseMutationOptionsWithExtra<TData, TError, TVariables, TContext> =
     UseMutationOptions<TData, TError, TVariables, TContext> &
         ExtraMutationOptions;
 
-export const useDefaultOpenApiMutationOptions = <
+export const useCustomMutationOptions = <
     TData = unknown, // All unknown because this is function is used across all mutations.
     TError = unknown,
     TVariables = void,
@@ -47,6 +46,7 @@ export const useDefaultOpenApiMutationOptions = <
         TVariables,
         TContext
     >,
+    // onSuccess,
 ): UseMutationOptions<TData, TError, TVariables, TContext> => {
     const { formatMessage } = useSafeIntl();
     const {
@@ -55,14 +55,14 @@ export const useDefaultOpenApiMutationOptions = <
         showSuccessSnackBar = true,
         ignoreErrorCodes = [],
         useApiErrorMessage = false,
-        invalidateQueryKey,
+        // invalidateQueryKey,
         onSuccess: optionsOnSuccess,
         onError: optionsOnError,
         successSnackBar = msg => succesfullSnackBar(undefined, msg),
         ...newMutationOptions
     } = mutationOptions;
 
-    const queryClient = useQueryClient();
+    // const queryClient = useQueryClient();
 
     return {
         onError: (error, variables, context) => {
@@ -89,15 +89,6 @@ export const useDefaultOpenApiMutationOptions = <
         onSuccess: (data, variables, context) => {
             if (snackSuccessMessage && showSuccessSnackBar) {
                 openSnackBar(successSnackBar(snackSuccessMessage));
-            }
-            if (invalidateQueryKey) {
-                if (isArray(invalidateQueryKey)) {
-                    invalidateQueryKey.forEach(queryKey =>
-                        queryClient.invalidateQueries(queryKey),
-                    );
-                } else {
-                    queryClient.invalidateQueries(invalidateQueryKey);
-                }
             }
             if (optionsOnSuccess) {
                 return optionsOnSuccess(data, variables, context);

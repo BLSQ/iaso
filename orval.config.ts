@@ -1,3 +1,6 @@
+import { mutationInvalidates as workflowMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
+import { useCustomMutationOptions } from './hat/assets/js/orval/mutator/custom-mutation-options';
+
 require('dotenv').config();
 
 const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || "http"}://${process.env.ORVAL_TARGET_URL_DOMAIN || "localhost:8000"}`
@@ -41,13 +44,17 @@ module.exports = {
                     runtimeValidation: true,
                     shouldSplitQueryKey: true,
                     useOperationIdAsQueryKey: true,
+                    useInvalidate: false,
+                    mutationInvalidates: [
+                        ...workflowMutationInvalidates
+                    ],
                     queryOptions: {
                         path: './hat/assets/js/orval/mutator/custom-query-options.ts',
                         name: 'useCustomQueryOptions'
                     },
                     mutationOptions: {
                         path: './hat/assets/js/orval/mutator/custom-mutation-options.ts',
-                        name: 'useDefaultOpenApiMutationOptions'
+                        name: 'useCustomMutationOptions',
                     }
                 },
                 mutator: {

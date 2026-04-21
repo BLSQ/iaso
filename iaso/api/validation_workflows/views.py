@@ -4,6 +4,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet
@@ -27,6 +28,7 @@ class ValidationWorkflowViewSet(ModelViewSet):
     lookup_field = "slug"
     lookup_url_kwarg = "slug"
     filterset_class = ValidationWorkflowListFilter
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
     def get_serializer_class(self):
         if self.action == "list":

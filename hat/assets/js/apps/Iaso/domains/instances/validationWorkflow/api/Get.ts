@@ -1,13 +1,11 @@
 import { UseQueryResult } from 'react-query';
 import {
+    PaginatedValidationWorkflowListList,
     useApiValidationWorkflowsList,
     useApiValidationWorkflowsRetrieve,
     ValidationWorkflowRetrieve,
 } from 'Iaso/api';
-import {
-    ApiValidationWorkflowsListParams,
-    PaginatedMobileValidationWorkflowListList,
-} from 'Iaso/api/models';
+import { ApiValidationWorkflowsListParams } from 'Iaso/api/models';
 import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
 import {
     ValidationWorkflowListDropdownResponse,
@@ -41,7 +39,7 @@ export const useCustomApiValidationWorkflowsList = (
     );
 
     if (data) {
-        PaginatedMobileValidationWorkflowListList.parse(data);
+        PaginatedValidationWorkflowListList.parse(data);
     }
 
     return {
@@ -51,11 +49,9 @@ export const useCustomApiValidationWorkflowsList = (
 };
 
 export const useCustomApiValidationWorkflowsRetrieve = (slug: string) => {
-    const { data, ...other } = useApiValidationWorkflowsRetrieve(
-        slug,
-        undefined,
-        { query: { enabled: !!slug } },
-    );
+    const { data, ...other } = useApiValidationWorkflowsRetrieve(slug, {
+        query: { enabled: !!slug },
+    });
     // once orval integrates zod , we won't really need this anymore
     // also once orval fix the fact that custom-query options does not output the enabled: !!slug
     if (data) {

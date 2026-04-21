@@ -70,7 +70,6 @@ jobs:
       - name: Push docker image
         run: |
           docker push blsq/iaso:latest
-          docker push blsq/iaso:${{ steps.version.outputs.VERSION_NAME }}
 
       - name: Swap to prod docker config
         run: |

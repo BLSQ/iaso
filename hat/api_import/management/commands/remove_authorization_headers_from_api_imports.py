@@ -19,6 +19,7 @@ class Command(BaseCommand):
         parser.add_argument(f"--{DRY_RUN_ARG}", default=False, action=argparse.BooleanOptionalAction)
         parser.add_argument(f"--{BATCH_SIZE_ARG}", default=1000)
 
+    @transaction.atomic
     def handle(self, *args, **options):
         dry_run = options[DRY_RUN_ARG]
         batch_size = options[BATCH_SIZE_ARG]
@@ -59,8 +60,7 @@ class Command(BaseCommand):
 
         # Final batch update for remaining records
         if objs_to_update:
-            with transaction.atomic():
-                self.bulk_update(objs_to_update, dry_run)
+            self.bulk_update(objs_to_update, dry_run)
 
         self.stdout.write(self.style.SUCCESS(f"Summary: {total_modified} objects modified."))
 

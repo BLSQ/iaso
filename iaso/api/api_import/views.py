@@ -4,7 +4,7 @@ from rest_framework.mixins import ListModelMixin
 
 from hat.api_import.models import APIImport
 from iaso.api.api_import.filters import APIImportFilterSet
-from iaso.api.api_import.paginations import APIImportPagination
+from iaso.api.api_import.pagination import APIImportPagination
 from iaso.api.api_import.serializers import APIImportSerializer
 from iaso.api.common.permissions import IsAdminOrSuperUserWithIasoProfile
 from iaso.models import Project

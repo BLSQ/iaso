@@ -199,8 +199,8 @@ msgstr "%(count)s assignations ont été supprimées avec succès"
 #, python-format
 msgid "There is %(count)d failing import needing your attention."
 msgid_plural "There are %(count)d failing imports needing your attention."
-msgstr[0] "Il y a %(count)d importation en échec nécessitant votre attention."
-msgstr[1] "Il y a %(count)d importation en échec nécessitant votre attention."
+msgstr[0] "Il y a %(count)d import en échec nécessitant votre attention."
+msgstr[1] "Il y a %(count)d imports en échec nécessitant votre attention."
 
 #: iaso/api/openhexa/views.py
 msgid "Failed to retrieve pipelines"

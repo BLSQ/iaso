@@ -66,9 +66,8 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
     samplingResult,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { data: pipeline } = useGetPipelineDetails(
-        isOpen ? samplingResult.pipeline_id : undefined,
-    );
+    const { data: pipeline, isFetching: isFetchingPipeline } =
+        useGetPipelineDetails(isOpen ? samplingResult.pipeline_id : undefined);
     const { data: configData } = useGetPipelineConfig();
     const config = configData?.config || {};
     const lQAS_code = config?.lqas_pipeline_code;
@@ -201,25 +200,34 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
                                         MESSAGES.samplingResultParameters,
                                     )}
                                 </Typography>
-
-                                {isLqasPipeline && hasParameters && (
-                                    <LQASRead
-                                        isFetchingOrgunitTypes={
-                                            isFetchingOrgunitTypes
-                                        }
-                                        orgunitTypes={orgunitTypes}
-                                        parameterValues={parameterValues}
-                                    />
-                                )}
-                                {!isLqasPipeline && parametersJson && (
-                                    <Box component="pre" sx={styles.parameters}>
-                                        {parametersJson}
-                                    </Box>
-                                )}
-                                {!hasParameters && (
-                                    <Typography variant="body1">
-                                        {formatMessage(MESSAGES.noParameters)}
-                                    </Typography>
+                                {!isFetchingPipeline && (
+                                    <>
+                                        {isLqasPipeline &&
+                                            hasParameters &&
+                                            !isFetchingOrgunitTypes && (
+                                                <LQASRead
+                                                    orgunitTypes={orgunitTypes}
+                                                    parameterValues={
+                                                        parameterValues
+                                                    }
+                                                />
+                                            )}
+                                        {!isLqasPipeline && parametersJson && (
+                                            <Box
+                                                component="pre"
+                                                sx={styles.parameters}
+                                            >
+                                                {parametersJson}
+                                            </Box>
+                                        )}
+                                        {!hasParameters && (
+                                            <Typography variant="body1">
+                                                {formatMessage(
+                                                    MESSAGES.noParameters,
+                                                )}
+                                            </Typography>
+                                        )}
+                                    </>
                                 )}
                             </Grid>
                         </Grid>

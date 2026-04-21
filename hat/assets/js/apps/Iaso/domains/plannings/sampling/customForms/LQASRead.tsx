@@ -1,11 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import {
-    LoadingSpinner,
-    textPlaceholder,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { SxStyles } from 'Iaso/types/general';
@@ -62,24 +58,11 @@ const styles: SxStyles = {
 type Props = {
     parameterValues: ParameterValues;
     orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
-    isFetchingOrgunitTypes?: boolean;
-};
-
-const getOrgUnitTypeLabel = (
-    id: number | undefined,
-    orgunitTypes: OrgUnitTypeHierarchyDropdownValues,
-): string => {
-    if (id === undefined || id === null) {
-        return textPlaceholder;
-    }
-    const found = orgunitTypes?.find(o => o.value === id);
-    return found?.label ?? String(id);
 };
 
 export const LQASRead: FunctionComponent<Props> = ({
     parameterValues,
     orgunitTypes,
-    isFetchingOrgunitTypes,
 }) => {
     const { formatMessage } = useSafeIntl();
     const criteriaOptions = useGetCriteriaOptions();
@@ -98,25 +81,12 @@ export const LQASRead: FunctionComponent<Props> = ({
         return opt?.label ?? String(value);
     };
 
-    if (isFetchingOrgunitTypes) {
-        return (
-            <Box minHeight={56} position="relative">
-                <LoadingSpinner absolute fixed={false} />
-            </Box>
-        );
-    }
-
-    if (!levels.length) {
-        return (
-            <Typography color="text.secondary" variant="body2">
-                {formatMessage(MESSAGES.noParameters)}
-            </Typography>
-        );
-    }
-
     return (
         <Paper elevation={0} sx={styles.paper}>
             {levels.map((orgUnitTypeId, index) => {
+                const currentOrgUnitType = orgunitTypes?.find(
+                    o => o.value === orgUnitTypeId,
+                );
                 return (
                     <Paper
                         key={orgUnitTypeId}
@@ -130,10 +100,7 @@ export const LQASRead: FunctionComponent<Props> = ({
                         >
                             {`${formatMessage(MESSAGES.level)} ${
                                 index + 1
-                            } — ${getOrgUnitTypeLabel(
-                                orgUnitTypeId,
-                                orgunitTypes,
-                            )}`}
+                            }${currentOrgUnitType?.label ? ` — ${currentOrgUnitType.label}` : ''}`}
                         </Typography>
                         <Box sx={styles.dataRow}>
                             <Typography

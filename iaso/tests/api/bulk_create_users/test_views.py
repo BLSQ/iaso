@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, User
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
 from rest_framework import status
 
 from iaso import models as m
@@ -1140,3 +1141,20 @@ class BulkCreateCsvTestCase(APITestCase):
         user = User.objects.get(username="projectid_user")
         self.assertEqual(user.iaso_profile.projects.count(), 1)
         self.assertEqual(user.iaso_profile.projects.first().id, self.project.id)
+
+    def test_file_from_sample_does_not_trigger_invalid_file_type(self):
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(reverse("bulkcreateuser-download-sample-csv"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        csv_content = b"".join(response.streaming_content)
+
+        uploaded_file = SimpleUploadedFile(name="test.csv", content=csv_content)
+
+        response = self.client.post(f"{BASE_URL}", {"file": uploaded_file}, format="multipart")
+
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn("file", res_data)

@@ -5,7 +5,7 @@ from iaso.models import Account
 from iaso.test import TestCase
 
 
-class Test(TestCase):
+class TestBulkCreateItemSerializer(TestCase):
     def setUp(self):
         account = Account.objects.create(name="account")
         self.user = self.create_user_with_profile(username="test", account=account)

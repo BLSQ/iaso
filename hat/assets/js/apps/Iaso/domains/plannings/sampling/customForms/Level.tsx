@@ -116,6 +116,10 @@ export const Level: FunctionComponent<Props> = ({
         orgUnitTypeId,
         orgunitTypes,
     ]);
+    console.log(
+        'parameterValues?.org_unit_type_exceptions',
+        parameterValues?.org_unit_type_exceptions,
+    );
     const selectedOrgUnitTypeId = useMemo(
         () =>
             parameterValues?.org_unit_type_exceptions?.[index]

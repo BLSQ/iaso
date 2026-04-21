@@ -215,9 +215,33 @@ const MESSAGES = defineMessages({
         id: 'iaso.plannings.label.seeSamplingResults',
         defaultMessage: 'See sampling results',
     },
+    viewSamplingResultDetails: {
+        id: 'iaso.plannings.label.viewSamplingResultDetails',
+        defaultMessage: 'View sampling result details',
+    },
     samplingName: {
         id: 'iaso.plannings.label.samplingName',
         defaultMessage: 'Sampling name',
+    },
+    samplingResultCreatedBy: {
+        id: 'iaso.plannings.label.samplingResultCreatedBy',
+        defaultMessage: 'Created by',
+    },
+    samplingResultDetailsTitle: {
+        id: 'iaso.plannings.label.samplingResultDetailsTitle',
+        defaultMessage: 'Sampling result {id}',
+    },
+    samplingResultParameters: {
+        id: 'iaso.plannings.label.samplingResultParameters',
+        defaultMessage: 'Parameters',
+    },
+    samplingResultPipelineVersion: {
+        id: 'iaso.plannings.label.samplingResultPipelineVersion',
+        defaultMessage: 'Pipeline version',
+    },
+    samplingResultTask: {
+        id: 'iaso.plannings.label.samplingResultTask',
+        defaultMessage: 'Task',
     },
     selectSamplingResult: {
         id: 'iaso.plannings.label.selectSamplingResult',
@@ -286,6 +310,10 @@ const MESSAGES = defineMessages({
     close: {
         id: 'iaso.label.close',
         defaultMessage: 'Close',
+    },
+    criteria: {
+        id: 'iaso.plannings.label.criteria',
+        defaultMessage: 'Criteria',
     },
     quantity: {
         defaultMessage: 'Qty',

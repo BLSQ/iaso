@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
+import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
@@ -10,16 +10,14 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../components/nav/TopBarComponent';
-import { mappingsTableColumns } from './config';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
-import { baseUrls } from '../../constants/urls.ts';
+import { Filters } from './components/Filter';
+import { mappingsTableColumns } from './config';
 import { useGetMappingVersions } from './hooks.js';
 import MESSAGES from './messages';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import * as Permission from '../../utils/permissions.ts';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { Filters } from './components/Filter';
 
 const baseUrl = baseUrls.mappings;
 
@@ -27,7 +25,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Mappings = props => {
+const Mappings = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrl);

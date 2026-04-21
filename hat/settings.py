@@ -887,6 +887,8 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
+INSTALLED_APPS.append("dynamic_fields")
+
 # Making sure that files are not stored on disk while running tests
 # This allows faster tests and easier clean up of test files
 if IN_TESTS:

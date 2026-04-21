@@ -89,7 +89,8 @@ jobs:
 
       - name: Setup beanstalk
         run: |
-           pip install awsebcli==3.27.1 botocore==1.42.92 boto3==1.42.92
+          cp .elasticbeanstalk/config.upgrade.yml .elasticbeanstalk/config.yml
+          pip install awsebcli==3.27.1 botocore==1.42.92 boto3==1.42.92
 
       - name: Deploy to beanstalk (docker)
         run: bash scripts/deploy_prod_docker.sh ${{ steps.config.outputs.ENVIRONMENT }}

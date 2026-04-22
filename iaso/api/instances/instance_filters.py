@@ -47,8 +47,8 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
     get_beginning_of_day(req.get(query.SENT_DATE_FROM, None), query.SENT_DATE_FROM)
     get_end_of_day(req.get(query.SENT_DATE_TO, None), query.SENT_DATE_TO)
 
-    ref_raw = (req.get(query.REFERENCE_INSTANCES) or req.get("reference_instances") or "").strip().lower()
-    reference_instances = ref_raw if ref_raw in ("reference", "not_reference") else None
+    ref = (req.get(query.REFERENCE_INSTANCES) or "").strip().lower()
+    reference_instances = ref if ref in ("reference", "not_reference") else None
 
     filters = {
         "form_id": req.get(query.FORM_ID, None),

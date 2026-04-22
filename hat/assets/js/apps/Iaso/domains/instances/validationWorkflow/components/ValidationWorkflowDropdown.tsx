@@ -6,6 +6,10 @@ import InputComponent, {
 import MESSAGES from 'Iaso/constants/messages';
 import { useGetWorkflowOptions } from 'Iaso/domains/instances/validationWorkflow/api/Get';
 import { userHasPermission } from 'Iaso/domains/users/utils';
+import {
+    hasFeatureFlag,
+    SUBMISSION_VALIDATION_WORKFLOW,
+} from 'Iaso/utils/featureFlags';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
@@ -19,14 +23,18 @@ export const ValidationWorkflowDropdown = ({
 }: ValidationWorkflowDropdownProps) => {
     const currentUser = useCurrentUser();
     const hasPermission = userHasPermission(VALIDATION_WORKFLOWS, currentUser);
+    const userHasFeatureFlag = hasFeatureFlag(
+        currentUser,
+        SUBMISSION_VALIDATION_WORKFLOW,
+    );
 
     const { data: workflowOptions, isFetching: isFetchingWorkflows } =
-        useGetWorkflowOptions(hasPermission);
+        useGetWorkflowOptions(hasPermission && userHasFeatureFlag);
     const { formatMessage } = useSafeIntl();
     const { loading, disabled, value, ...newProps } = props;
 
     const isLoading = loading || isFetchingWorkflows;
-    const isDisabled = disabled || !hasPermission;
+    const isDisabled = disabled || !hasPermission || !userHasFeatureFlag;
 
     const inputComponent = (
         <InputComponent
@@ -35,18 +43,22 @@ export const ValidationWorkflowDropdown = ({
             options={workflowOptions || []}
             loading={isLoading}
             disabled={isDisabled}
-            value={hasPermission ? value : null}
+            value={hasPermission && userHasFeatureFlag ? value : null}
             {...newProps}
         />
     );
 
-    return hasPermission ? (
+    return hasPermission && userHasFeatureFlag ? (
         inputComponent
     ) : (
         <InputWithInfos
-            infos={formatMessage(MESSAGES.missingPermissions, {
-                permissions: VALIDATION_WORKFLOWS,
-            })}
+            infos={
+                !userHasFeatureFlag
+                    ? formatMessage(MESSAGES.featureDisabled)
+                    : formatMessage(MESSAGES.missingPermissions, {
+                          permissions: VALIDATION_WORKFLOWS,
+                      })
+            }
         >
             {inputComponent}
         </InputWithInfos>

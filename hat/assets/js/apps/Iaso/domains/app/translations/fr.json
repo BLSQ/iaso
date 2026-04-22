@@ -290,6 +290,7 @@
     "iaso.exportRequest.last_export_success_at": "Dernier export réussi",
     "iaso.exportRequest.launcher": "Exporté par",
     "iaso.exportRequest.Status": "Statut",
+    "iaso.featureDisabled": "Cette fonctionnalité est désactivée pour votre compte.",
     "iaso.form.add": "Ajouter",
     "iaso.form.addUpdate": "Ajouter / Mettre à jour",
     "iaso.form.attachment": "Pièce jointe",

@@ -30,6 +30,18 @@ vi.mock('Iaso/domains/instances/validationWorkflow/api/Get', () => ({
     useGetWorkflowOptions: mockUseGetWorkflowOptions,
 }));
 
+const { mockHasFeatureFlag } = vi.hoisted(() => {
+    return { mockHasFeatureFlag: vi.fn() };
+});
+
+vi.mock('Iaso/utils/featureFlags', async () => {
+    const actual = await vi.importActual('Iaso/utils/featureFlags');
+    return {
+        ...actual,
+        hasFeatureFlag: mockHasFeatureFlag,
+    };
+});
+
 vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
     return {
@@ -41,12 +53,12 @@ vi.mock('bluesquare-components', async () => {
 describe('ValidationWorkflowDropdown', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-    });
-
-    it('renders input normally when user has permission', () => {
         mockCurrentUser.mockReturnValue({ id: 1 });
         mockUserHasPermission.mockReturnValue(true);
+        mockHasFeatureFlag.mockReturnValue(true);
+    });
 
+    it('renders input normally when user has permission and feature flag', () => {
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [{ label: 'A', value: 'a' }],
             isFetching: false,
@@ -68,7 +80,6 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('wraps input with InputWithInfos when user lacks permission and disables input', () => {
-        mockCurrentUser.mockReturnValue({ id: 1 });
         mockUserHasPermission.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({
@@ -89,10 +100,28 @@ describe('ValidationWorkflowDropdown', () => {
         ).toBeInTheDocument();
     });
 
-    it('sets loading from hook', () => {
-        mockCurrentUser.mockReturnValue({ id: 1 });
-        mockUserHasPermission.mockReturnValue(true);
+    it('wraps input with InputWithInfos when user lacks feature flag and disables input', () => {
+        mockHasFeatureFlag.mockReturnValue(false);
 
+        mockUseGetWorkflowOptions.mockReturnValue({
+            data: [],
+            isFetching: false,
+        });
+
+        renderWithThemeAndIntlProvider(
+            <ValidationWorkflowDropdown keyValue={'vf'} />,
+        );
+
+        expect(screen.getByRole('combobox')).toBeInTheDocument();
+        expect(screen.getByRole('combobox')).toBeDisabled();
+        expect(
+            screen.getByLabelText(
+                'This feature has been disabled for your account.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('sets loading from hook', () => {
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [],
             isFetching: true,
@@ -106,9 +135,6 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('merges external loading with hook loading', () => {
-        mockCurrentUser.mockReturnValue({ id: 1 });
-        mockUserHasPermission.mockReturnValue(true);
-
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [],
             isFetching: false,
@@ -122,9 +148,6 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('passes workflow options from hook', async () => {
-        mockCurrentUser.mockReturnValue({ id: 1 });
-        mockUserHasPermission.mockReturnValue(true);
-
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [{ label: 'Test', value: 'test' }],
             isFetching: false,
@@ -145,7 +168,6 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not call the API when user has no permissions', () => {
-        mockCurrentUser.mockReturnValue({ id: 1 });
         mockUserHasPermission.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
@@ -158,8 +180,33 @@ describe('ValidationWorkflowDropdown', () => {
     });
 
     it('does not pass initialValue when user has no permissions', () => {
-        mockCurrentUser.mockReturnValue({ id: 1 });
         mockUserHasPermission.mockReturnValue(false);
+
+        mockUseGetWorkflowOptions.mockReturnValue({});
+
+        renderWithThemeAndIntlProvider(
+            <ValidationWorkflowDropdown keyValue={'vf'} value={1} />,
+        );
+
+        expect(
+            screen.queryByText('Value not found in possible options'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not call the API when user has no feature flag', () => {
+        mockHasFeatureFlag.mockReturnValue(false);
+
+        mockUseGetWorkflowOptions.mockReturnValue({});
+
+        renderWithThemeAndIntlProvider(
+            <ValidationWorkflowDropdown keyValue={'vf'} />,
+        );
+
+        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(false);
+    });
+
+    it('does not pass initialValue when user has no feature flag', () => {
+        mockHasFeatureFlag.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({});
 

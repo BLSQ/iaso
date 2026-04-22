@@ -251,6 +251,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             "You're missing the following permission(s): {permissions}",
     },
+    featureDisabled: {
+        id: 'iaso.featureDisabled',
+        defaultMessage: 'This feature has been disabled for your account.',
+    },
 });
 
 export default MESSAGES;

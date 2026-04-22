@@ -28,10 +28,46 @@ vi.mock('Iaso/domains/instances/validationWorkflow/api/Get', () => ({
     useGetWorkflowOptions: mockUseGetWorkflowOptions,
 }));
 
+const { mockHasFeatureFlag } = vi.hoisted(() => {
+    return { mockHasFeatureFlag: vi.fn() };
+});
+
+vi.mock('Iaso/utils/featureFlags', async () => {
+    const actual = await vi.importActual('Iaso/utils/featureFlags');
+    return {
+        ...actual,
+        hasFeatureFlag: mockHasFeatureFlag,
+    };
+});
+
 describe('ValidationWorkflowDropdown accessibility', () => {
     it('has no accessibility violations', async () => {
         mockCurrentUser.mockReturnValue({ id: 1 });
         mockUserHasPermission.mockReturnValue(true);
+        mockHasFeatureFlag.mockReturnValue(true);
+
+        mockUseGetWorkflowOptions.mockReturnValue({
+            data: [{ label: 'A', value: 'a' }],
+            isFetching: false,
+        });
+
+        const { container } = renderWithThemeAndIntlProvider(
+            <ValidationWorkflowDropdown
+                keyValue={'vf'}
+                label={{ id: 'tempLabel', defaultMessage: 'Some label' }}
+            />,
+        );
+
+        const results = await axe(container);
+
+        expect(results).toHaveNoViolations();
+    });
+
+    // todo : InputWithInfos is not a11y compliant, to be fixed in blsq-component :)
+    it.skip('has no accessibility violations when disabled', async () => {
+        mockCurrentUser.mockReturnValue({ id: 1 });
+        mockUserHasPermission.mockReturnValue(false);
+        mockHasFeatureFlag.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({
             data: [{ label: 'A', value: 'a' }],

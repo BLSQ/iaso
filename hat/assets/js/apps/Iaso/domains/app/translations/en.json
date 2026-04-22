@@ -288,6 +288,7 @@
     "iaso.exportRequest.last_export_success_at": "Last export success at",
     "iaso.exportRequest.launcher": "Exported by",
     "iaso.exportRequest.Status": "Status",
+    "iaso.featureDisabled": "This feature has been disabled for your account.",
     "iaso.form.add": "Add",
     "iaso.form.addUpdate": "Add / Update",
     "iaso.form.attachment": "Attachment",

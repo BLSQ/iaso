@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 06:31+0000\n"
+"POT-Creation-Date: 2026-04-21 09:22+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -26,6 +26,14 @@ msgstr "Le modèle {value} n'existe pas."
 #: iaso/api/comment.py
 msgid "Invalid value."
 msgstr "Valeur invalide"
+
+#: iaso/api/common/serializer_fields.py
+msgid "Enter a valid phone number."
+msgstr "Veuillez saisir un numéro de téléphone valide."
+
+#: iaso/api/common/serializer_fields.py
+msgid "Both the phone number and the country code must be provided"
+msgstr "Le numéro de téléphone et le code pays doivent être fournis"
 
 #: iaso/api/common/validators.py
 #, python-format
@@ -468,14 +476,6 @@ msgstr ""
 msgid "Some projects are outside your scope."
 msgstr "Certains projets ne relèvent pas de votre champ d'action'."
 
-#: iaso/api/profiles/serializers/common.py
-msgid "Enter a valid phone number."
-msgstr "Veuillez saisir un numéro de téléphone valide."
-
-#: iaso/api/profiles/serializers/common.py
-msgid "Both phone number and country code must be provided"
-msgstr "Le numéro de téléphone et le code pays doivent être fournis"
-
 #: iaso/api/profiles/serializers/create.py
 #: iaso/api/profiles/serializers/update.py
 msgid "One or more user roles do not belong to the provided account."
@@ -537,6 +537,14 @@ msgstr "ID de Formulaire"
 #: iaso/api/stocks/filters.py
 msgid "Form Version ID"
 msgstr "ID de Version de Formulaire"
+
+#: iaso/api/validation_workflows/permissions.py
+msgid "This feature is disabled for your account."
+msgstr "Cette fonctionnalité est désactivée pour votre compte."
+
+#: iaso/auth/forms.py
+msgid "Too many login attempts. Please try again later."
+msgstr "Trop de tentatives de connexion. Veuillez réessayer plus tard."
 
 #: iaso/models/base.py
 msgid "Aggregate"
@@ -1136,6 +1144,28 @@ msgstr "Copie des unités organisationnelles"
 msgid "Fixing parents"
 msgstr "Correction des parents"
 
+#: iaso/templates/emails/base_iaso_email.html
+msgid "Resources to get started"
+msgstr "Ressources pour commencer"
+
+#: iaso/templates/emails/base_iaso_email.html
+#, python-format
+msgid "%(title)s user guide"
+msgstr "Guide d'utilisation (%(title)s)"
+
+#: iaso/templates/emails/base_iaso_email.html
+msgid "Contact us"
+msgstr "Nous contacter"
+
+#: iaso/templates/emails/base_iaso_email.txt
+#, python-format
+msgid "User guide (%(title)s): %(url)s"
+msgstr "Guide d'utilisation (%(title)s): %(url)s"
+
+#: iaso/templates/emails/base_iaso_email.txt
+msgid "Contact us:"
+msgstr "Nous contacter:"
+
 #: iaso/templates/emails/create_password_email.html
 #, python-format
 msgid ""
@@ -1252,7 +1282,3 @@ msgstr "Erreur lors de l'analyse"
 
 #~ msgid "Invalid phone number"
 #~ msgstr "Numéro de téléphone invalide"
-
-msgid "Too many login attempts. Please try again later."
-msgstr "Trop de tentatives de connexion. Veuillez réessayer plus tard."
-

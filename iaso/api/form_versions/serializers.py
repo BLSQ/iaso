@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from rest_framework import exceptions, serializers
 from rest_framework.fields import Field
 
-from iaso.api.common import DynamicFieldsModelSerializer, TimestampField
+from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from iaso.api.common import TimestampField
 from iaso.api.forms import HasFormPermission
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing, validate_xls_form

@@ -59,7 +59,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
     def test_serialize_chronogram_task(self):
         task = ChronogramTask.objects.get(pk=self.chronogram_task.pk)
         with translation.override("en"):
-            serializer = ChronogramTaskSerializer(task)
+            serializer = ChronogramTaskSerializer(task, fields=":all")
             self.assertEqual(
                 serializer.data,
                 {
@@ -84,7 +84,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
                 },
             )
         with translation.override("fr"):
-            serializer = ChronogramTaskSerializer(task)
+            serializer = ChronogramTaskSerializer(task, fields=":all")
             self.assertEqual(
                 serializer.data,
                 {
@@ -144,6 +144,8 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
     Test ChronogramTemplateTaskSerializer.
     """
 
+    maxDiff = None
+
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Data Source")
@@ -168,7 +170,7 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
 
     def test_serialize_chronogram_template_task(self):
         with translation.override("en"):
-            serializer = ChronogramTemplateTaskSerializer(self.chronogram_template_task)
+            serializer = ChronogramTemplateTaskSerializer(self.chronogram_template_task, fields=":all")
             self.assertEqual(
                 serializer.data,
                 {
@@ -194,7 +196,7 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
                 },
             )
         with translation.override("fr"):
-            serializer = ChronogramTemplateTaskSerializer(self.chronogram_template_task)
+            serializer = ChronogramTemplateTaskSerializer(self.chronogram_template_task, fields=":all")
             self.assertEqual(
                 serializer.data,
                 {

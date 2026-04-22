@@ -18,9 +18,9 @@ import {
 } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
+import { useDeleteForm } from '../hooks/useDeleteForm';
 import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
-import { useDeleteForm } from '../hooks/useDeleteForm';
 
 export const baseUrl = baseUrls.forms;
 
@@ -152,8 +152,7 @@ export const useFormsTableColumns = ({
 
     const { formatMessage } = useSafeIntl();
 
-    const { mutateAsync: deleteForm } = useDeleteForm({ params, count }); 
-
+    const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -194,8 +193,8 @@ export const useFormsTableColumns = ({
                 id: 'org_unit_types',
                 Cell: settings =>
                     settings.row.original.org_unit_types
-                        .map(o => o.short_name)
-                        .join(', '),
+                        ?.map(o => o.short_name)
+                        ?.join(', '),
             },
             {
                 Header: formatMessage(MESSAGES.instances_count),
@@ -233,7 +232,14 @@ export const useFormsTableColumns = ({
             });
         }
         return cols;
-    }, [formatMessage, user, showDeleted, orgUnitId, hasDhis2Module, deleteForm]);
+    }, [
+        formatMessage,
+        user,
+        showDeleted,
+        orgUnitId,
+        hasDhis2Module,
+        deleteForm,
+    ]);
 };
 
 export const requiredFields = [

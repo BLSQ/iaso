@@ -1,4 +1,5 @@
 import { UseMutationResult, UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import {
     deleteRequest,
     getRequest,
@@ -8,9 +9,8 @@ import {
 } from '../../../../libs/Api';
 import { useSnackMutation, useSnackQuery } from '../../../../libs/apiHooks';
 
-import { GroupSetMetaData } from '../types/GroupSetMetaData';
-
 import MESSAGES from '../messages';
+import { GroupSetMetaData } from '../types/GroupSetMetaData';
 
 interface GetGroupSetsParams {
     pageSize?: string;
@@ -42,12 +42,15 @@ export const useGetGroupSets = params => {
     const searchParams = new URLSearchParams(
         newParams as Record<string, string>,
     );
+
+    const queryString = createSearchParamsWithArray({
+        ...newParams,
+        fields: ['id', 'name', 'groups', 'created_at', 'updated_at'],
+    }).toString();
+
     return useSnackQuery(
         ['groupSets', searchParams.toString()],
-        () =>
-            getRequest(
-                `/api/group_sets/?${searchParams.toString()}&fields=id,name,groups,created_at,updated_at`,
-            ),
+        () => getRequest(`/api/group_sets/?${queryString}`),
         undefined,
         {
             // using this here to avoid multiple identical calls

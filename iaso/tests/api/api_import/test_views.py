@@ -2,6 +2,7 @@ from datetime import datetime
 
 from hat.api_import.models import APIImport
 from iaso.models import Account, Project
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -14,9 +15,13 @@ class APIImportViewSetTest(APITestCase):
         self.project1 = Project.objects.create(name="project1", app_id="P1", account=account1)
         self.project2 = Project.objects.create(name="project2", app_id="P2", account=account2)
 
-        self.staff = self.create_user_with_profile(username="staff", account=account1, permissions=[], is_staff=True)
-        self.superuser = self.create_user_with_profile(
-            username="superuser", account=account1, permissions=[], is_superuser=True
+        self.staff = self.create_user_with_profile(
+            username="staff", account=account1, permissions=[], is_staff=True, is_superuser=True
+        )
+        self.user_with_permission = self.create_user_with_profile(
+            username="user.with.permissions",
+            account=account1,
+            permissions=[CORE_ACCOUNT_MANAGEMENT_PERMISSION],
         )
         self.user = user = self.create_user_with_profile(username="user", account=account1, permissions=[])
 
@@ -56,8 +61,8 @@ class APIImportViewSetTest(APITestCase):
         response = self.client.get("/api/api_import/")
         self.assertJSONResponse(response, expected_status_code=403)
 
-    def test_get_superuser(self):
-        self.client.force_authenticate(self.superuser)
+    def test_get_user_with_permission(self):
+        self.client.force_authenticate(self.user_with_permission)
         response = self.client.get("/api/api_import/")
         json_response = self.assertJSONResponse(response, expected_status_code=200)
         self.assertEqual(json_response["count"], 3)

@@ -187,13 +187,13 @@ const menuItems = (
             permissions: paths.setupAccountPath.permissions,
             icon: props => <ManageAccountsIcon {...props} />,
         });
-        settingsSubMenu.push({
-            label: formatMessage(MESSAGES.apiImport),
-            key: 'apiImports',
-            permissions: paths.adminApiImportPath.permissions,
-            icon: props => <InventoryIcon {...props} />,
-        });
     }
+    settingsSubMenu.push({
+        label: formatMessage(MESSAGES.apiImport),
+        key: 'apiImports',
+        permissions: paths.adminApiImportPath.permissions,
+        icon: props => <InventoryIcon {...props} />,
+    });
     return [
         {
             label: formatMessage(MESSAGES.formsTitle),

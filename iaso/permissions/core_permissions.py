@@ -349,6 +349,12 @@ CORE_VALIDATION_WORKFLOW_PERMISSION = CorePermission(
     module=MODULE_DEFAULT,
     ui_group=PERMISSION_GROUP_ADMIN,
 )
+CORE_ACCOUNT_MANAGEMENT_PERMISSION = CorePermission(
+    codename="iaso_account_management",
+    label=_("Account management"),
+    module=MODULE_DEFAULT,
+    ui_group=PERMISSION_GROUP_ADMIN,
+)
 
 
 permissions = {

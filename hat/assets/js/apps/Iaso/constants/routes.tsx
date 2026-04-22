@@ -492,7 +492,7 @@ export const pipelineDetailsPath = {
 export const adminApiImportPath = {
     baseUrl: baseUrls.adminApiImport,
     routerUrl: `${baseUrls.adminApiImport}/*`,
-    permissions: [],
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
     element: <ApiImports />,
 };
 export const page401 = {

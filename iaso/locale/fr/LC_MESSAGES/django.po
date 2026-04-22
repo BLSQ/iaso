@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-21 09:22+0000\n"
+"POT-Creation-Date: 2026-04-22 13:53+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1133,6 +1133,10 @@ msgstr "Flux de travail"
 #: iaso/permissions/core_permissions.py
 msgid "Validation workflows"
 msgstr "Circuit de validation"
+
+#: iaso/permissions/core_permissions.py
+msgid "Account management"
+msgstr "Gestion du compte"
 
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py

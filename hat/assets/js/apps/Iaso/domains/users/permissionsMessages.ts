@@ -4,6 +4,15 @@ import { defineMessages } from 'react-intl';
 // List of translations for Iaso permissions used all along the project
 
 const PERMISSIONS_MESSAGES = defineMessages({
+    iaso_account_management: {
+        id: 'iaso.permissions.iaso_account_management',
+        defaultMessage: 'Account management',
+    },
+    iaso_account_management_tooltip: {
+        id: 'iaso.permissions.iaso_account_management_tooltip',
+        defaultMessage:
+            'Allows to manage things related to your account (not to be confused with user management)',
+    },
     iaso_completeness: {
         id: 'iaso.permissions.completeness',
         defaultMessage: 'Export completeness',

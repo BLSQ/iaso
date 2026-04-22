@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-14 08:08+0000\n"
+"POT-Creation-Date: 2026-04-22 13:53+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -179,10 +179,12 @@ msgid "link."
 msgstr "lien."
 
 #: hat/templates/iaso/reset_password_email.html
+#: hat/templates/iaso/reset_password_email.txt
 msgid "Hello,"
 msgstr "Bonjour,"
 
 #: hat/templates/iaso/reset_password_email.html
+#: hat/templates/iaso/reset_password_email.txt
 #, python-format
 msgid ""
 "A password reset has been requested for your account \"%(username)s\" on "
@@ -192,10 +194,12 @@ msgstr ""
 "compte \"%(username)s\" sur %(site_name)s,"
 
 #: hat/templates/iaso/reset_password_email.html
+#: hat/templates/iaso/reset_password_email.txt
 msgid "to proceed please click the link below:"
 msgstr "pour continuer, veuillez cliquer sur le lien suivant :"
 
 #: hat/templates/iaso/reset_password_email.html
+#: hat/templates/iaso/reset_password_email.txt
 msgid ""
 "If clicking the link above doesn't work, please copy and paste the URL in a "
 "new browser window instead."
@@ -204,6 +208,7 @@ msgstr ""
 "une fenêtre de votre navigateur à la place."
 
 #: hat/templates/iaso/reset_password_email.html
+#: hat/templates/iaso/reset_password_email.txt
 msgid ""
 "If you did not request a password reset, you can ignore this e-mail - no "
 "passwords will be changed."
@@ -212,10 +217,12 @@ msgstr ""
 "courriel, aucun mot de passe ne sera modifié."
 
 #: hat/templates/iaso/reset_password_email.html
+#: hat/templates/iaso/reset_password_email.txt
 msgid "Sincerely,"
 msgstr "Sincèrement,"
 
 #: hat/templates/iaso/reset_password_email.html
+#: hat/templates/iaso/reset_password_email.txt
 #, python-format
 msgid "The %(site_name)s Team."
 msgstr "L'équipe %(site_name)s."

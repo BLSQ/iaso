@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from iaso.api.notifications.checks import check_apiimport_for_user
 from iaso.api.notifications.models import Notification, NotificationLevel, NotificationType
 from iaso.api.notifications.serializers import NotificationSerializer
+from iaso.permissions.core_permissions import CORE_ACCOUNT_MANAGEMENT_PERMISSION
 
 
 class NotificationViewSet(viewsets.ViewSet):
@@ -12,7 +13,7 @@ class NotificationViewSet(viewsets.ViewSet):
 
     def list(self, request):
         notifications = []
-        if request.user.is_staff or request.user.is_superuser:
+        if request.user.is_staff or request.user.has_perm(CORE_ACCOUNT_MANAGEMENT_PERMISSION.full_name()):
             apiimport_count = check_apiimport_for_user(request.user)
             if apiimport_count:
                 notifications.append(

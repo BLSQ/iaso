@@ -507,6 +507,10 @@ export const useMenuItems = (): MenuItems => {
             menuItemsTemp.push(admin as MenuItem);
         }
         const authorizedItems = menuItemsTemp.filter(menuItem => {
+            if (menuItem.ignorePermissions) {
+                return true;
+            }
+
             const permissionsList = listMenuPermission(menuItem);
             return userHasOneOfPermissions(permissionsList, currentUser);
         });

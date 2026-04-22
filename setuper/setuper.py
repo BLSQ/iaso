@@ -49,7 +49,7 @@ def admin_login(server_url, username, password):
     return iaso_admin_client
 
 
-def setup_account(account_name, server_url, username, password, create_main_org_unit):
+def setup_account(account_name, server_url, username, password, create_main_org_unit, create_demo_form):
     data = {
         "account_name": account_name,
         "user_username": account_name,
@@ -74,7 +74,7 @@ def setup_account(account_name, server_url, username, password, create_main_org_
             "ALLOW_CATCHMENT_EDITION",
         ],
         "create_main_org_unit": create_main_org_unit,
-        "create_demo_form": True,
+        "create_demo_form": create_demo_form,
     }
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)
@@ -114,10 +114,11 @@ def create_account(
     optional_account_name: str,
     additional_projects: bool,
     create_main_org_unit: bool,
+    create_demo_form: bool,
 ):
     account_name = validate_account_name(optional_account_name)
     print("Creating account:", account_name)
-    iaso_client = setup_account(account_name, server_url, username, password, create_main_org_unit)
+    iaso_client = setup_account(account_name, server_url, username, password, create_main_org_unit, create_demo_form)
     setup_orgunits(iaso_client=iaso_client)
     create_user_role(iaso_client)
 
@@ -165,6 +166,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Flag to create the main organizational unit (default: False)",
     )
+    parser.add_argument("--create_demo_form", action="store_true", help="Flag to create a demo form (default: False")
 
     args = parser.parse_args()
     server_url = args.server_url
@@ -173,6 +175,7 @@ if __name__ == "__main__":
     account_name = args.name
     additional_projects = args.additional_projects
     create_main_org_unit = args.create_main_org_unit
+    create_demo_form = args.create_demo_form
 
     if server_url is None or username is None or password is None:
         from credentials import *
@@ -193,4 +196,6 @@ if __name__ == "__main__":
     if not server_url or not username or not password:
         sys.exit("ERROR: Values for server url, user name and password are all required")
 
-    create_account(server_url, username, password, account_name, additional_projects, create_main_org_unit)
+    create_account(
+        server_url, username, password, account_name, additional_projects, create_main_org_unit, create_demo_form
+    )

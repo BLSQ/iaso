@@ -246,15 +246,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Stock entries',
         id: 'iaso.label.stockItems',
     },
-    missingPermissions: {
-        id: 'iaso.missingPermissions',
-        defaultMessage:
-            "You're missing the following permission(s): {permissions}",
-    },
-    featureDisabled: {
-        id: 'iaso.featureDisabled',
-        defaultMessage: 'This feature has been disabled for your account.',
-    },
 });
 
 export default MESSAGES;

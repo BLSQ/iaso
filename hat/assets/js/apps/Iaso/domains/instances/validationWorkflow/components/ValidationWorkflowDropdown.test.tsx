@@ -79,7 +79,7 @@ describe('ValidationWorkflowDropdown', () => {
         expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(true);
     });
 
-    it('wraps input with InputWithInfos when user lacks permission and disables input', () => {
+    it('does not render input when user lacks permission', () => {
         mockUserHasPermission.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({
@@ -87,20 +87,13 @@ describe('ValidationWorkflowDropdown', () => {
             isFetching: false,
         });
 
-        renderWithThemeAndIntlProvider(
+        const { container } = renderWithThemeAndIntlProvider(
             <ValidationWorkflowDropdown keyValue={'vf'} />,
         );
-
-        expect(screen.getByRole('combobox')).toBeInTheDocument();
-        expect(screen.getByRole('combobox')).toBeDisabled();
-        expect(
-            screen.getByLabelText(
-                `You're missing the following permission(s): ${VALIDATION_WORKFLOWS}`,
-            ),
-        ).toBeInTheDocument();
+        expect(container.innerHTML).toBe('');
     });
 
-    it('wraps input with InputWithInfos when user lacks feature flag and disables input', () => {
+    it('does not render input when when user lacks feature flag', () => {
         mockHasFeatureFlag.mockReturnValue(false);
 
         mockUseGetWorkflowOptions.mockReturnValue({
@@ -108,17 +101,11 @@ describe('ValidationWorkflowDropdown', () => {
             isFetching: false,
         });
 
-        renderWithThemeAndIntlProvider(
+        const { container } = renderWithThemeAndIntlProvider(
             <ValidationWorkflowDropdown keyValue={'vf'} />,
         );
 
-        expect(screen.getByRole('combobox')).toBeInTheDocument();
-        expect(screen.getByRole('combobox')).toBeDisabled();
-        expect(
-            screen.getByLabelText(
-                'This feature has been disabled for your account.',
-            ),
-        ).toBeInTheDocument();
+        expect(container.innerHTML).toBe('');
     });
 
     it('sets loading from hook', () => {

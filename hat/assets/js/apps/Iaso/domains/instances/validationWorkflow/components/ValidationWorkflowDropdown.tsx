@@ -1,9 +1,7 @@
 import React from 'react';
-import { InputWithInfos, useSafeIntl } from 'bluesquare-components';
 import InputComponent, {
     InputComponentProps,
 } from 'Iaso/components/forms/InputComponent';
-import MESSAGES from 'Iaso/constants/messages';
 import { useGetWorkflowOptions } from 'Iaso/domains/instances/validationWorkflow/api/Get';
 import { userHasPermission } from 'Iaso/domains/users/utils';
 import {
@@ -30,37 +28,19 @@ export const ValidationWorkflowDropdown = ({
 
     const { data: workflowOptions, isFetching: isFetchingWorkflows } =
         useGetWorkflowOptions(hasPermission && userHasFeatureFlag);
-    const { formatMessage } = useSafeIntl();
-    const { loading, disabled, value, ...newProps } = props;
+    const { loading, disabled, ...newProps } = props;
 
     const isLoading = loading || isFetchingWorkflows;
     const isDisabled = disabled || !hasPermission || !userHasFeatureFlag;
 
-    const inputComponent = (
+    return hasPermission && userHasFeatureFlag ? (
         <InputComponent
             dataTestId={'validation-workflow-dropdown-input'}
             type="select"
             options={workflowOptions || []}
             loading={isLoading}
             disabled={isDisabled}
-            value={hasPermission && userHasFeatureFlag ? value : null}
             {...newProps}
         />
-    );
-
-    return hasPermission && userHasFeatureFlag ? (
-        inputComponent
-    ) : (
-        <InputWithInfos
-            infos={
-                !userHasFeatureFlag
-                    ? formatMessage(MESSAGES.featureDisabled)
-                    : formatMessage(MESSAGES.missingPermissions, {
-                          permissions: VALIDATION_WORKFLOWS,
-                      })
-            }
-        >
-            {inputComponent}
-        </InputWithInfos>
-    );
+    ) : null;
 };

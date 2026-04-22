@@ -15,6 +15,7 @@ services:
             - ./setuper:/opt/app/setuper
             - ./beanstalk_worker:/opt/app/beanstalk_worker
             - ./django_sql_dashboard_export:/opt/app/django_sql_dashboard_export
+            - ./dynamic_fields:/opt/app/dynamic_fields
             - ./media:/opt/app/media
             - ./plugins:/opt/app/plugins
             - ./scripts:/opt/app/scripts

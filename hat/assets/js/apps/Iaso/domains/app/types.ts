@@ -4,7 +4,6 @@ import { IntlMessage } from 'bluesquare-components';
 export type MenuItem = {
     label: string | IntlMessage;
     permissions?: string[];
-    ignorePermissions?: boolean;
     key?: string;
     mapKey?: string;
     icon?: (props: Record<string, any>) => ReactNode;

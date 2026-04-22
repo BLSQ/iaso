@@ -207,6 +207,7 @@ class InstancesViewSet(viewsets.ViewSet):
     to authenticated users having the "{CORE_FORMS_PERMISSION}" permission.
 
     GET /api/instances/
+        Optional query referenceInstances=all|reference|not_reference (default: no filter) matches is_reference_instance.
     GET /api/instances/<id>
     DELETE /api/instances/<id>
     POST /api/instances/
@@ -608,6 +609,7 @@ class InstancesViewSet(viewsets.ViewSet):
             "jsonContent",  # unsure if fully supported by export_django_query_to_parquet_via_duckdb function question names with __ doesn't seem to be supported but the problem seem the jsonlogic
             "planningIds",
             "userIds",
+            "referenceInstances",
         }
         received_params = set(request.GET.keys())
 

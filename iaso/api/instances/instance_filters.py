@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from iaso.api import query_params as query
 from iaso.models import Form
@@ -46,6 +47,9 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
     get_beginning_of_day(req.get(query.SENT_DATE_FROM, None), query.SENT_DATE_FROM)
     get_end_of_day(req.get(query.SENT_DATE_TO, None), query.SENT_DATE_TO)
 
+    ref_raw = (req.get(query.REFERENCE_INSTANCES) or req.get("reference_instances") or "").strip().lower()
+    reference_instances = ref_raw if ref_raw in ("reference", "not_reference") else None
+
     filters = {
         "form_id": req.get(query.FORM_ID, None),
         "form_ids": req.get(query.FORM_IDS, None),
@@ -56,6 +60,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "org_unit_parent_id": req.get(query.ORG_UNIT_PARENT_ID, None),
         "org_unit_id": req.get(query.ORG_UNIT_ID, None),
         "only_reference": req.get(query.ONLY_REFERENCE, None),
+        "reference_instances": reference_instances,
         "period_ids": periods,
         "periods_bound": periods_bound,
         "planning_ids": req.get(query.PLANNING_IDS, None),

@@ -19,7 +19,6 @@ type ExtraMutationOptions = {
     showSuccessSnackBar?: boolean;
     ignoreErrorCodes?: number[];
     useApiErrorMessage?: boolean;
-    // invalidateQueryKey?: QueryKey;
     successSnackBar?: (msg: IntlMessage) => {
         messageKey: string;
         messageObject: any;
@@ -55,14 +54,11 @@ export const useCustomMutationOptions = <
         showSuccessSnackBar = true,
         ignoreErrorCodes = [],
         useApiErrorMessage = false,
-        // invalidateQueryKey,
         onSuccess: optionsOnSuccess,
         onError: optionsOnError,
         successSnackBar = msg => succesfullSnackBar(undefined, msg),
         ...newMutationOptions
     } = mutationOptions;
-
-    // const queryClient = useQueryClient();
 
     return {
         onError: (error, variables, context) => {

@@ -29,7 +29,8 @@
         "extract-iaso-en-messages": "formatjs extract  --format simple --out-file './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' './hat/assets/js/apps/Iaso/**/*.js'",
         "extract-iaso-fr-messages": "formatjs extract  --format simple --out-file './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' './hat/assets/js/apps/Iaso/**/*.js'",
         "scan-translations-en": "npm run extract-iaso-en-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/en.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/en.json' 'En'",
-        "scan-translations-fr": "npm run extract-iaso-fr-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' 'Fr'"
+        "scan-translations-fr": "npm run extract-iaso-fr-messages && npm run scan-translations './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' './hat/assets/js/apps/Iaso/domains/app/translations/extracted/fr.json' 'Fr'",
+        "postinstall": "patch-package"
     },
     "repository": {
         "type": "git",
@@ -170,6 +171,7 @@
         "nock": "^13.0.4",
         "nyc": "^15.1.0",
         "orval": "^8.8.0",
+        "patch-package": "^8.0.1",
         "sinon": "^18.0.0",
         "sinon-chai": "^3.7.0",
         "source-map-loader": "^5.0.0",

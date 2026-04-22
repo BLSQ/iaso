@@ -1,5 +1,5 @@
-import { ValidationWorkflowRetrieve } from 'Iaso/api';
-import { ValidationWorkflowRetrieveResponseItemWithOrderedNodes } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+// import { ValidationWorkflowRetrieve } from 'Iaso/api';
+// import { ValidationWorkflowRetrieveResponseItemWithOrderedNodes } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 
 export const workflowsOperations = {
     apiValidationWorkflowsList: {
@@ -18,21 +18,22 @@ export const workflowsOperations = {
                 staleTime: Infinity,
                 cacheTime: Infinity,
                 keepPreviousData: true,
-                select: (
-                    data: ValidationWorkflowRetrieve,
-                ): ValidationWorkflowRetrieveResponseItemWithOrderedNodes => {
-                    if (!data) return data;
-                    return {
-                        ...data,
-                        node_templates: data.node_templates?.map(
-                            (node, index) => ({
-                                ...node,
-                                id: index + 1,
-                                order: index + 1,
-                            }),
-                        ),
-                    };
-                },
+                // todo
+                // select: (
+                //     data: ValidationWorkflowRetrieve,
+                // ): ValidationWorkflowRetrieveResponseItemWithOrderedNodes => {
+                //     if (!data) return data;
+                //     return {
+                //         ...data,
+                //         node_templates: data.node_templates?.map(
+                //             (node, index) => ({
+                //                 ...node,
+                //                 id: index + 1,
+                //                 order: index + 1,
+                //             }),
+                //         ),
+                //     };
+                // },
             },
         },
     },
@@ -40,10 +41,18 @@ export const workflowsOperations = {
 
 export const mutationInvalidates = [
     {
-        onMutations: ['apiValidationWorkflowsDestroy'],
+        onMutations: [
+            'apiValidationWorkflowsDestroy',
+            'apiValidationWorkflowsUpdate',
+            'apiValidationWorkflowsPartialUpdate',
+        ],
         invalidates: [
             'apiValidationWorkflowsList',
             { query: 'apiValidationWorkflowsRetrieve', params: ['slug'] },
         ],
+    },
+    {
+        onMutations: ['apiValidationWorkflowsCreate'],
+        invalidates: ['apiValidationWorkflowsList'],
     },
 ];

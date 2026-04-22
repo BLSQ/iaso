@@ -41,10 +41,12 @@ module.exports = {
                     credentials: 'same-origin'
                 },
                 query: {
+                    version: 3,
+                    // version: 5,
                     runtimeValidation: true,
                     shouldSplitQueryKey: true,
                     useOperationIdAsQueryKey: true,
-                    useInvalidate: false,
+                    useInvalidate: true,
                     mutationInvalidates: [
                         ...workflowMutationInvalidates
                     ],
@@ -55,11 +57,12 @@ module.exports = {
                     mutationOptions: {
                         path: './hat/assets/js/orval/mutator/custom-mutation-options.ts',
                         name: 'useCustomMutationOptions',
+                        optionalQueryClient: true
                     }
                 },
                 mutator: {
                     path: '../../../orval/client/custom-fetch.ts',
-                    name: 'customInstance',
+                    name: 'customFetchInstance',
                     runtimeValidation: true
                 },
                 // fetch: {

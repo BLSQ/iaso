@@ -34,7 +34,7 @@ const getHeaders = (headers?: HeadersInit): HeadersInit => {
     };
 };
 
-export const customInstance = async <T>(
+export const customFetchInstance = async <T>(
     url: string,
     options: RequestInit = {},
 ): Promise<T> => {
@@ -97,4 +97,4 @@ export const customInstance = async <T>(
     return (await getBody<T>(response)) as T;
 };
 
-export default customInstance;
+export default customFetchInstance;

@@ -1,5 +1,4 @@
-import { mutationInvalidates as workflowMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
-import { useCustomMutationOptions } from './hat/assets/js/orval/mutator/custom-mutation-options';
+import { mutationInvalidates } from './hat/assets/js/orval/apiConfiguration';
 
 require('dotenv').config();
 
@@ -13,7 +12,7 @@ module.exports = {
             filters: {
                 // mode: 'exclude',
                 // tags: ['Mobile'],
-                tags: ['Validation workflows'],
+                tags: ['Validation workflows', 'Profiles'],
                 schemas: [/Validation/, /NestedHistory/],
             },
             parserOptions: {
@@ -47,9 +46,7 @@ module.exports = {
                     shouldSplitQueryKey: true,
                     useOperationIdAsQueryKey: true,
                     useInvalidate: true,
-                    mutationInvalidates: [
-                        ...workflowMutationInvalidates
-                    ],
+                    mutationInvalidates: mutationInvalidates,
                     queryOptions: {
                         path: './hat/assets/js/orval/mutator/custom-query-options.ts',
                         name: 'useCustomQueryOptions'

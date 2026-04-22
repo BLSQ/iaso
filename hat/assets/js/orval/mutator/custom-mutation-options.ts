@@ -45,7 +45,6 @@ export const useCustomMutationOptions = <
         TVariables,
         TContext
     >,
-    // onSuccess,
 ): UseMutationOptions<TData, TError, TVariables, TContext> => {
     const { formatMessage } = useSafeIntl();
     const {

@@ -1,3 +1,4 @@
+import logging
 import typing
 
 from django.contrib.auth.models import User
@@ -10,6 +11,8 @@ from iaso.api.common import TimestampField
 from iaso.api.forms import HasFormPermission
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing, validate_xls_form
+
+logger = logging.getLogger(__name__)
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -189,7 +192,8 @@ class FormVersionPreviewSerializer(serializers.Serializer):
                 previous_version=previous_form_version.version_id if previous_form_version is not None else None,
             )
         except parsing.ParsingError as e:
-            raise serializers.ValidationError({"xls_file": str(e)})
+            logger.exception("Failed to parse XLS form during preview validation")
+            raise serializers.ValidationError({"xls_file": "Invalid XLS form content."})
 
         data["survey"] = survey
         data["previous_form_version"] = previous_form_version

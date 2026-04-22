@@ -76,7 +76,7 @@ export const UsersSelect = ({
                     <Chip
                         {...restTagProps}
                         key={String(option?.value ?? option?.label ?? index)}
-                        disabled
+                        disabled={isCurrentUser}
                         color={isCurrentUser ? 'primary' : 'secondary'}
                         label={option?.label ? option.label : ''}
                         {...(!isCurrentUser ? { onDelete } : {})}

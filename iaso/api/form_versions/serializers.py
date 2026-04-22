@@ -1,6 +1,7 @@
 import typing
 
 from django.contrib.auth.models import User
+from django.utils.html import strip_tags
 from rest_framework import exceptions, serializers
 from rest_framework.fields import Field
 
@@ -160,3 +161,84 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         form_version.updated_by = self.context["request"].user
         form_version.save()
         return form_version
+
+
+class FormVersionPreviewSerializer(serializers.Serializer):
+    """Validates the preview request and computes the diff without persisting anything."""
+
+    form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
+    xls_file = serializers.FileField(allow_empty_file=False)
+
+    def validate(self, data):
+        form = data["form"]
+
+        permission_checker = HasFormPermission()
+        if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
+            raise serializers.ValidationError({"form_id": "Invalid form id"})
+
+        xls_file = data["xls_file"]
+        validation_errors = validate_xls_form(xls_file)
+        if validation_errors:
+            raise serializers.ValidationError({"xls_file": "", "xls_file_validation_errors": validation_errors})
+
+        xls_file.seek(0)
+        try:
+            previous_form_version = FormVersion.objects.latest_version(form)
+            survey = parsing.parse_xls_form(
+                xls_file,
+                previous_version=previous_form_version.version_id if previous_form_version is not None else None,
+            )
+        except parsing.ParsingError as e:
+            raise serializers.ValidationError({"xls_file": str(e)})
+
+        data["survey"] = survey
+        data["previous_form_version"] = previous_form_version
+        return data
+
+    def compute_diff(self):
+        previous_form_version = self.validated_data["previous_form_version"]
+        survey = self.validated_data["survey"]
+
+        new_questions_by_name = parsing.to_questions_by_name(survey.to_json())
+        new_question_names = set(new_questions_by_name.keys())
+
+        removed_questions = []
+        added_questions = []
+        modified_questions = []
+        previous_version_id = None
+
+        if previous_form_version:
+            previous_version_id = previous_form_version.version_id
+            current_fields = previous_form_version.possible_fields or []
+            current_by_name = {q["name"]: q for q in current_fields}
+            current_question_names = set(current_by_name.keys())
+
+            removed_questions = [q for q in current_fields if q["name"] not in new_question_names]
+
+            for name in new_question_names:
+                q = new_questions_by_name[name]
+                label = q.get("label", "")
+                if isinstance(label, dict):
+                    label = next(iter(label.values()), "")
+                new_type = q.get("type", "")
+
+                if name not in current_question_names:
+                    added_questions.append({"name": name, "label": strip_tags(str(label)), "type": new_type})
+                else:
+                    old_type = current_by_name[name].get("type", "")
+                    if old_type != new_type:
+                        modified_questions.append(
+                            {
+                                "name": name,
+                                "label": strip_tags(str(label)),
+                                "old_type": old_type,
+                                "new_type": new_type,
+                            }
+                        )
+
+        return {
+            "previous_version_id": previous_version_id,
+            "removed_questions": removed_questions,
+            "added_questions": added_questions,
+            "modified_questions": modified_questions,
+        }

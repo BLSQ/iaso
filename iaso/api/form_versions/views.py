@@ -4,11 +4,13 @@ from django.db.models.functions import Concat
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, parsers
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
 from iaso.api.common import ModelViewSet
 from iaso.api.form_versions.permissions import HasFormVersionPermission
-from iaso.api.form_versions.serializers import FormVersionSerializer
+from iaso.api.form_versions.serializers import FormVersionPreviewSerializer, FormVersionSerializer
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, FormVersion, Project
@@ -93,3 +95,10 @@ class FormVersionsViewSet(ModelViewSet):
         queryset = queryset.order_by(*orders)
 
         return queryset
+
+    @action(detail=False, methods=["post"], url_path="preview")
+    def preview(self, request, *args, **kwargs):
+        """Return a diff of questions added/removed compared to the latest version without saving."""
+        serializer = FormVersionPreviewSerializer(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.compute_diff())

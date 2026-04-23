@@ -64,6 +64,12 @@ class APIImportViewSetTest(APITestCase):
         response = self.client.get(f"{self.BASE_URL}1/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_retrieve_from_other_account(self):
+        api_import_id = APIImport.objects.filter(app_id=self.project2.app_id).first().id
+        self.client.force_authenticate(self.user_with_permission)
+        response = self.client.get(f"{self.BASE_URL}{api_import_id}/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_get_anonymous(self):
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)

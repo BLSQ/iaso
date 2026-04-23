@@ -103,7 +103,7 @@ sentry-sdk[django]==1.38.0  # https://github.com/getsentry/sentry-python/tags
 SQLAlchemy==2.0.23  # https://github.com/sqlalchemy/sqlalchemy/tags
 celery==5.3.6  # https://github.com/celery/celery/tags
 django-allauth==0.54.0  # https://github.com/pennersr/django-allauth/tags
-django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat/tags
+django-celery-beat==2.6.0  # https://github.com/celery/django-celery-beat/tags
 django-celery-results==2.5.1  # https://github.com/celery/django-celery-results/tags
 
 # process utility for memory usage and other system information.

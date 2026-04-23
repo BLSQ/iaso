@@ -62,14 +62,6 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }} 
             password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # - name: Build docker image
-      #   run: |
-      #     docker build -t blsq/iaso:latest -f docker/prod/Dockerfile .
-
-      # - name: Push docker image
-      #   run: |
-      #     docker push blsq/iaso:latest
-
       - name: Swap to prod docker config
         run: |
           # Replace docker-compose with prod version
@@ -93,6 +85,7 @@ jobs:
           file: ./docker/prod/Dockerfile
           push: true
           tags: blsq/iaso:latest
+          # https://docs.docker.com/build/cache/backends/
           cache-from: type=registry,ref=blsq/iaso:buildcache
           cache-to: type=registry,ref=blsq/iaso:buildcache,mode=max
 

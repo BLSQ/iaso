@@ -119,14 +119,15 @@ class PaymentLotsViewSet(ModelViewSet):
 
         payments_prefetch = Prefetch(
             "payments",
-            queryset=Payment.objects.select_related("user__iaso_profile"),
+            queryset=Payment.objects.select_related("user__iaso_profile").prefetch_related(
+                Prefetch(
+                    "change_requests",
+                    queryset=OrgUnitChangeRequest.objects.select_related("org_unit"),
+                    to_attr="prefetched_change_requests",
+                )
+            ),
         )
-        change_requests_prefetch = Prefetch(
-            "payments__change_requests",
-            queryset=OrgUnitChangeRequest.objects.select_related("org_unit"),
-            to_attr="prefetched_change_requests",
-        )
-        queryset = queryset.prefetch_related(payments_prefetch, change_requests_prefetch)
+        queryset = queryset.prefetch_related(payments_prefetch)
 
         change_requests_count = (
             OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))

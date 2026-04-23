@@ -64,8 +64,8 @@ class NestedPaymentSerializer(serializers.ModelSerializer):
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def get_can_see_change_requests(self, obj):
-        user = self.context.get("request").user
-        if user.is_superuser:
+        user = getattr(self.context.get("request", None), "user", None)
+        if getattr(user, "is_superuser", False):
             return True
         user_org_units = self.context.get("user_org_units")
         change_requests = getattr(obj, "prefetched_change_requests", None)
@@ -110,11 +110,7 @@ class PaymentLotSerializer(serializers.ModelSerializer):
             return True
         org_unit_ids = []
         for payment in obj.payments.all():
-            change_requests = getattr(payment, "prefetched_change_requests", None)
-            if change_requests is None:
-                change_requests = payment.change_requests.all()
-            for change_request in change_requests:
-                org_unit_ids.append(change_request.org_unit.id)
+            org_unit_ids.extend([cr.org_unit_id for cr in payment.prefetched_change_requests])
         return set(org_unit_ids).issubset(set(self.context["user_org_units"]))
 
     def get_payments(self, obj):

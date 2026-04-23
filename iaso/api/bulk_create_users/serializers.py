@@ -4,12 +4,14 @@ import logging
 
 from collections import Counter
 
+import django.core.exceptions as django_exceptions
 import phonenumbers
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import Permission, User
+from django.contrib.auth.password_validation import validate_password
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.validators import FileExtensionValidator
 from django.db import transaction
@@ -116,7 +118,8 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        if not attrs.get("email") and not attrs.get("password"):
+        password = attrs.get("password")
+        if not attrs.get("email") and not password:
             raise serializers.ValidationError("Either password or email required for user creation")
 
         if (
@@ -127,6 +130,20 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 f"A User with {CORE_USERS_MANAGED_PERMISSION.full_name()} permission must create users with OrgUnits"
             )
+
+        if password:
+            account = self.context["request"].user.iaso_profile.account
+            if account.enforce_password_validation:
+                user = get_user_model()(
+                    username=attrs.get("username", ""),
+                    email=attrs.get("email", ""),
+                    first_name=attrs.get("first_name", ""),
+                    last_name=attrs.get("last_name", ""),
+                )
+                try:
+                    validate_password(password=password, user=user)
+                except django_exceptions.ValidationError as e:
+                    raise serializers.ValidationError({"password": e.messages})
 
         return attrs
 

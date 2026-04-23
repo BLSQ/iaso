@@ -55,7 +55,7 @@ class BulkCreateCsvTestCase(APITestCase):
         version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
         version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
         cls.MODULES = [module.codename for module in MODULES]
-        account1 = m.Account.objects.create(name="Account 1")
+        account1 = m.Account.objects.create(name="Account 1", enforce_password_validation=False)
         cls.project = m.Project.objects.create(name="Project name", app_id="project.id", account=account1)
         cls.project2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=account1)
         account1.default_version = version1
@@ -97,7 +97,7 @@ class BulkCreateCsvTestCase(APITestCase):
         m.OrgUnit.objects.create(name="chiloe", id=10244, version=version1, parent=cls.org_unit2)
         m.OrgUnit.objects.create(name="chiloe", id=10934, version=version2)
 
-        account2 = m.Account.objects.create(name="Account 2")
+        account2 = m.Account.objects.create(name="Account 2", enforce_password_validation=False)
         cls.create_user_with_profile(
             username="han solo",
             account=account2,

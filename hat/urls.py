@@ -13,6 +13,7 @@ from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+from iaso.auth.views import IasoPasswordResetView
 from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 
 
@@ -92,9 +93,10 @@ else:
         path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),
         path(
             "forgot-password/",
-            auth.views.PasswordResetView.as_view(
+            IasoPasswordResetView.as_view(
                 template_name="iaso/forgot_password.html",
-                email_template_name="iaso/reset_password_email.html",
+                email_template_name="iaso/reset_password_email.txt",
+                html_email_template_name="iaso/reset_password_email.html",
                 subject_template_name="iaso/reset_password_subject.txt",
                 success_url="/forgot-password-confirmation/",
             ),

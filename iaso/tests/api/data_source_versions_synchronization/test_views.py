@@ -99,7 +99,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         This can be useful to e.g. build a frontend dropdown.
         """
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/datasources/sync/?name__icontains=foo&fields=id,name")
+        response = self.client.get("/api/datasources/sync/", data={"name__icontains": "foo", "fields": ["id", "name"]})
         self.assertEqual(1, len(response.data["results"]))
         expected_result = {
             "id": self.data_source_sync_1.pk,

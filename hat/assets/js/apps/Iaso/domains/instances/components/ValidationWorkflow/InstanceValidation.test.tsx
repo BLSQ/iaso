@@ -57,6 +57,30 @@ describe('InstanceValidation (Vitest)', () => {
     const date = moment(Date.now()).format(apiMobileDateFormat);
     const timeline = [
         {
+            canValidate: true,
+            color: '#ffffff',
+            content: {
+                description: 'desc2',
+            },
+            label: 'Node2',
+            nodeId: 3,
+            nodeSlug: 'node2',
+            order: 2,
+        },
+        {
+            color: '#bbbbbb',
+            content: {
+                author: 'John',
+                comment: 'ok',
+                date: date,
+                description: 'desc1',
+            },
+            label: 'Node1',
+            nodeSlug: 'node1',
+            order: 1,
+            status: 'ACCEPTED',
+        },
+        {
             color: '#bbbbbb',
             content: {
                 author: 'John',
@@ -64,11 +88,11 @@ describe('InstanceValidation (Vitest)', () => {
                 date: date,
                 description: 'desc1',
             },
-            label: 'Submission',
+            label: 'New version',
             nodeSlug: 'node1',
             order: 1,
             previous: true,
-            status: 'SUBMISSION',
+            status: 'NEW_VERSION',
         },
         {
             color: '#ffffff',
@@ -92,35 +116,11 @@ describe('InstanceValidation (Vitest)', () => {
                 date: date,
                 description: 'desc1',
             },
-            label: 'New version',
+            label: 'Submission',
             nodeSlug: 'node1',
             order: 1,
             previous: true,
-            status: 'NEW_VERSION',
-        },
-        {
-            color: '#bbbbbb',
-            content: {
-                author: 'John',
-                comment: 'ok',
-                date: date,
-                description: 'desc1',
-            },
-            label: 'Node1',
-            nodeSlug: 'node1',
-            order: 1,
-            status: 'ACCEPTED',
-        },
-        {
-            canValidate: true,
-            color: '#ffffff',
-            content: {
-                description: 'desc2',
-            },
-            label: 'Node2',
-            nodeId: 3,
-            nodeSlug: 'node2',
-            order: 2,
+            status: 'SUBMISSION',
         },
     ];
 
@@ -159,22 +159,27 @@ describe('InstanceValidation (Vitest)', () => {
         const steps = screen.getAllByTestId('step');
 
         // step 1
-        expect(within(steps[0]).getByText('Submission')).toBeInTheDocument();
-        expect(within(steps[0]).getByText('John')).toBeInTheDocument();
+        expect(within(steps[0]).queryByText('Submission')).toBeNull();
+        expect(within(steps[0]).queryByText('John')).toBeNull();
+        expect(within(steps[0]).getByText('Node2')).toBeInTheDocument();
+        expect(within(steps[0]).getByText('desc2')).toBeInTheDocument();
         expect(
-            within(steps[0]).getByText(
+            within(steps[0]).getByText('2', { exact: true }),
+        ).toBeInTheDocument();
+        expect(
+            within(steps[0]).queryByText(
                 moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
             ),
-        ).toBeInTheDocument();
-        expect(within(steps[0]).getByTestId('SendIcon')).toBeInTheDocument();
+        ).toBeNull();
+        expect(within(steps[0]).queryByTestId('SendIcon')).toBeNull();
 
         // step 2
         expect(within(steps[1]).queryByText('Submission')).toBeNull();
         expect(within(steps[1]).getByText('John')).toBeInTheDocument();
-        expect(within(steps[1]).getByText('Nope')).toBeInTheDocument();
-        expect(within(steps[1]).getByText('Node2')).toBeInTheDocument();
+        expect(within(steps[1]).getByText('ok')).toBeInTheDocument();
+        expect(within(steps[1]).getByText('Node1')).toBeInTheDocument();
         expect(
-            within(steps[1]).getByText('2', { exact: true }),
+            within(steps[1]).getByText('1', { exact: true }),
         ).toBeInTheDocument();
         expect(
             within(steps[1]).getByText(
@@ -196,10 +201,10 @@ describe('InstanceValidation (Vitest)', () => {
         // step 4
         expect(within(steps[3]).queryByText('Submission')).toBeNull();
         expect(within(steps[3]).getByText('John')).toBeInTheDocument();
-        expect(within(steps[3]).getByText('ok')).toBeInTheDocument();
-        expect(within(steps[3]).getByText('Node1')).toBeInTheDocument();
+        expect(within(steps[3]).getByText('Nope')).toBeInTheDocument();
+        expect(within(steps[3]).getByText('Node2')).toBeInTheDocument();
         expect(
-            within(steps[3]).getByText('1', { exact: true }),
+            within(steps[3]).getByText('2', { exact: true }),
         ).toBeInTheDocument();
         expect(
             within(steps[3]).getByText(
@@ -209,19 +214,14 @@ describe('InstanceValidation (Vitest)', () => {
         expect(within(steps[3]).queryByTestId('SendIcon')).toBeNull();
 
         // step 5
-        expect(within(steps[4]).queryByText('Submission')).toBeNull();
-        expect(within(steps[4]).queryByText('John')).toBeNull();
-        expect(within(steps[4]).getByText('Node2')).toBeInTheDocument();
-        expect(within(steps[4]).getByText('desc2')).toBeInTheDocument();
+        expect(within(steps[4]).getByText('Submission')).toBeInTheDocument();
+        expect(within(steps[4]).getByText('John')).toBeInTheDocument();
         expect(
-            within(steps[4]).getByText('2', { exact: true }),
-        ).toBeInTheDocument();
-        expect(
-            within(steps[4]).queryByText(
+            within(steps[4]).getByText(
                 moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
             ),
-        ).toBeNull();
-        expect(within(steps[4]).queryByTestId('SendIcon')).toBeNull();
+        ).toBeInTheDocument();
+        expect(within(steps[4]).getByTestId('SendIcon')).toBeInTheDocument();
     });
 
     it('applies correct color to each step', () => {
@@ -229,8 +229,8 @@ describe('InstanceValidation (Vitest)', () => {
 
         const labels = screen.getAllByTestId('step-label');
 
-        expect(labels[3]).toHaveAttribute('data-color', '#bbbbbb');
-        expect(labels[4]).toHaveAttribute('data-color', '#ffffff');
+        expect(labels[1]).toHaveAttribute('data-color', '#bbbbbb');
+        expect(labels[0]).toHaveAttribute('data-color', '#ffffff');
     });
 
     it('renders validation modal only when allowed', () => {

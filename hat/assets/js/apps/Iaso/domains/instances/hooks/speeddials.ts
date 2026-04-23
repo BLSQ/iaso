@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useRedirectTo } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import snackMessages from '../../../components/snackBars/messages';
 import { baseUrls } from '../../../constants/urls';
 import { getRequest } from '../../../libs/Api';
@@ -68,12 +69,12 @@ export type FormDef = {
 export const useGetFormDefForInstance = (
     formId: number | string | undefined,
 ): UseQueryResult<FormDef, Error> => {
+    const queryString = createSearchParamsWithArray({
+        fields: ['org_unit_type_ids', 'period_type'],
+    }).toString();
     return useSnackQuery(
         ['forms', formId, 'org_unit_types'],
-        () =>
-            getRequest(
-                `/api/forms/${formId}/?fields=org_unit_type_ids,period_type`,
-            ),
+        () => getRequest(`/api/forms/${formId}/?${queryString}`),
         snackMessages.fetchFormError,
         {
             enabled: Boolean(formId),

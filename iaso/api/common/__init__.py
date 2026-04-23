@@ -9,7 +9,6 @@ from .permissions import GenericReadWritePerm, HasPermission, IsAdminOrSuperUser
 from .serializer import (
     DropdownOptionsSerializer,
     DropdownOptionsWithRepresentationSerializer,
-    DynamicFieldsModelSerializer,
     ModelSerializer,
     UserSerializer,
 )
@@ -30,7 +29,6 @@ __all__ = [
     "DropdownOptionsListViewSet",
     "DropdownOptionsSerializer",
     "DropdownOptionsWithRepresentationSerializer",
-    "DynamicFieldsModelSerializer",
     "EXPORTS_DATETIME_FORMAT",
     "EtlModelViewset",
     "EtlPaginator",

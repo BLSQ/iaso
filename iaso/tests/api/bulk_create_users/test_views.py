@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, User
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
 from rest_framework import status
 
 from iaso import models as m
@@ -55,7 +56,7 @@ class BulkCreateCsvTestCase(APITestCase):
         version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
         version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
         cls.MODULES = [module.codename for module in MODULES]
-        account1 = m.Account.objects.create(name="Account 1")
+        account1 = m.Account.objects.create(name="Account 1", enforce_password_validation=False)
         cls.project = m.Project.objects.create(name="Project name", app_id="project.id", account=account1)
         cls.project2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=account1)
         account1.default_version = version1
@@ -97,7 +98,7 @@ class BulkCreateCsvTestCase(APITestCase):
         m.OrgUnit.objects.create(name="chiloe", id=10244, version=version1, parent=cls.org_unit2)
         m.OrgUnit.objects.create(name="chiloe", id=10934, version=version2)
 
-        account2 = m.Account.objects.create(name="Account 2")
+        account2 = m.Account.objects.create(name="Account 2", enforce_password_validation=False)
         cls.create_user_with_profile(
             username="han solo",
             account=account2,
@@ -1156,6 +1157,23 @@ class BulkCreateCsvTestCase(APITestCase):
         user = User.objects.get(username="projectid_user")
         self.assertEqual(user.iaso_profile.projects.count(), 1)
         self.assertEqual(user.iaso_profile.projects.first().id, self.project.id)
+
+    def test_file_from_sample_does_not_trigger_invalid_file_type(self):
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(reverse("bulkcreateuser-download-sample-csv"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        csv_content = b"".join(response.streaming_content)
+
+        uploaded_file = SimpleUploadedFile(name="test.csv", content=csv_content)
+
+        response = self.client.post(f"{BASE_URL}", {"file": uploaded_file}, format="multipart")
+
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn("file", res_data)
 
     def test_create_user_with_empty_first_name_and_last_name(self):
         self.client.force_authenticate(self.yoda)

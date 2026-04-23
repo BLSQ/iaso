@@ -84,6 +84,9 @@ jobs:
           cp -r docker/prod/.platform .platform
           git add -f .platform
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Build and push
         uses: docker/build-push-action@v7
         with:

@@ -50,6 +50,7 @@ dependencies = [
     "gql[requests]==3.4.1",
     "gspread==5.12.3",
     "gspread-formatting==1.1.2",
+    "gunicorn==23.0.0",
     "ipython==8.18.1",
     "jsonref==1.1.0",
     "jsonschema==4.20.0",

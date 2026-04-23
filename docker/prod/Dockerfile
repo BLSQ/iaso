@@ -28,7 +28,7 @@ RUN npm run webpack-prod
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
 # Full Bullseye image to compile C extensions
 # Only the resulting /venv is carried forward.
-FROM python:3.9.25-bookworm AS pybuilder
+FROM python:3.9-bullseye AS pybuilder
 
 # Set working directory
 WORKDIR /opt/app
@@ -38,14 +38,13 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     libgdal-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Create virtual environment
-RUN python -m venv /venv
-ENV PATH="/venv/bin:$PATH"
-
-# Install python dependencies + gunicorn (uv)
+# Install python dependencies + gunicorn
 COPY ../../requirements.txt ./
-RUN pip install uv gunicorn
-RUN uv sync
+RUN pip install uv 
+RUN uv venv venv 
+RUN source venv/bin/activate 
+RUN uv sync 
+RUN uv add gunicorn==23.0.0
 
 # Strip the venv: remove caches and debug symbols
 RUN find /venv -type d -name "__pycache__" -exec rm -rf {} + && \
@@ -56,7 +55,7 @@ RUN find /venv -type d -name "__pycache__" -exec rm -rf {} + && \
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
-FROM python:3.9.25-slim-bookworm AS prod
+FROM python:3.9-slim-bullseye AS prod
 
 # Create non-root user early so COPY --chown can use it (avoids chown layer duplication)
 RUN groupadd --gid 1001 appuser && \

@@ -17,6 +17,7 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
     filterset_class = APIImportFilterSet
     pagination_class = APIImportPagination
     ordering_fields = ["created_at", "import_type", "user_id", "app_id", "app_version", "has_problem"]
+    ordering = ["id"]  # default ordering
 
     def get_queryset(self):
         queryset = APIImport.objects.prefetch_related("user").all()
@@ -27,4 +28,4 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
                 .only("app_id")
                 .values_list("app_id")
             )
-        return queryset.order_by("id")
+        return queryset

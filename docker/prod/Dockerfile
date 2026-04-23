@@ -82,8 +82,8 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 
 # Copy the virtualenv from builder
 COPY --from=pybuilder --chown=appuser:appuser .venv .venv
-ENV PATH="/.venv/bin:$PATH"
-ENV VIRTUAL_ENV="/.venv"
+ENV PATH="/opt/app/.venv/bin:$PATH"
+ENV VIRTUAL_ENV=".venv"
 
 WORKDIR /opt/app
 

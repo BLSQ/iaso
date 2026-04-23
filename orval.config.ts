@@ -1,4 +1,5 @@
 import { mutationInvalidates } from './hat/assets/js/orval/apiConfiguration';
+import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/transformer/fakerTransformer';
 
 require('dotenv').config();
 
@@ -26,6 +27,9 @@ module.exports = {
                     },
                 ],
             },
+            override: {
+                transformer: createSchemaTransformer(normalizeSchema),
+              },
         },
 
         output: {
@@ -77,7 +81,10 @@ module.exports = {
             },
             mock: {
                 type: 'msw',
-                preferredContentType: 'application/json'
+                preferredContentType: 'application/json',
+                delay: () => process.env?.MSW_DELAY ? parseInt(process.env.MSW_DELAY) : 0 ,
+                delayFunctionLazyExecute: true,
+                arrayMin: 1,
             },
             target: './endpoints',
             schemas: {

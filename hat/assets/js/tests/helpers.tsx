@@ -26,6 +26,7 @@ export const setLocale = (code: string): void => {
 };
 
 const queryClient = new QueryClient();
+export { queryClient as TestingQueryClient };
 
 export const QueryClientWrapper = ({
     children,

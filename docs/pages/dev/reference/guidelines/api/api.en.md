@@ -29,3 +29,13 @@ This is a first draft on how to properly document our API and synchronize it wit
 ## Notes
 
 Do we really need this custom mutation options just for snackbar ? could be set as query client default 
+
+Not using useSearchparams makes the testing nearly impossible :/ 
+
+right now we go : form => submit => redirect => API call and validate
+I get we do this because of direct url access
+
+with searchParams 
+
+direct url access => api call and validate (useEffect with searchParams dep)
+form submit : updateSearchParams (no harsh redirect) => API call and validate (useEffect with searchParams dep)

@@ -18,9 +18,9 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} sm={3} md={3}>
                 <InputComponent
-                    keyValue="name"
+                    keyValue="namegg"
                     onChange={handleChange}
-                    value={filters.name}
+                    value={filters.namegg}
                     type="search"
                     label={MESSAGES.search}
                     onEnterPressed={handleSearch}

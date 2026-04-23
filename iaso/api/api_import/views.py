@@ -19,7 +19,7 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
     ordering_fields = ["created_at", "import_type", "user_id", "app_id", "app_version", "has_problem"]
 
     def get_queryset(self):
-        queryset = APIImport.objects.all()
+        queryset = APIImport.objects.prefetch_related("user").all()
         user = self.request.user
         if not user.is_staff:
             queryset = queryset.filter(
@@ -27,4 +27,4 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
                 .only("app_id")
                 .values_list("app_id")
             )
-        return queryset
+        return queryset.order_by("id")

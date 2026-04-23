@@ -346,7 +346,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         self.client.get("/api/payments/lots/", format="json")
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             response = self.client.get("/api/payments/lots/", format="json")
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.data["results"]), 1)
@@ -370,7 +370,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         )
 
         # Same count with 2 lots — proves O(1), not O(N)
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             response = self.client.get("/api/payments/lots/", format="json")
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.data["results"]), 2)
@@ -379,6 +379,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/payments/lots/", format="json")
         self.assertJSONResponse(response, 200)
+        self.assertIn("count", response.data)
 
         results = response.data["results"]
         self.assertEqual(len(results), 1)

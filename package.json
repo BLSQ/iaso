@@ -175,8 +175,8 @@
         "vitest": "^4.0.18",
         "webpack": "^5.50.0",
         "webpack-bundle-tracker": "^1.0.0-alpha.1",
-        "webpack-cli": "^4.10.0",
-        "webpack-dev-server": "^4.15.1"
+        "webpack-cli": "^5.1.4",
+        "webpack-dev-server": "^5.2.3"
     },
     "overrides": {
         "canvg": "4.0.3",

@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies + gunicorn
-COPY ../../requirements.txt ./
+COPY ../../pyproject.toml ./
 RUN pip install uv 
 RUN uv sync
 RUN uv add gunicorn==23.0.0

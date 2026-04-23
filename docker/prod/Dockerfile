@@ -51,6 +51,10 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
     find ./.venv -type f -name "*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true && \
     find ././.venv -type f -name "*.so" -exec strip --strip-debug {} + 2>/dev/null || true
 
+
+RUN echo "------"
+RUN ls -lah
+RUN echo "------"
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
 FROM python:3.9-slim-bullseye AS prod
@@ -77,7 +81,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the virtualenv from builder
-COPY --from=pybuilder --chown=appuser:appuser ./.venv ./.venv
+COPY --from=pybuilder --chown=appuser:appuser /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 ENV VIRTUAL_ENV="/.venv"
 

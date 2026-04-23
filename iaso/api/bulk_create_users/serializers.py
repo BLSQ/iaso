@@ -325,7 +325,7 @@ class BulkCreateUserSerializer(ModelSerializer):
             "file": {
                 "write_only": True,
                 "validators": [
-                    FileTypeValidator(allowed_mimetypes=["text/csv"]),
+                    FileTypeValidator(allowed_mimetypes=["text/csv", "text/plain"]),
                     FileExtensionValidator(allowed_extensions=["csv"]),
                 ],
             },

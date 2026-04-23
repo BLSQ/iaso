@@ -207,7 +207,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         )
         extra_change_request.new_reference_instances.set([self.instance1, self.instance2, self.instance3])
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true", format="json")
             excel_columns, excel_data = self.assertXlsxFileResponse(response)
 

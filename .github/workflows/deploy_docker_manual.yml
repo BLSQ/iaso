@@ -70,6 +70,20 @@ jobs:
       #   run: |
       #     docker push blsq/iaso:latest
 
+      - name: Swap to prod docker config
+        run: |
+          # Replace docker-compose with prod version
+          cp docker/prod/docker-compose.prod.yml docker-compose.yml
+          git add -f docker-compose.yml
+
+          # Move Dockerfile to root
+          cp docker/prod/Dockerfile .
+
+          # Replace .platform with prod version
+          rm -rf .platform
+          cp -r docker/prod/.platform .platform
+          git add -f .platform
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -81,16 +95,6 @@ jobs:
           cache-from: type=registry,ref=blsq/iaso:buildcache
           cache-to: type=registry,ref=blsq/iaso:buildcache,mode=max
 
-      - name: Swap to prod docker config
-        run: |
-          # Replace docker-compose with prod version
-          cp docker/prod/docker-compose.prod.yml docker-compose.yml
-          git add -f docker-compose.yml
-
-          # Replace .platform with prod version
-          rm -rf .platform
-          cp -r docker/prod/.platform .platform
-          git add -f .platform
 
       - name: Set up Python 3.14
         uses: actions/setup-python@v5

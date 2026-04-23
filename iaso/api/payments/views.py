@@ -23,6 +23,7 @@ from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
     potential_payments as potential_payments_filters,
 )
+from iaso.api.payments.pagination import PaymentPagination
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
@@ -102,6 +103,7 @@ class PaymentLotsViewSet(ModelViewSet):
     ordering = ["updated_at"]
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
+    pagination_class = PaymentPagination
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -470,6 +472,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     ordering = ["user__last_name"]
 
     serializer_class = PotentialPaymentSerializer
+    pagination_class = PaymentPagination
 
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
@@ -598,6 +601,7 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
+    pagination_class = PaymentPagination
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
 
     def get_serializer_context(self):

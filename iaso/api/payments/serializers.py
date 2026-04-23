@@ -4,7 +4,6 @@ from rest_framework import serializers
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from iaso.api.payments.filters.potential_payments import filter_by_dates, filter_by_forms, filter_by_parent
-from iaso.api.payments.pagination import PaymentPagination
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.payments import PaymentStatuses
 from iaso.models.task import Task
@@ -100,7 +99,6 @@ class PaymentLotSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
-    pagination_class = PaymentPagination
     created_by = UserNestedSerializer()
     created_at = TimestampField(read_only=True)
 
@@ -127,7 +125,6 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
         fields = ["id", "user", "change_requests", "payment_lot", "can_see_change_requests"]
         read_only_fields = ["id", "payment_lot", "can_see_change_requests"]
 
-    pagination_class = PaymentPagination
     user = UserNestedSerializer()
 
     def get_change_requests(self, obj):
@@ -178,8 +175,6 @@ class PaymentSerializer(serializers.ModelSerializer):
             "payment_lot",
             "updated_by",
         ]
-
-    pagination_class = PaymentPagination
 
     def validate_status(self, status):
         if status not in PaymentStatuses:

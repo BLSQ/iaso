@@ -60,7 +60,10 @@ import { Details as UserDetails } from '../domains/users/details';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
-import { SHOW_PAGES } from '../utils/featureFlags';
+import {
+    SHOW_PAGES,
+    SUBMISSION_VALIDATION_WORKFLOW,
+} from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
 
@@ -139,12 +142,14 @@ export const instancesValidationPath = {
     baseUrl: baseUrls.instanceValidation,
     routerUrl: `${baseUrls.instanceValidation}/*`,
     permissions: [Permission.VALIDATION_WORKFLOWS],
+    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
     element: <SubmissionValidation />,
 };
 export const instanceValidationDetailPath = {
     baseUrl: baseUrls.instanceValidationDetail,
     routerUrl: `${baseUrls.instanceValidationDetail}/*`,
     permissions: [Permission.VALIDATION_WORKFLOWS],
+    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
     element: <WorkflowConfiguration />,
 };
 

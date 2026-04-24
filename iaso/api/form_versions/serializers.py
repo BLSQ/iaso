@@ -126,8 +126,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
         if len(validation_errors):
             # TODO: translate the error message
-            # keep xls_file empty to highlight the input in the UI
-            raise serializers.ValidationError({"xls_file": "", "xls_file_validation_errors": validation_errors})
+            raise serializers.ValidationError({"xls_file_validation_errors": validation_errors})
 
         data["xls_file"].seek(0)
 
@@ -205,7 +204,7 @@ class FormVersionPreviewSerializer(serializers.Serializer):
         xls_file = data["xls_file"]
         validation_errors = validate_xls_form(xls_file)
         if validation_errors:
-            raise serializers.ValidationError({"xls_file": "", "xls_file_validation_errors": validation_errors})
+            raise serializers.ValidationError({"xls_file_validation_errors": validation_errors})
 
         xls_file.seek(0)
         try:
@@ -221,3 +220,23 @@ class FormVersionPreviewSerializer(serializers.Serializer):
         data["survey"] = survey
         data["previous_form_version"] = previous_form_version
         return data
+
+
+class QuestionSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    label = serializers.CharField()
+    type = serializers.CharField()
+
+
+class ModifiedQuestionSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    label = serializers.CharField()
+    old_type = serializers.CharField()
+    new_type = serializers.CharField()
+
+
+class FormVersionDiffSerializer(serializers.Serializer):
+    previous_version_id = serializers.CharField(allow_null=True)
+    removed_questions = QuestionSerializer(many=True)
+    added_questions = QuestionSerializer(many=True)
+    modified_questions = ModifiedQuestionSerializer(many=True)

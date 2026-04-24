@@ -5,7 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, parsers
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import ModelViewSet
 from iaso.api.form_versions.permissions import HasFormVersionPermission
 from iaso.api.form_versions.serializers import FormVersionSerializer
@@ -34,7 +34,7 @@ class FormVersionsViewSet(ModelViewSet):
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
     http_method_names = ["get", "put", "post", "head", "options", "trace", "patch"]
-    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackend]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
     def get_queryset(self):
         orders = self.request.query_params.get("order", "full_name").split(",")

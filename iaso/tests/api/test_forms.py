@@ -10,7 +10,7 @@ from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
-from iaso.api.forms import FormSerializer
+from iaso.api.forms.serializers import FormSerializer
 from iaso.api.query_params import APP_ID
 from iaso.models import (
     AGGREGATE,

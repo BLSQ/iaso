@@ -3,11 +3,11 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializer, DynamicFieldsModelSerializerBackwardCompatible
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 
 from ..common import TimestampField
-from ..forms import FormSerializer
+from ..forms.serializers import FormSerializer
 from ..projects.serializers import ProjectSerializer
 
 
@@ -38,7 +38,7 @@ def validate_reference_forms(data):
 
 
 # Kept for the mobile
-class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
+class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializerBackwardCompatible):
     """
     V1 kept for mobile where sub_types is actually `allow_creating_sub_unit_types`
 

@@ -7,6 +7,7 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
         # todo: should be settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME directly , but polio serializers crash if not so
         # todo: is it also really needed, it's only used in some places like OrgUnitType
         self.dynamic_fields = kwargs.pop(getattr(settings, "DYNAMIC_FIELDS_QUERY_PARAM_NAME", "fields"), None)
+        self.string_field = kwargs.pop("string_field", False)
         super().__init__(*args, **kwargs)
         self._applied_dynamic_fields = False
 
@@ -48,6 +49,14 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
 
     def get_fields_value_from_query(self):
         if self.context.get("request", None):
+            if self.string_field:
+                return [
+                    v
+                    for v in self.context.get("request")
+                    .query_params.get(settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME, "")
+                    .split(",")
+                    if v
+                ]
             return [
                 v
                 for v in self.context.get("request").query_params.getlist(settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME)
@@ -58,3 +67,9 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
 
 class DynamicFieldsModelSerializer(DynamicFieldsModelSerializerMixin, serializers.ModelSerializer):
     pass
+
+
+class DynamicFieldsModelSerializerBackwardCompatible(DynamicFieldsModelSerializerMixin, serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("string_field", True)
+        super().__init__(*args, **kwargs)

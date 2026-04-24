@@ -1,4 +1,4 @@
-from iaso.api.forms import HasFormPermission
+from iaso.api.forms.permissions import HasFormPermission
 from iaso.api.query_params import APP_ID
 from iaso.models import Form
 

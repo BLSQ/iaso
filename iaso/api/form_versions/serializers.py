@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 from rest_framework import exceptions, serializers
 from rest_framework.fields import Field
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.api.common import TimestampField
-from iaso.api.forms import HasFormPermission
+from iaso.api.forms.permissions import HasFormPermission
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing, validate_xls_form
 
@@ -18,7 +18,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
         ref_name = "UserNestedSerializerForFormVersions"
 
 
-class FormVersionSerializer(DynamicFieldsModelSerializer):
+class FormVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = FormVersion
         default_fields = [

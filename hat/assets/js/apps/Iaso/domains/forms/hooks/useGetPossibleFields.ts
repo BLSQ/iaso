@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import { cloneDeep } from 'lodash';
 import { UseQueryResult } from 'react-query';
 import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQueries, useSnackQuery } from 'Iaso/libs/apiHooks';
 import { createSearchParamsWithArray } from 'Iaso/libs/utils';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQueries, useSnackQuery } from '../../../libs/apiHooks';
-import { DropdownOptions } from '../../../types/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 import MESSAGES from '../messages';
 import { useGetForm } from '../requests';
@@ -193,7 +193,7 @@ type FormVersionHookResult = {
 const useGetFormVersion = (
     formId: number | undefined,
     enabled: boolean,
-    fields?: string[],
+    fields?: string,
 ): UseQueryResult<FormVersionsApiResult, Error> => {
     const queryKey: any[] = ['formVersions', formId];
 
@@ -242,10 +242,10 @@ export const useGetPossibleFieldsByFormVersion = (
     formId?: number,
 ): FormVersionHookResult => {
     const { data: currentFormVersion, isFetching: isFetchingForm } =
-        useGetFormVersion(formId, Boolean(formId), [
-            'version_id',
-            'possible_fields',
-            'created_at',
-        ]);
+        useGetFormVersion(
+            formId,
+            Boolean(formId),
+            ['version_id', 'possible_fields', 'created_at'].join(','),
+        );
     return useVersionPossibleFields(isFetchingForm, currentFormVersion);
 };

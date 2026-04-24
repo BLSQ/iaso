@@ -206,6 +206,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Potential payments',
         id: 'iaso.payments.potentialPayments',
     },
+    submissionValidations: {
+        defaultMessage: 'Submissions validations',
+        id: 'iaso.label.submissionValidations',
+    },
     lots: {
         defaultMessage: 'Payments lots',
         id: 'iaso.payments.lots',

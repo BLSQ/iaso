@@ -202,17 +202,10 @@ const menuItems = (
                 },
                 {
                     label: formatMessage(MESSAGES.submissionsTitle),
-                    key: 'submissions',
-                    icon: props => <Input {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.list),
-                            extraPath: `/tab/list/mapResults/${locationLimitMax}`,
-                            permissions: paths.instancesPath.permissions,
-                            key: 'list',
-                            icon: props => <FormatListBulleted {...props} />,
-                        },
-                    ],
+                    key: 'submissions/list',
+                    icon: props => <FormatListBulleted {...props} />,
+                    permissions: paths.instancesPath.permissions,
+                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
                 },
 
                 {
@@ -312,6 +305,7 @@ const menuItems = (
                     key: `${CHANGE_REQUEST_CONFIG}`,
                     icon: props => <CategoryIcon {...props} />,
                 },
+                
             ],
         },
         {
@@ -459,17 +453,19 @@ export const useMenuItems = (): MenuItems => {
     }
 
     // add feature flags
-    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)) {
-        const formsMenuEntry = basicItems.find(item => item.key === 'forms');
+    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)){
+        const validationMenuEntry = basicItems.find(
+            item => item.key === 'validation',
+        );
         if (
-            !formsMenuEntry?.subMenu?.find(
-                entry => entry.key === 'submissions/validation',
+            !validationMenuEntry?.subMenu?.find(
+                entry => entry.key === 'submissions',
             )
         ) {
-            formsMenuEntry?.subMenu?.push({
-                label: formatMessage(MESSAGES.validation),
-                permissions: paths.instancesPath.permissions,
-                key: 'submissions/validation',
+            validationMenuEntry?.subMenu?.push({
+                label: formatMessage(MESSAGES.submissionValidations),
+                permissions: paths.instancesValidationPath.permissions,
+                key: 'submissions',
                 icon: props => <RuleIcon {...props} />,
             });
         }

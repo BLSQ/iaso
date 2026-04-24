@@ -53,6 +53,7 @@ class MetricType(models.Model):
     legend_config = models.JSONField(blank=True, default=dict)
     # This is meant to flag metric types that are used for system purposes (like population)
     is_utility = models.BooleanField(default=False)
+    is_population = models.BooleanField(default=False)
     # Define if it was from OpenHexa, create from the interface or other method
     origin = models.CharField(
         max_length=50,

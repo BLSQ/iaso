@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from hat.api.token_authentication import token_auth
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
+from iaso.api.ft_helpers.views import FunctionalTestHelperViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from iaso.api.profile_logs.views import ProfileLogsViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
@@ -281,6 +282,10 @@ router.registry.extend(plugins_router.registry)
 router.register(
     r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
 )
+
+if settings.TEST_MODE:
+    router.register(r"ft-helpers", FunctionalTestHelperViewSet, basename="ft_helpers")
+
 urlpatterns: URLList = [
     path(
         "fill/<form_uuid>/<org_unit_id>/<period>",

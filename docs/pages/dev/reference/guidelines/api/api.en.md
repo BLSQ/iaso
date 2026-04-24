@@ -39,3 +39,7 @@ with searchParams
 
 direct url access => api call and validate (useEffect with searchParams dep)
 form submit : updateSearchParams (no harsh redirect) => API call and validate (useEffect with searchParams dep)
+
+## Todo
+
+* silence msw during tests 

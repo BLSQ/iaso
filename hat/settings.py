@@ -906,3 +906,7 @@ if IN_TESTS:
 
 ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
 SETUPER_SANDBOX_PASSWORD = os.environ.get("SETUPER_SANDBOX_PASSSWORD", "district")
+
+
+# TEST MODE
+TEST_MODE = os.environ.get("TEST_MODE", "false").lower() == "true"

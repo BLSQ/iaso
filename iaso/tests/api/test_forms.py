@@ -232,12 +232,19 @@ class FormsAPITestCase(APITestCase):
         form_to_delete.delete()
 
         response = self.client.get(
-            "/api/forms/?&order=instance_updated_at&page=1&onlyDeleted=true&searchActive=true&all=true&limit=50&undefined=true",
-            headers={"Content-Type": "application/json"},
+            "/api/forms/",
+            data={
+                "order": "instance_updated_at",
+                "page": 1,
+                "onlyDeleted": "true",
+                "searchActive": "true",
+                "all": "true",
+                "limit": 50,
+                "undefined": "true"
+            },
         )
-
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 1)
+        res_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(res_json["count"], 1)
 
     def test_forms_list_excludes_deleted_by_default(self):
         """GET /forms/ should return only non-deleted forms by default."""
@@ -246,8 +253,8 @@ class FormsAPITestCase(APITestCase):
         self.form_1.delete()
 
         response = self.client.get(
-            "/api/forms/?&limit=50",
-            headers={"Content-Type": "application/json"},
+            "/api/forms/",
+            data={"limit": 50},
         )
 
         self.assertJSONResponse(response, 200)
@@ -261,8 +268,8 @@ class FormsAPITestCase(APITestCase):
         self.form_1.delete()
 
         response = self.client.get(
-            "/api/forms/?onlyDeleted=true&limit=50",
-            headers={"Content-Type": "application/json"},
+            "/api/forms/",
+            data={"onlyDeleted": "true", "limit": 50},
         )
 
         self.assertJSONResponse(response, 200)
@@ -276,8 +283,8 @@ class FormsAPITestCase(APITestCase):
         self.form_1.delete()
 
         response = self.client.get(
-            "/api/forms/?showDeleted=true&limit=50",
-            headers={"Content-Type": "application/json"},
+            "/api/forms/",
+            data={"showDeleted": "true", "limit": 50},
         )
 
         self.assertJSONResponse(response, 200)

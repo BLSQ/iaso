@@ -263,22 +263,15 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
                 queryset = queryset.filter(org_unit_id=org_unit_id)
 
         # Same semantics as Instance.is_reference_instance (own org unit).
-        if reference_instances == "reference":
+        if reference_instances in ("reference", "not_reference"):
             ref_for_own_org_unit = OrgUnitReferenceInstance.objects.filter(
                 instance_id=OuterRef("pk"),
                 org_unit_id=OuterRef("org_unit_id"),
             )
-            queryset = queryset.annotate(_iaso_ref_for_own_ou=Exists(ref_for_own_org_unit)).filter(
-                _iaso_ref_for_own_ou=True
-            )
-        elif reference_instances == "not_reference":
-            ref_for_own_org_unit = OrgUnitReferenceInstance.objects.filter(
-                instance_id=OuterRef("pk"),
-                org_unit_id=OuterRef("org_unit_id"),
-            )
-            queryset = queryset.annotate(_iaso_ref_for_own_ou=Exists(ref_for_own_org_unit)).filter(
-                _iaso_ref_for_own_ou=False
-            )
+            if reference_instances == "reference":
+                queryset = queryset.filter(Exists(ref_for_own_org_unit))
+            else:
+                queryset = queryset.filter(~Exists(ref_for_own_org_unit))
 
         if org_unit_parent_id:
             # Local import to avoid loop

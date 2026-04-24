@@ -40,8 +40,9 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
-RUN pip install uv 
-RUN uv sync
+RUN pip install uv
+ENV UV_PYTHON_PREFERENCE=only-system
+RUN uv sync --python $(which python3)
 RUN uv add gunicorn==23.0.0
 
 # Strip the venv: remove caches and debug symbols
@@ -81,7 +82,8 @@ WORKDIR /opt/app
 
 # Copy the virtualenv from builder
 COPY --from=pybuilder --chown=appuser:appuser /opt/app/.venv .venv
-ENV PATH="/opt/app/.venv/bin:$PATH"
+ENV VIRTUAL_ENV=/opt/app/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy webpack assets
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets

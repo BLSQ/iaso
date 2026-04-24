@@ -14,6 +14,7 @@ from iaso.api.form_versions.serializers import FormVersionPreviewSerializer, For
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, FormVersion, Project
+from iaso.odk.diff import compute_form_version_diff
 
 
 @extend_schema(tags=["Form versions"])
@@ -37,6 +38,11 @@ class FormVersionsViewSet(ModelViewSet):
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
     http_method_names = ["get", "put", "post", "head", "options", "trace", "patch"]
     filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackend]
+
+    def get_serializer_class(self):
+        if self.action == "preview":
+            return FormVersionPreviewSerializer
+        return FormVersionSerializer
 
     def get_queryset(self):
         orders = self.request.query_params.get("order", "full_name").split(",")
@@ -99,6 +105,11 @@ class FormVersionsViewSet(ModelViewSet):
     @action(detail=False, methods=["post"], url_path="preview")
     def preview(self, request, *args, **kwargs):
         """Return a diff of questions added/removed compared to the latest version without saving."""
-        serializer = FormVersionPreviewSerializer(data=request.data, context=self.get_serializer_context())
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response(serializer.compute_diff())
+        return Response(
+            compute_form_version_diff(
+                previous_form_version=serializer.validated_data["previous_form_version"],
+                survey=serializer.validated_data["survey"],
+            )
+        )

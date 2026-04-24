@@ -2,7 +2,8 @@ import logging
 import typing
 
 from django.contrib.auth.models import User
-from django.utils.html import strip_tags
+from django.core.validators import FileExtensionValidator
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import exceptions, serializers
 from rest_framework.fields import Field
 
@@ -14,6 +15,11 @@ from iaso.odk import parsing, validate_xls_form
 
 
 logger = logging.getLogger(__name__)
+
+
+@extend_schema_field({"type": "string", "format": "binary"})
+class UploadFileField(serializers.FileField):
+    pass
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -168,18 +174,34 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
 
 class FormVersionPreviewSerializer(serializers.Serializer):
-    """Validates the preview request and computes the diff without persisting anything."""
+    """Input serializer for the preview endpoint — validates the request without persisting anything."""
 
-    form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
-    xls_file = serializers.FileField(allow_empty_file=False)
+    form_id = serializers.PrimaryKeyRelatedField(
+        queryset=Form.objects.none(),
+        required=True,
+        write_only=True,
+    )
+    xls_file = UploadFileField(
+        allow_empty_file=False,
+        required=True,
+        write_only=True,
+        validators=[FileExtensionValidator(allowed_extensions=["xlsx", "xls"])],
+    )
 
-    def validate(self, data):
-        form = data["form"]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request:
+            self.fields["form_id"].queryset = Form.objects.filter_for_user_and_app_id(request.user)
 
+    def validate_form_id(self, form):
         permission_checker = HasFormPermission()
         if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
-            raise serializers.ValidationError({"form_id": "Invalid form id"})
+            raise serializers.ValidationError("Invalid form id")
+        return form
 
+    def validate(self, data):
+        form = data["form_id"]
         xls_file = data["xls_file"]
         validation_errors = validate_xls_form(xls_file)
         if validation_errors:
@@ -199,51 +221,3 @@ class FormVersionPreviewSerializer(serializers.Serializer):
         data["survey"] = survey
         data["previous_form_version"] = previous_form_version
         return data
-
-    def compute_diff(self):
-        previous_form_version = self.validated_data["previous_form_version"]
-        survey = self.validated_data["survey"]
-
-        new_questions_by_name = parsing.to_questions_by_name(survey.to_json())
-        new_question_names = set(new_questions_by_name.keys())
-
-        removed_questions = []
-        added_questions = []
-        modified_questions = []
-        previous_version_id = None
-
-        if previous_form_version:
-            previous_version_id = previous_form_version.version_id
-            current_fields = previous_form_version.possible_fields or []
-            current_by_name = {q["name"]: q for q in current_fields}
-            current_question_names = set(current_by_name.keys())
-
-            removed_questions = [q for q in current_fields if q["name"] not in new_question_names]
-
-            for name in new_question_names:
-                q = new_questions_by_name[name]
-                label = q.get("label", "")
-                if isinstance(label, dict):
-                    label = next(iter(label.values()), "")
-                new_type = q.get("type", "")
-
-                if name not in current_question_names:
-                    added_questions.append({"name": name, "label": strip_tags(str(label)), "type": new_type})
-                else:
-                    old_type = current_by_name[name].get("type", "")
-                    if old_type != new_type:
-                        modified_questions.append(
-                            {
-                                "name": name,
-                                "label": strip_tags(str(label)),
-                                "old_type": old_type,
-                                "new_type": new_type,
-                            }
-                        )
-
-        return {
-            "previous_version_id": previous_version_id,
-            "removed_questions": removed_questions,
-            "added_questions": added_questions,
-            "modified_questions": modified_questions,
-        }

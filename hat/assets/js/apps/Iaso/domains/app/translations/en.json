@@ -394,7 +394,7 @@
     "iaso.formversions.chronologicalPeriodError": "Start period should be before end period",
     "iaso.formversions.confirmRemovedQuestions": "Confirm and save",
     "iaso.formversions.create": "Create version",
-    "iaso.formversions.diffWarning": "This version introduces structural changes compared to version {versionId}. Removed or renamed questions will no longer appear in new submissions, and existing submissions may be missing those fields. Changed question types may make previously collected data unreadable.",
+    "iaso.formversions.diffWarning": "This version introduces structural changes compared to version {versionId}. Removed or renamed questions will no longer appear in new submissions, and existing submissions may be missing those fields. Changed question types or question names may make previously collected data difficult to use. Many integrations (DHIS2, pipelines, Superset, workflows) may also be broken by a question name change.",
     "iaso.formversions.modifiedQuestionsSection": "Questions with changed type ({count})",
     "iaso.formversions.periodError": "Period is not valid",
     "iaso.formversions.questionAdded": "added",

@@ -36,8 +36,8 @@ from iaso.test import APITestCase
 
 
 PREVIEW_URL = "/api/formversions/preview/"
-FIXTURE_V1 = "iaso/tests/fixtures/form_preview_diff_v1.xlsx"
-FIXTURE_V2 = "iaso/tests/fixtures/form_preview_diff_v2.xlsx"
+FIXTURE_V1 = "iaso/tests/fixtures/form_preview/form_preview_diff_v1.xlsx"
+FIXTURE_V2 = "iaso/tests/fixtures/form_preview/form_preview_diff_v2.xlsx"
 INVALID_XLS = "iaso/tests/fixtures/odk_form_blatantly_invalid.xlsx"
 
 
@@ -186,8 +186,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_empty.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
-        data = response.json()
+        data = self.assertJSONResponse(response, 200)
         self.assertIsNone(data["previous_version_id"])
         self.assertEqual(data["removed_questions"], [])
         self.assertEqual(data["added_questions"], [])
@@ -206,8 +205,8 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["previous_version_id"], "2020010101")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(data["previous_version_id"], "2020010101")
 
     def test_preview_removed_question(self):
         """birth_date is in v1 but absent from v2 → appears in removed_questions."""
@@ -218,8 +217,8 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
-        removed_names = {q["name"] for q in response.json()["removed_questions"]}
+        data = self.assertJSONResponse(response, 200)
+        removed_names = {q["name"] for q in data["removed_questions"]}
         self.assertIn("birth_date", removed_names)
 
     def test_preview_added_question(self):
@@ -231,8 +230,8 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
-        added_names = {q["name"] for q in response.json()["added_questions"]}
+        data = self.assertJSONResponse(response, 200)
+        added_names = {q["name"] for q in data["added_questions"]}
         self.assertIn("phone_number", added_names)
 
     def test_preview_modified_question_type(self):
@@ -244,8 +243,8 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
-        modified_by_name = {q["name"]: q for q in response.json()["modified_questions"]}
+        data = self.assertJSONResponse(response, 200)
+        modified_by_name = {q["name"]: q for q in data["modified_questions"]}
         self.assertIn("age", modified_by_name)
         self.assertEqual(modified_by_name["age"]["old_type"], "integer")
         self.assertEqual(modified_by_name["age"]["new_type"], "text")
@@ -259,8 +258,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
-        data = response.json()
+        data = self.assertJSONResponse(response, 200)
         all_diff_names = (
             {q["name"] for q in data["removed_questions"]}
             | {q["name"] for q in data["added_questions"]}
@@ -278,8 +276,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertJSONResponse(response, 200)
-        data = response.json()
+        data = self.assertJSONResponse(response, 200)
         self.assertEqual(len(data["removed_questions"]), 1, data["removed_questions"])
         self.assertEqual(len(data["added_questions"]), 1, data["added_questions"])
         self.assertEqual(len(data["modified_questions"]), 1, data["modified_questions"])
@@ -296,3 +293,16 @@ class FormVersionPreviewAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 200)
         self.assertEqual(self.form_with_version.form_versions.count(), count_before)
+
+    def test_preview_query_count(self):
+        """Preview endpoint should use a bounded number of database queries."""
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            # 2 permission queries + 1 form lookup + 1 HasFormPermission check + 1 latest version lookup
+            with self.assertNumQueries(5):
+                response = self.client.post(
+                    PREVIEW_URL,
+                    data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                    format="multipart",
+                )
+        self.assertJSONResponse(response, 200)

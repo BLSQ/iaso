@@ -41,7 +41,8 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
 RUN pip install uv
-RUN uv sync
+ENV UV_PYTHON_PREFERENCE=only-system
+RUN uv sync --python "$(which python3)"
 RUN uv add gunicorn==23.0.0
 
 # Strip the venv: remove caches and debug symbols
@@ -100,9 +101,6 @@ COPY --chown=appuser:appuser ../../README.md manage.py entrypoint.sh tsconfig.js
 
 # Create dir for uploaded files
 RUN mkdir media && chown appuser:appuser media
-
-# Source (activate) venv
-RUN . ./.venv/bin/activate
 
 # Collect static files, compile translations
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic --noinput && \

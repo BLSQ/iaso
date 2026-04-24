@@ -1,7 +1,7 @@
 [project]
 name = "Iaso"
 readme = "README.md"
-requires-python = "==3.9.25"
+requires-python = ">=3.9,<3.10"
 version = "v1.3"
 dependencies = [
     "azure-storage-blob==12.19.0",

@@ -52,9 +52,6 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
     find ././.venv -type f -name "*.so" -exec strip --strip-debug {} + 2>/dev/null || true
 
 
-RUN echo "------"
-RUN ls -lah
-RUN echo "------"
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
 FROM python:3.9-slim-bullseye AS prod
@@ -80,12 +77,11 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /opt/app
+
 # Copy the virtualenv from builder
 COPY --from=pybuilder --chown=appuser:appuser /opt/app/.venv .venv
 ENV PATH="/opt/app/.venv/bin:$PATH"
-ENV VIRTUAL_ENV=".venv"
-
-WORKDIR /opt/app
 
 # Copy webpack assets
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets

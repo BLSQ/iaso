@@ -41,6 +41,8 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
 RUN pip install uv
+# Use python from the system, not from uv
+# https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system
 RUN uv sync --python "$(which python3)"
 RUN uv add gunicorn==23.0.0

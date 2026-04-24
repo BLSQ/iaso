@@ -18,11 +18,6 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.other_account = Account.objects.create(name="account2")
         self.another_account = Account.objects.create(name="account3")
 
-        self.enable_validation_workflow_feature_flag(self.account, self.other_account)
-        self.john_doe = self.create_user_with_profile(
-            username="user.without.feature.flag", account=self.another_account, first_name="User", last_name="NoFlag"
-        )
-
         self.john_wick = self.create_user_with_profile(username="john.wick", account=self.account)
 
         self.jane_doe = self.create_user_with_profile(username="jane.doe", account=self.other_account)
@@ -118,11 +113,6 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         res = self.client.get(reverse("mobile_validation_workflows-list"))
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        self.client.force_authenticate(self.john_doe)
-        res = self.client.get(reverse("mobile_validation_workflows-list"))
-        res_data = self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(res_data["detail"], "This feature is disabled for your account.")
 
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
@@ -582,7 +572,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             # 1: PERM
             # 3 ORGUNIT
             # 4-5: QUERYSET + FILTER

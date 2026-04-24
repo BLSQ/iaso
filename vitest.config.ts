@@ -28,6 +28,7 @@ export default defineConfig({
     test: {
         dir: './hat/assets/js/',
         globals: true,
+        hookTimeout: 150_000,
         environment: 'jsdom',
         include: [
             '**/*.test.{ts,tsx}',

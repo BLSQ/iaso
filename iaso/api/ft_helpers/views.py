@@ -7,7 +7,17 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from iaso.models import MONTH, Account, DataSource, Form, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import (
+    MONTH,
+    Account,
+    AccountFeatureFlag,
+    DataSource,
+    Form,
+    OrgUnit,
+    OrgUnitType,
+    Project,
+    SourceVersion,
+)
 from iaso.test import IasoTestCaseMixin
 
 from .permissions import IsTestModeEnabled
@@ -24,7 +34,17 @@ class FunctionalTestHelperViewSet(viewsets.ViewSet):
         default_account = Account.objects.create(
             name="Star Wars", default_version=version, enforce_password_validation=False
         )
-        yoda = IasoTestCaseMixin.create_user_with_profile(username="yoda", account=default_account)
+
+        feature_flag, _ = AccountFeatureFlag.objects.get_or_create(
+            code="SUBMISSION_VALIDATION_WORKFLOW",
+            defaults={"name": "Web: Enable validation workflow"},
+        )
+
+        default_account.feature_flags.set([feature_flag])
+        default_account.save()
+        yoda = IasoTestCaseMixin.create_user_with_profile(
+            username="yoda", account=default_account, is_superuser=True, is_staff=True
+        )
 
         yoda.set_password("IMomLove")
         yoda.save()

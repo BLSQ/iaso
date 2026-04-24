@@ -7,7 +7,7 @@ import { useCustomApiValidationWorkflowsList } from 'Iaso/domains/instances/vali
 import { QueryClientWrapperWithIntlProvider } from '../../tests/helpers';
 
 // let user: any;
-// let token: any;
+let token: any;
 
 describe('ValidationWorkflow api e2e tests', () => {
     beforeEach(async () => {
@@ -22,7 +22,7 @@ describe('ValidationWorkflow api e2e tests', () => {
             method: 'POST',
         }).then(res => res.json());
 
-        token = await fetch('http://localhost:8000/api/token/', {
+        const data = await fetch('http://localhost:8000/api/token/', {
             method: 'POST',
             body: JSON.stringify({
                 username: 'yoda',
@@ -33,19 +33,18 @@ describe('ValidationWorkflow api e2e tests', () => {
             },
         }).then(res => res.json());
 
-        // console.log(token);
+        token = data?.access;
     });
 
     it('CRUD accordingly', async () => {
-        const { result: resultList, rerender: rerenderList } = renderHook(
+        const { result: resultList } = renderHook(
             () =>
-                // useApiValidationWorkflowsList(
                 useCustomApiValidationWorkflowsList(
                     {},
                     {
                         request: {
                             headers: {
-                                Authorization: `Bearer ${process.env.API_TOKEN}`,
+                                Authorization: `Bearer ${token}`,
                             },
                         },
                     },
@@ -53,13 +52,17 @@ describe('ValidationWorkflow api e2e tests', () => {
             { wrapper: QueryClientWrapperWithIntlProvider },
         );
 
-        await waitFor(() =>
-            expect(
-                resultList.current.isSuccess || resultList.current.isError,
-            ).toBe(true),
-        );
+        await waitFor(() => expect(resultList.current.isSuccess).toBe(true));
 
-        // expect(result.current.data).toBe([]);
+        expect(resultList.current.data).toStrictEqual({
+            count: 0,
+            has_next: false,
+            has_previous: false,
+            limit: 20,
+            page: 1,
+            pages: 1,
+            results: [],
+        });
 
         // create validation workflow
         const { result: resultCreate } = renderHook(
@@ -67,7 +70,7 @@ describe('ValidationWorkflow api e2e tests', () => {
                 useApiValidationWorkflowsCreate({
                     request: {
                         headers: {
-                            Authorization: `Bearer ${process.env.API_TOKEN}`,
+                            Authorization: `Bearer ${token}`,
                         },
                     },
                 }),
@@ -88,18 +91,42 @@ describe('ValidationWorkflow api e2e tests', () => {
             expect(resultCreate.current.isError).toBe(false);
         });
 
-        rerenderList({});
+        await act(async () => {
+            await resultList.current.refetch();
+        });
 
         await waitFor(() => expect(resultList.current.isSuccess).toBe(true));
 
-        expect(resultList.current.data).toBe({
-            count: 2,
-            results: [{}],
+        expect(resultList.current.data).toMatchObject({
+            count: 1,
+            has_next: false,
+            has_previous: false,
+            limit: 20,
+            page: 1,
+            pages: 1,
         });
+        expect(resultList.current.data?.results.length).toBe(1);
+        expect(resultList.current.data?.results[0]).toMatchObject({
+            name: 'test-validation-workflow',
+            slug: 'test-validation-workflow',
+            form_count: 0,
+            created_by: 'yoda',
+            updated_by: null,
+        });
+
+        expect(resultList.current.data?.results[0].updated_at).not.toBeNull();
+        expect(resultList.current.data?.results[0].created_at).not.toBeNull();
 
         // retrieve
         const { result: resultRetrieve } = renderHook(
-            () => useApiValidationWorkflowsRetrieve('test-validation-workflow'),
+            () =>
+                useApiValidationWorkflowsRetrieve('test-validation-workflow', {
+                    request: {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    },
+                }),
             { wrapper: QueryClientWrapperWithIntlProvider },
         );
 
@@ -107,9 +134,22 @@ describe('ValidationWorkflow api e2e tests', () => {
             expect(resultRetrieve.current.isSuccess).toBe(true);
         });
 
-        expect(resultRetrieve.current.data).toBe({});
+        expect(resultRetrieve.current.data).toMatchObject({
+            created_by: 'yoda',
+            description: 'a description',
+            forms: [],
+            name: 'test-validation-workflow',
+            node_templates: [],
+            slug: 'test-validation-workflow',
+            updated_by: null,
+        });
+
+        expect(resultRetrieve.current.data?.updated_at).not.toBeNull();
+        expect(resultRetrieve.current.data?.created_at).not.toBeNull();
 
         // update
+
+        // check with read and list
 
         // delete
     });

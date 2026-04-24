@@ -11,6 +11,7 @@ import {
 
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { useQueryString } from 'Iaso/hooks/useApiParams';
 import * as Permission from 'Iaso/utils/permissions';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
@@ -18,7 +19,6 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { baseUrl } from '../config';
 import { FormResponse, tableDefaults } from '../hooks/useGetForms';
@@ -57,7 +57,6 @@ const Filters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
-    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -121,14 +120,11 @@ const Filters: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="planning"
-                        onChange={handleChange}
+                    <PlanningsDropdown
+                        handleChange={handleChange}
                         value={filters.planning}
-                        label={MESSAGES.planning}
-                        options={planningsDropdownOptions}
+                        keyValue="planning"
+                        multi
                     />
                 </Grid>
             </Grid>

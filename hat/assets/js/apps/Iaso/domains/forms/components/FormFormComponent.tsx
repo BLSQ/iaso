@@ -8,7 +8,7 @@ import {
     LinkWithLocation,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useGetWorkflowOptions } from 'Iaso/domains/instances/validationWorkflow/api/Get';
+import { ValidationWorkflowDropdown } from 'Iaso/domains/instances/validationWorkflow/components/ValidationWorkflowDropdown';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
@@ -70,8 +70,6 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const { data: workflowOptions, isFetching: isFetchingWorkflows } =
-        useGetWorkflowOptions();
 
     const setPeriodType = value => {
         let periodTypeValue = value;
@@ -301,18 +299,16 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             }
                         />
                     </InputWithInfos>
-                    <InputComponent
+                    <ValidationWorkflowDropdown
                         clearable
                         keyValue="validation_workflow"
                         onChange={(key, value) => setFieldValue(key, value)}
                         value={validation_workflow?.value}
                         errors={currentForm?.validation_workflow?.errors ?? []}
-                        type="select"
-                        options={workflowOptions || []}
-                        label={MESSAGES.validationWorkflow}
-                        loading={isFetchingWorkflows}
                         disabled={!Boolean(validation_workflow)}
+                        label={MESSAGES.validationWorkflow}
                     />
+
                     {showAdvancedSettings && (
                         <>
                             <InputComponent

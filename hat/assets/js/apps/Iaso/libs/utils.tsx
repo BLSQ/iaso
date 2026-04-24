@@ -112,3 +112,15 @@ export const mapOptions = (
         });
     return result;
 };
+
+export const createSearchParamsWithArray = (
+    params: Record<string, any | Array<any>>,
+) => {
+    return new URLSearchParams(
+        Object.entries(params).flatMap(([key, values]) =>
+            Array.isArray(values)
+                ? values.map(value => [key, value])
+                : [[key, values]],
+        ),
+    );
+};

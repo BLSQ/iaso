@@ -6,7 +6,7 @@ from iaso.test import FileUploadToTestCase
 
 class BulkCreateUserCsvFileTestCase(FileUploadToTestCase):
     FILE_NAME = "test_user_bulk_create_valid.csv"
-    FILE_PATH = f"iaso/tests/fixtures/{FILE_NAME}"
+    FILE_PATH = f"iaso/tests/fixtures/bulk_create_users/{FILE_NAME}"
 
     def test_upload_to_happy_path(self):
         # Upload with a user that belongs to a (correctly named) account

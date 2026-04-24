@@ -96,13 +96,17 @@ const getWorkflowOptions =
         return getRequest(`${API_URL}dropdown/`);
     };
 
-export const useGetWorkflowOptions = (): UseQueryResult<
-    ValidationWorkflowListDropdownResponse,
-    Error
-> => {
+export const useGetWorkflowOptions = (
+    enabled = true,
+): UseQueryResult<ValidationWorkflowListDropdownResponse, Error> => {
     return useSnackQuery({
         queryKey: [WF_BASE_QUERYKEY, 'options'],
         queryFn: () => getWorkflowOptions(),
-        options: { staleTime: Infinity, cacheTime: Infinity, retry: false },
+        options: {
+            staleTime: Infinity,
+            cacheTime: Infinity,
+            retry: false,
+            enabled: enabled,
+        },
     });
 };

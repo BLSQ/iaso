@@ -1,7 +1,8 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer, ModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from iaso.api.common import ModelSerializer
 from iaso.models import Profile, Project, UserRole
 
 

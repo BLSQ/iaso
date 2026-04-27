@@ -1,11 +1,11 @@
 services:
   redis_main:
-    image: redis:5
+    image: valkey/valkey:8.1.0
     command: redis-server
     restart: unless-stopped
 
   redis_cache:
-    image: redis:5
+    image: valkey/valkey:8.1.0
     command: redis-server
     restart: unless-stopped
 

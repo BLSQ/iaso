@@ -1,4 +1,5 @@
 from django.http import FileResponse
+from drf_excel.mixins import XLSXFileMixin
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin
@@ -14,8 +15,8 @@ from iaso.models import BulkCreateUserCsvFile
 
 
 @extend_schema(tags=["Profiles", "Users"])
-class BulkCreateUserFromCsvViewSet(CreateModelMixin, GenericViewSet):
-    """API endpoint to bulk create users and profiles from a CSV file.
+class BulkCreateUserFromCsvViewSet(XLSXFileMixin, CreateModelMixin, GenericViewSet):
+    """API endpoint to bulk create users and profiles from a CSV or XLSX file.
 
     CSV Columns (all columns must be present, but values can be empty):
         - username (required)

@@ -25,6 +25,7 @@ drf-spectacular[sidecar]==0.29.0  # https://github.com/tfranzel/drf-spectacular
 pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 nested-multipart-parser==1.5.0 # https://github.com/remigermain/nested-multipart-parser
 drf-extensions==0.8.0 # https://github.com/chibisov/drf-extensions
+drf-excel==2.5.3
 
 # Redis.
 # ------------------------------------------------------------------------------

@@ -1,8 +1,4 @@
-import csv
-import io
 import logging
-
-from collections import Counter
 
 import django.core.exceptions as django_exceptions
 import phonenumbers
@@ -12,7 +8,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.password_validation import validate_password
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from rest_framework import serializers
@@ -20,9 +15,8 @@ from rest_framework.fields import CurrentUserDefault
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
 
-from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.bulk_create_users.mixin import BulkCreateUserSerializerFileMixin
 from iaso.api.bulk_create_users.permissions import has_only_user_managed_permission
-from iaso.api.bulk_create_users.utils import detect_multi_field_value_splitter
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import (
     AccountPrefixedSlugRelatedField,
@@ -286,7 +280,7 @@ class BulkCreateItemSerializer(serializers.ModelSerializer):
         }
 
 
-class BulkCreateUserSerializer(ModelSerializer):
+class BulkCreateUserSerializer(BulkCreateUserSerializerFileMixin, ModelSerializer):
     default_permissions = PrimaryKeyRelatedFieldFromJSON(
         many=True, allow_null=True, queryset=Permission.objects.all(), allow_empty=True, write_only=True, required=False
     )
@@ -325,8 +319,15 @@ class BulkCreateUserSerializer(ModelSerializer):
             "file": {
                 "write_only": True,
                 "validators": [
-                    FileTypeValidator(allowed_mimetypes=["text/csv", "text/plain"]),
-                    FileExtensionValidator(allowed_extensions=["csv"]),
+                    FileTypeValidator(
+                        allowed_mimetypes=[
+                            "text/csv",
+                            "text/plain",
+                            "application/vnd.ms-excel",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        ]
+                    ),
+                    FileExtensionValidator(allowed_extensions=["csv", "xlsx", "xls"]),
                 ],
             },
             "default_profile_language": {
@@ -364,74 +365,6 @@ class BulkCreateUserSerializer(ModelSerializer):
         # teams
         self.fields["default_teams"].child_relation.queryset = Team.objects.filter_for_user(importer_user)
 
-    def validate(self, attrs):
-        if attrs.get("file"):
-            self._validate_file_content(attrs["file"])
-        return attrs
-
-    def validate_file(self, value):
-        if value:
-            try:
-                decoded = value.readline().decode("utf-8")
-                value.seek(0)
-
-                self.dialect = csv.Sniffer().sniff(decoded, delimiters=";,|")
-
-            except UnicodeDecodeError:
-                raise serializers.ValidationError("Invalid file encoding")
-            except csv.Error:
-                raise serializers.ValidationError("Invalid CSV file")
-
-        return value
-
-    def _validate_file_content(self, value):
-        reader = csv.DictReader(io.StringIO(value.read().decode("utf-8")), dialect=self.dialect)
-        # validating columns
-        missing_columns = set(BULK_CREATE_USER_COLUMNS_LIST) - set(reader.fieldnames)
-        if missing_columns:
-            raise serializers.ValidationError(
-                {"file_content": [{"general": f"Missing required column(s): {', '.join(sorted(missing_columns))}"}]}
-            )
-
-        self._validate_csv_users(reader)
-
-        return value
-
-    def _validate_csv_users(self, user_data):
-        # Get existing data for uniqueness checks
-        usernames = [data.get("username") for data in user_data if data.get("username")]
-
-        if len(set(usernames)) != len(usernames):
-            raise serializers.ValidationError(
-                {
-                    "file_content": [
-                        {
-                            "general": f"Duplicates in usernames: {', '.join([item for item, count in Counter(usernames).items() if count > 1])}"
-                        }
-                    ]
-                }
-            )
-
-        return user_data
-
-    def _filter_out_sensitive_data(self, file):
-        file.seek(0)
-        reader = csv.DictReader(io.StringIO(file.read().decode("utf-8")), dialect=self.dialect)
-        for row in reader:
-            if row.get("password", ""):
-                row["password"] = "*" * 6  # put 6 there so we can't guess really the password length if there is one
-
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=reader.fieldnames)
-        writer.writeheader()
-        writer.writerows(list(reader))
-        output.seek(0)
-        return SimpleUploadedFile(
-            name=file.name,
-            content=output.getvalue().encode("utf-8"),
-            content_type="text/csv",
-        )
-
     def _send_bulk_email_invitations(self, users):
         """Queue background task to send email invitations to users without passwords."""
         user_ids = [
@@ -445,45 +378,10 @@ class BulkCreateUserSerializer(ModelSerializer):
 
         send_bulk_email_invitations(user_ids, self.context["request"].is_secure(), user=self.context["request"].user)
 
-    def _pre_process_row(self, row):
-        """
-        Split the values by delimiter if needed
-        Transform the integer strings into real integers
-        """
-
-        for k, v in list(row.items()):
-            if k in [
-                "teams",
-                "permissions",
-                "user_roles",
-                "orgunit",
-                "projects",
-                "orgunit__source_ref",
-                "editable_org_unit_types",
-            ]:
-                row[k] = list(
-                    map(
-                        lambda x: int(x) if isinstance(x, str) and x.isdigit() else x,
-                        filter(
-                            lambda x: bool(x),
-                            [i.strip() for i in v.split(detect_multi_field_value_splitter(self.dialect, v))]
-                            if isinstance(v, str)
-                            else (v or []),
-                        ),
-                    )
-                )
-            if k in ["profile_language"]:
-                if v:
-                    row[k] = v.lower()  # e.g to map FR to fr
-        return {k: v for k, v in row.items() if v}
-
     def create(self, validated_data):
         validation_errors = []
 
         items = []
-
-        validated_data["file"].seek(0)
-        csv_reader = csv.DictReader(validated_data["file"].read().decode("utf-8").splitlines(), dialect=self.dialect)
 
         # we do that so we avoid the BulkCreateItemSerializer serializer to hit the db every init for the querysets in m2m fields
         account = self.context["request"].user.iaso_profile.account
@@ -512,7 +410,7 @@ class BulkCreateUserSerializer(ModelSerializer):
             ),
         }
 
-        for idx, row in enumerate(csv_reader):
+        for idx, row in self.get_data_from_file(validated_data["file"]):
             serializer = BulkCreateItemSerializer(
                 data=self._pre_process_row(row),
                 context=self.context,

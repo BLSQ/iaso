@@ -40,7 +40,7 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
                     const exisitingFormIndex = newForms.findIndex(
                         f => f.id === i.form_id,
                     );
-                    if (exisitingFormIndex) {
+                    if (exisitingFormIndex === -1) {
                         newForms.push({
                             id: i.form_id,
                             name: i.form_name,

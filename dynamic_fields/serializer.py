@@ -65,11 +65,19 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
         return []
 
 
+class DynamicFieldsModelSerializerBackwardCompatibleMixin(DynamicFieldsModelSerializerMixin):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("string_field", True)
+        super().__init__(*args, **kwargs)
+
+
 class DynamicFieldsModelSerializer(DynamicFieldsModelSerializerMixin, serializers.ModelSerializer):
     pass
 
 
-class DynamicFieldsModelSerializerBackwardCompatible(DynamicFieldsModelSerializerMixin, serializers.ModelSerializer):
+class DynamicFieldsModelSerializerBackwardCompatible(
+    DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer
+):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("string_field", True)
         super().__init__(*args, **kwargs)

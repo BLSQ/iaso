@@ -50,7 +50,7 @@ export const useGetPossibleFields = (
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         Boolean(formId),
-        ['possible_fields'],
+        'possible_fields',
         appId,
     );
     return usePossibleFields(isFetchingForm, currentForm);

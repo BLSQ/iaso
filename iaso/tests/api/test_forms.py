@@ -769,7 +769,9 @@ class FormsAPITestCase(APITestCase):
 
         # Test with specific fields that don't include instances_count or :all
         response = self.client.get(
-            "/api/forms/", data={"fields": ["id", "name", "form_id"]}, headers={"Content-Type": "application/json"}
+            "/api/forms/",
+            data={"fields": ",".join(["id", "name", "form_id"])},
+            headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
 
@@ -780,7 +782,7 @@ class FormsAPITestCase(APITestCase):
         # Test that instances_count is included when explicitly requested
         response = self.client.get(
             "/api/forms/",
-            data={"fields": ["id", "name", "instances_count"]},
+            data={"fields": ",".join(["id", "name", "instances_count"])},
             headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
@@ -825,7 +827,7 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(
-            "/api/forms/", data={"fields": ["id", "name"]}, headers={"Content-Type": "application/json"}
+            "/api/forms/", data={"fields": ",".join(["id", "name"])}, headers={"Content-Type": "application/json"}
         )
         self.assertJSONResponse(response, 200)
         for form_data in response.json()["forms"]:
@@ -833,7 +835,7 @@ class FormsAPITestCase(APITestCase):
 
         response = self.client.get(
             "/api/forms/",
-            data={"fields": ["id", "name", "has_attachments"]},
+            data={"fields": ",".join(["id", "name", "has_attachments"])},
             headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
@@ -858,7 +860,9 @@ class FormsAPITestCase(APITestCase):
             .get()
         )
 
-        api_request = Request(APIRequestFactory().get("/api/forms/", data={"fields": ["id", "has_attachments"]}))
+        api_request = Request(
+            APIRequestFactory().get("/api/forms/", data={"fields": ",".join(["id", "has_attachments"])})
+        )
         api_request.user = self.yoda
 
         with self.assertNumQueries(0):

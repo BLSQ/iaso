@@ -4,7 +4,7 @@ from copy import copy
 
 from rest_framework import serializers
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.form_predefined_filters.serializers import FormPredefinedFilterSerializer
@@ -21,7 +21,7 @@ class FormVersionNestedSerializer(ModelSerializer):
         fields = ["id", "version_id", "file", "xls_file", "created_at", "updated_at"]
 
 
-class FormSerializer(DynamicFieldsModelSerializer):
+class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = Form
         default_fields = [

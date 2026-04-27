@@ -3,7 +3,7 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializer, DynamicFieldsModelSerializerBackwardCompatible
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 
 from ..common import TimestampField
@@ -137,7 +137,7 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializerBackwardCompatible):
         return super().to_representation(instance)
 
 
-class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
+class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializerBackwardCompatible):
     """This one is a bit cryptic: sub_unit_types is only needed for "root" org unit types
     (the ones returned by the viewset queryset), and they need to be filtered by app_id,
     hence the SerializerMethodField()"""

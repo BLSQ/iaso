@@ -871,7 +871,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         # Request without 'instances_count'
         requested_fields = ["id", "name", "org_unit_type_name"]
-        url = f"/api/orgunits/?{urlencode({'fields': requested_fields, 'limit': 10}, True)}"
+        url = f"/api/orgunits/?{urlencode({'fields': ','.join(requested_fields), 'limit': 10}, True)}"
 
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get(url)
@@ -892,7 +892,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         # Explicitly request instances_count
-        requested_fields = ["id", "name", "instances_count"]
+        requested_fields = ",".join(["id", "name", "instances_count"])
         url = f"/api/orgunits/?{urlencode({'fields': requested_fields, 'limit': 10, 'order': 'id'}, True)}"
 
         with CaptureQueriesContext(connection) as ctx:
@@ -1672,16 +1672,18 @@ class OrgUnitAPITestCase(APITestCase):
         old_created_at = ou.created_at
         previous_updated_at = ou.updated_at
 
-        requested_fields = [
-            "id",
-            "name",
-            "validation_status",
-            "aliases",
-            "latitude",
-            "longitude",
-            "org_unit_type_id",
-            "updated_at",
-        ]
+        requested_fields = ",".join(
+            [
+                "id",
+                "name",
+                "validation_status",
+                "aliases",
+                "latitude",
+                "longitude",
+                "org_unit_type_id",
+                "updated_at",
+            ]
+        )
 
         url = f"/api/orgunits/{ou.id}/?{urlencode({'fields': requested_fields}, True)}"
 

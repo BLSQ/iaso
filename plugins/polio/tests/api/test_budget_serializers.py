@@ -452,10 +452,10 @@ class BudgetProcessSerializerTestCase(TestCase):
             },
         )
 
-        # Ask for a set of fields (this is done via `DynamicFieldsModelSerializer`).
-        self.request.query_params.setlist(
-            "fields", "id,who_sent_budget_at_WFEDITABLE,payment_mode,district_count".split(",")
-        )
+        # Ask for a set of fields (this is done via `DynamicFieldsModelSerializerBackwardCompatible`).
+
+        self.request.query_params.setlist("fields", "id,who_sent_budget_at_WFEDITABLE,payment_mode,district_count")
+
         serializer = BudgetProcessSerializer(instance=budget_process, context={"request": self.request})
         self.assertEqual(
             serializer.data,
@@ -467,7 +467,7 @@ class BudgetProcessSerializerTestCase(TestCase):
             },
         )
 
-        # Ask for all fields (this is done via `DynamicFieldsModelSerializer`).
+        # Ask for all fields (this is done via `DynamicFieldsModelSerializerBackwardCompatible`).
         self.request.query_params["fields"] = ":all"
         serializer = BudgetProcessSerializer(instance=budget_process, context={"request": self.request})
 

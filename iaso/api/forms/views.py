@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, ModelViewSet, is_field_referenced
@@ -56,7 +56,7 @@ class FormsViewSet(ModelViewSet):
         {"title": "Date de modification", "width": 20},
     )
     EXPORT_FILE_NAME = "forms"
-    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackend]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
     def get_queryset(self):
         form_objects = Form.objects

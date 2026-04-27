@@ -379,10 +379,13 @@ const createEditFormA = async (body: any) => {
         url: `${modalUrl}outgoing_stock_movement/`,
         data: filteredParams,
     };
+    const isNewFileUpload =
+        Array.isArray(copy?.file) &&
+        copy?.file.length > 0 &&
+        copy?.file[0] instanceof File;
 
-    if (copy?.file) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-        const { files, ...data } = filteredParams;
+    if (isNewFileUpload) {
+        const { files: _files, ...data } = filteredParams;
         const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;

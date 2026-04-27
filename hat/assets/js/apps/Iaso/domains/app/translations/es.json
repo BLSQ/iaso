@@ -1052,6 +1052,8 @@
     "iaso.periods.start": "Inicio del período",
     "iaso.permission.reports": "Dispositivos",
     "iaso.permission.tooltip.reports": "Monitorear dispositivos vinculados a la instancia (sincronización, propietario, etc.)",
+    "iaso.permissions.account_management": "Gestión de cuentas",
+    "iaso.permissions.iaso_account_management_tooltip": "Permite gestionar aspectos relacionados con tu cuenta (no confundir con la gestión de usuarios).",
     "iaso.permissions.assignments": "Atribuciones",
     "iaso.permissions.completeness": "Exportar completitud",
     "iaso.permissions.completeness_stats": "Estadísticas de completitud",

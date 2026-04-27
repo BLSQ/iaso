@@ -360,11 +360,17 @@ const createEditFormA = async (body: any) => {
         copy.lot_numbers = lotNumbersArray;
     }
 
+    // Drop only `undefined` (= "field not set") so explicit `null` is forwarded
+    // as an intentional clear for nullable JSON fields (e.g. form_a_reception_date).
+    // `file` is excluded unconditionally because it travels via multipart below, not
+    // JSON — sending `file: null` here would not clear it server-side (the DRF
+    // FileField has no allow_null and would reject it anyway). The only supported
+    // "clear file" path today is the received→temporary status transition, which
+    // the backend serializer self-clears in `update()`.
     const filteredParams = copy
         ? Object.fromEntries(
               Object.entries(copy).filter(
-                  ([key, value]) =>
-                      value !== undefined && value !== null && key !== 'file',
+                  ([key, value]) => value !== undefined && key !== 'file',
               ),
           )
         : {};

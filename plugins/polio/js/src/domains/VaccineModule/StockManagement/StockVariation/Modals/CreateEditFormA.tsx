@@ -27,6 +27,7 @@ import {
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
 import {
+    EDIT_ACCESS_FULL,
     RECEIVED,
     RECEIVED_TO_TEMPORARY,
     SESSION_TEMPORARY,
@@ -72,26 +73,57 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     const validationSchema = useFormAValidation();
     const isNew = !formA?.id;
     const originalStatus = formA?.status ?? RECEIVED;
-    const withinEditWindow = isNew || Boolean(formA?.can_edit);
+    // Backend-driven enum: "full" | "completion_only" | "none". New forms are
+    // effectively "full". See useFormAUiState for how this maps to field gating.
+    const editAccess = isNew ? EDIT_ACCESS_FULL : formA?.edit_access;
+    // Extracted so the onSubmit closure can diff against initial state
+    // without referencing `formik` before it's assigned.
+    const initialValues: FormAFormValues = {
+        id: formA?.id,
+        status: originalStatus,
+        campaign: formA?.campaign,
+        round: formA?.round,
+        report_date: formA?.report_date,
+        form_a_reception_date: formA?.form_a_reception_date,
+        usable_vials_used: formA?.usable_vials_used,
+        doses_per_vial: formA?.doses_per_vial || defaultDosesPerVial,
+        vaccine_stock: vaccineStockId,
+        file: formA?.file,
+        comment: formA?.comment,
+        // `alternative_campaign` maps to a plain CharField on the serializer
+        // (no allow_null), so coalesce null -> undefined to let the payload
+        // sanitizer drop the key instead of sending `null` and being rejected.
+        alternative_campaign: formA?.alternative_campaign ?? undefined,
+    };
     const formik = useFormik<FormAFormValues>({
-        initialValues: {
-            id: formA?.id,
-            status: originalStatus,
-            campaign: formA?.campaign,
-            round: formA?.round,
-            report_date: formA?.report_date,
-            form_a_reception_date: formA?.form_a_reception_date,
-            usable_vials_used: formA?.usable_vials_used,
-            doses_per_vial: formA?.doses_per_vial || defaultDosesPerVial,
-            vaccine_stock: vaccineStockId,
-            file: formA?.file,
-            comment: formA?.comment ?? null,
-            alternative_campaign: formA?.alternative_campaign ?? null,
+        initialValues,
+        onSubmit: values => {
+            if (!values.id) {
+                return save(values);
+            }
+            // PATCH: send only fields that actually changed, plus identifiers.
+            // The backend rejects post-window requests containing non-allowlisted
+            // keys even if their values haven't changed.
+            const patch: Record<string, unknown> = {
+                id: values.id,
+                vaccine_stock: values.vaccine_stock,
+            };
+            for (const key of Object.keys(values) as Array<
+                keyof FormAFormValues
+            >) {
+                if (
+                    key !== 'id' &&
+                    key !== 'vaccine_stock' &&
+                    !isEqual(values[key], initialValues[key])
+                ) {
+                    patch[key] = values[key];
+                }
+            }
+            return save(patch);
         },
-        onSubmit: values => save(values),
         validationSchema,
     });
-    const { setFieldValue, setValues } = formik;
+    const { setFieldTouched, setFieldValue, setValues } = formik;
     const [temporaryStatusWarningType, setTemporaryStatusWarningType] =
         useState<StatusConfirmDirection | null>(null);
     const [withCustomObr, setWithCustomObr] = useState<boolean>(
@@ -118,9 +150,10 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     );
     const uiState = useFormAUiState({
         isNew,
-        withinEditWindow,
+        editAccess,
         originalStatus,
         currentStatus: formik.values.status,
+        withinEditWindow: isNew || Boolean(formA?.within_edit_window),
     });
 
     const resetOnCampaignChange = useCallback(() => {
@@ -129,23 +162,19 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
 
     const applyTemporaryToggle = useCallback(
         (checked: boolean) => {
+            // setFieldValue does not touch fields; mark status touched so the
+            // "must have something touched" save-button gate (allowConfirm) clears
+            // even when the user only flips the temporary checkbox.
+            setFieldTouched('status', true, false);
             if (checked) {
                 setFieldValue('status', TEMPORARY);
-                if (formik.values.form_a_reception_date !== undefined) {
-                    setFieldValue('form_a_reception_date', undefined);
-                }
-                if (formik.values.file !== undefined) {
-                    setFieldValue('file', undefined);
-                }
+                setFieldValue('form_a_reception_date', undefined);
+                setFieldValue('file', undefined);
             } else {
                 setFieldValue('status', RECEIVED);
             }
         },
-        [
-            formik.values.file,
-            formik.values.form_a_reception_date,
-            setFieldValue,
-        ],
+        [setFieldTouched, setFieldValue],
     );
 
     const handleTemporaryToggle = useCallback(

@@ -6,6 +6,7 @@ from rest_framework import permissions
 from plugins.polio.models import VaccineStock
 from plugins.polio.permissions import PolioPermission
 
+
 TEMPORARY_FORM_A_COMPLETION_FIELDS = {"status", "form_a_reception_date", "file", "comment"}
 
 

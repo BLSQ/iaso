@@ -39,9 +39,11 @@ const getForms = (params: FormsParams) => {
     const fields = `${
         params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS.join(',')
     },${FIELDS_PARAMS}`;
-
+    const { showDeleted, onlyDeleted, ...restParams } = params;
     const queryString = createSearchParamsWithArray({
-        ...params,
+        ...restParams,
+        show_deleted: showDeleted,
+        only_deleted: onlyDeleted,
         fields,
     }).toString();
     return getRequest(`/api/forms/?${queryString}`);

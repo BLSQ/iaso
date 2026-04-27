@@ -25,7 +25,7 @@ describe('useRestoreForm', () => {
         mutationFn(3);
 
         expect(mockRestoreRequest).toHaveBeenCalledWith(
-            '/api/forms/3/?showDeleted=true',
+            '/api/forms/3/?only_deleted=1',
         );
     });
 });

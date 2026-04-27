@@ -4,7 +4,7 @@ import { useSnackMutation } from '../../../libs/apiHooks';
 import MESSAGES from '../messages';
 
 const restoreForm = (id: number) => {
-    return restoreRequest(`/api/forms/${id}/?showDeleted=true`);
+    return restoreRequest(`/api/forms/${id}/?only_deleted=1`);
 };
 
 export const useRestoreForm = (): UseMutationResult => {

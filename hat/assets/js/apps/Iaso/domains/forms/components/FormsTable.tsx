@@ -33,8 +33,8 @@ export const FormsTable: FunctionComponent<Props> = ({
     );
 
     const columns = useFormsTableColumns({
-        onlyDeleted: apiParams?.onlyDeleted === 'true',
-        showDeleted: apiParams?.showDeleted === 'true',
+        onlyDeleted: apiParams?.onlyDeleted === '1',
+        showDeleted: apiParams?.showDeleted === '1',
         orgUnitId: params?.orgUnitId,
         params: apiParams,
         count: forms?.count ?? 0,

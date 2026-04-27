@@ -50,9 +50,9 @@ const Filters: FunctionComponent<Props> = ({
         searchAlwaysEnabled: true,
     });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const handleonlyDeleted = useCallback(
+    const handleOnlyDeleted = useCallback(
         (key, value) => {
-            const valueForParam = value ? 'true' : undefined;
+            const valueForParam = value ? '1' : undefined;
             handleChange(key, valueForParam);
         },
         [handleChange],
@@ -136,8 +136,8 @@ const Filters: FunctionComponent<Props> = ({
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="onlyDeleted"
-                        onChange={handleonlyDeleted}
-                        value={filters.onlyDeleted === 'true'}
+                        onChange={handleOnlyDeleted}
+                        value={filters.onlyDeleted === '1'}
                         type="checkbox"
                         label={MESSAGES.onlyDeleted}
                     />

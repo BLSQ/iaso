@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Form, Instance, ValidationWorkflow
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
 
@@ -200,3 +201,38 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.get(reverse("validation_workflows-list"))
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+
+
+class ValidationWorkflowAPISwaggerListTestCase(SwaggerTestCaseMixin, BaseValidationWorkflowAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.enable_validation_workflow_feature_flag(self.account)
+
+        self.form = Form.objects.create(name="form")
+        Instance.objects.create(name="instance", form=self.form)
+        Instance.objects.create(name="instance2", form=self.form)
+
+        self.form_2 = Form.objects.create(name="form_2")
+        self.form_3 = Form.objects.create(name="form_3")
+        for i in range(15):
+            v = ValidationWorkflow.objects.create(
+                name=f"name-{i}",
+                account=self.account,
+                description=f"description-{i}",
+                created_by=self.john_doe,
+                updated_by=self.john_wick,
+            )
+            if i == 0:
+                self.vf_pk = v.pk
+                v.form_set.set([self.form_3])
+                v.save()
+
+    def test_response_is_compliant(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validation_workflows-list"))
+        res_json = self.assertJSONResponse(res, 200)
+        self.assertValidValidationWorkflowListData(res_json, 15)
+
+        # res_json["results"][0]["slug"] = 1
+
+        self.assertResponseCompliantToSwagger(res_json, "PaginatedValidationWorkflowListList")

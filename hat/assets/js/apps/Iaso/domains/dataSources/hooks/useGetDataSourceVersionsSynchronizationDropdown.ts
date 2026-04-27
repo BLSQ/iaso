@@ -27,7 +27,7 @@ export const useSearchDataSourceVersionsSynchronization = () => {
             return queryClient
                 .fetchQuery(newQueryKey, async ({ queryKey }) => {
                     const [, searchTerm] = queryKey;
-                    const url = `/api/datasources/sync/?fields=id,name&name__icontains=${searchTerm}`;
+                    const url = `/api/datasources/sync/?fields=id&fields=name&name__icontains=${searchTerm}`;
                     return getRequest(url);
                 })
                 .then(data => searchOptions.select?.(data) ?? []);
@@ -45,7 +45,9 @@ export const useGetDataSourceVersionsSynchronizationDropdown = (
         queryKey: ['dataSourceVersionsSynchronizationDropdown', id],
         queryFn: () => {
             if (!id) return [];
-            return getRequest(`/api/datasources/sync/${id}/?fields=id,name`);
+            return getRequest(
+                `/api/datasources/sync/${id}/?fields=id&fields=name`,
+            );
         },
         snackErrorMsg: MESSAGES.error,
         options: {

@@ -16,20 +16,20 @@ from iaso.test import TestCase
 
 @time_machine.travel("2025-08-19T13:00:00.000Z", tick=False)
 class StockKeepingUnitMobileSerializerTestCase(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.account_1 = account_1 = m.Account.objects.create(name="Test Account")
-        cls.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
-        cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
-        cls.org_unit_type_2 = org_unit_type_2 = m.OrgUnitType.objects.create(name="Org unit type 2")
-        cls.org_unit_type_3 = m.OrgUnitType.objects.create(name="Org unit type 3")
-        cls.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
-        cls.project_2 = project_2 = m.Project.objects.create(name="Project 2", account=account_1)
-        cls.project_3 = m.Project.objects.create(name="Project 3", account=account_2)
+    def setUp(self):
+        super().setUp()
+        self.account_1 = account_1 = m.Account.objects.create(name="Test Account")
+        self.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
+        self.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
+        self.org_unit_type_2 = org_unit_type_2 = m.OrgUnitType.objects.create(name="Org unit type 2")
+        self.org_unit_type_3 = m.OrgUnitType.objects.create(name="Org unit type 3")
+        self.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
+        self.project_2 = project_2 = m.Project.objects.create(name="Project 2", account=account_1)
+        self.project_3 = m.Project.objects.create(name="Project 3", account=account_2)
 
-        cls.user = user = m.User.objects.create(username="User 1")
+        self.user = user = m.User.objects.create(username="User 1")
         m.Profile.objects.create(user=user, account=account_1)
-        cls.sku = sku = m.StockKeepingUnit.objects.create(
+        self.sku = sku = m.StockKeepingUnit.objects.create(
             name="SKU 1",
             short_name="1",
             created_by=user,
@@ -38,7 +38,7 @@ class StockKeepingUnitMobileSerializerTestCase(TestCase):
         sku.projects.set([project_2])
         sku.org_unit_types.set([org_unit_type_2])
 
-        cls.parent_sku = parent_sku = m.StockKeepingUnit.objects.create(
+        self.parent_sku = parent_sku = m.StockKeepingUnit.objects.create(
             name="Parent SKU",
             short_name="Parent",
             created_by=user,
@@ -77,17 +77,17 @@ class StockKeepingUnitMobileSerializerTestCase(TestCase):
 
 @time_machine.travel("2025-08-19T13:00:00.000Z", tick=False)
 class StockItemRuleMobileSerializerTestCase(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.account_1 = account_1 = m.Account.objects.create(name="Test Account")
-        cls.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
-        cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
-        cls.form_1 = form_1 = m.Form.objects.create(name="Form 1")
-        cls.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
+    def setUp(self):
+        super().setUp()
+        self.account_1 = account_1 = m.Account.objects.create(name="Test Account")
+        self.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
+        self.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
+        self.form_1 = form_1 = m.Form.objects.create(name="Form 1")
+        self.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
 
-        cls.user = user = m.User.objects.create(username="User 1")
+        self.user = user = m.User.objects.create(username="User 1")
         m.Profile.objects.create(user=user, account=account_1)
-        cls.sku = sku = m.StockKeepingUnit.objects.create(
+        self.sku = sku = m.StockKeepingUnit.objects.create(
             name="SKU 1",
             short_name="1",
             created_by=user,
@@ -95,16 +95,16 @@ class StockItemRuleMobileSerializerTestCase(TestCase):
         )
         sku.projects.set([project_1])
         sku.org_unit_types.set([org_unit_type_1])
-        cls.sku_2 = m.StockKeepingUnit.objects.create(
+        self.sku_2 = m.StockKeepingUnit.objects.create(
             name="SKU 2",
             short_name="2",
             created_by=user,
             account=account_2,
         )
-        cls.instance = m.Instance.objects.create()
+        self.instance = m.Instance.objects.create()
 
-        cls.version = version = m.StockRulesVersion.objects.create(name="version", account=account_1)
-        cls.stock_item_rule = m.StockItemRule.objects.create(
+        self.version = version = m.StockRulesVersion.objects.create(name="version", account=account_1)
+        self.stock_item_rule = m.StockItemRule.objects.create(
             sku=sku,
             form=form_1,
             question="question_name",
@@ -134,17 +134,17 @@ class StockItemRuleMobileSerializerTestCase(TestCase):
 
 @time_machine.travel("2025-08-19T13:00:00.000Z", tick=False)
 class StockRulesVersionMobileSerializerTestCase(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.account_1 = account_1 = m.Account.objects.create(name="Test Account")
-        cls.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
-        cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
-        cls.form_1 = form_1 = m.Form.objects.create(name="Form 1")
-        cls.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
+    def setUp(self):
+        super().setUp()
+        self.account_1 = account_1 = m.Account.objects.create(name="Test Account")
+        self.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
+        self.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
+        self.form_1 = form_1 = m.Form.objects.create(name="Form 1")
+        self.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
 
-        cls.user = user = m.User.objects.create(username="User 1")
+        self.user = user = m.User.objects.create(username="User 1")
         m.Profile.objects.create(user=user, account=account_1)
-        cls.sku = sku = m.StockKeepingUnit.objects.create(
+        self.sku = sku = m.StockKeepingUnit.objects.create(
             name="SKU 1",
             short_name="1",
             created_by=user,
@@ -152,18 +152,18 @@ class StockRulesVersionMobileSerializerTestCase(TestCase):
         )
         sku.projects.set([project_1])
         sku.org_unit_types.set([org_unit_type_1])
-        cls.sku_2 = sku_2 = m.StockKeepingUnit.objects.create(
+        self.sku_2 = sku_2 = m.StockKeepingUnit.objects.create(
             name="SKU 2",
             short_name="2",
             created_by=user,
             account=account_2,
         )
-        cls.instance = m.Instance.objects.create()
+        self.instance = m.Instance.objects.create()
 
-        cls.version_1 = version_1 = m.StockRulesVersion.objects.create(
+        self.version_1 = version_1 = m.StockRulesVersion.objects.create(
             name="Version 1", account=account_1, created_by=user, updated_by=user
         )
-        cls.stock_item_rule_1 = m.StockItemRule.objects.create(
+        self.stock_item_rule_1 = m.StockItemRule.objects.create(
             sku=sku,
             form=form_1,
             question="question_name_1",
@@ -172,7 +172,7 @@ class StockRulesVersionMobileSerializerTestCase(TestCase):
             created_by=user,
             updated_by=user,
         )
-        cls.stock_item_rule_2 = m.StockItemRule.objects.create(
+        self.stock_item_rule_2 = m.StockItemRule.objects.create(
             sku=sku_2,
             form=form_1,
             question="question_name_2",
@@ -225,17 +225,17 @@ class StockRulesVersionMobileSerializerTestCase(TestCase):
 
 @time_machine.travel("2025-08-19T13:00:00.000Z", tick=False)
 class StockLedgerItemMobileSerializerTestCase(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.account_1 = account_1 = m.Account.objects.create(name="Test Account")
-        cls.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
-        cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
-        cls.org_unit_1 = org_unit_1 = m.OrgUnit.objects.create(name="Org unit 1")
-        cls.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
+    def setUp(self):
+        super().setUp()
+        self.account_1 = account_1 = m.Account.objects.create(name="Test Account")
+        self.account_2 = account_2 = m.Account.objects.create(name="Forbidden Account")
+        self.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
+        self.org_unit_1 = org_unit_1 = m.OrgUnit.objects.create(name="Org unit 1")
+        self.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
 
-        cls.user = user = m.User.objects.create(username="User 1")
+        self.user = user = m.User.objects.create(username="User 1")
         m.Profile.objects.create(user=user, account=account_1)
-        cls.sku = sku = m.StockKeepingUnit.objects.create(
+        self.sku = sku = m.StockKeepingUnit.objects.create(
             name="SKU 1",
             short_name="1",
             created_by=user,
@@ -243,23 +243,23 @@ class StockLedgerItemMobileSerializerTestCase(TestCase):
         )
         sku.projects.set([project_1])
         sku.org_unit_types.set([org_unit_type_1])
-        cls.sku_2 = m.StockKeepingUnit.objects.create(
+        self.sku_2 = m.StockKeepingUnit.objects.create(
             name="SKU 2",
             short_name="2",
             created_by=user,
             account=account_2,
         )
-        cls.form = form = m.Form.objects.create(name="form1")
-        cls.instance = instance = m.Instance.objects.create(form=form)
+        self.form = form = m.Form.objects.create(name="form1")
+        self.instance = instance = m.Instance.objects.create(form=form)
         version = m.StockRulesVersion.objects.create(account=account_1, name="Version 1")
-        cls.rule = rule = m.StockItemRule.objects.create(
+        self.rule = rule = m.StockItemRule.objects.create(
             sku=sku,
             form=form,
             version=version,
             question="question_name",
             impact=m.StockImpacts.ADD,
         )
-        cls.ledger_item = m.StockLedgerItem.objects.create(
+        self.ledger_item = m.StockLedgerItem.objects.create(
             sku=sku,
             org_unit=org_unit_1,
             rule=rule,

@@ -34,6 +34,7 @@ import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPla
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { INSTANCE_STATUSES } from '../constants';
 
+import { useReferenceInstancesOptions } from '../hooks/useReferenceInstancesOptions';
 import MESSAGES from '../messages';
 import { parseJson } from '../utils/jsonLogicParse';
 
@@ -59,6 +60,7 @@ const useStyles = makeStyles(theme => ({
 const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
+    referenceInstances: params.referenceInstances ?? 'all',
 });
 
 type Props = {
@@ -90,6 +92,8 @@ const InstancesFiltersComponent = ({
 }: Props) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+
+    const referenceInstancesOptions = useReferenceInstancesOptions();
 
     const [isInstancesFilterUpdated, setIsInstancesFilterUpdated] =
         useState(false);
@@ -124,6 +128,7 @@ const InstancesFiltersComponent = ({
                 setFormState(key, value);
             }
         });
+        setFormState('referenceInstances', params.referenceInstances ?? 'all');
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
@@ -151,6 +156,9 @@ const InstancesFiltersComponent = ({
                 isSearchActive: 'true',
                 page: 1,
             };
+            if (searchParams.referenceInstances === 'all') {
+                delete searchParams.referenceInstances;
+            }
             // removing columns params to refetch correct columns
             const newFormIdsString = formState.formIds.value;
             const newFormIds = formState.formIds.value?.split(',');
@@ -347,6 +355,14 @@ const InstancesFiltersComponent = ({
                         type="select"
                         options={instanceStatusOptions}
                         label={MESSAGES.exportStatus}
+                    />
+                    <InputComponent
+                        keyValue="referenceInstances"
+                        onChange={handleFormChange}
+                        value={formState.referenceInstances?.value ?? 'all'}
+                        type="select"
+                        options={referenceInstancesOptions}
+                        label={MESSAGES.referenceInstancesFilter}
                     />
                     <InputComponent
                         keyValue="withLocation"

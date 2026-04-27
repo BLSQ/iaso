@@ -339,6 +339,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Status',
         id: 'iaso.exportRequest.Status',
     },
+    referenceInstancesFilter: {
+        defaultMessage: 'Reference submission',
+        id: 'iaso.label.orgunitreferenceinstance',
+    },
+    referenceInstancesAll: {
+        defaultMessage: 'All submissions',
+        id: 'iaso.instances.referenceInstancesAll',
+    },
+    referenceInstancesOnlyReference: {
+        defaultMessage: 'Only reference submissions',
+        id: 'iaso.instances.referenceInstancesOnlyReference',
+    },
+    referenceInstancesNotReference: {
+        defaultMessage: 'Only non-reference submissions',
+        id: 'iaso.instances.referenceInstancesNotReference',
+    },
     lastExportSuccessAt: {
         defaultMessage: 'Last export success at',
         id: 'iaso.exportRequest.last_export_success_at',

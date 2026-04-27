@@ -125,6 +125,30 @@ describe('useValidationTimeline', () => {
 
         expect(result.current).toEqual([
             {
+                canValidate: true,
+                color: '#00ff00',
+                content: {
+                    description: 'desc2',
+                },
+                label: 'Node2',
+                nodeId: 3,
+                nodeSlug: 'node2',
+                order: 2,
+            },
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: 'ok',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'Node1',
+                nodeSlug: 'node1',
+                order: 1,
+                status: 'ACCEPTED',
+            },
+            {
                 color: '#ff0000',
                 content: {
                     author: 'John',
@@ -132,11 +156,11 @@ describe('useValidationTimeline', () => {
                     date: date,
                     description: 'desc1',
                 },
-                label: 'Submission',
+                label: 'New version',
                 nodeSlug: 'node1',
                 order: 1,
                 previous: true,
-                status: 'SUBMISSION',
+                status: 'NEW_VERSION',
             },
             {
                 color: '#00ff00',
@@ -160,35 +184,11 @@ describe('useValidationTimeline', () => {
                     date: date,
                     description: 'desc1',
                 },
-                label: 'New version',
+                label: 'Submission',
                 nodeSlug: 'node1',
                 order: 1,
                 previous: true,
-                status: 'NEW_VERSION',
-            },
-            {
-                color: '#ff0000',
-                content: {
-                    author: 'John',
-                    comment: 'ok',
-                    date: date,
-                    description: 'desc1',
-                },
-                label: 'Node1',
-                nodeSlug: 'node1',
-                order: 1,
-                status: 'ACCEPTED',
-            },
-            {
-                canValidate: true,
-                color: '#00ff00',
-                content: {
-                    description: 'desc2',
-                },
-                label: 'Node2',
-                nodeId: 3,
-                nodeSlug: 'node2',
-                order: 2,
+                status: 'SUBMISSION',
             },
         ]);
 
@@ -268,20 +268,6 @@ describe('useValidationTimeline', () => {
 
         expect(result.current).toEqual([
             {
-                color: '#ff0000',
-                content: {
-                    author: 'John',
-                    comment: '',
-                    date: date,
-                    description: 'desc1',
-                },
-                label: 'Submission',
-                nodeSlug: 'node1',
-                order: 1,
-                previous: true,
-                status: 'SUBMISSION',
-            },
-            {
                 color: '#00ff00',
                 content: {
                     author: 'John',
@@ -292,8 +278,20 @@ describe('useValidationTimeline', () => {
                 label: 'Node2',
                 nodeSlug: 'node2',
                 order: 2,
-                previous: true,
                 status: 'REJECTED',
+            },
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: 'ok',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'Node1',
+                nodeSlug: 'node1',
+                order: 1,
+                status: 'ACCEPTED',
             },
             {
                 color: '#ff0000',
@@ -310,19 +308,6 @@ describe('useValidationTimeline', () => {
                 status: 'NEW_VERSION',
             },
             {
-                color: '#ff0000',
-                content: {
-                    author: 'John',
-                    comment: 'ok',
-                    date: date,
-                    description: 'desc1',
-                },
-                label: 'Node1',
-                nodeSlug: 'node1',
-                order: 1,
-                status: 'ACCEPTED',
-            },
-            {
                 color: '#00ff00',
                 content: {
                     author: 'John',
@@ -333,7 +318,22 @@ describe('useValidationTimeline', () => {
                 label: 'Node2',
                 nodeSlug: 'node2',
                 order: 2,
+                previous: true,
                 status: 'REJECTED',
+            },
+            {
+                color: '#ff0000',
+                content: {
+                    author: 'John',
+                    comment: '',
+                    date: date,
+                    description: 'desc1',
+                },
+                label: 'Submission',
+                nodeSlug: 'node1',
+                order: 1,
+                previous: true,
+                status: 'SUBMISSION',
             },
         ]);
     });

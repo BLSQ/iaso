@@ -7,26 +7,30 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import iaso.models.base
 import iaso.models.form_copilot
+import iaso.utils.models.encrypted_text_field
+
+from iaso.utils.models.choice_array_field import ChoiceArrayField
 
 
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0377_alter_validationworkflow_slug"),
+        ("iaso", "0378_account_enforce_password_validation"),
     ]
 
     operations = [
         migrations.AddField(
             model_name="account",
             name="anthropic_api_key",
-            field=models.TextField(blank=True, help_text="Anthropic API key used by the Form Copilot", null=True),
+            field=iaso.utils.models.encrypted_text_field.EncryptedTextField(
+                blank=True, help_text="Anthropic API key used by the Form Copilot", null=True
+            ),
         ),
         migrations.AlterField(
             model_name="account",
             name="modules",
-            field=iaso.models.base.ChoiceArrayField(
+            field=ChoiceArrayField(
                 base_field=models.CharField(
                     choices=[
                         ("DATA_COLLECTION_FORMS", "Data collection - Forms"),

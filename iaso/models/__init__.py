@@ -1,3 +1,4 @@
+from .account import Account, AccountFeatureFlag
 from .base import *
 from .bulk_create_user_csv_file import BulkCreateUserCsvFile
 from .comment import CommentIaso
@@ -44,6 +45,7 @@ __all__ = [
     "SUPERSET",
     "TEXT",
     "Account",
+    "AccountFeatureFlag",
     "BulkCreateUserCsvFile",
     "CommentIaso",
     "DataSource",

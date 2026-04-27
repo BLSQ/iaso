@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Permission, User
+from rest_framework import status
 
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import (
@@ -10,6 +11,8 @@ from iaso.test import APITestCase
 
 
 class SetupAccountApiTestCase(APITestCase):
+    BASE_URL = "/api/setupaccount/"
+
     @classmethod
     def setUpTestData(cls):
         account = m.Account(name="Zelda")
@@ -33,22 +36,24 @@ class SetupAccountApiTestCase(APITestCase):
         user1 = m.User.objects.create_superuser(username="user1", password="tiredofplayingthesameagain")
         cls.user1 = user1
 
+        cls.password = "0123456789-password-####''''test-something-something'"
+
     def test_setupaccount_unauthorized(self):
         self.client.force_authenticate(self.user)
-        response = self.client.post("/api/setupaccount/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
+        response = self.client.post(self.BASE_URL, data={}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_setupaccount_duplicate_account(self):
         self.client.force_authenticate(self.admin)
         data = {
             "account_name": "Zelda",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("account_name", j)
 
@@ -57,12 +62,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "Korogu",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("account_name", j)
 
@@ -71,12 +76,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "link",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("user_username", j)
 
@@ -85,12 +90,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that created_account_id is returned in response
         response_data = response.json()
@@ -99,6 +104,9 @@ class SetupAccountApiTestCase(APITestCase):
         # Verify the created account exists and matches the ID in response
         created_account = m.Account.objects.get(name="unittest_account")
         self.assertEqual(response_data["created_account_id"], created_account.id)
+
+        # Checking that the password flag is set to True by default
+        self.assertTrue(created_account.enforce_password_validation)
 
         self.assertEqual(m.Account.objects.filter(name="unittest_account").count(), 1)
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
@@ -111,13 +119,13 @@ class SetupAccountApiTestCase(APITestCase):
             "user_username": "unittest_username",
             "user_first_name": "unittest_first_name",
             "user_last_name": "unittest_last_name",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(m.Account.objects.filter(name="unittest_account").count(), 1)
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
@@ -128,13 +136,13 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "user_email": "test@example.com",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         user = m.User.objects.get(username="unittest_username")
         self.assertEqual(user.email, "test@example.com")
 
@@ -146,13 +154,13 @@ class SetupAccountApiTestCase(APITestCase):
             "user_first_name": "unittest_first_name",
             "user_last_name": "unittest_last_name",
             "user_email": "test@example.com",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         user = m.User.objects.get(username="unittest_username")
         self.assertEqual(user.first_name, "unittest_first_name")
         self.assertEqual(user.last_name, "unittest_last_name")
@@ -169,12 +177,12 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "user_email": "test@example.com",
-            "password": "unittest_password",
+            "password": self.password,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("user_email", j)
 
@@ -183,12 +191,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         user = m.User.objects.get(username="unittest_username")
         self.assertEqual(user.email, "")  # Empty string when no email provided
 
@@ -198,12 +206,12 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "user_email": "invalid-email-format",
-            "password": "unittest_password",
+            "password": self.password,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("user_email", j)
 
@@ -213,12 +221,12 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "user_email": "testexample.com",
-            "password": "unittest_password",
+            "password": self.password,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("user_email", j)
 
@@ -228,12 +236,12 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "user_email": "test@",
-            "password": "unittest_password",
+            "password": self.password,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("user_email", j)
 
@@ -252,10 +260,10 @@ class SetupAccountApiTestCase(APITestCase):
                 "account_name": f"unittest_account_{email.replace('@', '_').replace('.', '_')}",
                 "user_username": f"unittest_username_{email.replace('@', '_').replace('.', '_')}",
                 "user_email": email,
-                "password": "unittest_password",
+                "password": self.password,
                 "modules": self.MODULES,
             }
-            response = self.client.post("/api/setupaccount/", data=data, format="json")
+            response = self.client.post(self.BASE_URL, data=data, format="json")
             self.assertEqual(response.status_code, 201, f"Failed for email: {email}")
 
     def test_setup_account_email_invitation_with_password(self):
@@ -265,12 +273,12 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "user_email": "test@example.com",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": True,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         user = m.User.objects.get(username="unittest_username")
         self.assertEqual(user.email, "test@example.com")
@@ -287,8 +295,8 @@ class SetupAccountApiTestCase(APITestCase):
             "email_invitation": True,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         user = m.User.objects.get(username="unittest_username")
         self.assertEqual(user.email, "test@example.com")
@@ -304,8 +312,8 @@ class SetupAccountApiTestCase(APITestCase):
             "email_invitation": True,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("user_email", j)
 
@@ -317,8 +325,8 @@ class SetupAccountApiTestCase(APITestCase):
             "user_username": "unittest_username",
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("password", j)
 
@@ -327,11 +335,11 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        response = self.client.post(self.BASE_URL, data=data, format="json")
 
         user = User.objects.get(username="unittest_username")
 
@@ -345,7 +353,7 @@ class SetupAccountApiTestCase(APITestCase):
             if perm not in user.user_permissions.all():
                 has_all_perms = False
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(account.count(), 1)
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
@@ -357,13 +365,13 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "initial_project_account test-appid",
             "user_username": "username",
-            "password": "password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         created_account = m.Account.objects.filter(name="initial_project_account test-appid")
         created_project = m.Project.objects.filter(name="Main Project")
         created_data_source = m.DataSource.objects.filter(name="initial_project_account test-appid")
@@ -384,7 +392,7 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
             "feature_flags": [
@@ -395,8 +403,8 @@ class SetupAccountApiTestCase(APITestCase):
                 "SHOW_HOME_ONLINE",
             ],
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         account = response.json()
         self.assertEqual(account["feature_flags"], data["feature_flags"])
 
@@ -412,12 +420,12 @@ class SetupAccountApiTestCase(APITestCase):
             "user_username": "username",
             "user_first_name": "firstname",
             "user_last_name": "lastname",
-            "password": "password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         created_account = m.Account.objects.filter(name="account with no feature test-featureappid")
         feature_flags = created_account.first().feature_flags.values_list("code", flat=True)
         self.assertEqual(sorted(feature_flags), sorted(DEFAULT_ACCOUNT_FEATURE_FLAGS))
@@ -433,8 +441,8 @@ class SetupAccountApiTestCase(APITestCase):
             "modules": self.MODULES,
             "feature_flags": ["Unknown", "Test", "SHOW_HOME_ONLINE"],
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["feature_flags"], ["invalid_account_feature_flag"])
 
     def test_setup_account_with_None_value_as_feature_flags(self):
@@ -448,8 +456,8 @@ class SetupAccountApiTestCase(APITestCase):
             "modules": self.MODULES,
             "feature_flags": None,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["feature_flags"], ["This field may not be null."])
 
     def test_setup_account_with_empty_feature_flags(self):
@@ -463,8 +471,8 @@ class SetupAccountApiTestCase(APITestCase):
             "modules": self.MODULES,
             "feature_flags": [],
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["feature_flags"], ["feature_flags_empty"])
 
     def test_create_new_account_with_user_multi_account(self):
@@ -476,11 +484,11 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "account_multi_account",
             "user_username": "username",
-            "password": "password",
+            "password": self.password,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response_data = response.json()
         self.assertEqual(response_data["account_name"], data["account_name"])
 
@@ -501,8 +509,8 @@ class SetupAccountApiTestCase(APITestCase):
             "password": "password",
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response.json()["detail"],
             "You do not have permission to perform this action.",
@@ -514,12 +522,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that org unit type was created
         org_unit_type = m.OrgUnitType.objects.filter(name="Main org unit type").first()
@@ -538,12 +546,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that org unit was created
         org_unit = m.OrgUnit.objects.filter(name="Main org unit").first()
@@ -560,12 +568,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that form was created
         form = m.Form.objects.filter(name="Demo Form").first()
@@ -588,12 +596,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that form version was created
         form = m.Form.objects.filter(name="Demo Form").first()
@@ -610,15 +618,15 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": [
                 "DEFAULT",
                 "DATA_COLLECTION_FORMS",
             ],  # Explicitly provide default modules
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that default modules are used
         account = m.Account.objects.get(name="unittest_account")
@@ -636,12 +644,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": ["DATA_COLLECTION_FORMS"],  # Only provide DATA_COLLECTION_FORMS
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that DEFAULT module was automatically added
         account = m.Account.objects.get(name="unittest_account")
@@ -654,12 +662,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": ["DEFAULT", "DATA_COLLECTION_FORMS"],  # Explicitly include DEFAULT
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that DEFAULT module is not duplicated
         account = m.Account.objects.get(name="unittest_account")
@@ -680,12 +688,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that form version was created with the demo form file
         form = m.Form.objects.filter(name="Demo Form").first()
@@ -708,12 +716,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify all components are created and linked
         account = m.Account.objects.get(name="unittest_account")
@@ -748,12 +756,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that profile has English as default language
         user = m.User.objects.get(username="unittest_username")
@@ -766,13 +774,13 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "language": "fr",
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that profile has French language
         user = m.User.objects.get(username="unittest_username")
@@ -785,13 +793,13 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "language": "en",
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that profile has English language
         user = m.User.objects.get(username="unittest_username")
@@ -804,13 +812,13 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "language": "es",  # Invalid choice
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         j = response.json()
         self.assertIn("language", j)
 
@@ -825,8 +833,8 @@ class SetupAccountApiTestCase(APITestCase):
             "language": "fr",
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that profile has French language
         user = m.User.objects.get(username="unittest_username")
@@ -854,7 +862,7 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "language": "fr",
             "modules": self.MODULES,
@@ -863,8 +871,8 @@ class SetupAccountApiTestCase(APITestCase):
         # Count audit logs before
         initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that an audit log was created
         audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
@@ -895,7 +903,7 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "Zelda",  # This will fail because account already exists
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "language": "en",
             "modules": self.MODULES,
@@ -904,8 +912,8 @@ class SetupAccountApiTestCase(APITestCase):
         # Count audit logs before
         initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Check that an audit log was created for the failed attempt
         audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
@@ -936,7 +944,7 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "language": "invalid_language",  # This will cause a validation error
             "modules": self.MODULES,
@@ -945,8 +953,8 @@ class SetupAccountApiTestCase(APITestCase):
         # Count audit logs before
         initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Check that an audit log was created for the failed attempt
         audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
@@ -985,8 +993,8 @@ class SetupAccountApiTestCase(APITestCase):
         # Count audit logs before
         initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that an audit log was created
         audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
@@ -1018,15 +1026,15 @@ class SetupAccountApiTestCase(APITestCase):
             "user_first_name": "Test",
             "user_last_name": "User",
             "user_email": "test@example.com",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": True,
             "language": "fr",
             "modules": self.MODULES,
             "feature_flags": ["SHOW_HOME_ONLINE", "ALLOW_CATCHMENT_EDITION"],
         }
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the latest audit log
         latest_log = Modification.objects.filter(source=SETUP_ACCOUNT_API).latest("id")
@@ -1059,13 +1067,13 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the latest audit log
         latest_log = Modification.objects.filter(source=SETUP_ACCOUNT_API).latest("id")
@@ -1090,8 +1098,8 @@ class SetupAccountApiTestCase(APITestCase):
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that response contains created_account_id
         response_data = response.json()
@@ -1112,12 +1120,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the created project
         project = m.Project.objects.filter(name="Main Project").first()
@@ -1149,7 +1157,7 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
@@ -1157,8 +1165,8 @@ class SetupAccountApiTestCase(APITestCase):
         # Count audit logs before
         initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
 
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that an audit log was created
         audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
@@ -1191,12 +1199,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the created project
         project = m.Project.objects.filter(name="Main Project").first()
@@ -1223,23 +1231,23 @@ class SetupAccountApiTestCase(APITestCase):
         data1 = {
             "account_name": "unittest_account_1",
             "user_username": "unittest_username_1",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response1 = self.client.post("/api/setupaccount/", data=data1, format="json")
-        self.assertEqual(response1.status_code, 201)
+        response1 = self.client.post(self.BASE_URL, data=data1, format="json")
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
 
         # Create second account
         data2 = {
             "account_name": "unittest_account_2",
             "user_username": "unittest_username_2",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response2 = self.client.post("/api/setupaccount/", data=data2, format="json")
-        self.assertEqual(response2.status_code, 201)
+        response2 = self.client.post(self.BASE_URL, data=data2, format="json")
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
 
         # Get both projects
         project1 = m.Project.objects.filter(name="Main Project", account__name="unittest_account_1").first()
@@ -1263,12 +1271,12 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify complete integration
         account = m.Account.objects.get(name="unittest_account")
@@ -1291,13 +1299,13 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
             "create_main_org_unit": False,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that main org unit was NOT created
         org_unit = m.OrgUnit.objects.filter(name="Main org unit").first()
@@ -1313,14 +1321,32 @@ class SetupAccountApiTestCase(APITestCase):
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
-            "password": "unittest_password",
+            "password": self.password,
             "email_invitation": False,
             "modules": self.MODULES,
             "create_demo_form": False,
         }
-        response = self.client.post("/api/setupaccount/", data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check that demo form was NOT created
         form = m.Form.objects.filter(name="Demo Form").first()
         self.assertIsNone(form)
+
+    def test_setup_account_enforce_password_validation_false(self):
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "a",
+            "modules": self.MODULES,
+            "enforce_password_validation": False,
+        }
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(self.BASE_URL, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        new_account = m.Account.objects.get(name="unittest_account")
+        self.assertFalse(new_account.enforce_password_validation)
+
+        new_user = User.objects.get(username="unittest_username")
+        self.assertTrue(new_user.check_password("a"))

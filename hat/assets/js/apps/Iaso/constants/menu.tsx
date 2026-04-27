@@ -463,7 +463,7 @@ export const useMenuItems = (): MenuItems => {
             )
         ) {
             validationMenuEntry?.subMenu?.push({
-                label: formatMessage(MESSAGES.submissionValidations),
+                label: formatMessage(MESSAGES.submissions),
                 permissions: paths.instancesValidationPath.permissions,
                 key: 'submissions',
                 icon: props => <RuleIcon {...props} />,

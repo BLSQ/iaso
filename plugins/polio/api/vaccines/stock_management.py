@@ -298,11 +298,21 @@ def compute_category_from_campaign(campaign: Optional[Campaign], round: Optional
 
 
 class OutgoingStockMovementSerializer(ModelWithFileSerializer):
+    EDIT_ACCESS_NONE = "none"
+    EDIT_ACCESS_COMPLETION_ONLY = "completion_only"
+    EDIT_ACCESS_FULL = "full"
+
     campaign = serializers.CharField(source="campaign.obr_name", required=False)
     # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
     alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
     round_number = serializers.SerializerMethodField()
-    can_edit = serializers.SerializerMethodField()
+    # Single enum describing what the current user is allowed to edit on this row.
+    # "none": no edit path (read-only or post-window non-temporary for non-admin).
+    # "completion_only": only TEMPORARY_FORM_A_COMPLETION_FIELDS editable (non-admin
+    #   completing a temporary Form A past the edit window).
+    # "full": all fields editable (admin at any time, or non-admin within the window).
+    edit_access = serializers.SerializerMethodField()
+    within_edit_window = serializers.SerializerMethodField()
     campaign_category = serializers.SerializerMethodField()
 
     class Meta:
@@ -322,7 +332,8 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             "comment",
             "round",
             "round_number",
-            "can_edit",
+            "edit_access",
+            "within_edit_window",
             "alternative_campaign",
             "campaign_category",
             "doses_per_vial",
@@ -428,14 +439,29 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
 
-    def get_can_edit(self, obj):
-        return can_edit_helper(
-            self.context["request"].user,
+    def get_edit_access(self, obj):
+        user = self.context["request"].user
+        # Full edit: admin at any time, or non-admin within the generic edit window.
+        if can_edit_helper(
+            user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
             non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
             read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
-        )
+        ):
+            return self.EDIT_ACCESS_FULL
+        # Completion-only: temporary Form A past the edit window stays editable for
+        # completion (TEMPORARY_FORM_A_COMPLETION_FIELDS only; enforced server-side).
+        if obj.status == OutgoingStockMovement.StatusChoices.TEMPORARY and user.has_perm(
+            POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION.full_name()
+        ):
+            return self.EDIT_ACCESS_COMPLETION_ONLY
+        return self.EDIT_ACCESS_NONE
+
+    def get_within_edit_window(self, obj):
+        if obj.created_at is None:
+            return False
+        return is_within_edit_window(obj.created_at, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN)
 
     def get_campaign_category(self, obj):
         return compute_category_from_campaign(obj.campaign, obj.round)

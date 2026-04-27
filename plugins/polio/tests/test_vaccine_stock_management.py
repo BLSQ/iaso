@@ -228,6 +228,112 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         self.assertEqual(data["status"], "received")
         self.assertEqual(data["form_a_reception_date"], "2024-01-02")
 
+    def test_edit_access_and_within_edit_window_lifecycle(self):
+        """
+        The serialized ``edit_access`` field drives both the Edit-button gate in
+        the UI table (``!= "none"``) and the in-modal state machine (``"full"``
+        unlocks every field, ``"completion_only"`` restricts to the completion
+        allowlist). ``within_edit_window`` is a plain boolean the frontend uses
+        to gate the status toggle (received → temporary is only valid within the
+        window).
+
+        Within the window both fields are true/full for writers; past the window
+        ``within_edit_window`` flips to False while ``edit_access`` follows the
+        existing permission matrix.
+        """
+        self.client.force_authenticate(self.user_ro_perms)
+
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        temporary_id = self.assertJSONResponse(response, 201)["id"]
+
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "received",
+                "report_date": "2024-01-01",
+                "form_a_reception_date": "2024-01-02",
+                "usable_vials_used": 10,
+                "lot_numbers": ["LOT2"],
+                "round": self.campaign_round_1.id,
+                "comment": "Received",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        received_id = self.assertJSONResponse(response, 201)["id"]
+
+        def fetch_row_fields_by_id(user):
+            self.client.force_authenticate(user)
+            get_response = self.client.get(
+                f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/"
+                f"?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=50"
+            )
+            payload = self.assertJSONResponse(get_response, 200)
+            return {
+                row["id"]: {"edit_access": row["edit_access"], "within_edit_window": row["within_edit_window"]}
+                for row in payload["results"]
+            }
+
+        # --- Within the edit window (freshly created) ---
+        within_window = fetch_row_fields_by_id(self.user_ro_perms)
+        self.assertTrue(
+            within_window[temporary_id]["within_edit_window"],
+            msg="Freshly created rows must be within the edit window.",
+        )
+        self.assertTrue(within_window[received_id]["within_edit_window"])
+        self.assertEqual(within_window[temporary_id]["edit_access"], "full")
+        self.assertEqual(within_window[received_id]["edit_access"], "full")
+
+        # --- Past the edit window ---
+        pm.OutgoingStockMovement.objects.filter(id__in=[temporary_id, received_id]).update(
+            created_at=timezone.now() - datetime.timedelta(days=8)
+        )
+
+        non_admin = fetch_row_fields_by_id(self.user_ro_perms)
+        self.assertFalse(
+            non_admin[temporary_id]["within_edit_window"],
+            msg="Rows pushed past the edit window must report within_edit_window=False.",
+        )
+        self.assertFalse(non_admin[received_id]["within_edit_window"])
+        self.assertEqual(
+            non_admin[temporary_id]["edit_access"],
+            "completion_only",
+            msg="Non-admin writers on post-window temporary Form A must get completion_only access.",
+        )
+        self.assertEqual(
+            non_admin[received_id]["edit_access"],
+            "none",
+            msg="Received Form A past the edit window must be locked for non-admin writers.",
+        )
+
+        admin = fetch_row_fields_by_id(self.user_rw_perms)
+        self.assertFalse(admin[temporary_id]["within_edit_window"])
+        self.assertFalse(admin[received_id]["within_edit_window"])
+        self.assertEqual(admin[temporary_id]["edit_access"], "full")
+        self.assertEqual(admin[received_id]["edit_access"], "full")
+
+        read_only = fetch_row_fields_by_id(self.user_read_only_perms)
+        self.assertFalse(read_only[temporary_id]["within_edit_window"])
+        self.assertFalse(read_only[received_id]["within_edit_window"])
+        self.assertEqual(read_only[temporary_id]["edit_access"], "none")
+        self.assertEqual(read_only[received_id]["edit_access"], "none")
+
     def test_temporary_form_vials_are_immutable_on_update(self):
         """
         Usable vials cannot be updated on temporary Form A

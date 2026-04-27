@@ -352,7 +352,7 @@ export const useCampaignOptions = (
     }, [campaignOptions, isFetching, roundOptions, roundNumberOptions]);
 };
 
-const createEditFormA = async (body: any) => {
+export const createEditFormA = async (body: any) => {
     const copy = { ...body };
     const { lot_numbers } = body;
     if (lot_numbers && !Array.isArray(lot_numbers)) {

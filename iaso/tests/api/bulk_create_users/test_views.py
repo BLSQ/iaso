@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, User
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
 from rest_framework import status
 
 from iaso import models as m
@@ -55,7 +56,7 @@ class BulkCreateCsvTestCase(APITestCase):
         version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
         version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
         cls.MODULES = [module.codename for module in MODULES]
-        account1 = m.Account.objects.create(name="Account 1")
+        account1 = m.Account.objects.create(name="Account 1", enforce_password_validation=False)
         cls.project = m.Project.objects.create(name="Project name", app_id="project.id", account=account1)
         cls.project2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=account1)
         account1.default_version = version1
@@ -97,7 +98,7 @@ class BulkCreateCsvTestCase(APITestCase):
         m.OrgUnit.objects.create(name="chiloe", id=10244, version=version1, parent=cls.org_unit2)
         m.OrgUnit.objects.create(name="chiloe", id=10934, version=version2)
 
-        account2 = m.Account.objects.create(name="Account 2")
+        account2 = m.Account.objects.create(name="Account 2", enforce_password_validation=False)
         cls.create_user_with_profile(
             username="han solo",
             account=account2,
@@ -124,7 +125,9 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
+            fixture_name="test_user_bulk_create_valid.csv",
+            context=context,
         )
 
         test_file = SimpleUploadedFile(
@@ -178,7 +181,9 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
+            fixture_name="test_user_bulk_create_valid.csv",
+            context=context,
         )
 
         test_file = SimpleUploadedFile(
@@ -199,7 +204,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.account1.refresh_from_db()
         with self.assertNumQueries(47):
-            with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
+            with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid_with_perm.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
@@ -214,7 +219,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.account1.save()
 
         self.account1.refresh_from_db()
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid_with_perm.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         pollux = User.objects.get(username="pollux")
@@ -230,7 +235,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_invalid_mail.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -244,7 +249,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_no_mail.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_no_mail.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertJSONResponse(response, 201)
@@ -256,7 +261,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -285,7 +290,7 @@ class BulkCreateCsvTestCase(APITestCase):
         )
         user.save()
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -300,7 +305,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         users = User.objects.all()
@@ -317,7 +322,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.user_managed_geo_limit)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -328,7 +333,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.user_managed_geo_limit.iaso_profile.org_units.add(self.org_unit1)
         self.user_managed_geo_limit.save()
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -362,7 +367,9 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
+            fixture_name="test_user_bulk_create_valid.csv",
+            context=context,
         )
 
         test_file = SimpleUploadedFile(
@@ -406,7 +413,9 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
+            fixture_name="test_user_bulk_create_valid.csv",
+            context=context,
         )
 
         test_file = SimpleUploadedFile(
@@ -425,7 +434,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_ou_name.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_invalid_ou_name.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -442,7 +451,9 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures", fixture_name="test_user_bulk_create_valid.csv", context=context
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
+            fixture_name="test_user_bulk_create_valid.csv",
+            context=context,
         )
 
         test_file = SimpleUploadedFile(
@@ -472,7 +483,7 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
             fixture_name="test_user_bulk_create_valid.csv",
             context=context,
         )
@@ -486,7 +497,9 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_cant_create_user_without_ou_profile(self):
         self.client.force_authenticate(self.yoda)
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_creator_no_access_to_ou.csv") as csv_users:
+        with open(
+            "iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_creator_no_access_to_ou.csv"
+        ) as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -502,7 +515,9 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_user_duplicate_ou_names.csv") as csv_users:
+        with open(
+            "iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_user_duplicate_ou_names.csv"
+        ) as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertEqual(User.objects.filter(username="jan").exists(), True)
@@ -520,7 +535,9 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_user_access_to_child_ou.csv") as csv_users:
+        with open(
+            "iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_user_access_to_child_ou.csv"
+        ) as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -536,7 +553,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_semicolon.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_semicolon.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         users = User.objects.all()
@@ -562,7 +579,7 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_csv_with_missing_column(self):
         self.client.force_authenticate(self.yoda)
 
-        with open("iaso/tests/fixtures/test_user_bulk_missing_columns.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_missing_columns.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -578,7 +595,7 @@ class BulkCreateCsvTestCase(APITestCase):
         area_manager = {"name": "area_manager"}
         self.client.post("/api/userroles/", data=area_manager)
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_roles.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid_with_roles.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         users = User.objects.all()
@@ -616,7 +633,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid_with_projects.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -647,7 +664,7 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_create_user_with_project_restrictions(self):
         self.source.projects.set([self.project, self.project2])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             csv_reader = list(csv.reader(csv_users))
 
             csv_line_1 = csv_reader[1]
@@ -672,7 +689,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertFalse(self.user_managed_geo_limit.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
 
         self.client.force_authenticate(self.user_managed_geo_limit)
-        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         # changing this as it made no sense. If the project passed is invalid , we just put the available projects instead and silence the error
@@ -688,7 +705,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         self.yoda.iaso_profile.org_units.add(self.org_unit_child)
-        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
@@ -765,7 +782,7 @@ class BulkCreateCsvTestCase(APITestCase):
         area_manager = {"name": "area_manager"}
         self.client.post("/api/userroles/", data=area_manager)
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_all_fields.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_all_fields.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
@@ -815,7 +832,7 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": "Alpha Team"}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
             fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
@@ -839,7 +856,7 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": f"{team1.name}, {team2.name}"}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
             fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
@@ -866,7 +883,7 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": invalid_team_name}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
             fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
@@ -899,7 +916,7 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"org_unit_type_id": self.org_unit_type_region.id, "team_names": secret_team_name}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
             fixture_name="test_user_bulk_create_valid_with_multiple_teams.csv",
             context=context,
         )
@@ -929,7 +946,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_email_no_password.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_email_no_password.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -954,7 +971,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_mixed_email.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_mixed_email.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -996,7 +1013,7 @@ class BulkCreateCsvTestCase(APITestCase):
         # Get the permission ID for iaso_forms
         iaso_forms_perm = Permission.objects.get(codename="iaso_forms")
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_bulk_configuration.csv") as csv_file:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_bulk_configuration.csv") as csv_file:
             response = self.client.post(
                 f"{BASE_URL}",
                 {
@@ -1092,7 +1109,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.account1.modules = self.MODULES
         self.account1.save()
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_permission.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_invalid_permission.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -1108,7 +1125,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_language.csv") as csv_users:
+        with open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_invalid_language.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -1127,7 +1144,7 @@ class BulkCreateCsvTestCase(APITestCase):
         context = {"project_id": self.project.id}
 
         csv_content = self.load_fixture_with_jinja_template(
-            path_to_fixtures="iaso/tests/fixtures",
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
             fixture_name="test_user_bulk_create_valid_with_project_ids.csv",
             context=context,
         )
@@ -1140,3 +1157,47 @@ class BulkCreateCsvTestCase(APITestCase):
         user = User.objects.get(username="projectid_user")
         self.assertEqual(user.iaso_profile.projects.count(), 1)
         self.assertEqual(user.iaso_profile.projects.first().id, self.project.id)
+
+    def test_file_from_sample_does_not_trigger_invalid_file_type(self):
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(reverse("bulkcreateuser-download-sample-csv"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        csv_content = b"".join(response.streaming_content)
+
+        uploaded_file = SimpleUploadedFile(name="test.csv", content=csv_content)
+
+        response = self.client.post(f"{BASE_URL}", {"file": uploaded_file}, format="multipart")
+
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn("file", res_data)
+
+    def test_create_user_with_empty_first_name_and_last_name(self):
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        context = {"org_unit_type_id": self.org_unit_type_region.id}
+
+        csv_content = self.load_fixture_with_jinja_template(
+            path_to_fixtures="iaso/tests/fixtures/bulk_create_users",
+            fixture_name="test_user_bulk_create_empty_names.csv",
+            context=context,
+        )
+
+        test_file = SimpleUploadedFile(
+            "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
+        )
+
+        response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        users = User.objects.all()
+        self.assertEqual(users.count(), 6)
+
+        user = users.filter(username="broly").first()
+        self.assertEqual(user.first_name, "")
+        self.assertEqual(user.last_name, "")
+        self.assertEqual(user.email, "")

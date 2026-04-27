@@ -30,7 +30,7 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     country_code = serializers.CharField(write_only=True, required=False, allow_blank=True, allow_null=True)
 
     projects = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, queryset=Project.objects.none(), required=False, many=True
+        allow_empty=True, queryset=Project.objects.none(), required=False, many=True
     )
     user_permissions = serializers.SlugRelatedField(
         slug_field="codename", many=True, queryset=Permission.objects.none(), required=False
@@ -38,7 +38,6 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
 
     user_roles = serializers.PrimaryKeyRelatedField(
         allow_empty=True,
-        allow_null=True,
         many=True,
         queryset=UserRole.objects.none(),
         required=False,
@@ -46,12 +45,11 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     )
 
     org_units = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, many=True, queryset=OrgUnit.objects.all(), required=False
+        allow_empty=True, many=True, queryset=OrgUnit.objects.all(), required=False
     )
     editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
         source="editable_org_unit_types",
         allow_empty=True,
-        allow_null=True,
         queryset=OrgUnitType.objects.all(),
         required=False,
         many=True,

@@ -177,8 +177,8 @@ const insertIntoResults = (props: InsertIntoResultsProps): void => {
     };
 
     if (type === 'PREVIOUS_HISTORY') {
-        // we insert at the beginning of the array
-        results.unshift(
+        // we insert at the end of the array
+        results.push(
             getResultItem({
                 ...base,
                 data,
@@ -190,7 +190,8 @@ const insertIntoResults = (props: InsertIntoResultsProps): void => {
     }
 
     if (type === 'NEXT_TASKS') {
-        results.push(
+        // we insert at the beginning of the array
+        results.unshift(
             getResultItem({
                 ...base,
                 data,
@@ -202,7 +203,8 @@ const insertIntoResults = (props: InsertIntoResultsProps): void => {
     }
 
     if (type === 'NEXT_BYPASS') {
-        results.push(
+        // we insert at the beginning of the array
+        results.unshift(
             getResultItem({
                 ...base,
                 data,
@@ -213,7 +215,7 @@ const insertIntoResults = (props: InsertIntoResultsProps): void => {
         return;
     }
 
-    results.push(
+    results.unshift(
         getResultItem({
             ...base,
             data,

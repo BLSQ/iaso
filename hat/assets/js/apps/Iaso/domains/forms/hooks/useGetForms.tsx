@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -35,10 +36,10 @@ const FIELDS_PARAMS = [
 ];
 
 const getForms = (params: FormsParams) => {
-    const fields = `${
-        params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS.join(',')
-    },${FIELDS_PARAMS}`;
-    const queryString = new URLSearchParams({
+    const fields = (
+        params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS
+    ).concat(FIELDS_PARAMS);
+    const queryString = createSearchParamsWithArray({
         ...params,
         fields,
     }).toString();
@@ -72,15 +73,16 @@ export const useGetForms = (
     if (safeParams?.fields) {
         delete safeParams.fields;
     }
-    const fields = useMemo(
-        () =>
-            params?.fields
+    const fields = useMemo(() => {
+        if (typeof params?.fields === 'string') {
+            return params?.fields
                 ?.split(',')
-                .filter(p => p !== 'actions')
-                .sort()
-                .join(','),
-        [params?.fields],
-    );
+                ?.filter(p => p !== 'actions')
+                ?.sort();
+        } else {
+            return params?.fields?.filter(p => p !== 'actions')?.sort();
+        }
+    }, [params?.fields]);
     return useSnackQuery({
         queryKey: ['forms', safeParams, fields],
         queryFn: () =>

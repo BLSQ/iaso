@@ -18,7 +18,7 @@ const getPaymentLots = (options: PaymentLotsParams) => {
     } = options;
     const apiParams = {
         order: options.order || '-created_at',
-        limit: options.pageSize || 10,
+        limit: options.pageSize || 20,
         page,
         created_at_after: formatDateString(
             created_at_after,

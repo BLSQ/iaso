@@ -3,9 +3,10 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
+from dynamic_fields.serializer import DynamicFieldsModelSerializer
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 
-from ..common import DynamicFieldsModelSerializer, TimestampField
+from ..common import TimestampField
 from ..forms import FormSerializer
 from ..projects.serializers import ProjectSerializer
 

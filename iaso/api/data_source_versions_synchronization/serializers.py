@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializer
 from iaso.models import (
     Account,
     DataSourceVersionsSynchronization,

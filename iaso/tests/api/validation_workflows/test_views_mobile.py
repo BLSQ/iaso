@@ -6,10 +6,9 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, AccountFeatureFlag, Form, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -17,22 +16,19 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def setUp(self):
         self.account = Account.objects.create(name="account")
         self.other_account = Account.objects.create(name="account2")
+        self.another_account = Account.objects.create(name="account3")
 
+        self.enable_validation_workflow_feature_flag(self.account, self.other_account)
         self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+            username="user.without.feature.flag", account=self.another_account, first_name="User", last_name="NoFlag"
         )
 
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
+        self.john_wick = self.create_user_with_profile(username="john.wick", account=self.account)
 
-        self.jane_doe = self.create_user_with_profile(
-            username="jane.doe", account=self.other_account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
+        self.jane_doe = self.create_user_with_profile(username="jane.doe", account=self.other_account)
         self.superuser = self.create_user_with_profile(
             username="john.super",
             account=self.other_account,
-            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION],
             is_staff=True,
             is_superuser=True,
         )
@@ -78,6 +74,15 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             uuid=str(uuid.uuid4()),
         )
 
+    @staticmethod
+    def enable_validation_workflow_feature_flag(*accounts):
+        feature_flag, _ = AccountFeatureFlag.objects.get_or_create(
+            code="SUBMISSION_VALIDATION_WORKFLOW",
+            defaults={"name": "Web: Enable validation workflow"},
+        )
+        for account in accounts:
+            account.feature_flags.add(feature_flag)
+
     def setup_start(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
 
@@ -116,7 +121,8 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.john_doe)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        res_data = self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res_data["detail"], "This feature is disabled for your account.")
 
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
@@ -576,8 +582,8 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        with self.assertNumQueries(7):
-            # 1-2: PERM
+        with self.assertNumQueries(6):
+            # 1: PERM
             # 3 ORGUNIT
             # 4-5: QUERYSET + FILTER
             # 6-7: SERIALIZER

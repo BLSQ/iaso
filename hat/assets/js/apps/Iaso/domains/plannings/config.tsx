@@ -17,16 +17,18 @@ import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
 import { PlanningStatusChip } from './components/PlanningStatusChip';
+import { ViewSamplingResultDialog } from './components/SamplingResultDialog';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import { SavePlanningQuery } from './hooks/requests/useSavePlanning';
 import MESSAGES from './messages';
 import { Planning, SamplingResult } from './types';
 
 type Props = {
+    planning: Planning;
     samplingResult: SamplingResult;
 };
 
-const ActionCell: FunctionComponent<Props> = ({ samplingResult }) => {
+const ActionCell: FunctionComponent<Props> = ({ planning, samplingResult }) => {
     const { data: colors } = useGetColors(true);
     const purpleColor = getColor(3, colors).replace('#', '');
     const urlParams: Record<string, any> = useMemo(
@@ -51,11 +53,18 @@ const ActionCell: FunctionComponent<Props> = ({ samplingResult }) => {
     );
 
     return (
-        <IconButton
-            url={makeRedirectionUrl(baseUrls.orgUnits, urlParams)}
-            icon="remove-red-eye"
-            tooltipMessage={MESSAGES.seeSamplingResults}
-        />
+        <>
+            <ViewSamplingResultDialog
+                iconProps={{}}
+                planning={planning}
+                samplingResult={samplingResult}
+            />
+            <IconButton
+                url={makeRedirectionUrl(baseUrls.orgUnits, urlParams)}
+                icon="remove-red-eye"
+                tooltipMessage={MESSAGES.seeSamplingResults}
+            />
+        </>
     );
 };
 
@@ -183,7 +192,7 @@ export const useSamplingResultsColumns = (
                 sortable: false,
                 Cell: settings =>
                     formatThousand(
-                        settings.row.original.group_details.org_unit_count,
+                        settings.row.original.group_details?.org_unit_count,
                     ),
             },
             {
@@ -191,7 +200,10 @@ export const useSamplingResultsColumns = (
                 accessor: 'actions',
                 sortable: false,
                 Cell: settings => (
-                    <ActionCell samplingResult={settings.row.original} />
+                    <ActionCell
+                        planning={planning}
+                        samplingResult={settings.row.original}
+                    />
                 ),
             },
             {

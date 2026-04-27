@@ -650,6 +650,10 @@ export const getFilters = (
         modificationDateTo: getToDateString(params.modificationDateTo, false),
         sentDateFrom: getFromDateString(params.sentDateFrom, false),
         sentDateTo: getToDateString(params.sentDateTo, false),
+        referenceInstances:
+            params.referenceInstances && params.referenceInstances !== 'all'
+                ? params.referenceInstances
+                : undefined,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

@@ -128,6 +128,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     # Convert to GeoDataframe, and group by org unit type
     # as we want one layer per OrgUnitType
     ou_gdf = gpd.GeoDataFrame(df, geometry="geography")
+    ou_gdf.set_crs(crs="EPSG:4326", inplace=True)
     ou_gdf["layer_name"] = "level-" + ou_gdf["depth"].astype(str) + "-" + ou_gdf["type"]
 
     ou_gdf_by_type = ou_gdf.groupby("layer_name")
@@ -136,7 +137,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
         # keep only the columns we want to export and reorder them
         group = group[OUT_COLUMNS]
         # projection is hardcoded, but we use geography column
-        group.to_file(filepath, driver="GPKG", layer=layer_name, crs="EPSG:4326")
+        group.to_file(filepath, driver="GPKG", layer=layer_name)
 
 
 CREATE_GROUPS_TABLE_QUERY = """create table groups

@@ -1672,20 +1672,18 @@ class OrgUnitAPITestCase(APITestCase):
         old_created_at = ou.created_at
         previous_updated_at = ou.updated_at
 
-        requested_fields = ",".join(
-            [
-                "id",
-                "name",
-                "validation_status",
-                "aliases",
-                "latitude",
-                "longitude",
-                "org_unit_type_id",
-                "updated_at",
-            ]
-        )
+        requested_fields = [
+            "id",
+            "name",
+            "validation_status",
+            "aliases",
+            "latitude",
+            "longitude",
+            "org_unit_type_id",
+            "updated_at",
+        ]
 
-        url = f"/api/orgunits/{ou.id}/?{urlencode({'fields': requested_fields}, True)}"
+        url = f"/api/orgunits/{ou.id}/?{urlencode({'fields': ','.join(requested_fields)}, True)}"
 
         payload = {
             "name": "Updated Jedi HQ",

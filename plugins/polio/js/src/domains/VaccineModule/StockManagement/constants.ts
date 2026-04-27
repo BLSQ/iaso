@@ -14,6 +14,10 @@ export const RECEIVED = 'received';
 // Form A state transitions
 export const RECEIVED_TO_TEMPORARY = 'received-to-temporary';
 export const SESSION_TEMPORARY = 'session-temporary';
+// Form A edit access (backend-driven enum on OutgoingStockMovementSerializer.edit_access)
+export const EDIT_ACCESS_NONE = 'none';
+export const EDIT_ACCESS_COMPLETION_ONLY = 'completion_only';
+export const EDIT_ACCESS_FULL = 'full';
 // campaign category for on_hold/is_test
 export const REGULAR = 'REGULAR';
 export const TEST_CAMPAIGN = 'TEST_CAMPAIGN';

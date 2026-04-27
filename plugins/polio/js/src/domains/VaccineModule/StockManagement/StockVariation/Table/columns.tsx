@@ -14,7 +14,7 @@ import {
     STOCK_EARMARKS_ADMIN,
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
-import { RECEIVED, TEMPORARY, USED } from '../../constants';
+import { EDIT_ACCESS_NONE, RECEIVED, TEMPORARY, USED } from '../../constants';
 import {
     useDeleteDestruction,
     useDeleteEarmarked,
@@ -143,7 +143,8 @@ export const useFormATableColumns = (
                                     STOCK_MANAGEMENT_READ,
                                 ]}
                             >
-                                {settings.row.original.can_edit && (
+                                {settings.row.original.edit_access !==
+                                    EDIT_ACCESS_NONE && (
                                     <>
                                         <EditFormA
                                             id={settings.row.original.id}

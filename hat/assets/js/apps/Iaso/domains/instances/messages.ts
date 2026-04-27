@@ -828,7 +828,11 @@ const MESSAGES = defineMessages({
     },
     nodes: {
         id: 'iaso.form.label.nodes',
-        defaultMessage: 'node(s)',
+        defaultMessage: 'step(s)',
+    },
+    steps: {
+        id: 'iaso.form.label.steps',
+        defaultMessage: 'step(s)',
     },
     saveOrder: {
         id: 'iaso.workflows.saveOrder',
@@ -844,11 +848,11 @@ const MESSAGES = defineMessages({
     },
     deleteNodeQuestion: {
         id: 'iaso.workflows.label.deleteNodeQuestion',
-        defaultMessage: 'Delete node?',
+        defaultMessage: 'Delete step?',
     },
     canSkipPreviousNodes: {
         id: 'iaso.workflows.label.canSkipPreviousNodes',
-        defaultMessage: 'Can skip previous nodes',
+        defaultMessage: 'Can skip previous steps',
     },
     create: {
         defaultMessage: 'Create',

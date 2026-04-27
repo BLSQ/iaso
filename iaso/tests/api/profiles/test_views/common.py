@@ -1,6 +1,7 @@
 import typing
 
 from django.contrib.auth.models import Group, Permission
+from django.urls import reverse
 
 from iaso import models as m
 from iaso.modules import MODULES
@@ -10,131 +11,133 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_ADMIN_PERMISSION,
     CORE_USERS_MANAGED_PERMISSION,
 )
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class BaseProfileAPITestCase(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.MODULES = [module.codename for module in MODULES]
-        cls.account = m.Account.objects.create(name="Global Health Initiative", modules=cls.MODULES)
-        cls.another_account = m.Account.objects.create(name="Another account")
+class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.MODULES = [module.codename for module in MODULES]
+        self.account = m.Account.objects.create(
+            name="Global Health Initiative", modules=self.MODULES, enforce_password_validation=False
+        )
+        self.another_account = m.Account.objects.create(name="Another account", enforce_password_validation=False)
 
         # TODO : make the org unit creations shorter and reusable
-        cls.project = m.Project.objects.create(
+        self.project = m.Project.objects.create(
             name="Hydroponic gardens",
             app_id="stars.empire.agriculture.hydroponics",
-            account=cls.account,
+            account=self.account,
         )
         datasource = m.DataSource.objects.create(name="Evil Empire")
-        datasource.projects.add(cls.project)
-        cls.datasource = datasource
-        cls.sub_unit_type = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
-        cls.parent_org_unit_type = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
-        cls.parent_org_unit_type.sub_unit_types.add(cls.sub_unit_type)
+        datasource.projects.add(self.project)
+        self.datasource = datasource
+        self.sub_unit_type = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
+        self.parent_org_unit_type = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
+        self.parent_org_unit_type.sub_unit_types.add(self.sub_unit_type)
 
-        cls.mock_multipolygon = None
-        cls.mock_point = None
+        self.mock_multipolygon = None
+        self.mock_point = None
 
-        cls.org_unit_group = m.Group.objects.create(name="Elite councils")
-        cls.datasource = datasource
+        self.org_unit_group = m.Group.objects.create(name="Elite councils")
+        self.datasource = datasource
         source_version_1 = m.SourceVersion.objects.create(data_source=datasource, number=1)
-        cls.account.default_version = source_version_1
-        cls.account.save()
-        cls.org_unit_from_sub_type = m.OrgUnit.objects.create(
-            org_unit_type=cls.sub_unit_type,
+        self.account.default_version = source_version_1
+        self.account.save()
+        self.org_unit_from_sub_type = m.OrgUnit.objects.create(
+            org_unit_type=self.sub_unit_type,
             version=source_version_1,
             name="Jedi Squad 1",
-            geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
-            catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
+            geom=self.mock_multipolygon,
+            simplified_geom=self.mock_multipolygon,
+            catchment=self.mock_multipolygon,
+            location=self.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref=None,
         )
-        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        cls.another_org_unit = m.OrgUnit.objects.create(
-            org_unit_type=cls.org_unit_type,
+        self.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        self.another_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type,
             name="Hôpital Général",
         )
-        cls.org_unit_from_parent_type = m.OrgUnit.objects.create(
-            org_unit_type=cls.parent_org_unit_type,
+        self.org_unit_from_parent_type = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
             version=source_version_1,
             name="Corruscant Jedi Council",
-            geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
-            catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
+            geom=self.mock_multipolygon,
+            simplified_geom=self.mock_multipolygon,
+            catchment=self.mock_multipolygon,
+            location=self.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="FooBarB4z00",
         )
-        cls.org_unit_from_parent_type.groups.set([cls.org_unit_group])
+        self.org_unit_from_parent_type.groups.set([self.org_unit_group])
 
-        cls.child_org_unit = m.OrgUnit.objects.create(
-            org_unit_type=cls.parent_org_unit_type,
+        self.child_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
             version=source_version_1,
             name="Corruscant Jedi Council",
-            geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
-            catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
+            geom=self.mock_multipolygon,
+            simplified_geom=self.mock_multipolygon,
+            catchment=self.mock_multipolygon,
+            location=self.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
-            parent=cls.org_unit_from_parent_type,
+            parent=self.org_unit_from_parent_type,
         )
 
-        cls.permission = Permission.objects.create(
+        self.permission = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission"
         )
-        cls.group = Group.objects.create(name="user role")
-        cls.group.permissions.add(cls.permission)
-        cls.user_role = m.UserRole.objects.create(group=cls.group, account=cls.account)
+        self.group = Group.objects.create(name="user role")
+        self.group.permissions.add(self.permission)
+        self.user_role = m.UserRole.objects.create(group=self.group, account=self.account)
 
-        cls.group_another_account = Group.objects.create(name="user role with another account")
-        cls.group_another_account.permissions.add(cls.permission)
-        cls.user_role_another_account = m.UserRole.objects.create(
-            group=cls.group_another_account, account=cls.another_account
+        self.group_another_account = Group.objects.create(name="user role with another account")
+        self.group_another_account.permissions.add(self.permission)
+        self.user_role_another_account = m.UserRole.objects.create(
+            group=self.group_another_account, account=self.another_account
         )
 
         # Users.
-        cls.jane = cls.create_user_with_profile(
+        self.jane = self.create_user_with_profile(
             first_name="Jane",
             last_name="Doe",
             username="janedoe",
-            account=cls.account,
+            account=self.account,
             permissions=[CORE_FORMS_PERMISSION],
         )
-        cls.john = cls.create_user_with_profile(username="johndoe", account=cls.account, is_superuser=True)
-        cls.jim = cls.create_user_with_profile(
-            username="jim", account=cls.account, permissions=[CORE_FORMS_PERMISSION, CORE_USERS_ADMIN_PERMISSION]
+        self.john = self.create_user_with_profile(username="johndoe", account=self.account, is_superuser=True)
+        self.jim = self.create_user_with_profile(
+            username="jim", account=self.account, permissions=[CORE_FORMS_PERMISSION, CORE_USERS_ADMIN_PERMISSION]
         )
-        cls.jam = cls.create_user_with_profile(
+        self.jam = self.create_user_with_profile(
             username="jam",
-            account=cls.account,
+            account=self.account,
             permissions=[CORE_USERS_MANAGED_PERMISSION],
             language="en",
         )
-        cls.jom = cls.create_user_with_profile(username="jom", account=cls.account, permissions=[], language="fr")
-        cls.jum = cls.create_user_with_profile(
-            username="jum", account=cls.account, permissions=[], projects=[cls.project]
+        self.jom = self.create_user_with_profile(username="jom", account=self.account, permissions=[], language="fr")
+        self.jum = self.create_user_with_profile(
+            username="jum", account=self.account, permissions=[], projects=[self.project]
         )
-        cls.user_managed_geo_limit = cls.create_user_with_profile(
+        self.user_managed_geo_limit = self.create_user_with_profile(
             username="managedGeoLimit",
-            account=cls.account,
+            account=self.account,
             permissions=[CORE_USERS_MANAGED_PERMISSION],
-            org_units=[cls.org_unit_from_parent_type],
+            org_units=[self.org_unit_from_parent_type],
         )
-        cls.team1 = m.Team.objects.create(project=cls.project, name="team1", manager=cls.jane)
-        cls.team1.users.add(cls.jane)
-        cls.team2 = m.Team.objects.create(project=cls.project, name="team2", manager=cls.jim)
-        cls.team2.users.add(cls.jim)
-        cls.user_managed_geo_limit.iaso_profile.user_roles.set([cls.user_role, cls.user_role_another_account])
+        self.team1 = m.Team.objects.create(project=self.project, name="team1", manager=self.jane)
+        self.team1.users.add(self.jane)
+        self.team2 = m.Team.objects.create(project=self.project, name="team2", manager=self.jim)
+        self.team2.users.add(self.jim)
+        self.user_managed_geo_limit.iaso_profile.user_roles.set([self.user_role, self.user_role_another_account])
 
-        cls.user_role_name = cls.user_role.group.name.removeprefix(
-            f"{cls.user_managed_geo_limit.iaso_profile.account.pk}_"
+        self.user_role_name = self.user_role.group.name.removeprefix(
+            f"{self.user_managed_geo_limit.iaso_profile.account.pk}_"
         )
-        cls.user_role_another_account_name = cls.user_role_another_account.group.name.removeprefix(
-            f"{cls.user_managed_geo_limit.iaso_profile.account.pk}_"
+        self.user_role_another_account_name = self.user_role_another_account.group.name.removeprefix(
+            f"{self.user_managed_geo_limit.iaso_profile.account.pk}_"
         )
 
     def assertValidProfileListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
@@ -146,14 +149,22 @@ class BaseProfileAPITestCase(APITestCase):
         )
 
         for profile_data in list_data["results"]:
-            self.assertValidProfileData(profile_data)
+            self.assertValidProfileListItemData(profile_data)
 
-    def assertValidProfileData(self, project_data: typing.Mapping):
+    def get_profile_list_retrieve_schema(self):
+        res = self.client.get(reverse("swagger-schema"), data={"format": "json"})
+        return res.json()["components"]["schemas"]["ProfileList"]
+
+    def assertValidProfileData(self, data: typing.Mapping):
+        self.assertResponseCompliantToSwagger(data, "ProfileRetrieve")
+
+    def assertValidProfileListItemData(self, data: typing.Mapping):
+        self.assertResponseCompliantToSwagger(data, "ProfileList")
+
+    def assertValidProfileListItemData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "firstName", str)
-        self.assertHasField(project_data, "lastName", str)
-        self.assertHasField(project_data, "email", str)
-        self.assertHasField(project_data, "color", str)
+        self.assertHasField(project_data, "user_id", int)
+        self.assertHasField(project_data, "user_display", str)
 
     def get_new_user_data(self):
         user_name = "audit_user"
@@ -174,24 +185,24 @@ class BaseProfileAPITestCase(APITestCase):
         phone_number = "+32475888888"
         country_code = "be"
         data = {
-            "userName": user_name,
+            "user_name": user_name,
             "password": pwd,
-            "firstName": first_name,
-            "lastName": last_name,
-            "sendEmailInvitation": send_email_invitation,
+            "first_name": first_name,
+            "last_name": last_name,
+            "send_email_invitation": send_email_invitation,
             "email": email,
             "organization": organization,
             "language": language,
-            "homePage": home_page,
-            "dhis2Id": dhis2_id,
+            "home_page": home_page,
+            "dhis2_id": dhis2_id,
             "permissions": [],  # This looks legacy from an older version of the API
-            "userPermissions": user_permissions,
+            "user_permissions": user_permissions,
             "projects": projects,
-            "phoneNumber": phone_number,
-            "countryCode": country_code,
-            "userRoles": user_roles,
-            "userRolesPermissions": user_roles_permissions,
-            "orgUnits": org_units,
+            "phone_number": phone_number,
+            "country_code": country_code,
+            "user_roles": user_roles,
+            "user_roles_permissions": user_roles_permissions,
+            "org_units": org_units,
         }
         return data
 
@@ -290,3 +301,5 @@ PROFILE_LOG_SCHEMA = {
     },
     "required": ["id", "user", "content_type", "source", "object_id", "created_at", "past_value", "new_value"],
 }
+
+PROFILE_RETRIEVE_SCHEMA = {}

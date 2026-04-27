@@ -19,7 +19,7 @@ from rest_framework.relations import MANY_RELATION_KWARGS, ManyRelatedField
 from iaso.api.common.validators import JSONSchemaFieldValidator
 
 
-@extend_schema_field(OpenApiTypes.INT64)
+@extend_schema_field(OpenApiTypes.NUMBER)
 class TimestampField(serializers.Field):
     def to_representation(self, value: datetime):
         return value.timestamp()
@@ -120,7 +120,7 @@ class PrimaryKeyRelatedFieldFromJSON(serializers.PrimaryKeyRelatedField):
 class CountryAwarePhoneNumberField(serializers.CharField):
     default_error_messages = {
         "invalid": _("Enter a valid phone number."),
-        "both_required": _("Both phone number and country code must be provided"),
+        "both_required": _("Both the phone number and the country code must be provided"),
     }
 
     def __init__(self, country_code_field="country_code", **kwargs):

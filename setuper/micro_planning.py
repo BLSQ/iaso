@@ -86,7 +86,11 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "sub_teams": [x["id"] for x in teams],
         },
     )
-    forms = iaso_client.get("/api/forms/")["forms"]
+    teams_after_creation = iaso_client.get("/api/teams/?limit=20000")["results"]
+    teams_of_users = [t for t in teams_after_creation if t["type"] == "TEAM_OF_USERS"]
+    team_of_teams = [t for t in teams_after_creation if t["type"] == "TEAM_OF_TEAMS"][0]
+    team_of_teams_id = team_of_teams["id"]
+    forms = iaso_client.get("/api/forms")["forms"]
     planning_form = [form for form in forms if form["form_id"] == "SAMPLE_FORM_new5"][0]
 
     source_id = manager["account"]["default_version"]["data_source"]["id"]
@@ -110,19 +114,6 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     team = teams[0]
     current_date = datetime.now()
-    campaign = iaso_client.post(
-        "/api/microplanning/plannings/",
-        {
-            "name": "Campagne Carte Sanitaire",
-            "forms": [planning_form["id"]],
-            "project": project_id,
-            "team": team["id"],
-            "org_unit": country["id"],
-            "started_at": current_date.strftime("%Y-%m-%d"),
-            "ended_at": (current_date + timedelta(days=365)).strftime("%Y-%m-%d"),
-            "published_at": current_date.strftime("%Y-%m-%d"),
-        },
-    )
 
     health_facitities = iaso_client.get(
         "/api/orgunits/",
@@ -148,6 +139,30 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     print(f"Found {len(team_users)} users in team {team['name']} but assign only {len(team_users[:3])}")
 
+    health_facility_type_id = None
+    if health_facitities:
+        facility = health_facitities[0]
+        org_unit_type = facility.get("org_unit_type")
+        if isinstance(org_unit_type, dict):
+            health_facility_type_id = org_unit_type.get("id")
+        else:
+            health_facility_type_id = org_unit_type
+
+    campaign = iaso_client.post(
+        "/api/microplanning/plannings/",
+        {
+            "name": "Campagne Carte Sanitaire",
+            "forms": [planning_form["id"]],
+            "project": project_id,
+            "team": team["id"],
+            "org_unit": country["id"],
+            "target_org_unit_types": [health_facility_type_id] if health_facility_type_id else [],
+            "started_at": current_date.strftime("%Y-%m-%d"),
+            "ended_at": (current_date + timedelta(days=365)).strftime("%Y-%m-%d"),
+            "published_at": current_date.strftime("%Y-%m-%d"),
+        },
+    )
+
     for health_facitity in health_facitities:
         # Select an arbitrary user from the team for this assignment
         selected_user_id = random.choice(team_users[:3])
@@ -171,6 +186,49 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         )
 
     print(campaign)
+
+    campaign_of_teams_of_teams = iaso_client.post(
+        "/api/microplanning/plannings/",
+        json={
+            "name": "Campaign Polio",
+            "forms": [planning_form["id"]],
+            "project": project_id,
+            "team": team_of_teams_id,
+            "org_unit": country["id"],
+            "target_org_unit_types": [health_facility_type_id] if health_facility_type_id else [],
+            "started_at": current_date.strftime("%Y-%m-%d"),
+            "ended_at": (current_date + timedelta(days=30)).strftime("%Y-%m-%d"),
+        },
+    )
+
+    print(campaign_of_teams_of_teams)
+
+    print(f"--Planning with teams of teams created: {campaign_of_teams_of_teams['name']}")
+
+    print("--Creating assignments for team of teams")
+
+    active_sub_teams = teams_of_users[:4]
+
+    for facility in health_facitities:
+        sub_team = random.choice(active_sub_teams)
+        print(f"Assigning {facility['name']} to {sub_team['name']}...")
+        try:
+            iaso_client.post(
+                "/api/microplanning/assignments/",
+                json={
+                    "planning": campaign_of_teams_of_teams["id"],
+                    "org_unit": facility["id"],
+                    "team": sub_team["id"],
+                },
+            )
+        except Exception as e:
+            print(f"\tFailed to assign {facility['name']} to {sub_team['name']}: {e}")
+
+    print(
+        f"\tCreated {len(health_facitities)} assignments across {len(active_sub_teams)} sub-teams ({teams_of_users[4]['name']} and {teams_of_users[5]['name']} left without assignments)"
+    )
+
+    print("-- Micro-planning setup complete.")
 
 
 # Define the function outside the loop to avoid the loop variable binding issue

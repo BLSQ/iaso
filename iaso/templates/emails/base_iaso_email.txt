@@ -1,0 +1,11 @@
+{% load i18n %}
+{{ email_app_title }}
+================================
+
+{% block email_body %}{% endblock %}
+
+{% if email_user_manual_url %}
+{% blocktrans with title=email_app_title url=email_user_manual_url %}User guide ({{ title }}): {{ url }}{% endblocktrans %}
+{% endif %}
+
+{% trans "Contact us:" %} {{ email_contact_mailto }}

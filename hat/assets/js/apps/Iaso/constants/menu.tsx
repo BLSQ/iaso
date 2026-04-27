@@ -57,16 +57,18 @@ import {
     SHOW_DEV_FEATURES,
     SHOW_DHIS2_LINK,
     SHOW_PAGES,
+    SUBMISSION_VALIDATION_WORKFLOW,
 } from '../utils/featureFlags';
-import { useCurrentUser } from '../utils/usersUtils';
+import { useCurrentUser, User } from '../utils/usersUtils';
 import MESSAGES from './messages';
 import * as paths from './routes';
 import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
+
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
-    currentUser,
+    currentUser: User,
     orgUnitExtraPath?: string,
 ): MenuItems => {
     const entitiesListEntry: MenuItem = {
@@ -200,10 +202,17 @@ const menuItems = (
                 },
                 {
                     label: formatMessage(MESSAGES.submissionsTitle),
-                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
-                    permissions: paths.instancesPath.permissions,
                     key: 'submissions',
                     icon: props => <Input {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.list),
+                            extraPath: `/tab/list/mapResults/${locationLimitMax}`,
+                            permissions: paths.instancesPath.permissions,
+                            key: 'list',
+                            icon: props => <FormatListBulleted {...props} />,
+                        },
+                    ],
                 },
 
                 {
@@ -450,6 +459,21 @@ export const useMenuItems = (): MenuItems => {
     }
 
     // add feature flags
+    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)) {
+        const formsMenuEntry = basicItems.find(item => item.key === 'forms');
+        if (
+            !formsMenuEntry?.subMenu?.find(
+                entry => entry.key === 'submissions/validation',
+            )
+        ) {
+            formsMenuEntry?.subMenu?.push({
+                label: formatMessage(MESSAGES.validation),
+                permissions: paths.instancesPath.permissions,
+                key: 'submissions/validation',
+                icon: props => <RuleIcon {...props} />,
+            });
+        }
+    }
     if (
         hasFeatureFlag(currentUser, SHOW_PAGES) &&
         !basicItems.find(item => item.key === 'pages')
@@ -461,6 +485,7 @@ export const useMenuItems = (): MenuItems => {
             permissions: paths.pagesPath.permissions,
         });
     }
+
     if (
         hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) &&
         currentUser?.account?.default_version?.data_source.url
@@ -483,6 +508,10 @@ export const useMenuItems = (): MenuItems => {
         }
         const authorizedItems = menuItemsTemp.filter(menuItem => {
             const permissionsList = listMenuPermission(menuItem);
+            // If not permission set on the menuItem, we consider that everyone has access to it
+            if (permissionsList.length === 0) {
+                return true;
+            }
             return userHasOneOfPermissions(permissionsList, currentUser);
         });
         if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {

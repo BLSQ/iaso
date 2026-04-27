@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Button } from '@mui/material';
+import { ButtonProps } from '@mui/material/Button/Button';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
@@ -16,28 +17,26 @@ const MESSAGES = defineMessages({
     },
 });
 
-type Props = {
+type Props = Omit<
+    ButtonProps,
+    'onClick' | 'color' | 'variant' | 'className' | 'disabled'
+> & {
     disabled: boolean;
     onSearch: () => void;
-    size?: 'medium' | 'small' | 'large';
 };
 
-export const SearchButton: FunctionComponent<Props> = ({
-    disabled,
-    onSearch,
-    size = 'medium',
-}) => {
+export const SearchButton = ({ disabled, onSearch, ...props }: Props) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     return (
         <Button
-            data-test="search-button"
+            data-testid="search-button"
             disabled={disabled}
             variant="contained"
             className={classes.button}
             color="primary"
             onClick={onSearch}
-            size={size}
+            {...props}
         >
             <SearchIcon className={classes.buttonIcon} />
             {formatMessage(MESSAGES.search)}

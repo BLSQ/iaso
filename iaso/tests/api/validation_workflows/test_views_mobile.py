@@ -6,10 +6,9 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, AccountFeatureFlag, Form, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -17,17 +16,21 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def setUp(self):
         self.account = Account.objects.create(name="account")
         self.other_account = Account.objects.create(name="account2")
+        self.another_account = Account.objects.create(name="account3")
 
+        self.enable_validation_workflow_feature_flag(self.account, self.other_account)
         self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+            username="user.without.feature.flag", account=self.another_account, first_name="User", last_name="NoFlag"
         )
 
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
+        self.john_wick = self.create_user_with_profile(username="john.wick", account=self.account)
 
-        self.jane_doe = self.create_user_with_profile(
-            username="jane.doe", account=self.other_account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+        self.jane_doe = self.create_user_with_profile(username="jane.doe", account=self.other_account)
+        self.superuser = self.create_user_with_profile(
+            username="john.super",
+            account=self.other_account,
+            is_staff=True,
+            is_superuser=True,
         )
 
         # setup the validation workflow
@@ -71,6 +74,15 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             uuid=str(uuid.uuid4()),
         )
 
+    @staticmethod
+    def enable_validation_workflow_feature_flag(*accounts):
+        feature_flag, _ = AccountFeatureFlag.objects.get_or_create(
+            code="SUBMISSION_VALIDATION_WORKFLOW",
+            defaults={"name": "Web: Enable validation workflow"},
+        )
+        for account in accounts:
+            account.feature_flags.add(feature_flag)
+
     def setup_start(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
 
@@ -82,6 +94,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             ValidationWorkflowEngine.complete_node(
                 self.instance.get_next_pending_nodes(self.validation_workflow).first(),
                 self.john_wick,
+                artifact=self.instance,
                 approved=True,
                 comment=f"LGTM {i}",
             )
@@ -95,6 +108,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
             ValidationWorkflowEngine.complete_node(
                 self.instance.get_next_pending_nodes(self.validation_workflow).first(),
                 self.john_wick,
+                artifact=self.instance,
                 approved=i != 1,
                 comment=f"LGTM {i}" if i != 1 else "Nope",
             )
@@ -107,9 +121,14 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.john_doe)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        res_data = self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res_data["detail"], "This feature is disabled for your account.")
 
         self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.superuser)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
@@ -284,7 +303,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        self.assertEqual(len(instance_data["history"]), 1)
+        self.assertEqual(len(instance_data["history"]), 2)
 
         history_item = instance_data["history"][0]
         for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
@@ -300,7 +319,16 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(history_item["color"], "#FFFFFF")
         self.assertEqual(history_item["level"], "First node")
 
-    def test_data_approved(self):
+        history_item = instance_data["history"][1]
+
+        self.assertEqual(history_item["status"], ValidationNodeStatus.SUBMISSION)
+        self.assertEqual(history_item["comment"], "")
+        self.assertIsNone(history_item["updated_by"])
+        self.assertEqual(history_item["created_by"], self.john_wick.username)
+        self.assertEqual(history_item["color"], "#FFFFFF")
+        self.assertEqual(history_item["level"], "First node")
+
+    def test_as_superuser(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
         res = self.client.get(reverse("mobile_validation_workflows-list"))
@@ -320,7 +348,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        self.assertEqual(len(instance_data["history"]), 3)
+        self.assertEqual(len(instance_data["history"]), 4)
 
         for history_item in instance_data["history"]:
             for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
@@ -346,13 +374,81 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
 
-        last_item = instance_data["history"][2]
-        self.assertEqual(last_item["status"], ValidationNodeStatus.ACCEPTED)
+        third_item = instance_data["history"][2]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
         self.assertEqual(last_item["color"], "#FFFFFF")
-        self.assertEqual(last_item["comment"], "LGTM 0")
+        self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
-        self.assertEqual(last_item["updated_by"], self.john_wick.username)
+
+    def test_data_approved(self):
+        self.client.force_authenticate(self.john_wick)
+        self.setup_approve()
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        instance_data = res_data["results"][0]
+
+        self.assertEqual(instance_data["instance_id"], self.instance.uuid)
+        self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
+        self.assertIsNone(instance_data["rejection_comment"])
+        self.assertEqual(instance_data["name"], self.form.name)
+
+        self.assertHasField(instance_data, "created_at", float)
+        self.assertHasField(instance_data, "updated_at", float)
+
+        self.assertHasField(instance_data, "history", list)
+
+        self.assertEqual(len(instance_data["history"]), 4)
+
+        for history_item in instance_data["history"]:
+            for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
+                self.assertIn(f, history_item)
+
+            self.assertHasField(history_item, "created_at", float)
+            self.assertHasField(history_item, "updated_at", float)
+
+        # checking order, should be from leaves to root (graph wise)
+        first_item = instance_data["history"][0]
+        self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(first_item["level"], "Third node")
+        self.assertEqual(first_item["color"], "#6E6593")
+        self.assertEqual(first_item["comment"], "LGTM 2")
+        self.assertEqual(first_item["created_by"], self.john_wick.username)
+        self.assertEqual(first_item["updated_by"], self.john_wick.username)
+
+        second_item = instance_data["history"][1]
+        self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(second_item["level"], "Second node")
+        self.assertEqual(second_item["color"], "#12FA4B")
+        self.assertEqual(second_item["comment"], "LGTM 1")
+        self.assertEqual(second_item["created_by"], self.john_wick.username)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+
+        third_item = instance_data["history"][2]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
+        self.assertEqual(last_item["level"], "First node")
+        self.assertEqual(last_item["color"], "#FFFFFF")
+        self.assertEqual(last_item["comment"], "")
+        self.assertEqual(last_item["created_by"], self.john_wick.username)
 
     def test_data_reject(self):
         self.client.force_authenticate(self.john_wick)
@@ -376,7 +472,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
 
         self.assertHasField(instance_data, "history", list)
 
-        self.assertEqual(len(instance_data["history"]), 2)
+        self.assertEqual(len(instance_data["history"]), 3)
 
         for history_item in instance_data["history"]:
             for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
@@ -395,21 +491,101 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.assertEqual(second_item["created_by"], self.john_wick.username)
         self.assertEqual(second_item["updated_by"], self.john_wick.username)
 
-        last_item = instance_data["history"][1]
-        self.assertEqual(last_item["status"], ValidationNodeStatus.ACCEPTED)
+        third_item = instance_data["history"][1]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
         self.assertEqual(last_item["level"], "First node")
         self.assertEqual(last_item["color"], "#FFFFFF")
-        self.assertEqual(last_item["comment"], "LGTM 0")
+        self.assertEqual(last_item["comment"], "")
         self.assertEqual(last_item["created_by"], self.john_wick.username)
-        self.assertEqual(last_item["updated_by"], self.john_wick.username)
+
+    def test_resubmit(self):
+        self.client.force_authenticate(self.john_wick)
+        self.setup_reject()
+        self.setup_start()
+
+        res = self.client.get(reverse("mobile_validation_workflows-list"))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+        instance_data = res_data["results"][0]
+
+        self.assertEqual(instance_data["instance_id"], self.instance.uuid)
+        self.assertEqual(instance_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+        self.assertIsNone(instance_data["rejection_comment"])
+        self.assertEqual(instance_data["name"], self.form.name)
+
+        self.assertHasField(instance_data, "created_at", float)
+        self.assertHasField(instance_data, "updated_at", float)
+
+        self.assertHasField(instance_data, "history", list)
+
+        self.assertEqual(len(instance_data["history"]), 5)
+
+        for history_item in instance_data["history"]:
+            for f in ["level", "color", "status", "comment", "updated_by", "created_by"]:
+                self.assertIn(f, history_item)
+
+            self.assertHasField(history_item, "created_at", float)
+            self.assertHasField(history_item, "updated_at", float)
+
+        # checking order, should be from leaves to root (graph wise)
+
+        second_item = instance_data["history"][0]
+        self.assertEqual(second_item["status"], ValidationNodeStatus.UNKNOWN)
+        self.assertEqual(second_item["level"], "First node")
+        self.assertEqual(second_item["color"], "#FFFFFF")
+        self.assertEqual(second_item["comment"], "")
+        self.assertEqual(second_item["created_by"], self.john_wick.username)
+        self.assertIsNone(second_item["updated_by"])
+
+        second_item = instance_data["history"][1]
+        self.assertEqual(second_item["status"], ValidationNodeStatus.NEW_VERSION)
+        self.assertEqual(second_item["level"], "First node")
+        self.assertEqual(second_item["color"], "#FFFFFF")
+        self.assertEqual(second_item["comment"], "")
+        self.assertEqual(second_item["created_by"], self.john_wick.username)
+        self.assertIsNone(second_item["updated_by"])
+
+        second_item = instance_data["history"][2]
+        self.assertEqual(second_item["status"], ValidationNodeStatus.REJECTED)
+        self.assertEqual(second_item["level"], "Second node")
+        self.assertEqual(second_item["color"], "#12FA4B")
+        self.assertEqual(second_item["comment"], "Nope")
+        self.assertEqual(second_item["created_by"], self.john_wick.username)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+
+        third_item = instance_data["history"][3]
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["level"], "First node")
+        self.assertEqual(third_item["color"], "#FFFFFF")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertEqual(third_item["created_by"], self.john_wick.username)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+
+        last_item = instance_data["history"][-1]
+        self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
+        self.assertEqual(last_item["level"], "First node")
+        self.assertEqual(last_item["color"], "#FFFFFF")
+        self.assertEqual(last_item["comment"], "")
+        self.assertEqual(last_item["created_by"], self.john_wick.username)
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        with self.assertNumQueries(9):
-            # 1-2: PERM
+        with self.assertNumQueries(6):
+            # 1: PERM
             # 3 ORGUNIT
             # 4-5: QUERYSET + FILTER
-            # 6-9: SERIALIZER
+            # 6-7: SERIALIZER
             res = self.client.get(reverse("mobile_validation_workflows-list"))
             self.assertJSONResponse(res, status.HTTP_200_OK)

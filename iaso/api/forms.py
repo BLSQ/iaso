@@ -7,12 +7,15 @@ from xml.sax.saxutils import escape
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Subquery
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.serializer import DynamicFieldsModelSerializer
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.common import is_field_referenced
@@ -38,7 +41,7 @@ from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
 from ..enketo.enketo_url import verify_signed_url
-from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
+from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .form_predefined_filters.serializers import FormPredefinedFilterSerializer
 from .projects import ProjectSerializer
@@ -101,6 +104,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "legend_threshold",
             "change_request_mode",
             "has_mappings",
+            "validation_workflow",
         ]
         fields = [
             "id",
@@ -132,6 +136,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "change_request_mode",
             "has_mappings",
             "possible_fields_with_latest_version",
+            "validation_workflow",
         ]
         read_only_fields = [
             "id",
@@ -160,7 +165,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     latest_form_version = FormVersionNestedSerializer(source="latest_version", required=False)
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
-    predefined_filters = FormPredefinedFilterSerializer(many=True)
+    predefined_filters = FormPredefinedFilterSerializer(many=True, read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     deleted_at = TimestampField(allow_null=True, required=False)
@@ -270,6 +275,7 @@ class FormsViewSet(ModelViewSet):
         {"title": "Date de modification", "width": 20},
     )
     EXPORT_FILE_NAME = "forms"
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackend]
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
     FORM_PK = "form_pk"
 

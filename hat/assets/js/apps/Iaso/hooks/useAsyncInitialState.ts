@@ -12,6 +12,7 @@ import { Optional } from 'bluesquare-components';
  */
 export const useAsyncInitialState = <T>(
     initialState: Optional<T>,
+    keepSynced = false,
 ): [
     T | undefined,
     React.Dispatch<React.SetStateAction<T | undefined>>,
@@ -21,11 +22,13 @@ export const useAsyncInitialState = <T>(
     const isSet = useRef(false);
 
     useEffect(() => {
-        if (initialState && !isSet.current) {
+        const isStateFirstFetch = Boolean(initialState && !isSet.current);
+        const shouldKeepSynced = Boolean(initialState && keepSynced);
+        if (isStateFirstFetch || shouldKeepSynced) {
             setState(initialState);
             isSet.current = true;
         }
-    }, [initialState]);
+    }, [initialState, keepSynced]);
     return useMemo(
         () => [state, setState, isSet.current],
         [state, setState, isSet.current],

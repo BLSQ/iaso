@@ -1,4 +1,4 @@
-import { Pagination, UrlParams } from 'bluesquare-components';
+import { UrlParams } from 'bluesquare-components';
 import { EntityType } from '../entities/entityTypes/types/entityType';
 import { FieldType } from '../forms/types/forms';
 
@@ -63,8 +63,11 @@ export type WorkflowVersion = {
 };
 export type WorkflowVersions = Array<WorkflowVersion>;
 
-export interface WorkflowVersionsPaginated extends Pagination {
+export interface WorkflowVersionsPaginated {
     workflow_versions: WorkflowVersions;
+    order: string;
+    pages: number;
+    count: number;
 }
 export type ChangesOption = {
     label: string;

@@ -63,6 +63,7 @@ const defaultForm = {
     label_keys: [],
     legend_threshold: null,
     change_request_mode: CR_MODE_NONE,
+    validation_workflow: null,
 };
 
 const formatFormData = value => {
@@ -91,6 +92,7 @@ const formatFormData = value => {
         label_keys: form.label_keys ?? defaultForm.label_keys,
         legend_threshold: form.legend_threshold,
         change_request_mode: form.change_request_mode,
+        validation_workflow: form.validation_workflow,
     };
 };
 
@@ -103,7 +105,24 @@ const FormDetail: FunctionComponent = () => {
     const { data: form, isLoading: isFormLoading } = useGetForm(
         params.formId,
         Boolean(params.formId) && params.formId !== '0',
-        'id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields,legend_threshold,change_request_mode',
+        [
+            'id',
+            'name',
+            'org_unit_types',
+            'projects',
+            'period_type',
+            'derived',
+            'single_per_period',
+            'periods_before_allowed',
+            'periods_after_allowed',
+            'device_field',
+            'location_field',
+            'label_keys',
+            'possible_fields',
+            'legend_threshold',
+            'change_request_mode',
+            'validation_workflow',
+        ],
     );
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -184,7 +203,7 @@ const FormDetail: FunctionComponent = () => {
     }, [form, setFormState]);
 
     const onChange = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value) => {
             if (isSaved) setIsSaved(false);
             setFieldValue(keyValue, value);
             if (!isFieldValid(keyValue, value, detailRequiredFields)) {

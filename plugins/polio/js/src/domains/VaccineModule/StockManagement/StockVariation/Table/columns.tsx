@@ -1,7 +1,5 @@
 import React, { useMemo } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Tooltip } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
@@ -16,7 +14,7 @@ import {
     STOCK_EARMARKS_ADMIN,
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
-import { REGULAR, USED } from '../../constants';
+import { RECEIVED, TEMPORARY, USED } from '../../constants';
 import {
     useDeleteDestruction,
     useDeleteEarmarked,
@@ -67,6 +65,22 @@ export const useFormATableColumns = (
                     const value = settings.row.original.round_number;
                     if (Number.isSafeInteger(value)) {
                         return value;
+                    }
+                    return textPlaceholder;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.form_a_status),
+                accessor: 'status',
+                id: 'status',
+                sortable: true,
+                Cell: settings => {
+                    const value = settings.row.original.status;
+                    if (value === TEMPORARY) {
+                        return formatMessage(MESSAGES.form_a_status_temporary);
+                    }
+                    if (value === RECEIVED) {
+                        return formatMessage(MESSAGES.form_a_status_received);
                     }
                     return textPlaceholder;
                 },

@@ -26,7 +26,7 @@ import {
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
-import { FormAFormValues } from '../StockVariation/Modals/CreateEditFormA';
+import { FormAFormValues } from '../StockVariation/types';
 import {
     DosesPerVialDropdown,
     StockManagementDetailsParams,

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0378_account_enforce_password_validation'),
+        ("iaso", "0378_account_enforce_password_validation"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='metrictype',
-            name='is_population',
+            model_name="metrictype",
+            name="is_population",
             field=models.BooleanField(default=False),
         ),
     ]

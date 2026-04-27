@@ -240,7 +240,7 @@ class FormsAPITestCase(APITestCase):
                 "searchActive": "true",
                 "all": "true",
                 "limit": 50,
-                "undefined": "true"
+                "undefined": "true",
             },
         )
         res_json = self.assertJSONResponse(response, 200)
@@ -259,7 +259,7 @@ class FormsAPITestCase(APITestCase):
 
         resp_json = self.assertJSONResponse(response, 200)
         self.assertEqual(resp_json["count"], 1)
-        
+
         self.assertEqual(resp_json["forms"][0]["id"], self.form_2.id)
 
     def test_forms_list_only_deleted(self):

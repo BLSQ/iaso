@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-22 10:54+0000\n"
+"POT-Creation-Date: 2026-04-07 12:16+0000\n"
 "PO-Revision-Date: 2025-02-05 14:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,17 +18,65 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
+#: plugins/polio/api/calendar/serializers.py
 #: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Round {} ended"
 msgstr "Round {} terminé"
 
+#: plugins/polio/api/calendar/serializers.py
 #: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Round {} started"
 msgstr "Round {} commencé"
 
+#: plugins/polio/api/calendar/serializers.py
 #: plugins/polio/api/campaigns/serializers/campaigns.py
 msgid "Preparing"
 msgstr "Préparation"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+#: plugins/polio/api/campaigns/filters/filters.py
+#: plugins/polio/api/chronogram/filters.py plugins/polio/budget/filters.py
+msgid "Search"
+msgstr "Recherche"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Country groups"
+msgstr "Groupes de pays"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Campaign groups"
+msgstr "Groupes de campagnes"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Campaign types"
+msgstr "Types de campagnes"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "Test campaign"
+msgstr "Campagne de test"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "Planned"
+msgstr "Planifié"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "Preventive"
+msgstr "Préventive"
+
+#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
+msgid "On hold"
+msgstr "En pause"
+
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Campaign category"
+msgstr "Catégorie de campagne"
+
+#: plugins/polio/api/campaigns/filters/filters.py
+msgid "Show test"
+msgstr "Afficher les tests"
 
 #: plugins/polio/api/chronogram/filters.py
 msgid "Campaigns"
@@ -42,10 +90,6 @@ msgstr "Pays"
 #: plugins/polio/api/chronogram/filters.py
 msgid "On time"
 msgstr "À temps"
-
-#: plugins/polio/api/chronogram/filters.py plugins/polio/budget/filters.py
-msgid "Search"
-msgstr "Recherche"
 
 #: plugins/polio/api/chronogram/filters.py
 msgid "Created at greater than or equal to"
@@ -720,39 +764,3 @@ msgstr "Polio - Seuils de performance (écriture)"
 #: plugins/polio/preparedness/spreadsheet_manager.py
 msgid "No country found for campaign"
 msgstr "Aucun pays trouvé pour la campagne"
-
-#: plugins/polio/api/campaigns/filters/filters.py
-msgid "Country groups"
-msgstr "Groupes de pays"
-
-#: plugins/polio/api/campaigns/filters/filters.py
-msgid "Campaign groups"
-msgstr "Groupes de campagnes"
-
-#: plugins/polio/api/campaigns/filters/filters.py
-msgid "Campaign types"
-msgstr "Types de campagnes"
-
-#: plugins/polio/api/campaigns/filters/filters.py
-msgid "Campaign category"
-msgstr "Catégorie de campagne"
-
-#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
-msgid "Test campaign"
-msgstr "Campagne de test"
-
-#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
-msgid "Planned"
-msgstr "Planifié"
-
-#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
-msgid "Preventive"
-msgstr "Préventive"
-
-#: plugins/polio/api/campaigns/filters/campaign_dashboards_filters.py
-msgid "On hold"
-msgstr "En pause"
-
-#: plugins/polio/api/campaigns/filters/filters.py
-msgid "Show test"
-msgstr "Afficher les tests"

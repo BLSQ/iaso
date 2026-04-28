@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.api.common import ModelSerializer
 from iaso.models import Profile, Project, UserRole
 
@@ -25,7 +25,7 @@ class NestedUserRoleSerializer(ModelSerializer):
         return tail if sep else obj.group.name
 
 
-class ProfileListSerializer(DynamicFieldsModelSerializer):
+class ProfileListSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     first_name = serializers.SerializerMethodField(read_only=True)
     user_name = serializers.SerializerMethodField(read_only=True)
     last_name = serializers.SerializerMethodField(read_only=True)

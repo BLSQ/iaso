@@ -188,6 +188,12 @@ const menuItems = (
             icon: props => <ManageAccountsIcon {...props} />,
         });
     }
+    settingsSubMenu.push({
+        label: formatMessage(MESSAGES.apiImport),
+        key: 'apiImports',
+        permissions: paths.adminApiImportPath.permissions,
+        icon: props => <InventoryIcon {...props} />,
+    });
     return [
         {
             label: formatMessage(MESSAGES.formsTitle),
@@ -508,6 +514,10 @@ export const useMenuItems = (): MenuItems => {
         }
         const authorizedItems = menuItemsTemp.filter(menuItem => {
             const permissionsList = listMenuPermission(menuItem);
+            // If not permission set on the menuItem, we consider that everyone has access to it
+            if (permissionsList.length === 0) {
+                return true;
+            }
             return userHasOneOfPermissions(permissionsList, currentUser);
         });
         if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {

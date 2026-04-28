@@ -1,3 +1,4 @@
+const ACCOUNT_MANAGEMENT = 'iaso_account_management';
 const COMPLETENESS = 'iaso_completeness';
 const COMPLETENESS_STATS = 'iaso_completeness_stats';
 const DATA_DEVICES = 'iaso_data_devices';
@@ -66,6 +67,7 @@ const METRIC_TYPES = 'iaso_metric_types';
 const VALIDATION_WORKFLOWS = 'iaso_validation_workflows';
 
 export {
+    ACCOUNT_MANAGEMENT,
     COMPLETENESS,
     COMPLETENESS_STATS,
     DATA_DEVICES,

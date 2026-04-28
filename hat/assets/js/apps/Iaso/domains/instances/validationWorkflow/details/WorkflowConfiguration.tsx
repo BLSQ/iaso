@@ -93,11 +93,11 @@ export const WorkflowConfiguration: FunctionComponent = () => {
                 </Box>
                 <WidgetPaper
                     className={classes.infoPaper}
-                    title={formatMessage(MESSAGES.nodes)}
+                    title={formatMessage(MESSAGES.steps)}
                 >
                     <Box className={classes.count}>
                         {`${(workflow?.node_templates ?? []).length} `}
-                        {formatMessage(MESSAGES.nodes)}
+                        {formatMessage(MESSAGES.steps)}
                     </Box>
                     <SortableTable
                         items={items}

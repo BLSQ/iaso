@@ -62,6 +62,15 @@ class IsAdminOrSuperUser(permissions.BasePermission):
         return bool(request.user and request.user.is_staff) or (request.user and request.user.is_superuser)
 
 
+class IsAdminOrSuperUserWithIasoProfile(IsAdminOrSuperUser):
+    """
+    Allows access only to admin users with a `iaso_profile`.
+    """
+
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and hasattr(request.user, "iaso_profile")
+
+
 class GenericReadWritePerm(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:

@@ -166,7 +166,7 @@ azure-storage-blob==12.19.0
 
 # SNT Malaria plugin.
 # ------------------------------------------------------------------------------
-snt-malaria-budgeting==0.8.0
+snt-malaria-budgeting==0.9.1
 django-countries==8.2.0  # https://github.com/SmileyChris/django-countries/tags
 
 # Sass compiler for template styles.

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-21 09:22+0000\n"
+"POT-Creation-Date: 2026-04-28 09:32+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
+
+#: iaso/api/api_import/filters.py iaso/api/pages.py iaso/api/payments/views.py
+msgid "User ID"
+msgstr "ID utilisateur"
 
 #: iaso/api/comment.py
 #, python-brace-format
@@ -190,6 +194,13 @@ msgstr "Aucune assignation à effacer"
 #, python-format
 msgid "Successfully deleted %(count)s assignments"
 msgstr "%(count)s assignations ont été supprimées avec succès"
+
+#: iaso/api/notifications/views.py
+#, python-format
+msgid "There is %(count)d failing import needing your attention."
+msgid_plural "There are %(count)d failing imports needing your attention."
+msgstr[0] "Il y a %(count)d import en échec nécessitant votre attention."
+msgstr[1] "Il y a %(count)d imports en échec nécessitant votre attention."
 
 #: iaso/api/openhexa/views.py
 msgid "Failed to retrieve pipelines"
@@ -390,10 +401,6 @@ msgstr "Limiter les résultats par nom ou slug"
 #: iaso/api/pages.py
 msgid "Limit on authentication required or not"
 msgstr "Limiter selon si l'authentification est requise ou non"
-
-#: iaso/api/pages.py iaso/api/payments/views.py
-msgid "User ID"
-msgstr "ID utilisateur"
 
 #: iaso/api/pages.py
 msgid "User Role IDs"
@@ -843,6 +850,14 @@ msgstr "Personnalisé"
 msgid "Other"
 msgstr "Autre"
 
+#: iaso/models/metric.py
+msgid "Population"
+msgstr "Population"
+
+#: iaso/models/metric.py
+msgid "Any"
+msgstr "Quelconque"
+
 #: iaso/models/org_unit.py
 msgid "Country"
 msgstr "Pays"
@@ -1127,6 +1142,10 @@ msgstr "Flux de travail"
 msgid "Validation workflows"
 msgstr "Circuit de validation"
 
+#: iaso/permissions/core_permissions.py
+msgid "Account management"
+msgstr "Gestion du compte"
+
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py
 msgid "Starting"
@@ -1270,6 +1289,10 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#, python-format
+#~ msgid "There are %(count)d failing imports needing your attention."
+#~ msgstr "Il y a %(count)d importations en échec nécessitant votre attention."
 
 #~ msgid "Nom d'utilisateur requis"
 #~ msgstr "Nom d'utilisateur requis"

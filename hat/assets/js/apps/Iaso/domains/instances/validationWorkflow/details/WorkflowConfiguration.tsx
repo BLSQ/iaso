@@ -77,7 +77,7 @@ export const WorkflowConfiguration: FunctionComponent = () => {
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Box mb={2}>
                     <Grid container spacing={2}>
-                        <Grid container item xs={4}>
+                        <Grid container item xs={12} md={8} lg={6}>
                             <WidgetPaper
                                 className={classes.infoPaper}
                                 title={formatMessage(MESSAGES.infos)}

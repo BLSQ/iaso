@@ -51,7 +51,7 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
         <TableRow>
             <TableCell
                 className={classes.leftCell}
-                sx={{ wordBreak: 'break-word' }}
+                sx={{ whiteSpace: 'nowrap' }}
             >
                 {label}
             </TableCell>

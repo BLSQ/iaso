@@ -174,7 +174,7 @@ export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
                         color="error"
                         href={cancelUrl}
                     >
-                        Cancel
+                        {formatMessage(MESSAGES.cancel)}
                     </Button>
                 )}
                 <BulkImportButton

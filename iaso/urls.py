@@ -59,7 +59,8 @@ from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_predefined_filters.views import FormPredefinedFiltersViewSet
 from .api.form_versions.views import FormVersionsViewSet
-from .api.forms import FormsViewSet, MobileFormViewSet
+from .api.forms.views import FormsViewSet
+from .api.forms.views_mobile import MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet

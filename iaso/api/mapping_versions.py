@@ -8,15 +8,15 @@ from rest_framework import permissions, serializers
 
 import iaso.models as m
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.models import FormVersion, MappingVersion
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 
 from .common import HasPermission, ModelViewSet, TimestampField
 
 
-class MappingVersionSerializer(DynamicFieldsModelSerializer):
+class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = MappingVersion
         default_fields = [
@@ -191,7 +191,7 @@ class MappingVersionsViewSet(ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_MAPPINGS_PERMISSION)]  # type: ignore
     serializer_class = MappingVersionSerializer
-    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackend]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]

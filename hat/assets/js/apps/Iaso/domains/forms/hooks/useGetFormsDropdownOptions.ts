@@ -74,7 +74,7 @@ export const useGetFormsDropdownOptions = (
     );
     const queryParams = useMemo(() => {
         return {
-            fields: allFields,
+            fields: allFields.join(','),
             order: 'name', // Default order
             ...params, // User params override defaults
         };

@@ -1,250 +1,31 @@
 import typing
 
-from copy import copy
 from datetime import timedelta
-from xml.sax.saxutils import escape
 
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Subquery
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, serializers, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
-from iaso.api.common import is_field_referenced
-from iaso.api.permission_checks import (
-    AuthenticationEnforcedPermission,
-    IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
-    ReadOnly,
-)
-from iaso.models import (
-    EntityDuplicateAnalyzis,
-    Form,
-    FormAttachment,
-    FormVersion,
-    Instance,
-    OrgUnit,
-    OrgUnitType,
-    Project,
-    ProjectFeatureFlags,
-)
-from iaso.models.base import Mapping
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, ModelViewSet, is_field_referenced
+from iaso.api.forms.utils import generate_manifest_for_form
+from iaso.api.permission_checks import AuthenticationEnforcedPermission, ReadOnly
+from iaso.api.serializers import AppIdSerializer
+from iaso.enketo.enketo_url import enketo_settings, verify_signed_url
+from iaso.models import Form, FormAttachment, Instance, Mapping, OrgUnit, ProjectFeatureFlags
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
-from ..enketo import enketo_settings
-from ..enketo.enketo_url import verify_signed_url
-from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, ModelViewSet, TimestampField
-from .enketo import public_url_for_enketo
-from .form_predefined_filters.serializers import FormPredefinedFilterSerializer
-from .projects import ProjectSerializer
-from .serializers import AppIdSerializer
-
-
-class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return super().has_permission(request, view)
-
-        return request.user.is_authenticated and request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
-
-    def has_object_permission(self, request, view, obj):
-        if not self.has_permission(request, view):
-            return False
-        return (
-            Form.objects_include_deleted.filter_for_user_and_app_id(request.user, request.query_params.get("app_id"))
-            .filter(id=obj.id)
-            .exists()
-        )
-
-
-class FormVersionNestedSerializer(serializers.ModelSerializer):
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
-
-    class Meta:
-        model = FormVersion
-        fields = ["id", "version_id", "file", "xls_file", "created_at", "updated_at"]
-
-
-class FormSerializer(DynamicFieldsModelSerializer):
-    class Meta:
-        model = Form
-        default_fields = [
-            "id",
-            "name",
-            "form_id",
-            "device_field",
-            "location_field",
-            "org_unit_types",
-            "org_unit_type_ids",
-            "projects",
-            "project_ids",
-            "period_type",
-            "single_per_period",
-            "periods_before_allowed",
-            "periods_after_allowed",
-            "latest_form_version",
-            "instances_count",
-            "instance_updated_at",
-            "created_at",
-            "updated_at",
-            "deleted_at",
-            "derived",
-            "fields",
-            "label_keys",
-            "reference_form_of_org_unit_types",
-            "legend_threshold",
-            "change_request_mode",
-            "has_mappings",
-            "validation_workflow",
-        ]
-        fields = [
-            "id",
-            "name",
-            "form_id",
-            "device_field",
-            "location_field",
-            "org_unit_types",
-            "org_unit_type_ids",
-            "projects",
-            "project_ids",
-            "period_type",
-            "single_per_period",
-            "periods_before_allowed",
-            "periods_after_allowed",
-            "latest_form_version",
-            "instances_count",
-            "instance_updated_at",
-            "created_at",
-            "updated_at",
-            "deleted_at",
-            "derived",
-            "possible_fields",
-            "label_keys",
-            "predefined_filters",
-            "has_attachments",
-            "reference_form_of_org_unit_types",
-            "legend_threshold",
-            "change_request_mode",
-            "has_mappings",
-            "possible_fields_with_latest_version",
-            "validation_workflow",
-        ]
-        read_only_fields = [
-            "id",
-            "form_id",
-            "org_unit_types",
-            "projects",
-            "instances_count",
-            "instance_updated_at",
-            "created_at",
-            "updated_at",
-            "possible_fields",
-            "fields",
-            "has_attachments",
-            "reference_form_of_org_unit_types",
-            "has_mappings",
-        ]
-
-    org_unit_types = serializers.SerializerMethodField()
-    org_unit_type_ids = serializers.PrimaryKeyRelatedField(
-        source="org_unit_types", many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
-    )
-    projects = ProjectSerializer(read_only=True, many=True)
-    project_ids = serializers.PrimaryKeyRelatedField(
-        source="projects", many=True, allow_empty=False, queryset=Project.objects.all()
-    )
-    latest_form_version = FormVersionNestedSerializer(source="latest_version", required=False)
-    instances_count = serializers.IntegerField(read_only=True)
-    instance_updated_at = TimestampField(read_only=True)
-    predefined_filters = FormPredefinedFilterSerializer(many=True, read_only=True)
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
-    deleted_at = TimestampField(allow_null=True, required=False)
-    has_attachments = serializers.SerializerMethodField()
-    reference_form_of_org_unit_types = serializers.SerializerMethodField()
-    has_mappings = serializers.BooleanField(read_only=True)
-    possible_fields_with_latest_version = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_org_unit_types(obj: Form):
-        return [t.as_dict() for t in obj.org_unit_types.all()]
-
-    @staticmethod
-    def get_reference_form_of_org_unit_types(obj: Form):
-        return [org_unit.as_dict() for org_unit in obj.reference_of_org_unit_types.all()]
-
-    @staticmethod
-    def get_has_attachments(obj: Form):
-        if hasattr(obj, "has_attachments"):
-            return obj.has_attachments
-        return obj.attachments.exists()
-
-    @staticmethod
-    def get_possible_fields_with_latest_version(obj: Form):
-        possible_fields = [
-            field for field in obj.possible_fields if field["type"] in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES
-        ]
-
-        latest_version = obj.latest_version
-        if not latest_version:
-            return possible_fields
-
-        # Get the field names from the latest version
-        latest_version_fields = set(question["name"] for question in latest_version.questions_by_name().values())
-
-        # Add a flag to each possible field indicating if it's part of the latest version
-        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in possible_fields]
-
-    def validate(self, data: typing.Mapping):
-        # validate projects (access check)
-        if "projects" in data:
-            for project in data["projects"]:
-                if self.context["request"].user.iaso_profile.account != project.account:
-                    raise serializers.ValidationError({"project_ids": "Invalid project ids"})
-
-            # validate org_unit_types against projects
-            allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
-            if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
-                raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
-
-        # If the period type is None, some period-specific fields must have specific values
-        if "period_type" in data:
-            tracker_errors = {}
-            if data["period_type"] is None:
-                if data["periods_before_allowed"] != 0:
-                    tracker_errors["periods_before_allowed"] = "Should be 0 when period type is not specified"
-                if data["periods_after_allowed"] != 0:
-                    tracker_errors["periods_after_allowed"] = "Should be 0 when period type is not specified"
-            else:
-                before = data.get("periods_before_allowed", 0)
-                after = data.get("periods_after_allowed", 0)
-                if before + after < 1:
-                    tracker_errors["periods_allowed"] = (
-                        "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
-                    )
-            if tracker_errors:
-                raise serializers.ValidationError(tracker_errors)
-        return data
-
-    def update(self, form, validated_data):
-        original = copy(form)
-        form = super(FormSerializer, self).update(form, validated_data)
-        log_modification(original, form, FORM_API, user=self.context["request"].user)
-        return form
-
-    def create(self, validated_data):
-        form = super(FormSerializer, self).create(validated_data)
-        log_modification(None, form, FORM_API, user=self.context["request"].user)
-        return form
+from .permissions import HasFormPermission
+from .serializers import FormSerializer
 
 
 @extend_schema(tags=["Forms"])
@@ -275,11 +56,9 @@ class FormsViewSet(ModelViewSet):
         {"title": "Date de modification", "width": 20},
     )
     EXPORT_FILE_NAME = "forms"
-    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackend]
-    EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
-    FORM_PK = "form_pk"
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
-    def get_queryset(self, mobile=False):
+    def get_queryset(self):
         form_objects = Form.objects
         if self.request.query_params.get("only_deleted", None):
             form_objects = Form.objects_only_deleted
@@ -333,7 +112,7 @@ class FormsViewSet(ModelViewSet):
 
         enable_count = is_field_referenced("instances_count", requested_fields, order) and not is_request_from_manifest
 
-        if not mobile and enable_count:
+        if enable_count:
             if profile and profile.org_units.exists():
                 orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
                 queryset = queryset.annotate(
@@ -396,13 +175,12 @@ class FormsViewSet(ModelViewSet):
                 "org_unit_types__sub_unit_types",
                 "org_unit_types__allow_creating_sub_unit_types",
             ]
-            if not mobile:
-                prefetch_relations.append(
-                    Prefetch(
-                        "projects__projectfeatureflags_set",
-                        queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
-                    )
+            prefetch_relations.append(
+                Prefetch(
+                    "projects__projectfeatureflags_set",
+                    queryset=ProjectFeatureFlags.objects.select_related("featureflag"),
                 )
+            )
             queryset = queryset.prefetch_related(*prefetch_relations)
 
         # optimize latest version loading to not trigger a select n+1 on form_version
@@ -508,55 +286,4 @@ class FormsViewSet(ModelViewSet):
                 "X-OpenRosa-Version": "1.0",
             },
             content="<error>Invalid URL signature</error>",
-        )
-
-
-def generate_manifest_for_form(form: Form, request: Request) -> HttpResponse:
-    attachments = form.attachments.all()
-    media_files = []
-    for attachment in attachments:
-        attachment_file_url: str = attachment.file.url
-        if not attachment_file_url.startswith("http"):
-            # Needed for local dev
-            attachment_file_url = public_url_for_enketo(request, attachment_file_url)
-        media_files.append(generate_manifest_media_file(attachment, attachment_file_url))
-
-    manifest = generate_manifest_structure(media_files)
-    return HttpResponse(
-        status=status.HTTP_200_OK,
-        content_type="text/xml",
-        headers={
-            "X-OpenRosa-Version": "1.0",
-        },
-        content=manifest,
-    )
-
-
-def generate_manifest_media_file(attachment: FormAttachment, url: str) -> str:
-    return f"""<mediaFile>
-        <filename>{escape(attachment.name)}</filename>
-        <hash>md5:{attachment.md5}</hash>
-        <downloadUrl>{escape(url)}</downloadUrl>
-    </mediaFile>"""
-
-
-def generate_manifest_structure(content: list[str]) -> str:
-    nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
-    return (
-        f"""<?xml version="1.0" encoding="UTF-8"?>
-<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
-    {nl.join(content)}
-</manifest>""",
-    )
-
-
-@extend_schema(tags=["Mobile", "Forms"])
-class MobileFormViewSet(FormsViewSet):
-    # Filtering out forms without form versions to prevent mobile app from crashing
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset(mobile=True)
-            .exclude(form_versions=None)
-            .prefetch_related("predefined_filters", "attachments", "reference_of_org_unit_types__sub_unit_types")
         )

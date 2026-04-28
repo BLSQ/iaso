@@ -7,7 +7,7 @@ from rest_framework import exceptions, parsers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import ModelViewSet
 from iaso.api.form_versions.permissions import HasFormVersionPermission
 from iaso.api.form_versions.serializers import (
@@ -41,7 +41,7 @@ class FormVersionsViewSet(ModelViewSet):
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
     http_method_names = ["get", "put", "post", "head", "options", "trace", "patch"]
-    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackend]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
     def get_serializer_class(self):
         if self.action == "preview":

@@ -185,6 +185,17 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertValidFormVersionData(form_version_data)
         self.assertHasField(form_version_data, "descriptor", dict)
 
+    def test_form_versions_dynamic_fields(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=:all")
+        form_version_data = self.assertJSONResponse(response, 200)
+        self.assertValidFormVersionData(form_version_data)
+        self.assertHasField(form_version_data, "descriptor", dict)
+
+        response = self.client.get(f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=id,created_at")
+        form_version_data = self.assertJSONResponse(response, 200)
+        self.assertCountEqual(form_version_data.keys(), ["id", "created_at"])
+
     def test_form_versions_update(self):
         """PUT /formversions/<form_id>: ok"""
         form_version = self.form_2.form_versions.first()

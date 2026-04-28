@@ -10,7 +10,7 @@ export type ApiParams = {
     searches: string;
     asLocation?: string;
     locationLimit: string;
-    fields?: string[];
+    fields?: string;
 };
 
 type Result = {

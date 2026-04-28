@@ -553,7 +553,7 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         for item in response_data["results"]:
             self.assertCountEqual(item.keys(), ["id", "user_id", "user_display"])
 
-        response = self.client.get(reverse("profiles-list"), data={"fields": ["email", "last_name"]})
+        response = self.client.get(reverse("profiles-list"), data={"fields": ",".join(["email", "last_name"])})
         response_data = self.assertJSONResponse(response, 200)
         # self.assertValidProfileListData(response_data, 7)
 

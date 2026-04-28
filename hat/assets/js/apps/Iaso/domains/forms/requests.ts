@@ -14,7 +14,7 @@ import { Form } from './types/forms';
 export const useGetForm = (
     formId: number | string | undefined,
     enabled = Boolean(formId) && formId !== '0',
-    fields?: string[] | undefined,
+    fields?: string,
     appId?: string,
 ): UseQueryResult<Form, Error> => {
     const queryKey: any[] = ['forms', formId];

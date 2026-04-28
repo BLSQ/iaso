@@ -27,7 +27,7 @@ class BulkCreateUserFileTestCase(FileUploadToTestCase):
             )
 
         expected_file_name = (
-            f"unknown_account/bulk_create_user/{bulk_create.created_at.strftime('%Y_%m')}/{self.FILE_NAME}"
+            f"unknown_account/bulk_create_user_file/{bulk_create.created_at.strftime('%Y_%m')}/{self.FILE_NAME}"
         )
         self.assertEqual(bulk_create.file.name, expected_file_name)
 

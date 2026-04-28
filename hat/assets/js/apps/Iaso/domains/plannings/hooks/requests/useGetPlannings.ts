@@ -81,7 +81,7 @@ const getPlanningsOptions = async (formIds?: string): Promise<Planning[]> => {
 };
 export const useGetPlanningsOptions = (
     formIds?: string,
-    enabled = true,
+    enabled = false,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
     const queryKey: any[] = ['planningsList', formIds];
     return useSnackQuery({

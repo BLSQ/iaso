@@ -22,6 +22,7 @@ services:
             - ./entrypoint.sh:/opt/app/entrypoint.sh
             - ./README.md:/opt/app/README.md
             - ./tsconfig.json:/opt/app/tsconfig.json
+            - ./vitest.config.ts:/opt/app/vitest.config.ts
             - ./babel-register.js:/opt/app/babel-register.js
             - ./mypy.ini:/opt/app/mypy.ini
             - ./pyproject.toml:/opt/app/pyproject.toml

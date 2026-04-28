@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0379_alter_corepermissionsupport_options'),
+        ("iaso", "0379_alter_corepermissionsupport_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='metrictype',
-            name='metric_kind',
-            field=models.CharField(choices=[('population', 'Population'), ('any', 'Any')], default='any', max_length=50),
+            model_name="metrictype",
+            name="metric_kind",
+            field=models.CharField(
+                choices=[("population", "Population"), ("any", "Any")], default="any", max_length=50
+            ),
         ),
     ]

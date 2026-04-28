@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     FormControlLabel,
@@ -6,16 +6,18 @@ import {
     Collapse,
     Alert,
     Typography,
+    Container,
+    Button,
 } from '@mui/material';
 import {
     useSafeIntl,
-    makeFullModal,
     FilesUpload,
-    SimpleModal,
     LoadingSpinner,
+    useRedirectTo,
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
-import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
+import { baseUrls } from 'Iaso/constants/urls';
+import { DropdownSampleDownload } from 'Iaso/domains/users/components/BulkImport/DropdownSampleDownload';
 import { useApiErrorValidation } from 'Iaso/libs/validation';
 import MESSAGES from '../../messages';
 import { BulkImportButton } from './BulkImportButton';
@@ -24,24 +26,17 @@ import { useBulkUserValidation } from './hooks/useBulkUserValidation';
 import { useUploadCsv } from './hooks/useUploadCsv';
 import { ValidationErrorTable } from './ValidationErrorTable';
 
-type Props = {
-    closeDialog: () => void;
-    isOpen: boolean;
-    id?: string;
+type BulkImportFormProps = {
+    cancelUrl?: string;
 };
 
 type Values = {
     file?: File[];
 };
 
-export const BulkImportDialogModal: FunctionComponent<Props> = ({
-    isOpen,
-    closeDialog,
-    id,
-}) => {
+export const BulkImportForm = ({ cancelUrl }: BulkImportFormProps) => {
     const { formatMessage } = useSafeIntl();
-    const titleMessage = formatMessage(MESSAGES.createUsersFromFile);
-
+    const redirectTo = useRedirectTo();
     // State for default values toggle and values
     const [showDefaults, setShowDefaults] = useState(false);
 
@@ -53,7 +48,7 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         mutation: save,
     } = useApiErrorValidation<Partial<any>, any>({
         mutationFn: upload,
-        onSuccess: () => closeDialog(),
+        onSuccess: () => redirectTo(baseUrls.users),
     });
 
     const validationSchema = useBulkUserValidation(apiErrors, payload);
@@ -73,25 +68,11 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         values,
         setFieldValue,
         setFieldTouched,
-        resetForm,
         handleSubmit,
         isValid,
+        dirty,
+        isSubmitting,
     } = formik;
-
-    const allowConfirm = isValid && !isLoading;
-    const Buttons = ({ closeDialog: close }: { closeDialog: () => void }) => {
-        return (
-            <FileUploadButtons
-                allowConfirm={allowConfirm}
-                isLoading={isLoading}
-                closeDialog={close}
-                onConfirm={() => {
-                    handleSubmit();
-                }}
-                url="/api/bulkcreateuser/getsample/"
-            />
-        );
-    };
 
     // as formik error parsing flats everything as a string, we need to access this in a "raw" way
     const fileContentErrors = React.useMemo(() => {
@@ -99,23 +80,14 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
     }, [error?.details]);
 
     return (
-        <SimpleModal
-            titleMessage={titleMessage}
-            maxWidth={fileContentErrors?.length > 0 ? 'lg' : 'sm'}
-            open={isOpen}
-            closeDialog={closeDialog}
-            id={id ?? 'bulk-user-create'}
-            dataTestId="test-bulk-user-create"
-            onClose={() => {
-                resetForm();
-                setShowDefaults(false);
-            }}
-            buttons={Buttons}
-        >
+        <Container maxWidth="md" sx={{ mt: 6 }}>
+            {isLoading && <LoadingSpinner />}
             <Box mt={2}>
                 <FilesUpload
                     accept={{
                         'text/csv': ['.csv'],
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                            ['.xls', '.xlsx'],
                     }}
                     files={values.file ?? []}
                     onFilesSelect={files => {
@@ -125,7 +97,29 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                     required
                     multi={false}
                     errors={errors?.file ? [errors?.file] : undefined}
-                    placeholder={formatMessage(MESSAGES.selectCsvFile)}
+                    placeholder={formatMessage(MESSAGES.selectFile)}
+                />
+            </Box>
+            <Box mt={2} sx={{ fontSize: '12px' }}>
+                {formatMessage(MESSAGES.bulkImportDialogDescription)}
+            </Box>
+            <Box mt={2}>
+                <DropdownSampleDownload
+                    options={[
+                        {
+                            text: 'CSV',
+                            href: '/api/bulkcreateuser/get-sample-csv/',
+                            component: 'a',
+                            download: 'true',
+                        },
+                        {
+                            text: 'XLSX',
+                            href: '/api/bulkcreateuser/get-sample-xlsx/',
+                            component: 'a',
+                            download: 'true',
+                        },
+                    ]}
+                    buttonText={formatMessage(MESSAGES.downloadTemplate)}
                 />
             </Box>
 
@@ -167,16 +161,27 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                     <ValidationErrorTable errors={fileContentErrors} />
                 </Box>
             )}
-
-            {/* The loading spinner is set so users can still close the modal when the users are loading */}
-            {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
-            <Box mt={2} sx={{ fontSize: '12px' }}>
-                {formatMessage(MESSAGES.bulkImportDialogDescription)}
+            <Box
+                mt={2}
+                sx={{
+                    display: 'flex',
+                    justifyContent: cancelUrl ? 'space-between' : 'flex-end',
+                }}
+            >
+                {cancelUrl && (
+                    <Button
+                        variant={'contained'}
+                        color="error"
+                        href={cancelUrl}
+                    >
+                        Cancel
+                    </Button>
+                )}
+                <BulkImportButton
+                    onClick={() => handleSubmit()}
+                    disabled={isSubmitting || !isValid || !dirty || isLoading}
+                />
             </Box>
-        </SimpleModal>
+        </Container>
     );
 };
-
-const withButton = makeFullModal(BulkImportDialogModal, BulkImportButton);
-
-export { withButton as BulkImportUsersDialog };

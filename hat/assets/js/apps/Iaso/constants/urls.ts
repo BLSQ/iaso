@@ -337,6 +337,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    usersBulkCreate: {
+        url: 'settings/users/management/bulk-create',
+        params: ['accountId'],
+    },
     userDetails: {
         url: 'settings/users/management/details',
         params: ['accountId', 'userId'],
@@ -703,6 +707,7 @@ type IasoBaseUrls = {
     modules: string;
     users: string;
     userDetails: string;
+    usersBulkCreate: string;
     usersHistory: string;
     userRoles: string;
     projects: string;

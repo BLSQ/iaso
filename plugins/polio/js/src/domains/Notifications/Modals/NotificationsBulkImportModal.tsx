@@ -10,9 +10,9 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { BulkImportButton } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/components/BulkImportDialog/BulkImportButton';
-import { useApiErrorValidation } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { FileUploadButtons } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/FileUploadButtons';
+import { BulkImportButton } from 'Iaso/domains/users/components/BulkImport/BulkImportButton';
+import { useApiErrorValidation } from 'Iaso/libs/validation';
+import { FileUploadButtons } from 'Iaso/components/Buttons/FileUploadButtons';
 
 import MESSAGES from '../messages';
 import { XlsxFile } from '../types';

@@ -4,18 +4,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import {
-    Alert,
-    Box,
-    Grid,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-    Chip,
-} from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import {
     IntlMessage,
     LoadingSpinner,
@@ -38,6 +27,7 @@ import {
     previewFormVersion,
     updateFormVersion,
 } from '../requests';
+import FormVersionsDiffConfirmation from './FormVersionsDiffConfirmation';
 
 const emptyVersion = {
     id: null,
@@ -273,141 +263,7 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                 {...dialogProps}
             >
                 {step === 'confirming' && diff ? (
-                    <Box mt={1}>
-                        <Alert severity="warning" sx={{ mb: 2 }}>
-                            {formatMessage(MESSAGES.diffWarning, {
-                                versionId: diff.previous_version_id ?? '—',
-                            })}
-                        </Alert>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                gap: 1,
-                                flexWrap: 'wrap',
-                                mb: 3,
-                            }}
-                        >
-                            <Chip
-                                size="small"
-                                color="success"
-                                label={`+${diff.added_questions.length} ${formatMessage(MESSAGES.questionAdded)}`}
-                            />
-                            <Chip
-                                size="small"
-                                color="error"
-                                label={`-${diff.removed_questions.length} ${formatMessage(MESSAGES.questionRemoved)}`}
-                            />
-                            <Chip
-                                size="small"
-                                color="warning"
-                                label={`~${diff.modified_questions.length} ${formatMessage(MESSAGES.questionModified)}`}
-                            />
-                        </Box>
-                        {diff.removed_questions.length > 0 && (
-                            <Box mb={2}>
-                                <Typography
-                                    variant="subtitle2"
-                                    gutterBottom
-                                    color="error"
-                                >
-                                    {formatMessage(
-                                        MESSAGES.removedQuestionsSection,
-                                        {
-                                            count: diff.removed_questions
-                                                .length,
-                                        },
-                                    )}
-                                </Typography>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>
-                                                {formatMessage(
-                                                    MESSAGES.questionName,
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatMessage(
-                                                    MESSAGES.questionLabel,
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatMessage(
-                                                    MESSAGES.questionType,
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {diff.removed_questions.map(q => (
-                                            <TableRow key={q.name}>
-                                                <TableCell>{q.name}</TableCell>
-                                                <TableCell>{q.label}</TableCell>
-                                                <TableCell>{q.type}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </Box>
-                        )}
-                        {diff.modified_questions.length > 0 && (
-                            <Box>
-                                <Typography
-                                    variant="subtitle2"
-                                    gutterBottom
-                                    color="warning.main"
-                                >
-                                    {formatMessage(
-                                        MESSAGES.modifiedQuestionsSection,
-                                        {
-                                            count: diff.modified_questions
-                                                .length,
-                                        },
-                                    )}
-                                </Typography>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>
-                                                {formatMessage(
-                                                    MESSAGES.questionName,
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatMessage(
-                                                    MESSAGES.questionLabel,
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatMessage(
-                                                    MESSAGES.questionOldType,
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatMessage(
-                                                    MESSAGES.questionNewType,
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {diff.modified_questions.map(q => (
-                                            <TableRow key={q.name}>
-                                                <TableCell>{q.name}</TableCell>
-                                                <TableCell>{q.label}</TableCell>
-                                                <TableCell>
-                                                    {q.old_type}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {q.new_type}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </Box>
-                        )}
-                    </Box>
+                    <FormVersionsDiffConfirmation diff={diff} />
                 ) : (
                     <Grid container spacing={4} justifyContent="flex-start">
                         <Grid xs={12} item>

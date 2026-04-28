@@ -921,6 +921,57 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(ids, [child.id])
         self.assertTrue(r[0]["has_geo_json"])
 
+    def test_planning_orgunits_children_search_by_name(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type search")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type search")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-search",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_alpha = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="alpha-clinic",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="beta-clinic",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-search",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        response = self.client.get(
+            f"/api/microplanning/orgunits/children/?planning={planning.id}&search=alpha",
+            format="json",
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual([ou["id"] for ou in r], [child_alpha.id])
+
     def test_planning_orgunits_children_with_sampling_group(self):
         self.client.force_authenticate(self.user)
         parent_type = OrgUnitType.objects.create(name="Parent type sampling")

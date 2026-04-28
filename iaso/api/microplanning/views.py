@@ -76,6 +76,9 @@ class PlanningOrgunitsViewSet(AuditMixin, GenericViewSet):
     @action(detail=False, methods=["get"])
     def children(self, request, *args, **kwargs):
         queryset = self._children_org_units_queryset(request, with_geo=True)
+        search = request.query_params.get("search", None)
+        if search:
+            queryset = queryset.filter(name__icontains=search)
         return Response(PlanningOrgUnitSerializer(queryset, many=True).data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="children-paginated")

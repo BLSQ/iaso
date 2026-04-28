@@ -18,8 +18,10 @@ class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
         super().setUp()
         self.MODULES = [module.codename for module in MODULES]
-        self.account = m.Account.objects.create(name="Global Health Initiative", modules=self.MODULES)
-        self.another_account = m.Account.objects.create(name="Another account")
+        self.account = m.Account.objects.create(
+            name="Global Health Initiative", modules=self.MODULES, enforce_password_validation=False
+        )
+        self.another_account = m.Account.objects.create(name="Another account", enforce_password_validation=False)
 
         # TODO : make the org unit creations shorter and reusable
         self.project = m.Project.objects.create(

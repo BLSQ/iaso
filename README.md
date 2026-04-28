@@ -132,11 +132,11 @@ application.
 Other environment variables can be provided by a [.env
 file](https://docs.docker.com/v17.12/compose/environment-variables/#the-env-file).
 
-As a starting point, you can copy the sample .env.dist file and edit it
+As a starting point, you can copy the sample .env.example file and edit it
 to your needs.
 
 ```bash
-cp .env.dist .env
+cp .env.example .env
 ```
 
 > **note**

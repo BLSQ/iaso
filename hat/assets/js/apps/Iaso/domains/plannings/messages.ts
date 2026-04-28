@@ -215,9 +215,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.plannings.label.seeSamplingResults',
         defaultMessage: 'See sampling results',
     },
+    viewSamplingResultDetails: {
+        id: 'iaso.plannings.label.viewSamplingResultDetails',
+        defaultMessage: 'View sampling result details',
+    },
     samplingName: {
         id: 'iaso.plannings.label.samplingName',
         defaultMessage: 'Sampling name',
+    },
+    samplingResultCreatedBy: {
+        id: 'iaso.forms.created_by',
+        defaultMessage: 'Created by',
+    },
+    samplingResultParameters: {
+        id: 'iaso.plannings.label.samplingResultParameters',
+        defaultMessage: 'Parameters',
     },
     selectSamplingResult: {
         id: 'iaso.plannings.label.selectSamplingResult',
@@ -286,6 +298,10 @@ const MESSAGES = defineMessages({
     close: {
         id: 'iaso.label.close',
         defaultMessage: 'Close',
+    },
+    criteria: {
+        id: 'iaso.plannings.label.criteria',
+        defaultMessage: 'Criteria',
     },
     quantity: {
         defaultMessage: 'Qty',

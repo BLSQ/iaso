@@ -89,7 +89,7 @@ export type SamplingResult = {
     group_id?: number;
     group_details?: SamplingGroupDetails;
     parameters: Record<string, any>;
-    created_at: string;
+    created_at: number;
     created_by: number;
     created_by_details: UserDetails;
 };

@@ -118,6 +118,7 @@ pip-selfcheck.json
 
 # dev environment
 .env*
+!.env.example
 !.env.smoke.template
 \.idea/*
 \.run/*

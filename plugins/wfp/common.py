@@ -117,6 +117,7 @@ NEW_GUIDE_LINES_FORMS = [
     "child_antropometric_followUp_tsfp_2",
 ]
 
+ACCOUNT_WITH_GUIDELINE = "South Sudan"
 
 # ---------------------------------------------------------------------------
 # Field extraction helpers
@@ -308,7 +309,7 @@ def extract_weight(data):
     weight = data.get("weight_kgs")
 
     if weight == "":
-        return 0.0
+        return None
 
     if weight not in (None, ""):
         return _safe_float(weight)
@@ -589,7 +590,7 @@ def compute_weight_gain(initial_weight, current_weight, duration_days):
     non-zero.  Both are >= 0.
     """
     if not initial_weight or not current_weight:
-        return 0.0, 0.0
+        return None, None
 
     initial = float(initial_weight)
     current = float(current_weight)
@@ -756,6 +757,9 @@ class ETL:
         entirely (invalid data, no journeys, etc.).
         """
         beneficiary_info = self._extract_beneficiary_info(submissions)
+        guidelines = None
+        if account.name == ACCOUNT_WITH_GUIDELINE:
+            guidelines = beneficiary_info.get("guidelines")
 
         if not self._is_valid_beneficiary(beneficiary_info):
             return None
@@ -767,7 +771,7 @@ class ETL:
                 gender=beneficiary_info["gender"],
                 birth_date=beneficiary_info["birth_date"],
                 account=account,
-                guidelines=beneficiary_info.get("guidelines", "OLD"),
+                guidelines=guidelines,
             )
         else:
             beneficiary = Beneficiary.objects.filter(entity_id=entity_id).first()
@@ -994,8 +998,8 @@ class ETL:
 
         # --- Weight & duration ------------------------------------------
         duration = None
-        weight_gain = 0.0
-        weight_loss = 0.0
+        weight_gain = None
+        weight_loss = None
         effective_end = end_date or last_visit_date
 
         start_d = _to_date(start_date)

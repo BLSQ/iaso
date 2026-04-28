@@ -49,6 +49,7 @@ class PaymentViewSetAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/payments/")
         r = self.assertJSONResponse(response, 200)
+        self.assertIn("count", r)
         results = r["results"]
         result = results[0]
         self.assertEqual(len(results), 1)

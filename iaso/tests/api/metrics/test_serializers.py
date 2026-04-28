@@ -34,7 +34,7 @@ class MetricTypeSerializerTestCase(TestCase):
             "comments",
             "legend_config",
             "legend_type",
-            "is_population",
+            "metric_kind",
             "origin",
             "created_at",
             "updated_at",
@@ -72,7 +72,7 @@ class MetricTypeWriteSerializerTestCase(TestCase):
             "units": "units",
             "unit_symbol": "u",
             "description": "An existing metric type",
-            "is_population": True,
+            "metric_kind": "population",
             "origin": "custom",
             "legend_config": {
                 "domain": [10, 20, 30, 40, 50, 60, 70],
@@ -98,7 +98,7 @@ class MetricTypeWriteSerializerTestCase(TestCase):
             "units",
             "unit_symbol",
             "legend_type",
-            "is_population",
+            "metric_kind",
             "origin",
             "legend_config",
         }
@@ -115,7 +115,7 @@ class MetricTypeWriteSerializerTestCase(TestCase):
                 "units": "updated units",
                 "unit_symbol": "uu",
                 "legend_type": "threshold",
-                "is_population": True,
+                "metric_kind": "population",
                 "origin": "custom",
                 "legend_config": {
                     "domain": [5.0, 15.0, 25.0, 35.0],
@@ -133,7 +133,7 @@ class MetricTypeWriteSerializerTestCase(TestCase):
         self.assertEqual(updated_metric_type.units, "updated units")
         self.assertEqual(updated_metric_type.unit_symbol, "uu")
         self.assertEqual(updated_metric_type.legend_type, "threshold")
-        self.assertTrue(updated_metric_type.is_population)
+        self.assertEqual(updated_metric_type.metric_kind, "population")
         self.assertEqual(updated_metric_type.origin, "custom")
 
         expected_legend_config = {
@@ -242,7 +242,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             "units": "units",
             "unit_symbol": "u",
             "description": "An existing metric type",
-            "is_population": True,
+            "metric_kind": "population",
             "origin": "custom",
             "legend_config": {
                 "domain": [10, 20, 30, 40, 50, 60, 70],
@@ -260,7 +260,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             "units",
             "unit_symbol",
             "legend_type",
-            "is_population",
+            "metric_kind",
             "origin",
             "legend_config",
         }
@@ -301,17 +301,17 @@ class MetricTypeCreateSerializerTestCase(TestCase):
         self.assertEqual(metric_type.unit_symbol, self.request_data["unit_symbol"])
         self.assertEqual(metric_type.description, self.request_data["description"])
         self.assertEqual(metric_type.legend_type, self.request_data["legend_type"])
-        self.assertTrue(metric_type.is_population)
+        self.assertEqual(metric_type.metric_kind, self.request_data["metric_kind"])
         self.assertEqual(metric_type.origin, self.request_data["origin"])
 
-    def test_create_metric_type_defaults_is_population_false(self):
+    def test_create_metric_type_defaults_metric_kind_any(self):
         serializer_context = {"request": self.request}
         data = self.request_data.copy()
-        data.pop("is_population")
+        data.pop("metric_kind")
         serializer = MetricTypeCreateSerializer(data=data, context=serializer_context)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         metric_type = serializer.save()
-        self.assertFalse(metric_type.is_population)
+        self.assertEqual(metric_type.metric_kind, "any")
 
         expected_legend_config = {
             "domain": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0],

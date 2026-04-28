@@ -28,7 +28,7 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "comments",
             "legend_config",
             "legend_type",
-            "is_population",
+            "metric_kind",
             "origin",
             "created_at",
             "updated_at",
@@ -49,7 +49,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     unit_symbol = serializers.CharField(required=False, allow_blank=True, max_length=2)
     origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
     legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
-    is_population = serializers.BooleanField(required=False, default=False)
+    metric_kind = serializers.ChoiceField(choices=MetricType.MetricKind, required=False, allow_blank=True)
     legend_config = JSONSchemaField(schema=MetricType.LEGEND_CONFIG_SCHEMA, allow_null=False, write_only=True)
 
     class Meta:
@@ -61,7 +61,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
             "units",
             "unit_symbol",
             "legend_type",
-            "is_population",
+            "metric_kind",
             "origin",
             "legend_config",
         ]

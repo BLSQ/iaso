@@ -1,3 +1,5 @@
+import csv
+
 import pandas as pd
 
 from django.utils.translation import gettext_lazy as _
@@ -136,7 +138,9 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         if not value.name.endswith(".csv"):
             raise serializers.ValidationError(_("The file must be a CSV."))
 
-        df = pd.read_csv(value)
+        dialect = csv.Sniffer().sniff(value.read(1024).decode("utf-8", errors="ignore"))
+        value.seek(0)  # Reset file pointer after reading for dialect inference
+        df = pd.read_csv(value, sep=dialect.delimiter)
 
         header_errors = get_missing_headers(df, REQUIRED_METRIC_VALUES_HEADERS)
         if header_errors:

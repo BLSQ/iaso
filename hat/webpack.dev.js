@@ -67,7 +67,6 @@ module.exports = {
             'moment',
             'leaflet',
             'leaflet-draw',
-            'prop-types',
             'typescript',
             'video.js',
         ],

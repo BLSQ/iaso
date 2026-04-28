@@ -1,3 +1,4 @@
+import React, { ReactElement, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditLocationIcon from '@mui/icons-material/EditLocation';
 import LinkIcon from '@mui/icons-material/Link';
@@ -6,7 +7,6 @@ import LockIcon from '@mui/icons-material/Lock';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { DialogContentText } from '@mui/material';
 import { ExportButton, useSafeIntl } from 'bluesquare-components';
-import React, { ReactElement, useMemo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Nullable } from '../../../types/utils';

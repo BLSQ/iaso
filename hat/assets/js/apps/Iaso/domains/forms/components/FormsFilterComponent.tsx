@@ -8,11 +8,28 @@ import {
 } from 'bluesquare-components';
 import L from 'leaflet';
 import { useGetColors, getColor } from 'Iaso/hooks/useGetColors';
+import { Instance } from '../../instances/types/instance';
 import { useGetInstances } from '../hooks/useGetInstances';
 import MESSAGES from '../messages';
+import { Form } from '../types/forms';
+
+type instance = {
+    id: number;
+    form_id: Instance['form_id'];
+    form_name: Instance['form_name'];
+    latitude?: Instance['latitude'];
+    longitude?: Instance['longitude'];
+};
+
+type newForms = {
+    id: Form['id'];
+    name: Form['name'];
+    color: string;
+    instances: instance[];
+};
 
 type Props = {
-    formsSelected: any[];
+    formsSelected: newForms[];
     setFormsSelected: React.Dispatch<React.SetStateAction<any>>;
     currentOrgUnit: Record<string, any>;
     map: Record<string, any>;
@@ -31,11 +48,13 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
 
     const { data: colors } = useGetColors(true);
     const forms = useMemo(() => {
-        const newForms = [];
+        const newForms: newForms[] = [];
         if (data?.instances) {
-            const uniqueFormIds = new Set(data.instances.map(i => i.form_id));
+            const uniqueFormIds = new Set(
+                data.instances.map((i: instance) => i.form_id),
+            );
 
-            data.instances.forEach(i => {
+            data.instances.forEach((i: instance) => {
                 if (uniqueFormIds.has(i.form_id)) {
                     const exisitingFormIndex = newForms.findIndex(
                         f => f.id === i.form_id,
@@ -58,9 +77,11 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
 
     const computedBounds = useMemo(() => {
         const latLngs = formsSelected
-            .flatMap(form => form.instances || [])
-            .filter(i => i.latitude && i.longitude)
-            .map(i => L.latLng(i.latitude, i.longitude));
+            .flatMap((form: newForms) => form.instances || [])
+            .filter((i: instance) => i.latitude && i.longitude)
+            .map((i: instance) =>
+                L.latLng(i.latitude as number, i.longitude as number),
+            );
         if (latLngs.length === 0) return undefined;
         const bounds = L.latLngBounds(latLngs);
         return bounds.isValid() ? bounds : undefined;
@@ -93,8 +114,13 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
                         clearable
                         multi
                         value={formsSelected}
-                        getOptionLabel={option => option && option.name}
-                        getOptionSelected={(option, val) => {
+                        getOptionLabel={(option: newForms) =>
+                            option && option.name
+                        }
+                        getOptionSelected={(
+                            option: newForms,
+                            val: newForms,
+                        ) => {
                             return val && option.id === val.id;
                         }}
                         options={forms}
@@ -102,7 +128,7 @@ export const FormsFilterComponent: FunctionComponent<Props> = ({
                         onChange={newValue => {
                             setFormsSelected(newValue || []);
                         }}
-                        renderTags={renderTags(o => o.name)}
+                        renderTags={renderTags((o: newForms) => o.name)}
                     />
                 </Grid>
                 <Grid

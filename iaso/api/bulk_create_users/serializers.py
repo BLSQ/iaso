@@ -25,7 +25,7 @@ from iaso.api.common.serializer_fields import (
 )
 from iaso.api.common.validators import FileTypeValidator
 from iaso.api.validation_workflows.serializers.common import CurrentAccountDefault
-from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
+from iaso.models import BulkCreateUserFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_MANAGED_PERMISSION
 from iaso.tasks.bulk_create_users_email import send_bulk_email_invitations
 
@@ -301,7 +301,7 @@ class BulkCreateUserSerializer(BulkCreateUserSerializerFileMixin, ModelSerialize
     created_by = serializers.HiddenField(default=CurrentUserDefault(), write_only=True)
 
     class Meta:
-        model = BulkCreateUserCsvFile
+        model = BulkCreateUserFile
         fields = [
             "file",
             "default_permissions",

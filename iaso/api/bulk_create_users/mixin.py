@@ -11,7 +11,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 
 from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
-from iaso.api.bulk_create_users.utils import detect_multi_field_value_splitter
+from iaso.api.bulk_create_users.utils import (
+    detect_multi_field_value_splitter_csv,
+    detect_multi_field_value_splitter_xls,
+)
 
 
 log = logging.getLogger(__name__)
@@ -110,6 +113,7 @@ class BulkCreateUserSerializerFileMixin(serializers.Serializer):
             df.columns = df.columns.str.strip()
 
             missing_columns = set(BULK_CREATE_USER_COLUMNS_LIST) - set(df.columns)
+            reader = df.to_dict(orient="records")
 
             if missing_columns:
                 raise serializers.ValidationError(
@@ -148,7 +152,8 @@ class BulkCreateUserSerializerFileMixin(serializers.Serializer):
 
         if self._file_type == BulkCreateUserSerializerFileType.CSV:
             reader = csv.DictReader(io.StringIO(file.read().decode("utf-8")), dialect=self.dialect)
-            for row in reader:
+            rows = list(reader)
+            for row in rows:
                 if row.get("password", ""):
                     row["password"] = (
                         "*" * 6
@@ -157,7 +162,7 @@ class BulkCreateUserSerializerFileMixin(serializers.Serializer):
             output = io.StringIO()
             writer = csv.DictWriter(output, fieldnames=reader.fieldnames)
             writer.writeheader()
-            writer.writerows(list(reader))
+            writer.writerows(rows)
             output.seek(0)
             return SimpleUploadedFile(
                 name=file.name,
@@ -196,6 +201,7 @@ class BulkCreateUserSerializerFileMixin(serializers.Serializer):
                 content=output.getvalue(),
                 content_type=content_type,
             )
+        raise NotImplementedError
 
     def _pre_process_row(self, row):
         """
@@ -221,9 +227,9 @@ class BulkCreateUserSerializerFileMixin(serializers.Serializer):
                             [
                                 i.strip()
                                 for i in v.split(
-                                    detect_multi_field_value_splitter(self.dialect, v)
+                                    detect_multi_field_value_splitter_csv(self.dialect, v)
                                     if self._file_type == BulkCreateUserSerializerFileType.CSV
-                                    else ","
+                                    else detect_multi_field_value_splitter_xls(v)
                                 )
                             ]
                             if isinstance(v, str)

@@ -19,7 +19,7 @@ from django_sql_dashboard.models import Dashboard
 from hat.audit.models import Modification
 from iaso.models import (
     Account,
-    BulkCreateUserCsvFile,
+    BulkCreateUserFile,
     CommentIaso,
     ExportLog,
     Form,
@@ -317,8 +317,8 @@ class Command(BaseCommand):
         )
 
         print(
-            "BulkCreateUserCsvFile",
-            BulkCreateUserCsvFile.objects.filter(created_by__in=[p.user for p in profiles.all()]).delete(),
+            "BulkCreateUserFile",
+            BulkCreateUserFile.objects.filter(created_by__in=[p.user for p in profiles.all()]).delete(),
         )
 
         print("users_profile (tripl old table)")

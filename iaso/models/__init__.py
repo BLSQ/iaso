@@ -1,6 +1,6 @@
 from .account import Account, AccountFeatureFlag
 from .base import *
-from .bulk_create_user_csv_file import BulkCreateUserCsvFile
+from .bulk_create_user_csv_file import BulkCreateUserFile
 from .comment import CommentIaso
 from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
@@ -45,7 +45,7 @@ __all__ = [
     "TEXT",
     "Account",
     "AccountFeatureFlag",
-    "BulkCreateUserCsvFile",
+    "BulkCreateUserFile",
     "CommentIaso",
     "DataSource",
     "DataSourceVersionsSynchronization",

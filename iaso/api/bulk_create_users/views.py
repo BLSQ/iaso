@@ -11,7 +11,7 @@ from hat.audit.models import PROFILE_API_BULK
 from iaso.api.bulk_create_users.permissions import HasUserPermission
 from iaso.api.bulk_create_users.serializers import BulkCreateUserSerializer
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.models import BulkCreateUserCsvFile
+from iaso.models import BulkCreateUserFile
 
 
 @extend_schema(tags=["Profiles", "Users"])
@@ -53,7 +53,7 @@ class BulkCreateUserFromCsvViewSet(CreateModelMixin, GenericViewSet):
     """
 
     permission_classes = [HasUserPermission]
-    model = BulkCreateUserCsvFile
+    model = BulkCreateUserFile
     serializer_class = BulkCreateUserSerializer
     parser_classes = [MultiPartParser]
 

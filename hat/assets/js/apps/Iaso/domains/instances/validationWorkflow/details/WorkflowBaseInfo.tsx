@@ -51,7 +51,7 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
         <TableRow>
             <TableCell
                 className={classes.leftCell}
-                sx={{ whiteSpace: 'nowrap' }}
+                sx={{ whiteSpace: 'nowrap' }}   
             >
                 {label}
             </TableCell>

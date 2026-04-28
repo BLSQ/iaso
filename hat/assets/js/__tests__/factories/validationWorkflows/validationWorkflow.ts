@@ -2,8 +2,6 @@ import { faker } from '@faker-js/faker';
 import { Factory } from 'fishery';
 import {
     NestedNodeTemplate,
-    ValidationWorkflowListResponse,
-    ValidationWorkflowListResponseItem,
     ValidationWorkflowRetrieveResponseItem,
 } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 
@@ -36,34 +34,4 @@ export const validationWorkflowRetrieveFactory = Factory.define<
               transientParams?.nodeTemplatesLength ?? 0,
           )
         : [],
-}));
-
-const validationWorkflowListItemFactory =
-    Factory.define<ValidationWorkflowListResponseItem>(() => ({
-        slug: faker.lorem.slug(3),
-        name: faker.word.noun({ length: 10, strategy: 'closest' }),
-        form_count: faker.number.int({ max: 1000 }),
-        created_by: faker.person.fullName(),
-        updated_by: faker.person.fullName(),
-        created_at: faker.date.anytime().toLocaleDateString(),
-        updated_at: faker.date.anytime().toLocaleDateString(),
-    }));
-
-type ValidationWorkflowListFactoryTransientParams = {
-    resultsLength?: number;
-};
-
-export const validationWorkflowListFactory = Factory.define<
-    ValidationWorkflowListResponse,
-    ValidationWorkflowListFactoryTransientParams
->(({ transientParams }) => ({
-    count: transientParams?.resultsLength ?? 2,
-    has_next: true,
-    has_previous: false,
-    page: 1,
-    pages: 1,
-    limit: 5,
-    results: validationWorkflowListItemFactory.buildList(
-        transientParams?.resultsLength ?? 2,
-    ),
 }));

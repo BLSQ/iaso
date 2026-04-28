@@ -1,79 +1,66 @@
 import { UseQueryResult } from 'react-query';
+import {
+    PaginatedValidationWorkflowListList,
+    useApiValidationWorkflowsList,
+    useApiValidationWorkflowsRetrieve,
+    ValidationWorkflowRetrieve,
+} from 'Iaso/api';
+import { ApiValidationWorkflowsListParams } from 'Iaso/api/models';
 import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
 import {
     ValidationWorkflowListDropdownResponse,
     ValidationWorkflowListResponse,
-    ValidationWorkflowRetrieveResponseItem,
-    ValidationWorkflowRetrieveResponseItemWithOrderedNodes,
 } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
-import { FormattedApiParams, useApiParams } from 'Iaso/hooks/useApiParams';
+import { useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { API_URL, WF_BASE_QUERYKEY } from '../constants';
-
 const defaults = {
     order: 'name',
     pageSize: 20,
     page: 1,
 };
 
-const getSubmissionsWorkflows = async (
-    params: FormattedApiParams,
-): Promise<ValidationWorkflowListResponse> => {
-    const queryString = new URLSearchParams(params).toString();
-    return getRequest(`${API_URL}?${queryString}`);
-};
-
-export const useGetSubmissionValidationWorkflows = (
+export const useCustomApiValidationWorkflowsList = (
     params: Record<string, any>,
+    options?: Record<string, any>,
 ): UseQueryResult<ValidationWorkflowListResponse, Error> => {
+    // we do that so we can validate through zod
+    // or we could just drop the zod validation till orval implements it
     const safeParams = useUrlParams(params, defaults);
     const apiParams = useApiParams(safeParams);
-    return useSnackQuery({
-        queryKey: [WF_BASE_QUERYKEY, apiParams],
-        queryFn: () => getSubmissionsWorkflows(apiParams),
-        options: {
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            keepPreviousData: true,
-            retry: false,
-        },
-    });
+
+    ApiValidationWorkflowsListParams.parse(apiParams);
+
+    const { data, ...other } = useApiValidationWorkflowsList(
+        apiParams,
+        options,
+    );
+
+    if (data) {
+        PaginatedValidationWorkflowListList.parse(data);
+    }
+
+    return {
+        data,
+        ...other,
+    };
 };
 
-const getWorkflowDetails = async (
-    slug?: string,
-): Promise<ValidationWorkflowRetrieveResponseItem> => {
-    return getRequest(`${API_URL}${slug}/`);
-};
-
-export const useGetWorkflowDetails = (
-    slug?: string,
-): UseQueryResult<ValidationWorkflowRetrieveResponseItem, Error> => {
-    return useSnackQuery({
-        queryKey: [WF_BASE_QUERYKEY, 'details', slug],
-        queryFn: () => getWorkflowDetails(slug),
-        options: {
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            keepPreviousData: true,
-            enabled: Boolean(slug),
-            select: (
-                data: ValidationWorkflowRetrieveResponseItem,
-            ): ValidationWorkflowRetrieveResponseItemWithOrderedNodes => {
-                if (!data) return data;
-                return {
-                    ...data,
-                    node_templates: data.node_templates?.map((node, index) => ({
-                        ...node,
-                        id: index + 1,
-                        order: index + 1,
-                    })),
-                };
-            },
-        },
+export const useCustomApiValidationWorkflowsRetrieve = (slug: string) => {
+    const { data, ...other } = useApiValidationWorkflowsRetrieve(slug, {
+        query: { enabled: !!slug },
     });
+    // once orval integrates zod , we won't really need this anymore
+    // also once orval fix the fact that custom-query options does not output the enabled: !!slug
+    if (data) {
+        ValidationWorkflowRetrieve.parse(data);
+    }
+    return {
+        data,
+        ...other,
+    };
 };
 
 const getNode = async ({

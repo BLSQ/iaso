@@ -471,6 +471,7 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_METADATA_CLASS": "hat.api.metadata.IasoMetadata",
     "PAGE_SIZE": None,
+    "SERVE_INCLUDE_SCHEMA": False,
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
     "DEFAULT_RENDERER_CLASSES": (
@@ -500,10 +501,12 @@ SPECTACULAR_SETTINGS = {
         "defaultModelsExpandDepth": 0,  # collapsing schemas by default
         "docExpansion": "list",  # put this to "none" if you want all the sections to be collapsed by default
         "tagsSorter": "alpha",  # sorting tags by alphanumeric
+        "displayOperationId": bool(DEBUG),
     },
     "DISABLE_ERRORS_AND_WARNINGS": get_env_var_or_default("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],
-    "COMPONENT_NO_READ_ONLY_REQUIRED": True,
+    # "COMPONENT_NO_READ_ONLY_REQUIRED": True,
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {
@@ -914,3 +917,7 @@ if IN_TESTS:
 
 ENABLE_SETUPER_SANDBOX = get_env_var_or_default("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
 SETUPER_SANDBOX_PASSWORD = get_env_var_or_default("SETUPER_SANDBOX_PASSSWORD", "district")
+
+
+# TEST MODE
+TEST_MODE = get_env_var_or_default("TEST_MODE", "false").lower() == "true"

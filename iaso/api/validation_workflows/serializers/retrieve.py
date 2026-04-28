@@ -7,11 +7,12 @@ from iaso.models import Form, UserRole, ValidationNodeTemplate, ValidationWorkfl
 
 
 class NestedRolesRequiredSerializer(ModelSerializer):
-    name = serializers.CharField(read_only=True, source="group.name")
-
+    name = serializers.SerializerMethodField()
     class Meta:
         model = UserRole
         fields = ["name", "id"]
+    def get_name(self, obj):
+        return obj.group.name.removeprefix(f"{obj.account_id}_")
 
 
 class NestedValidationNodeTemplateSerializer(ModelSerializer):

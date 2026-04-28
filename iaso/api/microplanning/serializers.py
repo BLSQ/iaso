@@ -475,3 +475,68 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
 
     def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
         return hasattr(org_unit, "geo_json") and org_unit.geo_json is not None
+
+
+class PlanningOrgUnitTableAssignmentTeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ["id", "name"]
+
+
+class PlanningOrgUnitTableAssignmentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["first_name"] = data["first_name"] or ""
+        data["last_name"] = data["last_name"] or ""
+        return data
+
+
+class PlanningOrgUnitTableAssignmentSerializer(serializers.Serializer):
+    team = PlanningOrgUnitTableAssignmentTeamSerializer(allow_null=True)
+    user = PlanningOrgUnitTableAssignmentUserSerializer(allow_null=True)
+
+    def to_representation(self, assignment):
+        if assignment is None:
+            return None
+        if assignment.team_id and assignment.team:
+            return {
+                "team": PlanningOrgUnitTableAssignmentTeamSerializer(assignment.team).data,
+                "user": None,
+            }
+        if assignment.user_id and assignment.user:
+            return {
+                "team": None,
+                "user": PlanningOrgUnitTableAssignmentUserSerializer(assignment.user).data,
+            }
+        return None
+
+
+class PlanningOrgUnitTableSerializer(serializers.ModelSerializer):
+    """Paginated planning org units for tables (minimal columns + assignment for this planning)."""
+
+    assignment = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "assignment"]
+        read_only_fields = fields
+
+    def get_assignment(self, org_unit: OrgUnit):
+        return PlanningOrgUnitTableAssignmentSerializer().to_representation(self._assignment_for_org_unit(org_unit))
+
+    def _assignment_for_org_unit(self, org_unit: OrgUnit):
+        prefetched = getattr(org_unit, "_planning_assignments_prefetched", None)
+        if prefetched is not None:
+            return prefetched[0] if prefetched else None
+        planning = self.context.get("planning")
+        if planning is None:
+            return None
+        return (
+            Assignment.objects.filter(planning=planning, org_unit=org_unit, deleted_at__isnull=True)
+            .select_related("user", "team")
+            .first()
+        )

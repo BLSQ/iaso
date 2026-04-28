@@ -975,6 +975,83 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(ids, [sampled_ou.id])
         self.assertTrue(r[0]["has_geo_json"])
 
+    def test_planning_orgunits_children_paginated(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type paginated")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type paginated")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-paginated",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-paginated-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_team = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-paginated-team-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-paginated",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        Assignment.objects.create(
+            planning=planning, org_unit=child, user=self.user, created_by=self.user
+        )
+        Assignment.objects.create(
+            planning=planning, org_unit=child_team, team=self.team1, created_by=self.user
+        )
+
+        url = f"/api/microplanning/orgunits/children-paginated/?planning={planning.id}&limit=10&page=1"
+        response = self.client.get(url, format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["count"], 2)
+        rows = {ou["id"]: ou for ou in r["org_units"]}
+        self.assertEqual(
+            rows[child.id]["assignment"]["user"],
+            {
+                "id": self.user.id,
+                "username": self.user.username,
+                "first_name": self.user.first_name or "",
+                "last_name": self.user.last_name or "",
+            },
+        )
+        self.assertIsNone(rows[child.id]["assignment"]["team"])
+        self.assertEqual(rows[child_team.id]["assignment"]["team"], {"id": self.team1.id, "name": self.team1.name})
+        self.assertIsNone(rows[child_team.id]["assignment"]["user"])
+
+        filtered = self.client.get(
+            f"/api/microplanning/orgunits/children-paginated/?planning={planning.id}&search=child-paginated-ou",
+            format="json",
+        )
+        rf = self.assertJSONResponse(filtered, 200)
+        self.assertEqual(rf["count"], 1)
+        self.assertEqual(rf["org_units"][0]["id"], child.id)
+
     def test_planning_orgunits_root_requires_planning_id(self):
         self.client.force_authenticate(self.user)
 

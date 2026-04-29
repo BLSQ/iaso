@@ -514,7 +514,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     assignments: {
         url: 'planning/assignments',
-        params: ['accountId', 'planningId'],
+        params: [
+            'accountId',
+            'planningId',
+            'tab',
+            'search',
+            ...paginationPathParams,
+        ],
     },
     teams: {
         url: 'settings/users/teams',

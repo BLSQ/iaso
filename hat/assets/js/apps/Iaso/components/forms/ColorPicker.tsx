@@ -78,7 +78,7 @@ export const ColorPicker: FunctionComponent<Props> = ({
     const handleChangeColor = useCallback(
         (newColor: ColorResult) => {
             setOpen(false);
-            onChangeColor(newColor.hex);
+            onChangeColor(newColor?.hex);
         },
         [onChangeColor],
     );
@@ -124,7 +124,7 @@ export const ColorPicker: FunctionComponent<Props> = ({
                                 <TwitterPicker
                                     width="100%"
                                     colors={displayedColors}
-                                    color={currentColor}
+                                    color={currentColor ?? undefined}
                                     onChangeComplete={handleChangeColor}
                                     triangle="hide"
                                 />

@@ -1,4 +1,4 @@
-from django.db.models import Prefetch, Q
+from django.db.models import FilteredRelation, Prefetch, Q
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -74,26 +74,59 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
     @extend_schema_field(NestedHistorySerializer(many=True))
     def get_history(self, obj):
         return NestedHistorySerializer(
-            obj.get_all_validation_nodes().select_related("created_by", "updated_by", "node"),
+            obj.all_validation_nodes
+            if getattr(obj, "all_validation_nodes", None)
+            else obj.get_all_validation_nodes().select_related("created_by", "updated_by", "node"),
             many=True,
         ).data
 
     @extend_schema_field({"type": "string", "nullable": True})
     def get_rejection_comment(self, obj):
         if obj.general_validation_status == ValidationWorkflowArtefactStatus.REJECTED:
+            if getattr(obj, "all_validation_nodes", None):
+                rejected_validation_node = next(
+                    (n for n in obj.all_validation_nodes if n.status == ValidationNodeStatus.REJECTED), None
+                )
+                return getattr(rejected_validation_node, "comment", "")
             return obj.validationnode_set.filter(status=ValidationNodeStatus.REJECTED).first().comment
         return None
 
     @extend_schema_field(NextByPassSerializer(many=True))
     def get_next_bypass(self, obj):
         qs = ValidationNodeTemplate.objects.none()
-        if obj.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
-            qs = (
-                ValidationNodeTemplate.objects.prefetch_related(
-                    "validationnode_set", Prefetch("roles_required", UserRole.objects.select_related("group"))
-                )
-                .filter(can_skip_previous_nodes=True, workflow=obj.form.validation_workflow)
-                .filter(Q(validationnode__isnull=True) | Q(validationnode__status=ValidationNodeStatus.UNKNOWN))
+
+        if getattr(obj, "all_validation_nodes", None):
+            most_recent_new_version = next(
+                (n for n in obj.all_validation_nodes if n.status == ValidationNodeStatus.NEW_VERSION), None
             )
+        else:
+            most_recent_new_version = (
+                obj.get_all_validation_nodes().filter(status=ValidationNodeStatus.NEW_VERSION).first()
+            )
+
+        if obj.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
+            if most_recent_new_version:
+                # in case of resubmission, we need to filter out previous nodes
+                qs = (
+                    ValidationNodeTemplate.objects.annotate(
+                        active_nodes=FilteredRelation(
+                            "validationnode",
+                            condition=Q(validationnode__created_at__gte=most_recent_new_version.created_at),
+                        )
+                    )
+                    .prefetch_related(
+                        "validationnode_set", Prefetch("roles_required", UserRole.objects.select_related("group"))
+                    )
+                    .filter(can_skip_previous_nodes=True, workflow=obj.form.validation_workflow)
+                    .filter(Q(active_nodes__isnull=True) | Q(active_nodes__status=ValidationNodeStatus.UNKNOWN))
+                )
+            else:
+                qs = (
+                    ValidationNodeTemplate.objects.prefetch_related(
+                        "validationnode_set", Prefetch("roles_required", UserRole.objects.select_related("group"))
+                    )
+                    .filter(can_skip_previous_nodes=True, workflow=obj.form.validation_workflow)
+                    .filter(Q(validationnode__isnull=True) | Q(validationnode__status=ValidationNodeStatus.UNKNOWN))
+                )
 
         return NextByPassSerializer(qs, many=True).data

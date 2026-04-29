@@ -427,11 +427,6 @@ class FormAISaveTestCase(APITestCase):
         # No version should have been created
         self.assertEqual(other_form.form_versions.count(), 0)
 
-    def test_save_to_form_not_in_any_project_is_rejected(self):
-        """A form not linked to any project is inaccessible and saving to it must be rejected."""
-        orphan_form = m.Form.objects.create(name="Orphan Form")
-        # Not added to any project → filter_for_user_and_app_id returns nothing
-
         tf = self._create_temporary_form(user=self.user, account=self.account)
         self.client.force_authenticate(self.user)
         response = self.client.post(

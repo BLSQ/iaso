@@ -502,12 +502,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     options={[
                         {
                             value: 'ouCurrent',
-                            label: formatMessage(MESSAGES.ouCurrent) || '',
+                            label: formatMessage(MESSAGES.ouCurrent),
                             color: theme.palette.primary.main,
                         },
                         {
                             value: 'ouParent',
-                            label: formatMessage(MESSAGES.ouParent) || '',
+                            label: formatMessage(MESSAGES.ouParent),
                             color: pink['300'],
                         },
                     ]}

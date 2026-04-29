@@ -14,7 +14,7 @@ type Props = {
     district: District;
 };
 export const CaregiverInfoSource: FunctionComponent<Props> = ({ district }) => {
-    const { formatMessage } = useSafeIntl();
+    const { formatNullishMessage } = useSafeIntl();
     return (
         <>
             {Object.keys(district.care_giver_stats)
@@ -27,7 +27,7 @@ export const CaregiverInfoSource: FunctionComponent<Props> = ({ district }) => {
                 .map(sourceKey => {
                     return (
                         <p key={sourceKey}>
-                            {`${formatMessage(MESSAGES[sourceKey]) ?? sourceKey}
+                            {`${formatNullishMessage(sourceKey, MESSAGES)}
                         : ${floatToPercentString(
                             district.care_giver_stats.ratio,
                         )}

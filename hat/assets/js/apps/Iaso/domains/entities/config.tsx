@@ -5,6 +5,7 @@ import {
     Column,
     IconButton as IconButtonComponent,
     IntlFormatMessage,
+    IntlMessage,
     LinkWithLocation,
     textPlaceholder,
     useSafeIntl,
@@ -168,11 +169,15 @@ export const useColumns = (
 
 const generateColumnsFromFieldsList = (
     fields: string[],
-    formatMessage: IntlFormatMessage,
+    formatMessage: (
+        key: string,
+        messages: Record<string, IntlMessage>,
+        values?: any,
+    ) => string,
 ): Column[] => {
     return fields.map(field => {
         return {
-            Header: formatMessage(MESSAGES[field]) ?? field,
+            Header: formatMessage(field, MESSAGES),
             id: `${field}`,
             accessor: `${field}`,
             Cell: settings => {
@@ -197,10 +202,10 @@ const generateColumnsFromFieldsList = (
 export const useColumnsFromFieldsList = (
     fields: Array<string> = [],
 ): Array<Column> => {
-    const { formatMessage } = useSafeIntl();
+    const { formatNullishMessage } = useSafeIntl();
     return useMemo(
-        () => generateColumnsFromFieldsList(fields, formatMessage),
-        [fields, formatMessage],
+        () => generateColumnsFromFieldsList(fields, formatNullishMessage),
+        [fields, formatNullishMessage],
     );
 };
 

@@ -508,19 +508,19 @@ const MESSAGES = defineMessages({
     },
     modificationDateFrom: {
         id: 'iaso.instances.modificationDateFrom',
-        defineMessage: 'Modification date from',
+        defaultMessage: 'Modification date from',
     },
     modificationDateTo: {
         id: 'iaso.instances.modificationDateTo',
-        defineMessage: 'Modification date to',
+        defaultMessage: 'Modification date to',
     },
     sentDateFrom: {
         id: 'iaso.instances.sentDateFrom',
-        defineMessage: 'Sent date from',
+        defaultMessage: 'Sent date from',
     },
     sentDateTo: {
         id: 'iaso.instances.sentDateTo',
-        defineMessage: 'Sent date to',
+        defaultMessage: 'Sent date to',
     },
     clear: {
         id: 'iaso.label.clear',
@@ -648,7 +648,7 @@ const MESSAGES = defineMessages({
     },
     onlyOneExistingVersion: {
         id: 'iaso.label.onlyOneExisitingVersion',
-        defaultMessagbe: 'Only one existing version',
+        defaultMessage: 'Only one existing version',
     },
     seeAllVersions: {
         id: 'iaso.label.seeAllVersions',

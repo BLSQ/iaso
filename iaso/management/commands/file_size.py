@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from hat.api_import.models import APIImport
 from iaso.models import (
     Account,
-    BulkCreateUserCsvFile,
+    BulkCreateUserFile,
     FormAttachment,
     FormVersion,
     ImportGPKG,
@@ -44,7 +44,7 @@ class Command(BaseCommand):
             self.stdout.write(msg=f"- Form Attachments files: {self.sizeof_fmt(forms_attachments_size)}")
             reports_size = self.calculate_reports_size(account)
             self.stdout.write(msg=f"- Reports files: {self.sizeof_fmt(reports_size)}")
-            bulk_create_users_csv_size = self.calculate_bulk_create_user_csv_file_size(account)
+            bulk_create_users_csv_size = self.calculate_bulk_create_user_file_size(account)
             self.stdout.write(msg=f"- Bulk Create User CSV files: {self.sizeof_fmt(bulk_create_users_csv_size)}")
             import_gpk_size = self.calculate_import_gpkg_file_size(account)
             self.stdout.write(msg=f"- Import GPKG files: {self.sizeof_fmt(import_gpk_size)}")
@@ -94,9 +94,9 @@ class Command(BaseCommand):
         return Command.sum_size(map(lambda x: x.file, reports))
 
     @staticmethod
-    def calculate_bulk_create_user_csv_file_size(account: Account) -> int:
-        """Calculate the BulkCreateUserCsvFile size for an account"""
-        files = BulkCreateUserCsvFile.objects.filter(account=account)
+    def calculate_bulk_create_user_file_size(account: Account) -> int:
+        """Calculate the BulkCreateUserFile size for an account"""
+        files = BulkCreateUserFile.objects.filter(account=account)
         return Command.sum_size(map(lambda x: x.file, files))
 
     @staticmethod

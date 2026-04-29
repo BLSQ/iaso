@@ -1,12 +1,11 @@
+import React from 'react';
 import { Box, Button, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent } from 'react';
 import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import Add from '@mui/icons-material/Add';
 import { useIsMutating } from 'react-query';
 import MESSAGES from '../../messages';
 
@@ -17,10 +16,7 @@ type Props = {
     disabled: boolean;
 };
 
-export const BulkImportButton: FunctionComponent<Props> = ({
-    onClick,
-    disabled,
-}) => {
+export const BulkImportButton = ({ onClick, disabled }: Props) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const isMutating = useIsMutating();
@@ -33,13 +29,13 @@ export const BulkImportButton: FunctionComponent<Props> = ({
             <Box>
                 <Button
                     onClick={onClick}
+                    type={'submit'}
                     disabled={disabled || Boolean(isMutating)}
                     color="primary"
                     variant="contained"
                     className={classes.button}
                 >
-                    <Add className={classes.buttonIcon} />
-                    {formatMessage(MESSAGES.createFromFile)}
+                    {formatMessage(MESSAGES.submit)}
                     {Boolean(isMutating) && (
                         <LoadingSpinner
                             size={16}

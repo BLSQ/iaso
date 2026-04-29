@@ -123,7 +123,7 @@ class PlanningOrgunitsViewSet(AuditMixin, GenericViewSet):
         else:
             raise ValidationError({"planning": [_("Planning is missing sampling group or target org unit scope")]})
 
-        return queryset.order_by("id")
+        return queryset.filter(validation_status=OrgUnit.VALIDATION_VALID).order_by("id")
 
     @action(detail=False, methods=["get"])
     def root(self, request, *args, **kwargs):

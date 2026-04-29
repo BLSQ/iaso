@@ -972,6 +972,147 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual([ou["id"] for ou in r], [child_alpha.id])
 
+    def test_planning_orgunits_children_only_validation_valid_descendants(self):
+        """children and children-paginated must not return NEW or REJECTED org units (descendants scope)."""
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent validation filter")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child validation filter")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-validation",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_valid = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-valid",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-new",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_NEW,
+            simplified_geom=multipolygon,
+        )
+        OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-rejected",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_REJECTED,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-validation-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        r_map = self.assertJSONResponse(
+            self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in r_map], [child_valid.id])
+
+        r_page = self.assertJSONResponse(
+            self.client.get(
+                f"/api/microplanning/orgunits/children-paginated/?planning={planning.id}&limit=50&page=1",
+                format="json",
+            ),
+            200,
+        )
+        self.assertEqual(r_page["count"], 1)
+        self.assertEqual([ou["id"] for ou in r_page["org_units"]], [child_valid.id])
+
+    def test_planning_orgunits_children_only_validation_valid_sampling_group(self):
+        """children and children-paginated must not return NEW org units linked via sampling group."""
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent sampling validation")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child sampling validation")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-sampling-val",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        sampled_valid = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="sampled-valid",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        sampled_new = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="sampled-new",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_NEW,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-sampling-validation",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        group = Group.objects.create(name="sampling-group-validation", source_version=self.org_unit.version)
+        group.org_units.add(sampled_valid, sampled_new)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=planning,
+            pipeline_id="pipeline",
+            pipeline_version="v1",
+            group=group,
+            parameters={},
+            created_by=self.user,
+        )
+        planning.selected_sampling_result = sampling
+        planning.save()
+
+        r_map = self.assertJSONResponse(
+            self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in r_map], [sampled_valid.id])
+
+        r_page = self.assertJSONResponse(
+            self.client.get(
+                f"/api/microplanning/orgunits/children-paginated/?planning={planning.id}&limit=50&page=1",
+                format="json",
+            ),
+            200,
+        )
+        self.assertEqual(r_page["count"], 1)
+        self.assertEqual([ou["id"] for ou in r_page["org_units"]], [sampled_valid.id])
+
     def test_planning_orgunits_children_with_sampling_group(self):
         self.client.force_authenticate(self.user)
         parent_type = OrgUnitType.objects.create(name="Parent type sampling")

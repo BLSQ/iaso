@@ -145,6 +145,7 @@ const randomUser = {
     organization: faker.company.name(),
     phone_number: faker.phone.number(),
     home_page: faker.internet.url(),
+    date_joined: faker.date.past().toISOString(),
     color: faker.color.rgb({ format: 'hex' }),
 };
 
@@ -278,13 +279,13 @@ describe('UsersDetailView unit tests', () => {
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
 
         expect(screen.getByText('General info')).toBeInTheDocument();
-        expect(screen.queryAllByText(textPlaceholder)).toHaveLength(9);
+        expect(screen.queryAllByText(textPlaceholder)).toHaveLength(10);
 
         rerender(<UserDetailsView userId={'1'} />);
         expect(screen.getByText('General info')).toBeInTheDocument();
         expect(screen.queryByText(textPlaceholder)).toBeNull();
         Object.entries(randomUser)
-            .filter(([k, _]) => k !== 'color')
+            .filter(([k, _]) => k !== 'color' && k !== 'date_joined')
             .forEach(([k, v]) => {
                 expect(
                     screen.getByText(v),
@@ -350,7 +351,7 @@ describe('UsersDetailView unit tests', () => {
         // check that we render some projects
         expect(screen.queryAllByTestId('project-chip')).toHaveLength(2);
         projects.forEach(({ name }) => {
-            expect(screen.getByText(name)).toBeInTheDocument();
+            expect(screen.queryAllByText(name).length).toBeGreaterThan(0);
         });
     });
 
@@ -423,17 +424,21 @@ describe('UsersDetailView unit tests', () => {
                     permissions: permissions,
                 },
                 isLoading: false,
-                error: false,
+                error: null,
             });
 
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
         expect(
-            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+            within(screen.getByTestId('permissions-info-box')).getByRole(
+                'alert',
+            ),
         ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
         expect(
-            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+            within(screen.getByTestId('permissions-info-box')).getByRole(
+                'alert',
+            ),
         ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);

@@ -914,3 +914,7 @@ if IN_TESTS:
 
 ENABLE_SETUPER_SANDBOX = get_env_var_or_default("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
 SETUPER_SANDBOX_PASSWORD = get_env_var_or_default("SETUPER_SANDBOX_PASSSWORD", "district")
+
+
+# Form AI
+FORM_AI_MODEL = get_env_var_or_default("FORM_AI_MODEL", "claude-opus-4-7")

@@ -66,6 +66,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    formAI: {
+        url: 'forms/ai',
+        params: ['accountId'],
+    },
     pipelineList: {
         url: 'pipelines/',
         params: ['accountId'],
@@ -127,7 +131,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId', 'instanceId', 'referenceFormId'],
     },
     instanceValidation: {
-        url: 'forms/submissions/validation',
+        url: 'validation/submissions',
         params: [
             'accountId',
             'forms',
@@ -137,7 +141,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         ],
     },
     instanceValidationDetail: {
-        url: 'forms/submissions/validation/detail',
+        url: 'validation/submissions/detail',
         params: ['accountId', 'slug'],
     },
     compareInstanceLogs: {
@@ -689,6 +693,7 @@ type IasoBaseUrls = {
     setupAccountSettings: string;
     home: string;
     forms: string;
+    formAI: string;
     formDetail: string;
     pipelineDetails: string;
     pipelineList: string;

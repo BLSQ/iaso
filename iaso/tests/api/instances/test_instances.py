@@ -751,6 +751,35 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.assertValidInstanceListData(response.json(), 4)
 
+    def test_instance_list_filter_by_reference_instances(self):
+        """GET /instances/?referenceInstances=… filters like Instance.is_reference_instance."""
+        self.client.force_authenticate(self.yoda)
+        self.jedi_council.reference_forms.add(self.form_1)
+        self.jedi_council_corruscant.org_unit_type = self.jedi_council
+        self.jedi_council_corruscant.save()
+        self.instance_1.flag_reference_instance(self.jedi_council_corruscant)
+
+        base = f"/api/instances/?form_id={self.form_1.pk}&limit=100"
+        response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=reference")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual({i["id"] for i in j["instances"]}, {self.instance_1.id})
+        self.assertTrue(j["instances"][0]["is_reference_instance"])
+
+        response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=not_reference")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(
+            {i["id"] for i in j["instances"]},
+            {self.instance_2.id, self.instance_3.id, self.instance_4.id},
+        )
+
+        response = self.client.get(base)
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["instances"]), 4)
+
+        response = self.client.get(f"{base}&{query.REFERENCE_INSTANCES}=all")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["instances"]), 4)
+
     def test_instance_filter_by_org_unit_status(self):
         """GET /instances/?org_unit_status={status}"""
 

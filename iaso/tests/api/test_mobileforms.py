@@ -113,7 +113,7 @@ class MobileFormsAPITestCase(APITestCase):
         ]
         with self.assertNumQueries(13):
             response = self.client.get(
-                f"/api/mobile/forms/?fields={','.join(custom_fields)}", headers={"Content-Type": "application/json"}
+                "/api/mobile/forms/", data={"fields": custom_fields}, headers={"Content-Type": "application/json"}
             )
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)

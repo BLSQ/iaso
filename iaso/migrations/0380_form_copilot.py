@@ -7,14 +7,13 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import iaso.models.base
 import iaso.models.form_ai
 
 
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0377_alter_validationworkflow_slug"),
+        ("iaso", "0378_account_enforce_password_validation"),
     ]
 
     operations = [

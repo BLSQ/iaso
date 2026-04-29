@@ -1,7 +1,10 @@
 import logging
 
+import django.core.exceptions as django_exceptions
+
 from django.conf import settings
 from django.contrib.auth.models import Permission, User
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.utils.translation import gettext as _
@@ -67,6 +70,11 @@ class SetupAccountSerializer(serializers.Serializer):
         required=False,
         default=True,
         help_text="Whether to create a demo form during account setup",
+    )
+    enforce_password_validation = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text="Whether to validate passwords with default Django validation for all new users",
     )
     created_account_id = serializers.IntegerField(read_only=True)
 
@@ -169,8 +177,16 @@ class SetupAccountSerializer(serializers.Serializer):
             default_version=source_version,
             user_manual_path=validated_data.get("user_manual_path"),
             modules=account_modules,
+            enforce_password_validation=validated_data.get("enforce_password_validation", True),
         )
         account.feature_flags.set(validated_data.get("feature_flags"))
+
+        if account.enforce_password_validation and password:
+            try:
+                if account.enforce_password_validation:
+                    validate_password(password=password, user=user)
+            except django_exceptions.ValidationError as e:
+                raise serializers.ValidationError({"password": e.messages})
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
@@ -234,7 +250,7 @@ class SetupAccountSerializer(serializers.Serializer):
             demo_form.projects.add(initial_project)
 
             # Create the first version of the form using the demo form file
-            with open("setuper/data/demo_form.xlsx", "rb") as demo_form_file:
+            with open("iaso/fixtures/demo_form.xlsx", "rb") as demo_form_file:
                 survey = parsing.parse_xls_form(demo_form_file)
                 demo_form_file.seek(0)  # Reset file pointer to beginning
                 FormVersion.objects.create_for_form_and_survey(

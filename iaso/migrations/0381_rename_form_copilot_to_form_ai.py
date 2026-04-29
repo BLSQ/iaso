@@ -12,7 +12,7 @@ def rename_form_copilot_to_form_ai(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0378_form_copilot"),
+        ("iaso", "0380_form_copilot"),
     ]
 
     operations = [

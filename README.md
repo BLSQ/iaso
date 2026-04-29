@@ -132,11 +132,11 @@ application.
 Other environment variables can be provided by a [.env
 file](https://docs.docker.com/v17.12/compose/environment-variables/#the-env-file).
 
-As a starting point, you can copy the sample .env.dist file and edit it
+As a starting point, you can copy the sample .env.example file and edit it
 to your needs.
 
 ```bash
-cp .env.dist .env
+cp .env.example .env
 ```
 
 > **note**
@@ -671,6 +671,22 @@ HIDE_BASIC_NAV_ITEMS="<'yes' or 'no'>"
 >
 > Those settings are optional and are using a default value if nothing is provided
 
+### Core transactional email previews (HTML)
+
+Core invitation and forgot-password emails share a Django template layout. To **generate static HTML and plain-text files** for local layout checks (default output: `var/email-previews/`, ignored by git), run:
+
+```bash
+docker compose exec iaso ./manage.py render_core_email_previews
+```
+
+Useful options:
+
+- `--only invite` or `--only reset` to render a subset
+- `--output var/my-previews` to change the output directory (relative to the repository root)
+- `--http-logo` to keep normal `http(s)` logo URLs; **by default** the logo is **embedded as a data URI** so images still load when you open the `.html` files from disk without a running server
+
+Open the generated `.html` files in a browser. The same branding variables as above (`APP_TITLE`, `LOGO_PATH`, theme colours, `DEFAULT_FROM_EMAIL`, optional `USER_MANUAL_PATH`) apply.
+
 ## Superset Dashboard Integration
 
 Iaso supports embedding [Superset](https://superset.apache.org/) dashboards for advanced analytics and reporting. To configure this integration, you need to set up the following environment variables:
@@ -776,6 +792,46 @@ python manage.py shell_plus --notebook
 ```
 
 # Deployment in Production
+
+## Docker Compose
+
+You will need to populate at least these environment variables with your own values in a `.env` file:
+
+```
+# PostgreSQL Database connection details
+RDS_DB_NAME=
+RDS_HOSTNAME=
+RDS_PASSWORD=
+RDS_USERNAME=
+DB_READONLY_PASSWORD=
+DB_READONLY_USERNAME=
+
+# Used for encryption and authorisation
+ENCRYPTED_TEXT_FIELD_KEY=
+SECRET_KEY=
+
+# To interact with Enketo/ODK
+ENKETO_API_TOKEN=
+ENKETO_SIGNING_SECRET=
+
+# Docker image tag (defaults to "latest" if not set)
+IMAGE_TAG=
+```
+
+Docker Compose automatically reads a `.env` file in the project root, so no `source` command is needed.
+
+Alternatively, you can uncomment the `env_file:` section in `docker-compose.prod.yml` to pass the variables directly to the container.
+
+Note: for production deployments you need an external PostgreSQL database. The `db` service in the compose file is only intended for local development. Make sure your `RDS_*` variables point to your production database.
+
+Proceed to run docker compose on your server:
+
+```
+docker compose -f docker-compose.prod.yml up
+```
+
+This will pull the necessary containers (iaso & nginx) and spin up the service at port 80.
+
 
 ## System requirements
 

@@ -182,7 +182,7 @@ msgstr "Bonjour,"
 #: hat/templates/iaso/reset_password_email.html
 #, python-format
 msgid ""
-"A password reset has been request for your account \"%(username)s\" on "
+"A password reset has been requested for your account \"%(username)s\" on "
 "%(site_name)s,"
 msgstr ""
 "Une demande de réinitialisation de mot de passe a été effectuée pour votre "

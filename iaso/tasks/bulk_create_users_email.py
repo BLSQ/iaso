@@ -6,20 +6,15 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
-from django.template import Context, Template
+from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import translation
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from beanstalk_worker import task_decorator
-from iaso.api.profiles.email_templates import (
-    CREATE_PASSWORD_HTML_MESSAGE_EN,
-    CREATE_PASSWORD_HTML_MESSAGE_FR,
-    CREATE_PASSWORD_MESSAGE_EN,
-    CREATE_PASSWORD_MESSAGE_FR,
-    EMAIL_SUBJECT_EN,
-    EMAIL_SUBJECT_FR,
-)
+from iaso.api.profiles.views import ProfilesViewSet
+from iaso.mail.branding import core_email_branding_context
 
 
 @task_decorator(task_name="send_bulk_email_invitations")
@@ -61,44 +56,30 @@ def send_bulk_email_invitations(user_ids: List[int], is_secure: bool, task=None)
             profile = user.iaso_profile
             language = profile.language or "en"
 
-            # Generate password reset token
             token = token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
 
-            email_subject = EMAIL_SUBJECT_FR if language == "fr" else EMAIL_SUBJECT_EN
-            email_message = CREATE_PASSWORD_MESSAGE_FR if language == "fr" else CREATE_PASSWORD_MESSAGE_EN
-            email_html_message = (
-                CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else CREATE_PASSWORD_HTML_MESSAGE_EN
-            )
+            invitation_context = {
+                **core_email_branding_context(protocol=protocol, domain=domain),
+                "protocol": protocol,
+                "domain": domain,
+                "account_name": profile.account.name,
+                "user_name": user.username,
+                "url": f"{protocol}://{domain}{create_password_path}",
+            }
 
-            email_subject_text = email_subject.format(domain=domain)
-            email_message_text = email_message.format(
-                userName=user.username,
-                url=f"{protocol}://{domain}{create_password_path}",
-                protocol=protocol,
-                domain=domain,
-                account_name=profile.account.name,
-            )
-
-            html_email_template = Template(email_html_message)
-            html_email_context = Context(
-                {
-                    "protocol": protocol,
-                    "domain": domain,
-                    "account_name": profile.account.name,
-                    "userName": user.username,
-                    "url": f"{protocol}://{domain}{create_password_path}",
-                }
-            )
-            rendered_html_email = html_email_template.render(html_email_context)
+            with translation.override(language):
+                email_subject = ProfilesViewSet.get_subject_by_language(language=language, domain=domain)
+                email_message = render_to_string("emails/create_password_email.txt", invitation_context)
+                html_email_content = render_to_string("emails/create_password_email.html", invitation_context)
 
             send_mail(
-                email_subject_text,
-                email_message_text,
+                email_subject,
+                email_message,
                 settings.DEFAULT_FROM_EMAIL,
                 [user.email],
-                html_message=rendered_html_email,
+                html_message=html_email_content,
                 fail_silently=False,
             )
 

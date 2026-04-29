@@ -67,7 +67,10 @@ export const LotsPayments: FunctionComponent = () => {
                     columns={columns}
                     baseUrl={baseUrl}
                     params={params}
-                    extraProps={{ loading: isLoading }}
+                    extraProps={{
+                        loading: isLoading,
+                        defaultPageSize: parseInt(params.pageSize, 10) || 20,
+                    }}
                 />
             </Box>
         </>

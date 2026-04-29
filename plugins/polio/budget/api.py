@@ -11,6 +11,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
 from iaso.api.common import (
     CSVExportMixin,
     DeletionFilterBackend,
@@ -53,12 +54,9 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
     permission_classes = [HasPermission(POLIO_BUDGET_PERMISSION)]
     use_field_order = True
     http_method_names = ["delete", "get", "head", "patch", "post"]
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-        DeletionFilterBackend,
-    ]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend, DynamicFieldsFilterBackend]
     filterset_class = BudgetProcessFilter
+    dynamic_fields_serializer_class = BudgetProcessSerializer
     ordering_fields = [
         "current_state_key",
         "obr_name",

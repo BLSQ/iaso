@@ -469,3 +469,13 @@ class MockClamavScanResults:
         self.state = state
         self.details = details
         self.passed = passed
+
+
+class PasswordValidationTestMixin:
+    ERROR_PASSWORD_TOO_SHORT = "This password is too short. It must contain at least 8 characters."
+    ERROR_PASSWORD_TOO_COMMON = "This password is too common."
+    ERROR_PASSWORD_TOO_SIMILAR_USERNAME = "The password is too similar to the username."
+    ERROR_PASSWORD_TOO_SIMILAR_EMAIL = "The password is too similar to the email address."
+    ERROR_PASSWORD_TOO_SIMILAR_FIRST_NAME = "The password is too similar to the first name."
+    ERROR_PASSWORD_TOO_SIMILAR_LAST_NAME = "The password is too similar to the last name."
+    ERROR_PASSWORD_NUMERIC = "This password is entirely numeric."

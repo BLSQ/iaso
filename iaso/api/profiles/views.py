@@ -1,8 +1,11 @@
 from typing import Any, List, Union
 
+import django.core.exceptions as django_exceptions
+
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import Permission
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.db import transaction
@@ -18,11 +21,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, status
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
 from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
@@ -48,6 +52,7 @@ from iaso.api.profiles.serializers import (
 )
 from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
 from iaso.api.profiles.serializers.update import ProfileMeUpdateSerializer, ProfileUpdatePasswordSerializer
+from iaso.mail.branding import core_email_branding_context
 from iaso.models import OrgUnit, Profile, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
@@ -80,7 +85,6 @@ class ProfilesViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
     pagination_class = ProfilePagination
-    filter_backends = [OrderingFilter, DjangoFilterBackend]
     filterset_class = ProfileListFilter
     ordering = ["id"]  # default ordering
     ordering_fields = [
@@ -92,6 +96,13 @@ class ProfilesViewSet(ModelViewSet):
         "user__last_name",
         "phone_number",
     ]
+    dynamic_fields_serializer_class = ProfileListSerializer
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list"]:
+            return [OrderingFilter, DjangoFilterBackend, DynamicFieldsFilterBackend]
+        return [OrderingFilter, DjangoFilterBackend]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -179,13 +190,21 @@ class ProfilesViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        password = serializer.validated_data["password"]
         user = instance.user
+        account = instance.account
+
+        try:
+            if account.enforce_password_validation:
+                validate_password(password=password, user=user)
+        except django_exceptions.ValidationError as e:
+            raise serializers.ValidationError({"password": e.messages})
 
         if TenantUser.is_multi_account_user(user):
-            self.perform_update_password(user.tenant_user.main_user, serializer.validated_data["password"])
+            self.perform_update_password(user.tenant_user.main_user, password)
             user.tenant_user.main_user.save()
         else:
-            self.perform_update_password(user, serializer.validated_data["password"])
+            self.perform_update_password(user, password)
             user.save()
 
         if self.request.user == user:
@@ -453,28 +472,18 @@ class ProfilesViewSet(ModelViewSet):
 
         email_subject = self.get_subject_by_language(language, domain)
 
-        with translation.override(language):
-            email_message = render_to_string(
-                "emails/create_password_email.txt",
-                context={
-                    "protocol": protocol,
-                    "domain": domain,
-                    "account_name": profile.account.name,
-                    "user_name": profile.user.username,
-                    "url": f"{protocol}://{domain}{create_password_path}",
-                },
-            )
+        invitation_context = {
+            **core_email_branding_context(protocol=protocol, domain=domain),
+            "protocol": protocol,
+            "domain": domain,
+            "account_name": profile.account.name,
+            "user_name": profile.user.username,
+            "url": f"{protocol}://{domain}{create_password_path}",
+        }
 
-            html_email_content = render_to_string(
-                "emails/create_password_email.html",
-                context={
-                    "protocol": protocol,
-                    "domain": domain,
-                    "account_name": profile.account.name,
-                    "user_name": profile.user.username,
-                    "url": f"{protocol}://{domain}{create_password_path}",
-                },
-            )
+        with translation.override(language):
+            email_message = render_to_string("emails/create_password_email.txt", invitation_context)
+            html_email_content = render_to_string("emails/create_password_email.html", invitation_context)
 
         send_mail(
             email_subject,

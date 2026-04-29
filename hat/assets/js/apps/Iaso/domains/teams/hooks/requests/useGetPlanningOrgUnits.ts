@@ -14,12 +14,18 @@ export const tableDefaults = {
 };
 export const useGetPlanningOrgUnitsChildren = (
     planningId: string,
+    params?: AssignmentParams,
 ): UseQueryResult<PlanningOrgUnits[], Error> => {
-    const url = makeUrlWithParams('/api/microplanning/orgunits/children/', {
+    const apiParams = {
         planning: planningId,
-    });
+        search: params?.search,
+    };
+    const url = makeUrlWithParams(
+        '/api/microplanning/orgunits/children/',
+        apiParams,
+    );
     return useSnackQuery({
-        queryKey: ['planningChildrenOrgUnits', planningId],
+        queryKey: ['planningChildrenOrgUnits', apiParams],
         queryFn: () => getRequest(url),
         options: {
             enabled: Boolean(planningId),
@@ -56,6 +62,7 @@ export const useGetPlanningOrgUnitsChildrenPaginated = (
         limit: params?.pageSize ?? tableDefaults.limit,
         page: params?.page ?? tableDefaults.page,
         order: tableDefaults.order,
+        search: params?.search,
     };
     const url = makeUrlWithParams(
         '/api/microplanning/orgunits/children-paginated/',

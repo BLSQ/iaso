@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Button, Grid, Typography, Tabs, Tab } from '@mui/material';
@@ -7,8 +7,10 @@ import {
     useGoBack,
     useTabs,
     Optional,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
@@ -28,15 +30,16 @@ import MESSAGES from './messages';
 import { AssignmentParams } from './types/assigment';
 
 export const Assignments: FunctionComponent = () => {
-    const [selectedUser, setSelectedUser] = useState<User | undefined>(
-        undefined,
-    );
-    const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
-        undefined,
-    );
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
     ) as unknown as AssignmentParams;
+    const [selectedUser, setSelectedUser] = useState<User | undefined>(
+        undefined,
+    );
+    const [search, setSearch] = useState<string | undefined>(params.search);
+    const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
+        undefined,
+    );
     const { formatMessage } = useSafeIntl();
 
     const { planningId } = params;
@@ -75,6 +78,13 @@ export const Assignments: FunctionComponent = () => {
         baseUrl: baseUrls.assignments,
     });
     const canAssign = Boolean(selectedUser || selectedTeam);
+    const redirectToReplace = useRedirectToReplace();
+    const handleSearch = useCallback(() => {
+        redirectToReplace(baseUrls.assignments, {
+            ...params,
+            search,
+        });
+    }, [params, search, redirectToReplace]);
     return (
         <>
             <TopBar
@@ -135,16 +145,52 @@ export const Assignments: FunctionComponent = () => {
 
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={8}>
-                        <Tabs value={tab} onChange={handleChangeTab}>
-                            <Tab
-                                value="map"
-                                label={formatMessage(MESSAGES.map)}
-                            />
-                            <Tab
-                                value="list"
-                                label={formatMessage(MESSAGES.list)}
-                            />
-                        </Tabs>
+                        <Grid container spacing={0}>
+                            <Grid item xs={12} md={8}>
+                                <Tabs value={tab} onChange={handleChangeTab}>
+                                    <Tab
+                                        value="map"
+                                        label={formatMessage(MESSAGES.map)}
+                                    />
+                                    <Tab
+                                        value="list"
+                                        label={formatMessage(MESSAGES.list)}
+                                    />
+                                </Tabs>
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <Box
+                                    sx={{
+                                        marginTop: '-15px',
+                                        '& .MuiOutlinedInput-input': {
+                                            paddingTop: theme =>
+                                                theme.spacing(1),
+                                            paddingBottom: theme =>
+                                                theme.spacing(1),
+                                        },
+                                        '& .MuiInputLabel-formControl': {
+                                            height: '35px',
+                                        },
+                                        '& .MuiInputLabel-shrink': {
+                                            height: '25px',
+                                        },
+                                    }}
+                                >
+                                    <InputComponent
+                                        keyValue="search"
+                                        onChange={(
+                                            _key: string | null,
+                                            value: string,
+                                        ) => setSearch(value)}
+                                        value={search}
+                                        type="search"
+                                        label={MESSAGES.searchOrgUnit}
+                                        onEnterPressed={handleSearch}
+                                        blockForbiddenChars
+                                    />
+                                </Box>
+                            </Grid>
+                        </Grid>
                         {tab === 'map' && (
                             <AssignmentsMap
                                 planningId={planningId}
@@ -156,6 +202,7 @@ export const Assignments: FunctionComponent = () => {
                                 isSaving={isSaving}
                                 planning={planning}
                                 canAssign={canAssign}
+                                params={params}
                             />
                         )}
                         {tab === 'list' && (

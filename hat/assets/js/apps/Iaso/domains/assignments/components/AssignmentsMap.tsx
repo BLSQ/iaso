@@ -26,6 +26,7 @@ import {
 import { parentColor } from '../constants/colors';
 import { defaultHeight } from '../constants/ui';
 import { AssignmentsResult } from '../hooks/requests/useGetAssignments';
+import { AssignmentParams } from '../types/assigment';
 type Props = {
     planningId: string;
     rootTeam?: Team;
@@ -36,6 +37,7 @@ type Props = {
     isSaving: boolean;
     canAssign: boolean;
     planning?: Planning;
+    params: AssignmentParams;
 };
 
 const defaultViewport = {
@@ -57,9 +59,10 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     isSaving,
     canAssign,
     planning,
+    params,
 }) => {
     const { data: childrenOrgUnits, isLoading: isLoadingChildrenOrgUnits } =
-        useGetPlanningOrgUnitsChildren(planningId);
+        useGetPlanningOrgUnitsChildren(planningId, params);
     const { data: rootOrgUnit, isLoading: isLoadingRootOrgUnit } =
         useGetPlanningOrgUnitsRoot(planningId);
     const bounds: Bounds | undefined = useMemo(
@@ -124,127 +127,140 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     return (
         <Box position="relative">
             {isLoading && <LoadingSpinner />}
-            <MapContainer
-                key={planning?.id}
-                bounds={bounds}
-                maxZoom={currentTile.maxZoom}
-                style={{ height: defaultHeight }}
-                center={defaultViewport.center}
-                zoom={defaultViewport.zoom}
-                scrollWheelZoom={false}
-                zoomControl={false}
-                boundsOptions={boundsOptions}
-            >
-                <CloseTooltipOnMoveStart />
-                <CustomZoomControl
+            {!isLoading && (
+                <MapContainer
+                    key={planning?.id}
                     bounds={bounds}
+                    maxZoom={currentTile.maxZoom}
+                    style={{ height: defaultHeight }}
+                    center={defaultViewport.center}
+                    zoom={defaultViewport.zoom}
+                    scrollWheelZoom={false}
+                    zoomControl={false}
                     boundsOptions={boundsOptions}
-                    fitOnLoad
-                />
-                <ScaleControl imperial={false} />
-                <CustomTileLayer
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
-                />
-                {rootOrgUnit?.geo_json && (
-                    <Pane name="root-org-unit-shape" style={{ zIndex: 200 }}>
-                        <GeoJSON
-                            key={rootOrgUnit?.id}
-                            data={rootOrgUnit.geo_json}
-                        >
-                            <MapToolTip
-                                pane="popupPane"
-                                label={rootOrgUnit.name}
-                            />
-                        </GeoJSON>
-                    </Pane>
-                )}
-                <Pane name="org-units-shapes-parent" style={{ zIndex: 201 }}>
-                    {parentGeoJson?.map(ou => (
-                        <GeoJSON
-                            key={ou.id}
-                            data={ou.geo_json}
-                            style={{
-                                color: parentColor,
-                                fillOpacity: 0.3,
-                                fillColor: parentColor,
-                            }}
-                        >
-                            <MapToolTip pane="popupPane" label={ou.name} />
-                        </GeoJSON>
-                    ))}
-                </Pane>
-                <Pane
-                    name="target-org-units-shapes-unassigned"
-                    style={{ zIndex: 202 }}
                 >
-                    {unassignedGeoJson?.map(ou => (
-                        <GeoJSON
-                            key={ou.id}
-                            eventHandlers={{
-                                click: () =>
-                                    canAssign && handleSaveAssignment(ou.id),
-                            }}
-                            data={ou.geo_json}
-                            style={{
-                                color: getAssignmentColor(ou.id),
-                                fillOpacity: 0.3,
-                                fillColor: getAssignmentColor(ou.id),
-                            }}
+                    <CloseTooltipOnMoveStart />
+                    <CustomZoomControl
+                        bounds={bounds}
+                        boundsOptions={boundsOptions}
+                        fitOnLoad
+                    />
+                    <ScaleControl imperial={false} />
+                    <CustomTileLayer
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
+                    />
+                    {rootOrgUnit?.geo_json && (
+                        <Pane
+                            name="root-org-unit-shape"
+                            style={{ zIndex: 200 }}
                         >
-                            <MapToolTip pane="popupPane" label={ou.name} />
-                        </GeoJSON>
-                    ))}
-                </Pane>
-                <Pane
-                    name="target-org-units-shapes-assigned"
-                    style={{ zIndex: 203 }}
-                >
-                    {assignedGeoJson?.map(ou => (
-                        <GeoJSON
-                            key={ou.id}
-                            eventHandlers={{
-                                click: () =>
-                                    canAssign && handleSaveAssignment(ou.id),
-                            }}
-                            data={ou.geo_json}
-                            style={{
-                                color: getAssignmentColor(ou.id),
-                                fillOpacity: 0.8,
-                                fillColor: getAssignmentColor(ou.id),
-                            }}
-                        >
-                            <MapToolTip pane="popupPane" label={ou.name} />
-                        </GeoJSON>
-                    ))}
-                </Pane>
-                <Pane name="target-org-units-locations" style={{ zIndex: 202 }}>
-                    {childrenOrgUnits
-                        ?.filter(ou =>
-                            isValidCoordinate(ou.latitude, ou.longitude),
-                        )
-                        .map(ou => (
-                            <CircleMarkerComponent
+                            <GeoJSON
+                                key={rootOrgUnit?.id}
+                                data={rootOrgUnit.geo_json}
+                            >
+                                <MapToolTip
+                                    pane="popupPane"
+                                    label={rootOrgUnit.name}
+                                />
+                            </GeoJSON>
+                        </Pane>
+                    )}
+                    <Pane
+                        name="org-units-shapes-parent"
+                        style={{ zIndex: 201 }}
+                    >
+                        {parentGeoJson?.map(ou => (
+                            <GeoJSON
                                 key={ou.id}
-                                item={ou}
-                                onClick={() =>
-                                    canAssign && handleSaveAssignment(ou.id)
-                                }
-                                TooltipComponent={MapToolTip}
-                                tooltipProps={() => ({
-                                    pane: 'popupPane',
-                                    label: ou.name,
-                                })}
-                                markerProps={() => ({
-                                    ...circleColorMarkerOptions(
-                                        getAssignmentColor(ou.id),
-                                    ),
-                                    radius: 12,
-                                })}
-                            />
+                                data={ou.geo_json}
+                                style={{
+                                    color: parentColor,
+                                    fillOpacity: 0.3,
+                                    fillColor: parentColor,
+                                }}
+                            >
+                                <MapToolTip pane="popupPane" label={ou.name} />
+                            </GeoJSON>
                         ))}
-                </Pane>
-            </MapContainer>
+                    </Pane>
+                    <Pane
+                        name="target-org-units-shapes-unassigned"
+                        style={{ zIndex: 202 }}
+                    >
+                        {unassignedGeoJson?.map(ou => (
+                            <GeoJSON
+                                key={ou.id}
+                                eventHandlers={{
+                                    click: () =>
+                                        canAssign &&
+                                        handleSaveAssignment(ou.id),
+                                }}
+                                data={ou.geo_json}
+                                style={{
+                                    color: getAssignmentColor(ou.id),
+                                    fillOpacity: 0.3,
+                                    fillColor: getAssignmentColor(ou.id),
+                                }}
+                            >
+                                <MapToolTip pane="popupPane" label={ou.name} />
+                            </GeoJSON>
+                        ))}
+                    </Pane>
+                    <Pane
+                        name="target-org-units-shapes-assigned"
+                        style={{ zIndex: 203 }}
+                    >
+                        {assignedGeoJson?.map(ou => (
+                            <GeoJSON
+                                key={ou.id}
+                                eventHandlers={{
+                                    click: () =>
+                                        canAssign &&
+                                        handleSaveAssignment(ou.id),
+                                }}
+                                data={ou.geo_json}
+                                style={{
+                                    color: getAssignmentColor(ou.id),
+                                    fillOpacity: 0.8,
+                                    fillColor: getAssignmentColor(ou.id),
+                                }}
+                            >
+                                <MapToolTip pane="popupPane" label={ou.name} />
+                            </GeoJSON>
+                        ))}
+                    </Pane>
+                    <Pane
+                        name="target-org-units-locations"
+                        style={{ zIndex: 202 }}
+                    >
+                        {childrenOrgUnits
+                            ?.filter(ou =>
+                                isValidCoordinate(ou.latitude, ou.longitude),
+                            )
+                            .map(ou => (
+                                <CircleMarkerComponent
+                                    key={ou.id}
+                                    item={ou}
+                                    onClick={() =>
+                                        canAssign && handleSaveAssignment(ou.id)
+                                    }
+                                    TooltipComponent={MapToolTip}
+                                    tooltipProps={() => ({
+                                        pane: 'popupPane',
+                                        label: ou.name,
+                                    })}
+                                    markerProps={() => ({
+                                        ...circleColorMarkerOptions(
+                                            getAssignmentColor(ou.id),
+                                        ),
+                                        radius: 12,
+                                    })}
+                                />
+                            ))}
+                    </Pane>
+                </MapContainer>
+            )}
         </Box>
     );
 };

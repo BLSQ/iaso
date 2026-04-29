@@ -9,7 +9,6 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import * as Permission from '../../../utils/permissions';
 import { createInstance } from '../../instances/actions';
-import { useDeleteForm } from '../hooks/useDeleteForm';
 import { useRestoreForm } from '../hooks/useRestoreForm';
 import MESSAGES from '../messages';
 import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
@@ -130,7 +129,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                             formType={{
                                                 id: settings.row.original.id,
                                                 periodType:
-                                                    settings.row.original.period_type,
+                                                    settings.row.original
+                                                        .period_type,
                                             }}
                                             onCreateOrReAssign={(
                                                 currentForm,
@@ -148,7 +148,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                             iconProps={{
                                                 disabled: hasNoVersion,
                                             }}
-                                                />
+                                        />
                                     </span>
                                 </Tooltip>
                             </DisplayIfUserHasPerm>
@@ -186,8 +186,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                     titleMessage={MESSAGES.deleteFormTitle}
                                     onConfirm={closeDialog =>
                                         deleteForm({
-                                            id: settings.row.original.id},
-                                        ).then(closeDialog)
+                                            id: settings.row.original.id,
+                                        }).then(closeDialog)
                                     }
                                 />
                             </DisplayIfUserHasPerm>
@@ -195,7 +195,7 @@ export const FormActions: FunctionComponent<Props> = ({
                     )}
                 </>
             )}
-            {settings.row.original.latest_form_version !== null && (
+            {settings.row.original.latest_form_version != null && (
                 <>
                     <IconButton
                         onClick={handleClick as () => void}
@@ -219,7 +219,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                     reloadDocument
                                     to={
                                         settings.row.original
-                                            .latest_form_version.xls_file
+                                            .latest_form_version?.xls_file
                                     }
                                 >
                                     XLS
@@ -231,8 +231,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                 download
                                 reloadDocument
                                 to={
-                                    settings.row.original.latest_form_version
-                                        .file
+                                    settings.row.original
+                                        .latest_form_version?.file
                                 }
                             >
                                 XML

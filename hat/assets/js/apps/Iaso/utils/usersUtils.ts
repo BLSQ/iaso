@@ -6,7 +6,7 @@ import { userHasPermission } from '../domains/users/utils';
 import * as Permissions from './permissions';
 
 export type Profile = {
-    id: string;
+    id: number;
     first_name: string;
     user_name?: string;
     username?: string;

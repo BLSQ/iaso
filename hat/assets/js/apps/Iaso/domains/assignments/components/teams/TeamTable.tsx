@@ -63,6 +63,7 @@ export const TeamTable: FunctionComponent<Props> = ({
     const { mutate: updateTeam } = useSaveTeam('edit', false);
     const { mutate: updateUser } = useSaveProfile({
         showSuccessSnackBar: false,
+        extraInvalidateQueryKeys: ['planningChildrenOrgUnitsPaginated'],
     });
 
     const countTeams = useCallback(

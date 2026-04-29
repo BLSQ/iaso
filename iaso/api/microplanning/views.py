@@ -89,7 +89,7 @@ class PlanningOrgunitsViewSet(AuditMixin, GenericViewSet):
             Prefetch(
                 "assignment_set",
                 queryset=Assignment.objects.filter(planning=planning, deleted_at__isnull=True).select_related(
-                    "user", "team"
+                    "user__iaso_profile", "team"
                 ),
                 to_attr="_planning_assignments_prefetched",
             )

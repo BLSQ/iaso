@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Paper } from '@mui/material';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -6,48 +6,72 @@ import {
     useGetPlanningOrgUnitsChildrenPaginated,
     tableDefaults,
 } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
-import { Planning } from '../../plannings/types';
+import { SxStyles } from 'Iaso/types/general';
+import { PaginatedPlanningOrgUnit, Planning } from '../../plannings/types';
+import { SubTeam, User } from '../../teams/types/team';
 import { defaultHeight } from '../constants/ui';
 import { useGetColumns } from '../hooks/useGetColumns';
 import { AssignmentParams } from '../types/assigment';
 
+const tableScrollMaxHeight = `calc(${defaultHeight} - 70px)`;
+
+const styles: SxStyles = {
+    paper: {
+        height: defaultHeight,
+        elevation: 2,
+    },
+    tableContainer: {
+        borderTop: theme =>
+            // @ts-ignore
+            `1px solid ${theme.palette.ligthGray.border}`,
+        '& .MuiSpeedDial-root': {
+            display: 'none',
+        },
+        '& .MuiTableContainer-root': {
+            maxHeight: tableScrollMaxHeight,
+            overflowY: 'auto',
+            overflowX: 'auto',
+            '& .MuiTableHead-root th': {
+                top: 0,
+                position: 'sticky !important',
+            },
+        },
+    },
+};
+
 type Props = {
     planning?: Planning;
     params: AssignmentParams;
+    canAssign: boolean;
+    handleSaveAssignment: (orgUnitId: number) => void;
+    isSaving: boolean;
+    selectedUser?: User;
+    selectedTeam?: SubTeam;
 };
 
 export const AssignmentsTable: FunctionComponent<Props> = ({
     planning,
     params,
+    canAssign,
+    handleSaveAssignment,
+    isSaving,
+    selectedUser,
+    selectedTeam,
 }) => {
     const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
         planning?.id,
         params,
     );
     const columns = useGetColumns();
-
-    const tableScrollMaxHeight = `calc(${defaultHeight} - 70px)`;
+    const handleRowClick = useCallback(
+        (row: PaginatedPlanningOrgUnit) => {
+            handleSaveAssignment(row.id);
+        },
+        [handleSaveAssignment],
+    );
     return (
-        <Paper sx={{ height: defaultHeight }}>
-            <Box
-                sx={{
-                    borderTop: theme =>
-                        // @ts-ignore
-                        `1px solid ${theme.palette.ligthGray.border}`,
-                    '& .MuiSpeedDial-root': {
-                        display: 'none',
-                    },
-                    '& .MuiTableContainer-root': {
-                        maxHeight: tableScrollMaxHeight,
-                        overflowY: 'auto',
-                        overflowX: 'auto',
-                        '& .MuiTableHead-root th': {
-                            top: 0,
-                            position: 'sticky !important',
-                        },
-                    },
-                }}
-            >
+        <Paper sx={styles.paper}>
+            <Box sx={styles.tableContainer}>
                 <TableWithDeepLink
                     baseUrl={baseUrls.assignments}
                     params={params}
@@ -60,9 +84,13 @@ export const AssignmentsTable: FunctionComponent<Props> = ({
                     pages={data?.pages ?? 0}
                     elevation={0}
                     countOnTop={false}
+                    onRowClick={canAssign ? handleRowClick : undefined}
                     extraProps={{
                         defaultPageSize: data?.limit ?? tableDefaults.limit,
-                        loading: isLoading,
+                        loading: isLoading || isSaving,
+                        canAssign,
+                        selectedUser,
+                        selectedTeam,
                     }}
                 />
             </Box>

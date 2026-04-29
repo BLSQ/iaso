@@ -480,19 +480,15 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
 class PlanningOrgUnitTableAssignmentTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ["id", "name"]
+        fields = ["id", "name", "color"]
 
 
 class PlanningOrgUnitTableAssignmentUserSerializer(serializers.ModelSerializer):
+    color = serializers.CharField(source="iaso_profile.color", read_only=True)
+
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name"]
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["first_name"] = data["first_name"] or ""
-        data["last_name"] = data["last_name"] or ""
-        return data
+        fields = ["id", "username", "first_name", "last_name", "color"]
 
 
 class PlanningOrgUnitTableAssignmentSerializer(serializers.Serializer):
@@ -537,6 +533,6 @@ class PlanningOrgUnitTableSerializer(serializers.ModelSerializer):
             return None
         return (
             Assignment.objects.filter(planning=planning, org_unit=org_unit, deleted_at__isnull=True)
-            .select_related("user", "team")
+            .select_related("user__iaso_profile", "team")
             .first()
         )

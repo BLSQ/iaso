@@ -9,7 +9,12 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from hat.audit.models import Modification
-from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningWriteSerializer
+from iaso.api.microplanning.serializers import (
+    AssignmentSerializer,
+    PlanningOrgUnitTableAssignmentTeamSerializer,
+    PlanningOrgUnitTableAssignmentUserSerializer,
+    PlanningWriteSerializer,
+)
 from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, SourceVersion, Task
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.team import Team
@@ -1221,15 +1226,13 @@ class PlanningTestCase(APITestCase):
         rows = {ou["id"]: ou for ou in r["results"]}
         self.assertEqual(
             rows[child.id]["assignment"]["user"],
-            {
-                "id": self.user.id,
-                "username": self.user.username,
-                "first_name": self.user.first_name or "",
-                "last_name": self.user.last_name or "",
-            },
+            PlanningOrgUnitTableAssignmentUserSerializer(self.user).data,
         )
         self.assertIsNone(rows[child.id]["assignment"]["team"])
-        self.assertEqual(rows[child_team.id]["assignment"]["team"], {"id": self.team1.id, "name": self.team1.name})
+        self.assertEqual(
+            rows[child_team.id]["assignment"]["team"],
+            PlanningOrgUnitTableAssignmentTeamSerializer(self.team1).data,
+        )
         self.assertIsNone(rows[child_team.id]["assignment"]["user"])
 
         filtered = self.client.get(

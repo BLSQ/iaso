@@ -1,5 +1,5 @@
-import React from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import { AssignmentCell } from '../components/AssignmentCell';
 import MESSAGES from '../messages';
 
 export const useGetColumns = (): Column[] => {
@@ -15,16 +15,9 @@ export const useGetColumns = (): Column[] => {
             accessor: 'name',
         },
         {
-            Header: '',
+            Header: formatMessage(MESSAGES.assignment),
             accessor: 'assignment',
-            Cell: settings => {
-                const { assignment } = settings.row.original;
-                return (
-                    <span>
-                        {assignment?.user?.username} - {assignment?.team?.name}
-                    </span>
-                );
-            },
+            Cell: AssignmentCell,
         },
     ];
 };

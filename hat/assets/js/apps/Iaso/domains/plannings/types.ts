@@ -109,12 +109,14 @@ export type User = {
     username: string;
     first_name: string;
     last_name: string;
+    color: string;
 };
 export type Team = {
     id: number;
     name: string;
+    color: string;
 };
-type Assignment = {
+export type PaginatedAssignment = {
     id: number;
     user: User;
     team: Team;
@@ -123,7 +125,7 @@ type Assignment = {
 export type PaginatedPlanningOrgUnit = {
     id: number;
     name: string;
-    assignment: Assignment | null;
+    assignment: PaginatedAssignment | null;
 };
 export interface PaginatedPlanningOrgUnits extends Pagination {
     results: Array<PaginatedPlanningOrgUnit>;

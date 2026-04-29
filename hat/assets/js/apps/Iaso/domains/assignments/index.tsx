@@ -74,6 +74,7 @@ export const Assignments: FunctionComponent = () => {
         defaultTab: (params?.tab ?? 'map') as 'list' | 'map',
         baseUrl: baseUrls.assignments,
     });
+    const canAssign = Boolean(selectedUser || selectedTeam);
     return (
         <>
             <TopBar
@@ -154,15 +155,18 @@ export const Assignments: FunctionComponent = () => {
                                 handleSaveAssignment={handleSaveAssignment}
                                 isSaving={isSaving}
                                 planning={planning}
-                                canAssign={Boolean(
-                                    selectedUser || selectedTeam,
-                                )}
+                                canAssign={canAssign}
                             />
                         )}
                         {tab === 'list' && (
                             <AssignmentsTable
                                 planning={planning}
                                 params={params}
+                                canAssign={canAssign}
+                                handleSaveAssignment={handleSaveAssignment}
+                                isSaving={isSaving}
+                                selectedUser={selectedUser}
+                                selectedTeam={selectedTeam}
                             />
                         )}
                     </Grid>

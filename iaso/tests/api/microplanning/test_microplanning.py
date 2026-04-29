@@ -1039,7 +1039,7 @@ class PlanningTestCase(APITestCase):
             200,
         )
         self.assertEqual(r_page["count"], 1)
-        self.assertEqual([ou["id"] for ou in r_page["org_units"]], [child_valid.id])
+        self.assertEqual([ou["id"] for ou in r_page["results"]], [child_valid.id])
 
     def test_planning_orgunits_children_only_validation_valid_sampling_group(self):
         """children and children-paginated must not return NEW org units linked via sampling group."""
@@ -1111,7 +1111,7 @@ class PlanningTestCase(APITestCase):
             200,
         )
         self.assertEqual(r_page["count"], 1)
-        self.assertEqual([ou["id"] for ou in r_page["org_units"]], [sampled_valid.id])
+        self.assertEqual([ou["id"] for ou in r_page["results"]], [sampled_valid.id])
 
     def test_planning_orgunits_children_with_sampling_group(self):
         self.client.force_authenticate(self.user)
@@ -1211,18 +1211,14 @@ class PlanningTestCase(APITestCase):
         )
         planning.target_org_unit_types.set([child_type])
 
-        Assignment.objects.create(
-            planning=planning, org_unit=child, user=self.user, created_by=self.user
-        )
-        Assignment.objects.create(
-            planning=planning, org_unit=child_team, team=self.team1, created_by=self.user
-        )
+        Assignment.objects.create(planning=planning, org_unit=child, user=self.user, created_by=self.user)
+        Assignment.objects.create(planning=planning, org_unit=child_team, team=self.team1, created_by=self.user)
 
         url = f"/api/microplanning/orgunits/children-paginated/?planning={planning.id}&limit=10&page=1"
         response = self.client.get(url, format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["count"], 2)
-        rows = {ou["id"]: ou for ou in r["org_units"]}
+        rows = {ou["id"]: ou for ou in r["results"]}
         self.assertEqual(
             rows[child.id]["assignment"]["user"],
             {
@@ -1242,7 +1238,7 @@ class PlanningTestCase(APITestCase):
         )
         rf = self.assertJSONResponse(filtered, 200)
         self.assertEqual(rf["count"], 1)
-        self.assertEqual(rf["org_units"][0]["id"], child.id)
+        self.assertEqual(rf["results"][0]["id"], child.id)
 
     def test_planning_orgunits_root_requires_planning_id(self):
         self.client.force_authenticate(self.user)

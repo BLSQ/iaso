@@ -1,6 +1,7 @@
 import { UrlParams } from 'bluesquare-components';
 import { GeoJson } from 'Iaso/components/maps/types';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
+import { Pagination } from 'Iaso/types/general';
 
 export type PublishingStatus = 'all' | 'draft' | 'published';
 
@@ -102,3 +103,28 @@ export type PlanningOrgUnits = {
     longitude: number;
     org_unit_type_id: number;
 };
+
+export type User = {
+    id: number;
+    username: string;
+    first_name: string;
+    last_name: string;
+};
+export type Team = {
+    id: number;
+    name: string;
+};
+type Assignment = {
+    id: number;
+    user: User;
+    team: Team;
+};
+
+export type PaginatedPlanningOrgUnit = {
+    id: number;
+    name: string;
+    assignment: Assignment | null;
+};
+export interface PaginatedPlanningOrgUnits extends Pagination {
+    results: Array<PaginatedPlanningOrgUnit>;
+}

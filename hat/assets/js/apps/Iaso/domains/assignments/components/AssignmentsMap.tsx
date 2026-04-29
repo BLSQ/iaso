@@ -18,15 +18,14 @@ import {
     getOrgUnitsBounds,
     isValidCoordinate,
 } from 'Iaso/utils/map/mapUtils';
-import { useGetPlanningDetails } from '../../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../../plannings/types';
 import {
     useGetPlanningOrgUnitsChildren,
     useGetPlanningOrgUnitsRoot,
 } from '../../teams/hooks/requests/useGetPlanningOrgUnits';
 import { parentColor } from '../constants/colors';
+import { defaultHeight } from '../constants/ui';
 import { AssignmentsResult } from '../hooks/requests/useGetAssignments';
-
 type Props = {
     planningId: string;
     rootTeam?: Team;
@@ -36,6 +35,7 @@ type Props = {
     handleSaveAssignment: (orgUnitId: number) => void;
     isSaving: boolean;
     canAssign: boolean;
+    planning?: Planning;
 };
 
 const defaultViewport = {
@@ -46,7 +46,6 @@ const boundsOptions: L.FitBoundsOptions = {
     padding: L.point(25, 25),
     maxZoom: 12,
 };
-const defaultHeight = '80vh';
 
 export const AssignmentsMap: FunctionComponent<Props> = ({
     planningId,
@@ -57,19 +56,12 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     handleSaveAssignment,
     isSaving,
     canAssign,
+    planning,
 }) => {
-    const {
-        data: planning,
-    }: {
-        data?: Planning;
-        isLoading: boolean;
-    } = useGetPlanningDetails(planningId);
-
     const { data: childrenOrgUnits, isLoading: isLoadingChildrenOrgUnits } =
         useGetPlanningOrgUnitsChildren(planningId);
     const { data: rootOrgUnit, isLoading: isLoadingRootOrgUnit } =
         useGetPlanningOrgUnitsRoot(planningId);
-
     const bounds: Bounds | undefined = useMemo(
         () =>
             childrenOrgUnits &&

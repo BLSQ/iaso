@@ -1,8 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, Grid, Typography } from '@mui/material';
-import { useSafeIntl, useGoBack } from 'bluesquare-components';
+import { Box, Button, Grid, Typography, Tabs, Tab } from '@mui/material';
+import {
+    useSafeIntl,
+    useGoBack,
+    useTabs,
+    Optional,
+} from 'bluesquare-components';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -13,6 +18,7 @@ import { Planning } from '../plannings/types';
 import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { SubTeam, User } from '../teams/types/team';
 import { AssignmentsMap } from './components/AssignmentsMap';
+import { AssignmentsTable } from './components/AssignmentsTable';
 import { TeamTable } from './components/teams/TeamTable';
 import { useBulkDeleteAssignments } from './hooks/requests/useBulkDeleteAssignments';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
@@ -54,6 +60,7 @@ export const Assignments: FunctionComponent = () => {
         data?: AssignmentsResult;
         isLoading: boolean;
     } = useGetAssignments({ planning: planningId });
+
     const { handleSaveAssignment, isLoading: isSaving } = useSaveAssignment({
         planningId,
         assignments,
@@ -62,6 +69,11 @@ export const Assignments: FunctionComponent = () => {
     });
     const { mutateAsync: deleteAssignments } = useBulkDeleteAssignments();
 
+    const { tab, handleChangeTab } = useTabs<'list' | 'map'>({
+        params: params as Record<string, Optional<string>>,
+        defaultTab: (params?.tab ?? 'map') as 'list' | 'map',
+        baseUrl: baseUrls.assignments,
+    });
     return (
         <>
             <TopBar
@@ -122,16 +134,37 @@ export const Assignments: FunctionComponent = () => {
 
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={8}>
-                        <AssignmentsMap
-                            planningId={planningId}
-                            rootTeam={rootTeam}
-                            isLoadingRootTeam={isLoadingRootTeam}
-                            assignments={assignments}
-                            isLoadingAssignments={isLoadingAssignments}
-                            handleSaveAssignment={handleSaveAssignment}
-                            isSaving={isSaving}
-                            canAssign={Boolean(selectedUser || selectedTeam)}
-                        />
+                        <Tabs value={tab} onChange={handleChangeTab}>
+                            <Tab
+                                value="map"
+                                label={formatMessage(MESSAGES.map)}
+                            />
+                            <Tab
+                                value="list"
+                                label={formatMessage(MESSAGES.list)}
+                            />
+                        </Tabs>
+                        {tab === 'map' && (
+                            <AssignmentsMap
+                                planningId={planningId}
+                                rootTeam={rootTeam}
+                                isLoadingRootTeam={isLoadingRootTeam}
+                                assignments={assignments}
+                                isLoadingAssignments={isLoadingAssignments}
+                                handleSaveAssignment={handleSaveAssignment}
+                                isSaving={isSaving}
+                                planning={planning}
+                                canAssign={Boolean(
+                                    selectedUser || selectedTeam,
+                                )}
+                            />
+                        )}
+                        {tab === 'list' && (
+                            <AssignmentsTable
+                                planning={planning}
+                                params={params}
+                            />
+                        )}
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <TeamTable

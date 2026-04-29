@@ -63,7 +63,7 @@ class PlanningOrgunitsViewSet(AuditMixin, GenericViewSet):
     serializer_class = PlanningOrgUnitTableSerializer
     http_method_names = ["get", "head", "options"]
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
-    results_key = "org_units"
+    results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     search_fields = ["name"]

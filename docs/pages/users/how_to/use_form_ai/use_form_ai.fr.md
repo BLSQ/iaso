@@ -1,12 +1,12 @@
-# Utiliser Form AI
+# Utiliser IA pour formulaires
 
-Le **Form AI** est un assistant alimenté par l'IA qui vous permet de créer et de modifier des formulaires ODK XLSForm en langage naturel. Au lieu de construire un formulaire manuellement dans un tableur, vous décrivez vos besoins dans un chat, et Form AI génère un XLSForm prêt à l'emploi.
+Le **IA pour formulaires** est un assistant alimenté par l'IA qui vous permet de créer et de modifier des formulaires ODK XLSForm en langage naturel. Au lieu de construire un formulaire manuellement dans un tableur, vous décrivez vos besoins dans un chat, et IA pour formulaires génère un XLSForm prêt à l'emploi.
 
 ## Prérequis
 
 Avant d'utiliser le Form AI, les conditions suivantes doivent être remplies :
 
-- Le module **Form AI** doit être activé pour votre organisation par un administrateur (via **Paramètres → Modules**).
+- Le module **IA pour formulaires** doit être activé pour votre organisation par un administrateur (via **Paramètres → Modules**).
 - Votre compte utilisateur doit disposer de la permission **Gestion des formulaires** (`iaso_forms`).
 - Votre compte IASO doit disposer d'une **clé API Anthropic** configurée par un administrateur. Si la clé est absente, Form AI retournera un message d'erreur vous invitant à contacter votre administrateur.
 

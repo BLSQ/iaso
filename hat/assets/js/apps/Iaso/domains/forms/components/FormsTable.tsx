@@ -22,7 +22,6 @@ export const FormsTable: FunctionComponent<Props> = ({
     tableDefaults: tableDefaultsProp,
     displayColumnsSelectDrawer = true,
 }) => {
-
     const apiParams = usePrefixedParams(paramsPrefix, params) as FormsParams;
 
     const { data: forms, isFetching: isLoadingForms } = useGetForms(
@@ -34,7 +33,8 @@ export const FormsTable: FunctionComponent<Props> = ({
     );
 
     const columns = useFormsTableColumns({
-        showDeleted: params?.showDeleted === 'true',
+        onlyDeleted: apiParams?.onlyDeleted === '1',
+        showDeleted: apiParams?.showDeleted === '1',
         orgUnitId: params?.orgUnitId,
         params: apiParams,
         count: forms?.count ?? 0,

@@ -373,6 +373,7 @@
     "iaso.forms.searchToSeeOrgUnits": "Cliquez sur  \"Rechercher\" pour voir les unités d'org",
     "iaso.forms.searchToSeeSubmissions": "Cliquez sur  \"Rechercher\" pour voir les soumissions",
     "iaso.forms.shape": "Forme",
+    "iaso.forms.onlyDeleted": "Montrer seulement les formulaires effacés",
     "iaso.forms.showDeleted": "Montrer seulement les formulaires effacés",
     "iaso.forms.showInstancesCount": "Afficher le nombre d'instances",
     "iaso.forms.source": "Source",

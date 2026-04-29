@@ -232,12 +232,67 @@ class FormsAPITestCase(APITestCase):
         form_to_delete.delete()
 
         response = self.client.get(
-            "/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true",
-            headers={"Content-Type": "application/json"},
+            "/api/forms/",
+            data={
+                "order": "instance_updated_at",
+                "page": 1,
+                "only_deleted": "1",
+                "searchActive": "true",
+                "all": "true",
+                "limit": 50,
+                "undefined": "true",
+            },
+        )
+        res_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(res_json["count"], 1)
+
+    def test_forms_list_excludes_deleted_by_default(self):
+        """GET /forms/ should return only non-deleted forms by default."""
+        self.client.force_authenticate(self.yoda)
+
+        self.form_1.delete()
+
+        response = self.client.get(
+            "/api/forms/",
+            data={"limit": 50},
         )
 
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 1)
+        resp_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(resp_json["count"], 1)
+
+        self.assertEqual(resp_json["forms"][0]["id"], self.form_2.id)
+
+    def test_forms_list_only_deleted(self):
+        """GET /forms/?only_deleted=1 should return only deleted forms."""
+        self.client.force_authenticate(self.yoda)
+
+        self.form_1.delete()
+
+        response = self.client.get(
+            "/api/forms/",
+            data={"only_deleted": "1", "limit": 50},
+        )
+
+        resp_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(resp_json["count"], 1)
+        self.assertEqual(resp_json["forms"][0]["id"], self.form_1.id)
+
+    def test_forms_list_show_deleted(self):
+        """GET /forms/?show_deleted=1 should return both deleted and non-deleted forms."""
+        self.client.force_authenticate(self.yoda)
+
+        self.form_1.delete()
+
+        response = self.client.get(
+            "/api/forms/",
+            data={"show_deleted": "1", "limit": 50},
+        )
+
+        resp_json = self.assertJSONResponse(response, 200)
+        self.assertEqual(resp_json["count"], 2)
+
+        returned_ids = {form["id"] for form in resp_json["forms"]}
+        self.assertEqual(returned_ids, {self.form_1.id, self.form_2.id})
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""

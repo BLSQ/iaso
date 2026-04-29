@@ -83,7 +83,14 @@ export type Form = {
     single_per_period: boolean;
     periods_before_allowed: number;
     periods_after_allowed: number;
-    latest_form_version: string;
+    latest_form_version?: {
+        id: number;
+        version_id: string;
+        file: string | null;
+        xls_file: string | null;
+        created_at: string;
+        updated_at: string;
+    } | null;
     instances_count?: number;
     instance_updated_at: string;
     created_at: string;
@@ -185,6 +192,7 @@ export type FormsParams = {
     page: string;
     search?: string;
     showDeleted?: string;
+    onlyDeleted?: string;
     planning?: string;
     projectsIds?: string;
     fields?: string;

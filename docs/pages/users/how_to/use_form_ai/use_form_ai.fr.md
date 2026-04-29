@@ -1,18 +1,18 @@
-# Utiliser le Copilote de formulaire
+# Utiliser Form AI
 
-Le **Copilote de formulaire** est un assistant alimenté par l'IA qui vous permet de créer et de modifier des formulaires ODK XLSForm en langage naturel. Au lieu de construire un formulaire manuellement dans un tableur, vous décrivez vos besoins dans un chat, et le Copilote génère un XLSForm prêt à l'emploi.
+Le **Form AI** est un assistant alimenté par l'IA qui vous permet de créer et de modifier des formulaires ODK XLSForm en langage naturel. Au lieu de construire un formulaire manuellement dans un tableur, vous décrivez vos besoins dans un chat, et Form AI génère un XLSForm prêt à l'emploi.
 
 ## Prérequis
 
-Avant d'utiliser le Copilote de formulaire, les conditions suivantes doivent être remplies :
+Avant d'utiliser le Form AI, les conditions suivantes doivent être remplies :
 
-- Le module **Copilote de formulaire** doit être activé pour votre organisation par un administrateur (via **Paramètres → Modules**).
+- Le module **Form AI** doit être activé pour votre organisation par un administrateur (via **Paramètres → Modules**).
 - Votre compte utilisateur doit disposer de la permission **Gestion des formulaires** (`iaso_forms`).
-- Votre compte IASO doit disposer d'une **clé API Anthropic** configurée par un administrateur. Si la clé est absente, le Copilote retournera un message d'erreur vous invitant à contacter votre administrateur.
+- Votre compte IASO doit disposer d'une **clé API Anthropic** configurée par un administrateur. Si la clé est absente, Form AI retournera un message d'erreur vous invitant à contacter votre administrateur.
 
-## Accéder au Copilote de formulaire
+## Accéder au Form AI
 
-Dans le menu de navigation à gauche, allez dans **Formulaires → Copilote de formulaire**.
+Dans le menu de navigation à gauche, allez dans **Formulaires → Form AI**.
 
 La page est divisée en deux panneaux :
 
@@ -33,11 +33,11 @@ La page est divisée en deux panneaux :
 5. Vous pouvez continuer à affiner le formulaire en envoyant des messages de suivi.  
    *Exemple :* `Rends le champ âge obligatoire et ajoute une question numéro de téléphone après le nom.`
 
-Chaque message est envoyé avec l'historique complet de la conversation, de sorte que le Copilote conserve toujours le contexte de ce qui a déjà été créé.
+Chaque message est envoyé avec l'historique complet de la conversation, de sorte que Form AI conserve toujours le contexte de ce qui a déjà été créé.
 
 ## Charger un formulaire existant pour le modifier
 
-Vous pouvez charger un formulaire IASO existant dans le Copilote pour le modifier avec l'aide de l'IA.
+Vous pouvez charger un formulaire IASO existant dans Form AI pour le modifier avec l'aide de l'IA.
 
 1. Cliquez sur la liste déroulante **"Charger un formulaire existant"** en haut du panneau gauche.
 2. Recherchez et sélectionnez le formulaire à modifier. Seuls les formulaires disposant d'au moins une version XLSForm sont listés.
@@ -46,10 +46,10 @@ Vous pouvez charger un formulaire IASO existant dans le Copilote pour le modifie
    *Exemple :* `Ajoute une section sur les biens du ménage et rends la question GPS facultative.`
 
 !!! note
-    Lors de la modification d'un formulaire existant, le Copilote préserve toujours l'`form_id` ODK d'origine du formulaire. Cela garantit que l'enregistrement du résultat comme nouvelle version passe les contrôles de cohérence d'IASO.
+    Lors de la modification d'un formulaire existant, Form AI préserve toujours l'`form_id` ODK d'origine du formulaire. Cela garantit que l'enregistrement du résultat comme nouvelle version passe les contrôles de cohérence d'IASO.
 
 !!! note
-    La modification d'un formulaire via le Copilote entraîne la perte de la mise en forme (couleurs des cellules, par exemple) du XLSForm d'origine.
+    La modification d'un formulaire via Form AI entraîne la perte de la mise en forme (couleurs des cellules, par exemple) du XLSForm d'origine.
 
 ## Enregistrer le formulaire généré
 

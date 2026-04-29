@@ -7,11 +7,11 @@ from iaso.models.base import Account
 
 
 def _xls_file_upload_to(instance, filename):
-    return f"form_copilot/{instance.uuid}/form.xlsx"
+    return f"form_ai/{instance.uuid}/form.xlsx"
 
 
 class TemporaryForm(models.Model):
-    """Tracks an AI-generated XLSForm file produced by the form copilot."""
+    """Tracks an AI-generated XLSForm file produced by the Form AI."""
 
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     xls_file = models.FileField(upload_to=_xls_file_upload_to)

@@ -75,7 +75,7 @@ export const FormPreview: FunctionComponent<Props> = ({
                         variant="outlined"
                         size="small"
                         startIcon={<DownloadIcon />}
-                        href={`/api/form_copilot/download/${xlsformUuid}/`}
+                        href={`/api/form_ai/download/${xlsformUuid}/`}
                         download="form.xlsx"
                     >
                         {formatMessage(MESSAGES.downloadXlsForm)}

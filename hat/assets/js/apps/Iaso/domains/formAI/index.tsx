@@ -67,7 +67,7 @@ type FormOption = {
     label: string;
 };
 
-const FormCopilot: FunctionComponent = () => {
+const FormAI: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const [messages, setMessages] = useState<Message[]>([]);
     const [conversationHistory, setConversationHistory] = useState<
@@ -304,4 +304,4 @@ const FormCopilot: FunctionComponent = () => {
     );
 };
 
-export default FormCopilot;
+export default FormAI;

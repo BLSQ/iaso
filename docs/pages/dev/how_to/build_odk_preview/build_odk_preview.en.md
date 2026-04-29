@@ -1,6 +1,6 @@
 # Building the ODK Web Forms preview
 
-The Form Copilot uses a small standalone Vue 3 application to render live ODK form previews. It is built with Vite and its compiled output is committed to `iaso/static/odk-preview/` so it is served directly by Django as static files — no separate service is required.
+The Form AI uses a small standalone Vue 3 application to render live ODK form previews. It is built with Vite and its compiled output is committed to `iaso/static/odk-preview/` so it is served directly by Django as static files — no separate service is required.
 
 You only need to rebuild it when updating `@getodk/web-forms` or making changes to the Vue app source in `docker/odk-preview/`.
 
@@ -34,7 +34,7 @@ npm ci
 npm run dev
 ```
 
-The dev server starts on port 8009. To point the Form Copilot iframe at it instead of the committed static bundle, temporarily change `ODK_PREVIEW_BASE` in `hat/assets/js/apps/Iaso/domains/formCopilot/components/FormPreview.tsx`:
+The dev server starts on port 8009. To point the Form AI iframe at it instead of the committed static bundle, temporarily change `ODK_PREVIEW_BASE` in `hat/assets/js/apps/Iaso/domains/formAI/components/FormPreview.tsx`:
 
 ```ts
 const ODK_PREVIEW_BASE = 'http://localhost:8009/';

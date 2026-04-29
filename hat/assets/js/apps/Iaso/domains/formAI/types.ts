@@ -3,13 +3,13 @@ export type ConversationEntry = {
     content: string;
 };
 
-export type FormCopilotRequest = {
+export type FormAIRequest = {
     message: string;
     conversation_history: ConversationEntry[];
     existing_form_odk_id?: string | null;
 };
 
-export type FormCopilotResponse = {
+export type FormAIResponse = {
     assistant_message: string;
     xlsform_uuid: string | null;
     xform_xml: string | null;

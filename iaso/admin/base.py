@@ -93,7 +93,7 @@ from ..models import (
     WorkflowVersion,
 )
 from ..models.data_store import JsonDataStore
-from ..models.form_copilot import TemporaryForm
+from ..models.form_ai import TemporaryForm
 from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
 from ..models.team import Team
 from ..models.validation_workflow import ValidationNode

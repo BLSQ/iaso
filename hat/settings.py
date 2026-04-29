@@ -904,5 +904,5 @@ if IN_TESTS:
 ENABLE_SETUPER_SANDBOX = os.environ.get("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
 SETUPER_SANDBOX_PASSWORD = os.environ.get("SETUPER_SANDBOX_PASSSWORD", "district")
 
-# Form Copilot
-FORM_COPILOT_MODEL = os.environ.get("FORM_COPILOT_MODEL", "claude-opus-4-7")
+# Form AI
+FORM_AI_MODEL = os.environ.get("FORM_AI_MODEL", "claude-opus-4-7")

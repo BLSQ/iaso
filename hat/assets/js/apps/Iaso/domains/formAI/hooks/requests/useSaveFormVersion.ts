@@ -12,12 +12,12 @@ type SaveVersionPayload = {
 export const useSaveFormVersion = () => {
     return useSnackMutation<SaveVersionResponse, Error, SaveVersionPayload>({
         mutationFn: ({ formId, xlsformUuid, formOdkId }: SaveVersionPayload) =>
-            postRequest('/api/form_copilot/save/', {
+            postRequest('/api/form_ai/save/', {
                 form_id: formId,
                 xlsform_uuid: xlsformUuid,
                 ...(formOdkId ? { form_odk_id: formOdkId } : {}),
             }),
         snackSuccessMessage: MESSAGES.versionSaved,
-        invalidateQueryKey: ['formCopilotFormsList'],
+        invalidateQueryKey: ['formAIFormsList'],
     });
 };

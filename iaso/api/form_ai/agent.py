@@ -175,7 +175,7 @@ def call_claude(message: str, conversation_history: list[dict], api_key: Optiona
     messages.append({"role": "user", "content": message})
 
     response = client.messages.create(
-        model=settings.FORM_COPILOT_MODEL,
+        model=settings.FORM_AI_MODEL,
         max_tokens=8192,
         system=XLSFORM_SYSTEM_PROMPT,
         messages=messages,

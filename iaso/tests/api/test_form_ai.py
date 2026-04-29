@@ -7,9 +7,9 @@ from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
 
 from iaso import models as m
-from iaso.api.form_copilot.agent import FormSettings, GeneratedForm, SurveyRow
-from iaso.models.form_copilot import TemporaryForm
-from iaso.modules import MODULE_FORM_COPILOT
+from iaso.api.form_ai.agent import FormSettings, GeneratedForm, SurveyRow
+from iaso.models.form_ai import TemporaryForm
+from iaso.modules import MODULE_FORM_AI
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
@@ -30,19 +30,19 @@ def _make_generated_form() -> GeneratedForm:
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class FormCopilotChatTestCase(APITestCase):
-    url = "/api/form_copilot/"
+class FormAIChatTestCase(APITestCase):
+    url = "/api/form_ai/"
 
     @classmethod
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(
             name="Test Account",
             anthropic_api_key="sk-test-key",
-            modules=[MODULE_FORM_COPILOT.codename],
+            modules=[MODULE_FORM_AI.codename],
         )
         cls.account_no_key = m.Account.objects.create(
             name="Account Without Key",
-            modules=[MODULE_FORM_COPILOT.codename],
+            modules=[MODULE_FORM_AI.codename],
         )
         cls.account_no_module = m.Account.objects.create(name="Account Without Module")
 
@@ -85,14 +85,14 @@ class FormCopilotChatTestCase(APITestCase):
         self.client.force_authenticate(self.user_no_key)
         response = self.client.post(self.url, {"message": "Create a form"}, format="json")
         self.assertEqual(response.status_code, 503)
-        self.assertIn("Copilot API key is not configured", response.data["error"])
+        self.assertIn("Form AI API key is not configured", response.data["error"])
 
     def test_missing_message_returns_400(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, {}, format="json")
         self.assertEqual(response.status_code, 400)
 
-    @patch("iaso.api.form_copilot.views.generate_form")
+    @patch("iaso.api.form_ai.views.generate_form")
     def test_successful_form_generation(self, mock_gen):
         mock_gen.return_value = self._mock_generate_form(with_form=True)
         self.client.force_authenticate(self.user)
@@ -109,7 +109,7 @@ class FormCopilotChatTestCase(APITestCase):
         self.assertEqual(tf.user, self.user)
         self.assertEqual(tf.account, self.account)
 
-    @patch("iaso.api.form_copilot.views.generate_form")
+    @patch("iaso.api.form_ai.views.generate_form")
     def test_conversational_response_has_no_uuid(self, mock_gen):
         mock_gen.return_value = self._mock_generate_form(with_form=False)
         self.client.force_authenticate(self.user)
@@ -119,7 +119,7 @@ class FormCopilotChatTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.data["xlsform_uuid"])
 
-    @patch("iaso.api.form_copilot.views.generate_form")
+    @patch("iaso.api.form_ai.views.generate_form")
     def test_conversation_history_is_forwarded(self, mock_gen):
         mock_gen.return_value = self._mock_generate_form(with_form=False)
         self.client.force_authenticate(self.user)
@@ -134,7 +134,7 @@ class FormCopilotChatTestCase(APITestCase):
         call_args = mock_gen.call_args
         self.assertEqual(call_args[0][1], history)
 
-    @patch("iaso.api.form_copilot.views.generate_form")
+    @patch("iaso.api.form_ai.views.generate_form")
     def test_existing_form_odk_id_is_forwarded(self, mock_gen):
         mock_gen.return_value = self._mock_generate_form(with_form=True)
         self.client.force_authenticate(self.user)
@@ -150,13 +150,13 @@ class FormCopilotChatTestCase(APITestCase):
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class FormCopilotLoadFormTestCase(APITestCase):
+class FormAILoadFormTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(
             name="Test Account",
             anthropic_api_key="sk-test-key",
-            modules=[MODULE_FORM_COPILOT.codename],
+            modules=[MODULE_FORM_AI.codename],
         )
 
         cls.user = cls.create_user_with_profile(
@@ -178,7 +178,7 @@ class FormCopilotLoadFormTestCase(APITestCase):
         project.forms.set([cls.form])
 
     def _url(self, form_id):
-        return f"/api/form_copilot/load/{form_id}/"
+        return f"/api/form_ai/load/{form_id}/"
 
     def test_unauthenticated_returns_401(self):
         response = self.client.get(self._url(self.form.id))
@@ -219,17 +219,17 @@ class FormCopilotLoadFormTestCase(APITestCase):
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class FormCopilotDownloadTestCase(APITestCase):
+class FormAIDownloadTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(
             name="Test Account",
             anthropic_api_key="sk-test-key",
-            modules=[MODULE_FORM_COPILOT.codename],
+            modules=[MODULE_FORM_AI.codename],
         )
         cls.other_account = m.Account.objects.create(
             name="Other Account",
-            modules=[MODULE_FORM_COPILOT.codename],
+            modules=[MODULE_FORM_AI.codename],
         )
 
         cls.user = cls.create_user_with_profile(
@@ -250,7 +250,7 @@ class FormCopilotDownloadTestCase(APITestCase):
         return tf
 
     def _url(self, form_uuid):
-        return f"/api/form_copilot/download/{form_uuid}/"
+        return f"/api/form_ai/download/{form_uuid}/"
 
     def test_unauthenticated_returns_401(self):
         tf = self._create_temporary_form()
@@ -288,19 +288,19 @@ class FormCopilotDownloadTestCase(APITestCase):
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class FormCopilotSaveTestCase(APITestCase):
-    url = "/api/form_copilot/save/"
+class FormAISaveTestCase(APITestCase):
+    url = "/api/form_ai/save/"
 
     @classmethod
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(
             name="Test Account",
             anthropic_api_key="sk-test-key",
-            modules=[MODULE_FORM_COPILOT.codename],
+            modules=[MODULE_FORM_AI.codename],
         )
         cls.other_account = m.Account.objects.create(
             name="Other Account",
-            modules=[MODULE_FORM_COPILOT.codename],
+            modules=[MODULE_FORM_AI.codename],
         )
 
         source = m.DataSource.objects.create(name="Test Source")
@@ -407,3 +407,22 @@ class FormCopilotSaveTestCase(APITestCase):
         # Verify the form now has the patched ODK ID
         new_form.refresh_from_db()
         self.assertEqual(new_form.form_id, "patched_id")
+
+    def test_save_to_form_in_other_account_is_rejected(self):
+        """A user must not be able to create a form version for a form that belongs to another account."""
+        # other_form belongs to other_account only
+        other_form = m.Form.objects.create(name="Other Account Form")
+        other_project = m.Project.objects.create(name="other_proj", app_id="other.app", account=self.other_account)
+        other_project.forms.set([other_form])
+
+        # self.user has a valid TemporaryForm (own account, own uuid) but tries to target other_form
+        tf = self._create_temporary_form(user=self.user, account=self.account)
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            self.url,
+            {"form_id": other_form.id, "xlsform_uuid": str(tf.uuid)},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        # No version should have been created
+        self.assertEqual(other_form.form_versions.count(), 0)

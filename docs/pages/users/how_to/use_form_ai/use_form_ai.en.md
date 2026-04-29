@@ -1,18 +1,18 @@
-# Using the Form Copilot
+# Using Form AI
 
-The **Form Copilot** is an AI-powered assistant that lets you create and edit ODK XLSForms using plain language. Instead of building a form manually in a spreadsheet, you describe what you need in a chat, and the Copilot generates a ready-to-use XLSForm for you.
+The **Form AI** is an AI-powered assistant that lets you create and edit ODK XLSForms using plain language. Instead of building a form manually in a spreadsheet, you describe what you need in a chat, and Form AI generates a ready-to-use XLSForm for you.
 
 ## Prerequisites
 
-Before you can use the Form Copilot, the following conditions must be met:
+Before you can use the Form AI, the following conditions must be met:
 
-- The **Form Copilot** module must be activated for your organisation by an administrator (via **Settings → Modules**).
+- The **Form AI** module must be activated for your organisation by an administrator (via **Settings → Modules**).
 - Your user account must have the **Forms management** permission (`iaso_forms`).
 - Your IASO account must have an **Anthropic API key** configured by an administrator. If the key is missing, the Copilot will return an error message asking you to contact your administrator.
 
-## Accessing the Form Copilot
+## Accessing Form AI
 
-In the left navigation menu, go to **Forms → Form Copilot**.
+In the left navigation menu, go to **Forms → Form AI**.
 
 The page is split into two panels:
 

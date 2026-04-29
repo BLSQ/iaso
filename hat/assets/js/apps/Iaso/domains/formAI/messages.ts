@@ -2,94 +2,94 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     title: {
-        defaultMessage: 'Form Copilot',
-        id: 'iaso.formCopilot.title',
+        defaultMessage: 'Form AI',
+        id: 'iaso.formAI.title',
     },
     placeholder: {
         defaultMessage: 'Describe the form you want to create...',
-        id: 'iaso.formCopilot.placeholder',
+        id: 'iaso.formAI.placeholder',
     },
     send: {
         defaultMessage: 'Send',
-        id: 'iaso.formCopilot.send',
+        id: 'iaso.formAI.send',
     },
     downloadXlsForm: {
         defaultMessage: 'Download XLSForm',
-        id: 'iaso.formCopilot.downloadXlsForm',
+        id: 'iaso.formAI.downloadXlsForm',
     },
     previewPlaceholder: {
         defaultMessage: 'Form preview will appear here once generated',
-        id: 'iaso.formCopilot.previewPlaceholder',
+        id: 'iaso.formAI.previewPlaceholder',
     },
     errorGenerating: {
         defaultMessage: 'Error generating form. Please try again.',
-        id: 'iaso.formCopilot.errorGenerating',
+        id: 'iaso.formAI.errorGenerating',
     },
     selectForm: {
         defaultMessage: 'Load existing form',
-        id: 'iaso.formCopilot.selectForm',
+        id: 'iaso.formAI.selectForm',
     },
     loadForm: {
         defaultMessage: 'Load',
-        id: 'iaso.formCopilot.loadForm',
+        id: 'iaso.formAI.loadForm',
     },
     saveAsNewVersion: {
         defaultMessage: 'Save as new version',
-        id: 'iaso.formCopilot.saveAsNewVersion',
+        id: 'iaso.formAI.saveAsNewVersion',
     },
     formLoaded: {
         defaultMessage:
             'Form "{formName}" (v{versionId}) loaded. You can now ask me to modify it.',
-        id: 'iaso.formCopilot.formLoaded',
+        id: 'iaso.formAI.formLoaded',
     },
     versionSaved: {
         defaultMessage: 'Saved as new version!',
-        id: 'iaso.formCopilot.versionSaved',
+        id: 'iaso.formAI.versionSaved',
     },
     newForm: {
         defaultMessage: 'New form',
-        id: 'iaso.formCopilot.newForm',
+        id: 'iaso.formAI.newForm',
     },
     saveAsNewForm: {
         defaultMessage: 'Save as new form',
-        id: 'iaso.formCopilot.saveAsNewForm',
+        id: 'iaso.formAI.saveAsNewForm',
     },
     formName: {
         defaultMessage: 'Form name',
-        id: 'iaso.formCopilot.formName',
+        id: 'iaso.formAI.formName',
     },
     projects: {
         defaultMessage: 'Projects',
-        id: 'iaso.formCopilot.projects',
+        id: 'iaso.formAI.projects',
     },
     cancel: {
         defaultMessage: 'Cancel',
-        id: 'iaso.formCopilot.cancel',
+        id: 'iaso.formAI.cancel',
     },
     save: {
         defaultMessage: 'Save',
-        id: 'iaso.formCopilot.save',
+        id: 'iaso.formAI.save',
     },
     editProperties: {
         defaultMessage: 'Edit properties',
-        id: 'iaso.formCopilot.editProperties',
+        id: 'iaso.formAI.editProperties',
     },
     saveForm: {
         defaultMessage: 'Save form',
-        id: 'iaso.formCopilot.saveForm',
+        id: 'iaso.formAI.saveForm',
     },
     saveNewVersionOf: {
         defaultMessage: 'Save a new version of',
-        id: 'iaso.formCopilot.saveNewVersionOf',
+        id: 'iaso.formAI.saveNewVersionOf',
     },
     formOdkId: {
         defaultMessage: 'Form ID (ODK)',
-        id: 'iaso.formCopilot.formOdkId',
+        id: 'iaso.formAI.formOdkId',
     },
     formOdkIdHelp: {
         defaultMessage:
             'Unique identifier for the form (lowercase, underscores). Leave empty to auto-generate from the XLS.',
-        id: 'iaso.formCopilot.formOdkIdHelp',
+        id: 'iaso.formAI.formOdkIdHelp',
     },
 });
 

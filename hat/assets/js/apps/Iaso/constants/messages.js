@@ -26,9 +26,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
-    formCopilot: {
-        defaultMessage: 'Form Copilot',
-        id: 'iaso.formCopilot.title',
+    formAI: {
+        defaultMessage: 'Form AI',
+        id: 'iaso.formAI.title',
     },
     formList: {
         defaultMessage: 'Form List',

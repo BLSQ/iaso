@@ -11,26 +11,26 @@ from rest_framework.response import Response
 
 from iaso.api.form_versions.serializers import FormVersionSerializer
 from iaso.models import Form, TemporaryForm
-from iaso.modules import MODULE_FORM_COPILOT
+from iaso.modules import MODULE_FORM_AI
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 
 from .agent import build_xlsform, convert_to_xform_xml, generate_form, parse_xlsform_to_json, patch_xlsform_form_id
 
 
-class HasFormCopilotPermission(permissions.BasePermission):
+class HasFormAIPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
         if not request.user.has_perm(CORE_FORMS_PERMISSION.full_name()):
             return False
         account = request.user.iaso_profile.account
-        return MODULE_FORM_COPILOT.codename in (account.modules or [])
+        return MODULE_FORM_AI.codename in (account.modules or [])
 
 
 logger = logging.getLogger(__name__)
 
 
-class FormCopilotRequestSerializer(serializers.Serializer):
+class FormAIRequestSerializer(serializers.Serializer):
     message = serializers.CharField(help_text="User message describing the form to create or modify")
     conversation_history = serializers.ListField(
         child=serializers.DictField(),
@@ -46,27 +46,27 @@ class FormCopilotRequestSerializer(serializers.Serializer):
     )
 
 
-class FormCopilotResponseSerializer(serializers.Serializer):
+class FormAIResponseSerializer(serializers.Serializer):
     assistant_message = serializers.CharField()
     xlsform_uuid = serializers.CharField(allow_null=True)
     conversation_history = serializers.ListField(child=serializers.DictField())
 
 
 @extend_schema(
-    tags=["Form Copilot"],
-    request=FormCopilotRequestSerializer,
-    responses={200: FormCopilotResponseSerializer},
+    tags=["Form AI"],
+    request=FormAIRequestSerializer,
+    responses={200: FormAIResponseSerializer},
 )
 @api_view(["POST"])
-@permission_classes([HasFormCopilotPermission])
-def form_copilot_chat(request):
+@permission_classes([HasFormAIPermission])
+def form_ai_chat(request):
     """AI-powered form generation endpoint.
 
     Send a natural language message to generate or modify an ODK XLSForm.
     The endpoint returns the assistant's response along with preview the XForm XML and
     a uuid to download the generated XLSForm.
     """
-    serializer = FormCopilotRequestSerializer(data=request.data)
+    serializer = FormAIRequestSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -78,7 +78,7 @@ def form_copilot_chat(request):
     api_key = account.anthropic_api_key or None
     if not api_key:
         return Response(
-            {"error": "Copilot API key is not configured for this account. Please contact your administrator."},
+            {"error": "Form AI API key is not configured for this account. Please contact your administrator."},
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
@@ -104,18 +104,18 @@ def form_copilot_chat(request):
         result["xform_xml"] = xform_xml
         return Response(result, status=status.HTTP_200_OK)
     except Exception:
-        logger.exception("Form copilot error")
+        logger.exception("Form AI error")
         return Response(
             {"error": "Failed to generate form. Please try again."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
-@extend_schema(tags=["Form Copilot"])
+@extend_schema(tags=["Form AI"])
 @api_view(["GET"])
-@permission_classes([HasFormCopilotPermission])
-def form_copilot_load_form(request, form_id):
-    """Load an existing form's latest version for editing in the copilot.
+@permission_classes([HasFormAIPermission])
+def form_ai_load_form(request, form_id):
+    """Load an existing form's latest version for editing in Form AI.
 
     Returns the form's XLSForm structure as JSON (survey, choices, settings)
     plus the XForm XML for preview.
@@ -164,10 +164,10 @@ def form_copilot_load_form(request, form_id):
     )
 
 
-@extend_schema(tags=["Form Copilot"])
+@extend_schema(tags=["Form AI"])
 @api_view(["GET"])
-@permission_classes([HasFormCopilotPermission])
-def form_copilot_download(request, form_uuid):
+@permission_classes([HasFormAIPermission])
+def form_ai_download(request, form_uuid):
     """Download a previously generated XLSForm by its UUID.
 
     The file is served through an authenticated endpoint so the raw media
@@ -187,7 +187,7 @@ def form_copilot_download(request, form_uuid):
     )
 
 
-class FormCopilotSaveSerializer(serializers.Serializer):
+class FormAISaveSerializer(serializers.Serializer):
     form_id = serializers.IntegerField(help_text="ID of the iaso Form to save a new version for")
     xlsform_uuid = serializers.CharField(help_text="UUID returned by the chat endpoint")
     form_odk_id = serializers.CharField(
@@ -199,16 +199,16 @@ class FormCopilotSaveSerializer(serializers.Serializer):
     )
 
 
-@extend_schema(tags=["Form Copilot"])
+@extend_schema(tags=["Form AI"])
 @api_view(["POST"])
-@permission_classes([HasFormCopilotPermission])
-def form_copilot_save(request):
+@permission_classes([HasFormAIPermission])
+def form_ai_save(request):
     """Save a generated XLSForm as a new FormVersion
 
     Resolves the XLS file from the server-side UUID and creates the FormVersion
     directly using the same serializer as /api/formversions/.
     """
-    serializer = FormCopilotSaveSerializer(data=request.data)
+    serializer = FormAISaveSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

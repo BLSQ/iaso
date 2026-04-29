@@ -5,7 +5,7 @@ import { LoadFormResponse } from '../../types';
 export const useLoadForm = () => {
     return useSnackMutation<LoadFormResponse, Error, number>({
         mutationFn: (formId: number) =>
-            getRequest(`/api/form_copilot/load/${formId}/`),
+            getRequest(`/api/form_ai/load/${formId}/`),
         showSuccessSnackBar: false,
     });
 };

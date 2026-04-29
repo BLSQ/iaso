@@ -200,9 +200,9 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
-                    label: formatMessage(MESSAGES.formCopilot),
-                    permissions: paths.formCopilotPath.permissions,
-                    key: 'copilot',
+                    label: formatMessage(MESSAGES.formAI),
+                    permissions: paths.formAIPath.permissions,
+                    key: 'ai',
                     icon: props => <AutoFixHighIcon {...props} />,
                 },
                 {
@@ -469,14 +469,11 @@ export const useMenuItems = (): MenuItems => {
         );
     }
 
-    // Hide Form Copilot in the main menu, under Forms when FORM_COPILOT module is not activated
-    const hasFormCopilotModule = userHasAccessToModule(
-        'FORM_COPILOT',
-        currentUser,
-    );
-    if (!hasFormCopilotModule && basicItems?.length > 0) {
+    // Hide Form AI in the main menu, under Forms when FORM_AI module is not activated
+    const hasFormAIModule = userHasAccessToModule('FORM_AI', currentUser);
+    if (!hasFormAIModule && basicItems?.length > 0) {
         basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
-            item => item.key !== 'copilot',
+            item => item.key !== 'ai',
         );
     }
 

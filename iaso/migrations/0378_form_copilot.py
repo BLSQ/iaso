@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import migrations, models
 
 import iaso.models.base
-import iaso.models.form_copilot
+import iaso.models.form_ai
 
 
 class Migration(migrations.Migration):
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="account",
             name="anthropic_api_key",
-            field=models.TextField(blank=True, help_text="Anthropic API key used by the Form Copilot", null=True),
+            field=models.TextField(blank=True, help_text="Anthropic API key used by the Form AI", null=True),
         ),
         migrations.AlterField(
             model_name="account",
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                         ("SAAS", "SaaS"),
                         ("STOCK_MANAGEMENT", "Stock management"),
                         ("SNT_MALARIA", "SNT Malaria"),
-                        ("FORM_COPILOT", "Form Copilot"),
+                        ("FORM_AI", "Form AI"),
                     ],
                     max_length=100,
                 ),
@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
             name="TemporaryForm",
             fields=[
                 ("uuid", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("xls_file", models.FileField(upload_to=iaso.models.form_copilot._xls_file_upload_to)),
+                ("xls_file", models.FileField(upload_to=iaso.models.form_ai._xls_file_upload_to)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "account",

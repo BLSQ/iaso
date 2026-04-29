@@ -22,6 +22,7 @@ import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/Duplic
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
+import FormAI from '../domains/formAI';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
@@ -105,6 +106,13 @@ export const formsPath = {
     ],
     element: <Forms />,
     isRootUrl: true,
+};
+
+export const formAIPath = {
+    baseUrl: baseUrls.formAI,
+    routerUrl: `${baseUrls.formAI}/*`,
+    permissions: [Permission.FORMS],
+    element: <FormAI />,
 };
 
 export const pagesPath = {
@@ -537,6 +545,7 @@ export const page500 = {
 
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
+    formAIPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,

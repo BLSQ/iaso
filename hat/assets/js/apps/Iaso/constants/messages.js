@@ -26,6 +26,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    formAI: {
+        defaultMessage: 'Form AI',
+        id: 'iaso.formAI.title',
+    },
     formList: {
         defaultMessage: 'Form List',
         id: 'iaso.label.formList',

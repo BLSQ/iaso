@@ -148,10 +148,12 @@ const randomUser = {
     color: faker.color.rgb({ format: 'hex' }),
 };
 
+let projectCounter = 0;
 const getRandomProject = () => {
+    projectCounter += 1;
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun({ length: 10 }),
+        name: `project_${projectCounter}_${faker.string.alphanumeric(6)}`,
         color: faker.color.rgb({ format: 'hex' }),
         app_id: faker.string.numeric(3),
     };

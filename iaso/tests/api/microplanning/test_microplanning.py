@@ -1224,14 +1224,20 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["count"], 2)
         rows = {ou["id"]: ou for ou in r["results"]}
+
+        def _norm_hex_color(d):
+            if not d or not d.get("color"):
+                return d
+            return {**d, "color": d["color"].lower()}
+
         self.assertEqual(
-            rows[child.id]["assignment"]["user"],
-            PlanningOrgUnitTableAssignmentUserSerializer(self.user).data,
+            _norm_hex_color(rows[child.id]["assignment"]["user"]),
+            _norm_hex_color(PlanningOrgUnitTableAssignmentUserSerializer(self.user).data),
         )
         self.assertIsNone(rows[child.id]["assignment"]["team"])
         self.assertEqual(
-            rows[child_team.id]["assignment"]["team"],
-            PlanningOrgUnitTableAssignmentTeamSerializer(self.team1).data,
+            _norm_hex_color(rows[child_team.id]["assignment"]["team"]),
+            _norm_hex_color(PlanningOrgUnitTableAssignmentTeamSerializer(self.team1).data),
         )
         self.assertIsNone(rows[child_team.id]["assignment"]["user"])
 

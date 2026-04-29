@@ -1,13 +1,11 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { Module, ModuleParams, ModulesFilterParams } from '../../types/modules';
 
-type ModulesList = Pagination & {
-    results: Module[];
-};
+type ModulesList = Paginated<Module>;
 
 const getModules = async (
     options: ModuleParams | ModulesFilterParams,

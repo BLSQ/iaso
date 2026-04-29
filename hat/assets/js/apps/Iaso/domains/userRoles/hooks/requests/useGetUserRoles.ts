@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
@@ -11,9 +11,7 @@ import {
     UserRolesFilterParams,
 } from '../../types/userRoles';
 
-type UserRolesList = Pagination & {
-    results: UserRole[];
-};
+type UserRolesList = Paginated<UserRole>;
 
 const getUserRoles = async (
     options: UserRoleParams | UserRolesFilterParams,

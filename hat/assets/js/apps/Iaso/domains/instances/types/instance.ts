@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { PaginationType } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
 import { Entity } from '../../entities/types/entity';
 import { OrgUnitChangeRequest } from '../../orgUnits/reviewChanges/types';
@@ -80,7 +80,7 @@ export type InstanceLogDetail = {
     created_at: string;
 };
 
-export type InstanceLogsDetail = Pagination & {
+export type InstanceLogsDetail = PaginationType & {
     list: Array<InstanceLogDetail>;
 };
 
@@ -116,7 +116,7 @@ export type FileContent = {
     formDescriptorA: Record<string, any>[];
     formDescriptorB: Record<string, any>[];
 };
-export interface PaginatedInstances extends Pagination {
+export interface PaginatedInstances extends PaginationType {
     instances: Instance[];
 }
 

@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { PaginationType } from 'bluesquare-components';
 
 export type Version = {
     number: number;
@@ -40,7 +40,7 @@ export type DataSource = {
     credentials?: Credentials;
     color?: string;
 };
-export interface PaginatedDataSources extends Pagination {
+export interface PaginatedDataSources extends PaginationType {
     sources: DataSources;
 }
 export type DataSources = DataSource[];

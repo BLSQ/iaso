@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import MESSAGES from 'Iaso/domains/stock/messages';
 import { Status, StockRulesVersion } from 'Iaso/domains/stock/types/stocks';
@@ -12,9 +12,7 @@ import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { Params } from '../types/filters';
 
-export interface PaginatedStockRuleVersions extends Pagination {
-    results: Array<StockRulesVersion>;
-}
+export type PaginatedStockRuleVersions = Paginated<StockRulesVersion>;
 
 type ApiParams = {
     version_id?: number;

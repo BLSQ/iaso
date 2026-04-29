@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { PaginationType } from 'bluesquare-components';
 import { User } from 'Iaso/utils/usersUtils';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
 
@@ -44,6 +44,6 @@ export type Link = {
     algorithm_run: AlgorithmRun;
 };
 
-export type PaginatedLinks = Pagination & {
+export type PaginatedLinks = PaginationType & {
     links: Link[];
 };

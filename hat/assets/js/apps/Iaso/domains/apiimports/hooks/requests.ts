@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { APIImport } from 'Iaso/domains/apiimports/types/apiimport';
 import { Params } from 'Iaso/domains/apiimports/types/filters';
@@ -6,9 +6,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 
-export interface PaginatedApiImports extends Pagination {
-    results: Array<APIImport>;
-}
+export type PaginatedApiImports = Paginated<APIImport>;
 
 type ApiParams = {
     limit?: string;

@@ -11,14 +11,17 @@ import {
 
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
+import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useQueryString } from 'Iaso/hooks/useApiParams';
 import * as Permission from 'Iaso/utils/permissions';
+import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { baseUrl } from '../config';
 import { FormResponse, tableDefaults } from '../hooks/useGetForms';
@@ -57,7 +60,6 @@ const Filters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
-    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -78,6 +80,12 @@ const Filters: FunctionComponent<Props> = ({
     );
     const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
     const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
+
+    const currentUser = useCurrentUser();
+    const hasPlanningPermission = userHasOneOfPermissions(
+        [PLANNING_READ, PLANNING_WRITE],
+        currentUser,
+    );
     return (
         <Grid container>
             <Grid container item xs={12} spacing={2}>
@@ -121,26 +129,35 @@ const Filters: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="planning"
-                        onChange={handleChange}
+                    <PlanningsDropdown
+                        handleChange={handleChange}
                         value={filters.planning}
-                        label={MESSAGES.planning}
-                        options={planningsDropdownOptions}
+                        keyValue="planning"
+                        multi
                     />
+                    {!hasPlanningPermission && (
+                        <InputComponent
+                            keyValue="showDeleted"
+                            onChange={handleShowDeleted}
+                            value={filters.showDeleted === 'true'}
+                            type="checkbox"
+                            label={MESSAGES.showDeleted}
+                        />
+                    )}
                 </Grid>
             </Grid>
             <Grid container item xs={12} spacing={2}>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
+                  {hasPlanningPermission && (
+                      <InputComponent
                         keyValue="onlyDeleted"
                         onChange={handleOnlyDeleted}
                         value={filters.onlyDeleted === '1'}
                         type="checkbox"
                         label={MESSAGES.onlyDeleted}
-                    />
+                      />
+                   )}
+
                 </Grid>
                 <Grid item xs={12} md={9}>
                     <Box

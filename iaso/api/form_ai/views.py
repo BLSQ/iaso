@@ -79,7 +79,7 @@ def form_ai_chat(request):
     if not api_key:
         return Response(
             {"error": "Form AI API key is not configured for this account. Please contact your administrator."},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     try:
@@ -107,7 +107,7 @@ def form_ai_chat(request):
         logger.exception("Form AI error")
         return Response(
             {"error": "Failed to generate form. Please try again."},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
 
@@ -140,7 +140,7 @@ def form_ai_load_form(request, form_id):
         logger.exception("Failed to parse XLS file for form %s", form_id)
         return Response(
             {"error": "Failed to parse form. The XLS file may be corrupted."},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
     # Get XForm XML for preview
@@ -240,7 +240,7 @@ def form_ai_save(request):
         logger.exception("Failed to save form version for uuid %s", xlsform_uuid)
         return Response(
             {"error": "Failed to save form version. Please try again."},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
     return Response(

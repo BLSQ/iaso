@@ -81,10 +81,10 @@ class FormAIChatTestCase(APITestCase):
         response = self.client.post(self.url, {"message": "hi"}, format="json")
         self.assertEqual(response.status_code, 403)
 
-    def test_missing_api_key_returns_503(self):
+    def test_missing_api_key_returns_400(self):
         self.client.force_authenticate(self.user_no_key)
         response = self.client.post(self.url, {"message": "Create a form"}, format="json")
-        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.status_code, 400)
         self.assertIn("Form AI API key is not configured", response.data["error"])
 
     def test_missing_message_returns_400(self):
@@ -426,3 +426,17 @@ class FormAISaveTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         # No version should have been created
         self.assertEqual(other_form.form_versions.count(), 0)
+
+    def test_save_to_form_not_in_any_project_is_rejected(self):
+        """A form not linked to any project is inaccessible and saving to it must be rejected."""
+        orphan_form = m.Form.objects.create(name="Orphan Form")
+
+        tf = self._create_temporary_form(user=self.user, account=self.account)
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            self.url,
+            {"form_id": orphan_form.id, "xlsform_uuid": str(tf.uuid)},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(orphan_form.form_versions.count(), 0)

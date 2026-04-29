@@ -1224,14 +1224,18 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["count"], 2)
         rows = {ou["id"]: ou for ou in r["results"]}
+        # Expected payloads must use DB-round-tripped rows like the view does; class-level
+        # self.user / self.team1 can otherwise differ on ColorField casing vs JSON.
+        user_from_db = User.objects.select_related("iaso_profile").get(pk=self.user.pk)
+        team_from_db = Team.objects.get(pk=self.team1.pk)
         self.assertEqual(
             rows[child.id]["assignment"]["user"],
-            PlanningOrgUnitTableAssignmentUserSerializer(self.user).data,
+            PlanningOrgUnitTableAssignmentUserSerializer(user_from_db).data,
         )
         self.assertIsNone(rows[child.id]["assignment"]["team"])
         self.assertEqual(
             rows[child_team.id]["assignment"]["team"],
-            PlanningOrgUnitTableAssignmentTeamSerializer(self.team1).data,
+            PlanningOrgUnitTableAssignmentTeamSerializer(team_from_db).data,
         )
         self.assertIsNone(rows[child_team.id]["assignment"]["user"])
 

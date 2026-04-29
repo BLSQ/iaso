@@ -14,6 +14,7 @@ import {
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -30,7 +31,6 @@ import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
 
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { INSTANCE_STATUSES } from '../constants';
 
@@ -118,8 +118,6 @@ const InstancesFiltersComponent = ({
     const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: planningsDropdownOptions, isFetching: fetchingPlannings } =
-        useGetPlanningsOptions();
     useSkipEffectOnMount(() => {
         Object.entries(params).forEach(([key, value]) => {
             if (key === 'showDeleted') {
@@ -415,16 +413,14 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={isFetchingOuTypes}
                     />
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="planningIds"
-                        onChange={handleFormChange}
-                        value={formState.planningIds.value || null}
-                        options={planningsDropdownOptions}
-                        label={MESSAGES.planning}
-                        loading={fetchingPlannings}
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="userIds"
+                            label={MESSAGES.user}
+                            filterUsers={formState?.userIds?.value}
+                            handleChange={joinValuesBeforeHandleFormChange}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <DatesRange
@@ -480,14 +476,12 @@ const InstancesFiltersComponent = ({
                             </Typography>
                         </Box>
                     )}
-                    <Box mt={2}>
-                        <UserAsyncSelect
-                            keyValue="userIds"
-                            label={MESSAGES.user}
-                            filterUsers={formState?.userIds?.value}
-                            handleChange={joinValuesBeforeHandleFormChange}
-                        />
-                    </Box>
+                    <PlanningsDropdown
+                        handleChange={handleFormChange}
+                        value={formState.planningIds.value || null}
+                        keyValue="planningIds"
+                        multi
+                    />
                 </Grid>
             </Grid>
 

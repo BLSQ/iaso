@@ -8,6 +8,7 @@ export const useGetColumns = (): Column[] => {
         {
             Header: 'Id',
             accessor: 'id',
+            width: 50,
         },
         {
             Header: formatMessage(MESSAGES.name),

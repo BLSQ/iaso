@@ -1,1 +1,1 @@
-export const defaultHeight = '75.2vh';
+export const defaultHeight = '75vh';

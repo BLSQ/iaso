@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Paper } from '@mui/material';
-import { Pagination, useRedirectToReplace } from 'bluesquare-components';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 import {
@@ -26,25 +25,26 @@ export const AssignmentsTable: FunctionComponent<Props> = ({
         params,
     );
     const columns = useGetColumns();
-    const redirectToReplace = useRedirectToReplace();
-    const handleTableParamsChange = (key: string, value: any) => {
-        redirectToReplace(baseUrls.assignments, {
-            ...params,
-            [key]: value,
-        });
-    };
+
+    const tableScrollMaxHeight = `calc(${defaultHeight} - 70px)`;
     return (
         <Paper sx={{ height: defaultHeight }}>
             <Box
                 sx={{
-                    height: `calc(${defaultHeight} - 70px)`,
-                    overflow: 'auto',
                     borderTop: theme =>
                         // @ts-ignore
                         `1px solid ${theme.palette.ligthGray.border}`,
-
                     '& .MuiSpeedDial-root': {
                         display: 'none',
+                    },
+                    '& .MuiTableContainer-root': {
+                        maxHeight: tableScrollMaxHeight,
+                        overflowY: 'auto',
+                        overflowX: 'auto',
+                        '& .MuiTableHead-root th': {
+                            top: 0,
+                            position: 'sticky !important',
+                        },
                     },
                 }}
             >
@@ -58,29 +58,14 @@ export const AssignmentsTable: FunctionComponent<Props> = ({
                     data={data?.results ?? []}
                     count={data?.count ?? 0}
                     pages={data?.pages ?? 0}
+                    elevation={0}
                     countOnTop={false}
-                    showPagination={false}
                     extraProps={{
                         defaultPageSize: data?.limit ?? tableDefaults.limit,
                         loading: isLoading,
                     }}
-                    elevation={0}
                 />
             </Box>
-            {!isLoading && data && (
-                <Pagination
-                    count={data?.count ?? 0}
-                    pageIndex={
-                        (params.page
-                            ? parseInt(params.page, 10)
-                            : tableDefaults.page) - 1
-                    }
-                    rowsPerPage={data?.limit ?? tableDefaults.limit}
-                    pages={data?.pages ?? 0}
-                    onTableParamsChange={handleTableParamsChange}
-                    countOnTop={false}
-                />
-            )}
         </Paper>
     );
 };

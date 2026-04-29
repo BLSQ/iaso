@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import migrations, models
 
 import iaso.models.form_ai
+import iaso.utils.models.choice_array_field
 
 
 class Migration(migrations.Migration):
@@ -25,7 +26,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="account",
             name="modules",
-            field=iaso.models.base.ChoiceArrayField(
+            field=iaso.utils.models.choice_array_field.ChoiceArrayField(
                 base_field=models.CharField(
                     choices=[
                         ("DATA_COLLECTION_FORMS", "Data collection - Forms"),

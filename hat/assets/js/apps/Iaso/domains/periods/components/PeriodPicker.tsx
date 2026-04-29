@@ -42,10 +42,8 @@ const styles: SxStyles = {
     },
     inputBorder: {
         borderRadius: 2,
-        // @ts-ignore
         borderColor: theme => theme.palette.border.main,
         '&:hover': {
-            // @ts-ignore
             borderColor: theme => theme.palette.border.hover,
         },
     },

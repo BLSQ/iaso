@@ -43,7 +43,6 @@ const styles: SxStyles = {
         p: 1,
         borderRadius: 1,
         border: theme =>
-            // @ts-ignore
             `1px solid ${theme.palette.border?.main ?? theme.palette.divider}`,
         bgcolor: theme => theme.palette.grey[50],
     },

@@ -10,8 +10,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     infoPaperBox: {
         minHeight: '100px',
-        // @ts-ignore
-        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+        borderTop: `1px solid ${theme.palette.lightGray.border}`,
     },
 }));
 

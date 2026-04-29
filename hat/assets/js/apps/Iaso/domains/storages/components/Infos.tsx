@@ -15,8 +15,7 @@ import { LinkToEntity } from './LinkToEntity';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `1px solid ${theme.palette.lightGray.border}`,
         fontWeight: 'bold',
     },
 }));

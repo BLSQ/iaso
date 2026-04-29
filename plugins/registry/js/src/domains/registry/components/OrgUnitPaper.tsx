@@ -45,8 +45,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         width: '100%',
-        // @ts-ignore
-        backgroundColor: theme.palette.ligthGray.background,
+        backgroundColor: theme.palette.lightGray.background,
         marginBottom: theme.spacing(4),
         '&:last-child': {
             marginBottom: 0,

@@ -66,7 +66,7 @@ export const useStyles = makeStyles(() => ({
         height: 'auto',
         maxHeight: 400,
         '& thead tr th': {
-            boxShadow: `2px 2px ${theme.palette.ligthGray.main}`,
+            boxShadow: `2px 2px ${theme.palette.lightGray.main}`,
         },
         '& tbody tr:hover': {
             backgroundColor: theme.palette.action.hover,
@@ -83,14 +83,14 @@ export const useStyles = makeStyles(() => ({
         },
     },
     tableHeadCell: {
-        borderRight: `2px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `2px solid ${theme.palette.lightGray.border}`,
         position: 'relative',
         overflow: 'hidden',
         textAlign: 'center',
         backgroundColor: 'white',
     },
     sortableTableHeadCell: {
-        borderRight: `2px solid ${theme.palette.ligthGray.border}`,
+        borderRight: `2px solid ${theme.palette.lightGray.border}`,
         position: 'relative',
         overflow: 'hidden',
         textAlign: 'center',

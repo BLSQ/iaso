@@ -46,7 +46,6 @@ export const useOrgUnitBreadCrumbs = ({
 
 const useStyles = makeStyles(theme => {
     return {
-        // @ts-ignore
         link: { color: theme.palette.mediumGray.main },
     };
 });

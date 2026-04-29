@@ -60,7 +60,6 @@ export const usePaperStyles = makeStyles((theme: Theme) => ({
     paper: {
         padding: theme.spacing(4, 2, 2, 4),
         marginBottom: theme.spacing(4),
-        // @ts-ignore
         border: `1px solid ${theme.palette.mediumGray.main}`,
         width: 'calc(100% - 64px)',
         boxShadow:

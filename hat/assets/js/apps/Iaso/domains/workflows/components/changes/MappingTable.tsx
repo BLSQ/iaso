@@ -48,12 +48,9 @@ const useStyles = makeStyles(theme => ({
     tableContainer: {
         maxHeight: '60vh',
         overflow: 'auto',
-        // @ts-ignore
-        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
-        // @ts-ignore
-        borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderTop: `1px solid ${theme.palette.lightGray.border}`,
+        borderLeft: `1px solid ${theme.palette.lightGray.border}`,
+        borderRight: `1px solid ${theme.palette.lightGray.border}`,
         '& table tbody tr td': {
             '& label': {
                 opacity: 0,

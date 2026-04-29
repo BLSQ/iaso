@@ -10,7 +10,6 @@ import { RangeValue } from './types';
 const useStyles = makeStyles(theme => ({
     legendItem: {
         marginBottom: theme.spacing(2),
-        // @ts-ignore
         border: `1px solid ${theme.palette.border.main}`,
         borderRadius: 4,
     },

@@ -95,24 +95,20 @@ type InstanceFileContentRichProps = {
 const useStyles = makeStyles(theme => ({
     tableCellHead: {
         fontWeight: 'bold',
-        // @ts-ignore
-        backgroundColor: theme.palette.gray,
+        backgroundColor: theme.palette.gray.background,
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     tableCell: {
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+        borderBottom: `1px solid ${theme.palette.lightGray.border}  !important`,
     },
     tableCellCalculated: {
-        // @ts-ignore
         color: theme.palette.gray.main,
     },
     tableCellLabelWrapper: {
@@ -129,7 +125,6 @@ const useStyles = makeStyles(theme => ({
         marginLeft: 5,
     },
     tableCellLabelName: {
-        // @ts-ignore
         color: theme.palette.mediumGray.main,
     },
 }));

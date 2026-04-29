@@ -1607,6 +1607,10 @@ class VaccineStockHistory(models.Model):
 
 # Form A
 class OutgoingStockMovement(ModelWithFile):
+    class StatusChoices(models.TextChoices):
+        TEMPORARY = "temporary", _("Temporary")
+        RECEIVED = "received", _("Received")
+
     class Meta:
         indexes = [
             models.Index(fields=["vaccine_stock", "campaign"]),  # Frequently queried together
@@ -1630,8 +1634,9 @@ class OutgoingStockMovement(ModelWithFile):
     vaccine_stock = models.ForeignKey(
         VaccineStock, on_delete=models.CASCADE
     )  # Country can be deduced from the campaign
+    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.RECEIVED)
     report_date = models.DateField()
-    form_a_reception_date = models.DateField()
+    form_a_reception_date = models.DateField(null=True, blank=True)
     usable_vials_used = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     comment = models.TextField(blank=True, null=True)

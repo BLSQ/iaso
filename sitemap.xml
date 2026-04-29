@@ -49,6 +49,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/how_to/build_odk_preview/build_odk_preview.html</loc>
+        <lastmod>2026-04-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
         <lastmod>2026-04-29</lastmod>
         <changefreq>daily</changefreq>
@@ -505,6 +513,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
     </url>
     <url>
+        <loc>Nonepages/users/how_to/use_form_ai/use_form_ai.html</loc>
+        <lastmod>2026-04-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/use_form_ai/use_form_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/use_form_ai/use_form_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/use_form_ai/use_form_ai.html"/>
+    </url>
+    <url>
         <loc>Nonepages/users/reference/how_we_work/how_we_work.html</loc>
         <lastmod>2026-04-29</lastmod>
         <changefreq>daily</changefreq>
@@ -599,6 +615,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/build_odk_preview/build_odk_preview.html</loc>
+        <lastmod>2026-04-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
@@ -1057,6 +1081,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/users/how_to/use_form_ai/use_form_ai.html</loc>
+        <lastmod>2026-04-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/use_form_ai/use_form_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/use_form_ai/use_form_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/use_form_ai/use_form_ai.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/users/reference/how_we_work/how_we_work.html</loc>
         <lastmod>2026-04-29</lastmod>
         <changefreq>daily</changefreq>
@@ -1151,6 +1183,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/dev/how_to/build_odk_preview/build_odk_preview.html</loc>
+        <lastmod>2026-04-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/build_odk_preview/build_odk_preview.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
@@ -1607,6 +1647,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/users/how_to/use_form_ai/use_form_ai.html</loc>
+        <lastmod>2026-04-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/use_form_ai/use_form_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/use_form_ai/use_form_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/use_form_ai/use_form_ai.html"/>
     </url>
     <url>
         <loc>Nonees/pages/users/reference/how_we_work/how_we_work.html</loc>

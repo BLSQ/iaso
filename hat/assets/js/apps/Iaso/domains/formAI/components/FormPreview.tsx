@@ -85,7 +85,7 @@ export const FormPreview: FunctionComponent<Props> = ({
                     <iframe
                         key={iframeKey}
                         ref={iframeRef}
-                        src={`${window.STATIC_URL ?? '/static'}/odk-preview/index.html`}
+                        src={`${window.STATIC_URL ?? '/static/'}odk-preview/index.html`}
                         title="ODK Form Preview"
                         onLoad={handleIframeLoad}
                         style={{

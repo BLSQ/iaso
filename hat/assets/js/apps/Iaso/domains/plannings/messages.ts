@@ -360,6 +360,10 @@ const MESSAGES = defineMessages({
             'Editting dates or status can impact the actual data collection',
         id: 'iaso.planning.label.planningWarningMessage',
     },
+    planning: {
+        defaultMessage: 'Planning',
+        id: 'iaso.label.planning',
+    },
 });
 
 export default MESSAGES;

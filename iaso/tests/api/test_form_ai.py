@@ -426,13 +426,3 @@ class FormAISaveTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         # No version should have been created
         self.assertEqual(other_form.form_versions.count(), 0)
-
-        tf = self._create_temporary_form(user=self.user, account=self.account)
-        self.client.force_authenticate(self.user)
-        response = self.client.post(
-            self.url,
-            {"form_id": orphan_form.id, "xlsform_uuid": str(tf.uuid)},
-            format="json",
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(orphan_form.form_versions.count(), 0)

@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
     plugins: [vue()],
-    base: '/static/odk-preview/',
+    base: './',
     build: {
         target: 'esnext',
         outDir: '../../iaso/static/odk-preview',

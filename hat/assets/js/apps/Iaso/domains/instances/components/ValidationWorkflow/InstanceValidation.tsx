@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import SendIcon from '@mui/icons-material/Send';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
 import {
+    Avatar,
     Box,
     Step,
     StepContent,
@@ -11,6 +13,7 @@ import {
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { SxStyles } from 'Iaso/types/general';
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import MESSAGES from '../../messages';
 import { useGetNodesList } from './useGetSubmissionValidationStatus';
@@ -83,6 +86,35 @@ const formatStepContent = (step: UseValidationTimelineResult) => {
 };
 
 type Props = { id?: number; data?: ValidationNodeRetrieveResponse };
+
+const styles: SxStyles = {
+    avatar: {
+        width: 24,
+        height: 24,
+        backgroundColor: theme => theme.palette.primary.main,
+    },
+};
+
+const getIconFromStep = (status?: string, order?: number) => {
+    switch (status) {
+        case 'SUBMISSION':
+        case 'NEW_VERSION':
+            return (
+                <Avatar sx={styles.avatar}>
+                    <SendIcon sx={{ fontSize: '1rem' }} />
+                </Avatar>
+            );
+        case 'SKIPPED':
+            return (
+                <Avatar sx={styles.avatar}>
+                    <SkipNextIcon fontSize={'small'} />
+                </Avatar>
+            );
+        default:
+            return order;
+    }
+};
+
 export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -116,15 +148,10 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
                                 expanded
                             >
                                 <StepLabel
-                                    icon={
-                                        ['NEW_VERSION', 'SUBMISSION'].includes(
-                                            step?.status ?? '',
-                                        ) ? (
-                                            <SendIcon fontSize={'small'} />
-                                        ) : (
-                                            step?.order
-                                        )
-                                    }
+                                    icon={getIconFromStep(
+                                        step?.status,
+                                        step?.order,
+                                    )}
                                     StepIconProps={{
                                         completed: step.status === 'ACCEPTED',
                                         error: step.status === 'REJECTED',

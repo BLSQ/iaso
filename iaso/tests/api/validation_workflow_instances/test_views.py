@@ -135,7 +135,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
 
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(8):
             res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
         self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -354,3 +354,162 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 self.assertIsNone(last_item["updated_by"])
 
                 self.assertEqual(res_data["next_bypass"], [])
+
+
+class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(APITestCase):
+    """
+    This test purpose is to check that the next_bypass field is correctly populated in case of resubmission
+    """
+
+    def setUp(self):
+        self.account = Account.objects.create(name="account")
+
+        self.group = Group.objects.create(name="group")
+        self.user_role = UserRole.objects.create(account=self.account, group=self.group)
+        self.john_doe = self.create_user_with_profile(
+            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+        )
+
+        self.john_wick = self.create_user_with_profile(
+            username="john.wick",
+            account=self.account,
+            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION],
+            user_roles=[self.user_role],
+        )
+
+        self.superuser = self.create_user_with_profile(
+            username="superuser", account=self.account, is_staff=True, is_superuser=True
+        )
+
+        # setup the validation workflow
+        self.form = Form.objects.create(name="Form")
+
+        self.validation_workflow = ValidationWorkflow.objects.create(
+            name="Validation workflow", account=self.account, description="Description"
+        )
+        self.validation_workflow.form_set.add(self.form)
+
+        self.first_node = ValidationNodeTemplate.objects.create(
+            name="First node", workflow=self.validation_workflow, color="#ffffff"
+        )
+        self.first_node.roles_required.add(self.user_role)
+
+        self.second_node = ValidationNodeTemplate.objects.create(
+            name="Second node", workflow=self.validation_workflow, color="#12fa4b"
+        )
+        self.second_node.previous_node_templates.add(self.first_node)
+
+        self.third_node = ValidationNodeTemplate.objects.create(
+            name="Third node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
+        )
+        self.third_node.previous_node_templates.add(self.second_node)
+        self.third_node.roles_required.add(self.user_role)
+
+        self.fourth_node = ValidationNodeTemplate.objects.create(
+            name="Fourth node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
+        )
+        self.fourth_node.previous_node_templates.add(self.third_node)
+        self.fourth_node.roles_required.add(self.user_role)
+
+        self.project = Project.objects.create(account=self.account, app_id="1.1")
+        self.project.forms.add(self.form)
+
+        self.instance = self.create_form_instance(
+            form=self.form,
+            project=self.project,
+            uuid=str(uuid.uuid4()),
+        )
+
+    def test_next_bypass_data_after_resubmit_after_reject_on_first_node(self):
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+        # reject
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes(self.validation_workflow).first(),
+            self.john_wick,
+            self.instance,
+            approved=False,
+            comment="Nope",
+        )
+
+        # resubmit
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertEqual(
+            res_data["next_bypass"],
+            [
+                {
+                    "name": "Fourth node",
+                    "slug": "fourth-node",
+                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
+                },
+                {
+                    "name": "Third node",
+                    "slug": "third-node",
+                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
+                },
+            ],
+        )
+
+    def test_next_bypass_data_after_resubmit_after_bypass_reject_on_third_node(self):
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+        # reject
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.third_node,
+            self.john_wick,
+            self.instance,
+            approved=False,
+            comment="Nope",
+            workflow=self.validation_workflow,
+        )
+
+        # resubmit
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertEqual(
+            res_data["next_bypass"],
+            [
+                {
+                    "name": "Fourth node",
+                    "slug": "fourth-node",
+                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
+                },
+                {
+                    "name": "Third node",
+                    "slug": "third-node",
+                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
+                },
+            ],
+        )
+
+    def test_num_queries(self):
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+        # reject
+        ValidationWorkflowEngine.complete_node_by_passing(
+            self.third_node,
+            self.john_wick,
+            self.instance,
+            approved=False,
+            comment="Nope",
+            workflow=self.validation_workflow,
+        )
+
+        # resubmit
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
+
+        self.client.force_authenticate(self.john_wick)
+        with self.assertNumQueries(14):
+            res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
+        self.assertJSONResponse(res, status.HTTP_200_OK)

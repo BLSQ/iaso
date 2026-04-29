@@ -24,10 +24,13 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, GenericViewSet):
             .prefetch_related(
                 Prefetch(
                     "validationnode_set",
-                    queryset=ValidationNode.objects.select_related("node", "created_by", "updated_by").prefetch_related(
+                    queryset=ValidationNode.objects.select_related("node", "created_by", "updated_by")
+                    .prefetch_related(
                         "node__roles_required",
                         Prefetch("node__roles_required__group", queryset=Group.objects.only("id", "name")),
-                    ),
+                    )
+                    .order_by("-created_at"),
+                    to_attr="all_validation_nodes",
                 )
             )
         )

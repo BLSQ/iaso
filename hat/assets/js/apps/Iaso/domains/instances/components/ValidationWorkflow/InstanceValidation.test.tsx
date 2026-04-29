@@ -12,8 +12,10 @@ vi.mock('bluesquare-components', () => ({
 }));
 
 vi.mock('@mui/material', async () => {
+    const actual = await vi.importActual('@mui/material');
     const React = await import('react');
     return {
+        ...actual,
         Box: ({ children }: any) => <div>{children}</div>,
         Stepper: ({ children }: any) => (
             <div data-testid="stepper">{children}</div>
@@ -116,6 +118,20 @@ describe('InstanceValidation (Vitest)', () => {
                 date: date,
                 description: 'desc1',
             },
+            label: 'Skipped',
+            nodeSlug: 'node1',
+            order: 1,
+            previous: true,
+            status: 'SKIPPED',
+        },
+        {
+            color: '#bbbbbb',
+            content: {
+                author: 'John',
+                comment: '',
+                date: date,
+                description: 'desc1',
+            },
             label: 'Submission',
             nodeSlug: 'node1',
             order: 1,
@@ -146,7 +162,7 @@ describe('InstanceValidation (Vitest)', () => {
         render(<InstanceValidation data={{ history: [{}, {}] } as any} />);
 
         expect(screen.getByTestId('stepper')).toBeInTheDocument();
-        expect(screen.getAllByTestId('step')).toHaveLength(5);
+        expect(screen.getAllByTestId('step')).toHaveLength(6);
     });
 
     it('renders submission and new version with a special icon', () => {
@@ -214,14 +230,20 @@ describe('InstanceValidation (Vitest)', () => {
         expect(within(steps[3]).queryByTestId('SendIcon')).toBeNull();
 
         // step 5
-        expect(within(steps[4]).getByText('Submission')).toBeInTheDocument();
-        expect(within(steps[4]).getByText('John')).toBeInTheDocument();
+        expect(within(steps[4]).getByText('Skipped')).toBeInTheDocument();
         expect(
-            within(steps[4]).getByText(
+            within(steps[4]).getByTestId('SkipNextIcon'),
+        ).toBeInTheDocument();
+
+        // step 6
+        expect(within(steps[5]).getByText('Submission')).toBeInTheDocument();
+        expect(within(steps[5]).getByText('John')).toBeInTheDocument();
+        expect(
+            within(steps[5]).getByText(
                 moment(date, apiMobileDateFormat).format('DD-MM-YYYY HH:mm:ss'),
             ),
         ).toBeInTheDocument();
-        expect(within(steps[4]).getByTestId('SendIcon')).toBeInTheDocument();
+        expect(within(steps[5]).getByTestId('SendIcon')).toBeInTheDocument();
     });
 
     it('applies correct color to each step', () => {

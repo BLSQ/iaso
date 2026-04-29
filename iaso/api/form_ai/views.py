@@ -1,6 +1,8 @@
 import io
 import logging
 
+import anthropic
+
 from django.core.files import File
 from django.core.files.base import ContentFile
 from django.http import FileResponse
@@ -103,11 +105,23 @@ def form_ai_chat(request):
         result["xlsform_uuid"] = xlsform_uuid
         result["xform_xml"] = xform_xml
         return Response(result, status=status.HTTP_200_OK)
+    except anthropic.APIStatusError as e:
+        if e.status_code == 503:
+            logger.warning("Claude API returned 503")
+            return Response(
+                {"error": "The AI service is temporarily unavailable. Please try again later."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        logger.exception("Form AI error")
+        return Response(
+            {"error": "Failed to generate form. Please try again."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     except Exception:
         logger.exception("Form AI error")
         return Response(
             {"error": "Failed to generate form. Please try again."},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 
@@ -140,7 +154,7 @@ def form_ai_load_form(request, form_id):
         logger.exception("Failed to parse XLS file for form %s", form_id)
         return Response(
             {"error": "Failed to parse form. The XLS file may be corrupted."},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     # Get XForm XML for preview
@@ -240,7 +254,7 @@ def form_ai_save(request):
         logger.exception("Failed to save form version for uuid %s", xlsform_uuid)
         return Response(
             {"error": "Failed to save form version. Please try again."},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     return Response(

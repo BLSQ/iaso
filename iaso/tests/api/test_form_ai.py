@@ -2,6 +2,8 @@ import tempfile
 
 from unittest.mock import MagicMock, patch
 
+import anthropic
+
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
@@ -86,6 +88,15 @@ class FormAIChatTestCase(APITestCase):
         response = self.client.post(self.url, {"message": "Create a form"}, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertIn("Form AI API key is not configured", response.data["error"])
+
+    @patch("iaso.api.form_ai.views.generate_form")
+    def test_claude_503_returns_503(self, mock_gen):
+        mock_response = MagicMock()
+        mock_response.status_code = 503
+        mock_gen.side_effect = anthropic.APIStatusError("service unavailable", response=mock_response, body=None)
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url, {"message": "Create a form"}, format="json")
+        self.assertEqual(response.status_code, 503)
 
     def test_missing_message_returns_400(self):
         self.client.force_authenticate(self.user)

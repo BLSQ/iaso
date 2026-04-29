@@ -1,4 +1,5 @@
 import Color from 'color';
+import { SxStyles } from 'Iaso/types/general';
 import { styles as mapCluster } from './mapCluster';
 import { styles as mapCustomControl } from './mapCustomControl';
 
@@ -108,3 +109,19 @@ export const getGlobalOverrides = theme => ({
         display: 'none !important',
     },
 });
+
+export const smallInputOverrides: SxStyles = {
+    '& .MuiOutlinedInput-input': {
+        paddingTop: theme => theme.spacing(1),
+        paddingBottom: theme => theme.spacing(1),
+    },
+    '& .MuiInputLabel-formControl': {
+        height: '35px',
+    },
+    '& .MuiInputLabel-shrink': {
+        height: '25px',
+    },
+    '& .MuiSvgIcon-root ': {
+        cursor: 'pointer',
+    },
+};

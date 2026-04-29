@@ -12,6 +12,7 @@ import {
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { smallInputOverrides } from 'Iaso/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
@@ -162,18 +163,7 @@ export const Assignments: FunctionComponent = () => {
                                 <Box
                                     sx={{
                                         marginTop: '-15px',
-                                        '& .MuiOutlinedInput-input': {
-                                            paddingTop: theme =>
-                                                theme.spacing(1),
-                                            paddingBottom: theme =>
-                                                theme.spacing(1),
-                                        },
-                                        '& .MuiInputLabel-formControl': {
-                                            height: '35px',
-                                        },
-                                        '& .MuiInputLabel-shrink': {
-                                            height: '25px',
-                                        },
+                                        ...smallInputOverrides,
                                     }}
                                 >
                                     <InputComponent

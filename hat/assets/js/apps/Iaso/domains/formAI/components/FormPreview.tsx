@@ -15,7 +15,7 @@ type Props = {
     xformXml: string | null;
 };
 
-const ODK_PREVIEW_BASE = '/static/odk-preview/index.html';
+const ODK_PREVIEW_BASE = `${window.STATIC_URL ?? '/static'}/odk-preview/index.html`;
 
 export const FormPreview: FunctionComponent<Props> = ({
     xlsformUuid,

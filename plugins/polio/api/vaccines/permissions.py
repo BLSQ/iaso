@@ -3,14 +3,14 @@ import datetime
 from django.utils import timezone
 from rest_framework import permissions
 
-from plugins.polio.models import VaccineStock
+from plugins.polio.models import OutgoingStockMovement, VaccineStock
 from plugins.polio.permissions import PolioPermission
 
 
 TEMPORARY_FORM_A_COMPLETION_FIELDS = {"status", "form_a_reception_date", "file", "comment"}
 
 
-def is_within_edit_window(the_date, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN, now=None):
+def is_within_management_edit_window(the_date, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN, now=None):
     if the_date is None:
         return False
     if now is None:
@@ -18,21 +18,7 @@ def is_within_edit_window(the_date, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
     return the_date >= now - datetime.timedelta(days=days_open)
 
 
-def is_temporary_form_a_completion_edit(request, obj):
-    if request.method not in ["PUT", "PATCH"]:
-        return False
-
-    if obj.__class__.__name__ != "OutgoingStockMovement":
-        return False
-
-    if getattr(obj, "status", None) != "temporary":
-        return False
-
-    requested_fields = set(getattr(request, "data", {}).keys())
-    return requested_fields.issubset(TEMPORARY_FORM_A_COMPLETION_FIELDS)
-
-
-def can_edit_helper(
+def has_vaccine_stock_edit_access(
     user,
     the_date,
     admin_perm: PolioPermission,
@@ -44,7 +30,7 @@ def can_edit_helper(
         return True
 
     if user.has_perm(non_admin_perm.full_name()):
-        return is_within_edit_window(the_date, days_open=days_open)
+        return is_within_management_edit_window(the_date, days_open=days_open)
 
     if user.has_perm(read_only_perm.full_name()):
         return False
@@ -60,7 +46,6 @@ class VaccineStockPermission(permissions.BasePermission):
         read_only_perm: PolioPermission,
         days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
-        datetime_now_today=timezone.now,
         *args,
         **kwargs,
     ):
@@ -70,7 +55,6 @@ class VaccineStockPermission(permissions.BasePermission):
         self.read_only_perm = read_only_perm
         self.days_open = days_open
         self.datetime_field = datetime_field
-        self.datetime_now_today = datetime_now_today
 
     def has_permission(self, request, view):
         # For read operations, allow access to anyone with any of the permissions
@@ -112,15 +96,32 @@ class VaccineStockPermission(permissions.BasePermission):
                     return (
                         True  # There are multiple objects in one request for those so this is checked in the serializer
                     )
-                if is_within_edit_window(
+                if is_within_management_edit_window(
                     getattr(obj, self.datetime_field),
                     days_open=self.days_open,
-                    now=self.datetime_now_today(),
                 ):
                     return True
-                return is_temporary_form_a_completion_edit(request, obj)
+                return self._allow_after_window_edit(request, view, obj)
 
         return False
+
+    def _allow_after_window_edit(self, request, view, obj):
+        return False
+
+
+class OutgoingStockMovementPermission(VaccineStockPermission):
+    def _is_temporary_form_a_completion_edit(self, request, obj):
+        if request.method not in ["PUT", "PATCH"]:
+            return False
+
+        if getattr(obj, "status", None) != OutgoingStockMovement.StatusChoices.TEMPORARY:
+            return False
+
+        requested_fields = set(getattr(request, "data", {}).keys())
+        return requested_fields.issubset(TEMPORARY_FORM_A_COMPLETION_FIELDS)
+
+    def _allow_after_window_edit(self, request, view, obj):
+        return self._is_temporary_form_a_completion_edit(request, obj)
 
 
 class VaccineStockEarmarkPermission(permissions.BasePermission):
@@ -131,7 +132,6 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         read_only_perm: PolioPermission,
         days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
-        datetime_now_today=timezone.now,
         *args,
         **kwargs,
     ):
@@ -141,7 +141,6 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         self.read_only_perm = read_only_perm
         self.days_open = days_open
         self.datetime_field = datetime_field
-        self.datetime_now_today = datetime_now_today
 
     def has_permission(self, request, view):
         # For read operations, allow access to anyone with any of the permissions
@@ -186,10 +185,9 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
                 "delete_arrival_reports",
             ]:
                 return True  # There are multiple objects in one request for those so this is checked in the serializer
-            return is_within_edit_window(
+            return is_within_management_edit_window(
                 getattr(obj, self.datetime_field),
                 days_open=self.days_open,
-                now=self.datetime_now_today(),
             )
 
         return False

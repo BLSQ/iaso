@@ -25,11 +25,12 @@ from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from plugins.polio.api.vaccines.permissions import (
+    OutgoingStockMovementPermission,
     TEMPORARY_FORM_A_COMPLETION_FIELDS,
     VaccineStockEarmarkPermission,
     VaccineStockPermission,
-    can_edit_helper,
-    is_within_edit_window,
+    has_vaccine_stock_edit_access,
+    is_within_management_edit_window,
 )
 from plugins.polio.models import (
     Campaign,
@@ -358,7 +359,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
     def _is_after_edit_window(self):
         if not self.instance or self.instance.created_at is None:
             return False
-        return not is_within_edit_window(
+        return not is_within_management_edit_window(
             self.instance.created_at,
             days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         )
@@ -370,7 +371,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
         if resulting_status != OutgoingStockMovement.StatusChoices.TEMPORARY:
             return
 
-        if "usable_vials_used" in data and data["usable_vials_used"] != self.instance.usable_vials_used:
+        if data.get("usable_vials_used", self.instance.usable_vials_used) != self.instance.usable_vials_used:
             raise serializers.ValidationError(
                 {"usable_vials_used": "usable_vials_used cannot be edited once a temporary Form A is created"}
             )
@@ -454,7 +455,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
     def get_edit_access(self, obj):
         user = self.context["request"].user
         # Full edit: admin at any time, or non-admin within the generic edit window.
-        if can_edit_helper(
+        if has_vaccine_stock_edit_access(
             user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
@@ -474,7 +475,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
     def get_within_edit_window(self, obj):
         if obj.created_at is None:
             return False
-        return is_within_edit_window(obj.created_at, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN)
+        return is_within_management_edit_window(obj.created_at, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN)
 
     def get_campaign_category(self, obj):
         return compute_category_from_campaign(obj.campaign, obj.round)
@@ -547,7 +548,7 @@ class OutgoingStockMovementPatchSerializer(OutgoingStockMovementSerializer):
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     model_class = OutgoingStockMovement
     permission_classes = [
-        lambda: VaccineStockPermission(
+        lambda: OutgoingStockMovementPermission(
             admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
             non_admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
             read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
@@ -633,7 +634,7 @@ class IncidentReportSerializer(ModelWithFileSerializer):
         exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(
+        return has_vaccine_stock_edit_access(
             self.context["request"].user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
@@ -684,7 +685,7 @@ class DestructionReportSerializer(ModelWithFileSerializer):
         exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(
+        return has_vaccine_stock_edit_access(
             self.context["request"].user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
@@ -784,7 +785,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(
+        return has_vaccine_stock_edit_access(
             self.context["request"].user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,

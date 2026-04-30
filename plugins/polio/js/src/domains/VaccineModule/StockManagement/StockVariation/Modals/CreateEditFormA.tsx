@@ -285,7 +285,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         <Box mb={2} mt={2}>
                             <InputComponent
                                 type="checkbox"
-                                keyValue={''}
+                                keyValue="status"
                                 onChange={handleTemporaryToggle}
                                 labelString={formatMessage(
                                     MESSAGES.temporary_form_a,
@@ -309,7 +309,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                             {!Boolean(formA?.campaign) && (
                                 <InputComponent
                                     type="checkbox"
-                                    keyValue={''}
+                                    keyValue="alternativeCampaignName"
                                     onChange={() => setWithCustomObr(true)}
                                     labelString={formatMessage(
                                         MESSAGES.useCustomObrName,

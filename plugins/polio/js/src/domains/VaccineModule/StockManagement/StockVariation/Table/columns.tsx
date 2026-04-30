@@ -1,6 +1,11 @@
 import React, { useMemo } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    Setting,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
@@ -26,6 +31,12 @@ import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditEarmarked } from '../Modals/CreateEditEarmarked';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
+import type {
+    DestructionTableRow,
+    EarmarkedTableRow,
+    FormATableRow,
+    IncidentTableRow,
+} from '../types';
 import { CampaignNameWithWarning } from './CampaignNameWithWarning';
 
 export const useFormATableColumns = (
@@ -42,7 +53,7 @@ export const useFormATableColumns = (
                 accessor: 'campaign',
                 id: 'campaign',
                 sortable: true,
-                Cell: settings => {
+                Cell: (settings: Setting<FormATableRow>) => {
                     const campaign = settings.row.original.campaign;
                     const altCampaign =
                         settings.row.original.alternative_campaign;
@@ -61,7 +72,7 @@ export const useFormATableColumns = (
                 accessor: 'round_number',
                 id: 'round__number',
                 sortable: true,
-                Cell: settings => {
+                Cell: (settings: Setting<FormATableRow>) => {
                     const value = settings.row.original.round_number;
                     if (Number.isSafeInteger(value)) {
                         return value;
@@ -74,7 +85,7 @@ export const useFormATableColumns = (
                 accessor: 'status',
                 id: 'status',
                 sortable: true,
-                Cell: settings => {
+                Cell: (settings: Setting<FormATableRow>) => {
                     const value = settings.row.original.status;
                     if (value === TEMPORARY) {
                         return formatMessage(MESSAGES.form_a_status_temporary);
@@ -104,7 +115,7 @@ export const useFormATableColumns = (
                 accessor: 'usable_vials_used',
                 id: 'usable_vials_used',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<FormATableRow>) => (
                     <NumberCell
                         value={settings.row.original.usable_vials_used}
                     />
@@ -115,7 +126,7 @@ export const useFormATableColumns = (
                 accessor: 'doses_per_vial',
                 id: 'doses_per_vial',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<FormATableRow>) => (
                     <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
@@ -124,7 +135,7 @@ export const useFormATableColumns = (
                 id: 'account',
                 accessor: 'account',
                 sortable: false,
-                Cell: settings => {
+                Cell: (settings: Setting<FormATableRow>) => {
                     return (
                         <>
                             <PdfPreview
@@ -217,7 +228,7 @@ export const useDestructionTableColumns = (
                 accessor: 'unusable_vials_destroyed',
                 id: 'unusable_vials_destroyed',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<DestructionTableRow>) => (
                     <NumberCell
                         value={settings.row.original.unusable_vials_destroyed}
                     />
@@ -228,7 +239,7 @@ export const useDestructionTableColumns = (
                 accessor: 'doses_per_vial',
                 id: 'doses_per_vial',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<DestructionTableRow>) => (
                     <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
@@ -237,7 +248,7 @@ export const useDestructionTableColumns = (
                 accessor: 'account',
                 id: 'account',
                 sortable: false,
-                Cell: settings => {
+                Cell: (settings: Setting<DestructionTableRow>) => {
                     return (
                         <>
                             <PdfPreview
@@ -256,36 +267,41 @@ export const useDestructionTableColumns = (
                                     STOCK_MANAGEMENT_READ,
                                 ]}
                             >
-                                {settings.row.original.can_edit && (
-                                    <>
-                                        <EditDestruction
-                                            id={settings.row.original.id}
-                                            destruction={settings.row.original}
-                                            iconProps={{
-                                                overrideIcon: EditIcon,
-                                            }}
-                                            countryName={countryName}
-                                            vaccine={vaccine}
-                                            vaccineStockId={
-                                                settings.row.original
-                                                    .vaccine_stock
-                                            }
-                                        />
-                                        <DeleteDialog
-                                            titleMessage={
-                                                MESSAGES.deleteDestruction
-                                            }
-                                            message={
-                                                MESSAGES.deleteDestructionWarning
-                                            }
-                                            onConfirm={() =>
-                                                deleteDestruction(
-                                                    settings.row.original.id,
-                                                )
-                                            }
-                                        />
-                                    </>
-                                )}
+                                <>
+                                    {settings.row.original.can_edit && (
+                                        <>
+                                            <EditDestruction
+                                                id={settings.row.original.id}
+                                                destruction={
+                                                    settings.row.original
+                                                }
+                                                iconProps={{
+                                                    overrideIcon: EditIcon,
+                                                }}
+                                                countryName={countryName}
+                                                vaccine={vaccine}
+                                                vaccineStockId={
+                                                    settings.row.original
+                                                        .vaccine_stock
+                                                }
+                                            />
+                                            <DeleteDialog
+                                                titleMessage={
+                                                    MESSAGES.deleteDestruction
+                                                }
+                                                message={
+                                                    MESSAGES.deleteDestructionWarning
+                                                }
+                                                onConfirm={() =>
+                                                    deleteDestruction(
+                                                        settings.row.original
+                                                            .id,
+                                                    )
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </>
                             </DisplayIfUserHasPerm>
                         </>
                     );
@@ -308,7 +324,7 @@ export const useIncidentTableColumns = (
                 accessor: 'stock_correction',
                 id: 'stock_correction',
                 sortable: true,
-                Cell: settings =>
+                Cell: (settings: Setting<IncidentTableRow>) =>
                     settings.row.original.stock_correction
                         ? formatMessage(
                               MESSAGES[settings.row.original.stock_correction],
@@ -341,7 +357,7 @@ export const useIncidentTableColumns = (
                 accessor: 'usable_vials',
                 id: 'usable_vials',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<IncidentTableRow>) => (
                     <NumberCell value={settings.row.original.usable_vials} />
                 ),
             },
@@ -350,7 +366,7 @@ export const useIncidentTableColumns = (
                 accessor: 'unusable_vials',
                 id: 'unusable_vials',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<IncidentTableRow>) => (
                     <NumberCell value={settings.row.original.unusable_vials} />
                 ),
             },
@@ -359,7 +375,7 @@ export const useIncidentTableColumns = (
                 accessor: 'doses_per_vial',
                 id: 'doses_per_vial',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<IncidentTableRow>) => (
                     <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
@@ -368,7 +384,7 @@ export const useIncidentTableColumns = (
                 accessor: 'account',
                 id: 'account',
                 sortable: false,
-                Cell: settings => {
+                Cell: (settings: Setting<IncidentTableRow>) => {
                     return (
                         <>
                             <PdfPreview
@@ -388,36 +404,39 @@ export const useIncidentTableColumns = (
                                     STOCK_MANAGEMENT_READ,
                                 ]}
                             >
-                                {settings.row.original.can_edit && (
-                                    <>
-                                        <EditIncident
-                                            id={settings.row.original.id}
-                                            incident={settings.row.original}
-                                            iconProps={{
-                                                overrideIcon: EditIcon,
-                                            }}
-                                            countryName={countryName}
-                                            vaccine={vaccine}
-                                            vaccineStockId={
-                                                settings.row.original
-                                                    .vaccine_stock
-                                            }
-                                        />
-                                        <DeleteDialog
-                                            titleMessage={
-                                                MESSAGES.deleteIncident
-                                            }
-                                            message={
-                                                MESSAGES.deleteIncidentWarning
-                                            }
-                                            onConfirm={() =>
-                                                deleteIncident(
-                                                    settings.row.original.id,
-                                                )
-                                            }
-                                        />
-                                    </>
-                                )}
+                                <>
+                                    {settings.row.original.can_edit && (
+                                        <>
+                                            <EditIncident
+                                                id={settings.row.original.id}
+                                                incident={settings.row.original}
+                                                iconProps={{
+                                                    overrideIcon: EditIcon,
+                                                }}
+                                                countryName={countryName}
+                                                vaccine={vaccine}
+                                                vaccineStockId={
+                                                    settings.row.original
+                                                        .vaccine_stock
+                                                }
+                                            />
+                                            <DeleteDialog
+                                                titleMessage={
+                                                    MESSAGES.deleteIncident
+                                                }
+                                                message={
+                                                    MESSAGES.deleteIncidentWarning
+                                                }
+                                                onConfirm={() =>
+                                                    deleteIncident(
+                                                        settings.row.original
+                                                            .id,
+                                                    )
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </>
                             </DisplayIfUserHasPerm>
                         </>
                     );
@@ -440,7 +459,7 @@ export const useEarmarkedTableColumns = (
                 accessor: 'earmarked_stock_type',
                 id: 'earmarked_stock_type',
                 sortable: true,
-                Cell: settings => {
+                Cell: (settings: Setting<EarmarkedTableRow>) => {
                     if (settings.row.original.earmarked_stock_type) {
                         if (
                             MESSAGES[settings.row.original.earmarked_stock_type]
@@ -461,7 +480,7 @@ export const useEarmarkedTableColumns = (
                 accessor: 'campaign',
                 id: 'campaign',
                 sortable: true,
-                Cell: settings => {
+                Cell: (settings: Setting<EarmarkedTableRow>) => {
                     const text =
                         settings.row.original.campaign ??
                         settings.row.original.temporary_campaign_name ??
@@ -480,7 +499,7 @@ export const useEarmarkedTableColumns = (
                 accessor: 'round_number',
                 id: 'round_number',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<EarmarkedTableRow>) => (
                     <NumberCell value={settings.row.original.round_number} />
                 ),
             },
@@ -496,7 +515,7 @@ export const useEarmarkedTableColumns = (
                 accessor: 'vials_earmarked',
                 id: 'vials_earmarked',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<EarmarkedTableRow>) => (
                     <NumberCell value={settings.row.original.vials_earmarked} />
                 ),
             },
@@ -505,7 +524,7 @@ export const useEarmarkedTableColumns = (
                 accessor: 'doses_earmarked',
                 id: 'doses_earmarked',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<EarmarkedTableRow>) => (
                     <NumberCell value={settings.row.original.doses_earmarked} />
                 ),
             },
@@ -514,7 +533,7 @@ export const useEarmarkedTableColumns = (
                 accessor: 'doses_per_vial',
                 id: 'doses_per_vial',
                 sortable: true,
-                Cell: settings => (
+                Cell: (settings: Setting<EarmarkedTableRow>) => (
                     <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
@@ -523,7 +542,7 @@ export const useEarmarkedTableColumns = (
                 accessor: 'account',
                 id: 'account',
                 sortable: false,
-                Cell: settings => {
+                Cell: (settings: Setting<EarmarkedTableRow>) => {
                     if (settings.row.original.earmarked_stock_type === USED) {
                         return null;
                     }
@@ -534,31 +553,38 @@ export const useEarmarkedTableColumns = (
                                 STOCK_EARMARKS_ADMIN,
                             ]}
                         >
-                            {settings.row.original.can_edit && (
-                                <>
-                                    <EditEarmarked
-                                        id={settings.row.original.id}
-                                        earmark={settings.row.original}
-                                        iconProps={{ overrideIcon: EditIcon }}
-                                        countryName={countryName}
-                                        vaccine={vaccine}
-                                        vaccineStockId={
-                                            settings.row.original.vaccine_stock
-                                        }
-                                    />
-                                    <DeleteDialog
-                                        titleMessage={MESSAGES.deleteEarmarked}
-                                        message={
-                                            MESSAGES.deleteEarmarkedWarning
-                                        }
-                                        onConfirm={() =>
-                                            deleteEarmarked(
-                                                settings.row.original.id,
-                                            )
-                                        }
-                                    />
-                                </>
-                            )}
+                            <>
+                                {settings.row.original.can_edit && (
+                                    <>
+                                        <EditEarmarked
+                                            id={settings.row.original.id}
+                                            earmark={settings.row.original}
+                                            iconProps={{
+                                                overrideIcon: EditIcon,
+                                            }}
+                                            countryName={countryName}
+                                            vaccine={vaccine}
+                                            vaccineStockId={
+                                                settings.row.original
+                                                    .vaccine_stock
+                                            }
+                                        />
+                                        <DeleteDialog
+                                            titleMessage={
+                                                MESSAGES.deleteEarmarked
+                                            }
+                                            message={
+                                                MESSAGES.deleteEarmarkedWarning
+                                            }
+                                            onConfirm={() =>
+                                                deleteEarmarked(
+                                                    settings.row.original.id,
+                                                )
+                                            }
+                                        />
+                                    </>
+                                )}
+                            </>
                         </DisplayIfUserHasPerm>
                     );
                 },

@@ -327,6 +327,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                                 options={roundOptions}
                                 withMarginTop
                                 isLoading={isFetching}
+                                required={Boolean(formik.values.campaign)}
                                 disabled={
                                     !formik.values.campaign ||
                                     !uiState.canEditCampaignAndRound

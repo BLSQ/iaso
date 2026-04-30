@@ -299,7 +299,8 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         def fetch_row_fields_by_id(user):
             self.client.force_authenticate(user)
             get_response = self.client.get(
-                OUTGOING_STOCK_MOVEMENT_URL, f"?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=50"
+                OUTGOING_STOCK_MOVEMENT_URL,
+                {"vaccine_stock": self.vaccine_stock.pk, "page": 1, "limit": 50},
             )
             payload = self.assertJSONResponse(get_response, 200)
             return {

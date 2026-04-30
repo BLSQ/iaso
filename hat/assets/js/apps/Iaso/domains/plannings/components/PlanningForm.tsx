@@ -207,18 +207,30 @@ export const PlanningForm: FunctionComponent<Props> = ({
         useGetOrgUnit(values.selectedOrgUnit?.toString());
     const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypesHierarchy(rootorgunit?.org_unit_type_id);
-    const orgunitTypes = useMemo(
-        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
-        [orgUnitTypeHierarchy],
-    );
     const { data: formsDropdown, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions({
-            extraFields: ['project_ids'],
+            extraFields: ['project_ids', 'org_unit_type_ids'],
             params: {
                 projectsIds: values?.project,
             },
             enabled: Boolean(values?.project),
         });
+    const orgunitTypes = useMemo(() => {
+        // Get all possible org unit types filtering on forms org unit types,
+        // if no forms are selected, return all types,
+        // if no org unit types is selected in the forms used, return all types
+        const types = flattenHierarchy(
+            orgUnitTypeHierarchy?.sub_unit_types || [],
+        );
+        const possibleTypes =
+            formsDropdown
+                ?.filter(form => values.forms?.includes(form.value))
+                .flatMap(form => form.original?.org_unit_type_ids || []) ?? [];
+        if (possibleTypes.length === 0) {
+            return types;
+        }
+        return types.filter(type => possibleTypes?.includes(type.value));
+    }, [orgUnitTypeHierarchy, formsDropdown, values.forms]);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown(
             {

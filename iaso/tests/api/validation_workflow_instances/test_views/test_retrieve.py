@@ -8,7 +8,7 @@ from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
+from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -26,12 +26,14 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
         self.john_wick = self.create_user_with_profile(
             username="john.wick",
             account=self.account,
-            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION],
+            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION, CORE_SUBMISSIONS_PERMISSION],
             user_roles=[self.user_role],
         )
 
         self.jane_doe = self.create_user_with_profile(
-            username="jane.doe", account=self.other_account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+            username="jane.doe",
+            account=self.other_account,
+            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION, CORE_SUBMISSIONS_PERMISSION],
         )
 
         self.superuser = self.create_user_with_profile(

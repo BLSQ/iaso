@@ -37,6 +37,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditDosesPerVial).toBe(true);
             expect(state.canEditComment).toBe(true);
             expect(state.canEditFile).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
 
         it('locks reception date and file when status is temporary', () => {
@@ -54,6 +55,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditFile).toBe(false);
             // Vials remain editable on new forms (wasOriginallyTemporary = false)
             expect(state.canEditVials).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
     });
 
@@ -75,6 +77,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditDosesPerVial).toBe(true);
             expect(state.canEditComment).toBe(true);
             expect(state.canEditFile).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
 
         it('locks reception/file when temporary, locks vials when originally temporary', () => {
@@ -90,6 +93,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditReceptionDate).toBe(false);
             expect(state.canEditFile).toBe(false);
             expect(state.canEditVials).toBe(false);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
 
         it('unlocks vials when originally temporary but current status switched to received', () => {
@@ -104,6 +108,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditVials).toBe(true);
             expect(state.canEditReceptionDate).toBe(true);
             expect(state.canEditFile).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
     });
 
@@ -118,6 +123,7 @@ describe('useFormAUiState', () => {
             });
 
             expect(state.canEditStatus).toBe(false);
+            expect(state.showTemporaryStatusField).toBe(false);
         });
 
         it('enables status toggle for originally temporary form (can still complete)', () => {
@@ -130,6 +136,7 @@ describe('useFormAUiState', () => {
             });
 
             expect(state.canEditStatus).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
     });
 
@@ -151,6 +158,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditComment).toBe(true);
             expect(state.canEditReceptionDate).toBe(true);
             expect(state.canEditFile).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
 
         it('locks reception date and file when current status is still temporary', () => {
@@ -166,6 +174,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditFile).toBe(false);
             // Comment remains editable even in temporary state
             expect(state.canEditComment).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
 
         it('allows status toggle (temp → received completion)', () => {
@@ -178,6 +187,7 @@ describe('useFormAUiState', () => {
             });
 
             expect(state.canEditStatus).toBe(true);
+            expect(state.showTemporaryStatusField).toBe(true);
         });
     });
 
@@ -199,6 +209,7 @@ describe('useFormAUiState', () => {
             expect(state.canEditDosesPerVial).toBe(false);
             expect(state.canEditComment).toBe(false);
             expect(state.canEditFile).toBe(false);
+            expect(state.showTemporaryStatusField).toBe(false);
         });
     });
 });

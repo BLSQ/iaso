@@ -283,17 +283,19 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 {!withCustomObr && (
                     <>
                         <Box mb={2} mt={2}>
-                            <InputComponent
-                                type="checkbox"
-                                keyValue="status"
-                                onChange={handleTemporaryToggle}
-                                labelString={formatMessage(
-                                    MESSAGES.temporary_form_a,
-                                )}
-                                withMarginTop={false}
-                                value={uiState.isTemporary}
-                                disabled={!uiState.canEditStatus}
-                            />
+                            {uiState.showTemporaryStatusField && (
+                                <InputComponent
+                                    type="checkbox"
+                                    keyValue="status"
+                                    onChange={handleTemporaryToggle}
+                                    labelString={formatMessage(
+                                        MESSAGES.temporary_form_a,
+                                    )}
+                                    withMarginTop={false}
+                                    value={uiState.isTemporary}
+                                    disabled={!uiState.canEditStatus}
+                                />
+                            )}
                             <Field
                                 label={formatMessage(MESSAGES.campaign)}
                                 name="campaign"

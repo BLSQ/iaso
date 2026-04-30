@@ -46,14 +46,21 @@ export const useFormAUiState = ({
         //  - within the edit window with full access (received → temp reversal)
         // Post-window received → temporary is blocked server-side; disable the
         // toggle so the user isn't offered an impossible transition.
+        //
+        // showTemporaryStatusField hides the checkbox entirely for regular RECEIVED
+        // forms past the window (instead of showing a permanently disabled control).
         const canEditStatus =
             isNew ||
             canCompleteTemporary ||
             (canEditAllFields && (wasOriginallyTemporary || withinEditWindow));
 
+        const showTemporaryStatusField =
+            isNew || originalStatus === TEMPORARY || withinEditWindow;
+
         return {
             isTemporary,
             canEditStatus,
+            showTemporaryStatusField,
             canEditCampaignAndRound: canEditAllFields,
             canEditReportDate: canEditAllFields,
             canEditReceptionDate: !isTemporary && canEditCompletionFields,

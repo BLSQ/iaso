@@ -27,6 +27,8 @@ export type FormAFormValues = {
 export type FormAUiState = {
     isTemporary: boolean;
     canEditStatus: boolean;
+    /** Hide temporary/received toggle when a regular Form A is past the edit window (transition blocked server-side). */
+    showTemporaryStatusField: boolean;
     canEditCampaignAndRound: boolean;
     canEditReportDate: boolean;
     canEditReceptionDate: boolean;

@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from django_filters.rest_framework import FilterSet, NumberFilter
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_field
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -298,6 +298,9 @@ def compute_category_from_campaign(campaign: Optional[Campaign], round: Optional
 
 
 class OutgoingStockMovementSerializer(ModelWithFileSerializer):
+    # Set True by OutgoingStockMovementViewSet.get_serializer_context on write actions.
+    VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY = "validate_form_a_lifecycle"
+
     EDIT_ACCESS_NONE = "none"
     EDIT_ACCESS_COMPLETION_ONLY = "completion_only"
     EDIT_ACCESS_FULL = "full"
@@ -338,12 +341,6 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             "campaign_category",
             "doses_per_vial",
         ]
-
-    def _should_validate_lifecycle(self):
-        view = self.context.get("view")
-        action = getattr(view, "action", None)
-        write_actions = {"create", "update", "partial_update"}
-        return action in write_actions or action is None
 
     def _validate_editable_fields_based_on_status(self, status_value, form_a_reception_date, uploaded_file):
         if status_value == OutgoingStockMovement.StatusChoices.TEMPORARY and form_a_reception_date is not None:
@@ -400,27 +397,37 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             )
 
     def validate(self, data):
+        """
+        Validate against the resulting object state (existing instance + incoming payload).
+
+        Rationale:
+        - PATCH requests are often partial; validating only input would allow invariant
+          bypasses when invalid combinations already exist on the instance.
+        - Backend remains the source of truth for lifecycle rules, regardless of UI
+          behavior or legacy data quality.
+        """
+        validated_data = super().validate(data)
         # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
         current_campaign = self.instance.campaign if self.instance else None
         current_non_obr_name = self.instance.non_obr_name if self.instance else None
-        campaign_value = data.get("campaign", current_campaign)
-        non_obr_name_value = data.get("non_obr_name", current_non_obr_name)
+        campaign_value = validated_data.get("campaign", current_campaign)
+        non_obr_name_value = validated_data.get("non_obr_name", current_non_obr_name)
         if campaign_value and non_obr_name_value:
             raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
 
-        if self._should_validate_lifecycle():
+        if self.context.get(self.VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY):
             current_status = self.instance.status if self.instance else None
             current_form_a_reception_date = self.instance.form_a_reception_date if self.instance else None
             current_file = self.instance.file if self.instance else None
 
-            status_value = data.get("status", current_status)
+            status_value = validated_data.get("status", current_status)
             is_received_to_temporary = (
                 self.instance is not None
                 and current_status == OutgoingStockMovement.StatusChoices.RECEIVED
                 and status_value == OutgoingStockMovement.StatusChoices.TEMPORARY
             )
-            form_a_reception_date = data.get("form_a_reception_date", current_form_a_reception_date)
-            uploaded_file = data.get("file", current_file)
+            form_a_reception_date = validated_data.get("form_a_reception_date", current_form_a_reception_date)
+            uploaded_file = validated_data.get("file", current_file)
             if is_received_to_temporary:
                 # Transition normalization: received -> temporary clears reception metadata.
                 form_a_reception_date = None
@@ -433,12 +440,17 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             self._enforce_temporary_vials_immutability(data, status_value)
             self._validate_temporary_after_window_allowed_fields(status_value)
 
-        validated_data = super().validate(data)
         return validated_data
 
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
 
+    @extend_schema_field(
+        serializers.ChoiceField(
+            choices=[EDIT_ACCESS_NONE, EDIT_ACCESS_COMPLETION_ONLY, EDIT_ACCESS_FULL],
+            read_only=True,
+        )
+    )
     def get_edit_access(self, obj):
         user = self.context["request"].user
         # Full edit: admin at any time, or non-admin within the generic edit window.
@@ -458,6 +470,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             return self.EDIT_ACCESS_COMPLETION_ONLY
         return self.EDIT_ACCESS_NONE
 
+    @extend_schema_field(serializers.BooleanField(read_only=True))
     def get_within_edit_window(self, obj):
         if obj.created_at is None:
             return False
@@ -498,7 +511,8 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
                 instance.file.delete(save=False)
             validated_data["file"] = None
             validated_data["form_a_reception_date"] = None
-        self.scan_file_if_exists(validated_data, instance)
+        else:
+            self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
@@ -549,32 +563,35 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
             return OutgoingStockMovementPatchSerializer
         return OutgoingStockMovementStrictSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context[OutgoingStockMovementSerializer.VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY] = self.action in (
+            "create",
+            "update",
+            "partial_update",
+        )
+        return context
+
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
 
         base_queryset = OutgoingStockMovement.objects.all()
 
         if vaccine_stock_id is None:
-            return base_queryset.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+            qs = base_queryset.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+        else:
+            qs = base_queryset.filter(
+                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
+            )
 
-        return base_queryset.filter(
-            vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
-        )
+        if self.action in ("update", "partial_update"):
+            qs = qs.select_for_update()
 
+        return qs
+
+    @transaction.atomic
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop("partial", False)
-        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        lookup_value = kwargs[lookup_url_kwarg]
-        with transaction.atomic():
-            locked_instance = self.get_queryset().select_for_update().get(**{self.lookup_field: lookup_value})
-            self.check_object_permissions(request, locked_instance)
-
-            serializer = self.get_serializer(locked_instance, data=request.data, partial=partial)
-            serializer.is_valid(raise_exception=True)
-
-            self.perform_update(serializer)
-
-        return Response(serializer.data)
+        return super().update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)

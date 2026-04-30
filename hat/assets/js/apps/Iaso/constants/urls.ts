@@ -408,6 +408,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'tab',
             'search',
             'location',
+            'location_type',
             'dateFrom',
             'dateTo',
             'submitterId',

@@ -2,6 +2,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 
@@ -78,6 +79,7 @@ const Filters: FunctionComponent<Props> = ({
         locationLimit: params.locationLimit,
         groups: params.groups,
         fieldsSearch: params.fieldsSearch,
+        location_type: params.location_type || 'registration',
     });
 
     useEffect(() => {
@@ -92,6 +94,7 @@ const Filters: FunctionComponent<Props> = ({
             locationLimit: params.locationLimit,
             groups: params.groups,
             fieldsSearch: params.fieldsSearch,
+            location_type: params.location_type || 'registration',
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -117,6 +120,20 @@ const Filters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
 
+    const locationTypeOptions = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.registration),
+                value: 'registration',
+            },
+            {
+                label: formatMessage(MESSAGES.residence),
+                value: 'residence',
+            },
+        ],
+        [formatMessage],
+    );
+
     const fieldsSearchJson = filters.fieldsSearch
         ? JSON.parse(filters.fieldsSearch)
         : undefined;
@@ -137,23 +154,23 @@ const Filters: FunctionComponent<Props> = ({
             if (key === 'location') {
                 setInitialOrgUnitId(value);
             }
-            setFilters({
-                ...filters,
+            setFilters(prevFilters => ({
+                ...prevFilters,
                 [key]: value,
-            });
+            }));
         },
-        [filters],
+        [],
     );
     const handleTeamChange = useCallback(
         (key, value) => {
             setFiltersUpdated(true);
-            setFilters({
-                ...filters,
+            setFilters(prevFilters => ({
+                ...prevFilters,
                 [key]: value,
                 submitterId: undefined,
-            });
+            }));
         },
-        [filters],
+        [],
     );
 
     const { url: apiUrl } = useGetEntitiesApiParams(params);
@@ -240,6 +257,17 @@ const Filters: FunctionComponent<Props> = ({
                         dateFrom={filters.dateFrom}
                         dateTo={filters.dateTo}
                     />
+                    {filters.location && (
+                        <InputComponent
+                            keyValue="location_type"
+                            onChange={handleChange}
+                            value={filters.location_type}
+                            type="select"
+                            options={locationTypeOptions}
+                            label={MESSAGES.locationType}
+                            clearable={false}
+                        />
+                    )}
                     {!hasFeatureFlag(
                         currentUser,
                         SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,

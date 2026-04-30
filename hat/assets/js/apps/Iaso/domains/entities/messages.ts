@@ -284,7 +284,19 @@ const MESSAGES = defineMessages({
     results: {
         id: 'iaso.label.resultsLower',
         defaultMessage: 'result(s)',
-    }
+    },
+    locationType: {
+        id: 'iaso.entities.locationType',
+        defaultMessage: 'Location type',
+    },
+    registration: {
+        id: 'iaso.entities.registration',
+        defaultMessage: 'Registration',
+    },
+    residence: {
+        id: 'iaso.entities.residence',
+        defaultMessage: 'Residence',
+    },
 });
 
 export default MESSAGES;

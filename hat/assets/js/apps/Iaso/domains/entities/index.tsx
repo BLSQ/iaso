@@ -50,6 +50,8 @@ type Params = {
     fieldsSearch?: string;
     isSearchActive?: string;
     cursor?: string;
+    location?: string;
+    location_type?: 'registration' | 'residence';
 };
 
 export const Entities: FunctionComponent = () => {

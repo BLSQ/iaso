@@ -37,6 +37,7 @@ type ApiParams = {
     page?: string;
     search?: string;
     orgUnitId?: string;
+    residentOrgUnitId?: string;
     dateFrom?: string;
     dateTo?: string;
     created_by_team_id?: string;
@@ -62,7 +63,10 @@ export const useGetEntitiesApiParams = (
     const apiParams: ApiParams = {
         order_columns: params.order || 'id',
         search: params.search,
-        orgUnitId: params.location,
+        orgUnitId:
+            params.location_type !== 'residence' ? params.location : undefined,
+        residentOrgUnitId:
+            params.location_type === 'residence' ? params.location : undefined,
         dateFrom:
             params.dateFrom &&
             moment(params.dateFrom, 'DD-MM-YYYY').format(apiDateFormat),

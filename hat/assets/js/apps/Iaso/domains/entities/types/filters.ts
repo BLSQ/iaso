@@ -9,6 +9,7 @@ export type Filters = {
     search?: string;
     submitterId?: string;
     submitterTeamId?: string;
+    location_type?: 'registration' | 'residence';
 };
 
 export type Params = Filters & {

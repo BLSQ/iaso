@@ -3,11 +3,11 @@ import {
     ValidationNodeTemplateBulkUpdateBody,
     ValidationNodeTemplateCreateBody,
     ValidationNodeTemplateUpdateBody,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
+} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodeTemplates';
 import {
     ValidationWorkflowCreateBody,
     ValidationWorkflowPatchBody,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { patchRequest, postRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { API_URL, WF_BASE_QUERYKEY } from '../constants';

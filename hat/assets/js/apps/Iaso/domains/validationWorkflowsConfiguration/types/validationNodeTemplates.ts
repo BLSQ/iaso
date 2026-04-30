@@ -1,4 +1,4 @@
-import { PaginatedResponse } from 'Iaso/domains/instances/validationWorkflow/types/common';
+import { PaginatedResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/common';
 
 export type ValidationNodeTemplateListResponseItem = {
     slug: string;

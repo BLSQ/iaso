@@ -1,7 +1,7 @@
 import React from 'react';
 import { axe } from 'jest-axe';
 import { describe, it, expect, vi } from 'vitest';
-import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
 import { ValidationWorkflowDropdown } from './ValidationWorkflowDropdown';
 
 const { mockCurrentUser } = vi.hoisted(() => {

@@ -1,11 +1,11 @@
 import { UseQueryResult } from 'react-query';
-import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
+import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodeTemplates';
 import {
     ValidationWorkflowListDropdownResponse,
     ValidationWorkflowListResponse,
     ValidationWorkflowRetrieveResponseItem,
     ValidationWorkflowRetrieveResponseItemWithOrderedNodes,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { FormattedApiParams, useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';

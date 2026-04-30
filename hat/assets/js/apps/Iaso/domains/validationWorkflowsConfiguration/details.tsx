@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -13,14 +13,14 @@ import {
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useGetWorkflowDetails } from 'Iaso/domains/validationWorkflowsConfiguration/api/Get';
+import { useSaveNodeOrder } from 'Iaso/domains/validationWorkflowsConfiguration/api/PostPutPatch';
+import { useWorkflowNodesColumns } from 'Iaso/domains/validationWorkflowsConfiguration/config';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import MESSAGES from '../../messages';
-import { useGetWorkflowDetails } from '../api/Get';
-import { useSaveNodeOrder } from '../api/PostPutPatch';
-import { useWorkflowNodesColumns } from '../columns';
-import { useSortableTableState } from '../useSortableTableState';
-import { AddNode } from './CreateEditNode/CreateEditNode';
-import { WorkflowBaseInfo } from './WorkflowBaseInfo';
+import { AddNode } from './components/CreateEditNode/CreateEditNode';
+import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import { useSortableTableState } from './hooks/useSortableTableState';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles((theme: any) => {
     return {
@@ -44,8 +44,10 @@ const useStyles = makeStyles((theme: any) => {
     };
 });
 
-export const WorkflowConfiguration: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.instanceValidationDetail);
+export const ValidationWorkflowConfigurationDetail = () => {
+    const params = useParamsObject(
+        baseUrls.validationWorkflowsConfigurationDetail,
+    );
     const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();

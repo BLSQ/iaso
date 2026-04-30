@@ -1,16 +1,16 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { userHasOneOfRoles } from 'Iaso/domains/users/utils';
 import {
     NextByPass,
     NextTasks,
     History,
     ValidationNodeRetrieveResponse,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import {
     NestedNodeTemplate,
     ValidationWorkflowRetrieveResponseItem,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
-import { userHasOneOfRoles } from 'Iaso/domains/users/utils';
+} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../../messages';
 

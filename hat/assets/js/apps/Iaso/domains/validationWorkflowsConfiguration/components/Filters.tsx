@@ -8,7 +8,7 @@ import { useFilterState } from 'Iaso/hooks/useFilterState';
 import MESSAGES from '../messages';
 
 type Props = { params: Record<string, string> };
-const baseUrl = baseUrls.instanceValidation;
+const baseUrl = baseUrls.validationWorkflowsConfiguration;
 export const Filters: FunctionComponent<Props> = ({ params }) => {
     const { filters, filtersUpdated, handleChange, handleSearch } =
         useFilterState({ baseUrl, params, withPagination: true });

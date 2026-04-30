@@ -15,18 +15,18 @@ import {
     ParamsWithAccountId,
     useParamsObject,
 } from 'Iaso/routing/hooks/useParamsObject';
-import MESSAGES from '../messages';
 import { useGetSubmissionValidationWorkflows } from './api/Get';
-import { useWorkflowsTableColumns } from './columns';
-import { Filters } from './Filters';
+import { Filters } from './components/Filters';
+import { useWorkflowsTableColumns } from './config';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles((theme: any) => {
     return { ...commonStyles(theme) };
 });
 
-export const SubmissionValidation = () => {
+export const ValidationWorkflowsConfiguration = () => {
     const params: ParamsWithAccountId & Partial<UrlParams> = useParamsObject(
-        baseUrls.instanceValidation,
+        baseUrls.validationWorkflowsConfiguration,
     );
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -54,7 +54,7 @@ export const SubmissionValidation = () => {
                             color="primary"
                             size="medium"
                             target="_self"
-                            to={`/${baseUrls.instanceValidationDetail}/`}
+                            to={`/${baseUrls.validationWorkflowsConfigurationDetail}/`}
                         >
                             <Add className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.create)}
@@ -64,7 +64,7 @@ export const SubmissionValidation = () => {
                 <SimpleTableWithDeepLink
                     params={params}
                     isFetching={isLoadingWorkflows}
-                    baseUrl={baseUrls.instanceValidation}
+                    baseUrl={baseUrls.validationWorkflowsConfiguration}
                     data={workflows}
                     columns={columns}
                 />

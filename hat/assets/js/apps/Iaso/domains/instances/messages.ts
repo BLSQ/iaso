@@ -786,10 +786,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.searchToSeeSubmissions',
         defaultMessage: 'Click "Search" button to see submissions',
     },
-    configureInstancesValidation: {
-        id: 'iaso.label.configureInstancesValidation',
-        defaultMessage: 'Configure validation of submissions',
-    },
+
     addInstancesValidationWorkflow: {
         id: 'iaso.label.addInstancesValidationWorkflow',
         defaultMessage: 'Add validation workflow',
@@ -801,10 +798,6 @@ const MESSAGES = defineMessages({
     updated_by: {
         id: 'iaso.label.updated_by',
         defaultMessage: 'Updated by',
-    },
-    deleteWorkflow: {
-        id: 'iaso.submissions.label.deleteWorkflow',
-        defaultMessage: 'Delete workflow',
     },
     edit: {
         defaultMessage: 'Edit',

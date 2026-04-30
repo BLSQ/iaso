@@ -1,12 +1,12 @@
 import React from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
 import { axe } from 'jest-axe';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 import { expect, describe } from 'vitest';
-import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
-import { ValidationWorkflowListResponseItem } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+import { ValidationWorkflowListResponseItem } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { renderWithTheme } from '../../../tests/helpers';
 import { currentUserFactory } from '../../factories/users';

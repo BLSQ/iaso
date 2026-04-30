@@ -8,7 +8,7 @@ import {
     LinkWithLocation,
     useSafeIntl,
 } from 'bluesquare-components';
-import { ValidationWorkflowDropdown } from 'Iaso/domains/instances/validationWorkflow/components/ValidationWorkflowDropdown';
+import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';

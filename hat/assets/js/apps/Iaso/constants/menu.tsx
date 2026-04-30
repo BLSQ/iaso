@@ -29,6 +29,8 @@ import PriceCheckIcon from '@mui/icons-material/PriceCheck';
 import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import RuleIcon from '@mui/icons-material/Rule';
+import SchemaIcon from '@mui/icons-material/Schema';
+import SearchIcon from '@mui/icons-material/Search';
 import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
@@ -465,21 +467,32 @@ export const useMenuItems = (): MenuItems => {
     }
 
     // add feature flags
-    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)) {
-        const formsMenuEntry = basicItems.find(item => item.key === 'forms');
-        if (
-            !formsMenuEntry?.subMenu?.find(
-                entry => entry.key === 'submissions/validation',
-            )
-        ) {
-            formsMenuEntry?.subMenu?.push({
-                label: formatMessage(MESSAGES.validation),
-                permissions: paths.instancesPath.permissions,
-                key: 'submissions/validation',
-                icon: props => <RuleIcon {...props} />,
-            });
-        }
+    if (
+        hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW) &&
+        !basicItems.find(item => item.key === 'validation-workflows')
+    ) {
+        basicItems.push({
+            label: formatMessage(MESSAGES.validationWorkflow),
+            icon: props => <SchemaIcon {...props} />,
+            key: 'validation-workflows',
+            subMenu: [
+                {
+                    label: 'Configuration',
+                    key: 'configuration',
+                    permissions:
+                        paths.validationWorkflowConfigurationPath.permissions,
+                    icon: props => <Settings {...props} />,
+                },
+                {
+                    label: 'Submissions',
+                    key: 'submissions',
+                    permissions: paths.instancesPath.permissions,
+                    icon: props => <SearchIcon {...props} />,
+                },
+            ],
+        });
     }
+
     if (
         hasFeatureFlag(currentUser, SHOW_PAGES) &&
         !basicItems.find(item => item.key === 'pages')

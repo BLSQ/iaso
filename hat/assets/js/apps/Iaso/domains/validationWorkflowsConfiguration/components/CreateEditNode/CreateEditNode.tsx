@@ -7,16 +7,16 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { MultiSelect } from 'Iaso/domains/pages/components/MultiSelect';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
-import { EditIconButton } from '../../../../../components/Buttons/EditIconButton';
 
-import MESSAGES from '../../../messages';
 import { useGetNode } from '../../api/Get';
 import { useSaveNode } from '../../api/PostPutPatch';
+import MESSAGES from '../../messages';
 import { useNodeValidation } from './validation';
 
 type Props = {
@@ -62,7 +62,7 @@ export const CreateEditNode: FunctionComponent<Props> = ({
         validationSchema,
     });
     const handleChangeUserRoles = useCallback(
-        (_, newValue: string) => {
+        (_: any, newValue: string) => {
             const value =
                 newValue && newValue.length > 0 ? newValue : undefined;
             formik.setFieldTouched('roles_required', true);

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { UseMutationResult } from 'react-query';
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { API_URL } from '../../validationWorkflow/constants';
+import { API_URL } from '../../../validationWorkflowsConfiguration/constants';
 
 // ToDO replace with complete / complete_bypass
 const saveNode =

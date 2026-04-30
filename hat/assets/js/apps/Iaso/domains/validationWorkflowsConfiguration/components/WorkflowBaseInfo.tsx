@@ -16,11 +16,11 @@ import {
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import MESSAGES from '../../messages';
 import { useSaveWorkflow } from '../api/PostPutPatch';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -63,7 +63,9 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
 type Props = { workflow?: ValidationWorkflowRetrieveResponseItem };
 
 export const WorkflowBaseInfo = ({ workflow }: Props) => {
-    const params = useParamsObject(baseUrls.instanceValidationDetail);
+    const params = useParamsObject(
+        baseUrls.validationWorkflowsConfigurationDetail,
+    );
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const [name, setName] = useAsyncInitialState<string>(workflow?.name);
@@ -84,10 +86,13 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
             { body: { name, description } },
             {
                 onSuccess: data =>
-                    redirectToReplace(baseUrls.instanceValidationDetail, {
-                        ...params,
-                        slug: data.slug,
-                    }),
+                    redirectToReplace(
+                        baseUrls.validationWorkflowsConfigurationDetail,
+                        {
+                            ...params,
+                            slug: data.slug,
+                        },
+                    ),
             },
         );
     }, [description, mutateAsync, name, params, redirectToReplace, workflow]);

@@ -5,7 +5,7 @@ import {
     ValidationWorkflowListResponse,
     ValidationWorkflowListResponseItem,
     ValidationWorkflowRetrieveResponseItem,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 
 type ValidationWorkflowRetrieveFactoryTransientParams = {
     withNodeTemplates?: boolean;

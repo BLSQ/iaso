@@ -267,6 +267,10 @@ router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, ba
 router.register(r"api_import", APIImportViewSet, basename="api_import")
 router.register(r"notifications", NotificationViewSet, basename="notifications")
 
+router.register(
+    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
+)
+
 router.register(r"validation-workflows", ValidationWorkflowViewSet, basename="validation_workflows").register(
     r"node-templates",
     ValidationNodeTemplatesView,
@@ -279,13 +283,9 @@ router.register(
     basename="validation_workflow_nodes",
 )
 router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile_validation_workflows")
-router.register(
-    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
-)
+
 router.registry.extend(plugins_router.registry)
-router.register(
-    r"validation-workflows/instance", ValidationWorkflowInstanceViewSet, basename="validation_workflow_instances"
-)
+
 urlpatterns: URLList = [
     path(
         "fill/<form_uuid>/<org_unit_id>/<period>",

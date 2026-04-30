@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import React from 'react';
 import {
+    Column,
     IconButton,
     Setting,
     textPlaceholder,
@@ -13,13 +14,16 @@ import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 import { baseUrls } from 'Iaso/constants/urls';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import {
+    useDeleteNode,
+    useDeleteWorkflow,
+} from 'Iaso/domains/validationWorkflowsConfiguration/api/Delete';
+import { EditNode } from 'Iaso/domains/validationWorkflowsConfiguration/components/CreateEditNode/CreateEditNode';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../messages';
-import { useDeleteNode, useDeleteWorkflow } from './api/Delete';
-import { EditNode } from './details/CreateEditNode/CreateEditNode';
+import MESSAGES from './messages';
 
-export const useWorkflowsTableColumns = () => {
+export const useWorkflowsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
     const { mutateAsync: deleteWorkflow } = useDeleteWorkflow();
@@ -63,7 +67,8 @@ export const useWorkflowsTableColumns = () => {
                 id: 'updatedBy',
                 accessor: 'updated_by',
                 sortable: true,
-                Cell: ({ value }) => value ?? textPlaceholder,
+                Cell: ({ value }: { value?: string }) =>
+                    value ?? textPlaceholder,
             },
         ];
         if (userHasOneOfPermissions([VALIDATION_WORKFLOWS], user)) {
@@ -78,7 +83,7 @@ export const useWorkflowsTableColumns = () => {
                             <IconButton
                                 tooltipMessage={MESSAGES.edit}
                                 icon="edit"
-                                url={`/${baseUrls.instanceValidationDetail}/slug/${settings.row.original.slug}`}
+                                url={`/${baseUrls.validationWorkflowsConfigurationDetail}/slug/${settings.row.original.slug}`}
                             />
                             <DeleteModal
                                 key={settings.row.original.slug}

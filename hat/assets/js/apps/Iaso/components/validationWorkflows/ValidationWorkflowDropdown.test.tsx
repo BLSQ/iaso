@@ -3,7 +3,7 @@ import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
-import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
 import { ValidationWorkflowDropdown } from './ValidationWorkflowDropdown';
 
 const { mockCurrentUser } = vi.hoisted(() => {

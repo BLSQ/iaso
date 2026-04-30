@@ -2,8 +2,8 @@ import React from 'react';
 import InputComponent, {
     InputComponentProps,
 } from 'Iaso/components/forms/InputComponent';
-import { useGetWorkflowOptions } from 'Iaso/domains/instances/validationWorkflow/api/Get';
 import { userHasPermission } from 'Iaso/domains/users/utils';
+import { useGetWorkflowOptions } from 'Iaso/domains/validationWorkflowsConfiguration/api/Get';
 import {
     hasFeatureFlag,
     SUBMISSION_VALIDATION_WORKFLOW,

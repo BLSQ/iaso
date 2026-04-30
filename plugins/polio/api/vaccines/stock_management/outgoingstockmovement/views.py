@@ -4,8 +4,8 @@ from rest_framework import filters
 
 from plugins.polio.api.vaccines.permissions import OutgoingStockMovementPermission
 from plugins.polio.api.vaccines.stock_management.outgoingstockmovement.serializers import (
+    VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY,
     OutgoingStockMovementPatchSerializer,
-    OutgoingStockMovementSerializer,
     OutgoingStockMovementStrictSerializer,
 )
 from plugins.polio.api.vaccines.stock_management.subitems import VaccineStockSubitemBase
@@ -39,7 +39,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context[OutgoingStockMovementSerializer.VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY] = self.action in (
+        context[VALIDATE_FORM_A_LIFECYCLE_CONTEXT_KEY] = self.action in (
             "create",
             "update",
             "partial_update",

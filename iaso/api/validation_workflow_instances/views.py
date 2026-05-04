@@ -100,36 +100,57 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
             # get all validation nodes waiting for user action aka nodes in unknown status and created after last new version
             fallback_date = timezone.make_aware(datetime.datetime(1970, 1, 1))
 
+            cutoff = Coalesce(
+                latest_new_version_create_at_query,
+                Value(fallback_date),
+            )
+
             validation_nodes_waiting_for_user_action_query = Exists(
                 ValidationNode.objects.filter(
                     instance=OuterRef("pk"),
                     node__in=validation_node_templates,
                     status=ValidationNodeStatus.UNKNOWN,
-                ).filter(
-                    Q(
-                        created_at__gte=Coalesce(
-                            OuterRef("annotate_latest_new_version_created_at"), Value(fallback_date)
-                        )
-                    )
+                    created_at__gt=cutoff,
                 )
             )
 
+            cutoff = Coalesce(
+                Subquery(
+                    ValidationNode.objects.filter(instance=OuterRef("pk"), status=ValidationNodeStatus.NEW_VERSION)
+                    .order_by("-created_at")
+                    .values("created_at")[:1]
+                ),
+                Value(fallback_date),
+            )
             # get all next bypass where user could take action in that workflow for that instance
             bypass_waiting_query = Exists(
                 validation_node_templates.filter(
                     workflow__account=self.request.user.iaso_profile.account,
                     can_skip_previous_nodes=True,
                     workflow__form_set=OuterRef("form_id"),
-                ).exclude(
-                    validationnode__instance=OuterRef(
-                        "pk"
-                    )  # todo : this will have to change once resubmits # means validationnode is null but just for that instance
+                ).filter(
+                    Q(
+                        ~Exists(
+                            ValidationNode.objects.filter(
+                                instance=OuterRef("pk"),
+                                node=OuterRef("pk"),
+                            )
+                        )
+                    )
+                    | Q(
+                        Exists(
+                            ValidationNode.objects.filter(
+                                instance=OuterRef("pk"),
+                                node=OuterRef("pk"),
+                                created_at__gt=cutoff,
+                            )
+                        )
+                    )
                 )
             )
 
             qs = qs.annotate(
                 annotate_user_has_been_involved=user_has_been_involved_query,
-                annotate_latest_new_version_created_at=latest_new_version_create_at_query,
                 annotate_requires_user_action=Case(
                     When(
                         general_validation_status=ValidationWorkflowArtefactStatus.PENDING,
@@ -141,6 +162,10 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
                 annotate_last_updated=Max("validationnode__updated_at"),
             )
 
-            qs = qs.filter(Q(annotate_user_has_been_involved=True) | Q(annotate_requires_user_action=True)).distinct()
+            qs = (
+                qs.select_related("project", "form")
+                .filter(Q(annotate_user_has_been_involved=True) | Q(annotate_requires_user_action=True))
+                .distinct()
+            )
 
         return qs

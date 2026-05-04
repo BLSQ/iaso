@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.text import slugify
@@ -384,8 +385,16 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
             "reason": data.get("reason", ""),
         }
 
+    @transaction.atomic
     def create(self, validated_data):
-        ed = EntityDuplicate.objects.get(entity1=validated_data["entity1"], entity2=validated_data["entity2"])
+        try:
+            ed = EntityDuplicate.objects.select_for_update().get(
+                entity1=validated_data["entity1"], entity2=validated_data["entity2"]
+            )
+        except EntityDuplicate.DoesNotExist:
+            ed = EntityDuplicate.objects.select_for_update().get(
+                entity2=validated_data["entity1"], entity1=validated_data["entity2"]
+            )
 
         if ed.validation_status != ValidationStatus.PENDING:
             raise serializers.ValidationError("This duplicate has already been validated or ignored")

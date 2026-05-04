@@ -121,14 +121,10 @@ class EntityDateFilterBackend(filters.BaseFilterBackend):
                 end = timezone.make_aware(datetime.max, timezone.get_default_timezone())
 
             instance_qs = Instance.objects.filter(entity=OuterRef("pk"))
-            queryset = queryset.filter(
-                Exists(
-                    instance_qs.filter(
-                        Q(source_created_at__isnull=False, source_created_at__range=(start, end))
-                        | Q(source_created_at__isnull=True, created_at__range=(start, end))
-                    )
-                )
-            )
+
+            # Trypelim-specific: source_created_at is never null
+            # so we can simplify this part of the query
+            queryset = queryset.filter(Exists(instance_qs.filter(source_created_at__range=(start, end))))
 
         return queryset
 

@@ -4,6 +4,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BookIcon from '@mui/icons-material/Book';
 import CategoryIcon from '@mui/icons-material/Category';
 import CompareArrows from '@mui/icons-material/CompareArrows';
@@ -17,7 +18,6 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
 import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
-import Input from '@mui/icons-material/Input';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
@@ -209,18 +209,17 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.formAI),
+                    permissions: paths.formAIPath.permissions,
+                    key: 'ai',
+                    icon: props => <AutoFixHighIcon {...props} />,
+                },
+                {
                     label: formatMessage(MESSAGES.submissionsTitle),
-                    key: 'submissions',
-                    icon: props => <Input {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.list),
-                            extraPath: `/tab/list/mapResults/${locationLimitMax}`,
-                            permissions: paths.instancesPath.permissions,
-                            key: 'list',
-                            icon: props => <FormatListBulleted {...props} />,
-                        },
-                    ],
+                    key: 'submissions/list',
+                    icon: props => <FormatListBulleted {...props} />,
+                    permissions: paths.instancesPath.permissions,
+                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
                 },
 
                 {
@@ -463,6 +462,14 @@ export const useMenuItems = (): MenuItems => {
     if (!hasDhis2Module && basicItems?.length > 0) {
         basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
             item => item.key !== 'mappings',
+        );
+    }
+
+    // Hide Form AI in the main menu, under Forms when FORM_AI module is not activated
+    const hasFormAIModule = userHasAccessToModule('FORM_AI', currentUser);
+    if (!hasFormAIModule && basicItems?.length > 0) {
+        basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
+            item => item.key !== 'ai',
         );
     }
 

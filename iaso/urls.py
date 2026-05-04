@@ -56,6 +56,12 @@ from .api.entities.views import EntityViewSet
 from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.form_ai.views import (
+    form_ai_chat,
+    form_ai_download,
+    form_ai_load_form,
+    form_ai_save,
+)
 from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_predefined_filters.views import FormPredefinedFiltersViewSet
 from .api.form_versions.views import FormVersionsViewSet
@@ -333,6 +339,10 @@ urlpatterns = urlpatterns + [
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
     path("colors/", colors_list, name="colors"),
+    path("form_ai/", form_ai_chat, name="form_ai_chat"),
+    path("form_ai/load/<int:form_id>/", form_ai_load_form, name="form_ai_load_form"),
+    path("form_ai/download/<str:form_uuid>/", form_ai_download, name="form_ai_download"),
+    path("form_ai/save/", form_ai_save, name="form_ai_save"),
     path("", include(router.urls)),
 ]
 # External Auth

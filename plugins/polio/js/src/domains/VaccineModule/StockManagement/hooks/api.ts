@@ -26,7 +26,7 @@ import {
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
-import { FormAFormValues } from '../StockVariation/Modals/CreateEditFormA';
+import { FormAFormValues } from '../StockVariation/types';
 import {
     DosesPerVialDropdown,
     StockManagementDetailsParams,
@@ -352,7 +352,7 @@ export const useCampaignOptions = (
     }, [campaignOptions, isFetching, roundOptions, roundNumberOptions]);
 };
 
-const createEditFormA = async (body: any) => {
+export const createEditFormA = async (body: any) => {
     const copy = { ...body };
     const { lot_numbers } = body;
     if (lot_numbers && !Array.isArray(lot_numbers)) {
@@ -360,11 +360,17 @@ const createEditFormA = async (body: any) => {
         copy.lot_numbers = lotNumbersArray;
     }
 
+    // Drop only `undefined` (= "field not set") so explicit `null` is forwarded
+    // as an intentional clear for nullable JSON fields (e.g. form_a_reception_date).
+    // `file` is excluded unconditionally because it travels via multipart below, not
+    // JSON — sending `file: null` here would not clear it server-side (the DRF
+    // FileField has no allow_null and would reject it anyway). The only supported
+    // "clear file" path today is the received→temporary status transition, which
+    // the backend serializer self-clears in `update()`.
     const filteredParams = copy
         ? Object.fromEntries(
               Object.entries(copy).filter(
-                  ([key, value]) =>
-                      value !== undefined && value !== null && key !== 'file',
+                  ([key, value]) => value !== undefined && key !== 'file',
               ),
           )
         : {};
@@ -373,10 +379,13 @@ const createEditFormA = async (body: any) => {
         url: `${modalUrl}outgoing_stock_movement/`,
         data: filteredParams,
     };
+    const isNewFileUpload =
+        Array.isArray(copy?.file) &&
+        copy?.file.length > 0 &&
+        copy?.file[0] instanceof File;
 
-    if (copy?.file) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-        const { files, ...data } = filteredParams;
+    if (isNewFileUpload) {
+        const { files: _files, ...data } = filteredParams;
         const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;

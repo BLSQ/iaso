@@ -1,4 +1,4 @@
-from django.db.models import FilteredRelation, Prefetch, Q
+from django.db.models import Exists, FilteredRelation, OuterRef, Prefetch, Q
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -111,7 +111,10 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
                     ValidationNodeTemplate.objects.annotate(
                         active_nodes=FilteredRelation(
                             "validationnode",
-                            condition=Q(validationnode__created_at__gte=most_recent_new_version.created_at),
+                            condition=Q(
+                                validationnode__created_at__gte=most_recent_new_version.created_at,
+                                validationnode__instance=obj,
+                            ),
                         )
                     )
                     .prefetch_related(
@@ -125,8 +128,29 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
                     ValidationNodeTemplate.objects.prefetch_related(
                         "validationnode_set", Prefetch("roles_required", UserRole.objects.select_related("group"))
                     )
-                    .filter(can_skip_previous_nodes=True, workflow=obj.form.validation_workflow)
-                    .filter(Q(validationnode__isnull=True) | Q(validationnode__status=ValidationNodeStatus.UNKNOWN))
+                    .filter(
+                        can_skip_previous_nodes=True,
+                        workflow=obj.form.validation_workflow,
+                    )
+                    .filter(
+                        Q(
+                            ~Exists(
+                                ValidationNode.objects.filter(
+                                    instance=obj,
+                                    node=OuterRef("pk"),
+                                )
+                            )
+                        )
+                        | Q(
+                            Exists(
+                                ValidationNode.objects.filter(
+                                    instance=obj,
+                                    node=OuterRef("pk"),
+                                    status=ValidationNodeStatus.UNKNOWN,
+                                )
+                            )
+                        )
+                    )
                 )
 
         return NextByPassSerializer(qs, many=True).data

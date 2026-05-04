@@ -24,7 +24,7 @@ from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
-from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
+from plugins.polio.api.vaccines.permissions import VaccineStockPermission, has_vaccine_stock_edit_access
 from plugins.polio.api.vaccines.stock_management import CampaignCategory
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 from plugins.polio.permissions import (
@@ -210,7 +210,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         return validated_data
 
     def get_can_edit(self, obj):
-        return can_edit_helper(
+        return has_vaccine_stock_edit_access(
             self.context["request"].user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
@@ -321,7 +321,7 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         return validated_data
 
     def get_can_edit(self, obj):
-        return can_edit_helper(
+        return has_vaccine_stock_edit_access(
             self.context["request"].user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
@@ -383,7 +383,7 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         setattr(pa, key, item[key])
 
                 if is_different:
-                    if can_edit_helper(
+                    if has_vaccine_stock_edit_access(
                         self.context["request"].user,
                         pa.created_at,
                         admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
@@ -439,7 +439,7 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                         setattr(ar, key, item[key])
 
                 if is_different:
-                    if can_edit_helper(
+                    if has_vaccine_stock_edit_access(
                         self.context["request"].user,
                         ar.created_at,
                         admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
@@ -588,7 +588,7 @@ class VaccineRequestFormDetailSerializer(ModelWithFileSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(
+        return has_vaccine_stock_edit_access(
             self.context["request"].user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
@@ -651,7 +651,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(
+        return has_vaccine_stock_edit_access(
             self.context["request"].user,
             obj.created_at,
             admin_perm=POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,

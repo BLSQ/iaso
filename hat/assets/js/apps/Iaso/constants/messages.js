@@ -26,6 +26,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    formAI: {
+        defaultMessage: 'Form AI',
+        id: 'iaso.formAI.title',
+    },
     formList: {
         defaultMessage: 'Form List',
         id: 'iaso.label.formList',
@@ -205,6 +209,10 @@ const MESSAGES = defineMessages({
     potentialPayments: {
         defaultMessage: 'Potential payments',
         id: 'iaso.payments.potentialPayments',
+    },
+    submissions: {
+        defaultMessage: 'Submissions',
+        id: 'iaso.label.submissions',
     },
     lots: {
         defaultMessage: 'Payments lots',

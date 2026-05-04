@@ -172,3 +172,8 @@ django-countries==8.2.0  # https://github.com/SmileyChris/django-countries/tags
 # Sass compiler for template styles.
 # ------------------------------------------------------------------------------
 libsass==0.23.0  # provides the 'sass' module used by compile_index_scss
+
+# AI / Form Copilot.
+# ------------------------------------------------------------------------------
+anthropic==0.52.0  # https://github.com/anthropics/anthropic-sdk-python/tags
+pydantic==2.11.3  # https://github.com/pydantic/pydantic/tags

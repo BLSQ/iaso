@@ -41,6 +41,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Email',
         id: 'iaso.label.email',
     },
+    date_joined: {
+        defaultMessage: 'Creation date',
+        id: 'iaso.label.dateJoined',
+    },
     newPassword: {
         defaultMessage: 'New password',
         id: 'iaso.users.newPassword',

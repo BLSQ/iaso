@@ -232,6 +232,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
     user_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
+    date_joined = serializers.SerializerMethodField(read_only=True)
     permissions = serializers.SerializerMethodField()
     user_permissions = serializers.SerializerMethodField()
     is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
@@ -263,6 +264,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
             "user_name",
             "last_name",
             "email",
+            "date_joined",
             "permissions",
             "user_permissions",
             "is_staff",
@@ -305,6 +307,10 @@ class ProfileRetrieveSerializer(ModelSerializer):
     @extend_schema_field(serializers.EmailField)
     def get_email(self, obj):
         return self._get_user_infos(obj).email
+
+    @extend_schema_field(serializers.DateField)
+    def get_date_joined(self, obj):
+        return self._get_user_infos(obj).date_joined
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_permissions(self, obj):

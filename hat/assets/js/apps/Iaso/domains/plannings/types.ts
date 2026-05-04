@@ -116,10 +116,13 @@ export type Team = {
     name: string;
     color: string;
 };
+export type PlanningOrgUnitAssignmentType = 'team' | 'user';
+
 export type PaginatedAssignment = {
     id: number;
-    user: User;
-    team: Team;
+    user: User | null;
+    team: Team | null;
+    assignment_type: PlanningOrgUnitAssignmentType | null;
 };
 
 export type PaginatedPlanningOrgUnit = {

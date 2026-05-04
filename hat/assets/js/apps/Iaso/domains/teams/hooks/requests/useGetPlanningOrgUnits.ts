@@ -12,20 +12,20 @@ export const tableDefaults = {
     page: 1,
     order: '-name',
 };
+
 export const useGetPlanningOrgUnitsChildren = (
     planningId: string,
     params?: AssignmentParams,
 ): UseQueryResult<PlanningOrgUnits[], Error> => {
     const apiParams = {
-        planning: planningId,
         search: params?.search,
     };
     const url = makeUrlWithParams(
-        '/api/microplanning/orgunits/children/',
+        `/api/microplanning/plannings/${planningId}/orgunits/children/`,
         apiParams,
     );
     return useSnackQuery({
-        queryKey: ['planningChildrenOrgUnits', apiParams],
+        queryKey: ['planningChildrenOrgUnits', planningId, apiParams],
         queryFn: () => getRequest(url),
         options: {
             enabled: Boolean(planningId),
@@ -38,9 +38,7 @@ export const useGetPlanningOrgUnitsChildren = (
 export const useGetPlanningOrgUnitsRoot = (
     planningId: string,
 ): UseQueryResult<PlanningOrgUnits, Error> => {
-    const url = makeUrlWithParams('/api/microplanning/orgunits/root/', {
-        planning: planningId,
-    });
+    const url = `/api/microplanning/plannings/${planningId}/orgunits/root/`;
     return useSnackQuery({
         queryKey: ['planningRootOrgUnit', planningId],
         queryFn: () => getRequest(url),
@@ -54,22 +52,23 @@ export const useGetPlanningOrgUnitsRoot = (
 };
 
 export const useGetPlanningOrgUnitsChildrenPaginated = (
-    planningId?: number,
+    planningId?: string,
     params?: AssignmentParams,
 ): UseQueryResult<PaginatedPlanningOrgUnits, Error> => {
     const apiParams = {
-        planning: planningId,
         limit: params?.pageSize ?? tableDefaults.limit,
         page: params?.page ?? tableDefaults.page,
         order: tableDefaults.order,
         search: params?.search,
     };
-    const url = makeUrlWithParams(
-        '/api/microplanning/orgunits/children-paginated/',
-        apiParams,
-    );
+    const url = Boolean(planningId)
+        ? makeUrlWithParams(
+              `/api/microplanning/plannings/${planningId}/orgunits/children-paginated/`,
+              apiParams,
+          )
+        : '';
     return useSnackQuery({
-        queryKey: ['planningChildrenOrgUnitsPaginated', apiParams],
+        queryKey: ['planningChildrenOrgUnitsPaginated', planningId, apiParams],
         queryFn: () => getRequest(url),
         options: {
             enabled: Boolean(planningId),

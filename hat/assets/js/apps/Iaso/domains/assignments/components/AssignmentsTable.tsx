@@ -7,7 +7,7 @@ import {
     tableDefaults,
 } from 'Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits';
 import { SxStyles } from 'Iaso/types/general';
-import { PaginatedPlanningOrgUnit, Planning } from '../../plannings/types';
+import { PaginatedPlanningOrgUnit } from '../../plannings/types';
 import { SubTeam, User } from '../../teams/types/team';
 import { defaultHeight } from '../constants/ui';
 import { useGetColumns } from '../hooks/useGetColumns';
@@ -40,7 +40,6 @@ const styles: SxStyles = {
 };
 
 type Props = {
-    planning?: Planning;
     params: AssignmentParams;
     canAssign: boolean;
     handleSaveAssignment: (orgUnitId: number) => void;
@@ -50,7 +49,6 @@ type Props = {
 };
 
 export const AssignmentsTable: FunctionComponent<Props> = ({
-    planning,
     params,
     canAssign,
     handleSaveAssignment,
@@ -59,7 +57,7 @@ export const AssignmentsTable: FunctionComponent<Props> = ({
     selectedTeam,
 }) => {
     const { data, isLoading } = useGetPlanningOrgUnitsChildrenPaginated(
-        planning?.id,
+        params.planningId,
         params,
     );
     const columns = useGetColumns();

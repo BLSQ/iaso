@@ -197,7 +197,6 @@ export const Assignments: FunctionComponent = () => {
                         )}
                         {tab === 'list' && (
                             <AssignmentsTable
-                                planning={planning}
                                 params={params}
                                 canAssign={canAssign}
                                 handleSaveAssignment={handleSaveAssignment}

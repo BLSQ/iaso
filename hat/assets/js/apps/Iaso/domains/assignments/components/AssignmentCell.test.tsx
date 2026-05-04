@@ -9,6 +9,7 @@ describe('AssignmentCell', () => {
     it('renders a user chip when the assignment has a user', () => {
         const assignment = {
             id: 1,
+            assignment_type: 'user' as const,
             user: {
                 id: 10,
                 username: 'jdoe',
@@ -16,11 +17,7 @@ describe('AssignmentCell', () => {
                 last_name: 'Doe',
                 color: '#336699',
             },
-            team: {
-                id: 99,
-                name: 'Ignored',
-                color: '#000000',
-            },
+            team: null,
         } as PaginatedAssignment;
 
         renderWithThemeAndIntlProvider(<AssignmentCell value={assignment} />);
@@ -31,6 +28,8 @@ describe('AssignmentCell', () => {
     it('renders a team chip when the assignment has no user but has a team', () => {
         const assignment = {
             id: 2,
+            assignment_type: 'team' as const,
+            user: null,
             team: {
                 id: 3,
                 name: 'Field team',
@@ -50,7 +49,12 @@ describe('AssignmentCell', () => {
     });
 
     it('renders the text placeholder when assignment has neither user nor team', () => {
-        const assignment = { id: 3 } as PaginatedAssignment;
+        const assignment = {
+            id: 3,
+            user: null,
+            team: null,
+            assignment_type: null,
+        } as PaginatedAssignment;
 
         renderWithThemeAndIntlProvider(<AssignmentCell value={assignment} />);
 

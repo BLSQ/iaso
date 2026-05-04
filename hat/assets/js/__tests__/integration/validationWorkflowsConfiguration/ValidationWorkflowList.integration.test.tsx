@@ -1,11 +1,12 @@
 import React from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
+
 import { axe } from 'jest-axe';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 import { expect, describe } from 'vitest';
+import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import { ValidationWorkflowListResponseItem } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { renderWithTheme } from '../../../tests/helpers';
@@ -34,12 +35,12 @@ const { mockUseDeleteWorkflow } = vi.hoisted(() => {
     return { mockUseDeleteWorkflow: vi.fn() };
 });
 
-vi.mock('Iaso/domains/instances/validationWorkflow/api/Get', () => ({
+vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Get', () => ({
     useGetSubmissionValidationWorkflows:
         mockUseGetSubmissionValidationWorkflows,
 }));
 
-vi.mock('Iaso/domains/instances/validationWorkflow/api/Delete', () => ({
+vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Delete', () => ({
     useDeleteWorkflow: () => ({
         mutationFn: mockUseDeleteWorkflow,
         mutateAsync: mockUseDeleteWorkflow,
@@ -84,7 +85,7 @@ describe('Validation workflow list UI integration test', () => {
         renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
@@ -93,7 +94,7 @@ describe('Validation workflow list UI integration test', () => {
             () => {
                 expect(
                     screen.getByRole('heading', {
-                        name: 'Configure validation of submissions',
+                        name: 'Configure validation workflows',
                     }),
                 ).toBeInTheDocument();
                 expect(screen.queryByText('No result')).toBeNull();
@@ -114,14 +115,14 @@ describe('Validation workflow list UI integration test', () => {
         renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
 
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
         expect(screen.getByText('No result')).toBeInTheDocument();
@@ -137,13 +138,13 @@ describe('Validation workflow list UI integration test', () => {
         renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
 
@@ -184,14 +185,14 @@ describe('Validation workflow list UI integration test', () => {
         const { rerender } = renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
 
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
 
@@ -205,14 +206,14 @@ describe('Validation workflow list UI integration test', () => {
         expect(screen.getByRole('link', { name: '' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: '' })).toHaveAttribute(
             'href',
-            `/forms/submissions/validation/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
+            `/validation-workflows/configuration/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
         );
 
         expect(
             screen.getByTestId('SettingsIcon').parentElement,
         ).toHaveAttribute(
             'href',
-            `/forms/submissions/validation/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
+            `/validation-workflows/configuration/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
         );
 
         currentUser = currentUserFactory.build({
@@ -224,14 +225,14 @@ describe('Validation workflow list UI integration test', () => {
         rerender(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
 
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
 
@@ -260,14 +261,14 @@ describe('Validation workflow list UI integration test', () => {
         renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
 
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
 
@@ -308,7 +309,7 @@ describe('Validation workflow list UI integration test', () => {
         renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
@@ -318,7 +319,7 @@ describe('Validation workflow list UI integration test', () => {
         ).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Create' })).toHaveAttribute(
             'href',
-            '/forms/submissions/validation/detail/',
+            '/validation-workflows/configuration/detail/',
         );
 
         // it shouldn't be disabled as the router handles the perm there
@@ -344,14 +345,14 @@ describe.todo('Validation workflow list accessibility', () => {
         const { container } = renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
 
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
         expect(screen.queryByText('No result')).toBeNull();
@@ -370,14 +371,14 @@ describe.todo('Validation workflow list accessibility', () => {
         const { container } = renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
 
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
         expect(screen.queryByText('No result')).toBeNull();
@@ -395,14 +396,14 @@ describe.todo('Validation workflow list accessibility', () => {
         const { container } = renderWithTheme(
             <MemoryRouter>
                 <IntlProvider locale={'en'}>
-                    <SubmissionValidation />
+                    <ValidationWorkflowsConfiguration />
                 </IntlProvider>
             </MemoryRouter>,
         );
 
         expect(
             screen.getByRole('heading', {
-                name: 'Configure validation of submissions',
+                name: 'Configure validation workflows',
             }),
         ).toBeInTheDocument();
         expect(screen.getByText('No result')).toBeInTheDocument();

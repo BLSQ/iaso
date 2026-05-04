@@ -24,7 +24,7 @@ const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
     return { mockUseGetWorkflowOptions: vi.fn() };
 });
 
-vi.mock('Iaso/domains/instances/validationWorkflow/api/Get', () => ({
+vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Get', () => ({
     useGetWorkflowOptions: mockUseGetWorkflowOptions,
 }));
 

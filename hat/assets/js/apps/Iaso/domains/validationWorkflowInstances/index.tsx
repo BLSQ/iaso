@@ -1,7 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/system';
-// import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';

@@ -17,11 +17,9 @@ from iaso.api.common import (
     DeletionFilterBackend,
     HasPermission,
     ModelViewSet,
-    Paginator,
     ReadOnlyOrHasPermission,
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.api.query_params import LIMIT, PAGE
 from iaso.models.microplanning import Assignment, Planning
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
@@ -30,6 +28,7 @@ from .filters import (
     PlanningSearchFilterBackend,
     PublishingStatusFilterBackend,
 )
+from .pagination import PlanningOrgUnitChildrenPagination
 from .serializers import (
     AssignmentSerializer,
     AuditAssignmentSerializer,
@@ -46,13 +45,6 @@ from .serializers import (
     PlanningSamplingResultWriteSerializer,
     PlanningWriteSerializer,
 )
-
-
-class PlanningOrgUnitChildrenPagination(Paginator):
-    page_size_query_param = LIMIT
-    page_query_param = PAGE
-    page_size = 50
-    max_page_size = 500
 
 
 @extend_schema(tags=["Micro plannings", "Org units", "Plannings"])

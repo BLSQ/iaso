@@ -33,14 +33,6 @@ const timelineContentSx = {
     backgroundColor: 'rgba(0, 0, 0, 0.04)',
 };
 
-const timelineLineSx = {
-    width: 0,
-    flexShrink: 0,
-    alignSelf: 'stretch',
-    my: 0.5,
-    borderLeft: '3px dashed rgba(0, 0, 0, 0.32)',
-};
-
 const timelineBodySx = {
     flex: 1,
     display: 'flex',
@@ -172,7 +164,6 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
                                         }}
                                     >
                                         <Box sx={timelineContentSx}>
-                                            <Box sx={timelineLineSx} />
                                             <Box sx={timelineBodySx}>
                                                 {formatStepContent(step)}
                                                 {step.canValidate && (

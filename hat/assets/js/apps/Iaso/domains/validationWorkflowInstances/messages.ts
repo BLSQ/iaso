@@ -53,7 +53,7 @@ const MESSAGES = defineMessages({
     },
 
     statusPending: {
-        defaultMessage: 'Approved',
+        defaultMessage: 'Pending',
         id: 'iaso.workflows.instance.status.pending',
     },
     userHasBeenInvolvedTooltip: {

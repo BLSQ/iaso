@@ -477,14 +477,14 @@ export const useMenuItems = (): MenuItems => {
             key: 'validation-workflows',
             subMenu: [
                 {
-                    label: 'Configuration',
+                    label: formatMessage(MESSAGES.configuration),
                     key: 'configuration',
                     permissions:
                         paths.validationWorkflowConfigurationPath.permissions,
                     icon: props => <Settings {...props} />,
                 },
                 {
-                    label: 'Submissions',
+                    label: formatMessage(MESSAGES.submissionsTitle),
                     key: 'submissions',
                     permissions: paths.instancesPath.permissions,
                     icon: props => <SearchIcon {...props} />,

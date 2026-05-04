@@ -70,8 +70,7 @@ class PlanningOrgunitsViewSet(AuditMixin, GenericViewSet):
     ordering_fields = ["id", "name"]
     ordering = ["id"]
 
-    def pagination_class(self):
-        return PlanningOrgUnitChildrenPagination(self.results_key)
+    pagination_class = PlanningOrgUnitChildrenPagination
 
     @action(detail=False, methods=["get"])
     def children(self, request, *args, **kwargs):

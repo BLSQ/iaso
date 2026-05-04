@@ -20,18 +20,10 @@ const mockUseGetPlanningOrgUnitsChildrenPaginated = vi.fn();
 vi.mock('Iaso/domains/teams/hooks/requests/useGetPlanningOrgUnits', () => ({
     tableDefaults: { limit: 20, page: 1, order: '-name' },
     useGetPlanningOrgUnitsChildrenPaginated: (
-        planningId?: number,
+        planningId?: string,
         params?: unknown,
     ) => mockUseGetPlanningOrgUnitsChildrenPaginated(planningId, params),
 }));
-
-const minimalPlanning = {
-    id: 7,
-    name: 'Plan',
-    forms: [] as number[],
-    pipeline_uuids: [] as string[],
-    assignments_count: 0,
-};
 
 const defaultParams = {
     planningId: '7',
@@ -59,7 +51,6 @@ describe('AssignmentsTable', () => {
     it('passes org unit rows and pagination from the query into the table', () => {
         renderWithThemeAndIntlProvider(
             <AssignmentsTable
-                planning={minimalPlanning}
                 params={defaultParams}
                 canAssign
                 handleSaveAssignment={vi.fn()}
@@ -68,7 +59,7 @@ describe('AssignmentsTable', () => {
         );
 
         expect(mockUseGetPlanningOrgUnitsChildrenPaginated).toHaveBeenCalledWith(
-            7,
+            '7',
             defaultParams,
         );
 
@@ -99,7 +90,6 @@ describe('AssignmentsTable', () => {
 
         const { rerender } = renderWithThemeAndIntlProvider(
             <AssignmentsTable
-                planning={minimalPlanning}
                 params={defaultParams}
                 canAssign
                 handleSaveAssignment={vi.fn()}
@@ -124,7 +114,6 @@ describe('AssignmentsTable', () => {
 
         rerender(
             <AssignmentsTable
-                planning={minimalPlanning}
                 params={defaultParams}
                 canAssign
                 handleSaveAssignment={vi.fn()}
@@ -143,7 +132,6 @@ describe('AssignmentsTable', () => {
 
         const { rerender } = renderWithThemeAndIntlProvider(
             <AssignmentsTable
-                planning={minimalPlanning}
                 params={defaultParams}
                 canAssign
                 handleSaveAssignment={handleSave}
@@ -160,7 +148,6 @@ describe('AssignmentsTable', () => {
 
         rerender(
             <AssignmentsTable
-                planning={minimalPlanning}
                 params={defaultParams}
                 canAssign={false}
                 handleSaveAssignment={handleSave}
@@ -187,7 +174,6 @@ describe('AssignmentsTable', () => {
 
         renderWithThemeAndIntlProvider(
             <AssignmentsTable
-                planning={minimalPlanning}
                 params={defaultParams}
                 canAssign={false}
                 handleSaveAssignment={vi.fn()}

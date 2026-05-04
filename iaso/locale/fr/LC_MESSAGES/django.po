@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-28 09:32+0000\n"
+"POT-Creation-Date: 2026-05-04 09:35+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -179,6 +179,10 @@ msgstr "Le CSV doit avoir au moins une ligne avec des valeurs."
 #: iaso/api/metrics/serializers.py
 msgid "The following org unit IDs do not exist: "
 msgstr "Ces IDs d'org unit n'existent pas:"
+
+#: iaso/api/microplanning/views.py
+msgid "Planning id is required in the URL path."
+msgstr "L'ID du planning est requis dans le chemin de l'URL."
 
 #: iaso/api/microplanning/views.py
 msgid "Planning is missing sampling group or target org unit scope"

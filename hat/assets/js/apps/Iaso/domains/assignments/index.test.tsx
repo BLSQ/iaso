@@ -281,7 +281,6 @@ describe('Assignments page', () => {
 
         expect(captureTableProps.mock.calls[0][0]).toMatchObject({
             canAssign: false,
-            planning: minimalPlanning,
             params: defaultParams,
         });
     });

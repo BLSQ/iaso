@@ -406,6 +406,7 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
             "reason": data.get("reason", ""),
         }
 
+    @transaction.atomic
     def create(self, validated_data):
         e1 = validated_data["entity1"]
         e2 = validated_data["entity2"]

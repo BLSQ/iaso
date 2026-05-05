@@ -1,8 +1,10 @@
 from django.db.models import Exists, OuterRef, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, mixins, permissions, serializers, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import CursorPagination, PageNumberPagination
+from rest_framework.response import Response
 
 from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
 from iaso.api.query_params import LIMIT, PAGE
@@ -197,6 +199,7 @@ class MobileEntityCursorPagination(CursorPagination):
     """Cursor pagination for the MobileEntityViewSet using 'id' for ordering."""
 
     page_size = 1000
+    page_size_query_param = "limit"
     ordering = "id"
     cursor_query_param = "cursor"
 
@@ -280,6 +283,11 @@ class InternalMobileEntityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
         )
 
         return queryset
+
+    @action(detail=False, methods=["get"])
+    def count(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        return Response({"count": queryset.count()})
 
 
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):

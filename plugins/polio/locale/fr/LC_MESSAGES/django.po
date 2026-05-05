@@ -462,6 +462,14 @@ msgid "Created"
 msgstr "Créé"
 
 #: plugins/polio/models/base.py
+msgid "Temporary"
+msgstr "Temporaire"
+
+#: plugins/polio/models/base.py
+msgid "Received"
+msgstr "Reçu"
+
+#: plugins/polio/models/base.py
 msgid "Used"
 msgstr "Utilisé"
 

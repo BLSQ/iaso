@@ -15,8 +15,6 @@ type Props = {
     xformXml: string | null;
 };
 
-const ODK_PREVIEW_BASE = '/static/odk-preview/index.html';
-
 export const FormPreview: FunctionComponent<Props> = ({
     xlsformUuid,
     xformXml,
@@ -87,7 +85,7 @@ export const FormPreview: FunctionComponent<Props> = ({
                     <iframe
                         key={iframeKey}
                         ref={iframeRef}
-                        src={ODK_PREVIEW_BASE}
+                        src={`${window.STATIC_URL ?? '/static/'}odk-preview/index.html`}
                         title="ODK Form Preview"
                         onLoad={handleIframeLoad}
                         style={{

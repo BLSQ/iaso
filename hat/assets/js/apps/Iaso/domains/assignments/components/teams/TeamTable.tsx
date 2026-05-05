@@ -86,6 +86,7 @@ export const TeamTable: FunctionComponent<Props> = ({
         },
         [assignments],
     );
+    const assigneeRadioGroupName = `assignee-${planningId}`;
     return (
         <>
             <Paper sx={styles.paper}>
@@ -131,13 +132,15 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         subTeam => (
                                             <AssigneeRow
                                                 key={subTeam.id}
+                                                radioGroupName={assigneeRadioGroupName}
                                                 isActive={
                                                     selectedTeam?.id ===
                                                     subTeam.id
                                                 }
-                                                setSelectedRow={() =>
-                                                    setSelectedTeam(subTeam)
-                                                }
+                                                setSelectedRow={() => {
+                                                    setSelectedTeam(subTeam);
+                                                    setSelectedUser(undefined);
+                                                }}
                                                 currentColor={subTeam?.color}
                                                 displayName={subTeam?.name}
                                                 count={countTeams(subTeam)}
@@ -161,12 +164,14 @@ export const TeamTable: FunctionComponent<Props> = ({
                                         .map(user => (
                                             <AssigneeRow
                                                 key={user.id}
+                                                radioGroupName={assigneeRadioGroupName}
                                                 isActive={
                                                     selectedUser?.id === user.id
                                                 }
-                                                setSelectedRow={() =>
-                                                    setSelectedUser(user)
-                                                }
+                                                setSelectedRow={() => {
+                                                    setSelectedUser(user);
+                                                    setSelectedTeam(undefined);
+                                                }}
                                                 currentColor={user?.color}
                                                 count={assignmentsCountForUser(
                                                     user,

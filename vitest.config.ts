@@ -13,28 +13,30 @@ import {
 } from './hat/assets/js/apps/Iaso/bundle/generators.js';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-const LIB_PATH: string = path.join(__dirname, './hat')
+const LIB_PATH: string = path.join(__dirname, './hat');
 const combinedTranslationsPath = generateCombinedTranslations(LIB_PATH);
 const combinedConfigPath = generateCombinedConfig(LIB_PATH);
 const pluginKeysPath = generatePluginKeysFile(LIB_PATH);
 const languageConfigsPath = generateLanguageConfigs(LIB_PATH);
 
-
 export default defineConfig({
-    plugins: [
-        react(),
-        tsconfigPaths()
-    ],
+    plugins: [react(), tsconfigPaths()],
     test: {
-        dir: './hat/assets/js/',
         globals: true,
         environment: 'jsdom',
         include: [
-            '**/*.test.{ts,tsx}',
-            '__tests__/integration/**/*.integration.test.{ts,tsx}'
+            'hat/assets/js/**/*.test.{ts,tsx}',
+            'hat/assets/js/__tests__/integration/**/*.integration.test.{ts,tsx}',
+            'plugins/**/js/**/*.test.{ts,tsx}',
         ],
         setupFiles: ['./hat/assets/js/tests/setup.ts'],
-        exclude: [...configDefaults.exclude, '**/build/', '**/dist/', '**/*.min.js', '**/playwright/**'],
+        exclude: [
+            ...configDefaults.exclude,
+            '**/build/',
+            '**/dist/',
+            '**/*.min.js',
+            '**/playwright/**',
+        ],
         coverage: {
             provider: 'v8',
             include: ['apps/**'],
@@ -43,7 +45,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            'Iaso': path.resolve(LIB_PATH, 'assets', 'js', 'apps', 'Iaso'),
+            Iaso: path.resolve(LIB_PATH, 'assets', 'js', 'apps', 'Iaso'),
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,
             'IasoModules/translations/configs': combinedTranslationsPath,

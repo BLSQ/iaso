@@ -7,6 +7,8 @@ import zipfile
 
 from unittest import mock
 
+import requests
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -34,6 +36,8 @@ def mocked_iaso_client_get(*args, **kwargs):
         return {"form_versions": []}
     if url.startswith("/api/formattachments/"):
         return {"results": []}
+    if url.startswith("/api/internal/entities/count/"):
+        return {"count": 1}
     if url.startswith("/api/internal/entities/"):
         return {
             "next": None,
@@ -237,7 +241,7 @@ class DownloadFormAttachmentsTest(TestCase):
             ]
         }
         zipf = MockZip()
-        _get_resource(iaso_client_mock, call, zipf, self.app_id, [], {}, lambda _: _)
+        _get_resource(iaso_client_mock, call, zipf, self.app_id, [], {}, mock.MagicMock(), 0, 10)
 
         self.assertIn("formattachments.json", zipf.captured_files)
         result = json.loads(zipf.captured_files["formattachments.json"])
@@ -254,16 +258,17 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
             "required_feature_flag": "ENTITY",
             "filename": "entities",
             "paginated": True,
-            "cursor_pagination": {"shim": True, "legacy_url": "/api/mobile/entities/"},
+            "cursor_pagination": {"shim": True, "count_url": "/api/internal/entities/count/"},
         }
         self.app_id = "org.test.app"
         self.feature_flags = ["ENTITY"]
 
-    def test_strip_visited_at(self):
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._call_endpoint")
+    def test_strip_visited_at(self, mock_call_endpoint):
         """SLEEP-1698: Test that `visited_at` is set to null when `strip_visited_at` options is set."""
 
         iaso_client_mock = mock.MagicMock()
-        iaso_client_mock.get.side_effect = [
+        mock_call_endpoint.side_effect = [
             {"count": 4},
             {
                 "next": None,
@@ -284,7 +289,17 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
             "strip_visited_at": True,
         }
         zipf_mock = MockZip()
-        _get_resource(iaso_client_mock, self.call, zipf_mock, self.app_id, self.feature_flags, options, lambda _: _)
+        _get_resource(
+            iaso_client_mock,
+            self.call,
+            zipf_mock,
+            self.app_id,
+            self.feature_flags,
+            options,
+            mock.MagicMock(),
+            base_progress=0,
+            sub_steps=10,
+        )
         self.assertIn("entities-1.json", zipf_mock.captured_files)
         expected = {
             "instances": [
@@ -306,7 +321,7 @@ class CursorPaginationShimTest(TestCase):
             "required_feature_flag": "ENTITY",
             "filename": "entities",
             "paginated": True,
-            "cursor_pagination": {"shim": True, "legacy_url": "/api/mobile/entities/"},
+            "cursor_pagination": {"shim": True, "count_url": "/api/internal/entities/count/"},
         }
         self.app_id = "org.test.app"
 
@@ -382,3 +397,123 @@ class CursorPaginationShimTest(TestCase):
         self.assertTrue(result2["has_previous"])
 
         self.assertEqual(mock_call_endpoint.call_count, 3)
+
+
+class RetryMechanismTest(TestCase):
+    """Test task retries when external calls fail."""
+
+    def setUp(self):
+        self.iaso_client = mock.MagicMock()
+        self.url = "http://test.com/api/resource/"
+        self.filename = "test_resource.json"
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user.time.sleep")
+    def test_call_endpoint_success_after_failure(self, mock_sleep):
+        from iaso.tasks.export_mobile_app_setup_for_user import _call_endpoint
+
+        self.iaso_client.get.side_effect = [Exception("Failure"), {"results": []}]
+
+        result = _call_endpoint(self.iaso_client, self.url, self.filename, max_retries=3, delay=1)
+
+        self.assertEqual(result, {"results": []})
+        self.assertEqual(self.iaso_client.get.call_count, 2)
+        self.assertEqual(mock_sleep.call_count, 1)
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user.time.sleep")
+    def test_call_endpoint_total_failure(self, mock_sleep):
+        from iaso.tasks.export_mobile_app_setup_for_user import _call_endpoint
+
+        self.iaso_client.get.side_effect = Exception("Failure")
+
+        with self.assertRaises(Exception):
+            _call_endpoint(self.iaso_client, self.url, self.filename, max_retries=3, delay=1)
+
+        self.assertEqual(self.iaso_client.get.call_count, 3)
+        self.assertEqual(mock_sleep.call_count, 2)
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user.requests.get")
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user.time.sleep")
+    def test_requests_get_with_retry_success_after_failure(self, mock_sleep, mock_requests_get):
+        from iaso.tasks.export_mobile_app_setup_for_user import _requests_get
+
+        mock_response = mock.MagicMock()
+        mock_response.raise_for_status.return_value = None
+
+        mock_requests_get.side_effect = [requests.exceptions.RequestException("Failure"), mock_response]
+
+        result = _requests_get(self.url, max_retries=3, delay=1)
+
+        self.assertEqual(result, mock_response)
+        self.assertEqual(mock_requests_get.call_count, 2)
+        self.assertEqual(mock_sleep.call_count, 1)
+
+
+class ProgressReportingTest(TestCase):
+    """Test progress interpolation when api calls have substeps."""
+
+    def setUp(self):
+        self.task = mock.MagicMock()
+        self.iaso_client = mock.MagicMock()
+        self.call = {
+            "path": "/api/resource/",
+            "filename": "resource",
+            "paginated": True,
+            "page_size": 10,
+        }
+        self.app_id = "org.test.app"
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._call_endpoint")
+    def test_get_resource_progress_reporting_paginated(self, mock_call_endpoint):
+        from iaso.tasks.export_mobile_app_setup_for_user import _get_resource
+
+        mock_call_endpoint.side_effect = [
+            {"pages": 2, "has_next": True, "results": [{"id": 1}]},
+            {"pages": 2, "has_next": False, "results": [{"id": 2}]},
+        ]
+
+        zipf = MockZip()
+        _get_resource(
+            self.iaso_client,
+            self.call,
+            zipf,
+            self.app_id,
+            [],
+            {},
+            self.task,
+            base_progress=10,
+            sub_steps=100,
+        )
+
+        # Base progress is 10, sub_steps is 100.
+        # Page 1 progress: 10 + (1 * 100 / 2) = 60
+        # Page 2 progress: 10 + (2 * 100 / 2) = 110
+        self.task.report_progress_and_stop_if_killed.assert_has_calls(
+            [
+                mock.call(progress_value=60, progress_message="Fetching resource (page 1/2)"),
+                mock.call(progress_value=110, progress_message="Fetching resource (page 2/2)"),
+            ]
+        )
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._call_endpoint")
+    def test_get_resource_progress_reporting_non_paginated(self, mock_call_endpoint):
+        from iaso.tasks.export_mobile_app_setup_for_user import _get_resource
+
+        self.call["paginated"] = False
+        mock_call_endpoint.return_value = {"results": []}
+
+        zipf = MockZip()
+        _get_resource(
+            self.iaso_client,
+            self.call,
+            zipf,
+            self.app_id,
+            [],
+            {},
+            self.task,
+            base_progress=10,
+            sub_steps=50,
+        )
+
+        self.task.report_progress_and_stop_if_killed.assert_called_once_with(
+            progress_value=60, progress_message="Fetching resource"
+        )

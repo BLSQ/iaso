@@ -19,6 +19,7 @@ import logging
 import os
 import re
 import tempfile
+import time
 import uuid
 import zipfile
 
@@ -57,10 +58,16 @@ def export_mobile_app_setup_for_user(
     task=None,
 ):
     the_task = task
+
+    # Calculate total steps for progress reporting
+    total_steps = 2  # Two setup steps: app info and auth
+    for call in API_CALLS:
+        total_steps += call.get("sub_steps", 1)
+
     the_task.report_progress_and_stop_if_killed(
         progress_value=0,
         progress_message=_("Starting"),
-        end_value=len(API_CALLS) + 3,
+        end_value=total_steps,
     )
     user = User.objects.get(id=user_id)
     project = Project.objects.get(id=project_id)
@@ -68,6 +75,8 @@ def export_mobile_app_setup_for_user(
     # setup
     export_name = f"mobile-app-export-{uuid.uuid4()}"
     iaso_client = IasoClient(server_url=SERVER)
+
+    current_progress = 0
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_path = os.path.join(tmp_dir, export_name)
@@ -87,15 +96,21 @@ def export_mobile_app_setup_for_user(
             the_task.report_progress_and_stop_if_killed(progress_value=2)
 
             for call in API_CALLS:
-                the_task.report_progress_and_stop_if_killed(
-                    progress_value=the_task.progress_value + 1,
-                    progress_message=f"Fetching {call['filename']}",
+                sub_steps = call.get("sub_steps", 1)
+
+                _get_resource(
+                    iaso_client,
+                    call,
+                    zipf,
+                    project.app_id,
+                    feature_flags,
+                    options,
+                    the_task,
+                    current_progress,
+                    sub_steps,
                 )
-                task_callback = lambda message: the_task.report_progress_and_stop_if_killed(
-                    progress_value=the_task.progress_value,
-                    progress_message=message,
-                )
-                _get_resource(iaso_client, call, zipf, project.app_id, feature_flags, options, task_callback)
+
+                current_progress += sub_steps
 
         s3_object_name = _encrypt_and_upload_to_s3(tmp_dir, export_name, password)
 
@@ -159,7 +174,7 @@ class ZipFileWriter:
 def _get_project_app_details(iaso_client, zipf, app_id):
     logger.info("Getting app info (feature flags etc)")
     # Public endpoint, no auth needed
-    app_info = iaso_client.get(f"/api/apps/current/?app_id={app_id}")
+    app_info = _call_endpoint(iaso_client, f"/api/apps/current/?app_id={app_id}", "app_details")
 
     logger.info("App summary:")
     logger.info(f"\tName: {app_info['name']}")
@@ -192,13 +207,12 @@ def _get_cursor_pagination_metadata(iaso_client, call, app_id):
     """Retrieves total count for cursor pagination and calculates total pages."""
     page_size = call.get("page_size", DEFAULT_PAGE_SIZE)
 
-    # Retrieve total count from the legacy url
-    count_path = call["cursor_pagination"]["legacy_url"]
+    count_path = call["cursor_pagination"]["count_url"]
     count_query_params = {k: v for k, v in call.get("query_params", {}).items() if k not in ["limit", "page", "cursor"]}
     count_query_params["app_id"] = app_id
 
     count_url = urlunparse(("", "", count_path, "", urlencode(count_query_params), ""))
-    count_result = _call_endpoint(iaso_client, count_url, None)
+    count_result = _call_endpoint(iaso_client, count_url, f"{call['filename']}_count")
     total_count = count_result.get("count", 0)
 
     total_pages = (total_count + page_size - 1) // page_size
@@ -238,7 +252,7 @@ def _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state):
     return result, filename
 
 
-def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task_callback):
+def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task, base_progress, sub_steps):
     if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
         logger.info(f"{call['filename']}: not writing, feature flag missing.")
         return
@@ -307,10 +321,20 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task_
                     if "visited_at" in instance.get("json", []):
                         instance["json"]["visited_at"] = None
 
-        if page > 1 and page % 5 == 0:
-            # Provide a task update for long-running paginated resources.
-            count = call.get("page_size", DEFAULT_PAGE_SIZE) * page
-            task_callback(f"Fetching {call['filename']} ({count})...")
+        if paginated and result:
+            total_pages = result.get("pages") or 1
+            interpolated_progress = base_progress + int((page * sub_steps) / total_pages)
+            # Cap progress at base + sub_steps in case page exceeds total_pages
+            interpolated_progress = min(interpolated_progress, base_progress + sub_steps)
+
+            task.report_progress_and_stop_if_killed(
+                progress_value=interpolated_progress,
+                progress_message=f"Fetching {call['filename']} (page {page}/{total_pages})",
+            )
+        else:
+            task.report_progress_and_stop_if_killed(
+                progress_value=base_progress + sub_steps, progress_message=f"Fetching {call['filename']}"
+            )
 
         with zipf.open(filename) as json_file:
             json.dump(result, json_file)
@@ -325,20 +349,54 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task_
 # The URL is potentially an S3 signed URL, thus containing query params with
 # an AWS key, signature etc.
 # For this reason, we use `urlparse` to easily get a clean path without query params.
+def _requests_get(url, headers=None, max_retries=3, delay=10):
+    """Wraps requests.get with retry."""
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Request failed ({attempt + 1}/{max_retries}) for {url}: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(delay)
+            else:
+                raise
+
+
+def _call_endpoint(iaso_client, url, filename, max_retries=3, delay=10):
+    logger.info(f"{filename}: GET {url}")
+    for attempt in range(max_retries):
+        try:
+            result = iaso_client.get(url)
+
+            if isinstance(result, dict) and "count" in result:
+                logger.info(f"\tTotal count: {result['count']}")
+            if isinstance(result, dict) and "pages" in result:
+                logger.info(f"\tTotal pages: {result['pages']}")
+
+            return result
+        except Exception as e:
+            logger.warning(f"IasoClient request failed ({attempt + 1}/{max_retries}) for {url}: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(delay)
+            else:
+                raise
+
+
 def _extract_filename_from_url(url):
     return urlparse(url).path.split("/")[-1]
 
 
-def _call_endpoint(iaso_client, url, filename):
-    logger.info(f"{filename}: GET {url}")
-    result = iaso_client.get(url)
+def _update_manifest_download_urls(content: str, form_id: int) -> str:
+    url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
 
-    if isinstance(result, dict) and "count" in result:
-        logger.info(f"\tTotal count: {result['count']}")
-    if isinstance(result, dict) and "pages" in result:
-        logger.info(f"\tTotal pages: {result['pages']}")
+    def update_url(match):
+        original_url = match.group()
+        filename = _extract_filename_from_url(original_url)
+        return f"formattachments/{form_id}/{filename}"
 
-    return result
+    return re.sub(url_regex, update_url, content)
 
 
 def _download_form_attachments(iaso_client, zipf, resources, app_id):
@@ -355,9 +413,9 @@ def _download_form_attachments(iaso_client, zipf, resources, app_id):
         attachment_file = None
         # S3 urls contain a signature and don't work with additional auth headers
         if "s3.amazonaws" in url:
-            attachment_file = requests.get(url)
+            attachment_file = _requests_get(url)
         else:
-            attachment_file = requests.get(url, headers=iaso_client.headers)
+            attachment_file = _requests_get(url, headers=iaso_client.headers)
 
         with zipf.openb(os.path.join("formattachments", str(form_id), filename)) as f:
             f.write(attachment_file.content)
@@ -365,21 +423,14 @@ def _download_form_attachments(iaso_client, zipf, resources, app_id):
         if form_id not in downloaded_manifests:
             # For the manifest.xml, rewrite the `downloadUrl` to the local file path
             logger.info("\tDOWNLOAD manifest")
-            manifest_file = requests.get(
+            manifest_file = _requests_get(
                 SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
                 headers=iaso_client.headers,
             )
 
             with zipf.open(os.path.join("formattachments", str(form_id), "manifest.xml")) as f:
                 content = manifest_file.content.decode("utf-8")
-                url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
-
-                def update_url(match):
-                    original_url = match.group()
-                    filename = original_url.split("/")[-1]
-                    return f"formattachments/{form_id}/{filename}"
-
-                updated_content = re.sub(url_regex, update_url, content)
+                updated_content = _update_manifest_download_urls(content, form_id)
                 f.write(updated_content)
 
             downloaded_manifests.add(form_id)
@@ -419,10 +470,10 @@ def _download_and_save_file(iaso_client, zipf, folder_name, url, non_s3_url):
     # S3 urls contain a signature and don't work with additional auth headers
     if "s3.amazonaws" in url:
         logger.info(f"\tDOWNLOAD {url}")
-        response = requests.get(url)
+        response = _requests_get(url)
     else:
         logger.info(f"\tDOWNLOAD {non_s3_url}")
-        response = requests.get(non_s3_url, headers=iaso_client.headers)
+        response = _requests_get(non_s3_url, headers=iaso_client.headers)
 
     with zipf.openb(os.path.join(folder_name, filename)) as f:
         f.write(response.content)

@@ -41,7 +41,7 @@ jobs:
       - name: Use node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 22.18.0
 
       # https://github.com/npm/cli/issues/9151
       - name: upgrade npm

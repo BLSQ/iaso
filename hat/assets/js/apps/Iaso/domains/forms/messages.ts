@@ -747,6 +747,62 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.validationWorkflow',
         defaultMessage: 'Validation workflow',
     },
+    diffWarning: {
+        id: 'iaso.formversions.diffWarning',
+        defaultMessage:
+            'This version introduces structural changes compared to version {versionId}. ' +
+            'Removed or renamed questions will no longer appear in new submissions, and existing ' +
+            'submissions may be missing those fields. Changed question types may make previously ' +
+            'collected data unreadable.',
+    },
+    confirmRemovedQuestions: {
+        id: 'iaso.formversions.confirmRemovedQuestions',
+        defaultMessage: 'Confirm and save',
+    },
+    backToEdit: {
+        id: 'iaso.formversions.backToEdit',
+        defaultMessage: 'Back',
+    },
+    questionAdded: {
+        id: 'iaso.formversions.questionAdded',
+        defaultMessage: 'added',
+    },
+    questionRemoved: {
+        id: 'iaso.formversions.questionRemoved',
+        defaultMessage: 'removed or renamed',
+    },
+    questionModified: {
+        id: 'iaso.formversions.questionModified',
+        defaultMessage: 'type changed',
+    },
+    removedQuestionsSection: {
+        id: 'iaso.formversions.removedQuestionsSection',
+        defaultMessage: 'Removed or renamed questions ({count})',
+    },
+    modifiedQuestionsSection: {
+        id: 'iaso.formversions.modifiedQuestionsSection',
+        defaultMessage: 'Questions with changed type ({count})',
+    },
+    questionName: {
+        id: 'iaso.formversions.questionName',
+        defaultMessage: 'Name',
+    },
+    questionLabel: {
+        id: 'iaso.formversions.questionLabel',
+        defaultMessage: 'Label',
+    },
+    questionType: {
+        id: 'iaso.formversions.questionType',
+        defaultMessage: 'Type',
+    },
+    questionOldType: {
+        id: 'iaso.formversions.questionOldType',
+        defaultMessage: 'Previous type',
+    },
+    questionNewType: {
+        id: 'iaso.formversions.questionNewType',
+        defaultMessage: 'New type',
+    },
 });
 
 export default MESSAGES;

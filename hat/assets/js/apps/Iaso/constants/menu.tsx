@@ -4,6 +4,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BookIcon from '@mui/icons-material/Book';
 import CategoryIcon from '@mui/icons-material/Category';
 import CompareArrows from '@mui/icons-material/CompareArrows';
@@ -188,6 +189,12 @@ const menuItems = (
             icon: props => <ManageAccountsIcon {...props} />,
         });
     }
+    settingsSubMenu.push({
+        label: formatMessage(MESSAGES.apiImport),
+        key: 'apiImports',
+        permissions: paths.adminApiImportPath.permissions,
+        icon: props => <InventoryIcon {...props} />,
+    });
     return [
         {
             label: formatMessage(MESSAGES.formsTitle),
@@ -201,18 +208,17 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.formAI),
+                    permissions: paths.formAIPath.permissions,
+                    key: 'ai',
+                    icon: props => <AutoFixHighIcon {...props} />,
+                },
+                {
                     label: formatMessage(MESSAGES.submissionsTitle),
-                    key: 'submissions',
-                    icon: props => <Input {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.list),
-                            extraPath: `/tab/list/mapResults/${locationLimitMax}`,
-                            permissions: paths.instancesPath.permissions,
-                            key: 'list',
-                            icon: props => <FormatListBulleted {...props} />,
-                        },
-                    ],
+                    key: 'submissions/list',
+                    icon: props => <FormatListBulleted {...props} />,
+                    permissions: paths.instancesPath.permissions,
+                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
                 },
 
                 {
@@ -312,6 +318,7 @@ const menuItems = (
                     key: `${CHANGE_REQUEST_CONFIG}`,
                     icon: props => <CategoryIcon {...props} />,
                 },
+                
             ],
         },
         {
@@ -458,18 +465,28 @@ export const useMenuItems = (): MenuItems => {
         );
     }
 
+    // Hide Form AI in the main menu, under Forms when FORM_AI module is not activated
+    const hasFormAIModule = userHasAccessToModule('FORM_AI', currentUser);
+    if (!hasFormAIModule && basicItems?.length > 0) {
+        basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
+            item => item.key !== 'ai',
+        );
+    }
+
     // add feature flags
-    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)) {
-        const formsMenuEntry = basicItems.find(item => item.key === 'forms');
+    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)){
+        const validationMenuEntry = basicItems.find(
+            item => item.key === 'validation',
+        );
         if (
-            !formsMenuEntry?.subMenu?.find(
-                entry => entry.key === 'submissions/validation',
+            !validationMenuEntry?.subMenu?.find(
+                entry => entry.key === 'submissions',
             )
         ) {
-            formsMenuEntry?.subMenu?.push({
-                label: formatMessage(MESSAGES.validation),
-                permissions: paths.instancesPath.permissions,
-                key: 'submissions/validation',
+            validationMenuEntry?.subMenu?.push({
+                label: formatMessage(MESSAGES.submissions),
+                permissions: paths.instancesValidationPath.permissions,
+                key: 'submissions',
                 icon: props => <RuleIcon {...props} />,
             });
         }
@@ -508,6 +525,10 @@ export const useMenuItems = (): MenuItems => {
         }
         const authorizedItems = menuItemsTemp.filter(menuItem => {
             const permissionsList = listMenuPermission(menuItem);
+            // If not permission set on the menuItem, we consider that everyone has access to it
+            if (permissionsList.length === 0) {
+                return true;
+            }
             return userHasOneOfPermissions(permissionsList, currentUser);
         });
         if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {

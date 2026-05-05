@@ -12,7 +12,7 @@ export const fetchFormDetailsForInstance = (formId: number) => {
             'label_keys',
             'id',
             'org_unit_type_ids',
-        ],
+        ].join(','),
     }).toString();
 
     return getRequest(`/api/forms/${formId}/?${queryString}`);

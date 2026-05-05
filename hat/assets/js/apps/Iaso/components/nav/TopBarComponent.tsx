@@ -14,15 +14,16 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
+import { CurrentUserInfos } from 'Iaso/components/nav/CurrentUser';
 import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
-import { useSidebar } from '../../domains/app/contexts/SideBarContext';
-import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext';
-import { LangSwitch } from '../../domains/home/components/LangSwitch';
-import { useFindCustomComponent } from '../../plugins/hooks/customComponents';
-import { useCurrentUser } from '../../utils/usersUtils';
-import { CurrentUserInfos } from './CurrentUser/index';
-import { HomePageButton } from './HomePageButton';
-import { LogoutButton } from './LogoutButton';
+import { HomePageButton } from 'Iaso/components/nav/HomePageButton';
+import { LogoutButton } from 'Iaso/components/nav/LogoutButton';
+import { NotificationBadge } from 'Iaso/components/nav/NotificationBadge';
+import { useSidebar } from 'Iaso/domains/app/contexts/SideBarContext';
+import { ThemeConfigContext } from 'Iaso/domains/app/contexts/ThemeConfigContext';
+import { LangSwitch } from 'Iaso/domains/home/components/LangSwitch';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 const styles = (theme: Theme) => ({
     menuButton: {
@@ -159,9 +160,16 @@ const TopBar: FunctionComponent<Props> = ({
                                 alignItems="center"
                                 justifyContent="flex-end"
                             >
+                                <NotificationBadge />
+                            </Box>
+                            <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="flex-end"
+                            >
                                 <CurrentUserInfos
                                     currentUser={currentUser}
-                                    version={window.IASO_VERSION}
+                                    version={window.IASO_VERSION ?? ''}
                                 />
                             </Box>
 
@@ -169,11 +177,16 @@ const TopBar: FunctionComponent<Props> = ({
                                 <HomePageButton />
                             </Box>
 
-                            {(currentUser.is_staff === true && currentUser.is_superuser === true) && (
-                                <Box display="flex" justifyContent="center" pl={1}>
-                                    <DjangoAdminPanelButton />
-                                </Box>
-                            )}
+                            {currentUser.is_staff === true &&
+                                currentUser.is_superuser === true && (
+                                    <Box
+                                        display="flex"
+                                        justifyContent="center"
+                                        pl={1}
+                                    >
+                                        <DjangoAdminPanelButton />
+                                    </Box>
+                                )}
 
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />

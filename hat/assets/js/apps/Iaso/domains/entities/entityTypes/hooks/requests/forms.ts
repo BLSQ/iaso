@@ -13,7 +13,9 @@ export const useGetForms = (
     fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
     const queryString = createSearchParamsWithArray({
-        fields: fields ? ['id', 'name', 'latest_form_version', 'form_id'] : [],
+        fields:
+            fields ??
+            ['id', 'name', 'latest_form_version', 'form_id'].join(','),
         order: 'name',
     }).toString();
 
@@ -46,7 +48,11 @@ export const useGetFormForEntityType = ({
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         enabled && Boolean(formId),
-        ['possible_fields_with_latest_version', 'name', 'latest_form_version'],
+        [
+            'possible_fields_with_latest_version',
+            'name',
+            'latest_form_version',
+        ].join(','),
     );
     return {
         ...usePossibleFields(

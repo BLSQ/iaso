@@ -25,22 +25,20 @@ class ProfileCreateSerializer(ModelSerializer):
     user_name = serializers.CharField(required=True, write_only=True)
     user_roles = serializers.PrimaryKeyRelatedField(
         allow_empty=True,
-        allow_null=True,
         many=True,
         queryset=UserRole.objects.none(),
         required=False,
         error_messages={"does_not_exist": _("One or more user roles do not belong to the provided account.")},
     )
     projects = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, queryset=Project.objects.none(), required=False, many=True
+        allow_empty=True, queryset=Project.objects.none(), required=False, many=True
     )
     org_units = serializers.PrimaryKeyRelatedField(
-        allow_empty=True, allow_null=True, many=True, queryset=OrgUnit.objects.all(), required=False
+        allow_empty=True, many=True, queryset=OrgUnit.objects.all(), required=False
     )
     editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
         source="editable_org_unit_types",
         allow_empty=True,
-        allow_null=True,
         queryset=OrgUnitType.objects.all(),
         required=False,
         many=True,

@@ -43,8 +43,10 @@ jobs:
         with:
           node-version: 22.x
 
+      # https://github.com/npm/cli/issues/9151
       - name: upgrade npm
         run: |
+          npm install -g npm@~11.13.0
           npm install --global npm@latest
 
       - name: install dependencies

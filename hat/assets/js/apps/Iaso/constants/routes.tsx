@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react';
 
+import { ApiImports } from 'Iaso/domains/apiimports';
 import { WorkflowConfiguration } from 'Iaso/domains/instances/validationWorkflow/details/WorkflowConfiguration';
 import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
 import { PipelineList } from 'Iaso/domains/openHexa';
@@ -21,6 +22,7 @@ import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/Duplic
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
+import FormAI from '../domains/formAI';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
@@ -60,7 +62,10 @@ import { Details as UserDetails } from '../domains/users/details';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
-import { SHOW_PAGES } from '../utils/featureFlags';
+import {
+    SHOW_PAGES,
+    SUBMISSION_VALIDATION_WORKFLOW,
+} from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
 
@@ -103,6 +108,13 @@ export const formsPath = {
     isRootUrl: true,
 };
 
+export const formAIPath = {
+    baseUrl: baseUrls.formAI,
+    routerUrl: `${baseUrls.formAI}/*`,
+    permissions: [Permission.FORMS],
+    element: <FormAI />,
+};
+
 export const pagesPath = {
     baseUrl: baseUrls.pages,
     routerUrl: `${baseUrls.pages}/*`,
@@ -139,12 +151,14 @@ export const instancesValidationPath = {
     baseUrl: baseUrls.instanceValidation,
     routerUrl: `${baseUrls.instanceValidation}/*`,
     permissions: [Permission.VALIDATION_WORKFLOWS],
+    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
     element: <SubmissionValidation />,
 };
 export const instanceValidationDetailPath = {
     baseUrl: baseUrls.instanceValidationDetail,
     routerUrl: `${baseUrls.instanceValidationDetail}/*`,
     permissions: [Permission.VALIDATION_WORKFLOWS],
+    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
     element: <WorkflowConfiguration />,
 };
 
@@ -488,6 +502,12 @@ export const pipelineDetailsPath = {
     permissions: [],
     element: <PipelineDetails />,
 };
+export const adminApiImportPath = {
+    baseUrl: baseUrls.adminApiImport,
+    routerUrl: `${baseUrls.adminApiImport}/*`,
+    permissions: [Permission.ACCOUNT_MANAGEMENT],
+    element: <ApiImports />,
+};
 export const page401 = {
     baseUrl: baseUrls.error401,
     routerUrl: baseUrls.error401,
@@ -525,6 +545,7 @@ export const page500 = {
 
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
+    formAIPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,
@@ -586,4 +607,5 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     bonusPath,
     pipelineDetailsPath,
     pipelineListPath,
+    adminApiImportPath,
 ];

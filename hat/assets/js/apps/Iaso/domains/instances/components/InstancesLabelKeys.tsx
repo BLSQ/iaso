@@ -15,7 +15,7 @@ export const InstancesLabelKeys: FunctionComponent<Props> = ({
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         currentInstance?.form_id,
         undefined,
-        'name,label_keys,id,possible_fields',
+        ['name', 'label_keys', 'id', 'possible_fields'].join(','),
     );
     const getLabelKeyLabel = useCallback(
         (labelKey: string) => {

@@ -1,9 +1,11 @@
 from django.db.models import Prefetch, Q
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.org_unit_types.permissions import HasOrgUnitTypeWritePermission
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,
@@ -46,6 +48,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
     serializer_class = OrgUnitTypeSerializerV1
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
@@ -100,6 +103,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
     serializer_class = OrgUnitTypeSerializerV2
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)

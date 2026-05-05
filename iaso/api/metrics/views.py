@@ -34,7 +34,11 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
-        return MetricType.objects.filter(account=self.request.user.iaso_profile.account, is_utility=False)
+        queryset = MetricType.objects.filter(account=self.request.user.iaso_profile.account)
+        include_utility = self.request.query_params.get("include_utility", "false").lower() == "true"
+        if not include_utility:
+            queryset = queryset.filter(is_utility=False)
+        return queryset
 
     def get_serializer_class(self):
         return (

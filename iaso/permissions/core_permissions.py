@@ -62,12 +62,14 @@ PERMISSION_GROUPS_DISPLAY_ORDER = [
 CORE_ASSIGNMENTS_PERMISSION = CorePermission(
     codename="iaso_assignments", label=_("Attributions"), module=MODULE_PLANNING, ui_group=PERMISSION_GROUP_PLANNING
 )
+
 CORE_COMPLETENESS_PERMISSION = CorePermission(
     codename="iaso_completeness",
     label=_("Complétude des données"),
     module=MODULE_COMPLETENESS_PER_PERIOD,
     ui_group=PERMISSION_GROUP_FORMS,
 )
+
 CORE_COMPLETENESS_STATS_PERMISSION = CorePermission(
     codename="iaso_completeness_stats",
     label=_("Completeness stats"),
@@ -127,6 +129,7 @@ CORE_FORMS_STATS_PERMISSION = CorePermission(
     module=MODULE_DATA_COLLECTION,
     ui_group=PERMISSION_GROUP_FORMS,
 )
+
 CORE_LINKS_PERMISSION = CorePermission(
     codename="iaso_links", label=_("Correspondances sources"), module=MODULE_DEFAULT, ui_group=PERMISSION_GROUP_ADMIN
 )
@@ -346,6 +349,12 @@ CORE_WORKFLOW_PERMISSION = CorePermission(
 CORE_VALIDATION_WORKFLOW_PERMISSION = CorePermission(
     codename="iaso_validation_workflows",
     label=_("Validation workflows"),
+    module=MODULE_DEFAULT,
+    ui_group=PERMISSION_GROUP_ADMIN,
+)
+CORE_ACCOUNT_MANAGEMENT_PERMISSION = CorePermission(
+    codename="iaso_account_management",
+    label=_("Account management"),
     module=MODULE_DEFAULT,
     ui_group=PERMISSION_GROUP_ADMIN,
 )

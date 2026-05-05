@@ -60,6 +60,9 @@ case "$1" in
   "vitest" )
     npm run test
   ;;
+  "vitest_watch" )
+    npm run test:watch
+  ;;
   "gen_docs" )
     ./scripts/gen_docs.sh
   ;;
@@ -100,8 +103,8 @@ case "$1" in
     python "${@:2}"
   ;;
   * )
-    if [[ $2 == /opt/.pycharm_helpers/* ]]; then
-      ${@}
+    if [[ $2 == /opt/.pycharm_helpers/* || $2 == /opt/project/manage.py ]]; then
+      "${@}"
     else
       show_help
     fi

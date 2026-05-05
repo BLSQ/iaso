@@ -77,11 +77,11 @@ export const WorkflowConfiguration: FunctionComponent = () => {
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Box mb={2}>
                     <Grid container spacing={2}>
-                        <Grid container item xs={4}>
+                        <Grid container item xs={12} md={8} lg={6}>
                             <WidgetPaper
                                 className={classes.infoPaper}
                                 title={formatMessage(MESSAGES.infos)}
-                                sx={{ position: 'relative' }}
+                                sx={{ position: 'relative' }}   
                             >
                                 <Box className={classes.infoPaperBox}>
                                     {isLoading && <LoadingSpinner absolute />}
@@ -93,11 +93,11 @@ export const WorkflowConfiguration: FunctionComponent = () => {
                 </Box>
                 <WidgetPaper
                     className={classes.infoPaper}
-                    title={formatMessage(MESSAGES.nodes)}
+                    title={formatMessage(MESSAGES.steps)}
                 >
                     <Box className={classes.count}>
                         {`${(workflow?.node_templates ?? []).length} `}
-                        {formatMessage(MESSAGES.nodes)}
+                        {formatMessage(MESSAGES.steps)}
                     </Box>
                     <SortableTable
                         items={items}

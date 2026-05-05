@@ -16,11 +16,13 @@ from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, is_field_referenced, safe_api_import
@@ -117,6 +119,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
     # this HasOrgUnitPermission bypass UserAccessPermission and allow anonymous access
     # except if AuthenticationEnforcedPermission is enabled
     permission_classes = [AuthenticationEnforcedPermission, HasOrgUnitPermission]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
+    dynamic_fields_serializer_class = OrgUnitSearchSerializer
 
     def get_queryset(self):
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))

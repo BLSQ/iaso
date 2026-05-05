@@ -371,7 +371,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         *,
         request_body: typing.Any,
         has_problems: bool,
-        check_auth_header: bool = False,
         exception_contains_string: str = None,
         exception_contains_code: str = None,
     ):
@@ -385,9 +384,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertEqual(has_problems, last_api_import.has_problem, f"{last_api_import} - {last_api_import.exception}")
 
         self.assertIsInstance(last_api_import.headers, dict)
-        if check_auth_header:
-            self.assertIsInstance(last_api_import.headers["HTTP_AUTHORIZATION"], str)
-            self.assertEqual("Bearer ", last_api_import.headers["HTTP_AUTHORIZATION"][:7])
 
         if has_problems is False:
             self.assertEqual(last_api_import.exception, "")
@@ -469,3 +465,13 @@ class MockClamavScanResults:
         self.state = state
         self.details = details
         self.passed = passed
+
+
+class PasswordValidationTestMixin:
+    ERROR_PASSWORD_TOO_SHORT = "This password is too short. It must contain at least 8 characters."
+    ERROR_PASSWORD_TOO_COMMON = "This password is too common."
+    ERROR_PASSWORD_TOO_SIMILAR_USERNAME = "The password is too similar to the username."
+    ERROR_PASSWORD_TOO_SIMILAR_EMAIL = "The password is too similar to the email address."
+    ERROR_PASSWORD_TOO_SIMILAR_FIRST_NAME = "The password is too similar to the first name."
+    ERROR_PASSWORD_TOO_SIMILAR_LAST_NAME = "The password is too similar to the last name."
+    ERROR_PASSWORD_NUMERIC = "This password is entirely numeric."

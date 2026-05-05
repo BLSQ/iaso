@@ -1,3 +1,4 @@
+from .account import Account, AccountFeatureFlag
 from .base import *
 from .bulk_create_user_csv_file import BulkCreateUserCsvFile
 from .comment import CommentIaso
@@ -6,6 +7,7 @@ from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
 from .device import Device, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType
 from .feature_flags import FeatureFlag, ProjectFeatureFlags
+from .form_ai import TemporaryForm
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
 from .instances import Instance, InstanceFile, InstanceLock, InstanceQuerySet
@@ -43,6 +45,7 @@ __all__ = [
     "SUPERSET",
     "TEXT",
     "Account",
+    "AccountFeatureFlag",
     "BulkCreateUserCsvFile",
     "CommentIaso",
     "DataSource",
@@ -60,6 +63,7 @@ __all__ = [
     "FormAttachment",
     "FormPredefinedFilter",
     "FormVersion",
+    "TemporaryForm",
     "ImportGPKG",
     "Instance",
     "InstanceLock",

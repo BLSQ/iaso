@@ -1,11 +1,13 @@
 import React from 'react';
 import { Table, TableBody } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
 import MESSAGES from 'Iaso/domains/users/messages';
 import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
+import { getLocaleDateFormat } from 'Iaso/utils/dates';
 
 type Props = {
     savingProfile?: boolean;
@@ -54,6 +56,16 @@ export const GeneralInfoWidgetPaper = ({
                                     {profile?.email}
                                 </a>
                             ),
+                        }}
+                    />
+                    <Row
+                        field={{
+                            label: formatMessage(MESSAGES.date_joined),
+                            value: profile?.date_joined
+                                ? moment(profile.date_joined).format(
+                                      getLocaleDateFormat('LTS'),
+                                  )
+                                : undefined,
                         }}
                     />
                     <Row

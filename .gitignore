@@ -94,6 +94,7 @@ build_scripts/deploy.zip
 #!.elasticbeanstalk/*.global.yml
 .elasticbeanstalk/config.yml
 .elasticbeanstalk/logs
+.elasticbeanstalk/app_versions
 
 ### Built JS ###
 hat/assets/bundles/
@@ -117,6 +118,7 @@ pip-selfcheck.json
 
 # dev environment
 .env*
+!.env.example
 !.env.smoke.template
 \.idea/*
 \.run/*
@@ -212,3 +214,4 @@ iaso-enketo/
 
 # eslint
 .eslintcache
+.claude

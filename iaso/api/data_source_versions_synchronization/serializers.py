@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.models import (
     Account,
     DataSourceVersionsSynchronization,
@@ -34,9 +34,9 @@ class DataSourceVersionNestedSerializer(serializers.ModelSerializer):
         fields = ["id", "number", "description", "data_source", "data_source_name"]
 
 
-class DataSourceVersionsSynchronizationSerializer(DynamicFieldsModelSerializer):
+class DataSourceVersionsSynchronizationSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     """
-    Inheriting from DynamicFieldsModelSerializer allows to fetch the data with only a specific subset of fields.
+    Inheriting from DynamicFieldsModelSerializerBackwardCompatible allows to fetch the data with only a specific subset of fields.
     This is useful e.g. to build a dropdown in the UI with only the name and ID of objects.
     """
 

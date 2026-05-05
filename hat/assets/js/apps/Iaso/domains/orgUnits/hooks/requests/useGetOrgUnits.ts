@@ -1,6 +1,7 @@
-import { Pagination } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
+import { Pagination } from 'Iaso/types/general';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
@@ -71,7 +72,7 @@ export const useGetOrgUnits = ({
         ...params,
         fields: getCleanFields(params.fields),
     };
-    const queryString = new URLSearchParams(apiParams);
+    const queryString = createSearchParamsWithArray(apiParams);
     return useSnackQuery({
         queryKey: ['orgunits', apiParams],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),

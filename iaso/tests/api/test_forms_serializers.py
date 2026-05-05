@@ -1,10 +1,11 @@
 from unittest.mock import Mock
 
+from django.http import QueryDict
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
-from iaso.api.forms import FormSerializer
+from iaso.api.forms.serializers import FormSerializer
 
 
 class FormsSerializerTestCase(TestCase):
@@ -24,7 +25,7 @@ class FormsSerializerTestCase(TestCase):
 
     def test_should_serialize_a_form(self):
         request = APIRequestFactory().get("/")
-        request.query_params = {}
+        request.query_params = QueryDict(mutable=True)
         serializer = FormSerializer(self.form, context={"request": request})
 
         expected_data = {

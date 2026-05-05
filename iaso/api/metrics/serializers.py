@@ -1,3 +1,5 @@
+import csv
+
 import pandas as pd
 
 from django.utils.translation import gettext_lazy as _
@@ -26,6 +28,7 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "comments",
             "legend_config",
             "legend_type",
+            "metric_kind",
             "origin",
             "created_at",
             "updated_at",
@@ -46,6 +49,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
     unit_symbol = serializers.CharField(required=False, allow_blank=True, max_length=2)
     origin = serializers.ChoiceField(choices=MetricType.MetricTypeOrigin, required=False, allow_blank=True)
     legend_type = serializers.ChoiceField(choices=MetricType.LegendType, required=True, allow_blank=False)
+    metric_kind = serializers.ChoiceField(choices=MetricType.MetricKind, required=False, allow_blank=True)
     legend_config = JSONSchemaField(schema=MetricType.LEGEND_CONFIG_SCHEMA, allow_null=False, write_only=True)
 
     class Meta:
@@ -57,6 +61,7 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
             "units",
             "unit_symbol",
             "legend_type",
+            "metric_kind",
             "origin",
             "legend_config",
         ]
@@ -136,7 +141,9 @@ class ImportMetricValuesSerializer(serializers.Serializer):
         if not value.name.endswith(".csv"):
             raise serializers.ValidationError(_("The file must be a CSV."))
 
-        df = pd.read_csv(value)
+        dialect = csv.Sniffer().sniff(value.read(1024).decode("utf-8", errors="ignore"))
+        value.seek(0)  # Reset file pointer after reading for dialect inference
+        df = pd.read_csv(value, sep=dialect.delimiter)
 
         header_errors = get_missing_headers(df, REQUIRED_METRIC_VALUES_HEADERS)
         if header_errors:

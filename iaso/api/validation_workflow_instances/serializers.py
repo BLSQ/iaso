@@ -11,11 +11,14 @@ from iaso.utils.serializer.color import ColorFieldSerializer
 
 
 class NestedUserRoleSerializer(ModelSerializer):
-    name = serializers.CharField(read_only=True, source="group.name")
+    name = serializers.SerializerMethodField()
 
     class Meta:
         model = UserRole
-        fields = ["id", "name"]
+        fields = ["name", "id"]
+
+    def get_name(self, obj):
+        return obj.group.name.removeprefix(f"{obj.account_id}_")
 
 
 class NestedHistorySerializer(ModelSerializer):

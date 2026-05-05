@@ -2,9 +2,10 @@ import { useMemo } from 'react';
 import { cloneDeep } from 'lodash';
 import { UseQueryResult } from 'react-query';
 import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder/utils';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQueries, useSnackQuery } from '../../../libs/apiHooks';
-import { DropdownOptions } from '../../../types/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQueries, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 import MESSAGES from '../messages';
 import { useGetForm } from '../requests';
@@ -192,13 +193,17 @@ type FormVersionHookResult = {
 const useGetFormVersion = (
     formId: number | undefined,
     enabled: boolean,
-    fields?: string | undefined,
+    fields?: string,
 ): UseQueryResult<FormVersionsApiResult, Error> => {
     const queryKey: any[] = ['formVersions', formId];
-    let url = `/api/formversions/?form_id=${formId}`;
-    if (fields) {
-        url += `&fields=${fields}`;
-    }
+
+    const queryString = createSearchParamsWithArray({
+        form_id: formId,
+        fields: fields,
+    }).toString();
+
+    const url = `/api/formversions/?${queryString}`;
+
     return useSnackQuery({
         queryKey,
         queryFn: () => getRequest(url),
@@ -240,7 +245,7 @@ export const useGetPossibleFieldsByFormVersion = (
         useGetFormVersion(
             formId,
             Boolean(formId),
-            'version_id,possible_fields,created_at',
+            ['version_id', 'possible_fields', 'created_at'].join(','),
         );
     return useVersionPossibleFields(isFetchingForm, currentFormVersion);
 };

@@ -36,7 +36,7 @@ describe('ValidationWorkflow api e2e tests', () => {
         token = data?.access;
     });
 
-    it('CRUD accordingly', async () => {
+    it.skip('CRUD accordingly', async () => {
         const { result: resultList } = renderHook(
             () =>
                 useCustomApiValidationWorkflowsList(

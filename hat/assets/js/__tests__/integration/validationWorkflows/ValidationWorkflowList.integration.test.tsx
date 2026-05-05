@@ -2,6 +2,12 @@ import React from 'react';
 import { faker } from '@faker-js/faker';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
+import { IntlProvider } from 'react-intl';
+import { MemoryRouter } from 'react-router-dom';
+import { expect, describe } from 'vitest';
 import type { PaginatedValidationWorkflowListList } from 'Iaso/api/validationWorkflows';
 import {
     getApiValidationWorkflowsDestroyMockHandler,
@@ -9,12 +15,6 @@ import {
     getApiValidationWorkflowsListResponseMock,
     getValidationWorkflowsMock,
 } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows.msw';
-import { axe } from 'jest-axe';
-import { HttpResponse } from 'msw';
-import { setupServer } from 'msw/node';
-import { IntlProvider } from 'react-intl';
-import { MemoryRouter } from 'react-router-dom';
-import { expect, describe } from 'vitest';
 import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import {
@@ -55,29 +55,6 @@ const customMockHandlers = {
 };
 
 const server = setupServer(...getValidationWorkflowsMock());
-
-// just an helper to get the right faker seed for your usage
-// eslint-disable-next-line
-const getSeedFor = ({
-    condition,
-}: {
-    condition: (data: PaginatedValidationWorkflowListList) => boolean;
-}): void => {
-    let validationWorkFlows;
-    for (let seed = 1; seed < 10_000_000; seed++) {
-        faker.seed(seed);
-
-        validationWorkFlows = getApiValidationWorkflowsListResponseMock();
-
-        const ok = condition(validationWorkFlows);
-
-        if (ok) {
-            // eslint-disable-next-line
-            console.log('number', seed);
-            break;
-        }
-    }
-};
 
 type WithResults = PaginatedValidationWorkflowListList & {
     results: NonNullable<PaginatedValidationWorkflowListList['results']>;

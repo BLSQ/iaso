@@ -4,12 +4,12 @@ import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/
 require('dotenv').config();
 
 const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || 'http'}://${process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'}`;
-
+const ORVAL_TARGET_FILE = process.env?.ORVAL_TARGET_FILE
 
 const createConfig = (project: string, tags: string[] | RegExp[], mutationInvalidates?: any[], schemas?: string[] | RegExp[]) => {
     return {
         input: {
-            target: new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
+            target: ORVAL_TARGET_FILE ? ORVAL_TARGET_FILE : new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
             filters: {
                 tags: tags,
                 ...schemas ? {schemas: schemas} : {}

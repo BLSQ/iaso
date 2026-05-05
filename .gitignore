@@ -214,6 +214,3 @@ iaso-enketo/
 
 # eslint
 .eslintcache
-
-# orval
-/hat/assets/js/apps/Iaso/api/

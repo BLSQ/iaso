@@ -38,6 +38,7 @@ jobs:
           echo "SAVE_SMOKE_TEST_SCREENSHOT: $SAVE_SMOKE_TEST_SCREENSHOT"
           echo "SMOKE_TEST_MONITOR_CONSOLE_ERRORS: $SMOKE_TEST_MONITOR_CONSOLE_ERRORS"
 
+      - uses: actions/checkout@v4
       - name: Use node.js 22.x
         uses: actions/setup-node@v4
         with:

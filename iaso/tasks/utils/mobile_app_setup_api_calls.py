@@ -32,13 +32,6 @@ API_CALLS = [
         "filename": "formattachments",
     },
     {
-        "path": "/api/mobile/orgunits/",
-        "filename": "orgunits",
-        "query_params": {"shapes": 0},
-        "page_size": 25000,
-        "paginated": True,
-    },
-    {
         "path": "/api/mobile/orgunits/changes/",
         "required_feature_flag": "MOBILE_ORG_UNIT_REGISTRY",
         "filename": "orgunitchanges",
@@ -59,19 +52,6 @@ API_CALLS = [
         "filename": "storage-blacklisted",
     },
     {
-        "path": "/api/internal/entities/",
-        "required_feature_flag": "ENTITY",
-        "filename": "entities",
-        "paginated": True,
-        "cursor_pagination": {"shim": True, "legacy_url": "/api/mobile/entities/"},
-    },
-    {
-        "path": "/api/mobile/entities/deleted/",
-        "required_feature_flag": "ENTITY",
-        "filename": "deletedentities",
-        "paginated": True,
-    },
-    {
         "path": "/api/mobile/entitytypes/",
         "required_feature_flag": "ENTITY",
         "filename": "entitytypes",
@@ -86,5 +66,28 @@ API_CALLS = [
         "path": "/api/mobile/workflows/",
         "required_feature_flag": "ENTITY",
         "filename": "workflows",
+    },
+    {
+        "path": "/api/mobile/orgunits/",
+        "filename": "orgunits",
+        "query_params": {"shapes": 0},
+        "page_size": 5000,
+        "paginated": True,
+        "sub_steps": 20,
+    },
+    {
+        "path": "/api/internal/entities/",
+        "required_feature_flag": "ENTITY",
+        "filename": "entities",
+        "paginated": True,
+        "page_size": 2000,
+        "cursor_pagination": {"shim": True, "count_url": "/api/internal/entities/count/"},
+        "sub_steps": 50,
+    },
+    {
+        "path": "/api/mobile/entities/deleted/",
+        "required_feature_flag": "ENTITY",
+        "filename": "deletedentities",
+        "paginated": True,
     },
 ]

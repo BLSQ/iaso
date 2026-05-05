@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import {
     useApiValidationWorkflowsCreate,
     useApiValidationWorkflowsRetrieve,
-} from 'Iaso/api';
+} from 'Iaso/api/validationWorkflows';
 import { useCustomApiValidationWorkflowsList } from 'Iaso/domains/instances/validationWorkflow/api/Get';
 import { QueryClientWrapperWithIntlProvider } from '../../tests/helpers';
 

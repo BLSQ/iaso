@@ -1,25 +1,23 @@
-import { mutationInvalidates } from './hat/assets/js/orval/apiConfiguration';
+import { mutationInvalidates as validationWorkflowsMutationInvalidates} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
 import { createSchemaTransformer, normalizeSchema } from './hat/assets/js/orval/transformer/fakerTransformer';
 
 require('dotenv').config();
 
-const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || "http"}://${process.env.ORVAL_TARGET_URL_DOMAIN || "localhost:8000"}`
-module.exports = {
+const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || 'http'}://${process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'}`;
 
-    api: {
 
+const createConfig = (project: string, tags: string[] | RegExp[], mutationInvalidates?: any[], schemas?: string[] | RegExp[]) => {
+    return {
         input: {
             target: new URL('/swagger/?format=json', ORVAL_TARGET).toString(),
             filters: {
-                // mode: 'exclude',
-                // tags: ['Mobile'],
-                tags: ['Validation workflows', 'Profiles'],
-                schemas: [/Validation/, /NestedHistory/],
+                tags: tags,
+                ...schemas ? {schemas: schemas} : {}
             },
             parserOptions: {
                 headers: [
                     {
-                        domains: [process.env.ORVAL_TARGET_URL_DOMAIN || "localhost:8000"],
+                        domains: [process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'],
                         headers: {
                             Authorization: `Bearer ${process.env.API_TOKEN}`,
                             Accept: 'application/json',
@@ -29,19 +27,20 @@ module.exports = {
             },
             override: {
                 transformer: createSchemaTransformer(normalizeSchema),
-              },
+            }
         },
+
 
         output: {
             mode: 'tags-split',
             client: 'react-query',
             clean: true,
             baseUrl: ORVAL_TARGET,
-            workspace: './hat/assets/js/apps/Iaso/api',
+            workspace: `./hat/assets/js/apps/Iaso/api/${project}`,
             override: {
                 // operations: OperationConfig.operations,
                 requestOptions: {
-                    credentials: 'same-origin'
+                    credentials: 'same-origin',
                 },
                 query: {
                     version: 3,
@@ -50,25 +49,22 @@ module.exports = {
                     shouldSplitQueryKey: true,
                     useOperationIdAsQueryKey: true,
                     useInvalidate: true,
-                    mutationInvalidates: mutationInvalidates,
+                    mutationInvalidates: mutationInvalidates ?? [],
                     queryOptions: {
                         path: './hat/assets/js/orval/mutator/custom-query-options.ts',
-                        name: 'useCustomQueryOptions'
+                        name: 'getCustomQueryOptions',
                     },
                     mutationOptions: {
                         path: './hat/assets/js/orval/mutator/custom-mutation-options.ts',
                         name: 'useCustomMutationOptions',
-                        optionalQueryClient: true
-                    }
+                        optionalQueryClient: true,
+                    },
                 },
                 mutator: {
-                    path: '../../../orval/client/custom-fetch.ts',
+                    path: '../../../../orval/client/custom-fetch.ts',
                     name: 'customFetchInstance',
                     runtimeValidation: true
                 },
-                // fetch: {
-                //     runtimeValidation: true
-                // },
                 zod: {
                     strict: {
                         response: true,
@@ -82,22 +78,27 @@ module.exports = {
             mock: {
                 type: 'msw',
                 preferredContentType: 'application/json',
-                delay: () => process.env?.MSW_DELAY ? parseInt(process.env.MSW_DELAY) : 0 ,
+                delay: () => process.env?.MSW_DELAY ? parseInt(process.env.MSW_DELAY) : 0,
                 delayFunctionLazyExecute: true,
                 arrayMin: 1,
             },
             target: './endpoints',
             schemas: {
                 type: 'zod',
-                path: './models'
+                path: './models',
             },
         },
 
+
         hooks: {
             afterAllFilesWrite: [
-                'eslint --cache --fix'
-            ]
-        }
-    },
+                'eslint --cache --fix',
+            ],
+        },
+    };
+};
 
+module.exports = {
+    validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
+    profiles: createConfig('profiles', ['Profiles'])
 };

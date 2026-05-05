@@ -8,13 +8,13 @@ import { setupServer } from 'msw/node';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 import { expect, describe } from 'vitest';
-import type { PaginatedValidationWorkflowListList } from 'Iaso/api';
+import type { PaginatedValidationWorkflowListList } from 'Iaso/api/validationWorkflows';
 import {
     getApiValidationWorkflowsDestroyMockHandler,
     getApiValidationWorkflowsListMockHandler,
     getApiValidationWorkflowsListResponseMock,
     getValidationWorkflowsMock,
-} from 'Iaso/api/endpoints/validation-workflows/validation-workflows.msw';
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows.msw';
 import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import {

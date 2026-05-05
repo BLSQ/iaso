@@ -16,7 +16,7 @@ type UseQueryOptions<TOptions, TError> = TOptions & {
     onError?: (error: TError) => void;
 };
 
-export const useCustomQueryOptions = <TOptions, TError>(
+export const getCustomQueryOptions = <TOptions, TError>(
     options: UseQueryOptions<TOptions, TError>,
 ): Omit<
     UseQueryOptions<TOptions, TError>,

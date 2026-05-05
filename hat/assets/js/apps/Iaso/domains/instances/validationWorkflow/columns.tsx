@@ -6,7 +6,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useApiValidationWorkflowsDestroy } from 'Iaso/api';
+import { useApiValidationWorkflowsDestroy } from 'Iaso/api/validationWorkflows';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';

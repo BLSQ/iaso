@@ -4,8 +4,8 @@ import {
     useApiValidationWorkflowsList,
     useApiValidationWorkflowsRetrieve,
     ValidationWorkflowRetrieve,
-} from 'Iaso/api';
-import { ApiValidationWorkflowsListParams } from 'Iaso/api/models';
+} from 'Iaso/api/validationWorkflows';
+import { ApiValidationWorkflowsListParams } from 'Iaso/api/validationWorkflows/models';
 import { ValidationNodeTemplateRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
 import {
     ValidationWorkflowListDropdownResponse,

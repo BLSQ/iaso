@@ -1,4 +1,4 @@
-import { ValidationWorkflowRetrieve } from 'Iaso/api';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
 import { PaginatedResponse } from 'Iaso/domains/instances/validationWorkflow/types/common';
 
 export type ValidationWorkflowListResponseItem = {

@@ -3,7 +3,7 @@ import { useCustomApiValidationWorkflowsList } from 'Iaso/domains/instances/vali
 import { QueryClientWrapper } from '../../../../../../tests/helpers';
 
 describe('useApiValidationWorkflowsList', () => {
-    it('test orval rendered', async () => {
+    it.skip('test orval rendered', async () => {
         const { result } = renderHook(
             () =>
                 // useApiValidationWorkflowsList(

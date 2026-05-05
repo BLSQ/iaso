@@ -43,3 +43,7 @@ form submit : updateSearchParams (no harsh redirect) => API call and validate (u
 ## Todo
 
 * silence msw during tests 
+
+## how to extend zod :
+
+BAseSchema.extend({})

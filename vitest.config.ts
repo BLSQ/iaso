@@ -30,6 +30,10 @@ export default defineConfig({
         globals: true,
         hookTimeout: 150_000,
         environment: 'jsdom',
+        env: {
+            // to avoid clashing with django debug
+            DEBUG: process.env?.VITEST_DEBUG ?? ""
+        },
         include: [
             '**/*.test.{ts,tsx}',
             '__tests__/integration/**/*.integration.test.{ts,tsx}'

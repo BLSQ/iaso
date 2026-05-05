@@ -75,8 +75,6 @@ class PlanningOrgunitsViewSet(GenericViewSet):
         if cached is not None:
             return cached
         pk = self.kwargs.get("parent_lookup_pk")
-        if pk is None:
-            raise ValidationError({"planning": [_("Planning id is required in the URL path.")]})
         user = self.request.user
         self._planning_for_orgunits = get_object_or_404(
             Planning.objects.filter_for_user(user)
@@ -87,8 +85,6 @@ class PlanningOrgunitsViewSet(GenericViewSet):
         return self._planning_for_orgunits
 
     def get_queryset(self):
-        if self.kwargs.get("parent_lookup_pk") is None:
-            return OrgUnit.objects.none()
         planning = self.get_planning()
         action = self.action
         user = self.request.user
@@ -128,7 +124,7 @@ class PlanningOrgunitsViewSet(GenericViewSet):
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
-        if getattr(self, "action", None) == "children_paginated" and self.kwargs.get("parent_lookup_pk") is not None:
+        if getattr(self, "action", None) == "children_paginated":
             ctx["planning"] = self.get_planning()
         return ctx
 
@@ -145,7 +141,7 @@ class PlanningOrgunitsViewSet(GenericViewSet):
         serializer = self.get_serializer(page if page is not None else queryset, many=True)
         if page is not None:
             return self.get_paginated_response(serializer.data)
-        return Response({"results": serializer.data})
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def root(self, request, *args, **kwargs):

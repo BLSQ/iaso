@@ -502,7 +502,7 @@ class PlanningOrgUnitTableAssignmentSerializer(ModelSerializer):
         return None
 
 
-class PlanningOrgUnitTableSerializer(serializers.ModelSerializer):
+class PlanningOrgUnitTableSerializer(ModelSerializer):
     """Paginated planning org units for tables (minimal columns + assignment for this planning)."""
 
     assignment = serializers.SerializerMethodField()
@@ -514,8 +514,6 @@ class PlanningOrgUnitTableSerializer(serializers.ModelSerializer):
 
     def get_assignment(self, org_unit: OrgUnit):
         assignment = self._assignment_for_org_unit(org_unit)
-        if assignment is None:
-            return None
         return PlanningOrgUnitTableAssignmentSerializer(instance=assignment).data
 
     def _assignment_for_org_unit(self, org_unit: OrgUnit):

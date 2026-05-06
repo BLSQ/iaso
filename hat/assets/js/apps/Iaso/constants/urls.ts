@@ -130,20 +130,6 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'forms/submission',
         params: ['accountId', 'instanceId', 'referenceFormId'],
     },
-    instanceValidation: {
-        url: 'validation/submissions',
-        params: [
-            'accountId',
-            'forms',
-            'name',
-            'showDeleted',
-            ...paginationPathParams,
-        ],
-    },
-    instanceValidationDetail: {
-        url: 'validation/submissions/detail',
-        params: ['accountId', 'slug'],
-    },
     compareInstanceLogs: {
         url: 'forms/compareInstanceLogs',
         params: ['accountId', 'instanceIds', 'logA', 'logB'],
@@ -633,6 +619,26 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'value_to',
         ],
     },
+
+    validationWorkflowsConfiguration: {
+        url: 'validation-workflows/configuration',
+        params: ['accountId', 'forms', 'name', ...paginationPathParams],
+    },
+    validationWorkflowsConfigurationDetail: {
+        url: 'validation-workflows/configuration/detail',
+        params: ['accountId', 'slug'],
+    },
+    validationWorkflowInstances: {
+        url: 'validation-workflows/submissions',
+        params: [
+            'accountId',
+            'forms',
+            'status',
+            'requires_user_action',
+            'validation_workflows',
+            ...paginationPathParams,
+        ],
+    },
     adminApiImport: {
         url: 'settings/apiImports',
         params: [
@@ -700,8 +706,6 @@ type IasoBaseUrls = {
     formsStats: string;
     instances: string;
     instanceDetail: string;
-    instanceValidation: string;
-    instanceValidationDetail: string;
     compareInstanceLogs: string;
     compareInstances: string;
     mappings: string;
@@ -759,6 +763,9 @@ type IasoBaseUrls = {
     login: string;
     apiLogs: string;
     adminApiImport: string;
+    validationWorkflowsConfiguration: string;
+    validationWorkflowsConfigurationDetail: string;
+    validationWorkflowInstances: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

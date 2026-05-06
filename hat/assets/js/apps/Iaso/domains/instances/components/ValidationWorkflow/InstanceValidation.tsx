@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import MESSAGES from '../../messages';
 import { useGetNodesList } from './useGetSubmissionValidationStatus';

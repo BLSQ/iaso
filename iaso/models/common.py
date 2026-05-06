@@ -1,7 +1,6 @@
 from autoslug import AutoSlugField
 from autoslug.utils import crop_slug, get_prepopulated_value
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 
@@ -46,19 +45,6 @@ class ValidationWorkflowArtefact(models.Model):
         return ValidationNode.objects.filter(
             instance_id=self.pk, **{"node__workflow": workflow} if workflow else {}
         ).order_by("-created_at")
-
-    def get_next_bypass_nodes(self, workflow=None):
-        from iaso.models import ValidationNodeTemplate
-        from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-
-        if self.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
-            return (
-                ValidationNodeTemplate.objects.prefetch_related("validationnode")
-                .filter(can_skip_previous_nodes=True, **{"workflow": workflow} if workflow else {})
-                .filter(Q(validationnode__isnull=True) | Q(validationnode__status=ValidationNodeStatus.UNKNOWN))
-            )
-
-        return ValidationNodeTemplate.objects.none()
 
 
 class BulkAutoSlugField(AutoSlugField):

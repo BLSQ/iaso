@@ -14,16 +14,18 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    useApiValidationWorkflowsCreate,
-    useApiValidationWorkflowsUpdate,
-    ValidationWorkflowRetrieveOutput,
-} from 'Iaso/api/validationWorkflows';
+// import {
+//     useApiValidationWorkflowsCreate,
+//     useApiValidationWorkflowsUpdate,
+//     ValidationWorkflowRetrieveOutput,
+// } from 'Iaso/api/validationWorkflows';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
+import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
+import { useSaveWorkflow } from '../api/PostPutPatch';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -63,7 +65,8 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
     );
 };
 
-type Props = { workflow?: ValidationWorkflowRetrieveOutput };
+// type Props = { workflow?: ValidationWorkflowRetrieveOutput };
+type Props = { workflow?: ValidationWorkflowRetrieveResponseItem };
 
 export const WorkflowBaseInfo = ({ workflow }: Props) => {
     const params = useParamsObject(baseUrls.instanceValidationDetail);
@@ -74,19 +77,25 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
         workflow?.description,
     );
     const redirectToReplace = useRedirectToReplace();
-    const { mutateAsync: mutateAsyncCreate } =
-        useApiValidationWorkflowsCreate();
-    const { mutateAsync: mutateAsyncSave } = useApiValidationWorkflowsUpdate();
+    const { mutateAsync } = useSaveWorkflow();
+    // const { mutateAsync: mutateAsyncCreate } =
+    //     useApiValidationWorkflowsCreate();
+    // const { mutateAsync: mutateAsyncSave } = useApiValidationWorkflowsUpdate();
 
     const save = useCallback(() => {
         if (workflow) {
-            return mutateAsyncSave({
+            return mutateAsync({
                 slug: workflow.slug,
-                data: { name, description },
+                body: { name, description },
             });
+            // return mutateAsyncSave({
+            //     slug: workflow.slug,
+            //     data: { name, description },
+            // });
         }
-        return mutateAsyncCreate(
-            { data: { name, description } },
+
+        return mutateAsync(
+            { body: { name, description } },
             {
                 onSuccess: data =>
                     redirectToReplace(baseUrls.instanceValidationDetail, {
@@ -95,10 +104,22 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
                     }),
             },
         );
+
+        // return mutateAsyncCreate(
+        //     { data: { name, description } },
+        //     {
+        //         onSuccess: data =>
+        //             redirectToReplace(baseUrls.instanceValidationDetail, {
+        //                 ...params,
+        //                 slug: data.slug,
+        //             }),
+        //     },
+        // );
     }, [
         description,
-        mutateAsyncCreate,
-        mutateAsyncSave,
+        // mutateAsyncCreate,
+        // mutateAsyncSave,
+        mutateAsync,
         name,
         params,
         redirectToReplace,

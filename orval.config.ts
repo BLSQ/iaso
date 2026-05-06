@@ -101,6 +101,6 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
 };
 
 module.exports = {
-    validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
-    profiles: createConfig('profiles', ['Profiles'])
+    // validationWorkflows: createConfig('validationWorkflows', ['Validation workflows'], validationWorkflowsMutationInvalidates),
+    // profiles: createConfig('profiles', ['Profiles'])
 };

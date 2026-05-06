@@ -4,9 +4,50 @@ import {
     ValidationNodeTemplateCreateBody,
     ValidationNodeTemplateUpdateBody,
 } from 'Iaso/domains/instances/validationWorkflow/types/validationNodeTemplates';
-import { postRequest, putRequest } from 'Iaso/libs/Api';
+import {
+    ValidationWorkflowCreateBody,
+    ValidationWorkflowPatchBody,
+} from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
+import { patchRequest, postRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { API_URL, WF_BASE_QUERYKEY } from '../constants';
+
+const postWorkflow = async (body: ValidationWorkflowCreateBody) => {
+    return postRequest(`${API_URL}`, body);
+};
+
+const patchWorkflow = async ({
+    slug,
+    body,
+}: {
+    slug: string;
+    body: ValidationWorkflowPatchBody;
+}) => {
+    return patchRequest(`${API_URL}${slug}/`, body);
+};
+
+const createEditWorkflow = async ({
+    slug,
+    body,
+}: {
+    slug?: string;
+    body: ValidationWorkflowPatchBody | ValidationWorkflowCreateBody;
+}) => {
+    if (!!slug) {
+        return patchWorkflow({
+            slug: slug,
+            body: body as ValidationWorkflowPatchBody,
+        });
+    }
+    return postWorkflow(body as ValidationWorkflowCreateBody);
+};
+
+export const useSaveWorkflow = (): UseMutationResult<any, any> => {
+    return useSnackMutation({
+        mutationFn: createEditWorkflow,
+        invalidateQueryKey: [WF_BASE_QUERYKEY],
+    });
+};
 
 const saveNode = async ({
     workflowSlug,

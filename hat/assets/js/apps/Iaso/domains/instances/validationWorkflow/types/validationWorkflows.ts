@@ -1,4 +1,4 @@
-import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
+// import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
 import { PaginatedResponse } from 'Iaso/domains/instances/validationWorkflow/types/common';
 
 export type ValidationWorkflowListResponseItem = {
@@ -26,11 +26,30 @@ export type NestedNodeTemplate = {
     can_skip_previous_nodes: boolean;
 };
 
+export type ValidationWorkflowRetrieveResponseItem = {
+    slug: string;
+    name: string;
+    description?: string;
+    forms?: Array<{
+        id: number;
+        label?: string;
+    }>;
+    created_by?: string;
+    updated_by?: string;
+    created_at: string;
+    updated_at: string;
+    node_templates?: NestedNodeTemplate[];
+};
+
 export type ValidationWorkflowRetrieveResponseItemWithOrderedNodes = Omit<
-    ValidationWorkflowRetrieve,
+    // ValidationWorkflowRetrieve,
+    ValidationWorkflowRetrieveResponseItem,
     'node_templates'
 > & {
-    node_templates?: (Pick<ValidationWorkflowRetrieve, 'node_templates'> & {
+    node_templates?: (Pick<
+        ValidationWorkflowRetrieveResponseItem,
+        'node_templates'
+    > & {
         id: number;
         order: number;
     })[];

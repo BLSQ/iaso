@@ -446,6 +446,10 @@ The API exposes several endpoints to support E2E testing and database management
 
 Below is an example of an E2E test with a running backend.
 These tests should be located under: `__tests__/api/<project>.api.test.tsx`
+To avoid any issue with the backend, you need to run a special command for those tests : 
+```shell
+npm run test:api-e2e
+```
 
 ```typescript
 
@@ -455,39 +459,29 @@ import {
     useApiValidationWorkflowsRetrieve,
 } from 'Iaso/api/validationWorkflows';
 import { useCustomApiValidationWorkflowsList } from 'Iaso/domains/instances/validationWorkflow/api/Get';
+import { SUBMISSION_VALIDATION_WORKFLOW } from 'Iaso/utils/featureFlags';
+import { cleanDatabase, createUserAndGetToken } from '../../tests/ft_helpers';
 import { QueryClientWrapperWithIntlProvider } from '../../tests/helpers';
 
-// let user: any;
 let token: any;
 
 describe('ValidationWorkflow api e2e tests', () => {
     beforeEach(async () => {
         // clean DB
-        await fetch('http://localhost:8000/api/ft-helpers/clean-database/', {
-            method: 'POST',
-        });
+        await cleanDatabase();
 
         // create user and retrieve token
-
-        await fetch('http://localhost:8000/api/ft-helpers/create-user/', {
-            method: 'POST',
-        }).then(res => res.json());
-
-        const data = await fetch('http://localhost:8000/api/token/', {
-            method: 'POST',
-            body: JSON.stringify({
-                username: 'yoda',
-                password: 'IMomLove',
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then(res => res.json());
-
-        token = data?.access;
+        token = await createUserAndGetToken({
+            username: 'myuser',
+            password: 'mypasswordnotsosecure',
+            account_name: 'myaccountname',
+            feature_flags: [SUBMISSION_VALIDATION_WORKFLOW],
+            is_superuser: true,
+            is_staff: true
+        });
     });
 
-    it.skip('CRUD accordingly', async () => {
+    it('CRUD accordingly', async () => {
         const { result: resultList } = renderHook(
             () =>
                 useCustomApiValidationWorkflowsList(
@@ -561,7 +555,7 @@ describe('ValidationWorkflow api e2e tests', () => {
             name: 'test-validation-workflow',
             slug: 'test-validation-workflow',
             form_count: 0,
-            created_by: 'yoda',
+            created_by: 'myuser',
             updated_by: null,
         });
 
@@ -586,7 +580,7 @@ describe('ValidationWorkflow api e2e tests', () => {
         });
 
         expect(resultRetrieve.current.data).toMatchObject({
-            created_by: 'yoda',
+            created_by: 'myuser',
             description: 'a description',
             forms: [],
             name: 'test-validation-workflow',
@@ -605,6 +599,7 @@ describe('ValidationWorkflow api e2e tests', () => {
         // delete
     });
 });
+
 
 
 ```

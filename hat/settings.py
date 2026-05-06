@@ -505,7 +505,6 @@ SPECTACULAR_SETTINGS = {
     },
     "DISABLE_ERRORS_AND_WARNINGS": get_env_var_or_default("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", "true").lower()
     in ["true", "1"],
-    # "COMPONENT_NO_READ_ONLY_REQUIRED": True,
     "COMPONENT_SPLIT_REQUEST": True,
 }
 

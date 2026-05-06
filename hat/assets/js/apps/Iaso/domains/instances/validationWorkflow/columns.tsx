@@ -6,7 +6,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useApiValidationWorkflowsDestroy } from 'Iaso/api/validationWorkflows';
+// import { useApiValidationWorkflowsDestroy } from 'Iaso/api/validationWorkflows';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
@@ -17,13 +17,14 @@ import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
-import { useDeleteNode } from './api/Delete';
+import { useDeleteNode, useDeleteWorkflow } from './api/Delete';
 import { EditNode } from './details/CreateEditNode/CreateEditNode';
 
 export const useWorkflowsTableColumns = () => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
-    const { mutateAsync: deleteWorkflow } = useApiValidationWorkflowsDestroy();
+    // const { mutateAsync: deleteWorkflow } = useApiValidationWorkflowsDestroy();
+    const { mutateAsync: deleteWorkflow } = useDeleteWorkflow();
 
     return useMemo(() => {
         const cols = [
@@ -86,9 +87,10 @@ export const useWorkflowsTableColumns = () => {
                                 type="icon"
                                 titleMessage={MESSAGES.deleteWorkflow}
                                 onConfirm={() =>
-                                    deleteWorkflow({
-                                        slug: settings.row.original.slug,
-                                    })
+                                    // deleteWorkflow({
+                                    //     slug: settings.row.original.slug,
+                                    // })
+                                    deleteWorkflow(settings.row.original.slug)
                                 }
                                 backdropClick
                             />

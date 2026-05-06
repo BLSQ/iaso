@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 
-def bulk_create_user_csv_file_upload_to(bulk_create, filename):
+def bulk_create_user_file_upload_to(bulk_create, filename):
     account_name = "unknown_account"  #  shouldn't be unknown, but the model is nullable
 
     today = timezone.now().date()
@@ -17,14 +17,14 @@ def bulk_create_user_csv_file_upload_to(bulk_create, filename):
 
     return os.path.join(
         account_name,
-        "bulk_create_user_csv",
+        "bulk_create_user_file",
         year_month,
         filename,
     )
 
 
-class BulkCreateUserCsvFile(models.Model):
-    file = models.FileField(upload_to=bulk_create_user_csv_file_upload_to, blank=False, null=False)
+class BulkCreateUserFile(models.Model):
+    file = models.FileField(upload_to=bulk_create_user_file_upload_to, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     account = models.ForeignKey("Account", on_delete=models.PROTECT, null=True)

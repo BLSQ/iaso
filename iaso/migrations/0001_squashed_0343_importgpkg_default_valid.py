@@ -3136,9 +3136,7 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 (
                     "file",
-                    models.FileField(
-                        upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_csv_file_upload_to
-                    ),
+                    models.FileField(upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_file_upload_to),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (

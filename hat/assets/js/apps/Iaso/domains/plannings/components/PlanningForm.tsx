@@ -29,10 +29,12 @@ import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipel
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import {
     flattenHierarchy,
+    OrgUnitTypeHierarchy,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import { SxStyles } from 'Iaso/types/general';
+import { DropdownOptions } from 'Iaso/types/utils';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
@@ -202,23 +204,42 @@ export const PlanningForm: FunctionComponent<Props> = ({
     }, [handleSubmit, isEditingDisabled]);
     const allowConfirm =
         isValid && (!isEqual(values, initialValues) || mode === 'copy');
-
-    const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
-        useGetOrgUnit(values.selectedOrgUnit?.toString());
-    const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesHierarchy(rootorgunit?.org_unit_type_id);
-    const orgunitTypes = useMemo(
-        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
-        [orgUnitTypeHierarchy],
-    );
     const { data: formsDropdown, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions({
-            extraFields: ['project_ids'],
+            extraFields: ['project_ids', 'org_unit_type_ids'],
             params: {
                 projectsIds: values?.project,
             },
             enabled: Boolean(values?.project),
         });
+
+    const selectOrgUnitTypeHierarchy = useCallback(
+        (data: OrgUnitTypeHierarchy) => {
+            // Get all possible org unit types filtering on forms org unit types,
+            // if no forms are selected, return all types,
+            // if no org unit types is selected in the forms used, return all types
+            const types = flattenHierarchy(data.sub_unit_types || []);
+            const possibleTypes =
+                formsDropdown
+                    ?.filter(form => values.forms?.includes(form.value))
+                    .flatMap(form => form.original?.org_unit_type_ids || []) ??
+                [];
+            if (possibleTypes.length === 0) {
+                return types;
+            }
+            return types.filter(type => possibleTypes?.includes(type.value));
+        },
+        [formsDropdown, values.forms],
+    );
+
+    const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
+        useGetOrgUnit(values.selectedOrgUnit?.toString());
+    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypesHierarchy<DropdownOptions<number>[]>(
+            rootorgunit?.org_unit_type_id,
+            selectOrgUnitTypeHierarchy,
+        );
+
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown(
             {

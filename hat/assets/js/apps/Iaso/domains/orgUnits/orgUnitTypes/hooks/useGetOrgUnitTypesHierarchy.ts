@@ -1,4 +1,4 @@
-import { UseQueryResult } from 'react-query';
+import { QueryKey, UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
@@ -17,10 +17,10 @@ export type OrgUnitTypeHierarchyDropdownValues = DropdownOptionsWithOriginal<
 >[];
 
 export const flattenHierarchy = (
-    items: any[],
+    items: OrgUnitTypeHierarchy[],
     orgUnitTypeId?: number,
     selectedOrgUnitTypeIds?: number[],
-): any[] => {
+): OrgUnitTypeHierarchyDropdownValues => {
     return items.flatMap(item => {
         if (
             selectedOrgUnitTypeIds?.includes(item.id) &&
@@ -29,7 +29,7 @@ export const flattenHierarchy = (
         ) {
             return [];
         }
-        const currentItem = {
+        const currentItem: OrgUnitTypeHierarchyDropdownValues[number] = {
             value: item.id,
             label: item.name,
             original: item,
@@ -43,11 +43,12 @@ export const flattenHierarchy = (
     });
 };
 
-export const useGetOrgUnitTypesHierarchy = (
+export const useGetOrgUnitTypesHierarchy = <TSelected = OrgUnitTypeHierarchy>(
     orgUnitTypeId?: number,
-): UseQueryResult<OrgUnitTypeHierarchy, Error> => {
-    const queryKey: any[] = ['orgUnitTypeHierarchy', orgUnitTypeId];
-    return useSnackQuery({
+    select?: (data: OrgUnitTypeHierarchy) => TSelected,
+): UseQueryResult<TSelected, Error> => {
+    const queryKey: QueryKey = ['orgUnitTypeHierarchy', orgUnitTypeId];
+    return useSnackQuery<OrgUnitTypeHierarchy, Error, TSelected>({
         queryKey,
         queryFn: () =>
             getRequest(`/api/v2/orgunittypes/${orgUnitTypeId}/hierarchy/`),
@@ -57,6 +58,7 @@ export const useGetOrgUnitTypesHierarchy = (
             cacheTime: 60000,
             staleTime: Infinity,
             retry: false,
+            ...(select ? { select } : {}),
         },
     });
 };

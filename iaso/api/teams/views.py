@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions
@@ -9,6 +10,7 @@ from iaso.api.common import (
     DeletionFilterBackend,
     ModelViewSet,
     ReadOnlyOrHasPermission,
+    is_field_referenced,
 )
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
@@ -59,11 +61,25 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return self.queryset.none()
-        return (
+        queryset = (
             self.queryset.filter_for_user(user)
             .select_related("project")
             .prefetch_related("users", "users__iaso_profile", "sub_teams")
         )
+
+        if self.action != "dropdown":
+            requested_fields = self.request.query_params.get("fields", None)
+            order = self.request.query_params.get("order", "")
+
+            needs_members_count = is_field_referenced("members_count", requested_fields, order)
+
+            if needs_members_count:
+                queryset = queryset.annotate(
+                    annotated_users_count=Count("users", distinct=True),
+                    annotated_sub_teams_count=Count("sub_teams", distinct=True),
+                )
+
+        return queryset
 
     @action(
         detail=False,

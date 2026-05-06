@@ -252,6 +252,61 @@ class TeamTestCase(APITestCase, IasoTestCaseMixin):
         self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("project", serializer.errors)
 
+    def test_serializer_members_count(self):
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+
+        user1 = self.create_user_with_profile(username="user1", account=account)
+        user2 = self.create_user_with_profile(username="user2", account=account)
+
+        data_users = {
+            "name": "team of users",
+            "project": project.id,
+            "users": [user1.id, user2.id],
+            "manager": user.id,
+            "sub_teams": [],
+        }
+
+        serializer_users = TeamSerializer(context={"request": request}, data=data_users)
+        self.assertTrue(serializer_users.is_valid(), serializer_users.errors)
+        team_of_users = serializer_users.save()
+
+        self.assertEqual(serializer_users.get_members_count(team_of_users), 2)
+
+        sub_team1 = Team.objects.create(project=project, name="sub1", manager=user)
+        sub_team2 = Team.objects.create(project=project, name="sub2", manager=user)
+        sub_team3 = Team.objects.create(project=project, name="sub3", manager=user)
+
+        data_teams = {
+            "name": "team of teams",
+            "project": project.id,
+            "users": [],
+            "manager": user.id,
+            "sub_teams": [sub_team1.id, sub_team2.id, sub_team3.id],
+        }
+
+        serializer_teams = TeamSerializer(context={"request": request}, data=data_teams)
+        self.assertTrue(serializer_teams.is_valid(), serializer_teams.errors)
+        team_of_teams = serializer_teams.save()
+
+        self.assertEqual(serializer_teams.get_members_count(team_of_teams), 3)
+
+        data_empty = {
+            "name": "empty team",
+            "project": project.id,
+            "users": [],
+            "manager": user.id,
+            "sub_teams": [],
+        }
+
+        serializer_empty = TeamSerializer(context={"request": request}, data=data_empty)
+        self.assertTrue(serializer_empty.is_valid(), serializer_empty.errors)
+        empty_team = serializer_empty.save()
+
+        self.assertEqual(serializer_empty.get_members_count(empty_team), 0)
+
 
 class TeamAPITestCase(APITestCase):
     fixtures = ["user.yaml"]
@@ -309,6 +364,49 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(len(r), 3)
         ids = sorted([row["id"] for row in r])
         self.assertEqual(ids, [team_b_c.id, team_b_c_e.id, team_b_c_f.id])
+
+    def test_members_count_in_view(self):
+        self.client.force_authenticate(self.user)
+
+        user1 = self.create_user_with_profile(username="member1", account=self.account)
+        user2 = self.create_user_with_profile(username="member2", account=self.account)
+
+        team_of_users = Team.objects.create(
+            project=self.project1, name="Team of Users API", manager=self.user, type=TeamType.TEAM_OF_USERS
+        )
+        team_of_users.users.set([user1, user2])
+
+        sub_team = Team.objects.create(project=self.project1, name="Sub Team API", manager=self.user)
+
+        team_of_teams = Team.objects.create(
+            project=self.project1, name="Team of Teams API", manager=self.user, type=TeamType.TEAM_OF_TEAMS
+        )
+        team_of_teams.sub_teams.set([sub_team])
+
+        response = self.client.get("/api/teams/?fields=id,members_count", format="json")
+        r = self.assertJSONResponse(response, 200)
+
+        team_of_users_data = next(t for t in r if t["id"] == team_of_users.id)
+        team_of_teams_data = next(t for t in r if t["id"] == team_of_teams.id)
+        team1_data = next(t for t in r if t["id"] == self.team1.id)
+
+        self.assertIn("members_count", team_of_users_data)
+        self.assertEqual(team_of_users_data["members_count"], 2)
+
+        self.assertIn("members_count", team_of_teams_data)
+        self.assertEqual(team_of_teams_data["members_count"], 1)
+
+        self.assertEqual(team1_data["members_count"], 0)
+
+        response_default = self.client.get("/api/teams/", format="json")
+        r_default = self.assertJSONResponse(response_default, 200)
+
+        default_team_data = next(t for t in r_default if t["id"] == team_of_users.id)
+
+        self.assertNotIn("members_count", default_team_data)
+
+        self.assertIn("name", default_team_data)
+        self.assertEqual(default_team_data["name"], "Team of Users API")
 
     def test_create(self):
         user_with_perms = self.create_user_with_profile(

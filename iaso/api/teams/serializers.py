@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.fields import Field
 
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.api.common import ModelSerializer
 from iaso.models import Project
 from iaso.models.team import Team, TeamType
@@ -51,7 +52,9 @@ class TeamDropdownSerializer(ModelSerializer):
         read_only_fields = ["id", "name", "color", "type", "project"]
 
 
-class TeamSerializer(ModelSerializer):
+class TeamSerializer(ModelSerializer, DynamicFieldsModelSerializerBackwardCompatible):
+    members_count = serializers.SerializerMethodField()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
@@ -82,12 +85,38 @@ class TeamSerializer(ModelSerializer):
             "parent",
             "sub_teams",
             "sub_teams_details",
+            "members_count",
         ]
-        read_only_fields = ["created_at"]
+        default_fields = [
+            "id",
+            "project",
+            "project_details",
+            "name",
+            "description",
+            "created_at",
+            "deleted_at",
+            "type",
+            "color",
+            "users",
+            "users_details",
+            "manager",
+            "parent",
+            "sub_teams",
+            "sub_teams_details",
+        ]
+        read_only_fields = ["created_at", "members_count"]
 
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
     project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
+
+    def get_members_count(self, team):
+        if team.type == TeamType.TEAM_OF_TEAMS:
+            return getattr(team, "annotated_sub_teams_count", None) or team.sub_teams.count()
+
+        if team.type == TeamType.TEAM_OF_USERS:
+            return getattr(team, "annotated_users_count", None) or team.users.count()
+        return 0
 
     def validate_parent(self, value: Team):
         if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):

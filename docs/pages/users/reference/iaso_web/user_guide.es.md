@@ -12,9 +12,7 @@ Los administradores pueden por lo tanto usar la plataforma web para planificar, 
 
 ## Inicio de sesión
 
-Para iniciar sesión en la interfaz web, vaya a
-[<u>https://iaso.bluesquare.org/login/</u>](https://iaso.bluesquare.org/login/)
-e inicie sesión con su nombre de usuario y contraseña.
+Para iniciar sesión en la interfaz web, vaya a a url del server e inicie sesión con su nombre de usuario y contraseña.
 
 ![alt text](attachments/iasologin.png)
 

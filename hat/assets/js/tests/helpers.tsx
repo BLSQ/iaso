@@ -1,4 +1,5 @@
 import React from 'react';
+import { faker } from '@faker-js/faker';
 import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
@@ -26,6 +27,7 @@ export const setLocale = (code: string): void => {
 };
 
 const queryClient = new QueryClient();
+export { queryClient as TestingQueryClient };
 
 export const QueryClientWrapper = ({
     children,
@@ -119,4 +121,29 @@ export const selectFromComboBoxWithAsync = async ({
     await act(async () => {
         await user.click(screen.getByRole('option', { name: nameOption }));
     });
+};
+
+// just an helper to get the right faker seed for your usage
+
+export const getSeedFor = ({
+    condition,
+    responseMock,
+}: {
+    condition: (data: any) => boolean;
+    responseMock: () => any;
+}): void => {
+    let response;
+    for (let seed = 1; seed < 10_000_000; seed++) {
+        faker.seed(seed);
+
+        response = responseMock();
+
+        const ok = condition(response);
+
+        if (ok) {
+            // eslint-disable-next-line
+            console.log('number', seed);
+            break;
+        }
+    }
 };

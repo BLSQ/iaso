@@ -6,7 +6,7 @@ import { Nullable, Optional } from '../types/utils';
 import { FETCHING_ABORTED } from './constants';
 
 export class ApiError extends Error {
-    private status: any;
+    public status: any;
 
     public details: any;
 
@@ -122,17 +122,6 @@ export const getRequest = async (
         signal,
     }).then(response => {
         return response.json();
-    });
-};
-export const getRequestImage = async (
-    url: string,
-    signal?: Nullable<AbortSignal>,
-): Promise<Blob> => {
-    return iasoFetch(url, {
-        headers: { 'Accept-Language': moment.locale() },
-        signal,
-    }).then(response => {
-        return response.blob();
     });
 };
 

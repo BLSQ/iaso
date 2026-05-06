@@ -16,6 +16,7 @@ import {
     useParamsObject,
 } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../messages';
+// import { useCustomApiValidationWorkflowsList } from './api/Get';
 import { useGetSubmissionValidationWorkflows } from './api/Get';
 import { useWorkflowsTableColumns } from './columns';
 import { Filters } from './Filters';
@@ -30,6 +31,8 @@ export const SubmissionValidation = () => {
     );
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    // const { data: workflows, isFetching: isLoadingWorkflows } =
+    //     useCustomApiValidationWorkflowsList(params);
     const { data: workflows, isFetching: isLoadingWorkflows } =
         useGetSubmissionValidationWorkflows(params);
     const columns = useWorkflowsTableColumns();

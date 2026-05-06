@@ -14,6 +14,11 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
+// import {
+//     useApiValidationWorkflowsCreate,
+//     useApiValidationWorkflowsUpdate,
+//     ValidationWorkflowRetrieveOutput,
+// } from 'Iaso/api/validationWorkflows';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
@@ -51,7 +56,7 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
         <TableRow>
             <TableCell
                 className={classes.leftCell}
-                sx={{ whiteSpace: 'nowrap' }}   
+                sx={{ whiteSpace: 'nowrap' }}
             >
                 {label}
             </TableCell>
@@ -60,6 +65,7 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
     );
 };
 
+// type Props = { workflow?: ValidationWorkflowRetrieveOutput };
 type Props = { workflow?: ValidationWorkflowRetrieveResponseItem };
 
 export const WorkflowBaseInfo = ({ workflow }: Props) => {
@@ -72,6 +78,9 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
     );
     const redirectToReplace = useRedirectToReplace();
     const { mutateAsync } = useSaveWorkflow();
+    // const { mutateAsync: mutateAsyncCreate } =
+    //     useApiValidationWorkflowsCreate();
+    // const { mutateAsync: mutateAsyncSave } = useApiValidationWorkflowsUpdate();
 
     const save = useCallback(() => {
         if (workflow) {
@@ -79,7 +88,12 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
                 slug: workflow.slug,
                 body: { name, description },
             });
+            // return mutateAsyncSave({
+            //     slug: workflow.slug,
+            //     data: { name, description },
+            // });
         }
+
         return mutateAsync(
             { body: { name, description } },
             {
@@ -90,7 +104,27 @@ export const WorkflowBaseInfo = ({ workflow }: Props) => {
                     }),
             },
         );
-    }, [description, mutateAsync, name, params, redirectToReplace, workflow]);
+
+        // return mutateAsyncCreate(
+        //     { data: { name, description } },
+        //     {
+        //         onSuccess: data =>
+        //             redirectToReplace(baseUrls.instanceValidationDetail, {
+        //                 ...params,
+        //                 slug: data.slug,
+        //             }),
+        //     },
+        // );
+    }, [
+        description,
+        // mutateAsyncCreate,
+        // mutateAsyncSave,
+        mutateAsync,
+        name,
+        params,
+        redirectToReplace,
+        workflow,
+    ]);
 
     // TODO add trim()
     const hasChange =

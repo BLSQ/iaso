@@ -23,7 +23,7 @@ class NestedDataSourceSerializer(ModelSerializer):
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-    url = serializers.CharField(source="credentials__url", read_only=True)
+    url = serializers.CharField(source="credentials__url", read_only=True, allow_null=True)
 
     class Meta:
         model = DataSource
@@ -241,7 +241,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
     user_roles_permissions = NestedUserRoleSerializer(many=True, read_only=True, source="get_ordered_user_roles")
 
     country_code = serializers.SerializerMethodField()
-    phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True)
+    phone_number = serializers.CharField(source="phone_number.as_e164", read_only=True, allow_null=True)
 
     projects = NestedProjectSerializer(many=True, read_only=True, source="get_ordered_projects")
 

@@ -6,6 +6,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+// import { useApiValidationWorkflowsDestroy } from 'Iaso/api/validationWorkflows';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
@@ -22,6 +23,7 @@ import { EditNode } from './details/CreateEditNode/CreateEditNode';
 export const useWorkflowsTableColumns = () => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
+    // const { mutateAsync: deleteWorkflow } = useApiValidationWorkflowsDestroy();
     const { mutateAsync: deleteWorkflow } = useDeleteWorkflow();
 
     return useMemo(() => {
@@ -85,6 +87,9 @@ export const useWorkflowsTableColumns = () => {
                                 type="icon"
                                 titleMessage={MESSAGES.deleteWorkflow}
                                 onConfirm={() =>
+                                    // deleteWorkflow({
+                                    //     slug: settings.row.original.slug,
+                                    // })
                                     deleteWorkflow(settings.row.original.slug)
                                 }
                                 backdropClick

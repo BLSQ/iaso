@@ -7,11 +7,60 @@ We will primarily rely on the following tools:
 * [drf-spectacular](https://drf-spectacular.readthedocs.io/en/latest/) (backend)
 * [orval](https://orval.dev/) (frontend)
 
+---
+
+
 ## Table of contents
 
+- [Quick start](#quick-start)
 - [Backend](#backend)
-  - [Setting up drf-spectacular]
+  - [Setting up drf-spectacular](#setting-up-drf-spectacular)
+  - [Documenting your endpoint](#documenting-your-endpoint)
+  - [Testing the generated OpenAPI schema](#testing-the-generated-openapi-schema)
+  - [Utilities](#utilities)
 - [Frontend](#frontend)
+  - [Configuration](#configuration)
+  - [Generating new files](#generating-new-files)
+  - [Integrating React Query hooks](#integrating-react-query-hooks)
+  - [Using zod schemas](#using-zod-schemas)
+  - [Testing](#testing)
+    - [Integration testing (without a backend)](#integration-testing-without-a-backend)
+    - [E2E Tests](#e2e-tests)
+  - [CI](#ci)
+- [FAQ](#faq)
+- [Known Issues and Caveats](#known-issues-and-caveats)
+
+---
+
+
+## Quick start
+
+The typical workflow is:
+
+1. Update backend (serializers / views)
+2. Generate OpenAPI schema
+3. Run Orval
+4. Use generated hooks in frontend
+5. Test with MSW and/or E2E
+
+### Generate OpenAPI schema
+
+```shell
+python manage.py generate_openapi_schema
+```
+
+### Run orval
+```shell
+npm run orval
+```
+
+### Import generated hooks
+```typescript
+import { useGetSomething } from '...'
+```
+
+---
+
 
 ## Backend
 
@@ -97,7 +146,10 @@ A Django management command is available to automatically generate an OpenAPI sc
 python manage.py generate_openapi_schema
 ```
 
-## Front end
+---
+
+
+## Frontend
 
 We use Orval to generate frontend code from the OpenAPI specification defined by the backend.
 
@@ -115,11 +167,12 @@ Several environment variables are also available to control the generation proce
 
 * `ORVAL_TARGET_URL_PROTOCOL`: `http` or `https`, the protocol used in the URL to fetch the OpenAPI schema
 * `ORVAL_TARGET_URL_DOMAIN`: default `localhost:8000`, the host serving the OpenAPI schema
+* `ORVAL_API_BASE_URL`: the base url that will be appended to your generated hooks for the API.
 * `ORVAL_TARGET_FILE`: path to a local OpenAPI file, if used instead of a remote endpoint
 * `API_TOKEN`: bearer token used when fetching the schema from a protected /swagger/ endpoint
 * `MSW_DELAY`: adds an artificial delay to MSW mocks, useful for simulating loading states during development and testing
 
-### Generating new file
+### Generating new files
 
 We have split the `orval.config.ts` into multiple projects, allowing selective regeneration of specific parts of the API without overwriting the entire generated client.
 
@@ -362,33 +415,235 @@ server.use(
 
 These tools make it easy to define flexible API mocks and thoroughly test the frontend without requiring a running backend.
 
-#### E2E tests
+#### E2E Tests
 
 In addition to mocked integration tests, we can also run true end-to-end (E2E) tests against the real backend.
 
-This approach allows us to validate full user flows, including basic CRUD operations, and ensures that the frontend and backend work correctly together in a real environment.
+This approach validates complete user flows, including basic CRUD operations, and ensures that the frontend and backend interact correctly in a real environment.
 
-To support this, a set of backend testing helpers has been introduced. These helpers make it possible to programmatically create and clean up data, enabling reliable and repeatable E2E tests without manual setup.
+To support this, a set of backend testing helpers has been introduced. These helpers allow programmatic data setup and cleanup, enabling reliable and repeatable E2E tests without manual intervention.
 
 ###### 1. Setup
+
+In your `settings.py`, set the `TEST_MODE` variable to `True` to enable the functional test (FT) helpers.
+
+When using this mode, it is strongly recommended to use a dedicated database, as it will be flushed during tests.
+
 ###### 2. Functional Test Helpers
-###### 3. Testing
+
+The API exposes several endpoints to support E2E testing and database management:
+
+- `/api/ft-helpers/clean-database/`  
+  Resets the backend database by flushing all data.
+
+- `/api/ft-helpers/create-user/`  
+  Creates a user that can be used for authentication during tests.
+
+- `/api/token/`  
+  Returns an authentication token using the credentials of the created user. This token can then be included in request headers.
+
+###### 3. Writing Tests
+
+Below is an example of an E2E test with a running backend.
+These tests should be located under: `__tests__/api/<project>.api.test.tsx`
+
+```typescript
+
+import { act, renderHook, waitFor } from '@testing-library/react';
+import {
+    useApiValidationWorkflowsCreate,
+    useApiValidationWorkflowsRetrieve,
+} from 'Iaso/api/validationWorkflows';
+import { useCustomApiValidationWorkflowsList } from 'Iaso/domains/instances/validationWorkflow/api/Get';
+import { QueryClientWrapperWithIntlProvider } from '../../tests/helpers';
+
+// let user: any;
+let token: any;
+
+describe('ValidationWorkflow api e2e tests', () => {
+    beforeEach(async () => {
+        // clean DB
+        await fetch('http://localhost:8000/api/ft-helpers/clean-database/', {
+            method: 'POST',
+        });
+
+        // create user and retrieve token
+
+        await fetch('http://localhost:8000/api/ft-helpers/create-user/', {
+            method: 'POST',
+        }).then(res => res.json());
+
+        const data = await fetch('http://localhost:8000/api/token/', {
+            method: 'POST',
+            body: JSON.stringify({
+                username: 'yoda',
+                password: 'IMomLove',
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then(res => res.json());
+
+        token = data?.access;
+    });
+
+    it.skip('CRUD accordingly', async () => {
+        const { result: resultList } = renderHook(
+            () =>
+                useCustomApiValidationWorkflowsList(
+                    {},
+                    {
+                        request: {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        },
+                    },
+                ),
+            { wrapper: QueryClientWrapperWithIntlProvider },
+        );
+
+        await waitFor(() => expect(resultList.current.isSuccess).toBe(true));
+
+        expect(resultList.current.data).toStrictEqual({
+            count: 0,
+            has_next: false,
+            has_previous: false,
+            limit: 20,
+            page: 1,
+            pages: 1,
+            results: [],
+        });
+
+        // create validation workflow
+        const { result: resultCreate } = renderHook(
+            () =>
+                useApiValidationWorkflowsCreate({
+                    request: {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    },
+                }),
+            { wrapper: QueryClientWrapperWithIntlProvider },
+        );
+
+        await act(async () => {
+            await resultCreate.current.mutateAsync({
+                data: {
+                    name: 'test-validation-workflow',
+                    description: 'a description',
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(resultCreate.current.isSuccess).toBe(true);
+            expect(resultCreate.current.isError).toBe(false);
+        });
+
+        await act(async () => {
+            await resultList.current.refetch();
+        });
+
+        await waitFor(() => expect(resultList.current.isSuccess).toBe(true));
+
+        expect(resultList.current.data).toMatchObject({
+            count: 1,
+            has_next: false,
+            has_previous: false,
+            limit: 20,
+            page: 1,
+            pages: 1,
+        });
+        expect(resultList.current.data?.results.length).toBe(1);
+        expect(resultList.current.data?.results[0]).toMatchObject({
+            name: 'test-validation-workflow',
+            slug: 'test-validation-workflow',
+            form_count: 0,
+            created_by: 'yoda',
+            updated_by: null,
+        });
+
+        expect(resultList.current.data?.results[0].updated_at).not.toBeNull();
+        expect(resultList.current.data?.results[0].created_at).not.toBeNull();
+
+        // retrieve
+        const { result: resultRetrieve } = renderHook(
+            () =>
+                useApiValidationWorkflowsRetrieve('test-validation-workflow', {
+                    request: {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    },
+                }),
+            { wrapper: QueryClientWrapperWithIntlProvider },
+        );
+
+        await waitFor(() => {
+            expect(resultRetrieve.current.isSuccess).toBe(true);
+        });
+
+        expect(resultRetrieve.current.data).toMatchObject({
+            created_by: 'yoda',
+            description: 'a description',
+            forms: [],
+            name: 'test-validation-workflow',
+            node_templates: [],
+            slug: 'test-validation-workflow',
+            updated_by: null,
+        });
+
+        expect(resultRetrieve.current.data?.updated_at).not.toBeNull();
+        expect(resultRetrieve.current.data?.created_at).not.toBeNull();
+
+        // update
+
+        // check with read and list
+
+        // delete
+    });
+});
+
+
+```
+
+#### CI
+
+Since Orval-generated files must be committed and pushed to the repository, a CI check ensures they are always up to date.
+
+This helps prevent inconsistencies between the OpenAPI schema and the generated client, reducing the risk of runtime errors.
+
+---
 
 ## FAQ
 
-* How do I extend a generated zod schema ?
-Like so: 
-```typescript
+### How do I extend a generated Zod schema?
 
-import BaseSchema from "project/models";
+You can extend a generated schema using Zod’s `.extend()` method:
+
+```typescript
+import { BaseSchema } from "project/models";
 
 const NewSchema = BaseSchema.extend({
-  
-})
+  // add or override fields here
+});
 ```
 
-## Known issues and caveats
+This allows you to reuse the generated schema while customizing it for your specific needs.
 
-* orval does not include zod parsing by default with react-query and custom fetch/mutators/httpClient... , it's WIP on their side https://github.com/orval-labs/orval/issues/2858
-* orval does not include operations when using custom mutators, had to patch it
-* few bugs on orval side, used patch package
+---
+
+
+## Known Issues and Caveats
+
+1. **Zod integration**  
+   Orval does not currently support Zod parsing out of the box when using `react-query` with custom fetchers, mutators, or HTTP clients. This is a known limitation and is still a work in progress on their side:  
+   https://github.com/orval-labs/orval/issues/2858 https://github.com/orval-labs/orval/pull/3226
+
+2. **Missing operations with custom mutators**  
+   When using custom mutators, some operations may not be generated. Refer to the implementation in `custom-mutators` for details and workarounds.
+
+3. **Upstream bugs**  
+   A few issues originate from Orval itself. Temporary fixes have been applied locally using `patch-package` until upstream fixes are available.

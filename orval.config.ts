@@ -35,7 +35,9 @@ const createConfig = (project: string, tags: string[] | RegExp[], mutationInvali
             mode: 'tags-split',
             client: 'react-query',
             clean: true,
-            baseUrl: ORVAL_TARGET,
+            baseUrl: {
+                runtime: 'process.env.ORVAL_API_BASE_URL'
+            },
             workspace: `./hat/assets/js/apps/Iaso/api/${project}`,
             override: {
                 // operations: OperationConfig.operations,

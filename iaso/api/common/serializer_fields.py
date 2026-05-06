@@ -77,6 +77,12 @@ class AccountPrefixedSlugRelatedField(serializers.SlugRelatedField):
         return super().to_internal_value(prefixed_name)
 
 
+@extend_schema_field(OpenApiTypes.STR)
+class UserRoleNameField(serializers.Field):
+    def to_representation(self, user_role):
+        return user_role.group.name.removeprefix(f"{user_role.account_id}_")
+
+
 class SlugOrPrimaryKeyRelatedField(serializers.SlugRelatedField):
     def to_internal_value(self, data):
         if isinstance(data, int):

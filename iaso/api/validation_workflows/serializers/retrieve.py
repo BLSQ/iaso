@@ -2,23 +2,13 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
+from iaso.api.common.serializer import UserRoleNameSerializer
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
-from iaso.models import Form, UserRole, ValidationNodeTemplate, ValidationWorkflow
-
-
-class NestedRolesRequiredSerializer(ModelSerializer):
-    name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserRole
-        fields = ["name", "id"]
-
-    def get_name(self, obj):
-        return obj.group.name.removeprefix(f"{obj.account_id}_")
+from iaso.models import Form, ValidationNodeTemplate, ValidationWorkflow
 
 
 class NestedValidationNodeTemplateSerializer(ModelSerializer):
-    roles_required = NestedRolesRequiredSerializer(read_only=True, many=True)
+    roles_required = UserRoleNameSerializer(read_only=True, many=True)
 
     class Meta:
         model = ValidationNodeTemplate

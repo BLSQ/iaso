@@ -12,9 +12,7 @@ Administrators can therefore use the web platform to plan, monitor and then eval
 
 ## Login
 
-To log into the web interface, go to
-[<u>https://iaso.bluesquare.org/login/</u>](https://iaso.bluesquare.org/login/)
-and sign in with your username and password.
+To log into the web interface, go to your server url and sign in with your username and password.
 
 ![alt text](attachments/iasologin.png)
 

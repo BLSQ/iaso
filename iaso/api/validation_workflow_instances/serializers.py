@@ -3,23 +3,12 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
+from iaso.api.common.serializer import UserRoleNameSerializer
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
 from iaso.models import Instance, UserRole, ValidationNode, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.utils.serializer.color import ColorFieldSerializer
-
-
-class NestedUserRoleSerializer(ModelSerializer):
-    name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserRole
-        fields = ["name", "id"]
-
-    def get_name(self, obj):
-        return obj.group.name.removeprefix(f"{obj.account_id}_")
-
 
 class NestedHistorySerializer(ModelSerializer):
     color = ColorFieldSerializer(source="node.color", read_only=True)
@@ -45,7 +34,7 @@ class NestedHistorySerializer(ModelSerializer):
 
 
 class NextTasksSerializer(ModelSerializer):
-    user_roles = NestedUserRoleSerializer(read_only=True, many=True, source="node.roles_required")
+    user_roles = UserRoleNameSerializer(read_only=True, many=True, source="node.roles_required")
     name = serializers.CharField(read_only=True, source="node.name")
     node_template_slug = serializers.CharField(read_only=True, source="node.slug")
 
@@ -55,7 +44,7 @@ class NextTasksSerializer(ModelSerializer):
 
 
 class NextByPassSerializer(ModelSerializer):
-    user_roles = NestedUserRoleSerializer(read_only=True, many=True, source="roles_required")
+    user_roles = UserRoleNameSerializer(read_only=True, many=True, source="roles_required")
 
     class Meta:
         model = ValidationNodeTemplate

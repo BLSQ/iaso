@@ -238,18 +238,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.date_rrt_orpg_approval',
         defaultMessage: 'Date of RRT/ORPG approval',
     },
-    date_vrf_submission_dg: {
-        id: 'iaso.polio.label.date_vrf_submission_dg',
-        defaultMessage: 'Date of VRF submission to DG',
-    },
-    quantities_approved_by_dg_in_doses: {
-        id: 'iaso.polio.label.quantities_approved_by_dg_in_doses',
-        defaultMessage: 'Quantity approved by DG in doses',
-    },
-    date_dg_approval: {
-        id: 'iaso.polio.label.date_dg_approval',
-        defaultMessage: 'Date of DG approval',
-    },
     defaultMutationApiError: {
         id: 'iaso.snackBar.error',
         defaultMessage: 'An error occurred while saving',

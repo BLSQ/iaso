@@ -154,7 +154,5 @@ class ValidationNodeTemplateAPIRetrieveTestCase(BaseApiTestCase):
                 self.assertEqual(res_data["name"], "Second node")
                 self.assertEqual(res_data["description"], "some description")
                 self.assertEqual(res_data["color"], "#FFFFFF")
-                self.assertEqual(
-                    res_data["roles_required"], [{"id": self.user_role.pk, "name": "Group"}]
-                )
+                self.assertEqual(res_data["roles_required"], [{"id": self.user_role.pk, "name": "Group"}])
                 self.assertTrue(res_data["can_skip_previous_nodes"])

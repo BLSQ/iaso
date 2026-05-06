@@ -20,6 +20,7 @@ class UserRoleNameFieldTestCase(TestCase):
         user_role = UserRole.objects.create(account=self.account, group=group)
 
         self.assertEqual(UserRoleNameFieldTestSerializer(user_role).data, {"name": "data manager"})
+
     def test_keeps_group_name_without_matching_account_prefix(self):
         group = Group.objects.create(name="data_manager")
         user_role = UserRole.objects.create(account=self.account, group=group)

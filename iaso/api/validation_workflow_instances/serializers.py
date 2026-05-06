@@ -10,6 +10,7 @@ from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.utils.serializer.color import ColorFieldSerializer
 
+
 class NestedHistorySerializer(ModelSerializer):
     color = ColorFieldSerializer(source="node.color", read_only=True)
     level = serializers.CharField(read_only=True, source="node.name")

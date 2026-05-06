@@ -7,11 +7,13 @@ import { User } from 'Iaso/utils/usersUtils';
 type UseSaveProfileParams = {
     id?: number | string;
     showSuccessSnackBar?: boolean;
+    extraInvalidateQueryKeys?: string[];
 };
 
 export const useSaveProfile = ({
     id,
     showSuccessSnackBar = true,
+    extraInvalidateQueryKeys = [],
 }: UseSaveProfileParams = {}): UseMutationResult<
     User,
     DjangoError,
@@ -25,6 +27,7 @@ export const useSaveProfile = ({
             'usersHistoryList',
             'team',
             'userDetail',
+            ...extraInvalidateQueryKeys,
         ],
         showSuccessSnackBar,
     });

@@ -46,6 +46,7 @@ export const useSaveAssignment = ({
         queryClient.invalidateQueries('assignmentsList');
         queryClient.invalidateQueries('planningDetails');
         queryClient.invalidateQueries('orgUnitsList');
+        queryClient.invalidateQueries('planningChildrenOrgUnitsPaginated');
     };
     const mutation = useSnackMutation<unknown, unknown, SaveAssignmentQuery>({
         mutationFn: (data: SaveAssignmentQuery) => saveAssignment(data),

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import (
@@ -229,17 +230,6 @@ class PlanningSamplingResultListSerializer(serializers.Serializer):
         user = getattr(request, "user", None)
         if user and user.is_authenticated:
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
-
-
-class PlanningOrgUnitListSerializer(serializers.Serializer):
-    planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none())
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        if user and user.is_authenticated:
-            self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
 
 
 class PlanningSamplingResultWriteSerializer(serializers.ModelSerializer):
@@ -475,3 +465,66 @@ class PlanningOrgUnitSerializer(serializers.ModelSerializer):
 
     def get_has_geo_json(self, org_unit: OrgUnit) -> bool:
         return hasattr(org_unit, "geo_json") and org_unit.geo_json is not None
+
+
+class PlanningOrgUnitTableAssignmentTeamSerializer(ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ["id", "name", "color"]
+
+
+class PlanningOrgUnitTableAssignmentUserSerializer(ModelSerializer):
+    color = serializers.CharField(source="iaso_profile.color", read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "color"]
+
+
+class PlanningOrgUnitTableAssignmentSerializer(ModelSerializer):
+    """Assignment row for planning org unit table: both ``team`` and ``user`` are exposed; ``assignment_type`` indicates which is set."""
+
+    team = PlanningOrgUnitTableAssignmentTeamSerializer(allow_null=True, read_only=True)
+    user = PlanningOrgUnitTableAssignmentUserSerializer(allow_null=True, read_only=True)
+    assignment_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Assignment
+        fields = ("id", "team", "user", "assignment_type")
+
+    @extend_schema_field(serializers.ChoiceField(allow_null=True, choices=["team", "user"], required=False))
+    def get_assignment_type(self, obj: Assignment):
+        if obj.team_id and obj.team:
+            return "team"
+        if obj.user_id and obj.user:
+            return "user"
+        return None
+
+
+class PlanningOrgUnitTableSerializer(ModelSerializer):
+    """Paginated planning org units for tables (minimal columns + assignment for this planning)."""
+
+    assignment = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "assignment"]
+        read_only_fields = fields
+
+    @extend_schema_field(PlanningOrgUnitTableAssignmentSerializer)
+    def get_assignment(self, org_unit: OrgUnit):
+        assignment = self._assignment_for_org_unit(org_unit)
+        return PlanningOrgUnitTableAssignmentSerializer(instance=assignment).data
+
+    def _assignment_for_org_unit(self, org_unit: OrgUnit):
+        prefetched = getattr(org_unit, "_planning_assignments_prefetched", None)
+        if prefetched is not None:
+            return prefetched[0] if prefetched else None
+        planning = self.context.get("planning")
+        if planning is None:
+            return None
+        return (
+            Assignment.objects.filter(planning=planning, org_unit=org_unit, deleted_at__isnull=True)
+            .select_related("user__iaso_profile", "team")
+            .first()
+        )

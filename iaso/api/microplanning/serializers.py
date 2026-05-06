@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -493,7 +492,7 @@ class PlanningOrgUnitTableAssignmentSerializer(ModelSerializer):
         model = Assignment
         fields = ("id", "team", "user", "assignment_type")
 
-    @extend_schema_field(OpenApiTypes.STR)
+    @extend_schema_field(serializers.ChoiceField(allow_null=True, choices=["team", "user"], required=False))
     def get_assignment_type(self, obj: Assignment):
         if obj.team_id and obj.team:
             return "team"
@@ -512,6 +511,7 @@ class PlanningOrgUnitTableSerializer(ModelSerializer):
         fields = ["id", "name", "assignment"]
         read_only_fields = fields
 
+    @extend_schema_field(PlanningOrgUnitTableAssignmentSerializer)
     def get_assignment(self, org_unit: OrgUnit):
         assignment = self._assignment_for_org_unit(org_unit)
         return PlanningOrgUnitTableAssignmentSerializer(instance=assignment).data

@@ -59,6 +59,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'search',
             'showDeleted',
+            'onlyDeleted',
             'planning',
             'orgUnitTypeIds',
             'projectsIds',

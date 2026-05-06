@@ -9,15 +9,28 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import * as Permission from '../../../utils/permissions';
 import { createInstance } from '../../instances/actions';
-import { useDeleteForm } from '../hooks/useDeleteForm';
 import { useRestoreForm } from '../hooks/useRestoreForm';
 import MESSAGES from '../messages';
 import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
+
+type ShouldShowRestoreActionArgs = {
+    onlyDeleted: boolean;
+    showDeleted: boolean;
+    deletedAt?: string | null;
+};
+
+export const shouldShowRestoreAction = ({
+    onlyDeleted,
+    showDeleted,
+    deletedAt,
+}: ShouldShowRestoreActionArgs): boolean =>
+    onlyDeleted || (showDeleted && Boolean(deletedAt));
 
 type Props = {
     settings: any;
     orgUnitId: number | string;
     baseUrls: any;
+    onlyDeleted: boolean;
     showDeleted: boolean;
     hasDhis2Module: boolean;
     deleteForm: (body: { id: number }) => Promise<any>;
@@ -27,6 +40,7 @@ export const FormActions: FunctionComponent<Props> = ({
     settings,
     orgUnitId,
     baseUrls,
+    onlyDeleted,
     showDeleted,
     hasDhis2Module,
     deleteForm,
@@ -50,17 +64,22 @@ export const FormActions: FunctionComponent<Props> = ({
     const { mutateAsync: restoreForm } = useRestoreForm();
     const hasNoVersion = settings.row.original.latest_form_version === null;
     const { formatMessage } = useSafeIntl();
+    const shouldShowRestore = shouldShowRestoreAction({
+        onlyDeleted,
+        showDeleted,
+        deletedAt: settings.row.original.deleted_at,
+    });
 
     return (
         <section>
-            {showDeleted && (
+            {shouldShowRestore && (
                 <IconButton
                     onClick={() => restoreForm(settings.row.original.id)}
                     icon="restore-from-trash"
                     tooltipMessage={MESSAGES.restoreFormTooltip}
                 />
             )}
-            {!showDeleted && (
+            {!shouldShowRestore && (
                 <>
                     <DisplayIfUserHasPerm
                         permissions={[
@@ -110,7 +129,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                             formType={{
                                                 id: settings.row.original.id,
                                                 periodType:
-                                                    settings.row.original.period_type,
+                                                    settings.row.original
+                                                        .period_type,
                                             }}
                                             onCreateOrReAssign={(
                                                 currentForm,
@@ -128,7 +148,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                             iconProps={{
                                                 disabled: hasNoVersion,
                                             }}
-                                                />
+                                        />
                                     </span>
                                 </Tooltip>
                             </DisplayIfUserHasPerm>
@@ -165,9 +185,9 @@ export const FormActions: FunctionComponent<Props> = ({
                                 <DeleteDialog
                                     titleMessage={MESSAGES.deleteFormTitle}
                                     onConfirm={closeDialog =>
-                                        deleteForm(
-                                            {id: settings.row.original.id},
-                                        ).then(closeDialog)
+                                        deleteForm({
+                                            id: settings.row.original.id,
+                                        }).then(closeDialog)
                                     }
                                 />
                             </DisplayIfUserHasPerm>
@@ -175,7 +195,7 @@ export const FormActions: FunctionComponent<Props> = ({
                     )}
                 </>
             )}
-            {settings.row.original.latest_form_version !== null && (
+            {settings.row.original.latest_form_version != null && (
                 <>
                     <IconButton
                         onClick={handleClick as () => void}
@@ -199,7 +219,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                     reloadDocument
                                     to={
                                         settings.row.original
-                                            .latest_form_version.xls_file
+                                            .latest_form_version?.xls_file
                                     }
                                 >
                                     XLS
@@ -211,8 +231,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                 download
                                 reloadDocument
                                 to={
-                                    settings.row.original.latest_form_version
-                                        .file
+                                    settings.row.original
+                                        .latest_form_version?.file
                                 }
                             >
                                 XML

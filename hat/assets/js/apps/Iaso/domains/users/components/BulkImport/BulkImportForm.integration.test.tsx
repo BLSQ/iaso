@@ -6,13 +6,19 @@ import {
     within,
     act,
 } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import { baseUrls } from 'Iaso/constants/urls';
 import {
     renderWithThemeAndIntlProvider,
     selectFromComboBoxWithAsync,
 } from '../../../../../../tests/helpers';
-import { BulkImportDialogModal } from './BulkImportDialog';
+import { BulkImportForm } from './BulkImportForm';
 import * as uploadHook from './hooks/useUploadCsv';
+
+const { mockRedirectTo } = vi.hoisted(() => {
+    return { mockRedirectTo: vi.fn() };
+});
 
 vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
@@ -23,6 +29,7 @@ vi.mock('bluesquare-components', async () => {
             formatMessage: ({ defaultMessage }: any) => defaultMessage,
         }),
         LoadingSpinner: () => <div data-testid="loading-spinner" />,
+        useRedirectTo: () => mockRedirectTo,
     };
 });
 
@@ -81,8 +88,6 @@ vi.mock('Iaso/domains/app/constants', async () => {
 });
 
 describe('BulkImportDialogModal', () => {
-    const closeDialogMock = vi.fn();
-
     beforeEach(() => {
         vi.clearAllMocks();
         mockUseGetProjectsDropdownOptions.mockReturnValue({
@@ -109,28 +114,45 @@ describe('BulkImportDialogModal', () => {
         ]);
     });
 
-    it('renders the modal and file upload', () => {
+    it('renders the components', () => {
         renderWithThemeAndIntlProvider(
-            <BulkImportDialogModal
-                isOpen={true}
-                closeDialog={closeDialogMock}
-            />,
+            <MemoryRouter>
+                <BulkImportForm cancelUrl={'/home'} />
+            </MemoryRouter>,
         );
-        expect(
-            screen.getByRole('dialog', { name: 'Create users from file' }),
-        ).toBeVisible();
         expect(
             document.querySelector('input[type="file"]'),
         ).toBeInTheDocument();
+        expect(
+            screen.findAllByRole('button', { name: /download template/i }),
+        ).not.toBeNull();
         expect(screen.getByTestId('default-values-toggle')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /cancel/i }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /submit/i }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /cancel/i })).toHaveAttribute(
+            'href',
+            '/home',
+        );
     });
 
-    it('handles file selection', async () => {
+    it('does not render cancel button if no cancel url', () => {
         renderWithThemeAndIntlProvider(
-            <BulkImportDialogModal
-                isOpen={true}
-                closeDialog={closeDialogMock}
-            />,
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
+        );
+        expect(screen.queryByRole('link', { name: /cancel/i })).toBeNull();
+    });
+
+    it('handles file selection - csv', async () => {
+        renderWithThemeAndIntlProvider(
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
         );
         const file = new File(
             ['username,email\njohn,john@example.com'],
@@ -148,12 +170,35 @@ describe('BulkImportDialogModal', () => {
         });
     });
 
+    it('handles file selection - xlsx', async () => {
+        renderWithThemeAndIntlProvider(
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
+        );
+        const file = new File(
+            ['username,email\njohn,john@example.com'],
+            'test.xlsx',
+            {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            },
+        );
+
+        const input = document.querySelector(
+            'input[type="file"]',
+        ) as HTMLInputElement;
+        fireEvent.change(input, { target: { files: [file] } });
+
+        await waitFor(() => {
+            expect(input.files?.[0]).toBe(file);
+        });
+    });
+
     it('toggles default values section', async () => {
         renderWithThemeAndIntlProvider(
-            <BulkImportDialogModal
-                isOpen={true}
-                closeDialog={closeDialogMock}
-            />,
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
         );
         const checkbox = screen.getByTestId('default-values-toggle');
         fireEvent.click(checkbox);
@@ -192,10 +237,9 @@ describe('BulkImportDialogModal', () => {
         });
 
         renderWithThemeAndIntlProvider(
-            <BulkImportDialogModal
-                isOpen={true}
-                closeDialog={closeDialogMock}
-            />,
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
         );
 
         expect(
@@ -217,10 +261,9 @@ describe('BulkImportDialogModal', () => {
         });
 
         renderWithThemeAndIntlProvider(
-            <BulkImportDialogModal
-                isOpen={true}
-                closeDialog={closeDialogMock}
-            />,
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
         );
         expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
     });
@@ -234,10 +277,9 @@ describe('BulkImportDialogModal', () => {
         });
 
         renderWithThemeAndIntlProvider(
-            <BulkImportDialogModal
-                isOpen={true}
-                closeDialog={closeDialogMock}
-            />,
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
         );
 
         const checkbox = screen.getByTestId('default-values-toggle');
@@ -303,8 +345,8 @@ describe('BulkImportDialogModal', () => {
         });
 
         const confirmButton =
-            screen.getByText(/confirm/i) ||
-            screen.getByRole('button', { name: /confirm/i });
+            screen.getByText(/submit/i) ||
+            screen.getByRole('button', { name: /submit/i });
 
         expect(confirmButton).not.toBeDisabled();
         fireEvent.click(confirmButton);
@@ -323,6 +365,54 @@ describe('BulkImportDialogModal', () => {
             default_projects: [1],
             default_teams: [1],
             default_user_roles: [1],
+        });
+    });
+
+    it('redirects after successful submit', async () => {
+        const saveMock = vi.fn();
+        mockUseUploadCsv.mockReturnValue({
+            mutateAsync: saveMock,
+            isLoading: false,
+            error: null,
+        });
+
+        saveMock.mockImplementation(async (_values, options) => {
+            options?.onSuccess?.();
+            return {};
+        });
+
+        renderWithThemeAndIntlProvider(
+            <MemoryRouter>
+                <BulkImportForm />
+            </MemoryRouter>,
+        );
+
+        const file = new File(
+            ['username,email\njohn,john@example.com'],
+            'test.csv',
+            { type: 'text/csv' },
+        );
+
+        const input = document.querySelector(
+            'input[type="file"]',
+        ) as HTMLInputElement;
+
+        await act(async () => {
+            fireEvent.change(input, {
+                target: { files: [file] },
+            });
+        });
+
+        const confirmButton =
+            screen.getByText(/submit/i) ||
+            screen.getByRole('button', { name: /submit/i });
+
+        expect(confirmButton).not.toBeDisabled();
+        fireEvent.click(confirmButton);
+
+        await waitFor(() => {
+            expect(saveMock).toHaveBeenCalled();
+            expect(mockRedirectTo).toHaveBeenCalledWith(baseUrls.users);
         });
     });
 });

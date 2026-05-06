@@ -218,9 +218,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.user.label.downloadTemplate',
         defaultMessage: 'Download template',
     },
-    selectCsvFile: {
-        id: 'iaso.user.label.selectCsvFile',
-        defaultMessage: 'Select CSV file',
+    selectFile: {
+        id: 'iaso.user.label.selectFile',
+        defaultMessage: 'Select file',
     },
     uploadError: {
         id: 'iaso.user.label.uploadError',
@@ -611,7 +611,7 @@ const MESSAGES = defineMessages({
     fixErrorsAndRetry: {
         id: 'iaso.users.bulk.fixErrorsAndRetry',
         defaultMessage:
-            'Fix the {count} error(s) in your CSV file and upload again.',
+            'Fix the {count} error(s) in your file and upload again.',
     },
     row: {
         id: 'iaso.users.bulk.row',
@@ -628,11 +628,15 @@ const MESSAGES = defineMessages({
     bulkImportDialogDescription: {
         id: 'iaso.users.bulkImportDialogDescription',
         defaultMessage:
-            'Please check the file encoding. It must be in UTF-8 format to be read by Iaso.',
+            'File must be of type .csv or .xlsx. In case of CSV file, please check the file encoding. It must be in UTF-8 format to be read by Iaso.',
     },
     error: {
         defaultMessage: 'Error',
         id: 'iaso.users.errorSingleCap',
+    },
+    submit: {
+        defaultMessage: 'Submit',
+        id: 'iaso.users.submit',
     },
 });
 

@@ -6,6 +6,7 @@ from phonenumbers.phonenumberutil import region_code_for_number
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, TimestampField
+from iaso.api.common.serializer_fields import UserRoleNameField
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Profile, Project, SourceVersion, UserRole
 
 
@@ -93,7 +94,7 @@ class NestedUserRoleSerializer(ModelSerializer):
     Mimic UserRole as_dict method
     """
 
-    name = serializers.SerializerMethodField()
+    name = UserRoleNameField(source="group.name", read_only=True)
     permissions = serializers.SlugRelatedField(
         many=True, read_only=True, slug_field="codename", source="get_iaso_permissions"
     )
@@ -103,11 +104,6 @@ class NestedUserRoleSerializer(ModelSerializer):
     class Meta:
         model = UserRole
         fields = ["id", "name", "group_id", "permissions", "created_at", "updated_at"]
-
-    @extend_schema_field(serializers.CharField(required=True))
-    def get_name(self, obj):
-        head, sep, tail = obj.group.name.partition("_")
-        return tail if sep else obj.group.name
 
 
 class NestedProjectSerializer(ModelSerializer):

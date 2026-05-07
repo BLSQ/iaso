@@ -139,7 +139,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         user_access_ou = user_access_ou.filter(org_unit_type__name=COUNTRY)
         country_id = self.request.query_params.get("country", None)
-        queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
+        queryset = VaccineAuthorization.objects.select_related("country").filter(
+            account=user.iaso_profile.account, country__in=user_access_ou
+        )
         block_country = self.request.query_params.get("block_country", None)
         search = self.request.query_params.get("search", None)
         auth_status = self.request.query_params.get("auth_status", None)
@@ -190,36 +192,32 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         user = self.request.user
         user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         user_access_ou = user_access_ou.filter(org_unit_type__name=COUNTRY)
-        queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
+        all_auths = list(
+            VaccineAuthorization.objects.select_related("country")
+            .filter(account=user.iaso_profile.account, country__in=user_access_ou, deleted_at__isnull=True)
+            .order_by("expiration_date")
+        )
         auth_status = self.request.query_params.get("auth_status", None)
         block_country = self.request.query_params.get("block_country", None)
-        country_list = []
-        response = []
-
         ordering = request.query_params.get("order", None)
 
-        for auth in queryset:
-            if auth.country not in country_list:
-                country_list.append(auth.country)
+        auths_by_country = {}
+        for auth in all_auths:
+            if auth.country not in auths_by_country:
+                auths_by_country[auth.country] = []
+            auths_by_country[auth.country].append(auth)
 
-        for country in country_list:
-            last_validated_or_expired = (
-                queryset.filter(country=country, status__in=["VALIDATED", "EXPIRED"], deleted_at__isnull=True)
-                .order_by("-expiration_date")
-                .first()
-            )
+        response = []
 
-            next_expiration_auth = (
-                queryset.filter(country=country, status__in=["ONGOING", "SIGNATURE"], deleted_at__isnull=True)
-                .order_by("-expiration_date")
-                .first()
-            )
+        for country, auths in auths_by_country.items():
+            validated_or_expired_auths = [a for a in auths if a.status in ["VALIDATED", "EXPIRED"]]
+            last_validated_or_expired = validated_or_expired_auths[-1] if validated_or_expired_auths else None
 
-            last_entry = queryset.filter(country=country, deleted_at__isnull=True).last()
+            ongoing_or_signature_auths = [a for a in auths if a.status in ["ONGOING", "SIGNATURE"]]
+            next_expiration_auth = ongoing_or_signature_auths[-1] if ongoing_or_signature_auths else None
 
-            last_entry_date_check = VaccineAuthorization.objects.filter(
-                country=country, account=self.request.user.iaso_profile.account, deleted_at__isnull=True
-            ).last()
+            last_entry = auths[-1] if auths else None
+            last_entry_date_check = max(auths, key=lambda a: a.id) if auths else None
 
             if last_entry_date_check and last_entry:
                 if last_entry_date_check.expiration_date > last_entry.expiration_date:

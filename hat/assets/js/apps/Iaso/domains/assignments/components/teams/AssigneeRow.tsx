@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { TableCell, TableRow, Checkbox, useTheme } from '@mui/material';
+import { TableCell, TableRow, Radio, useTheme } from '@mui/material';
 import { IconButton } from 'bluesquare-components';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { SubTeam, User } from 'Iaso/domains/teams/types/team';
@@ -10,6 +10,7 @@ type Props = {
     user?: User;
     team?: SubTeam;
     planningId: string;
+    radioGroupName: string;
     isActive: boolean;
     setSelectedRow: () => void;
     currentColor: string;
@@ -22,6 +23,7 @@ export const AssigneeRow: FunctionComponent<Props> = ({
     user,
     team,
     planningId,
+    radioGroupName,
     isActive,
     setSelectedRow,
     currentColor,
@@ -52,7 +54,8 @@ export const AssigneeRow: FunctionComponent<Props> = ({
                     textAlign: 'center',
                 }}
             >
-                <Checkbox
+                <Radio
+                    name={radioGroupName}
                     checked={isActive}
                     onChange={() => setSelectedRow()}
                 />

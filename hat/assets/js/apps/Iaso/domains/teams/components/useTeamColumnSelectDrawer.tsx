@@ -11,7 +11,6 @@ export const DEFAULT_TEAMS_COLUMNS = [
     'project_details',
     'type',
     'users_details',
-    'members_count',
 ];
 
 const HIDDEN_COLUMNS = ['actions', 'selection'];
@@ -47,11 +46,11 @@ export const useTeamsColumnSelectDrawer = (
     const options = useMemo(() => {
         return columns
             .filter(column => {
-                const key = (column.id || column.accessor) as string;
+                const key = (column.accessor || column.id) as string;
                 return key && !HIDDEN_COLUMNS.includes(key);
             })
             .map(column => {
-                const key = (column.id || column.accessor) as string;
+                const key = (column.accessor || column.id) as string;
                 return {
                     key,
                     label: column.Header || key,
@@ -74,7 +73,7 @@ export const useTeamsColumnSelectDrawer = (
 
     const visibleColumns = useMemo(() => {
         return columns.filter(column => {
-            const key = (column.id || column.accessor) as string;
+            const key = (column.accessor || column.id) as string;
             if (HIDDEN_COLUMNS.includes(key)) {
                 return true;
             }
@@ -85,10 +84,11 @@ export const useTeamsColumnSelectDrawer = (
     const redirectToReplace = useRedirectToReplace();
 
     const handleApplyOptions = useCallback(() => {
-        redirectToReplace(baseUrl, {
+        const newParams: any = {
             ...params,
             fields: visibleColumnsKeys.join(','),
-        });
+        };
+        redirectToReplace(baseUrl, newParams);
     }, [params, redirectToReplace, visibleColumnsKeys, baseUrl]);
 
     return {

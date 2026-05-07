@@ -36,10 +36,23 @@ from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from beanstalk_worker import task_decorator
 from iaso.models import Project
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.tasks.utils.mobile_app_setup_api_calls import API_CALLS
 from iaso.utils.encryption import encrypt_file
 from iaso.utils.iaso_api_client import IasoClient
 from iaso.utils.s3_client import upload_file_to_s3
+
+
+if is_trypelim_plugin_active():
+    from plugins.trypelim.common.form_utils import FormRegistry
+    from plugins.trypelim.constants import (
+        CATT_FORM_ID,
+        CTCWOO_FORM_ID,
+        MAECT_FORM_ID,
+        PG_FORM_ID,
+        PL_STADIFICATION_FORM_ID,
+        TDR_FORM_ID,
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -76,6 +89,10 @@ def export_mobile_app_setup_for_user(
     export_name = f"mobile-app-export-{uuid.uuid4()}"
     iaso_client = IasoClient(server_url=SERVER)
 
+    context = {}
+    if is_trypelim_plugin_active():
+        context["forms_registry"] = FormRegistry()
+
     current_progress = 0
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -108,6 +125,7 @@ def export_mobile_app_setup_for_user(
                     the_task,
                     current_progress,
                     sub_steps,
+                    context,
                 )
 
                 current_progress += sub_steps
@@ -252,7 +270,7 @@ def _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state):
     return result, filename
 
 
-def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task, base_progress, sub_steps):
+def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task, base_progress, sub_steps, context):
     if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
         logger.info(f"{call['filename']}: not writing, feature flag missing.")
         return
@@ -313,13 +331,8 @@ def _get_resource(iaso_client, call, zipf, app_id, feature_flags, options, task,
             for record in result["results"]:
                 record["file"] = f"formattachments/{record['form_id']}/{_extract_filename_from_url(record['file'])}"
 
-        # trypelim-specific
-        # SLEEP-1698: set `visited_at` attribute to null so that the instances are excluded from filters
-        if call["filename"] == "entities" and options.get("strip_visited_at", False) and "results" in result:
-            for entity in result["results"]:
-                for instance in entity.get("instances", []):
-                    if "visited_at" in instance.get("json", []):
-                        instance["json"]["visited_at"] = None
+        if is_trypelim_plugin_active():
+            modify_result_for_trypelim(call, options, result, context)
 
         if paginated and result:
             total_pages = result.get("pages") or 1
@@ -493,3 +506,64 @@ def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
     s3_object_name = "export-files/" + dest_name
     upload_file_to_s3(encrypted_file_path, object_name=s3_object_name)
     return s3_object_name
+
+
+def modify_result_for_trypelim(call, options, result, context):
+    """Modify the export payloads for trypelim-specific issues."""
+
+    if call.get("filename") != "entities" or not isinstance(result, dict):
+        return
+
+    items = result.get("results")
+    if not items:
+        return
+
+    forms_registry = context["forms_registry"]
+
+    for entity in items:
+        for instance in entity.get("instances", []):
+            json = instance.get("json", {})
+
+            # SLEEP-1698: reset all session-scoped values
+            reset_values = {
+                # from predefined filters
+                "visited_at": "0",
+                "is_absent": "0",
+                "is_suspect": "0",
+                "is_not_done": "1",
+                "has_clinical_signs": "0",
+                "is_pg_negative": "0",
+                "is_pg_positive": "0",
+                "is_ctcwoo_negative": "0",
+                "is_ctcwoo_positive": "0",
+                "is_plresearch_negative": "0",
+                "is_plresearch_positive": "0",
+                "is_maect_negative": "0",
+                "is_maect_positive": "0",
+                "is_pl_stad_negative": "0",
+                "is_pl_stad_positive": "0",
+                "is_confirmed_positive": "0",
+                "is_confirmed_negative": "0",
+                # from workflow follow-ups
+                "confirmation_pg_not_done": "0",
+                "test_maect_not_done": "0",
+                "test_ctcwoo_not_done": "0",
+                "plresearch_not_done": "0",
+            }
+            if options.get("strip_visited_at", False):
+                for key, value in reset_values.items():
+                    if key in json:
+                        json[key] = value
+
+            # SLEEP-1782: set a fallback value for images and videos for instances
+            # that have a randomized quality check to prevent potential validation errors
+            # on mobile import.
+            if instance.get("form_id") in forms_registry.ids(CATT_FORM_ID, TDR_FORM_ID):
+                if not json.get("rdt_control_picture"):
+                    json["rdt_control_picture"] = "no picture"
+
+            # Note: PL_RESEARCH has videos but no randomized QC so we don't need to change it
+            if instance.get("form_id") in forms_registry.ids(
+                PG_FORM_ID, MAECT_FORM_ID, CTCWOO_FORM_ID, PL_STADIFICATION_FORM_ID
+            ):
+                json["video_qc_probability"] = "1"

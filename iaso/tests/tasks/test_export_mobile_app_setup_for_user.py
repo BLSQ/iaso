@@ -12,7 +12,8 @@ import requests
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from iaso.models import SUCCESS, Account, Project, Task
+from iaso.models import SUCCESS, Account, Form, Project, Task
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.tasks.export_mobile_app_setup_for_user import (
     _call_cursor_pagination_page,
     _get_cursor_pagination_metadata,
@@ -20,6 +21,18 @@ from iaso.tasks.export_mobile_app_setup_for_user import (
     export_mobile_app_setup_for_user,
 )
 from iaso.utils.encryption import decrypt_file
+
+
+if is_trypelim_plugin_active():
+    from plugins.trypelim.common.form_utils import FormRegistry
+    from plugins.trypelim.constants import (
+        CATT_FORM_ID,
+        CTCWOO_FORM_ID,
+        MAECT_FORM_ID,
+        PG_FORM_ID,
+        PL_STADIFICATION_FORM_ID,
+        TDR_FORM_ID,
+    )
 
 
 def mocked_iaso_client_get(*args, **kwargs):
@@ -241,7 +254,7 @@ class DownloadFormAttachmentsTest(TestCase):
             ]
         }
         zipf = MockZip()
-        _get_resource(iaso_client_mock, call, zipf, self.app_id, [], {}, mock.MagicMock(), 0, 10)
+        _get_resource(iaso_client_mock, call, zipf, self.app_id, [], {}, mock.MagicMock(), 0, 10, {})
 
         self.assertIn("formattachments.json", zipf.captured_files)
         result = json.loads(zipf.captured_files["formattachments.json"])
@@ -250,6 +263,17 @@ class DownloadFormAttachmentsTest(TestCase):
 
 class ExportMobileAppSetupTrypelimFeatures(TestCase):
     """Test trypelim-specific features for the export mobile setup task."""
+
+    @classmethod
+    def setUpTestData(cls):
+        if is_trypelim_plugin_active():
+            cls.form_catt = Form.objects.create(form_id=CATT_FORM_ID, name="CATT")
+            cls.form_tdr = Form.objects.create(form_id=TDR_FORM_ID, name="TDR")
+            cls.form_pg = Form.objects.create(form_id=PG_FORM_ID, name="PG")
+            cls.form_ctcwoo = Form.objects.create(form_id=CTCWOO_FORM_ID, name="CTCWOO")
+            cls.form_maect = Form.objects.create(form_id=MAECT_FORM_ID, name="MAECT")
+            cls.form_pl_stadification = Form.objects.create(form_id=PL_STADIFICATION_FORM_ID, name="PL_STADIFICATION")
+            cls.form_other = Form.objects.create(form_id="other_form", name="Other")
 
     def setUp(self):
         self.call = {
@@ -264,22 +288,28 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
         self.feature_flags = ["ENTITY"]
 
     @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._call_endpoint")
-    def test_strip_visited_at(self, mock_call_endpoint):
-        """SLEEP-1698: Test that `visited_at` is set to null when `strip_visited_at` options is set."""
+    def test_strip_session_scoped_values(self, mock_call_endpoint):
+        """SLEEP-1698: Test that session scoped values are reset when `strip_visited_at` option is set."""
 
         iaso_client_mock = mock.MagicMock()
         mock_call_endpoint.side_effect = [
-            {"count": 4},
+            {"count": 1},
             {
                 "next": None,
                 "previous": None,
                 "results": [
                     {
                         "instances": [
-                            {"id": 1, "json": {"visited_at": "2021-03-10"}},
-                            {"id": 2, "json": {"visited_at": None}},
-                            {"id": 3, "json": {}},
-                            {"id": 4},
+                            {
+                                "id": 1,
+                                "json": {
+                                    "visited_at": "2021-03-10",
+                                    "is_not_done": "0",
+                                    "is_absent": "1",
+                                    "other_field": "keep",
+                                },
+                            },
+                            {"id": 2, "json": {"visited_at": "0", "is_suspect": "1", "is_pg_positive": "1"}},
                         ]
                     }
                 ],
@@ -289,6 +319,10 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
             "strip_visited_at": True,
         }
         zipf_mock = MockZip()
+
+        context = {}
+        context["forms_registry"] = FormRegistry()
+
         _get_resource(
             iaso_client_mock,
             self.call,
@@ -299,17 +333,119 @@ class ExportMobileAppSetupTrypelimFeatures(TestCase):
             mock.MagicMock(),
             base_progress=0,
             sub_steps=10,
+            context=context,
         )
         self.assertIn("entities-1.json", zipf_mock.captured_files)
         expected = {
             "instances": [
-                {"id": 1, "json": {"visited_at": None}},
-                {"id": 2, "json": {"visited_at": None}},
-                {"id": 3, "json": {}},
-                {"id": 4},
+                {"id": 1, "json": {"visited_at": "0", "is_not_done": "1", "is_absent": "0", "other_field": "keep"}},
+                {"id": 2, "json": {"visited_at": "0", "is_suspect": "0", "is_pg_positive": "0"}},
             ],
         }
-        self.assertDictEqual(json.loads(zipf_mock.captured_files["entities-1.json"])["results"][0], expected)
+        actual = json.loads(zipf_mock.captured_files["entities-1.json"])["results"][0]
+        self.assertDictEqual(actual, expected)
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._call_endpoint")
+    def test_rdt_control_picture_default(self, mock_call_endpoint):
+        """SLEEP-1782: Test that rdt_control_picture is set to 'no picture' if not present."""
+
+        iaso_client_mock = mock.MagicMock()
+        mock_call_endpoint.side_effect = [
+            {"count": 1},
+            {
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "instances": [
+                            {"id": 1, "form_id": self.form_catt.id, "json": {}},
+                            {"id": 2, "form_id": self.form_catt.id, "json": {"rdt_control_picture": "my_pic.jpg"}},
+                            {"id": 3, "form_id": self.form_tdr.id, "json": {"other_field": "val"}},
+                            {"id": 4, "form_id": self.form_other.id, "json": {}},
+                        ]
+                    }
+                ],
+            },
+        ]
+        options = {}
+        zipf_mock = MockZip()
+
+        _get_resource(
+            iaso_client_mock,
+            self.call,
+            zipf_mock,
+            self.app_id,
+            self.feature_flags,
+            options,
+            mock.MagicMock(),
+            base_progress=0,
+            sub_steps=10,
+            context={"forms_registry": FormRegistry()},
+        )
+        self.assertIn("entities-1.json", zipf_mock.captured_files)
+        expected = {
+            "instances": [
+                {"id": 1, "form_id": self.form_catt.id, "json": {"rdt_control_picture": "no picture"}},
+                {"id": 2, "form_id": self.form_catt.id, "json": {"rdt_control_picture": "my_pic.jpg"}},
+                {
+                    "id": 3,
+                    "form_id": self.form_tdr.id,
+                    "json": {"other_field": "val", "rdt_control_picture": "no picture"},
+                },
+                {"id": 4, "form_id": self.form_other.id, "json": {}},
+            ],
+        }
+        actual = json.loads(zipf_mock.captured_files["entities-1.json"])["results"][0]
+        self.assertDictEqual(actual, expected)
+
+    @mock.patch("iaso.tasks.export_mobile_app_setup_for_user._call_endpoint")
+    def test_video_qc_probability_default(self, mock_call_endpoint):
+        """SLEEP-1782: Test that video_qc_probability is set to '1' for specific form IDs."""
+
+        iaso_client_mock = mock.MagicMock()
+        mock_call_endpoint.side_effect = [
+            {"count": 1},
+            {
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "instances": [
+                            {"id": 1, "form_id": self.form_pg.id, "json": {}},
+                            {"id": 2, "form_id": self.form_pg.id, "json": {"video_qc_probability": "0"}},
+                            {"id": 3, "form_id": self.form_ctcwoo.id, "json": {"other_field": "val"}},
+                            {"id": 4, "form_id": self.form_other.id, "json": {}},
+                        ]
+                    }
+                ],
+            },
+        ]
+        options = {}
+        zipf_mock = MockZip()
+
+        _get_resource(
+            iaso_client_mock,
+            self.call,
+            zipf_mock,
+            self.app_id,
+            self.feature_flags,
+            options,
+            mock.MagicMock(),
+            base_progress=0,
+            sub_steps=10,
+            context={"forms_registry": FormRegistry()},
+        )
+        self.assertIn("entities-1.json", zipf_mock.captured_files)
+        expected = {
+            "instances": [
+                {"id": 1, "form_id": self.form_pg.id, "json": {"video_qc_probability": "1"}},
+                {"id": 2, "form_id": self.form_pg.id, "json": {"video_qc_probability": "1"}},
+                {"id": 3, "form_id": self.form_ctcwoo.id, "json": {"other_field": "val", "video_qc_probability": "1"}},
+                {"id": 4, "form_id": self.form_other.id, "json": {}},
+            ],
+        }
+        actual = json.loads(zipf_mock.captured_files["entities-1.json"])["results"][0]
+        self.assertDictEqual(actual, expected)
 
 
 class CursorPaginationShimTest(TestCase):
@@ -482,6 +618,7 @@ class ProgressReportingTest(TestCase):
             self.task,
             base_progress=10,
             sub_steps=100,
+            context={},
         )
 
         # Base progress is 10, sub_steps is 100.
@@ -512,6 +649,7 @@ class ProgressReportingTest(TestCase):
             self.task,
             base_progress=10,
             sub_steps=50,
+            context={},
         )
 
         self.task.report_progress_and_stop_if_killed.assert_called_once_with(

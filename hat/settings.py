@@ -887,8 +887,8 @@ for plugin_name in PLUGINS:
         if hasattr(plugin_settings, "WEBPACK_LOADER"):
             WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
 
-        if hasattr(plugin_settings, "DATABASES"):
-            DATABASES.update(plugin_settings.DATABASES)
+        if hasattr(plugin_settings, "DEFAULT_THROTTLE_RATES"):
+            REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update(plugin_settings.DEFAULT_THROTTLE_RATES)
 
     except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
         print(

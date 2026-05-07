@@ -8,7 +8,7 @@ from iaso.test import TestCase
 
 
 class UserRoleNameFieldTestSerializer(serializers.Serializer):
-    name = UserRoleNameField(source="*", read_only=True)
+    name = UserRoleNameField(source="group.name", read_only=True)
 
 
 class UserRoleNameFieldTestCase(TestCase):

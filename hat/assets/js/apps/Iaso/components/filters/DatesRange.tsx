@@ -103,16 +103,11 @@ const DatesRange: FunctionComponent<Props> = ({
 
     const handleChange = useCallback(
         (keyValue, date) => {
-            if (blockInvalidDates) {
-                onChangeDate(
-                    keyValue,
-                    date && date.isValid()
-                        ? date.format(dateFormat)
-                        : undefined,
-                );
-            } else {
-                onChangeDate(keyValue, date?.format(dateFormat));
-            }
+
+            if (blockInvalidDates && date && !date.isValid()) {
+                return;
+            } 
+            onChangeDate(keyValue, date?.format(dateFormat));
         },
         [blockInvalidDates, onChangeDate],
     );

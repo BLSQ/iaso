@@ -67,7 +67,7 @@ const getTeams = async (
     const apiParams = {
         ...params,
         fields: getCleanFields(params.fields),
-    }
+    };
 
     const url = makeUrlWithParams('/api/teams/', apiParams);
     return getRequest(url) as Promise<TeamList>;

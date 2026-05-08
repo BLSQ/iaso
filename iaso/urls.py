@@ -312,6 +312,7 @@ urlpatterns: URLList = [
         "enketo/instance_files/<instance_file_id>/<file_name>", view=enketo_instance_files, name="enketo-instance-files"
     ),
     path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("captcha/", include("captcha.urls")),
 ]
 
 

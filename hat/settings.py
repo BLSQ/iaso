@@ -234,6 +234,7 @@ INSTALLED_APPS += [
     "django_json_widget",
     "phonenumber_field",
     "axes",
+    "captcha",
 ]
 
 if USE_CELERY:
@@ -863,6 +864,9 @@ CLAMAV_CONFIGURATION = {
     "stream": True,  # Streaming file content instead of sending files as is
 }
 
+# django-simple-captcha config
+CAPTCHA_CHALLENGE_FUNCT = "captcha.helpers.math_challenge"
+
 # Plugin config
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:
@@ -911,6 +915,7 @@ if IN_TESTS:
     }
     if not ENCRYPTED_TEXT_FIELD_KEY:
         ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="
+    CAPTCHA_TEST_MODE = True
 
 ENABLE_SETUPER_SANDBOX = get_env_var_or_default("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
 SETUPER_SANDBOX_PASSWORD = get_env_var_or_default("SETUPER_SANDBOX_PASSSWORD", "district")

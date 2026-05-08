@@ -122,14 +122,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        metric_values = serializer.context.get("metric_values")
-        with transaction.atomic():
-            # Clear existing metric values to avoid duplicates
-            metric_type_ids = set(mv.metric_type_id for mv in metric_values)
-            org_unit_ids = set(mv.org_unit_id for mv in metric_values)
-            MetricValue.objects.filter(metric_type_id__in=metric_type_ids, org_unit_id__in=org_unit_ids).delete()
-
-            MetricValue.objects.bulk_create(metric_values)
+        metric_values = serializer.save()
 
         return Response(
             {

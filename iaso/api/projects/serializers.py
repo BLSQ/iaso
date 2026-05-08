@@ -58,6 +58,7 @@ class ProjectSerializer(ModelSerializer):
             "id",
             "name",
             "app_id",
+            "description",
             "feature_flags",
             "created_at",
             "updated_at",

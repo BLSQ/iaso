@@ -59,6 +59,7 @@ const useStyles = makeStyles(theme => ({
 const emptyProject: ProjectForm = {
     id: { value: '', errors: [] },
     app_id: { value: '', errors: [] },
+    description: { value: '', errors: [] },
     name: { value: '', errors: [] },
     feature_flags: { value: [], errors: [] },
     qr_code: { value: '', errors: [] },
@@ -94,6 +95,10 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                 app_id: { value: get(pr, 'app_id', ''), errors: [] },
                 name: {
                     value: get(pr, 'name', ''),
+                    errors: [],
+                },
+                description: {
+                    value: get(pr, 'description', ''),
                     errors: [],
                 },
                 feature_flags: {
@@ -177,6 +182,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
             feature_flags: project.feature_flags.value ?? [],
             app_id: project.app_id.value || '',
             name: project.name.value || '',
+            description: project.description.value || '',
             old_app_id: initialData?.app_id,
             color: project.color.value || defaultProjectColor,
         };

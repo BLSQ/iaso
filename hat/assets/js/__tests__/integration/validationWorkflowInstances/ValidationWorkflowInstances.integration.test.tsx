@@ -3,7 +3,7 @@ import { act, screen, waitFor } from '@testing-library/react';
 import moment from 'moment/moment';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect } from 'vitest';
-import { ValidationWorkflowInstanceSearch } from 'Iaso/domains/validationWorkflowInstances';
+import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
 import { apiDateTimeFormat } from 'Iaso/utils/dates';
 import { SUBMISSION_VALIDATION_WORKFLOW } from 'Iaso/utils/featureFlags';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
@@ -76,7 +76,7 @@ describe('Validation workflow list UI integration test', () => {
 
         renderWithThemeAndIntlProvider(
             <MemoryRouter>
-                <ValidationWorkflowInstanceSearch />
+                <ValidationWorkflowInstances />
             </MemoryRouter>,
         );
         await waitFor(() => {
@@ -115,7 +115,7 @@ describe('Validation workflow list UI integration test', () => {
         await act(async () => {
             renderWithThemeAndIntlProvider(
                 <MemoryRouter>
-                    <ValidationWorkflowInstanceSearch />
+                    <ValidationWorkflowInstances />
                 </MemoryRouter>,
             );
         });
@@ -168,7 +168,7 @@ describe('Validation workflow list UI integration test', () => {
         await act(async () => {
             renderWithThemeAndIntlProvider(
                 <MemoryRouter>
-                    <ValidationWorkflowInstanceSearch />
+                    <ValidationWorkflowInstances />
                 </MemoryRouter>,
             );
         });

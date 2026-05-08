@@ -517,6 +517,43 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidVFInstanceListData(res_data, 0)
 
+        with self.subTest("project"):
+            self.client.force_authenticate(self.john_wick)
+
+            res = self.client.get(reverse("validation_workflow_instances-list"))
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 2)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"),
+                data={"projects": [self.project.pk, self.other_project.pk]},
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 2)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"),
+                data={"projects": [self.project.pk]},
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 1)
+            self.assertEqual(res_data["results"][0]["id"], self.instance.id)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"),
+                data={"projects": [self.other_project.pk]},
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 1)
+            self.assertEqual(res_data["results"][0]["id"], self.other_instance.id)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"),
+                data={"projects": [self.other_project.pk + 99]},
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 0)
+
         with self.subTest("status"):
             self.client.force_authenticate(self.john_wick)
 

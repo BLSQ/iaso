@@ -14,6 +14,7 @@ class ValidationWorkflowInstancesListFilters(FilterSet):
     )
     validation_workflows = NumberInFilter(field_name="form__validation_workflow", widget=QueryArrayWidget)
     forms = NumberInFilter(field_name="form_id", widget=QueryArrayWidget)
+    projects = NumberInFilter(field_name="project_id", widget=QueryArrayWidget)
     requires_user_action = django_filters.BooleanFilter(field_name="annotate_requires_user_action")
 
     class Meta:

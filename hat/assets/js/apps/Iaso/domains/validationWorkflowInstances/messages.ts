@@ -13,7 +13,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.instance.project.label',
         defaultMessage: 'Project',
     },
-
+    projects: {
+        id: 'iaso.workflows.instance.projects.label',
+        defaultMessage: 'Projects',
+    },
     viewSubmissionDetails: {
         defaultMessage: 'View submission details',
         id: 'iaso.instance.details',
@@ -63,6 +66,14 @@ const MESSAGES = defineMessages({
     requiresUserActionTooltip: {
         defaultMessage: 'Waiting for your action',
         id: 'iaso.workflows.instance.requiresUserActionTooltip',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
     },
 });
 

@@ -1,7 +1,10 @@
 import React from 'react';
 import { UseQueryResult } from 'react-query';
 import { ValidationWorkflowInstanceListResponse } from 'Iaso/domains/validationWorkflowInstances/types';
-import { WF_BASE_QUERYKEY } from 'Iaso/domains/validationWorkflowsConfiguration/constants';
+import {
+    API_URL,
+    WF_BASE_QUERYKEY,
+} from 'Iaso/domains/validationWorkflowsConfiguration/constants';
 import { FormattedApiParams, useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';
@@ -40,7 +43,7 @@ const getValidationWorkflowInstances = async (
     params: FormattedApiParams,
 ): Promise<ValidationWorkflowInstanceListResponse> => {
     const queryString = createSearchParamsWithArray(params).toString();
-    return getRequest(`/api/validation-workflows/instance/?${queryString}`);
+    return getRequest(`${API_URL}instance/?${queryString}`);
 };
 
 export const useGetValidationWorkflowInstanceSearch = ({

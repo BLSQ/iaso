@@ -5,18 +5,23 @@ import { SearchButton } from 'Iaso/components/SearchButton';
 import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
+import { useGetRequiresUserActionOptions } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetRequiresUserActionOptions';
 import { useGetValidationWorkflowInstanceStatuses } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceStatuses';
 import MESSAGES from 'Iaso/domains/validationWorkflowInstances/messages';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 
 const baseUrl = baseUrls.validationWorkflowInstances;
 
-export const ValidationWorkflowInstanceSearchFilterForm = ({ params }) => {
+export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
     const { filters, filtersUpdated, handleChange, handleSearch } =
         useFilterState({ baseUrl, params, withPagination: true });
     const { data: formsList, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions();
     const statusOptions = useGetValidationWorkflowInstanceStatuses();
+    const requiresUserActionOptions = useGetRequiresUserActionOptions();
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
 
     return (
         <>
@@ -36,11 +41,7 @@ export const ValidationWorkflowInstanceSearchFilterForm = ({ params }) => {
                         type={'select'}
                         keyValue={'status'}
                         label={MESSAGES.status}
-                        options={Object.entries(statusOptions)?.map(
-                            ([value, label]) => {
-                                return { value, label };
-                            },
-                        )}
+                        options={statusOptions}
                         onChange={handleChange}
                         value={filters.status}
                     />
@@ -61,18 +62,27 @@ export const ValidationWorkflowInstanceSearchFilterForm = ({ params }) => {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
-                        type={'checkbox'}
-                        checked={
-                            filters.requires_user_action === true ||
-                            filters.requires_user_action === 'true'
-                        }
-                        value={
-                            filters.requires_user_action === true ||
-                            filters.requires_user_action === 'true'
-                        }
+                        type={'select'}
+                        options={requiresUserActionOptions}
                         keyValue={'requires_user_action'}
+                        value={filters.requires_user_action}
                         label={MESSAGES.requiresUserAction}
                         onChange={handleChange}
+                        clearable
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <InputComponent
+                        keyValue="projects"
+                        onChange={handleChange}
+                        value={filters.projects}
+                        type="select"
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
+                        onEnterPressed={handleSearch}
+                        clearable
+                        multi
                     />
                 </Grid>
                 <Grid

@@ -131,15 +131,15 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
                 ).filter(
                     Q(
                         ~Exists(
-                            ValidationNode.objects.filter(
+                            ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
                                 instance=OuterRef("pk"),
                                 node=OuterRef("pk"),
                             )
                         )
                     )
-                    | Q(
-                        Exists(
-                            ValidationNode.objects.filter(
+                    & Q(
+                        ~Exists(
+                            ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
                                 instance=OuterRef("pk"),
                                 node=OuterRef("pk"),
                                 created_at__gt=cutoff,

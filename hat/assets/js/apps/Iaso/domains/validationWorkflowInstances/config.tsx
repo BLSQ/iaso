@@ -12,14 +12,10 @@ import { StatusChip } from 'Iaso/domains/validationWorkflowInstances/components/
 import { getLocaleDateFormat } from 'Iaso/utils/dates';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
-type ValidationWorkflowInstanceSearchColumnsProps = {
-    currentUser: ReturnType<typeof useCurrentUser>;
-};
 
-export const useValidationWorkflowInstanceSearchColumns = ({
-    currentUser,
-}: ValidationWorkflowInstanceSearchColumnsProps): Column[] => {
+export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     return useMemo(
         () => [
             {

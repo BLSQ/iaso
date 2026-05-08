@@ -1,12 +1,4 @@
-export type PaginatedResponse<T> = {
-    count: number;
-    has_next: boolean;
-    has_previous: boolean;
-    page: number;
-    pages: number;
-    limit: number;
-    results: T[];
-};
+import { Paginated } from 'bluesquare-components';
 
 export type ValidationWorkflowInstanceListResponseItem = {
     id: number;
@@ -26,4 +18,4 @@ export type ValidationWorkflowInstanceListResponseItem = {
 };
 
 export type ValidationWorkflowInstanceListResponse =
-    PaginatedResponse<ValidationWorkflowInstanceListResponseItem>;
+    Paginated<ValidationWorkflowInstanceListResponseItem>;

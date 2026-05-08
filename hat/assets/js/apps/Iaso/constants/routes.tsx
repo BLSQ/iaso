@@ -6,7 +6,7 @@ import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
 import { StockItems } from 'Iaso/domains/stock/items';
 import { StockRulesVersions } from 'Iaso/domains/stock/versions';
-import { ValidationWorkflowInstanceSearch } from 'Iaso/domains/validationWorkflowInstances';
+import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
 import PageError from '../components/errors/PageError';
@@ -499,7 +499,7 @@ export const validationWorkflowInstancesPath = {
     routerUrl: `${baseUrls.validationWorkflowInstances}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.VALIDATION_WORKFLOWS],
     feature_flag: SUBMISSION_VALIDATION_WORKFLOW,
-    element: <ValidationWorkflowInstanceSearch />,
+    element: <ValidationWorkflowInstances />,
 };
 
 export const pipelineListPath = {

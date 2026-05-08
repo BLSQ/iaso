@@ -38,6 +38,10 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         include_utility = self.request.query_params.get("include_utility", "false").lower() == "true"
         if not include_utility:
             queryset = queryset.filter(is_utility=False)
+
+        metric_kind = self.request.query_params.get("metric_kind")
+        if metric_kind:
+            queryset = queryset.filter(metric_kind=metric_kind)
         return queryset
 
     def get_serializer_class(self):

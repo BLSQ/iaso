@@ -11,6 +11,29 @@ import {
     TeamDropdown,
 } from '../../types/team';
 
+export const DEFAULT_TEAMS_COLUMNS = [
+    'id',
+    'color',
+    'name',
+    'project_details',
+    'type',
+    'users_details',
+];
+
+export const NON_SELECTABLE_COLUMNS = ['actions', 'selection'];
+
+const getCleanFields = (fields?: string | string[]): string | undefined => {
+    const fieldsArray = Array.isArray(fields)
+        ? fields
+        : (fields?.split(',') ?? DEFAULT_TEAMS_COLUMNS);
+
+    const filtered = fieldsArray.filter(
+        f => f && !NON_SELECTABLE_COLUMNS.includes(f),
+    );
+
+    return filtered.length > 0 ? filtered.join(',') : undefined;
+};
+
 const getTeam = async (teamId?: number): Promise<Team> => {
     return getRequest(`/api/teams/${teamId}/`) as Promise<Team>;
 };
@@ -41,8 +64,12 @@ const getTeams = async (
     if (params.select) {
         delete params.select;
     }
+    const apiParams = {
+        ...params,
+        fields: getCleanFields(params.fields),
+    };
 
-    const url = makeUrlWithParams('/api/teams/', params);
+    const url = makeUrlWithParams('/api/teams/', apiParams);
     return getRequest(url) as Promise<TeamList>;
 };
 

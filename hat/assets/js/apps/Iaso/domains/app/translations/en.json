@@ -1710,6 +1710,7 @@
     "iaso.teams.delete": "Are you sure you want to delete this team?",
     "iaso.teams.edit": "Edit team",
     "iaso.teams.manager": "Manager",
+    "iaso.teams.membersCount": "Members count",
     "iaso.teams.noLoopInSubTree": "Cannot create loop in teams tree",
     "iaso.teams.parentIsNotTeamOfTeam": "Parent is not team of teams",
     "iaso.teams.parentTeam": "Parent team",

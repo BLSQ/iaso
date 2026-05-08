@@ -62,10 +62,18 @@ export const useTeamColumns = ({ params, data }): Column[] => {
             Cell: (settings): ReactElement => (
                 <UsersTeamsCell
                     type={settings.row.original.type}
-                    subTeamsDetails={settings.row.original.sub_teams_details}
-                    usersDetails={settings.row.original.users_details}
+                    subTeamsDetails={
+                        settings.row.original.sub_teams_details || []
+                    }
+                    usersDetails={settings.row.original.users_details || []}
                 />
             ),
+        },
+        {
+            Header: formatMessage(MESSAGES.membersCount),
+            accessor: 'members_count',
+            id: 'members_count',
+            sortable: true,
         },
         {
             Header: formatMessage(MESSAGES.actions),

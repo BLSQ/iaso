@@ -1709,6 +1709,7 @@
     "iaso.teams.delete": "Etes-vous sûr(e) de vouloir effacer cette équipe?",
     "iaso.teams.edit": "Editer une équipe",
     "iaso.teams.manager": "Responsable",
+    "iaso.teams.membersCount": "Nombre de membres",
     "iaso.teams.noLoopInSubTree": "Impossible de créer une boucle dans la hiérarchie des équipes",
     "iaso.teams.parentIsNotTeamOfTeam": "Le parent n'est pas une équipe d'équipes",
     "iaso.teams.parentTeam": "Equipe parente",

@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Q
 from rest_framework import serializers
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializerMixin
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatibleMixin
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import TimestampField
 from iaso.api.query_params import APP_ID
@@ -191,7 +191,7 @@ class OrgUnitDropdownSerializer(OrgUnitSerializer):
 
 
 # noinspection PyMethodMayBeStatic
-class OrgUnitSearchSerializer(DynamicFieldsModelSerializerMixin, OrgUnitSerializer):
+class OrgUnitSearchSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, OrgUnitSerializer):
     parent = OrgUnitSearchParentSerializer()
     instances_count = serializers.SerializerMethodField()
     creator = serializers.SerializerMethodField()

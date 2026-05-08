@@ -3,11 +3,11 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 
 from ..common import TimestampField
-from ..forms import FormSerializer
+from ..forms.serializers import FormSerializer
 from ..projects.serializers import ProjectSerializer
 
 
@@ -38,7 +38,7 @@ def validate_reference_forms(data):
 
 
 # Kept for the mobile
-class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
+class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializerBackwardCompatible):
     """
     V1 kept for mobile where sub_types is actually `allow_creating_sub_unit_types`
 
@@ -137,7 +137,7 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         return super().to_representation(instance)
 
 
-class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
+class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializerBackwardCompatible):
     """This one is a bit cryptic: sub_unit_types is only needed for "root" org unit types
     (the ones returned by the viewset queryset), and they need to be filtered by app_id,
     hence the SerializerMethodField()"""

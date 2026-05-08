@@ -8,7 +8,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.data_source_versions_synchronization.filters import DataSourceVersionsSynchronizationFilter
 from iaso.api.data_source_versions_synchronization.pagination import DataSourceVersionsSynchronizationPagination
 from iaso.api.data_source_versions_synchronization.permissions import DataSourceVersionsSynchronizationPermission
@@ -26,7 +26,7 @@ class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
-        DynamicFieldsFilterBackend,
+        DynamicFieldsFilterBackendBackwardCompatible,
     ]
     filterset_class = DataSourceVersionsSynchronizationFilter
     ordering_fields = [

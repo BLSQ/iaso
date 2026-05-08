@@ -5,7 +5,7 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import Paginator
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import GroupSet, Project, SourceVersion
@@ -81,7 +81,7 @@ class GroupSetsViewSet(ModelViewSet):
             return [
                 filters.OrderingFilter,
                 django_filters.rest_framework.DjangoFilterBackend,
-                DynamicFieldsFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
             ]
         return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 

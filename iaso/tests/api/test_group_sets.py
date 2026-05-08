@@ -384,7 +384,7 @@ class GroupSetsAPITestCase(APITestCase):
         record_1, record_2 = self.seed_list()
         # Search all
 
-        resp = self.client.get("/api/group_sets/", data={"fields": ["id", "name"]})
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"])})
         self.assertEqual(
             resp.json()["group_sets"],
             [
@@ -396,26 +396,30 @@ class GroupSetsAPITestCase(APITestCase):
     def test_list_groupsets_search_by_name(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get("/api/group_sets/", data={"fields": ["id", "name"], "search": "src 1"})
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"]), "search": "src 1"})
         self.assertEqual(resp.json()["group_sets"], [record_1])
 
-        resp = self.client.get("/api/group_sets/", data={"fields": ["id", "name"], "search": "src"})
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"]), "search": "src"})
         self.assertEqual(resp.json()["group_sets"], [record_1, record_2])
 
     def test_list_groupsets_search_by_default_version(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get("/api/group_sets/", data={"fields": ["id", "name"], "default_version": "true"})
+        resp = self.client.get("/api/group_sets/", data={"fields": ",".join(["id", "name"]), "default_version": "true"})
         self.assertJSONResponse(resp, status.HTTP_200_OK)
         self.assertEqual(resp.json()["group_sets"], [record_1])
 
     def test_list_groupsets_search_by_version(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get("/api/group_sets/", data={"fields": ["id", "name"], "version": self.source_version_1.id})
+        resp = self.client.get(
+            "/api/group_sets/", data={"fields": ",".join(["id", "name"]), "version": self.source_version_1.id}
+        )
         self.assertEqual(resp.json()["group_sets"], [record_1])
 
-        resp = self.client.get("/api/group_sets/", data={"fields": ["id", "name"], "version": self.source_version_2.id})
+        resp = self.client.get(
+            "/api/group_sets/", data={"fields": ",".join(["id", "name"]), "version": self.source_version_2.id}
+        )
         self.assertEqual(resp.json()["group_sets"], [record_2])
 
     def test_list_groupsets_search_return_dynamic_fields(self):
@@ -428,7 +432,7 @@ class GroupSetsAPITestCase(APITestCase):
         self.seed_list()
 
         resp = self.client.get(
-            "/api/group_sets/", data={"fields": ["id", "name", "groups"], "version": self.source_version_1.id}
+            "/api/group_sets/", data={"fields": ",".join(["id", "name", "groups"]), "version": self.source_version_1.id}
         )
         resp_data = self.assertJSONResponse(resp, status.HTTP_200_OK)
         groups_name = [g["name"] for g in resp_data["group_sets"][0]["groups"]]

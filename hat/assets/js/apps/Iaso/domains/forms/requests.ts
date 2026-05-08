@@ -14,7 +14,7 @@ import { Form } from './types/forms';
 export const useGetForm = (
     formId: number | string | undefined,
     enabled = Boolean(formId) && formId !== '0',
-    fields?: string[] | undefined,
+    fields?: string,
     appId?: string,
 ): UseQueryResult<Form, Error> => {
     const queryKey: any[] = ['forms', formId];
@@ -48,6 +48,26 @@ export const updateForm = (formId, formData) =>
     putRequest(`/api/forms/${formId}/`, formData).catch(error => {
         openSnackBar(errorSnackBar('updateFormError', null, error));
     });
+
+export type FormVersionDiff = {
+    previous_version_id: string | null;
+    removed_questions: { name: string; label: string; type: string }[];
+    added_questions: { name: string; label: string; type: string }[];
+    modified_questions: {
+        name: string;
+        label: string;
+        old_type: string;
+        new_type: string;
+    }[];
+};
+
+export const previewFormVersion = (
+    formVersionData,
+): Promise<FormVersionDiff> => {
+    const { data } = formVersionData;
+    const fileData = { xls_file: formVersionData.xls_file };
+    return postRequest('/api/formversions/preview/', data, fileData);
+};
 
 export const createFormVersion = formVersionData => {
     const { data } = formVersionData;

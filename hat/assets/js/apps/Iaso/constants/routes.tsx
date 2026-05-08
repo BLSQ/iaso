@@ -1,13 +1,15 @@
 import React, { ReactElement } from 'react';
 
 import { ApiImports } from 'Iaso/domains/apiimports';
-import { WorkflowConfiguration } from 'Iaso/domains/instances/validationWorkflow/details/WorkflowConfiguration';
-import { SubmissionValidation } from 'Iaso/domains/instances/validationWorkflow/SubmissionValidation';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
 import { StockItems } from 'Iaso/domains/stock/items';
 import { StockRulesVersions } from 'Iaso/domains/stock/versions';
+import { UsersBulkCreate } from 'Iaso/domains/users/bulkCreate';
+import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
+import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
+import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
 import { Assignments } from '../domains/assignments';
@@ -22,6 +24,7 @@ import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/Duplic
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
+import FormAI from '../domains/formAI';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
@@ -107,6 +110,13 @@ export const formsPath = {
     isRootUrl: true,
 };
 
+export const formAIPath = {
+    baseUrl: baseUrls.formAI,
+    routerUrl: `${baseUrls.formAI}/*`,
+    permissions: [Permission.FORMS],
+    element: <FormAI />,
+};
+
 export const pagesPath = {
     baseUrl: baseUrls.pages,
     routerUrl: `${baseUrls.pages}/*`,
@@ -138,20 +148,6 @@ export const instancesPath = {
     routerUrl: `${baseUrls.instances}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <Instances />,
-};
-export const instancesValidationPath = {
-    baseUrl: baseUrls.instanceValidation,
-    routerUrl: `${baseUrls.instanceValidation}/*`,
-    permissions: [Permission.VALIDATION_WORKFLOWS],
-    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
-    element: <SubmissionValidation />,
-};
-export const instanceValidationDetailPath = {
-    baseUrl: baseUrls.instanceValidationDetail,
-    routerUrl: `${baseUrls.instanceValidationDetail}/*`,
-    permissions: [Permission.VALIDATION_WORKFLOWS],
-    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
-    element: <WorkflowConfiguration />,
 };
 
 export const instanceDetailPath = {
@@ -271,6 +267,13 @@ export const usersPath = {
     routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
+};
+
+export const usersBulkCreate = {
+    baseUrl: baseUrls.usersBulkCreate,
+    routerUrl: `${baseUrls.usersBulkCreate}/*`,
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+    element: <UsersBulkCreate />,
 };
 
 export const userDetailsPath = {
@@ -482,6 +485,31 @@ export const stockItemsPath = {
     permissions: [Permission.STOCK_MANAGEMENT],
     element: <StockItems />,
 };
+
+export const validationWorkflowConfigurationPath = {
+    baseUrl: baseUrls.validationWorkflowsConfiguration,
+    routerUrl: `${baseUrls.validationWorkflowsConfiguration}/*`,
+    permissions: [Permission.VALIDATION_WORKFLOWS],
+    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
+    element: <ValidationWorkflowsConfiguration />,
+};
+
+export const validationWorkflowsConfigurationDetailPath = {
+    baseUrl: baseUrls.validationWorkflowsConfigurationDetail,
+    routerUrl: `${baseUrls.validationWorkflowsConfigurationDetail}/*`,
+    permissions: [Permission.VALIDATION_WORKFLOWS],
+    featureFlag: SUBMISSION_VALIDATION_WORKFLOW,
+    element: <ValidationWorkflowConfigurationDetail />,
+};
+
+export const validationWorkflowInstancesPath = {
+    baseUrl: baseUrls.validationWorkflowInstances,
+    routerUrl: `${baseUrls.validationWorkflowInstances}/*`,
+    permissions: [Permission.SUBMISSIONS, Permission.VALIDATION_WORKFLOWS],
+    feature_flag: SUBMISSION_VALIDATION_WORKFLOW,
+    element: <ValidationWorkflowInstances />,
+};
+
 export const pipelineListPath = {
     baseUrl: baseUrls.pipelineList,
     routerUrl: `${baseUrls.pipelineList}/*`,
@@ -537,14 +565,13 @@ export const page500 = {
 
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
+    formAIPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
-    instancesValidationPath,
-    instanceValidationDetailPath,
     compareInstanceLogsPath,
     compareInstancesPath,
     orgUnitsPath,
@@ -557,6 +584,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     userDetailsPath,
     usersHistoryPath,
     userRolesPath,
+    usersBulkCreate,
     projectsPath,
     dataSourcesPath,
     dataSourceDetailsPath,
@@ -599,4 +627,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     pipelineDetailsPath,
     pipelineListPath,
     adminApiImportPath,
+    validationWorkflowConfigurationPath,
+    validationWorkflowsConfigurationDetailPath,
+    validationWorkflowInstancesPath,
 ];

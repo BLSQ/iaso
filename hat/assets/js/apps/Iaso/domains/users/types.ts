@@ -56,7 +56,7 @@ export interface BulkImportPayload extends BulkImportDefaults {
 }
 
 export type Profile = {
-    id: string;
+    id: number;
     first_name: string;
     user_name?: string;
     username?: string;
@@ -149,6 +149,7 @@ export type ProfileRetrieveResponseItem = {
     user_name: string;
     last_name: string;
     email: string;
+    date_joined: string;
     permissions: string[];
     user_permissions: string[];
     is_staff: boolean;

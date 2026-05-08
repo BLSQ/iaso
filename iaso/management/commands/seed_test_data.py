@@ -37,7 +37,7 @@ from iaso.models import (
     SourceVersion,
     User,
 )
-from iaso.models.base import AccountFeatureFlag
+from iaso.models.account import AccountFeatureFlag
 from iaso.models.comment import CommentIaso
 from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType

@@ -27,7 +27,7 @@ jobs:
                   cache: npm
             - name: upgrade npm
               run: |
-                  npm install --global npm@10.9.3
+                  npm install --global npm@11.13.0
             - name: Environment info
               run: |
                   node --version

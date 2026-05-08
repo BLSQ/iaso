@@ -26,7 +26,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
 from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
@@ -101,7 +101,7 @@ class ProfilesViewSet(ModelViewSet):
     @property
     def filter_backends(self):
         if self.action in ["list"]:
-            return [OrderingFilter, DjangoFilterBackend, DynamicFieldsFilterBackend]
+            return [OrderingFilter, DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
         return [OrderingFilter, DjangoFilterBackend]
 
     def get_serializer_class(self):

@@ -60,6 +60,9 @@ case "$1" in
   "vitest" )
     npm run test
   ;;
+  "vitest_watch" )
+    npm run test:watch
+  ;;
   "gen_docs" )
     ./scripts/gen_docs.sh
   ;;

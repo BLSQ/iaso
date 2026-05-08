@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 
-from dynamic_fields.filter_backends import DynamicFieldsFilterBackend
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import Paginator
 from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
 from plugins.polio.api.chronogram.permissions import HasChronogramPermission, HasChronogramRestrictedWritePermission
@@ -39,7 +39,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
             return [
                 filters.OrderingFilter,
                 django_filters.rest_framework.DjangoFilterBackend,
-                DynamicFieldsFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
             ]
         return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
@@ -150,7 +150,7 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
             return [
                 filters.OrderingFilter,
                 django_filters.rest_framework.DjangoFilterBackend,
-                DynamicFieldsFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
             ]
         return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
@@ -195,7 +195,7 @@ class ChronogramTemplateTaskViewSet(viewsets.ModelViewSet):
             return [
                 filters.OrderingFilter,
                 django_filters.rest_framework.DjangoFilterBackend,
-                DynamicFieldsFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
             ]
         return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 

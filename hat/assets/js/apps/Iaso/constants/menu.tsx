@@ -4,6 +4,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BookIcon from '@mui/icons-material/Book';
 import CategoryIcon from '@mui/icons-material/Category';
 import CompareArrows from '@mui/icons-material/CompareArrows';
@@ -17,7 +18,6 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
 import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
-import Input from '@mui/icons-material/Input';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
@@ -29,6 +29,8 @@ import PriceCheckIcon from '@mui/icons-material/PriceCheck';
 import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import RuleIcon from '@mui/icons-material/Rule';
+import SchemaIcon from '@mui/icons-material/Schema';
+import SearchIcon from '@mui/icons-material/Search';
 import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
@@ -207,18 +209,17 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.formAI),
+                    permissions: paths.formAIPath.permissions,
+                    key: 'ai',
+                    icon: props => <AutoFixHighIcon {...props} />,
+                },
+                {
                     label: formatMessage(MESSAGES.submissionsTitle),
-                    key: 'submissions',
-                    icon: props => <Input {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.list),
-                            extraPath: `/tab/list/mapResults/${locationLimitMax}`,
-                            permissions: paths.instancesPath.permissions,
-                            key: 'list',
-                            icon: props => <FormatListBulleted {...props} />,
-                        },
-                    ],
+                    key: 'submissions/list',
+                    icon: props => <FormatListBulleted {...props} />,
+                    permissions: paths.instancesPath.permissions,
+                    extraPath: `/tab/list/mapResults/${locationLimitMax}`,
                 },
 
                 {
@@ -464,22 +465,41 @@ export const useMenuItems = (): MenuItems => {
         );
     }
 
-    // add feature flags
-    if (hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)) {
-        const formsMenuEntry = basicItems.find(item => item.key === 'forms');
-        if (
-            !formsMenuEntry?.subMenu?.find(
-                entry => entry.key === 'submissions/validation',
-            )
-        ) {
-            formsMenuEntry?.subMenu?.push({
-                label: formatMessage(MESSAGES.validation),
-                permissions: paths.instancesPath.permissions,
-                key: 'submissions/validation',
-                icon: props => <RuleIcon {...props} />,
-            });
-        }
+    // Hide Form AI in the main menu, under Forms when FORM_AI module is not activated
+    const hasFormAIModule = userHasAccessToModule('FORM_AI', currentUser);
+    if (!hasFormAIModule && basicItems?.length > 0) {
+        basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
+            item => item.key !== 'ai',
+        );
     }
+
+    // add feature flags
+    if (
+        hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW) &&
+        !basicItems.find(item => item.key === 'validation-workflows')
+    ) {
+        basicItems.push({
+            label: formatMessage(MESSAGES.validationWorkflow),
+            icon: props => <SchemaIcon {...props} />,
+            key: 'validation-workflows',
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.configuration),
+                    key: 'configuration',
+                    permissions:
+                        paths.validationWorkflowConfigurationPath.permissions,
+                    icon: props => <Settings {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.submissionsTitle),
+                    key: 'submissions',
+                    permissions: paths.instancesPath.permissions,
+                    icon: props => <SearchIcon {...props} />,
+                },
+            ],
+        });
+    }
+
     if (
         hasFeatureFlag(currentUser, SHOW_PAGES) &&
         !basicItems.find(item => item.key === 'pages')

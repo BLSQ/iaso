@@ -1,19 +1,10 @@
-from rest_framework import serializers
-
 from iaso.api.common import ModelSerializer
-from iaso.models import UserRole, ValidationNodeTemplate
-
-
-class NestedRolesRequiredSerializer(ModelSerializer):
-    name = serializers.CharField(read_only=True, source="group.name")
-
-    class Meta:
-        model = UserRole
-        fields = ["name", "id"]
+from iaso.api.common.serializer import UserRoleNameSerializer
+from iaso.models import ValidationNodeTemplate
 
 
 class ValidationNodeTemplateListSerializer(ModelSerializer):
-    roles_required = NestedRolesRequiredSerializer(read_only=True, many=True)
+    roles_required = UserRoleNameSerializer(read_only=True, many=True)
 
     class Meta:
         model = ValidationNodeTemplate

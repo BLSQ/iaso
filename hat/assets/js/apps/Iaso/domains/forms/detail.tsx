@@ -122,7 +122,7 @@ const FormDetail: FunctionComponent = () => {
             'legend_threshold',
             'change_request_mode',
             'validation_workflow',
-        ],
+        ].join(','),
     );
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);

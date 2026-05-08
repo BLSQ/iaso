@@ -330,7 +330,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
         GET /api/polio/budget/?fields=obr_name,country_name
         """
         self.client.force_login(self.user)
-        response = self.client.get("/api/polio/budget/", data={"fields": ["obr_name", "country_name"]})
+        response = self.client.get("/api/polio/budget/", data={"fields": ",".join(["obr_name", "country_name"])})
         response_data = self.assertJSONResponse(response, 200)
         for budget_process in response_data["results"]:
             self.assertEqual(budget_process["obr_name"], "test campaign")
@@ -793,7 +793,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
 
     def test_csv_export(self):
         self.client.force_login(self.user)
-        r = self.client.get("/api/polio/budget/export_csv/", data={"fields": ["obr_name", "rounds"]})
+        r = self.client.get("/api/polio/budget/export_csv/", data={"fields": ",".join(["obr_name", "rounds"])})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r["Content-Type"], "text/csv")
         self.assertEqual(r.content, b'OBR name,Rounds\r\ntest campaign,"1,2"\r\ntest campaign,3\r\n')

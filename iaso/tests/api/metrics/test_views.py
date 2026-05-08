@@ -41,6 +41,7 @@ class MetricTypeAPITestCase(APITestCase):
         response = self.client.get(self.BASE_URL)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]["metric_kind"], "any")
         metric_type_codes = {mt["code"] for mt in data}
         self.assertIn("MT001", metric_type_codes)
         self.assertIn("MT002", metric_type_codes)
@@ -67,6 +68,7 @@ class MetricTypeAPITestCase(APITestCase):
             "name": "Metric Type 3",
             "description": "Description for Metric Type 3",
             "category": "Category C",
+            "metric_kind": "population",
             "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
             "legend_config": {"domain": [1.0, 2.0, 3.0], "range": ["#A2CAEA", "#ACDF9B", "#F2B16E", "#A93A42"]},
             "legend_type": MetricType.LegendType.THRESHOLD.value,
@@ -79,6 +81,7 @@ class MetricTypeAPITestCase(APITestCase):
         created_mt = MetricType.objects.get(code="MT003")
         self.assertEqual(created_mt.account, self.account)
         self.assertEqual(created_mt.legend_type, MetricType.LegendType.THRESHOLD.value)
+        self.assertEqual(created_mt.metric_kind, "population")
         self.assertEqual(created_mt.origin, MetricType.MetricTypeOrigin.CUSTOM.value)
         self.assertEqual(
             created_mt.legend_config,
@@ -126,6 +129,7 @@ class MetricTypeAPITestCase(APITestCase):
             "code": "MT001",
             "name": "Updated Metric Type 1",
             "description": "Updated description for Metric Type 1",
+            "metric_kind": "population",
             "origin": MetricType.MetricTypeOrigin.CUSTOM.value,
             "category": "Category A",
             "legend_config": {
@@ -143,6 +147,27 @@ class MetricTypeAPITestCase(APITestCase):
         self.metric_type_1.refresh_from_db()
         self.assertEqual(self.metric_type_1.name, "Updated Metric Type 1")
         self.assertEqual(self.metric_type_1.description, "Updated description for Metric Type 1")
+        self.assertEqual(self.metric_type_1.metric_kind, "population")
+
+    def test_metric_type_list_include_utility_query_param(self):
+        MetricType.objects.create(
+            account=self.account,
+            code="POP001",
+            name="Population Metric",
+            description="Utility metric",
+            category="Population",
+            is_utility=True,
+            metric_kind="population",
+            origin=MetricType.MetricTypeOrigin.OPENHEXA.value,
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}?include_utility=true")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(len(data), 3)
+        utility_metric = next(item for item in data if item["code"] == "POP001")
+        self.assertEqual(utility_metric["metric_kind"], "population")
 
     def test_metric_type_update_unauthenticated(self):
         payload = {

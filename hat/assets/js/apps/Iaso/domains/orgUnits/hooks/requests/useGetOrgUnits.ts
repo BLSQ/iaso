@@ -40,7 +40,7 @@ export const DEFAULT_ORG_UNIT_COLUMNS = [
 
 export const NON_SELECTABLE_COLUMNS = ['actions', 'selection'];
 
-const getCleanFields = (fields?: string | string[]): string[] | undefined => {
+const getCleanFields = (fields?: string | string[]): string | undefined => {
     const fieldsArray = Array.isArray(fields)
         ? fields
         : (fields?.split(',') ?? DEFAULT_ORG_UNIT_COLUMNS);
@@ -49,7 +49,7 @@ const getCleanFields = (fields?: string | string[]): string[] | undefined => {
         f => f && !NON_SELECTABLE_COLUMNS.includes(f),
     );
 
-    return filtered.length > 0 ? filtered : undefined;
+    return filtered.length > 0 ? filtered.join(',') : undefined;
 };
 
 type Props = {

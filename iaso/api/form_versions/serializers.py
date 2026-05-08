@@ -1,14 +1,25 @@
+import logging
 import typing
 
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import exceptions, serializers
 from rest_framework.fields import Field
 
-from dynamic_fields.serializer import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.api.common import TimestampField
-from iaso.api.forms import HasFormPermission
+from iaso.api.forms.permissions import HasFormPermission
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing, validate_xls_form
+
+
+logger = logging.getLogger(__name__)
+
+
+@extend_schema_field({"type": "string", "format": "binary"})
+class UploadFileField(serializers.FileField):
+    pass
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -18,7 +29,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
         ref_name = "UserNestedSerializerForFormVersions"
 
 
-class FormVersionSerializer(DynamicFieldsModelSerializer):
+class FormVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = FormVersion
         default_fields = [
@@ -115,8 +126,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
         if len(validation_errors):
             # TODO: translate the error message
-            # keep xls_file empty to highlight the input in the UI
-            raise serializers.ValidationError({"xls_file": "", "xls_file_validation_errors": validation_errors})
+            raise serializers.ValidationError({"xls_file_validation_errors": validation_errors})
 
         data["xls_file"].seek(0)
 
@@ -160,3 +170,73 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         form_version.updated_by = self.context["request"].user
         form_version.save()
         return form_version
+
+
+class FormVersionPreviewSerializer(serializers.Serializer):
+    """Input serializer for the preview endpoint — validates the request without persisting anything."""
+
+    form_id = serializers.PrimaryKeyRelatedField(
+        queryset=Form.objects.none(),
+        required=True,
+        write_only=True,
+    )
+    xls_file = UploadFileField(
+        allow_empty_file=False,
+        required=True,
+        write_only=True,
+        validators=[FileExtensionValidator(allowed_extensions=["xlsx", "xls"])],
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request:
+            self.fields["form_id"].queryset = Form.objects.filter_for_user_and_app_id(request.user)
+
+    def validate_form_id(self, form):
+        permission_checker = HasFormPermission()
+        if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
+            raise serializers.ValidationError("Invalid form id")
+        return form
+
+    def validate(self, data):
+        form = data["form_id"]
+        xls_file = data["xls_file"]
+        validation_errors = validate_xls_form(xls_file)
+        if validation_errors:
+            raise serializers.ValidationError({"xls_file_validation_errors": validation_errors})
+
+        xls_file.seek(0)
+        try:
+            previous_form_version = FormVersion.objects.latest_version(form)
+            survey = parsing.parse_xls_form(
+                xls_file,
+                previous_version=previous_form_version.version_id if previous_form_version is not None else None,
+            )
+        except parsing.ParsingError as e:
+            logger.exception("Failed to parse XLS form during preview validation")
+            raise serializers.ValidationError({"xls_file": "Invalid XLS form content."})
+
+        data["survey"] = survey
+        data["previous_form_version"] = previous_form_version
+        return data
+
+
+class QuestionSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    label = serializers.CharField()
+    type = serializers.CharField()
+
+
+class ModifiedQuestionSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    label = serializers.CharField()
+    old_type = serializers.CharField()
+    new_type = serializers.CharField()
+
+
+class FormVersionDiffSerializer(serializers.Serializer):
+    previous_version_id = serializers.CharField(allow_null=True)
+    removed_questions = QuestionSerializer(many=True)
+    added_questions = QuestionSerializer(many=True)
+    modified_questions = ModifiedQuestionSerializer(many=True)

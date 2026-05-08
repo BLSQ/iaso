@@ -25,7 +25,10 @@ export const userHasPermission = (permission, user) => {
  * @param {Object} user
  * @return {Boolean}
  */
-export const userHasOneOfPermissions = (permissions = [], user) => {
+export const userHasOneOfPermissions = (
+    permissions: string[] = [],
+    user: User,
+): boolean => {
     if (!user) {
         return false;
     }

@@ -100,17 +100,19 @@ class MobileFormsAPITestCase(APITestCase):
         self.form_1.form_versions.create(file=self.create_file_mock(name="data.xml"), version_id="20250813")
 
         self.client.force_authenticate(self.yoda)
-        custom_fields = [
-            "id",
-            "name",
-            "periods_before_allowed",
-            "periods_after_allowed",
-            "predefined_filters",
-            "has_attachments",
-            "created_at",
-            "updated_at",
-            "reference_form_of_org_unit_types",
-        ]
+        custom_fields = ",".join(
+            [
+                "id",
+                "name",
+                "periods_before_allowed",
+                "periods_after_allowed",
+                "predefined_filters",
+                "has_attachments",
+                "created_at",
+                "updated_at",
+                "reference_form_of_org_unit_types",
+            ]
+        )
         with self.assertNumQueries(13):
             response = self.client.get(
                 "/api/mobile/forms/", data={"fields": custom_fields}, headers={"Content-Type": "application/json"}

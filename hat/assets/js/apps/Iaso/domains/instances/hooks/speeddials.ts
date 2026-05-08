@@ -70,7 +70,7 @@ export const useGetFormDefForInstance = (
     formId: number | string | undefined,
 ): UseQueryResult<FormDef, Error> => {
     const queryString = createSearchParamsWithArray({
-        fields: ['org_unit_type_ids', 'period_type'],
+        fields: ['org_unit_type_ids', 'period_type'].join(','),
     }).toString();
     return useSnackQuery(
         ['forms', formId, 'org_unit_types'],

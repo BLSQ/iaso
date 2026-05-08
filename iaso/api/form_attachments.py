@@ -14,7 +14,7 @@ from iaso.utils.encryption import calculate_md5
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 
 from .common import ModelViewSet, TimestampField
-from .forms import HasFormPermission
+from .forms.permissions import HasFormPermission
 from .query_params import APP_ID
 
 

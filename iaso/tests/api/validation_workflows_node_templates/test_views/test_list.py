@@ -13,7 +13,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
         self.account_2 = Account.objects.create(name="account_2")
         self.enable_validation_workflow_feature_flag(self.account, self.account_2)
 
-        self.group = Group.objects.create(name="Group")
+        self.group = Group.objects.create(name=f"{self.account.id}_Group")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
 
         self.validation_workflow = ValidationWorkflow.objects.create(

@@ -45,7 +45,7 @@ export const useGetGroupSets = params => {
 
     const queryString = createSearchParamsWithArray({
         ...newParams,
-        fields: ['id', 'name', 'groups', 'created_at', 'updated_at'],
+        fields: ['id', 'name', 'groups', 'created_at', 'updated_at'].join(','),
     }).toString();
 
     return useSnackQuery(

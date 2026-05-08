@@ -3,13 +3,14 @@ import { List, ListItem, ListItemText } from '@mui/material';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 // import { useSafeIntl } from 'bluesquare-components';
 import { ListItemSecondaryText } from 'Iaso/domains/instances/components/ValidationWorkflow/timeline/ListItemSecondaryText';
+import { Timeline } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
 import { AvatarTimeline } from './AvatarTimeline';
 
 type SubmissionListProps = {
     totalSteps: number;
     instanceId: number;
     isMostRecent: boolean;
-    timeline: any[];
+    timeline: Timeline[];
 };
 
 export const SubmissionList = ({
@@ -20,7 +21,7 @@ export const SubmissionList = ({
 }: SubmissionListProps) => {
     return (
         <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-            {timeline?.map((timelineItem, idx) => {
+            {timeline?.map(timelineItem => {
                 return (
                     <ListItem
                         alignItems="flex-start"
@@ -39,7 +40,7 @@ export const SubmissionList = ({
                             />
                         </ListItemAvatar>
                         <ListItemText
-                            primary={`${timelineItem.name} (${timeline?.length - idx}/${totalSteps})`}
+                            primary={`${timelineItem.name} (${timelineItem.order}/${totalSteps})`}
                             secondary={
                                 <ListItemSecondaryText
                                     timelineItem={timelineItem}

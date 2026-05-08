@@ -45,6 +45,7 @@ export type Timeline = {
     updated_by?: string;
     type: 'NEXT_BYPASS' | 'TIMELINE';
     user_can_do_actions: boolean;
+    order: number;
 };
 
 export type ValidationNodeRetrieveResponseSubmission = {

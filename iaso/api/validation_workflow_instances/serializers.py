@@ -24,6 +24,7 @@ class NestedTimelineSerializer(ModelSerializer):
     updated_by = UserDisplayNameField()
     type = serializers.SerializerMethodField(read_only=True)
     user_can_do_actions = serializers.SerializerMethodField(read_only=True)
+    order = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ValidationNode
@@ -38,6 +39,7 @@ class NestedTimelineSerializer(ModelSerializer):
             "updated_by",
             "type",
             "user_can_do_actions",
+            "order",
         ]
 
     def get_type(self, obj):
@@ -57,6 +59,10 @@ class NestedTimelineSerializer(ModelSerializer):
 
         return True
 
+    def get_order(self, obj):
+        list_nodes = list(obj.instance.form.validation_workflow.dump_nodes())
+        return list_nodes.index(obj.node.slug) + 1
+
 
 class NestedTimelineNextBypassSerializer(ModelSerializer):
     node_template_slug = serializers.CharField(read_only=True, source="slug")
@@ -65,6 +71,7 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
     comment = serializers.SerializerMethodField(read_only=True)
     type = serializers.SerializerMethodField(read_only=True)
     user_can_do_actions = serializers.SerializerMethodField(read_only=True)
+    order = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ValidationNodeTemplate
@@ -79,6 +86,7 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
             "updated_by",
             "type",
             "user_can_do_actions",
+            "order",
         ]
 
     def get_status(self, obj):
@@ -107,6 +115,10 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
             return False
 
         return True
+
+    def get_order(self, obj):
+        list_nodes = list(obj.workflow.dump_nodes())
+        return list_nodes.index(obj.slug) + 1
 
 
 class NestedSubmissionSerializer(serializers.ModelSerializer):

@@ -280,8 +280,10 @@ class Exporter:
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
             filter(
-                lambda x: (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
-                and x.are_fields_modified(support_by_update_fields),
+                lambda x: (
+                    (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
+                    and x.are_fields_modified(support_by_update_fields)
+                ),
                 diffs,
             )
         )
@@ -346,8 +348,10 @@ class Exporter:
         support_by_update_fields = [field for field in fields if field.startswith("group:")]
         to_update_diffs = list(
             filter(
-                lambda x: (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
-                and x.are_fields_modified(support_by_update_fields),
+                lambda x: (
+                    (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
+                    and x.are_fields_modified(support_by_update_fields)
+                ),
                 diffs,
             )
         )

@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0384_project_description'),
-        ('iaso', '0384_rename_bulkcreateusercsvfile_bulkcreateuserfile'),
+        ("iaso", "0384_project_description"),
+        ("iaso", "0384_rename_bulkcreateusercsvfile_bulkcreateuserfile"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -22,6 +22,27 @@ admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
 
 
+def resolve_root_redirect_pattern_name():
+    pattern_name = settings.ROOT_REDIRECT_PATTERN_NAME
+    for plugin_name in settings.PLUGINS:
+        module_name = f"plugins.{plugin_name}.root_redirect"
+        try:
+            plugin_root_redirect = import_module(module_name)
+        except ModuleNotFoundError as error:
+            if error.name == module_name:
+                continue
+            raise
+
+        plugin_pattern_name = getattr(plugin_root_redirect, "ROOT_REDIRECT_PATTERN_NAME", None)
+        if plugin_pattern_name:
+            return plugin_pattern_name
+
+    return pattern_name
+
+
+ROOT_REDIRECT_PATTERN_NAME = resolve_root_redirect_pattern_name()
+
+
 if settings.MAINTENANCE_MODE:
     urlpatterns = [
         path("_health/", health),
@@ -81,7 +102,7 @@ else:
 
     urlpatterns += [
         path("robots.txt", robots_txt),
-        path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
+        path("", RedirectView.as_view(pattern_name=ROOT_REDIRECT_PATTERN_NAME, permanent=False), name="index"),
         path("_health/", health),
         path("_health", health),  # same without slash otherwise AWS complain about redirect
         path("health/", health),  # alias since current apache config hide _health/

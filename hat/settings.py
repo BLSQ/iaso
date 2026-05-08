@@ -61,6 +61,7 @@ DNS_DOMAIN = get_env_var_or_default("DNS_DOMAIN", "localhost:8081")
 TESTING = get_env_var_or_default("TESTING", "").lower() == "true"
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = os.environ["PLUGINS"].split(",") if get_env_var_or_default("PLUGINS", "") else []
+ROOT_REDIRECT_PATTERN_NAME = get_env_var_or_default("ROOT_REDIRECT_PATTERN_NAME", "dashboard:home_iaso")
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

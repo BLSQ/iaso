@@ -618,6 +618,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
 ]
+for plugin_name in PLUGINS:
+    STATICFILES_DIRS.append(os.path.join(BASE_DIR, "plugins/%s/static" % plugin_name))
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -896,6 +898,7 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
+XLSFORM_VALIDATOR_TEMP_DIR = "/tmp"
 INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests

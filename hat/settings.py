@@ -43,7 +43,7 @@ class Env(_Env):
 
 
 env = Env()
-env.read_env()
+env.read_env()  # env vars in .env are the base value, but if OS-level env vars also exist, they override .env
 
 
 MAINTENANCE_MODE = env.bool("MAINTENANCE_MODE", default=False)

@@ -1,5 +1,6 @@
 import { UseQueryResult } from 'react-query';
 import { AssignmentParams } from 'Iaso/domains/assignments/types/assigment';
+import { PLANNINGS_API_URL } from 'Iaso/domains/plannings/constants';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
@@ -21,7 +22,7 @@ export const useGetPlanningOrgUnitsChildren = (
         search: params?.search,
     };
     const url = makeUrlWithParams(
-        `/api/microplanning/plannings/${planningId}/orgunits/children/`,
+        `${PLANNINGS_API_URL}${planningId}/orgunits/children/`,
         apiParams,
     );
     return useSnackQuery({
@@ -38,7 +39,7 @@ export const useGetPlanningOrgUnitsChildren = (
 export const useGetPlanningOrgUnitsRoot = (
     planningId: string,
 ): UseQueryResult<PlanningOrgUnits, Error> => {
-    const url = `/api/microplanning/plannings/${planningId}/orgunits/root/`;
+    const url = `${PLANNINGS_API_URL}${planningId}/orgunits/root/`;
     return useSnackQuery({
         queryKey: ['planningRootOrgUnit', planningId],
         queryFn: () => getRequest(url),
@@ -63,7 +64,7 @@ export const useGetPlanningOrgUnitsChildrenPaginated = (
     };
     const url = Boolean(planningId)
         ? makeUrlWithParams(
-              `/api/microplanning/plannings/${planningId}/orgunits/children-paginated/`,
+              `${PLANNINGS_API_URL}${planningId}/orgunits/children-paginated/`,
               apiParams,
           )
         : '';

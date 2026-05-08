@@ -4,19 +4,18 @@ import { postRequest, patchRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
 import { SubTeam, User } from '../../../teams/types/team';
+import { ASSIGNMENTS_API_URL } from '../../constants/api';
 import { SaveAssignmentQuery } from '../../types/assigment';
 import { AssignmentsResult } from './useGetAssignments';
-
-const endpoint = '/api/microplanning/assignments/';
 
 export const saveAssignment = async (
     body: SaveAssignmentQuery,
 ): Promise<any> => {
     if (body.id) {
-        const url = `${endpoint}${body.id}/`;
+        const url = `${ASSIGNMENTS_API_URL}${body.id}/`;
         return patchRequest(url, body);
     }
-    return postRequest(endpoint, body);
+    return postRequest(ASSIGNMENTS_API_URL, body);
 };
 
 type UseSaveAssignmentArgs = {
@@ -103,7 +102,7 @@ export const useSaveAssignment = ({
 };
 
 const saveBulkAssignments = (data: SaveAssignmentQuery) => {
-    const url = `${endpoint}bulk_create_assignments/`;
+    const url = `${ASSIGNMENTS_API_URL}bulk_create_assignments/`;
     return postRequest(url, data);
 };
 

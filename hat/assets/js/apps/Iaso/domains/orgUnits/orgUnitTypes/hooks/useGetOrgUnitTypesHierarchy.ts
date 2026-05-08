@@ -16,38 +16,16 @@ export type OrgUnitTypeHierarchyDropdownValues = DropdownOptionsWithOriginal<
     OrgUnitTypeHierarchy
 >[];
 
-export const flattenHierarchy = (
-    items: OrgUnitTypeHierarchy[],
-    orgUnitTypeId?: number,
-    selectedOrgUnitTypeIds?: number[],
-): OrgUnitTypeHierarchyDropdownValues => {
-    return items.flatMap(item => {
-        if (
-            selectedOrgUnitTypeIds?.includes(item.id) &&
-            orgUnitTypeId &&
-            item.id !== orgUnitTypeId
-        ) {
-            return [];
-        }
-        const currentItem: OrgUnitTypeHierarchyDropdownValues[number] = {
-            value: item.id,
-            label: item.name,
-            original: item,
-        };
-        const children = flattenHierarchy(
-            item.sub_unit_types ?? [],
-            orgUnitTypeId,
-            selectedOrgUnitTypeIds,
-        );
-        return [currentItem, ...children];
-    });
-};
-
+/**
+ * Fetch org unit types hierarchy as a tree.
+ *
+ * For dropdowns, flatten this hierarchy with `flattenOrgUnitTypeHierarchy`.
+ */
 export const useGetOrgUnitTypesHierarchy = <TSelected = OrgUnitTypeHierarchy>(
     orgUnitTypeId?: number,
     select?: (data: OrgUnitTypeHierarchy) => TSelected,
 ): UseQueryResult<TSelected, Error> => {
-    const queryKey: QueryKey = ['orgUnitTypeHierarchy', orgUnitTypeId];
+    const queryKey: QueryKey = ['orgUnitTypeHierarchy', orgUnitTypeId, select];
     return useSnackQuery<OrgUnitTypeHierarchy, Error, TSelected>({
         queryKey,
         queryFn: () =>

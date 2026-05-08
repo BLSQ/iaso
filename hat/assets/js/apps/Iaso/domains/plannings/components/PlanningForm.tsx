@@ -25,13 +25,14 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useBulkDeleteAssignments } from 'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { filterOrgUnitTypesByForms } from 'Iaso/domains/forms/utils';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import {
-    flattenHierarchy,
     OrgUnitTypeHierarchy,
     useGetOrgUnitTypesHierarchy,
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptions } from 'Iaso/types/utils';
@@ -213,21 +214,16 @@ export const PlanningForm: FunctionComponent<Props> = ({
             enabled: Boolean(values?.project),
         });
 
-    const selectOrgUnitTypeHierarchy = useCallback(
+    const selectOrgUnitTypeByForm = useCallback(
         (data: OrgUnitTypeHierarchy) => {
-            // Get all possible org unit types filtering on forms org unit types,
-            // if no forms are selected, return all types,
-            // if no org unit types is selected in the forms used, return all types
-            const types = flattenHierarchy(data.sub_unit_types || []);
-            const possibleTypes =
-                formsDropdown
-                    ?.filter(form => values.forms?.includes(form.value))
-                    .flatMap(form => form.original?.org_unit_type_ids || []) ??
-                [];
-            if (possibleTypes.length === 0) {
-                return types;
-            }
-            return types.filter(type => possibleTypes?.includes(type.value));
+            const types = flattenOrgUnitTypeHierarchy(
+                data.sub_unit_types || [],
+            );
+            return filterOrgUnitTypesByForms(
+                types,
+                formsDropdown,
+                values.forms,
+            );
         },
         [formsDropdown, values.forms],
     );
@@ -237,7 +233,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypesHierarchy<DropdownOptions<number>[]>(
             rootorgunit?.org_unit_type_id,
-            selectOrgUnitTypeHierarchy,
+            selectOrgUnitTypeByForm,
         );
 
     const { data: teamsDropdown, isFetching: isFetchingTeams } =

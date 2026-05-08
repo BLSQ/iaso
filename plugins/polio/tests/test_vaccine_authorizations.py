@@ -5,7 +5,9 @@ from datetime import date
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection
 from django.shortcuts import get_object_or_404
+from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -333,6 +335,68 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.data[0]["next_expiration_date"], None)
         self.assertEqual(response.data[0]["start_date"], datetime.date(2224, 2, 1))
 
+    def test_get_most_recent_authorizations_is_o1_queries(self):
+        """
+        Ensure the endpoint does not suffer from N+1 queries by comparing
+        the query count of 1 country vs multiple countries.
+        """
+        self.client.force_authenticate(self.user_1)
+
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "quantity": 12346,
+                "status": "VALIDATED",
+                "comment": "baseline auth",
+                "expiration_date": "2224-03-01",
+                "start_date": "2224-02-01",
+            },
+        )
+
+        with CaptureQueriesContext(connection) as baseline_ctx:
+            response_baseline = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
+
+        baseline_query_count = len(baseline_ctx.captured_queries)
+        self.assertEqual(response_baseline.status_code, 200)
+
+        bulk_org_units = [
+            self.org_unit_CHAD,
+            self.org_unit_BURKINA_FASO,
+            self.org_unit_ZIMBABWE,
+            self.org_unit_SIERRA_LEONE,
+            self.org_unit_ALGERIA,
+            self.org_unit_SOMALIA,
+        ]
+
+        self.user_1.iaso_profile.org_units.add(*bulk_org_units)
+
+        for ou in bulk_org_units:
+            self.client.post(
+                "/api/polio/vaccineauthorizations/",
+                data={
+                    "country": ou.pk,
+                    "quantity": 5000,
+                    "status": "ONGOING",
+                    "comment": f"bulk auth for {ou.name}",
+                    "expiration_date": "2224-04-01",
+                    "start_date": "2224-03-01",
+                },
+            )
+
+        with CaptureQueriesContext(connection) as bulk_ctx:
+            response_bulk = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
+
+        bulk_query_count = len(bulk_ctx.captured_queries)
+        self.assertEqual(response_bulk.status_code, 200)
+        self.assertLessEqual(
+            bulk_query_count,
+            baseline_query_count,
+            f"N+1 Regression: Queries jumped from {baseline_query_count} to {bulk_query_count}!",
+        )
+
     def test_filters(self):
         self.client.force_authenticate(self.user_1)
 
@@ -482,28 +546,29 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 2)
 
     def test_get_recent_without_expired_or_validated_data_must_return_ongoing_or_signature(self):
-        def test_get_most_recent_authorizations(self):
-            self.client.force_authenticate(self.user_1)
-            self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-            self.client.post(
-                "/api/polio/vaccineauthorizations/",
-                data={
-                    "country": self.org_unit_DRC.pk,
-                    "quantity": 12346,
-                    "status": "ONGOING",
-                    "comment": "waiting for approval.",
-                    "expiration_date": (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
-                },
-            )
+        tomorrow_str = datetime.date.today() + datetime.timedelta(days=1)
 
-            response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "quantity": 12346,
+                "status": "ONGOING",
+                "comment": "waiting for approval.",
+                "expiration_date": (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+            },
+        )
 
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data[0]["comment"], "waiting for approval.")
-            self.assertEqual(response.data[0]["status"], "ongoing")
-            self.assertEqual(response.data[0]["current_expiration_date"], None)
-            self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 2, 1))
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]["comment"], "waiting for approval.")
+        self.assertEqual(response.data[0]["status"], "ONGOING")
+        self.assertEqual(response.data[0]["current_expiration_date"], None)
+        self.assertEqual(response.data[0]["next_expiration_date"], tomorrow_str)
 
     def test_can_edit_authorizations(self):
         self.client.force_authenticate(self.user_1)

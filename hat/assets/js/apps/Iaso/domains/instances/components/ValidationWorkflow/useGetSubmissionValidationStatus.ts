@@ -1,11 +1,11 @@
-import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
-import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/instances/validationWorkflow/types/validationWorkflows';
 import { userHasPermission } from 'Iaso/domains/users/utils';
+import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
+import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import { API_URL } from '../../validationWorkflow/constants';
+import { API_URL } from '../../../validationWorkflowsConfiguration/constants';
 
 const getSubmissionValidationStatus = (
     id: number,

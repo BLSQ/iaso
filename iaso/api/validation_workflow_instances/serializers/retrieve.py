@@ -21,10 +21,12 @@ class NestedUserRoleSerializer(ModelSerializer):
 class NestedTimelineSerializer(ModelSerializer):
     name = serializers.CharField(read_only=True, source="node.name")
     node_template_slug = serializers.CharField(read_only=True, source="node.slug")
-    updated_by = UserDisplayNameField()
+    updated_by = UserDisplayNameField(allow_null=True)
     type = serializers.SerializerMethodField(read_only=True)
     user_can_do_actions = serializers.SerializerMethodField(read_only=True)
     order = serializers.SerializerMethodField(read_only=True)
+    comment = serializers.CharField(read_only=True, allow_null=True, allow_blank=True)
+    status = serializers.ChoiceField(choices=ValidationNodeStatus.choices, read_only=True, allow_null=True)
 
     class Meta:
         model = ValidationNode
@@ -42,9 +44,11 @@ class NestedTimelineSerializer(ModelSerializer):
             "order",
         ]
 
+    @extend_schema_field(serializers.ChoiceField(choices=["TIMELINE", "NEXT_BYPASS"]))
     def get_type(self, obj):
         return "TIMELINE"
 
+    @extend_schema_field(serializers.BooleanField)
     def get_user_can_do_actions(self, obj):
         user = self.context["request"].user
         if user.is_superuser:
@@ -59,6 +63,7 @@ class NestedTimelineSerializer(ModelSerializer):
 
         return True
 
+    @extend_schema_field(serializers.IntegerField)
     def get_order(self, obj):
         list_nodes = list(obj.instance.form.validation_workflow.dump_nodes())
         return list_nodes.index(obj.node.slug) + 1
@@ -101,6 +106,7 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
     def get_type(self, obj):
         return "NEXT_BYPASS"
 
+    @extend_schema_field(serializers.BooleanField)
     def get_user_can_do_actions(self, obj):
         user = self.context["request"].user
 
@@ -116,6 +122,7 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
 
         return True
 
+    @extend_schema_field(serializers.IntegerField)
     def get_order(self, obj):
         list_nodes = list(obj.workflow.dump_nodes())
         return list_nodes.index(obj.slug) + 1
@@ -124,7 +131,7 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
 class NestedSubmissionSerializer(serializers.ModelSerializer):
     general_validation_status = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
-    next_created_at = serializers.DateTimeField(read_only=True)
+    next_created_at = serializers.DateTimeField(read_only=True, allow_null=True)
     created_by = UserDisplayNameField()
     active_steps = serializers.SerializerMethodField(read_only=True)
 
@@ -139,6 +146,7 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
             "active_steps",
         ]
 
+    @extend_schema_field(serializers.IntegerField)
     def get_active_steps(self, obj):
         return (
             obj.instance.validationnode_set.exclude(
@@ -150,6 +158,7 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
             .count()
         )
 
+    @extend_schema_field(serializers.ChoiceField(choices=ValidationWorkflowArtefactStatus.choices))
     def get_general_validation_status(self, obj):
         if not obj.next_created_at:
             return obj.instance.general_validation_status
@@ -162,6 +171,7 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
             return ValidationWorkflowArtefactStatus.REJECTED
         return ValidationWorkflowArtefactStatus.PENDING
 
+    @extend_schema_field(NestedTimelineSerializer(many=True))
     def get_timeline(self, obj):
         # get history
         data = (
@@ -230,7 +240,7 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
         model = Instance
         fields = ["workflow", "total_steps", "validation_status", "submissions"]
 
-    @extend_schema_field(NestedSubmissionSerializer)
+    @extend_schema_field(NestedSubmissionSerializer(many=True))
     def get_submissions(self, obj):
         data = (
             obj.validationnode_set.filter(
@@ -241,5 +251,6 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
         )
         return NestedSubmissionSerializer(data, many=True, context=self.context).data
 
+    @extend_schema_field(serializers.IntegerField)
     def get_total_steps(self, obj):
         return obj.form.validation_workflow.node_templates.count()

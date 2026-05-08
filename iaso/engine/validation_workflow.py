@@ -93,16 +93,17 @@ class ValidationWorkflowEngine:
 
         # check previous submission
         last_submission = (
-            artifact.validationnode_set.filter(
+            getattr(artifact, "annotate_last_submission", None)
+            or artifact.validationnode_set.filter(
                 Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION)
             )
             .order_by("-created_at")
-            .first()
+            .values("created_at")[:1]
         )
 
-        validation_node, created = ValidationNode.objects.exclude(
-            created_at__lt=last_submission.created_at
-        ).get_or_create(node=node, instance=artifact)
+        validation_node, created = ValidationNode.objects.exclude(created_at__lt=last_submission).get_or_create(
+            node=node, instance=artifact
+        )
         validation_node.updated_by = user
 
         if not created and validation_node.status != ValidationNodeStatus.UNKNOWN:

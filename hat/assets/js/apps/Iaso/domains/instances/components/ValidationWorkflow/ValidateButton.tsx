@@ -21,7 +21,7 @@ type Props = Omit<ButtonProps, 'children' | 'size' | 'variant'> & {
         'text' | 'outlined' | 'contained',
         ButtonPropsVariantOverrides
     >;
-    buttonText?: string;
+    buttonText: string;
 };
 
 export const ValidateButton = ({
@@ -39,7 +39,7 @@ export const ValidateButton = ({
             size={size}
             {...props}
         >
-            {buttonText}
+            {buttonText ?? ''}
         </Button>
     );
 };

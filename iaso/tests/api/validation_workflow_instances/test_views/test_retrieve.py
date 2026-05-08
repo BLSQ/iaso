@@ -9,10 +9,10 @@ from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_VALIDATION_WORKFLOW_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
+class ValidationWorkflowInstanceAPIRetrieveTestCase(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
         self.account = Account.objects.create(name="account")
         self.other_account = Account.objects.create(name="account2")
@@ -83,6 +83,9 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
             project=self.other_project,
             uuid=str(uuid.uuid4()),
         )
+
+    def assertValidResponse(self, data):
+        self.assertResponseCompliantToSwagger(data, "ValidationWorkflowInstanceRetrieve")
 
     def setup_start(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
@@ -165,66 +168,55 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
         for user in [self.john_wick, self.superuser]:
             with self.subTest(f"with user {user}"):
                 self.client.force_authenticate(user)
-
                 res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
                 res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+                self.assertValidResponse(res_data)
 
+                self.assertEqual(res_data["workflow"], self.validation_workflow.slug)
+                self.assertEqual(res_data["total_steps"], 3)
                 self.assertEqual(res_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-                self.assertIsNone(res_data["rejection_comment"])
 
-                self.assertHasField(res_data, "history", list)
+                self.assertEqual(len(res_data["submissions"]), 1)
 
-                self.assertEqual(len(res_data["history"]), 2)
-
-                history_item = res_data["history"][0]
-                for f in [
-                    "level",
-                    "color",
-                    "status",
-                    "comment",
-                    "updated_by",
-                    "created_by",
-                    "created_at",
-                    "updated_at",
-                ]:
-                    self.assertIn(f, history_item)
-
-                self.assertEqual(history_item["status"], ValidationNodeStatus.UNKNOWN)
-                self.assertEqual(history_item["comment"], "")
-                self.assertIsNone(history_item["updated_by"])
-                self.assertEqual(history_item["created_by"], self.john_wick.username)
-                self.assertEqual(history_item["color"], "#FFFFFF")
-                self.assertEqual(history_item["level"], "First node")
-
-                self.assertHasField(res_data, "next_tasks", list)
-
-                self.assertEqual(len(res_data["next_tasks"]), 1)
-
-                next_task = self.instance.get_next_pending_nodes().first()
-                self.assertEqual(next_task.node.name, "First node")
-                self.assertEqual(
-                    res_data["next_tasks"],
-                    [
-                        {
-                            "id": next_task.pk,
-                            "name": next_task.node.name,
-                            "node_template_slug": "first-node",
-                            "user_roles": [{"id": self.user_role.id, "name": "group"}],
-                        }
-                    ],
-                )
+                first_submission = res_data["submissions"][0]
 
                 self.assertEqual(
-                    res_data["next_bypass"],
-                    [
-                        {
-                            "name": "Third node",
-                            "slug": "third-node",
-                            "user_roles": [{"id": self.user_role.pk, "name": "group"}],
-                        }
-                    ],
+                    first_submission["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING
                 )
+                self.assertIsNone(first_submission["next_created_at"])
+                self.assertEqual(first_submission["created_by"], self.john_wick.username)
+
+                self.assertEqual(len(first_submission["timeline"]), 2)
+
+                timeline = first_submission["timeline"]
+
+                # checking order, should be from leaves to root (graph wise)
+                first_item = timeline[0]
+                self.assertIsNotNone(first_item["id"])
+                self.assertEqual(first_item["name"], "Third node")
+                self.assertEqual(first_item["node_template_slug"], "third-node")
+                self.assertIsNone(first_item["comment"])
+                self.assertIsNotNone(first_item["updated_at"])
+                self.assertIsNotNone(first_item["created_at"])
+                self.assertIsNone(first_item["status"])
+                self.assertIsNone(first_item["updated_by"])
+                self.assertEqual(first_item["type"], "NEXT_BYPASS")
+                self.assertEqual(first_item["order"], 3)
+                self.assertTrue(first_item["user_can_do_actions"])
+
+                second_item = timeline[1]
+                self.assertIsNotNone(second_item["id"])
+                self.assertEqual(second_item["name"], "First node")
+                self.assertEqual(second_item["node_template_slug"], "first-node")
+                self.assertEqual(second_item["comment"], "")
+                self.assertIsNotNone(second_item["updated_at"])
+                self.assertIsNotNone(second_item["created_at"])
+                self.assertEqual(second_item["status"], ValidationNodeStatus.UNKNOWN)
+                self.assertIsNone(second_item["updated_by"], self.john_wick.username)
+                self.assertEqual(second_item["type"], "TIMELINE")
+                self.assertEqual(second_item["order"], 1)
+                self.assertTrue(second_item["user_can_do_actions"])
 
     def test_data_approved(self):
         self.setup_approve()
@@ -235,65 +227,65 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
                 res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+                self.assertValidResponse(res_data)
 
+                self.assertEqual(res_data["workflow"], self.validation_workflow.slug)
+                self.assertEqual(res_data["total_steps"], 3)
                 self.assertEqual(res_data["validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
-                self.assertIsNone(res_data["rejection_comment"])
 
-                self.assertHasField(res_data, "history", list)
+                self.assertEqual(len(res_data["submissions"]), 1)
 
-                self.assertEqual(len(res_data["history"]), 4)
+                first_submission = res_data["submissions"][0]
 
-                self.assertEqual(res_data["next_tasks"], [])
+                self.assertEqual(
+                    first_submission["general_validation_status"], ValidationWorkflowArtefactStatus.APPROVED
+                )
+                self.assertIsNone(first_submission["next_created_at"])
+                self.assertEqual(first_submission["created_by"], self.john_wick.username)
 
-                for history_item in res_data["history"]:
-                    for f in [
-                        "level",
-                        "color",
-                        "status",
-                        "comment",
-                        "updated_by",
-                        "created_by",
-                        "created_at",
-                        "updated_at",
-                    ]:
-                        self.assertIn(f, history_item)
+                self.assertEqual(len(first_submission["timeline"]), 3)
+
+                timeline = first_submission["timeline"]
 
                 # checking order, should be from leaves to root (graph wise)
-                first_item = res_data["history"][0]
-                self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
-                self.assertEqual(first_item["level"], "Third node")
-                self.assertEqual(first_item["color"], "#6E6593")
+                first_item = timeline[0]
+                self.assertIsNotNone(first_item["id"])
+                self.assertEqual(first_item["name"], "Third node")
+                self.assertEqual(first_item["node_template_slug"], "third-node")
                 self.assertEqual(first_item["comment"], "LGTM 2")
-                self.assertEqual(first_item["created_by"], self.john_wick.username)
+                self.assertIsNotNone(first_item["updated_at"])
+                self.assertIsNotNone(first_item["created_at"])
+                self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
                 self.assertEqual(first_item["updated_by"], self.john_wick.username)
+                self.assertEqual(first_item["type"], "TIMELINE")
+                self.assertEqual(first_item["order"], 3)
+                self.assertTrue(first_item["user_can_do_actions"])
 
-                second_item = res_data["history"][1]
-                self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
-                self.assertEqual(second_item["level"], "Second node")
-                self.assertEqual(second_item["color"], "#12FA4B")
+                second_item = timeline[1]
+                self.assertIsNotNone(second_item["id"])
+                self.assertEqual(second_item["name"], "Second node")
+                self.assertEqual(second_item["node_template_slug"], "second-node")
                 self.assertEqual(second_item["comment"], "LGTM 1")
-                self.assertEqual(second_item["created_by"], self.john_wick.username)
+                self.assertIsNotNone(second_item["updated_at"])
+                self.assertIsNotNone(second_item["created_at"])
+                self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
                 self.assertEqual(second_item["updated_by"], self.john_wick.username)
+                self.assertEqual(second_item["type"], "TIMELINE")
+                self.assertEqual(second_item["order"], 2)
+                self.assertTrue(second_item["user_can_do_actions"])
 
-                third_item = res_data["history"][2]
-                self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
-                self.assertEqual(third_item["level"], "First node")
-                self.assertEqual(third_item["color"], "#FFFFFF")
+                third_item = timeline[2]
+                self.assertIsNotNone(third_item["id"])
+                self.assertEqual(third_item["name"], "First node")
+                self.assertEqual(third_item["node_template_slug"], "first-node")
                 self.assertEqual(third_item["comment"], "LGTM 0")
-                self.assertEqual(third_item["created_by"], self.john_wick.username)
+                self.assertIsNotNone(third_item["updated_at"])
+                self.assertIsNotNone(third_item["created_at"])
+                self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
                 self.assertEqual(third_item["updated_by"], self.john_wick.username)
-
-                self.assertEqual(res_data["next_bypass"], [])
-
-                last_item = res_data["history"][3]
-                self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
-                self.assertEqual(last_item["level"], "First node")
-                self.assertEqual(last_item["color"], "#FFFFFF")
-                self.assertEqual(last_item["comment"], "")
-                self.assertEqual(last_item["created_by"], self.john_wick.username)
-                self.assertIsNone(last_item["updated_by"])
-
-                self.assertEqual(res_data["next_bypass"], [])
+                self.assertEqual(third_item["type"], "TIMELINE")
+                self.assertEqual(third_item["order"], 1)
+                self.assertTrue(third_item["user_can_do_actions"])
 
     def test_data_reject(self):
         self.setup_reject()
@@ -303,62 +295,56 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                 self.client.force_authenticate(user)
 
                 res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
-
                 res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+                self.assertValidResponse(res_data)
 
+                self.assertEqual(res_data["workflow"], self.validation_workflow.slug)
+                self.assertEqual(res_data["total_steps"], 3)
                 self.assertEqual(res_data["validation_status"], ValidationWorkflowArtefactStatus.REJECTED)
-                self.assertEqual(res_data["rejection_comment"], "Nope")
 
-                self.assertHasField(res_data, "history", list)
-                self.assertEqual(res_data["next_tasks"], [])
+                self.assertEqual(len(res_data["submissions"]), 1)
 
-                self.assertEqual(len(res_data["history"]), 3)
+                first_submission = res_data["submissions"][0]
 
-                for history_item in res_data["history"]:
-                    for f in [
-                        "level",
-                        "color",
-                        "status",
-                        "comment",
-                        "updated_by",
-                        "created_by",
-                        "created_at",
-                        "updated_at",
-                    ]:
-                        self.assertIn(f, history_item)
+                self.assertEqual(
+                    first_submission["general_validation_status"], ValidationWorkflowArtefactStatus.REJECTED
+                )
+                self.assertIsNone(first_submission["next_created_at"])
+                self.assertEqual(first_submission["created_by"], self.john_wick.username)
+
+                self.assertEqual(len(first_submission["timeline"]), 2)
+
+                timeline = first_submission["timeline"]
 
                 # checking order, should be from leaves to root (graph wise)
+                first_item = timeline[0]
+                self.assertIsNotNone(first_item["id"])
+                self.assertEqual(first_item["name"], "Second node")
+                self.assertEqual(first_item["node_template_slug"], "second-node")
+                self.assertEqual(first_item["comment"], "Nope")
+                self.assertIsNotNone(first_item["updated_at"])
+                self.assertIsNotNone(first_item["created_at"])
+                self.assertEqual(first_item["status"], ValidationNodeStatus.REJECTED)
+                self.assertEqual(first_item["updated_by"], self.john_wick.username)
+                self.assertEqual(first_item["type"], "TIMELINE")
+                self.assertEqual(first_item["order"], 2)
+                self.assertTrue(first_item["user_can_do_actions"])
 
-                second_item = res_data["history"][0]
-                self.assertEqual(second_item["status"], ValidationNodeStatus.REJECTED)
-                self.assertEqual(second_item["level"], "Second node")
-                self.assertEqual(second_item["color"], "#12FA4B")
-                self.assertEqual(second_item["comment"], "Nope")
-                self.assertEqual(second_item["created_by"], self.john_wick.username)
+                second_item = timeline[1]
+                self.assertIsNotNone(second_item["id"])
+                self.assertEqual(second_item["name"], "First node")
+                self.assertEqual(second_item["node_template_slug"], "first-node")
+                self.assertEqual(second_item["comment"], "LGTM 0")
+                self.assertIsNotNone(second_item["updated_at"])
+                self.assertIsNotNone(second_item["created_at"])
+                self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
                 self.assertEqual(second_item["updated_by"], self.john_wick.username)
-
-                last_item = res_data["history"][1]
-                self.assertEqual(last_item["status"], ValidationNodeStatus.ACCEPTED)
-                self.assertEqual(last_item["level"], "First node")
-                self.assertEqual(last_item["color"], "#FFFFFF")
-                self.assertEqual(last_item["comment"], "LGTM 0")
-                self.assertEqual(last_item["created_by"], self.john_wick.username)
-                self.assertEqual(last_item["updated_by"], self.john_wick.username)
-
-                self.assertEqual(res_data["next_bypass"], [])
-
-                last_item = res_data["history"][2]
-                self.assertEqual(last_item["status"], ValidationNodeStatus.SUBMISSION)
-                self.assertEqual(last_item["level"], "First node")
-                self.assertEqual(last_item["color"], "#FFFFFF")
-                self.assertEqual(last_item["comment"], "")
-                self.assertEqual(last_item["created_by"], self.john_wick.username)
-                self.assertIsNone(last_item["updated_by"])
-
-                self.assertEqual(res_data["next_bypass"], [])
+                self.assertEqual(second_item["type"], "TIMELINE")
+                self.assertEqual(second_item["order"], 1)
+                self.assertTrue(second_item["user_can_do_actions"])
 
 
-class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(APITestCase):
+class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(SwaggerTestCaseMixin, APITestCase):
     """
     This test purpose is to check that the next_bypass field is correctly populated in case of resubmission
     """
@@ -375,7 +361,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(AP
         self.john_wick = self.create_user_with_profile(
             username="john.wick",
             account=self.account,
-            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION],
+            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION, CORE_SUBMISSIONS_PERMISSION],
             user_roles=[self.user_role],
         )
 
@@ -422,6 +408,9 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(AP
             uuid=str(uuid.uuid4()),
         )
 
+    def assertValidResponse(self, data):
+        self.assertResponseCompliantToSwagger(data, "ValidationWorkflowInstanceRetrieve")
+
     def test_next_bypass_data_after_resubmit_after_reject_on_first_node(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
 
@@ -441,22 +430,113 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(AP
         res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data)
 
-        self.assertEqual(
-            res_data["next_bypass"],
-            [
-                {
-                    "name": "Fourth node",
-                    "slug": "fourth-node",
-                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
-                },
-                {
-                    "name": "Third node",
-                    "slug": "third-node",
-                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
-                },
-            ],
-        )
+        self.assertEqual(res_data["workflow"], self.validation_workflow.slug)
+        self.assertEqual(res_data["total_steps"], 4)
+        self.assertEqual(res_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+
+        self.assertEqual(len(res_data["submissions"]), 2)
+
+        first_submission = res_data["submissions"][0]
+
+        self.assertEqual(first_submission["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+        self.assertIsNone(first_submission["next_created_at"])
+        self.assertEqual(first_submission["created_by"], self.john_wick.username)
+
+        self.assertEqual(len(first_submission["timeline"]), 3)
+
+        timeline = first_submission["timeline"]
+
+        # checking order, should be from leaves to root (graph wise)
+        first_item = timeline[0]
+        self.assertIsNotNone(first_item["id"])
+        self.assertEqual(first_item["name"], "Third node")
+        self.assertEqual(first_item["node_template_slug"], "third-node")
+        self.assertEqual(first_item["comment"], "LGTM 2")
+        self.assertIsNotNone(first_item["updated_at"])
+        self.assertIsNotNone(first_item["created_at"])
+        self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(first_item["updated_by"], self.john_wick.username)
+        self.assertEqual(first_item["type"], "TIMELINE")
+        self.assertEqual(first_item["order"], 3)
+        self.assertTrue(first_item["user_can_do_actions"])
+
+        second_item = timeline[1]
+        self.assertIsNotNone(second_item["id"])
+        self.assertEqual(second_item["name"], "Second node")
+        self.assertEqual(second_item["node_template_slug"], "second-node")
+        self.assertEqual(second_item["comment"], "LGTM 1")
+        self.assertIsNotNone(second_item["updated_at"])
+        self.assertIsNotNone(second_item["created_at"])
+        self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+        self.assertEqual(second_item["type"], "TIMELINE")
+        self.assertEqual(second_item["order"], 2)
+        self.assertTrue(second_item["user_can_do_actions"])
+
+        third_item = timeline[2]
+        self.assertIsNotNone(third_item["id"])
+        self.assertEqual(third_item["name"], "First node")
+        self.assertEqual(third_item["node_template_slug"], "first-node")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertIsNotNone(third_item["updated_at"])
+        self.assertIsNotNone(third_item["created_at"])
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+        self.assertEqual(third_item["type"], "TIMELINE")
+        self.assertEqual(third_item["order"], 1)
+        self.assertTrue(third_item["user_can_do_actions"])
+
+        second_submission = res_data["submissions"][1]
+
+        self.assertEqual(second_submission["general_validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
+        self.assertIsNone(second_submission["next_created_at"])
+        self.assertEqual(second_submission["created_by"], self.john_wick.username)
+
+        self.assertEqual(len(second_submission["timeline"]), 3)
+
+        timeline = first_submission["timeline"]
+
+        # checking order, should be from leaves to root (graph wise)
+        first_item = timeline[0]
+        self.assertIsNotNone(first_item["id"])
+        self.assertEqual(first_item["name"], "Third node")
+        self.assertEqual(first_item["node_template_slug"], "third-node")
+        self.assertEqual(first_item["comment"], "LGTM 2")
+        self.assertIsNotNone(first_item["updated_at"])
+        self.assertIsNotNone(first_item["created_at"])
+        self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(first_item["updated_by"], self.john_wick.username)
+        self.assertEqual(first_item["type"], "TIMELINE")
+        self.assertEqual(first_item["order"], 3)
+        self.assertTrue(first_item["user_can_do_actions"])
+
+        second_item = timeline[1]
+        self.assertIsNotNone(second_item["id"])
+        self.assertEqual(second_item["name"], "Second node")
+        self.assertEqual(second_item["node_template_slug"], "second-node")
+        self.assertEqual(second_item["comment"], "LGTM 1")
+        self.assertIsNotNone(second_item["updated_at"])
+        self.assertIsNotNone(second_item["created_at"])
+        self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+        self.assertEqual(second_item["type"], "TIMELINE")
+        self.assertEqual(second_item["order"], 2)
+        self.assertTrue(second_item["user_can_do_actions"])
+
+        third_item = timeline[2]
+        self.assertIsNotNone(third_item["id"])
+        self.assertEqual(third_item["name"], "First node")
+        self.assertEqual(third_item["node_template_slug"], "first-node")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertIsNotNone(third_item["updated_at"])
+        self.assertIsNotNone(third_item["created_at"])
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+        self.assertEqual(third_item["type"], "TIMELINE")
+        self.assertEqual(third_item["order"], 1)
+        self.assertTrue(third_item["user_can_do_actions"])
 
     def test_next_bypass_data_after_resubmit_after_bypass_reject_on_third_node(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
@@ -478,22 +558,113 @@ class ValidationWorkflowInstanceAPIRetrieveTestCaseResubmissionWithNextByPass(AP
         res = self.client.get(reverse("validation_workflow_instances-detail", kwargs={"pk": self.instance.pk}))
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data)
 
-        self.assertEqual(
-            res_data["next_bypass"],
-            [
-                {
-                    "name": "Fourth node",
-                    "slug": "fourth-node",
-                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
-                },
-                {
-                    "name": "Third node",
-                    "slug": "third-node",
-                    "user_roles": [{"id": self.user_role.pk, "name": "group"}],
-                },
-            ],
-        )
+        self.assertEqual(res_data["workflow"], self.validation_workflow.slug)
+        self.assertEqual(res_data["total_steps"], 4)
+        self.assertEqual(res_data["validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+
+        self.assertEqual(len(res_data["submissions"]), 2)
+
+        first_submission = res_data["submissions"][0]
+
+        self.assertEqual(first_submission["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
+        self.assertIsNone(first_submission["next_created_at"])
+        self.assertEqual(first_submission["created_by"], self.john_wick.username)
+
+        self.assertEqual(len(first_submission["timeline"]), 3)
+
+        timeline = first_submission["timeline"]
+
+        # checking order, should be from leaves to root (graph wise)
+        first_item = timeline[0]
+        self.assertIsNotNone(first_item["id"])
+        self.assertEqual(first_item["name"], "Third node")
+        self.assertEqual(first_item["node_template_slug"], "third-node")
+        self.assertEqual(first_item["comment"], "LGTM 2")
+        self.assertIsNotNone(first_item["updated_at"])
+        self.assertIsNotNone(first_item["created_at"])
+        self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(first_item["updated_by"], self.john_wick.username)
+        self.assertEqual(first_item["type"], "TIMELINE")
+        self.assertEqual(first_item["order"], 3)
+        self.assertTrue(first_item["user_can_do_actions"])
+
+        second_item = timeline[1]
+        self.assertIsNotNone(second_item["id"])
+        self.assertEqual(second_item["name"], "Second node")
+        self.assertEqual(second_item["node_template_slug"], "second-node")
+        self.assertEqual(second_item["comment"], "LGTM 1")
+        self.assertIsNotNone(second_item["updated_at"])
+        self.assertIsNotNone(second_item["created_at"])
+        self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+        self.assertEqual(second_item["type"], "TIMELINE")
+        self.assertEqual(second_item["order"], 2)
+        self.assertTrue(second_item["user_can_do_actions"])
+
+        third_item = timeline[2]
+        self.assertIsNotNone(third_item["id"])
+        self.assertEqual(third_item["name"], "First node")
+        self.assertEqual(third_item["node_template_slug"], "first-node")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertIsNotNone(third_item["updated_at"])
+        self.assertIsNotNone(third_item["created_at"])
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+        self.assertEqual(third_item["type"], "TIMELINE")
+        self.assertEqual(third_item["order"], 1)
+        self.assertTrue(third_item["user_can_do_actions"])
+
+        second_submission = res_data["submissions"][1]
+
+        self.assertEqual(second_submission["general_validation_status"], ValidationWorkflowArtefactStatus.APPROVED)
+        self.assertIsNone(second_submission["next_created_at"])
+        self.assertEqual(second_submission["created_by"], self.john_wick.username)
+
+        self.assertEqual(len(second_submission["timeline"]), 3)
+
+        timeline = first_submission["timeline"]
+
+        # checking order, should be from leaves to root (graph wise)
+        first_item = timeline[0]
+        self.assertIsNotNone(first_item["id"])
+        self.assertEqual(first_item["name"], "Third node")
+        self.assertEqual(first_item["node_template_slug"], "third-node")
+        self.assertEqual(first_item["comment"], "LGTM 2")
+        self.assertIsNotNone(first_item["updated_at"])
+        self.assertIsNotNone(first_item["created_at"])
+        self.assertEqual(first_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(first_item["updated_by"], self.john_wick.username)
+        self.assertEqual(first_item["type"], "TIMELINE")
+        self.assertEqual(first_item["order"], 3)
+        self.assertTrue(first_item["user_can_do_actions"])
+
+        second_item = timeline[1]
+        self.assertIsNotNone(second_item["id"])
+        self.assertEqual(second_item["name"], "Second node")
+        self.assertEqual(second_item["node_template_slug"], "second-node")
+        self.assertEqual(second_item["comment"], "LGTM 1")
+        self.assertIsNotNone(second_item["updated_at"])
+        self.assertIsNotNone(second_item["created_at"])
+        self.assertEqual(second_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(second_item["updated_by"], self.john_wick.username)
+        self.assertEqual(second_item["type"], "TIMELINE")
+        self.assertEqual(second_item["order"], 2)
+        self.assertTrue(second_item["user_can_do_actions"])
+
+        third_item = timeline[2]
+        self.assertIsNotNone(third_item["id"])
+        self.assertEqual(third_item["name"], "First node")
+        self.assertEqual(third_item["node_template_slug"], "first-node")
+        self.assertEqual(third_item["comment"], "LGTM 0")
+        self.assertIsNotNone(third_item["updated_at"])
+        self.assertIsNotNone(third_item["created_at"])
+        self.assertEqual(third_item["status"], ValidationNodeStatus.ACCEPTED)
+        self.assertEqual(third_item["updated_by"], self.john_wick.username)
+        self.assertEqual(third_item["type"], "TIMELINE")
+        self.assertEqual(third_item["order"], 1)
+        self.assertTrue(third_item["user_can_do_actions"])
 
     def test_num_queries(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)

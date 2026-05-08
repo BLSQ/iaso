@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 import MESSAGES from '../../messages';
 import { useGetNodesList } from './useGetSubmissionValidationStatus';
@@ -19,6 +19,26 @@ import {
     UseValidationTimelineResult,
 } from './useValidationTimeline';
 import { ValidateNodeModal } from './ValidationModal';
+
+const timelineContentSx = {
+    mt: 1,
+    ml: 1,
+    px: 2,
+    py: 1.5,
+    display: 'flex',
+    gap: 2,
+    alignItems: 'stretch',
+    border: '1px solid rgba(0, 0, 0, 0.18)',
+    borderRadius: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+};
+
+const timelineBodySx = {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 1.5,
+};
 
 const formatStepContent = (step: UseValidationTimelineResult) => {
     if (step?.status === 'SUBMISSION' || step?.status === 'NEW_VERSION') {
@@ -134,19 +154,47 @@ export const InstanceValidation: FunctionComponent<Props> = ({ id, data }) => {
                                     }}
                                 >
                                     <Box>{step.label}</Box>
-                                    <StepContent sx={{ fontWeight: 'normal' }}>
-                                        {formatStepContent(step)}
-                                        {step.canValidate && (
-                                            <ValidateNodeModal
-                                                key={step.nodeSlug}
-                                                instanceId={id as number}
-                                                nodeSlug={step.nodeSlug}
-                                                nodeId={step.nodeId}
-                                                iconProps={{
-                                                    buttonText: `${formatMessage(MESSAGES.validate)}`,
-                                                }}
-                                            />
-                                        )}
+                                    <StepContent
+                                        sx={{
+                                            fontWeight: 'normal',
+                                            borderLeft: 'none',
+                                            marginLeft: 0,
+                                            paddingLeft: 0,
+                                            paddingRight: 0,
+                                        }}
+                                    >
+                                        <Box sx={timelineContentSx}>
+                                            <Box sx={timelineBodySx}>
+                                                {formatStepContent(step)}
+                                                {step.canValidate && (
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            justifyContent:
+                                                                'flex-end',
+                                                            pt: 1,
+                                                            borderTop:
+                                                                '1px solid rgba(0, 0, 0, 0.2)',
+                                                        }}
+                                                    >
+                                                        <ValidateNodeModal
+                                                            key={step.nodeSlug}
+                                                            instanceId={
+                                                                id as number
+                                                            }
+                                                            nodeSlug={
+                                                                step.nodeSlug
+                                                            }
+                                                            nodeId={step.nodeId}
+                                                            iconProps={{
+                                                                buttonText: `${formatMessage(MESSAGES.validate)}`,
+                                                                size: 'medium',
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        </Box>
                                     </StepContent>
                                 </StepLabel>
                             </Step>

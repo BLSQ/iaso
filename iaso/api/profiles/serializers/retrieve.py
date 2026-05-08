@@ -6,6 +6,7 @@ from phonenumbers.phonenumberutil import region_code_for_number
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, TimestampField
+from iaso.api.common.serializer_fields import UserRoleNameField
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Profile, Project, SourceVersion, UserRole
 
 
@@ -93,7 +94,7 @@ class NestedUserRoleSerializer(ModelSerializer):
     Mimic UserRole as_dict method
     """
 
-    name = serializers.SerializerMethodField()
+    name = UserRoleNameField(source="group.name", read_only=True)
     permissions = serializers.SlugRelatedField(
         many=True, read_only=True, slug_field="codename", source="get_iaso_permissions"
     )
@@ -103,11 +104,6 @@ class NestedUserRoleSerializer(ModelSerializer):
     class Meta:
         model = UserRole
         fields = ["id", "name", "group_id", "permissions", "created_at", "updated_at"]
-
-    @extend_schema_field(serializers.CharField(required=True))
-    def get_name(self, obj):
-        head, sep, tail = obj.group.name.partition("_")
-        return tail if sep else obj.group.name
 
 
 class NestedProjectSerializer(ModelSerializer):
@@ -232,6 +228,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
     user_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
+    date_joined = serializers.SerializerMethodField(read_only=True)
     permissions = serializers.SerializerMethodField()
     user_permissions = serializers.SerializerMethodField()
     is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
@@ -263,6 +260,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
             "user_name",
             "last_name",
             "email",
+            "date_joined",
             "permissions",
             "user_permissions",
             "is_staff",
@@ -305,6 +303,10 @@ class ProfileRetrieveSerializer(ModelSerializer):
     @extend_schema_field(serializers.EmailField)
     def get_email(self, obj):
         return self._get_user_infos(obj).email
+
+    @extend_schema_field(serializers.DateField)
+    def get_date_joined(self, obj):
+        return self._get_user_infos(obj).date_joined
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_permissions(self, obj):

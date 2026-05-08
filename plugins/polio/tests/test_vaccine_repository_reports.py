@@ -1,6 +1,8 @@
 import datetime
 
 from django.contrib.auth.models import AnonymousUser
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now
 
 from iaso import models as m
@@ -179,3 +181,89 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         data = response.json()["results"]
         self.assertEqual(data[0]["vaccine"], pm.VACCINES[0][0])
         self.assertEqual(data[1]["vaccine"], pm.VACCINES[1][0])
+
+
+class VaccineRepositoryReportsQueryPerformanceTestCase(APITestCase, PolioTestCaseMixin):
+    """Assert that get_queryset() optimisations (select_related, defer, prefetch_related) hold."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="perf_source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="perf_account", default_version=cls.source_version)
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Country")
+        cls.user = cls.create_user_with_profile(username="perf_user", account=cls.account)
+
+    def _make_stock_with_reports(self, name):
+        country = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type,
+            version=self.source_version,
+            name=name,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        stock = pm.VaccineStock.objects.create(account=self.account, country=country, vaccine=pm.VACCINES[0][0])
+        pm.IncidentReport.objects.create(
+            vaccine_stock=stock,
+            date_of_incident_report=now(),
+            incident_report_received_by_rrt=now(),
+            usable_vials=10,
+            unusable_vials=0,
+            doses_per_vial=20,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
+            title="ir",
+            comment="",
+        )
+        pm.DestructionReport.objects.create(
+            vaccine_stock=stock,
+            rrt_destruction_report_reception_date=now(),
+            destruction_report_date=now(),
+            unusable_vials_destroyed=5,
+            action="EXPIRED",
+            comment="",
+            doses_per_vial=20,
+        )
+        return stock
+
+    def test_query_count_does_not_scale_with_result_size(self):
+        """prefetch_related must keep query count constant regardless of how many stocks are returned."""
+        self.client.force_authenticate(user=self.user)
+
+        self._make_stock_with_reports("Country-baseline")
+        with CaptureQueriesContext(connection) as ctx_one:
+            response = self.client.get(REPORTS_URL)
+        self.assertEqual(response.status_code, 200)
+        baseline_count = len(ctx_one)
+
+        for i in range(19):
+            self._make_stock_with_reports(f"Country-{i}")
+
+        with CaptureQueriesContext(connection) as ctx_many:
+            response = self.client.get(REPORTS_URL)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            len(ctx_many),
+            baseline_count,
+            msg=(
+                f"Query count grew from {baseline_count} (1 stock) to {len(ctx_many)} (20 stocks). "
+                "N+1 regression — check prefetch_related on incidentreport_set / destructionreport_set."
+            ),
+        )
+
+    def test_geometry_fields_are_deferred(self):
+        """defer() must keep heavy geometry columns out of every SELECT issued by the list endpoint."""
+        self._make_stock_with_reports("Country-geo")
+        self.client.force_authenticate(user=self.user)
+
+        with CaptureQueriesContext(connection) as ctx:
+            self.client.get(REPORTS_URL)
+
+        for query in ctx:
+            sql = query["sql"]
+            for field in ("geom", "simplified_geom", "catchment"):
+                # Match the exact column reference as it appears in SQL: "table"."field"
+                self.assertNotIn(
+                    f'"."{field}"',
+                    sql,
+                    msg=f"Deferred field '{field}' found in SQL — defer() on country geometry was removed.",
+                )

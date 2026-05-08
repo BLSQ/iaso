@@ -15,6 +15,7 @@ from plugins.polio.tests.vaccine_stocks_setup_data import VaccineStockManagement
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
 
 BASE_URL_SUB_RESOURCES = "/api/polio/vaccine/stock/"
+OUTGOING_STOCK_MOVEMENT_URL = f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/"
 
 DT = datetime.datetime(2024, 10, 29, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
@@ -76,14 +77,14 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
             "doses_per_vial": 20,
         }
 
-        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
+        response = self.client.post(OUTGOING_STOCK_MOVEMENT_URL, osm_data, format="json")
         self.assertEqual(response.status_code, 201)
         osm_id = response.data["id"]
 
         # Non-admin can edit within 7 days
         update_data = {"comment": "Updated comment"}
         response = self.client.patch(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/",
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{osm_id}/",
             update_data,
             format="json",
         )
@@ -97,7 +98,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
 
         # Non-admin cannot edit after 7 days
         response = self.client.patch(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/",
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{osm_id}/",
             update_data,
             format="json",
         )
@@ -108,15 +109,526 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
 
         # Admin can edit regardless of time passed
         response = self.client.patch(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/",
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{osm_id}/",
             update_data,
             format="json",
         )
         self.assertEqual(response.status_code, 200)
 
         # Admin can delete regardless of time passed
-        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/")
+        response = self.client.delete(f"{OUTGOING_STOCK_MOVEMENT_URL}{osm_id}/")
         self.assertEqual(response.status_code, 204)
+
+    def test_outgoing_stock_movement_temporary_lifecycle_validation(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        payload_temp_form_a = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "status": "temporary",
+            "report_date": "2024-01-01",
+            "usable_vials_used": 50,
+            "lot_numbers": ["LOT1", "LOT2"],
+            "round": self.campaign_round_1.id,
+            "comment": "Temporary Form A",
+            "doses_per_vial": 20,
+        }
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            payload_temp_form_a,
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 201)
+        self.assertEqual(data["status"], OutgoingStockMovement.StatusChoices.TEMPORARY)
+        self.assertIsNone(data["form_a_reception_date"])
+
+        payload_temp_form_a_with_date = {
+            **payload_temp_form_a,
+            "form_a_reception_date": "2024-01-02",
+        }
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            payload_temp_form_a_with_date,
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 400)
+        self.assertHasError(
+            data,
+            "form_a_reception_date",
+            "form_a_reception_date must be empty when status is temporary",
+        )
+
+        with self.assertNumQueries(2):
+            response = self.client.post(
+                OUTGOING_STOCK_MOVEMENT_URL,
+                payload_temp_form_a_with_date,
+                format="json",
+            )
+            data = self.assertJSONResponse(response, 400)
+            self.assertHasError(
+                data,
+                "form_a_reception_date",
+                "form_a_reception_date must be empty when status is temporary",
+            )
+
+        with open("plugins/polio/tests/fixtures/virus_scan/safe_file.pdf", "rb") as safe_file:
+            response = self.client.post(
+                OUTGOING_STOCK_MOVEMENT_URL,
+                {
+                    **payload_temp_form_a,
+                    "file": safe_file,
+                },
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, 400)
+        self.assertHasError(data, "file", "file cannot be provided when status is temporary")
+
+        payload_received_form_a = {
+            **payload_temp_form_a,
+            "status": "received",
+        }
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            payload_received_form_a,
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 400)
+        self.assertIn("form_a_reception_date", data)
+
+    def test_non_admin_user_can_complete_temporary_form_allowed_fields_after_edit_window(self):
+        self.client.force_authenticate(self.user_ro_perms)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a = self.assertJSONResponse(response, 201)
+        form_a_id = form_a["id"]
+
+        object = pm.OutgoingStockMovement.objects.get(id=form_a_id)
+        object.created_at = timezone.now() - datetime.timedelta(days=8)
+        object.save()
+
+        allowed_payload = {
+            "status": "received",
+            "form_a_reception_date": "2024-01-02",
+            "comment": "Finalized after reception",
+        }
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {
+                **allowed_payload,
+                "usable_vials_used": 60,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            allowed_payload,
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(data["status"], "received")
+        self.assertEqual(data["form_a_reception_date"], "2024-01-02")
+
+    def test_edit_access_and_within_edit_window_lifecycle(self):
+        """
+        The serialized ``edit_access`` field drives both the Edit-button gate in
+        the UI table (``!= "none"``) and the in-modal state machine (``"full"``
+        unlocks every field, ``"completion_only"`` restricts to the completion
+        allowlist). ``within_edit_window`` is a plain boolean the frontend uses
+        to gate the status toggle (received → temporary is only valid within the
+        window).
+
+        Within the window both fields are true/full for writers; past the window
+        ``within_edit_window`` flips to False while ``edit_access`` follows the
+        existing permission matrix.
+        """
+        self.client.force_authenticate(self.user_ro_perms)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        temporary_id = self.assertJSONResponse(response, 201)["id"]
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "received",
+                "report_date": "2024-01-01",
+                "form_a_reception_date": "2024-01-02",
+                "usable_vials_used": 10,
+                "lot_numbers": ["LOT2"],
+                "round": self.campaign_round_1.id,
+                "comment": "Received",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        received_id = self.assertJSONResponse(response, 201)["id"]
+
+        def fetch_row_fields_by_id(user):
+            self.client.force_authenticate(user)
+            get_response = self.client.get(
+                OUTGOING_STOCK_MOVEMENT_URL,
+                {"vaccine_stock": self.vaccine_stock.pk, "page": 1, "limit": 50},
+            )
+            payload = self.assertJSONResponse(get_response, 200)
+            return {
+                row["id"]: {"edit_access": row["edit_access"], "within_edit_window": row["within_edit_window"]}
+                for row in payload["results"]
+            }
+
+        # --- Within the edit window (freshly created) ---
+        within_window = fetch_row_fields_by_id(self.user_ro_perms)
+        self.assertTrue(
+            within_window[temporary_id]["within_edit_window"],
+            msg="Freshly created rows must be within the edit window.",
+        )
+        self.assertTrue(within_window[received_id]["within_edit_window"])
+        self.assertEqual(within_window[temporary_id]["edit_access"], "full")
+        self.assertEqual(within_window[received_id]["edit_access"], "full")
+
+        # --- Past the edit window ---
+        pm.OutgoingStockMovement.objects.filter(id__in=[temporary_id, received_id]).update(
+            created_at=timezone.now() - datetime.timedelta(days=8)
+        )
+
+        non_admin = fetch_row_fields_by_id(self.user_ro_perms)
+        self.assertFalse(
+            non_admin[temporary_id]["within_edit_window"],
+            msg="Rows pushed past the edit window must report within_edit_window=False.",
+        )
+        self.assertFalse(non_admin[received_id]["within_edit_window"])
+        self.assertEqual(
+            non_admin[temporary_id]["edit_access"],
+            "completion_only",
+            msg="Non-admin writers on post-window temporary Form A must get completion_only access.",
+        )
+        self.assertEqual(
+            non_admin[received_id]["edit_access"],
+            "none",
+            msg="Received Form A past the edit window must be locked for non-admin writers.",
+        )
+
+        admin = fetch_row_fields_by_id(self.user_rw_perms)
+        self.assertFalse(admin[temporary_id]["within_edit_window"])
+        self.assertFalse(admin[received_id]["within_edit_window"])
+        self.assertEqual(admin[temporary_id]["edit_access"], "full")
+        self.assertEqual(admin[received_id]["edit_access"], "full")
+
+        read_only = fetch_row_fields_by_id(self.user_read_only_perms)
+        self.assertFalse(read_only[temporary_id]["within_edit_window"])
+        self.assertFalse(read_only[received_id]["within_edit_window"])
+        self.assertEqual(read_only[temporary_id]["edit_access"], "none")
+        self.assertEqual(read_only[received_id]["edit_access"], "none")
+
+    def test_temporary_form_vials_are_immutable_on_update(self):
+        """
+        Usable vials cannot be updated on temporary Form A
+        """
+        self.client.force_authenticate(self.user_rw_perms)
+
+        create_response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a_id = self.assertJSONResponse(create_response, 201)["id"]
+
+        update_response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {"usable_vials_used": 55},
+            format="json",
+        )
+        update_data = self.assertJSONResponse(update_response, 400)
+        self.assertIn("usable_vials_used", update_data)
+
+    def test_temporary_to_received_transition_allows_vials_update_within_edit_window(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a_id = self.assertJSONResponse(response, 201)["id"]
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {
+                "status": "received",
+                "form_a_reception_date": "2024-01-02",
+                "usable_vials_used": 55,
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(data["status"], "received")
+        self.assertEqual(data["usable_vials_used"], 55)
+
+    def test_admin_gets_serializer_guardrail_error_on_temporary_non_allowlisted_fields_after_edit_window(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a_id = self.assertJSONResponse(response, 201)["id"]
+
+        form_a = pm.OutgoingStockMovement.objects.get(id=form_a_id)
+        form_a.created_at = timezone.now() - datetime.timedelta(days=8)
+        form_a.save()
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {"lot_numbers": ["LOT1", "LOT2"]},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 400)
+        self.assertIn("error", data)
+
+    def test_received_to_temporary_after_edit_window_enforces_allowlist_with_400(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "received",
+                "report_date": "2024-01-01",
+                "form_a_reception_date": "2024-01-02",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Received form",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a_id = self.assertJSONResponse(response, 201)["id"]
+
+        form_a = pm.OutgoingStockMovement.objects.get(id=form_a_id)
+        form_a.created_at = timezone.now() - datetime.timedelta(days=8)
+        form_a.save()
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {
+                "status": "temporary",
+                "report_date": "2024-01-03",
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 400)
+        self.assertIn("error", data)
+
+    def test_received_to_temporary_transition_clears_file_and_reception_date(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        with open("plugins/polio/tests/fixtures/virus_scan/safe_file.pdf", "rb") as safe_file:
+            response = self.client.post(
+                OUTGOING_STOCK_MOVEMENT_URL,
+                {
+                    "campaign": self.campaign.obr_name,
+                    "vaccine_stock": self.vaccine_stock.id,
+                    "status": "received",
+                    "report_date": "2024-01-01",
+                    "form_a_reception_date": "2024-01-02",
+                    "usable_vials_used": 50,
+                    "lot_numbers": ["LOT1"],
+                    "round": self.campaign_round_1.id,
+                    "comment": "Received with file",
+                    "doses_per_vial": 20,
+                    "file": safe_file,
+                },
+                format="multipart",
+            )
+        form_a_id = self.assertJSONResponse(response, 201)["id"]
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {"status": "temporary"},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(data["status"], "temporary")
+        self.assertIsNone(data["form_a_reception_date"])
+        self.assertIsNone(data["file"])
+
+    def test_form_a_reception_date_required_when_switching_temporary_to_received(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        create_response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a_id = self.assertJSONResponse(create_response, 201)["id"]
+
+        response = self.client.patch(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/",
+            {"status": "received"},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, 400)
+        self.assertIn("form_a_reception_date", data)
+
+    def test_non_allowlisted_fields_can_be_edited_on_temporary_form_within_edit_window(self):
+        self.client.force_authenticate(self.user_ro_perms)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a = self.assertJSONResponse(response, 201)
+        form_a_id = form_a["id"]
+        base_url = f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/"
+
+        non_allowlisted_payloads_and_expected_statuses = [
+            ({"campaign": self.campaign.obr_name}, 200),
+            ({"vaccine_stock": self.vaccine_stock.id}, 200),
+            ({"report_date": "2024-01-03"}, 200),
+            ({"usable_vials_used": 55}, 400),  # blocked by temporary-vials immutability rule
+            ({"lot_numbers": ["LOT1", "LOT2"]}, 200),
+            ({"round": self.campaign_round_1.id}, 200),
+            ({"doses_per_vial": 10}, 200),
+            ({"alternative_campaign": "Alternative Campaign"}, 400),  # blocked by campaign/non-obr exclusivity
+        ]
+
+        for payload, expected_status in non_allowlisted_payloads_and_expected_statuses:
+            response = self.client.patch(base_url, payload, format="json")
+            self.assertEqual(
+                response.status_code,
+                expected_status,
+                msg=f"Unexpected status for payload {payload}",
+            )
+
+        data = self.assertJSONResponse(self.client.get(base_url), 200)
+        self.assertEqual(data["lot_numbers"], ["LOT1", "LOT2"])
+
+    def test_non_allowlisted_fields_are_blocked_on_temporary_form_after_edit_window(self):
+        self.client.force_authenticate(self.user_ro_perms)
+
+        response = self.client.post(
+            OUTGOING_STOCK_MOVEMENT_URL,
+            {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.id,
+                "status": "temporary",
+                "report_date": "2024-01-01",
+                "usable_vials_used": 50,
+                "lot_numbers": ["LOT1"],
+                "round": self.campaign_round_1.id,
+                "comment": "Temporary draft",
+                "doses_per_vial": 20,
+            },
+            format="json",
+        )
+        form_a = self.assertJSONResponse(response, 201)
+        form_a_id = form_a["id"]
+
+        object = pm.OutgoingStockMovement.objects.get(id=form_a_id)
+        object.created_at = timezone.now() - datetime.timedelta(days=8)
+        object.save()
+        base_url = f"{OUTGOING_STOCK_MOVEMENT_URL}{form_a_id}/"
+
+        non_allowlisted_payloads = [
+            {"campaign": self.campaign.obr_name},
+            {"vaccine_stock": self.vaccine_stock.id},
+            {"report_date": "2024-01-03"},
+            {"usable_vials_used": 55},
+            {"lot_numbers": ["LOT1", "LOT2"]},
+            {"round": self.campaign_round_1.id},
+            {"doses_per_vial": 10},
+            {"alternative_campaign": "Alternative Campaign"},
+        ]
+
+        for payload in non_allowlisted_payloads:
+            response = self.client.patch(base_url, payload, format="json")
+            self.assertEqual(response.status_code, 403, msg=f"Expected 403 for payload {payload}")
 
     def test_vaccine_stock_management_permissions_incident_report(self):
         # Use a non-admin user
@@ -635,7 +1147,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         self.client.force_authenticate(self.user_rw_perms)
 
         response = self.client.get(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20"
+            f"{OUTGOING_STOCK_MOVEMENT_URL}?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20"
         )
 
         # Check that the response status code is 200
@@ -673,7 +1185,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         self.client.force_authenticate(self.user_rw_perms)
 
         response = self.client.get(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=form_a_reception_date"
+            f"{OUTGOING_STOCK_MOVEMENT_URL}?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=form_a_reception_date"
         )
 
         # Check that the response status code is 200
@@ -692,6 +1204,60 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         # Verify that the results are ordered by date_of_incident_report
         dates = [result["form_a_reception_date"] for result in data["results"]]
         self.assertEqual(dates, sorted(dates))
+
+    def test_outgoing_stock_movement_list_ordered_by_date_handles_null_reception_dates(self):
+        self.client.force_authenticate(self.user_rw_perms)
+        pm.OutgoingStockMovement.objects.create(
+            campaign=self.campaign,
+            vaccine_stock=self.vaccine_stock,
+            status=OutgoingStockMovement.StatusChoices.TEMPORARY,
+            report_date=self.now - datetime.timedelta(days=1),
+            form_a_reception_date=None,
+            usable_vials_used=3,
+            doses_per_vial=20,
+        )
+        pm.OutgoingStockMovement.objects.create(
+            campaign=self.campaign,
+            vaccine_stock=self.vaccine_stock,
+            status=OutgoingStockMovement.StatusChoices.RECEIVED,
+            report_date=self.now - datetime.timedelta(days=2),
+            form_a_reception_date=self.now.date() - datetime.timedelta(days=4),
+            usable_vials_used=4,
+            doses_per_vial=20,
+        )
+        pm.OutgoingStockMovement.objects.create(
+            campaign=self.campaign,
+            vaccine_stock=self.vaccine_stock,
+            status=OutgoingStockMovement.StatusChoices.RECEIVED,
+            report_date=self.now - datetime.timedelta(days=1),
+            form_a_reception_date=self.now.date() - datetime.timedelta(days=1),
+            usable_vials_used=5,
+            doses_per_vial=20,
+        )
+
+        response = self.client.get(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=form_a_reception_date"
+        )
+        data = self.assertJSONResponse(response, 200)
+        ids = [result["id"] for result in data["results"]]
+        expected_ids = list(
+            pm.OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
+            .order_by("form_a_reception_date")
+            .values_list("id", flat=True)
+        )
+        self.assertEqual(ids, expected_ids)
+
+        response = self.client.get(
+            f"{OUTGOING_STOCK_MOVEMENT_URL}?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=-form_a_reception_date"
+        )
+        data = self.assertJSONResponse(response, 200)
+        ids = [result["id"] for result in data["results"]]
+        expected_ids = list(
+            pm.OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
+            .order_by("-form_a_reception_date")
+            .values_list("id", flat=True)
+        )
+        self.assertEqual(ids, expected_ids)
 
     def test_documents_upload_and_download(self):
         self.client.force_authenticate(self.user_rw_perms)
@@ -722,7 +1288,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
             self.assertIn("document_path_1", queried_movement.file.name)
 
             # Query the newly created OutgoingStockMovement via API
-            response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{outgoing_stock_movement.pk}/")
+            response = self.client.get(f"{OUTGOING_STOCK_MOVEMENT_URL}{outgoing_stock_movement.pk}/")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["usable_vials_used"], 999)
             self.assertIn("path", response.data["file"])
@@ -806,7 +1372,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
             }
 
             response = self.client.post(
-                f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+                OUTGOING_STOCK_MOVEMENT_URL,
                 data=data,
                 format="multipart",
             )
@@ -1057,7 +1623,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
             "comment": "Test OSM",
             "doses_per_vial": 20,
         }
-        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
+        response = self.client.post(OUTGOING_STOCK_MOVEMENT_URL, osm_data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_read_only_cannot_create_incident_report(self):
@@ -1098,7 +1664,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         self.client.force_authenticate(user=self.user_read_only_perms)
         update_data = {"comment": "Updated comment"}
         response = self.client.patch(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{self.outgoing_stock_movement.id}/",
+            f"{OUTGOING_STOCK_MOVEMENT_URL}{self.outgoing_stock_movement.id}/",
             update_data,
             format="json",
         )
@@ -1126,9 +1692,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
 
     def test_user_with_read_only_cannot_delete_outgoing_stock_movement(self):
         self.client.force_authenticate(user=self.user_read_only_perms)
-        response = self.client.delete(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{self.outgoing_stock_movement.id}/"
-        )
+        response = self.client.delete(f"{OUTGOING_STOCK_MOVEMENT_URL}{self.outgoing_stock_movement.id}/")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_read_only_cannot_delete_incident_report(self):
@@ -1168,7 +1732,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
 
     def test_outgoing_stock_movement_without_campaign(self):
         """Test that an OutgoingStockMovement can be created without a campaign"""
-        FORMA_URL = "/api/polio/vaccine/stock/outgoing_stock_movement/"
+        FORMA_URL = OUTGOING_STOCK_MOVEMENT_URL
         VIALS_COUNT = 1831  # using a remarkable number to avoid ambiguity in test result
         ALT_CAMPAIGN_NAME = "Alternative campaign"
         self.client.force_authenticate(user=self.user_rw_perms)
@@ -1219,7 +1783,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         self.assertTrue(forma[0]["action"] == "Form A - Vials Used")
 
     def test_create_outgoiing_stock_cannot_have_both_campaign_and_alt_campaign(self):
-        forma_url = "/api/polio/vaccine/stock/outgoing_stock_movement/"
+        forma_url = OUTGOING_STOCK_MOVEMENT_URL
         alt_campaign_name = "Alternative campaign"
 
         self.client.force_authenticate(user=self.user_rw_perms)
@@ -1386,7 +1950,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         self.client.force_authenticate(user=self.user_rw_perms)
 
         # Test list endpoint
-        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
+        response = self.client.get(OUTGOING_STOCK_MOVEMENT_URL)
         self.assertEqual(response.status_code, 200)
 
         # Check that campaign_category is present in the response
@@ -1403,7 +1967,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
 
         # Test detail endpoint
         movement_id = results[0]["id"]
-        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{movement_id}/")
+        response = self.client.get(f"{OUTGOING_STOCK_MOVEMENT_URL}{movement_id}/")
         self.assertEqual(response.status_code, 200)
         self.assertIn("campaign_category", response.data)
         self.assertIsInstance(response.data["campaign_category"], str)
@@ -1498,7 +2062,7 @@ class VaccineStockManagementAPITestCase(VaccineStockManagementAPITestBase):
         )
 
         # Test API responses
-        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
+        response = self.client.get(OUTGOING_STOCK_MOVEMENT_URL)
         self.assertEqual(response.status_code, 200)
 
         results = response.data["results"]

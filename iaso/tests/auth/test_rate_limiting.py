@@ -1,11 +1,11 @@
-from django.core.cache import cache
+from axes.handlers.proxy import AxesProxyHandler
 from django.test import Client, TestCase, override_settings
 from rest_framework import status
 from rest_framework.test import APIClient
 
 
 @override_settings(
-    AXES_HANDLER="axes.handlers.cache.AxesCacheHandler",
+    AXES_HANDLER="axes.handlers.database.AxesDatabaseHandler",
     AXES_FAILURE_LIMIT=3,
     AXES_LOCKOUT_PARAMETERS=["username"],
 )
@@ -22,7 +22,7 @@ class AxesRateLimitTests(TestCase):
         self.client = APIClient()
         self.django_client = Client()
 
-        cache.clear()
+        AxesProxyHandler.reset_attempts()  # works with every type of axe handlers
 
     def test_api_token_rate_limit(self):
         """Test that /api/token/ locks out the user after AXES_FAILURE_LIMIT attempts."""

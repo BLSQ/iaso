@@ -442,6 +442,36 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.doses_per_vial',
         defaultMessage: 'Doses per vial',
     },
+    temporary_form_a: {
+        id: 'iaso.polio.form.temporary_form_a',
+        defaultMessage: 'Temporary Form A',
+    },
+    temporary_status_change_title: {
+        id: 'iaso.polio.form.temporary_status_change_title',
+        defaultMessage: 'Change Form A status',
+    },
+    received_to_temporary_warning: {
+        id: 'iaso.polio.form.received_to_temporary_warning',
+        defaultMessage:
+            'Changing this Form A back to temporary will remove the reception date and file on save.',
+    },
+    temporary_toggle_unsaved_warning: {
+        id: 'iaso.polio.form.temporary_toggle_unsaved_warning',
+        defaultMessage:
+            'Switching back to temporary will discard the reception date and file you have entered.',
+    },
+    form_a_status: {
+        id: 'iaso.polio.label.form_a_status',
+        defaultMessage: 'Status',
+    },
+    form_a_status_temporary: {
+        id: 'iaso.polio.label.form_a_status_temporary',
+        defaultMessage: 'Temporary',
+    },
+    form_a_status_received: {
+        id: 'iaso.polio.label.form_a_status_received',
+        defaultMessage: 'Received',
+    },
 });
 
 export default MESSAGES;

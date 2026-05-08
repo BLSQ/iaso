@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import AccountFeatureFlag, Project
+from iaso.models import AccountFeatureFlag, Project, UserRole
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.tests.api.profiles.test_views.common import BaseProfileAPITestCase
 from iaso.utils.colors import DEFAULT_COLOR
@@ -95,6 +96,20 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.assertHasField(response_data, "org_units", list)
         self.assertEqual(response_data["color"], DEFAULT_COLOR)
 
+        self.assertHasField(response_data, "date_joined", str)
+        expected_date = self.jane.date_joined.isoformat().replace("+00:00", "Z")
+        self.assertEqual(response_data["date_joined"], expected_date)
+
+    def test_retrieve_profile_user_roles_permissions_do_not_include_account_prefix(self):
+        group = Group.objects.create(name=f"{self.account.id}_Data manager")
+        user_role = UserRole.objects.create(group=group, account=self.account)
+        self.jane.iaso_profile.user_roles.set([user_role])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(reverse("profiles-detail", kwargs={"pk": "me"}))
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["user_roles_permissions"][0]["name"], "Data manager")
+
     def test_retrieve_profile_me_no_profile(self):
         """GET /profiles/me/ with auth, but without profile
         The goal is to know that this call doesn't result in a 500 error
@@ -113,6 +128,7 @@ class ProfileRetrieveAPITestCase(BaseProfileAPITestCase):
         self.assertEqual(response_data["projects"], [])
         self.assertFalse(response_data["is_staff"])
         self.assertFalse(response_data["is_superuser"])
+        self.assertNotIn("date_joined", response_data)
         self.assertIsNone(response_data["account"])
 
     def test_retrieve_profile_me_superuser_ok(self):

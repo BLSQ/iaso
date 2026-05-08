@@ -258,6 +258,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Stock entries',
         id: 'iaso.label.stockItems',
     },
+    validationWorkflow: {
+        defaultMessage: 'Validation workflows',
+        id: 'iaso.label.validationWorkflows',
+    },
 });
 
 export default MESSAGES;

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.fields import Field
 
@@ -110,6 +111,7 @@ class TeamSerializer(ModelSerializer, DynamicFieldsModelSerializerBackwardCompat
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
     project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
 
+    @extend_schema_field(serializers.IntegerField)
     def get_members_count(self, team):
         if team.type == TeamType.TEAM_OF_TEAMS:
             return getattr(team, "annotated_sub_teams_count", None) or team.sub_teams.count()

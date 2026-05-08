@@ -5,6 +5,7 @@ from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from hat.audit.audit_mixin import AuditMixin
 from iaso.api.common import (
     DeletionFilterBackend,
@@ -44,6 +45,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         TeamManagersFilterBackend,
         TeamTypesFilterBackend,
         TeamProjectsFilterBackend,
+        DynamicFieldsFilterBackendBackwardCompatible,
     ]
     permission_classes = [permissions.IsAuthenticated & ReadOnlyOrHasPermission(CORE_TEAMS_PERMISSION)]  # type: ignore
     serializer_class = TeamSerializer

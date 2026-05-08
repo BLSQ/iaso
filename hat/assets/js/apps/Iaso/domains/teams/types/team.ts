@@ -32,7 +32,7 @@ export type Team = {
     deleted_at?: string;
     parent?: number;
     color: string;
-    members_count: number;
+    members_count?: number;
 };
 
 export type TeamDropdown = {

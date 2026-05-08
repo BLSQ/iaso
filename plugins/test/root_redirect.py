@@ -1,0 +1,1 @@
+ROOT_REDIRECT_PATTERN_NAME = "test:homepage"

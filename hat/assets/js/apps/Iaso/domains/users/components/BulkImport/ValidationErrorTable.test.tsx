@@ -120,5 +120,8 @@ describe('ValidationErrorTable', () => {
         );
 
         expect(container).toBeEmptyDOMElement();
+
+        expect(container.innerHTML).not.toContain('undefined');
+        expect(container.innerHTML).not.toContain('null');
     });
 });

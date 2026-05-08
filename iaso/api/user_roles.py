@@ -8,6 +8,7 @@ from iaso.models import OrgUnitType, Project, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ROLES_PERMISSION
 
 from .common import ModelViewSet, TimestampField
+from .common.serializer_fields import UserRoleNameField
 
 
 class HasUserRolePermission(permissions.BasePermission):
@@ -25,7 +26,7 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 class UserRoleSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField("get_permissions")
-    name = serializers.CharField(source="group.name")
+    name = UserRoleNameField(source="group.name")
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
@@ -39,12 +40,6 @@ class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
         fields = ["id", "name", "permissions", "editable_org_unit_type_ids", "created_at", "updated_at"]
-
-    def to_representation(self, instance):
-        user_role = super().to_representation(instance)
-        account_id = user_role["name"].split("_")[0]
-        user_role["name"] = user_role["name"].removeprefix(f"{account_id}_")
-        return user_role
 
     def get_permissions(self, obj):
         return [permission["codename"] for permission in PermissionSerializer(obj.group.permissions, many=True).data]

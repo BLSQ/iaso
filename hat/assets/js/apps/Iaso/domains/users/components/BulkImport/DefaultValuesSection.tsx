@@ -116,7 +116,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
                 <InputComponent
                     type="select"
                     multi
@@ -129,7 +129,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                 />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
                 <InputComponent
                     type="select"
                     multi
@@ -142,7 +142,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                 />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
                 <InputComponent
                     type="select"
                     multi
@@ -155,7 +155,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                 />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
                 <InputComponent
                     type="select"
                     keyValue="default_profile_language"
@@ -166,7 +166,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                 />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
                 <InputComponent
                     type="select"
                     multi
@@ -179,7 +179,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                 />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
                 <InputComponent
                     type="text"
                     keyValue="default_organization"
@@ -194,7 +194,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
                 />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
                     titleMessage={MESSAGES.selectedOrgUnits}

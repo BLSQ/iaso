@@ -781,10 +781,9 @@ AUTHENTICATION_BACKENDS = [
 
 # The API will rate limit login attempts based on 2 parameters:
 # - AUTH_RATE_LIMIT_MAX_FAILURES:
-#  Number of failed login attempts allowed before the user is locked out temporarily
+#  Number of failed login attempts before the user is locked out temporarily
 # - AUTH_RATE_LIMIT_COOLOFF_SECONDS:
-#  Sets the duration of the lockout period *and* the TTL of the failure counter
-#  (See AxesCacheHandler for more information)
+#  Sets the duration of the lockout period
 AUTH_RATE_LIMIT_MAX_FAILURES = int(get_env_as_float("AUTH_RATE_LIMIT_MAX_FAILURES", "10"))
 AUTH_RATE_LIMIT_COOLOFF_SECONDS = get_env_as_float("AUTH_RATE_LIMIT_COOLOFF_SECONDS", "30")
 AXES_COOLOFF_TIME = lambda request: timedelta(seconds=AUTH_RATE_LIMIT_COOLOFF_SECONDS)
@@ -792,7 +791,8 @@ AXES_FAILURE_LIMIT = AUTH_RATE_LIMIT_MAX_FAILURES
 AXES_LOCKOUT_PARAMETERS = ["username"]
 AXES_COOLOFF_MESSAGE = "Too many login attempts. Please try again later."
 AXES_HTTP_RESPONSE_CODE = 429
-AXES_HANDLER = "axes.handlers.cache.AxesCacheHandler"
+AXES_HANDLER = "axes.handlers.database.AxesDatabaseHandler"
+AXES_DISABLE_ACCESS_LOG = True
 if IN_TESTS:
     AXES_HANDLER = "axes.handlers.dummy.AxesDummyHandler"
 

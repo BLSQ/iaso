@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="bulkcreateusercsvfile",
             name="file",
-            field=models.FileField(upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_csv_file_upload_to),
+            field=models.FileField(upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_file_upload_to),
         ),
         migrations.AlterField(
             model_name="importgpkg",

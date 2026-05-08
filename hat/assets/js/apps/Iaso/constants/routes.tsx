@@ -6,6 +6,7 @@ import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
 import { StockItems } from 'Iaso/domains/stock/items';
 import { StockRulesVersions } from 'Iaso/domains/stock/versions';
+import { UsersBulkCreate } from 'Iaso/domains/users/bulkCreate';
 import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
@@ -266,6 +267,13 @@ export const usersPath = {
     routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
+};
+
+export const usersBulkCreate = {
+    baseUrl: baseUrls.usersBulkCreate,
+    routerUrl: `${baseUrls.usersBulkCreate}/*`,
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+    element: <UsersBulkCreate />,
 };
 
 export const userDetailsPath = {
@@ -576,6 +584,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     userDetailsPath,
     usersHistoryPath,
     userRolesPath,
+    usersBulkCreate,
     projectsPath,
     dataSourcesPath,
     dataSourceDetailsPath,

@@ -22,7 +22,7 @@ class ReportsAPITestCase(APITestCase):
     def test_get_reports_web(self):
         self.client.force_authenticate(self.kefla)
 
-        file = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
 
         report_version = ReportVersion.objects.create(
             file=file,
@@ -40,7 +40,7 @@ class ReportsAPITestCase(APITestCase):
     def test_must_have_report_permission(self):
         self.client.force_authenticate(self.beerus)
 
-        file = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
 
         report_version = ReportVersion.objects.create(
             file=file,
@@ -57,7 +57,7 @@ class ReportsAPITestCase(APITestCase):
     def test_get_reports_munlti_tenancy(self):
         self.client.force_authenticate(self.tao)
 
-        file = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
 
         report_version = ReportVersion.objects.create(
             file=file,
@@ -73,7 +73,7 @@ class ReportsAPITestCase(APITestCase):
         self.assertEqual(len(response.json()), 0)
 
     def test_get_reports_must_be_authenticated(self):
-        file = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
 
         report_version = ReportVersion.objects.create(
             file=file,
@@ -90,7 +90,7 @@ class ReportsAPITestCase(APITestCase):
     def test_get_reports_mobile(self):
         self.client.force_authenticate(self.kefla)
 
-        file = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
 
         report_version = ReportVersion.objects.create(
             file=file,

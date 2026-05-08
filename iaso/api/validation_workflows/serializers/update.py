@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from iaso.api.common import ModelSerializer
 from iaso.models import Form, ValidationWorkflow
@@ -19,7 +20,13 @@ class ValidationWorkflowUpdateSerializer(ModelSerializer):
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
         user = getattr(request, "user", None)
+        iaso_profile = getattr(user, "iaso_profile", None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
+
+        if getattr(iaso_profile, "account", None):
+            self.fields["name"].validators.append(
+                UniqueValidator(queryset=ValidationWorkflow.objects.filter(account=user.iaso_profile.account))
+            )
 
     def update(self, instance, validated_data):
         request = self.context.get("request")

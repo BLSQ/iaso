@@ -113,6 +113,18 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
 
+    def test_dynamic_fields(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/", data={"fields": ":all"})
+        res_data = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitTypeData(res_data)
+
+        response = self.client.get(
+            f"/api/orgunittypes/{self.org_unit_type_1.id}/", data={"fields": "id,name,short_name"}
+        )
+        res_data = self.assertJSONResponse(response, 200)
+        self.assertCountEqual(res_data.keys(), ["id", "name", "short_name"])
+
     def test_org_unit_type_create_no_auth(self):
         """POST /orgunittypes/ without auth: 401"""
 

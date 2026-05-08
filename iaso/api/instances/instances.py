@@ -46,6 +46,7 @@ from iaso.api.instances.serializers import FileTypeSerializer, InstanceImportAcc
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.serializers import OrgUnitSerializer
+from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
     Account,
@@ -59,6 +60,7 @@ from iaso.models import (
     OrgUnitChangeRequest,
     Project,
 )
+from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
@@ -205,6 +207,7 @@ class InstancesViewSet(viewsets.ViewSet):
     to authenticated users having the "{CORE_FORMS_PERMISSION}" permission.
 
     GET /api/instances/
+        Optional query referenceInstances=all|reference|not_reference (default: no filter) matches is_reference_instance.
     GET /api/instances/<id>
     DELETE /api/instances/<id>
     POST /api/instances/
@@ -606,6 +609,7 @@ class InstancesViewSet(viewsets.ViewSet):
             "jsonContent",  # unsure if fully supported by export_django_query_to_parquet_via_duckdb function question names with __ doesn't seem to be supported but the problem seem the jsonlogic
             "planningIds",
             "userIds",
+            "referenceInstances",
         }
         received_params = set(request.GET.keys())
 
@@ -1038,11 +1042,20 @@ def import_data(instances, user, app_id):
     the second endpoint (POST /sync/form_upload/).
     """
     project = Project.objects.get_for_user_and_app_id(user, app_id)
+    rtn_instances = []
 
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
-        if Instance.objects.filter(uuid=uuid).exists():
+        existing_instances = Instance.objects.filter(uuid=uuid)
+        if existing_instances:
+            if all(
+                existing_instance.general_validation_status
+                in [ValidationWorkflowArtefactStatus.REJECTED, ValidationWorkflowArtefactStatus.PENDING]
+                + Instance._meta.get_field("general_validation_status").empty_values
+                for existing_instance in existing_instances
+            ):
+                rtn_instances.append(existing_instances.first())
             continue
 
         # Get or create instance based on file_name - this "get or create" logic is important:
@@ -1131,6 +1144,23 @@ def import_data(instances, user, app_id):
                 oucr.new_reference_instances.set([instance])
                 oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()
+
+        rtn_instances.append(instance)
+
+    for instance in rtn_instances:
+        validation_workflow = getattr(instance.form, "validation_workflow", None)
+        if (
+            validation_workflow
+            and not validation_workflow.deleted_at
+            and getattr(validation_workflow, "node_templates", None)
+        ):
+            try:
+                ValidationWorkflowEngine.start(
+                    instance.form.validation_workflow, user if user.is_authenticated else None, instance
+                )
+            except Exception as e:
+                # so we avoid the whole instance creation crashing
+                logger.error(e)
 
 
 def _entity_correctness_score(entity):

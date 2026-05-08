@@ -1,15 +1,24 @@
 from django.db.models import BooleanField, CharField, Count, F, TextField, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import Concat
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, parsers
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import ModelViewSet
 from iaso.api.form_versions.permissions import HasFormVersionPermission
-from iaso.api.form_versions.serializers import FormVersionSerializer
+from iaso.api.form_versions.serializers import (
+    FormVersionDiffSerializer,
+    FormVersionPreviewSerializer,
+    FormVersionSerializer,
+)
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, FormVersion, Project
+from iaso.odk.diff import compute_form_version_diff
 
 
 @extend_schema(tags=["Form versions"])
@@ -32,6 +41,12 @@ class FormVersionsViewSet(ModelViewSet):
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
     http_method_names = ["get", "put", "post", "head", "options", "trace", "patch"]
+    filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
+
+    def get_serializer_class(self):
+        if self.action == "preview":
+            return FormVersionPreviewSerializer
+        return FormVersionSerializer
 
     def get_queryset(self):
         orders = self.request.query_params.get("order", "full_name").split(",")
@@ -90,3 +105,15 @@ class FormVersionsViewSet(ModelViewSet):
         queryset = queryset.order_by(*orders)
 
         return queryset
+
+    @extend_schema(responses={200: FormVersionDiffSerializer})
+    @action(detail=False, methods=["post"], url_path="preview")
+    def preview(self, request, *args, **kwargs):
+        """Return a diff of questions added/removed compared to the latest version without saving."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        diff = compute_form_version_diff(
+            previous_form_version=serializer.validated_data["previous_form_version"],
+            survey=serializer.validated_data["survey"],
+        )
+        return Response(FormVersionDiffSerializer(diff).data)

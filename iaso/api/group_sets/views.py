@@ -5,6 +5,7 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from iaso.api.common import Paginator
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models import GroupSet, Project, SourceVersion
@@ -67,13 +68,22 @@ class GroupSetsViewSet(ModelViewSet):
         HasGroupsetPermission,
     ]
 
-    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = GroupSetFilter
     ordering = ["name"]
 
     serializer_class = GroupSetSerializer
     results_key = "group_sets"
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
+
+    @property
+    def filter_backends(self):
+        if self.action in ["list", "dropdown"]:
+            return [
+                filters.OrderingFilter,
+                django_filters.rest_framework.DjangoFilterBackend,
+                DynamicFieldsFilterBackendBackwardCompatible,
+            ]
+        return [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
 
     def pagination_class(self):
         return GroupSetPagination(self.results_key)

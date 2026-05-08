@@ -7,7 +7,7 @@ from rest_framework.viewsets import GenericViewSet
 from iaso.api.common.mixin import CustomPaginationListModelMixin
 from iaso.api.validation_workflows.filters import MobileValidationWorkflowListFilter
 from iaso.api.validation_workflows.pagination import MobileValidationWorkflowPagination
-from iaso.api.validation_workflows.permissions import HasValidationWorkflowPermission
+from iaso.api.validation_workflows.permissions import HasAccountFeatureFlag
 from iaso.api.validation_workflows.serializers.mobile import MobileValidationWorkflowListSerializer
 from iaso.models import Instance
 
@@ -15,7 +15,7 @@ from iaso.models import Instance
 @extend_schema(tags=["Validation workflows", "Mobile"])
 class ValidationWorkflowMobileViewSet(CustomPaginationListModelMixin, GenericViewSet):
     filter_backends = [DjangoFilterBackend]
-    permission_classes = (IsAuthenticated, HasValidationWorkflowPermission)
+    permission_classes = (IsAuthenticated, HasAccountFeatureFlag)
     filterset_class = MobileValidationWorkflowListFilter
     pagination_class = MobileValidationWorkflowPagination
     serializer_class = MobileValidationWorkflowListSerializer

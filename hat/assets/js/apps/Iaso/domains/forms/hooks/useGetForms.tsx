@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
+import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -38,7 +39,8 @@ const getForms = (params: FormsParams) => {
     const fields = `${
         params.fields ? params.fields : DEFAULT_VISIBLE_COLUMNS.join(',')
     },${FIELDS_PARAMS}`;
-    const queryString = new URLSearchParams({
+
+    const queryString = createSearchParamsWithArray({
         ...params,
         fields,
     }).toString();

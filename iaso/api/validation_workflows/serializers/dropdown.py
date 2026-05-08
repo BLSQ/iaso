@@ -5,7 +5,7 @@ from iaso.models import ValidationWorkflow
 
 
 class ValidationWorkflowDropdownSerializer(ModelSerializer):
-    value = serializers.CharField(source="slug", read_only=True)
+    value = serializers.IntegerField(source="pk", read_only=True)
     label = serializers.CharField(source="name", read_only=True)
 
     class Meta:

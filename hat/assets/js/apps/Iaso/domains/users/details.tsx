@@ -8,7 +8,7 @@ import MESSAGES from 'Iaso/domains/users/messages';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 
 // todo : remove this once IA-4806 has been done
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(_theme => ({
     '@global': {
         body: {
             overflowX: 'hidden !important',

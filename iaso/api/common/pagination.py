@@ -21,6 +21,38 @@ class Paginator(pagination.PageNumberPagination):
             }
         )
 
+    def get_paginated_response_schema(self, schema):
+        return {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 123,
+                },
+                "has_next": {
+                    "type": "boolean",
+                },
+                "has_previous": {
+                    "type": "boolean",
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 123,
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 2,
+                    "description": "The current page number",
+                },
+                "pages": {
+                    "type": "integer",
+                    "example": 2,
+                    "description": "The total number of pages",
+                },
+                self.results_key: schema,
+            },
+        }
+
 
 class EtlPaginator(Paginator):
     page_size = 20

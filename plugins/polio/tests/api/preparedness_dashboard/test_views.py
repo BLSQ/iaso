@@ -295,8 +295,8 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         self.assertEqual(campaign_details["round_number"], 4)
         self.assertEqual(campaign_details["campaign"], "test-campaign")
 
-    def test_score_raises_when_multiple_rounds_share_url(self):
-        """When multiple rounds share the same preparedness URL, the view raises."""
+    def test_score_returns_409_when_multiple_rounds_share_url(self):
+        """When multiple rounds share the same preparedness URL, the view returns 409."""
         from plugins.polio.models.base import Round
 
         shared_url = "https://docs.google.com/spreadsheets/d/shared"
@@ -308,6 +308,6 @@ class PreparednessDashboardScoreAPITestCase(PreparednessDashboardAPIBase):
         Round.objects.create(campaign=self.campaign, number=10, preparedness_spreadsheet_url=shared_url)
         Round.objects.create(campaign=self.campaign, number=11, preparedness_spreadsheet_url=shared_url)
 
-        with self.assertRaises(Exception) as ctx:
-            self.client.get(self.SCORE_URL, {"url": shared_url, "date": "2030-01-01"})
-        self.assertIn("Found more than one round for url:", str(ctx.exception))
+        response = self.client.get(self.SCORE_URL, {"url": shared_url, "date": "2030-01-01"})
+        data = self.assertJSONResponse(response, status.HTTP_409_CONFLICT)
+        self.assertIn("Found more than one round for url:", data["error"])

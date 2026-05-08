@@ -117,6 +117,7 @@ NEW_GUIDE_LINES_FORMS = [
     "child_antropometric_followUp_tsfp_2",
 ]
 
+ACCOUNT_WITH_GUIDELINE = "South Sudan"
 
 # ---------------------------------------------------------------------------
 # Field extraction helpers
@@ -308,7 +309,7 @@ def extract_weight(data):
     weight = data.get("weight_kgs")
 
     if weight == "":
-        return 0.0
+        return None
 
     if weight not in (None, ""):
         return _safe_float(weight)
@@ -589,7 +590,7 @@ def compute_weight_gain(initial_weight, current_weight, duration_days):
     non-zero.  Both are >= 0.
     """
     if not initial_weight or not current_weight:
-        return 0.0, 0.0
+        return None, None
 
     initial = float(initial_weight)
     current = float(current_weight)
@@ -756,6 +757,9 @@ class ETL:
         entirely (invalid data, no journeys, etc.).
         """
         beneficiary_info = self._extract_beneficiary_info(submissions)
+        guidelines = None
+        if account.name == ACCOUNT_WITH_GUIDELINE:
+            guidelines = beneficiary_info.get("guidelines")
 
         if not self._is_valid_beneficiary(beneficiary_info):
             return None
@@ -767,7 +771,7 @@ class ETL:
                 gender=beneficiary_info["gender"],
                 birth_date=beneficiary_info["birth_date"],
                 account=account,
-                guidelines=beneficiary_info.get("guidelines", "OLD"),
+                guidelines=guidelines,
             )
         else:
             beneficiary = Beneficiary.objects.filter(entity_id=entity_id).first()
@@ -833,17 +837,16 @@ class ETL:
 
             gender = extract_gender(data)
             physiology = extract_pbwg_physiology(data)
-            guidelines = extract_guidelines(sub)
+
             if physiology:
                 info["physiology"] = physiology
                 info["gender"] = None
             elif gender in ("Male", "Female"):
                 info["gender"] = gender
+                info["guidelines"] = extract_guidelines(sub)
             birth_date = calculate_birth_date(data)
             if birth_date is not None:
                 info["birth_date"] = birth_date
-            if guidelines:
-                info["guidelines"] = guidelines
         return info
 
     @staticmethod
@@ -995,8 +998,8 @@ class ETL:
 
         # --- Weight & duration ------------------------------------------
         duration = None
-        weight_gain = 0.0
-        weight_loss = 0.0
+        weight_gain = None
+        weight_loss = None
         effective_end = end_date or last_visit_date
 
         start_d = _to_date(start_date)
@@ -1484,8 +1487,29 @@ class ETL:
     # ------------------------------------------------------------------
     @staticmethod
     def _process_monthly_data(program_type, aggregated_data, account):
+        """Processing monthly data by excluding rows with 0 values in the needed columns."""
         all_journeys = []
+        fields_to_ignore = {
+            "org_unit_id",
+            "year",
+            "month",
+            "dhis2_id",
+            "period",
+            "gender",
+            "physiology_status",
+            "nutrition_programme",
+            "programme_type",
+            "total_beneficiaries",
+            "number_visits",
+        }
+
         for row in aggregated_data:
+            # Check if there is any value in the row
+            has_data = any((row.get(field) or 0) > 0 for field in row if field not in fields_to_ignore)
+            # Skip the row if all needed columns are 0
+            if not has_data:
+                continue
+
             journey_by_org_unit_period = MonthlyStatistics(
                 account=account,
                 programme_type=program_type,

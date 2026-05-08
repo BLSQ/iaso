@@ -5,7 +5,8 @@ from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer, UserSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatibleMixin
+from iaso.api.common import UserSerializer
 from iaso.models.team import Team
 
 from ..models import Campaign, Round
@@ -212,7 +213,7 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
         return budget_process
 
 
-class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class BudgetProcessSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer):
     class Meta:
         model = BudgetProcess
         fields = [

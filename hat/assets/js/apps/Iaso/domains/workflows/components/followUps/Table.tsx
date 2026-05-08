@@ -1,16 +1,14 @@
-import { Box } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-
+import { Box } from '@mui/material';
 import {
     formatThousand,
     Table,
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-
-import { WorkflowParams, WorkflowVersionDetail } from '../../types';
-import MESSAGES from '../../messages';
 import { baseUrls } from '../../../../constants/urls';
+import MESSAGES from '../../messages';
+import { WorkflowParams, WorkflowVersionDetail } from '../../types';
 
 type Props = {
     params: WorkflowParams;

@@ -4,6 +4,31 @@ from iaso.test import APITestCase
 
 
 class BaseValidationWorkflowAPITestCase(APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.account = Account.objects.create(name="account")
+        self.john_doe = self.create_user_with_profile(
+            username="john.doe", account=self.account, first_name="John", last_name="Doe"
+        )
+        self.john_wick = self.create_user_with_profile(
+            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+        )
+        self.superuser = self.create_user_with_profile(
+            username="john.super",
+            account=self.account,
+            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION],
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        (
+            self.account_without_feature_flag,
+            self.user_without_feature_flag,
+            self.validation_workflow_without_feature_flag,
+        ) = self.create_no_feature_flag_data()
+
+        self.enable_validation_workflow_feature_flag(self.account)
+
     def create_no_feature_flag_data(self):
         account_without_feature_flag = Account.objects.create(name="account_without_feature_flag")
         user_without_feature_flag = self.create_user_with_profile(
@@ -36,11 +61,11 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
         for data in list_data[results_key]:
             self.assertIn("slug", data)
             self.assertIn("name", data)
-            self.assertIn("formCount", data)
-            self.assertIn("createdBy", data)
-            self.assertIn("updatedBy", data)
-            self.assertIn("createdAt", data)
-            self.assertIn("updatedAt", data)
+            self.assertIn("form_count", data)
+            self.assertIn("created_by", data)
+            self.assertIn("updated_by", data)
+            self.assertIn("created_at", data)
+            self.assertIn("updated_at", data)
 
     def assertValidValidationWorkflowDropdownListData(self, list_data, expected_length):
         self.assertValidListData(

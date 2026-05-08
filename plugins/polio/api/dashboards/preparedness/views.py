@@ -1,5 +1,5 @@
 from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -49,20 +49,24 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
         params_serializer = ParamsSerializer(data=request.query_params)
         params_serializer.is_valid(raise_exception=True)
         queryset = self.get_queryset()
+        url_param = request.query_params.get("url")
         filter = PreparednessScoreFilter(request.query_params, queryset=queryset)
         filtered_qs = filter.qs
         obj = filtered_qs.first()
-        if not obj:
-            return Response({})
-
         round_qs = (
-            Round.objects.filter(preparedness_spreadsheet_url=obj.url)
+            Round.objects.filter(preparedness_spreadsheet_url=url_param)
             .select_related("campaign")
             .only("id", "number", "campaign__obr_name")
         )
         if round_qs.count() > 1:
             rounds_list = list(round_qs.values_list("id", flat=True))
-            raise Exception(f"Found more than one round for url: {rounds_list}")
+            return Response(
+                {"error": f"Found more than one round for url: {rounds_list}"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        if not obj:
+            return Response({})
 
         round_obj = round_qs.first()
         obj.round_id = round_obj.id if round_obj else None

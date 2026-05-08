@@ -1,3 +1,4 @@
+const ACCOUNT_MANAGEMENT = 'iaso_account_management';
 const COMPLETENESS = 'iaso_completeness';
 const COMPLETENESS_STATS = 'iaso_completeness_stats';
 const DATA_DEVICES = 'iaso_data_devices';
@@ -63,8 +64,10 @@ const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 const PAYMENTS = 'iaso_payments';
 const STOCK_MANAGEMENT = 'iaso_stock_management';
 const METRIC_TYPES = 'iaso_metric_types';
+const VALIDATION_WORKFLOWS = 'iaso_validation_workflows';
 
 export {
+    ACCOUNT_MANAGEMENT,
     COMPLETENESS,
     COMPLETENESS_STATS,
     DATA_DEVICES,
@@ -120,5 +123,6 @@ export {
     USERS_ADMIN,
     USERS_MANAGEMENT,
     USER_ROLES,
+    VALIDATION_WORKFLOWS,
     WORKFLOWS,
 };

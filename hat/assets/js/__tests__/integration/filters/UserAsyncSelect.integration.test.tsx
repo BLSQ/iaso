@@ -2,18 +2,13 @@ import React from 'react';
 
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { IntlProvider } from 'react-intl';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { getUsersDropDown } from 'Iaso/domains/instances/hooks/requests/getUsersDropDown';
-import { renderWithTheme } from '../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
 import { randomProfileDropdownOption } from '../../factories/profileDropdown';
 
 const renderUserAsyncSelect = (ui: React.ReactElement) =>
-    renderWithTheme(
-        <IntlProvider locale="en" messages={{}}>
-            {ui}
-        </IntlProvider>,
-    );
+    renderWithThemeAndIntlProvider(ui);
 
 const { mockUseGetProfilesDropdown } = vi.hoisted(() => ({
     mockUseGetProfilesDropdown: vi.fn(),

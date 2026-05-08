@@ -4,13 +4,12 @@ from rest_framework import status
 from rest_framework.settings import api_settings
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
 
 
 class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
     def setUp(self):
-        self.account = Account.objects.create(name="account")
+        super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
         self.enable_validation_workflow_feature_flag(self.account, self.account_2)
@@ -18,14 +17,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.group = Group.objects.create(name="Group")
         self.other_group = Group.objects.create(name="Group 2")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
-
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name",
@@ -78,8 +69,8 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 kwargs={"parent_lookup_workflow__slug": self.other_validation_workflow.slug},
             ),
             data=[
-                {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
-                {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
                 {
                     "slug": self.second_node.slug,
                     "name": "new third node",
@@ -91,7 +82,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             res_data,
-            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+            api_settings.NON_FIELD_ERRORS_KEY,
             "The slugs provided don't match the existing ones",
         )
 
@@ -105,7 +96,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
             res_data,
-            self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+            api_settings.NON_FIELD_ERRORS_KEY,
             "The slugs provided don't match the existing ones",
         )
 
@@ -118,8 +109,8 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
             ),
             data=[
-                {"slug": self.third_node.slug, "name": "New first node", "rolesRequired": [self.user_role.pk]},
-                {"slug": self.first_node.slug, "name": "New-first-node", "canSkipPreviousNodes": True},
+                {"slug": self.third_node.slug, "name": "New first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "New-first-node", "can_skip_previous_nodes": True},
                 {
                     "slug": self.second_node.slug,
                     "name": "new third node",
@@ -133,15 +124,21 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.assertEqual(res_data, [{"slug": "third-node"}, {"slug": "first-node"}, {"slug": "second-node"}])
 
     def test_happy_flow(self):
-        self.client.force_authenticate(self.john_wick)
+        self.base_test_happy_flow(self.john_wick)
+
+    def test_happy_flow_as_superuser(self):
+        self.base_test_happy_flow(self.superuser)
+
+    def base_test_happy_flow(self, user):
+        self.client.force_authenticate(user)
         res = self.client.put(
             reverse(
                 "validation_node_templates-bulk",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
             ),
             data=[
-                {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
-                {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
                 {
                     "slug": self.second_node.slug,
                     "name": "new third node",
@@ -211,6 +208,15 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+        self.client.force_authenticate(self.superuser)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            )
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.put(
             reverse(
@@ -234,7 +240,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
                 res_data,
-                self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+                api_settings.NON_FIELD_ERRORS_KEY,
                 'Expected a list of items but got type "dict".',
             )
 
@@ -249,7 +255,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
                 res_data,
-                self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+                api_settings.NON_FIELD_ERRORS_KEY,
                 "This list may not be empty.",
             )
 
@@ -267,7 +273,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
                 res_data,
-                self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY),
+                api_settings.NON_FIELD_ERRORS_KEY,
                 "The slugs provided don't match the existing ones",
             )
 
@@ -283,9 +289,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 ],
             )
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(
-                res_data, self.snake_case_to_camel_case(api_settings.NON_FIELD_ERRORS_KEY), "Duplicate slugs provided."
-            )
+            self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "Duplicate slugs provided.")
 
         with self.subTest("Validate items : name"):
             res = self.client.put(
@@ -336,15 +340,15 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
                 ),
                 data=[
-                    {"slug": self.first_node.slug, "name": "test", "rolesRequired": [1111]},
-                    {"slug": self.second_node.slug, "name": "test", "rolesRequired": [1111]},
-                    {"slug": self.third_node.slug, "name": "test", "rolesRequired": [1111]},
+                    {"slug": self.first_node.slug, "name": "test", "roles_required": [1111]},
+                    {"slug": self.second_node.slug, "name": "test", "roles_required": [1111]},
+                    {"slug": self.third_node.slug, "name": "test", "roles_required": [1111]},
                 ],
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             for error in res_data:
-                self.assertHasError(error, "rolesRequired", 'Invalid pk "1111" - object does not exist.')
+                self.assertHasError(error, "roles_required", 'Invalid pk "1111" - object does not exist.')
 
             res = self.client.put(
                 reverse(
@@ -352,16 +356,16 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
                 ),
                 data=[
-                    {"slug": self.first_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
-                    {"slug": self.second_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
-                    {"slug": self.third_node.slug, "name": "test", "rolesRequired": [self.other_user_role.pk]},
+                    {"slug": self.first_node.slug, "name": "test", "roles_required": [self.other_user_role.pk]},
+                    {"slug": self.second_node.slug, "name": "test", "roles_required": [self.other_user_role.pk]},
+                    {"slug": self.third_node.slug, "name": "test", "roles_required": [self.other_user_role.pk]},
                 ],
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             for error in res_data:
                 self.assertHasError(
-                    error, "rolesRequired", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+                    error, "roles_required", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
                 )
 
     def test_num_queries(self):
@@ -373,8 +377,8 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
                 ),
                 data=[
-                    {"slug": self.third_node.slug, "name": "new first node", "rolesRequired": [self.user_role.pk]},
-                    {"slug": self.first_node.slug, "name": "new second node", "canSkipPreviousNodes": True},
+                    {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                    {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
                     {
                         "slug": self.second_node.slug,
                         "name": "new third node",
@@ -384,3 +388,25 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 ],
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_uniqueness_validator(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new first node", "can_skip_previous_nodes": True},
+                {
+                    "slug": self.second_node.slug,
+                    "name": "new third node",
+                    "description": "some description",
+                    "color": "#ebebeb",
+                },
+            ],
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, api_settings.NON_FIELD_ERRORS_KEY, "Names must be unique.")

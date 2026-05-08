@@ -12,6 +12,16 @@ class ValidationNodeStatus(models.TextChoices):
     REJECTED = "REJECTED", _("Rejected")
     SKIPPED = "SKIPPED", _("Skipped")
     UNKNOWN = "UNKNOWN", _("Unknown")
+    SUBMISSION = "SUBMISSION", _("Submission")
+    NEW_VERSION = "NEW_VERSION", _("New version")
+
+
+class ValidationNodeQuerySet(models.QuerySet):
+    def filter_for_user(self, user):
+        iaso_profile = getattr(user, "iaso_profile", None)
+        if getattr(iaso_profile, "account", None):
+            return self.filter(node__workflow__account=iaso_profile.account)
+        return self.none()
 
 
 class ValidationNode(CreatedAndUpdatedModel):
@@ -38,9 +48,9 @@ class ValidationNode(CreatedAndUpdatedModel):
         """
         Return the existing ValidationNode that are placed right after this one in the workflow.
         """
-        return ValidationNode.objects.filter(
-            node__pk__in=self.node.next_node_templates.values_list("pk", flat=True), instance=self.instance
-        )
+        return ValidationNode.objects.filter(node__in=self.node.next_node_templates.all(), instance=self.instance)
 
     class Meta:
         ordering = ["-created_at"]
+
+    objects = models.Manager.from_queryset(ValidationNodeQuerySet)()

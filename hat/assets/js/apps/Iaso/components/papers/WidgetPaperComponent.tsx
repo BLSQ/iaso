@@ -5,6 +5,8 @@ import React, {
     ReactNode,
 } from 'react';
 
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import {
     Paper,
     Divider,
@@ -12,11 +14,9 @@ import {
     Grid,
     Collapse,
     Box,
-    SxProps, PaperProps,
+    PaperProps,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -32,6 +32,7 @@ const useStyles = makeStyles(theme => ({
         [theme.breakpoints.down('md')]: {
             fontSize: '1.4rem',
         },
+        textTransform: 'capitalize',
     },
     paperTitle: {
         padding: theme.spacing(2),
@@ -69,7 +70,7 @@ type Props = {
     showHeader?: boolean;
     className?: string;
     children?: ReactNode;
-} & Omit<PaperProps, "classes" | "children">;
+} & Omit<PaperProps, 'classes' | 'children'>;
 export const WidgetPaper = ({
     IconButton,
     iconButtonProps,
@@ -91,11 +92,7 @@ export const WidgetPaper = ({
         }
     };
     return (
-        <Paper
-            className={`${classes.root} ${className}`}
-            id={id}
-            {...props}
-        >
+        <Paper className={`${classes.root} ${className}`} id={id} {...props}>
             {showHeader && (
                 <div className={classes.paperTitle}>
                     <Grid xs={IconButton ? 10 : 12} item>

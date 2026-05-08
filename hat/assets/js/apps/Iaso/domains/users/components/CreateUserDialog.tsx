@@ -14,14 +14,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { MutateFunction, useQueryClient } from 'react-query';
-
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { SxStyles } from 'Iaso/types/general';
-import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
 import * as Permissions from '../../../utils/permissions';
+import { useCreateProfile } from '../hooks/useCreateProfile';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
+import { ErrorFieldText } from './ErrorFieldText';
 import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
 import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
@@ -49,7 +48,6 @@ const styles: SxStyles = {
 type Props = {
     titleMessage: IntlMessage;
     initialData?: InitialUserData;
-    createProfile: MutateFunction<Profile, any>;
     allowSendEmailInvitation?: boolean;
     isOpen: boolean;
     closeDialog: () => void;
@@ -63,15 +61,11 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
     initialData = defaultData,
-    createProfile,
     allowSendEmailInvitation = false,
     closeDialog,
     canBypassProjectRestrictions,
 }) => {
-    const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-
-    const queryClient = useQueryClient();
 
     const {
         user,
@@ -81,6 +75,23 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
         hasErrors,
         setEmail,
     } = useInitialUser(initialData);
+
+    const { mutate: createProfile } = useCreateProfile(true, {
+        onSuccess: () => {
+            closeDialog();
+        },
+        onError: error => {
+            console.error('Error creating user', error);
+            if (error.status === 400) {
+                Object.keys(error.details).forEach(key => {
+                    setFieldErrors(
+                        key,
+                        <ErrorFieldText errors={error.details[key]} />,
+                    );
+                });
+            }
+        },
+    });
 
     const [tab, setTab] = useState<string>('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
@@ -109,30 +120,8 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
             }
         });
 
-        createProfile(currentUser, {
-            onSuccess: () => {
-                if (currentUser.id === connectedUser.id) {
-                    queryClient.invalidateQueries('currentUser');
-                }
-                closeDialog();
-            },
-            onError: error => {
-                if (error.status === 400) {
-                    setFieldErrors(
-                        error.details.errorKey,
-                        error.details.errorMessage,
-                    );
-                }
-            },
-        });
-    }, [
-        closeDialog,
-        connectedUser.id,
-        queryClient,
-        createProfile,
-        setFieldErrors,
-        user,
-    ]);
+        createProfile(currentUser);
+    }, [createProfile, user]);
 
     const userPermissions = user?.user_permissions.value ?? [];
     const userRolesPermissions = user?.user_roles_permissions.value ?? [];

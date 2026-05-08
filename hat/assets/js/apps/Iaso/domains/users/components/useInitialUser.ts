@@ -93,15 +93,14 @@ export const useInitialUser = (
                 errors: [],
             },
             editable_org_unit_type_ids: {
-                value: get(data, 'editable_org_unit_type_ids', []),
+                value: get(data, 'editable_org_unit_types', []).map(
+                    (orgUnitWriteType: { id: number; name: string }) =>
+                        orgUnitWriteType.id,
+                ),
                 errors: [],
             },
             user_roles_editable_org_unit_type_ids: {
-                value: get(
-                    data,
-                    'user_roles_editable_org_unit_type_ids',
-                    [],
-                ),
+                value: get(data, 'user_roles_editable_org_unit_type_ids', []),
                 errors: [],
             },
             has_multiple_accounts: {

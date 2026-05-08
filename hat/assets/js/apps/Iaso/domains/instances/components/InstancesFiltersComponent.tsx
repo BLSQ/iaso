@@ -14,6 +14,7 @@ import {
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -30,10 +31,10 @@ import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
 
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { INSTANCE_STATUSES } from '../constants';
 
+import { useReferenceInstancesOptions } from '../hooks/useReferenceInstancesOptions';
 import MESSAGES from '../messages';
 import { parseJson } from '../utils/jsonLogicParse';
 
@@ -59,6 +60,7 @@ const useStyles = makeStyles(theme => ({
 const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
+    referenceInstances: params.referenceInstances ?? 'all',
 });
 
 type Props = {
@@ -91,6 +93,8 @@ const InstancesFiltersComponent = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
+    const referenceInstancesOptions = useReferenceInstancesOptions();
+
     const [isInstancesFilterUpdated, setIsInstancesFilterUpdated] =
         useState(false);
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
@@ -114,8 +118,6 @@ const InstancesFiltersComponent = ({
     const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: planningsDropdownOptions, isFetching: fetchingPlannings } =
-        useGetPlanningsOptions();
     useSkipEffectOnMount(() => {
         Object.entries(params).forEach(([key, value]) => {
             if (key === 'showDeleted') {
@@ -124,6 +126,7 @@ const InstancesFiltersComponent = ({
                 setFormState(key, value);
             }
         });
+        setFormState('referenceInstances', params.referenceInstances ?? 'all');
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
@@ -151,6 +154,9 @@ const InstancesFiltersComponent = ({
                 isSearchActive: 'true',
                 page: 1,
             };
+            if (searchParams.referenceInstances === 'all') {
+                delete searchParams.referenceInstances;
+            }
             // removing columns params to refetch correct columns
             const newFormIdsString = formState.formIds.value;
             const newFormIds = formState.formIds.value?.split(',');
@@ -349,6 +355,14 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.exportStatus}
                     />
                     <InputComponent
+                        keyValue="referenceInstances"
+                        onChange={handleFormChange}
+                        value={formState.referenceInstances?.value ?? 'all'}
+                        type="select"
+                        options={referenceInstancesOptions}
+                        label={MESSAGES.referenceInstancesFilter}
+                    />
+                    <InputComponent
                         keyValue="withLocation"
                         clearable
                         onChange={handleFormChange}
@@ -399,16 +413,14 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={isFetchingOuTypes}
                     />
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="planningIds"
-                        onChange={handleFormChange}
-                        value={formState.planningIds.value || null}
-                        options={planningsDropdownOptions}
-                        label={MESSAGES.planning}
-                        loading={fetchingPlannings}
-                    />
+                    <Box mt={2}>
+                        <UserAsyncSelect
+                            keyValue="userIds"
+                            label={MESSAGES.user}
+                            filterUsers={formState?.userIds?.value}
+                            handleChange={joinValuesBeforeHandleFormChange}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <DatesRange
@@ -464,14 +476,12 @@ const InstancesFiltersComponent = ({
                             </Typography>
                         </Box>
                     )}
-                    <Box mt={2}>
-                        <UserAsyncSelect
-                            keyValue="userIds"
-                            label={MESSAGES.user}
-                            filterUsers={formState?.userIds?.value}
-                            handleChange={joinValuesBeforeHandleFormChange}
-                        />
-                    </Box>
+                    <PlanningsDropdown
+                        handleChange={handleFormChange}
+                        value={formState.planningIds.value || null}
+                        keyValue="planningIds"
+                        multi
+                    />
                 </Grid>
             </Grid>
 

@@ -1,10 +1,13 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Chip } from '@mui/material';
-import { Select } from 'bluesquare-components';
+import { AutocompleteRenderGetTagProps } from '@mui/material/Autocomplete/Autocomplete';
 import { FieldInputProps, FormikProps } from 'formik';
 
-import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
-import { useGetProfiles } from '../../users/hooks/useGetProfiles';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
+import { DropdownOptions } from 'Iaso/types/utils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+
+import MESSAGES from '../messages';
 
 type FormValues = {
     users: string;
@@ -17,76 +20,83 @@ type Props = {
     isNewPage?: boolean;
 };
 
-export const UsersSelect: FunctionComponent<Props> = ({
+export const UsersSelect = ({
     field,
     form,
-    label = '',
+    label: _label,
     isNewPage = false,
     ...props
-} = {}) => {
+}: Props = {}) => {
     const currentUser = useCurrentUser();
-    const value = useMemo(() => {
-        if (isNewPage && (!field?.value || field?.value?.length === 0)) {
+
+    const rawFieldIds = field?.value;
+    const effectiveUserIds = useMemo(() => {
+        if (isNewPage && (!rawFieldIds || rawFieldIds.length === 0)) {
             return [currentUser.user_id];
         }
-        return field?.value;
-    }, [currentUser.user_id, field?.value, isNewPage]);
-    const { data, isFetching: isFetchingProfiles } = useGetProfiles({
-        managedUsersOnly: 'true',
-    });
-    const profilesList = useMemo(() => {
-        if (!data) return [];
-        return data.results.map(p => ({
-            value: p.user_id,
-            label: getDisplayName(p),
-        }));
-    }, [data]);
+        return rawFieldIds ?? [];
+    }, [currentUser.user_id, isNewPage, rawFieldIds]);
+
+    const filterUsers = useMemo(
+        () =>
+            effectiveUserIds.length > 0
+                ? effectiveUserIds.join(',')
+                : undefined,
+        [effectiveUserIds],
+    );
+
     const handleChange = useCallback(
-        (newValue: string): void => {
-            const fieldValue: number[] = newValue
-                ? newValue.split(',').map(val => parseInt(val, 10))
+        (_keyValue: string, val: unknown) => {
+            const fieldValue: number[] = val
+                ? String(val)
+                      .split(',')
+                      .map(v => parseInt(v, 10))
+                      .filter(n => !Number.isNaN(n))
                 : [];
             if (field && form) {
                 form.setFieldValue(field.name, fieldValue);
+                form.setFieldTouched(field.name, true);
             }
         },
         [field, form],
     );
+
+    const renderTags = useCallback(
+        (
+            tagValue: DropdownOptions<number>[],
+            getTagProps: AutocompleteRenderGetTagProps,
+        ) =>
+            tagValue.map((option, index: number) => {
+                const tagProps = getTagProps({
+                    index,
+                });
+                const { onDelete, ...restTagProps } = tagProps;
+                const isCurrentUser = option.value === currentUser.user_id;
+                return (
+                    <Chip
+                        {...restTagProps}
+                        key={String(option?.value ?? option?.label ?? index)}
+                        disabled={isCurrentUser}
+                        color={isCurrentUser ? 'primary' : 'secondary'}
+                        label={option?.label ? option.label : ''}
+                        {...(!isCurrentUser ? { onDelete } : {})}
+                    />
+                );
+            }),
+        [currentUser.user_id],
+    );
+
     return (
-        <Select
-            {...props}
-            {...field}
-            keyValue={field?.name}
-            label={label}
-            required
-            loading={isFetchingProfiles}
-            clearable={false}
+        <UserAsyncSelect
+            handleChange={handleChange}
+            filterUsers={filterUsers}
+            additionalFilters={{ managedUsersOnly: 'true' }}
+            keyValue={field?.name ?? 'users'}
+            label={MESSAGES.users}
             multi
-            value={value?.filter(userId =>
-                Boolean(profilesList.find(profile => profile.value === userId)),
-            )}
-            options={profilesList}
-            onChange={handleChange}
-            renderTags={(tagValue, getTagProps) =>
-                tagValue.map((option, index) => {
-                    const tagProps = getTagProps({
-                        index,
-                    });
-                    const isCurrentUser = option.value === currentUser.user_id;
-                    // disable delete for current user
-                    tagProps.onDelete = isCurrentUser
-                        ? undefined
-                        : tagProps.onDelete;
-                    return (
-                        <Chip
-                            disabled
-                            color={isCurrentUser ? 'primary' : 'secondary'}
-                            label={option?.label ? option.label : ''}
-                            {...tagProps}
-                        />
-                    );
-                })
-            }
+            renderTags={renderTags}
+            required
+            {...props}
         />
     );
 };

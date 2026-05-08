@@ -3,13 +3,12 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Account, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.tests.api.validation_workflows_node_templates.test_views.common import BaseApiTestCase
 
 
 class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
     def setUp(self):
-        self.account = Account.objects.create(name="account")
+        super().setUp()
         self.project = Project.objects.create(name="project", account=self.account)
         self.account_2 = Account.objects.create(name="account_2")
         self.enable_validation_workflow_feature_flag(self.account, self.account_2)
@@ -19,14 +18,6 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
 
         self.other_user_role = UserRole.objects.create(group=self.other_group, account=self.account_2)
-
-        self.john_doe = self.create_user_with_profile(
-            username="john.doe", account=self.account, first_name="John", last_name="Doe"
-        )
-
-        self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
-        )
 
         self.other_validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name 2",
@@ -76,13 +67,19 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
         self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)
 
     def test_happy_flow(self):
-        self.client.force_authenticate(self.john_wick)
+        self.base_test_happy_flow(self.john_wick)
+
+    def test_happy_flow_as_superuser(self):
+        self.base_test_happy_flow(self.superuser)
+
+    def base_test_happy_flow(self, user):
+        self.client.force_authenticate(user)
         res = self.client.patch(
             reverse(
                 "validation_node_templates-detail",
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
             ),
-            data={"name": "test", "rolesRequired": [self.user_role.pk]},
+            data={"name": "test", "roles_required": [self.user_role.pk]},
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertEqual(res_data, {"slug": "first-node"})
@@ -116,6 +113,15 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            )
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.superuser)
         res = self.client.patch(
             reverse(
                 "validation_node_templates-detail",
@@ -167,41 +173,78 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(res_data, "name", "This field may not be null.")
 
-        with self.subTest("rolesRequired"):
+        with self.subTest("roles_required"):
             res = self.client.patch(
                 reverse(
                     "validation_node_templates-detail",
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
                 ),
-                data={"name": "test", "rolesRequired": [1111]},
+                data={"name": "test", "roles_required": [1111]},
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-            self.assertHasError(res_data, "rolesRequired", 'Invalid pk "1111" - object does not exist.')
+            self.assertHasError(res_data, "roles_required", 'Invalid pk "1111" - object does not exist.')
 
             res = self.client.patch(
                 reverse(
                     "validation_node_templates-detail",
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
                 ),
-                data={"name": "test", "rolesRequired": [self.other_user_role.pk]},
+                data={"name": "test", "roles_required": [self.other_user_role.pk]},
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
             self.assertHasError(
-                res_data, "rolesRequired", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
+                res_data, "roles_required", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
             )
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             res = self.client.patch(
                 reverse(
                     "validation_node_templates-detail",
                     kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
                 ),
-                data={"name": "test", "rolesRequired": [self.user_role.pk]},
+                data={"name": "test", "roles_required": [self.user_role.pk]},
             )
             self.assertJSONResponse(res, status.HTTP_200_OK)
+
+    def test_uniqueness_validator(self):
+        self.client.force_authenticate(self.john_wick)
+
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": self.node.name, "roles_required": [self.user_role.pk]},
+        )
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        # create another node
+        second_node = ValidationNodeTemplate.objects.create(name="second node", workflow=self.validation_workflow)
+
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": second_node.name, "roles_required": [self.user_role.pk]},
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+        self.assertHasError(res_data, "name", "This field must be unique.")
+
+        # try to update to a node name from another account
+        res = self.client.patch(
+            reverse(
+                "validation_node_templates-detail",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.node.slug},
+            ),
+            data={"name": self.other_node.name, "roles_required": [self.user_role.pk]},
+        )
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)

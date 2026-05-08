@@ -44,15 +44,13 @@ const styles: SxStyles = {
         mr: 1,
     },
 };
-export type ParameterValues =
-    | {
-          sampling_name?: string;
-          org_unit_type_quantities?: number[];
-          org_unit_type_sequence_identifiers?: number[];
-          org_unit_type_exceptions?: string[];
-          org_unit_type_criteria?: Criteria[];
-      }
-    | undefined;
+export type ParameterValues = {
+    sampling_name?: string;
+    org_unit_type_quantities: number[];
+    org_unit_type_sequence_identifiers: number[];
+    org_unit_type_exceptions: Array<string>;
+    org_unit_type_criteria: Criteria[];
+};
 
 type ArrayParamKey = keyof Pick<
     NonNullable<ParameterValues>,

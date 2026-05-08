@@ -9,7 +9,7 @@ import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../utils/dates';
-import { endpoint } from '../../constants';
+import { PLANNINGS_API_URL } from '../../constants';
 import { PlanningParams } from '../../types';
 
 export type OrgUnitDetails = {
@@ -32,7 +32,7 @@ const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     params.ended_at__lte = dateRangePickerToDateApi(options.dateTo);
     params.publishing_status = options.publishingStatus;
 
-    const url = makeUrlWithParams(endpoint, params);
+    const url = makeUrlWithParams(PLANNINGS_API_URL, params);
     return getRequest(url) as Promise<PlanningList>;
 };
 
@@ -76,17 +76,19 @@ const getPlanningsOptions = async (formIds?: string): Promise<Planning[]> => {
     if (formIds) {
         apiParams.form_ids = formIds;
     }
-    const url = makeUrlWithParams(endpoint, apiParams);
+    const url = makeUrlWithParams(PLANNINGS_API_URL, apiParams);
     return getRequest(url) as Promise<Planning[]>;
 };
 export const useGetPlanningsOptions = (
     formIds?: string,
+    enabled = false,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
     const queryKey: any[] = ['planningsList', formIds];
     return useSnackQuery({
         queryKey,
         queryFn: () => getPlanningsOptions(formIds),
         options: {
+            enabled,
             select: (data: Planning[]) => {
                 return data?.map(planning => {
                     return {

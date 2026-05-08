@@ -1,5 +1,6 @@
 import { useSafeIntl } from 'bluesquare-components';
 import * as yup from 'yup';
+import { TEMPORARY } from '../../constants';
 import MESSAGES from '../../messages';
 
 yup.addMethod(
@@ -12,8 +13,8 @@ yup.addMethod(
             if (value) {
                 const regexp = /^\d*$/;
 
-                const valuesArray = Array.isArray(value)
-                    ? value
+                const valuesArray: string[] = Array.isArray(value)
+                    ? value.map((v: string | number) => `${v}`.trim())
                     : value
                           .split(',')
                           .map((v: string | number) => `${v}`.trim());
@@ -34,12 +35,68 @@ yup.addMethod(
     },
 );
 
+const hasCampaignOrAlternative = (
+    campaign: unknown,
+    alternativeCampaign: unknown,
+): boolean => {
+    const hasCampaign = campaign != null && String(campaign).trim() !== '';
+    const hasAlternative =
+        alternativeCampaign != null &&
+        String(alternativeCampaign).trim() !== '';
+    return hasCampaign || hasAlternative;
+};
+
 export const useFormAValidation = () => {
     const { formatMessage } = useSafeIntl();
+    const requiredMessage = formatMessage(MESSAGES.requiredField);
     return yup.object().shape({
-        campaign: yup.string().nullable(),
-        alternative_campaign: yup.string().nullable(),
-        round: yup.number().nullable(),
+        campaign: yup
+            .string()
+            .nullable()
+            .test(
+                'campaign-or-alternative-required',
+                requiredMessage,
+                function campaignOrAlternative(value) {
+                    return hasCampaignOrAlternative(
+                        value,
+                        this.parent.alternative_campaign,
+                    );
+                },
+            ),
+        alternative_campaign: yup
+            .string()
+            .nullable()
+            .test(
+                'alternative-campaign-non-empty-string',
+                requiredMessage,
+                value =>
+                    value === undefined ||
+                    value === null ||
+                    String(value).trim() !== '',
+            )
+            .test(
+                'campaign-or-alternative-required',
+                requiredMessage,
+                function campaignOrAlternative(value) {
+                    return hasCampaignOrAlternative(
+                        this.parent.campaign,
+                        value,
+                    );
+                },
+            ),
+        round: yup
+            .number()
+            .nullable()
+            .when('campaign', {
+                is: (campaign: unknown) =>
+                    campaign != null && String(campaign).trim() !== '',
+                then: schema =>
+                    schema
+                        .required(requiredMessage)
+                        .integer()
+                        .typeError(formatMessage(MESSAGES.positiveInteger)),
+                otherwise: schema => schema.nullable(),
+            }),
         lot_numbers: yup
             .mixed()
             .nullable()
@@ -54,9 +111,14 @@ export const useFormAValidation = () => {
             .nullable(),
         form_a_reception_date: yup
             .date()
-            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable(),
+            .nullable()
+            .when('status', {
+                is: TEMPORARY,
+                then: schema => schema.notRequired(),
+                otherwise: schema =>
+                    schema.required(formatMessage(MESSAGES.requiredField)),
+            }),
         usable_vials_used: yup
             .number()
             .nullable()
@@ -67,7 +129,6 @@ export const useFormAValidation = () => {
         unusable_vials: yup
             .number()
             .nullable()
-            // .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),

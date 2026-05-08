@@ -4,6 +4,8 @@ import io
 import json
 import typing
 
+from urllib.parse import urlencode
+
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
 from django.test import SimpleTestCase
@@ -868,7 +870,8 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         # Request without 'instances_count'
-        url = "/api/orgunits/?fields=id,name,org_unit_type_name&limit=10"
+        requested_fields = ["id", "name", "org_unit_type_name"]
+        url = f"/api/orgunits/?{urlencode({'fields': ','.join(requested_fields), 'limit': 10}, True)}"
 
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get(url)
@@ -889,7 +892,8 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         # Explicitly request instances_count
-        url = "/api/orgunits/?fields=id,name,instances_count&limit=10&order=id"
+        requested_fields = ",".join(["id", "name", "instances_count"])
+        url = f"/api/orgunits/?{urlencode({'fields': requested_fields, 'limit': 10, 'order': 'id'}, True)}"
 
         with CaptureQueriesContext(connection) as ctx:
             response = self.client.get(url)
@@ -1679,7 +1683,7 @@ class OrgUnitAPITestCase(APITestCase):
             "updated_at",
         ]
 
-        url = f"/api/orgunits/{ou.id}/?fields={','.join(requested_fields)}"
+        url = f"/api/orgunits/{ou.id}/?{urlencode({'fields': ','.join(requested_fields)}, True)}"
 
         payload = {
             "name": "Updated Jedi HQ",

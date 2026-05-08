@@ -1,0 +1,2 @@
+class ValidationWorkflowEngineException(Exception):
+    pass

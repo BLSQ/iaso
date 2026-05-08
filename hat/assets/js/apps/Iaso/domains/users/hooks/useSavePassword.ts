@@ -13,4 +13,5 @@ export const useSavePassword = (
             putRequest(`/api/profiles/${id}/update-password/`, body),
         invalidateQueryKey: [],
         showSuccessSnackBar,
+        ignoreErrorCodes: [400],
     });

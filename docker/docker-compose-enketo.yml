@@ -1,14 +1,14 @@
 services:
   redis_main:
-    image: redis:5
+    image: valkey/valkey:8.1.0
     command: redis-server
     restart: unless-stopped
 
   redis_cache:
-    image: redis:5
+    image: valkey/valkey:8.1.0
     command: redis-server
     restart: unless-stopped
-  
+
   enketo:
     build:
       context: .
@@ -23,10 +23,10 @@ services:
       - DISABLED_DEBUG=*
       - PORT=8005
       - ENKETO_VAR=yes
-      - ENKETO_API_KEY=AZE78974654azeAZE
+      - ENKETO_API_KEY=${ENKETO_API_TOKEN}
       - ENKETO_APP_NAME=Enketo for Iaso dev
       - ENKETO_DEFAULT_THEME=grid
-      - ENKETO_LINKED_FORM_AND_DATA_SERVER_API_KEY=AZE78974654azeAZE
+      - ENKETO_LINKED_FORM_AND_DATA_SERVER_API_KEY=${ENKETO_API_TOKEN}
       - ENKETO_LINKED_FORM_AND_DATA_SERVER_NAME=Iaso Dev
       - ENKETO_LINKED_FORM_AND_DATA_SERVER_SERVER_URL=
       - ENKETO_LOGO_SOURCE=https://i1.wp.com/bluesquarehub.com/wp-content/uploads/2019/11/Bluesquare-horizontal-white.png?w=200&ssl=1

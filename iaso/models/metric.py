@@ -15,6 +15,10 @@ class MetricType(models.Model):
         CUSTOM = "custom", _("Custom")
         OTHER = "other", _("Other")
 
+    class MetricKind(models.TextChoices):
+        POPULATION = "population", _("Population")
+        ANY = "any", _("Any")
+
     LEGEND_CONFIG_SCHEMA = {
         "type": "object",
         "properties": {
@@ -53,6 +57,12 @@ class MetricType(models.Model):
     legend_config = models.JSONField(blank=True, default=dict)
     # This is meant to flag metric types that are used for system purposes (like population)
     is_utility = models.BooleanField(default=False)
+    metric_kind = models.CharField(
+        max_length=50,
+        choices=MetricKind.choices,
+        default=MetricKind.ANY,
+        blank=False,
+    )
     # Define if it was from OpenHexa, create from the interface or other method
     origin = models.CharField(
         max_length=50,

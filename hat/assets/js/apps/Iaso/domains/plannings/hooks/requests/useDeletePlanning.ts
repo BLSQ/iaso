@@ -3,9 +3,10 @@ import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { deleteRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
-import { endpoint } from '../../constants';
+import { PLANNINGS_API_URL } from '../../constants';
 
-const deletePlanning = (id: number) => deleteRequest(`${endpoint}${id}/`);
+const deletePlanning = (id: number) =>
+    deleteRequest(`${PLANNINGS_API_URL}${id}/`);
 
 type useDeleteArgs = {
     params?: any;

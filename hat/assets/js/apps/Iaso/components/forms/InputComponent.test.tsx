@@ -3,9 +3,8 @@ import { faker } from '@faker-js/faker';
 import { act, waitFor } from '@testing-library/react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { IntlProvider } from 'react-intl';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { renderWithTheme } from '../../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
 
 const Wrapper = () => {
     const [value, setValue] = React.useState(null);
@@ -25,11 +24,7 @@ const Wrapper = () => {
 
 describe('Phone InputComponent', () => {
     it('clears the whole field and dropdown when countryCodeEditable is set to true', async () => {
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <Wrapper />
-            </IntlProvider>,
-        );
+        renderWithThemeAndIntlProvider(<Wrapper />);
 
         const user = userEvent.setup();
 
@@ -59,11 +54,7 @@ describe('Phone InputComponent', () => {
     });
 
     it('leaves the whole field and dropdown when countryCodeEditable is set to true', async () => {
-        renderWithTheme(
-            <IntlProvider locale={'en'} messages={{}}>
-                <Wrapper />
-            </IntlProvider>,
-        );
+        renderWithThemeAndIntlProvider(<Wrapper />);
 
         const user = userEvent.setup();
 

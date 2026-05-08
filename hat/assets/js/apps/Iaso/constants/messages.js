@@ -17,6 +17,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submissions',
         id: 'iaso.instance.title',
     },
+
     formsStats: {
         defaultMessage: 'Form Stats',
         id: 'iaso.forms.stats.title',
@@ -24,6 +25,10 @@ const MESSAGES = defineMessages({
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',
+    },
+    formAI: {
+        defaultMessage: 'Form AI',
+        id: 'iaso.formAI.title',
     },
     formList: {
         defaultMessage: 'Form List',
@@ -205,6 +210,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Potential payments',
         id: 'iaso.payments.potentialPayments',
     },
+    submissions: {
+        defaultMessage: 'Submissions',
+        id: 'iaso.label.submissions',
+    },
     lots: {
         defaultMessage: 'Payments lots',
         id: 'iaso.payments.lots',
@@ -237,6 +246,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Setup a new account',
         id: 'iaso.setup.accountSetup',
     },
+    apiImport: {
+        defaultMessage: 'APIImport',
+        id: 'iaso.label.apiimport',
+    },
     skus: {
         defaultMessage: 'Stock Keeping Units',
         id: 'iaso.label.stockkeepingunits',
@@ -244,6 +257,10 @@ const MESSAGES = defineMessages({
     stockItems: {
         defaultMessage: 'Stock entries',
         id: 'iaso.label.stockItems',
+    },
+    validationWorkflow: {
+        defaultMessage: 'Validation workflows',
+        id: 'iaso.label.validationWorkflows',
     },
 });
 

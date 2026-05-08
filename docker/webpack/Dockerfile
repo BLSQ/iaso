@@ -22,7 +22,7 @@ COPY package.json .
 COPY package-lock.json .
 
 # Upgrade npm to the latest version compatible with Node.js 22.18.0
-RUN npm install -g npm@10.9.3
+RUN npm install -g npm@11.13.0
 
 # Install project dependencies
 RUN npm ci

@@ -10,7 +10,7 @@ from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
-from iaso.api.forms import FormSerializer
+from iaso.api.forms.serializers import FormSerializer
 from iaso.api.query_params import APP_ID
 from iaso.models import (
     AGGREGATE,
@@ -768,7 +768,11 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         # Test with specific fields that don't include instances_count or :all
-        response = self.client.get("/api/forms/?fields=id,name,form_id", headers={"Content-Type": "application/json"})
+        response = self.client.get(
+            "/api/forms/",
+            data={"fields": ",".join(["id", "name", "form_id"])},
+            headers={"Content-Type": "application/json"},
+        )
         self.assertJSONResponse(response, 200)
 
         # The response should not include instances_count field when not requested
@@ -777,7 +781,9 @@ class FormsAPITestCase(APITestCase):
 
         # Test that instances_count is included when explicitly requested
         response = self.client.get(
-            "/api/forms/?fields=id,name,instances_count", headers={"Content-Type": "application/json"}
+            "/api/forms/",
+            data={"fields": ",".join(["id", "name", "instances_count"])},
+            headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
 
@@ -820,13 +826,17 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/forms/?fields=id,name", headers={"Content-Type": "application/json"})
+        response = self.client.get(
+            "/api/forms/", data={"fields": ",".join(["id", "name"])}, headers={"Content-Type": "application/json"}
+        )
         self.assertJSONResponse(response, 200)
         for form_data in response.json()["forms"]:
             self.assertNotIn("has_attachments", form_data)
 
         response = self.client.get(
-            "/api/forms/?fields=id,name,has_attachments", headers={"Content-Type": "application/json"}
+            "/api/forms/",
+            data={"fields": ",".join(["id", "name", "has_attachments"])},
+            headers={"Content-Type": "application/json"},
         )
         self.assertJSONResponse(response, 200)
         self.assertTrue(self.find_forms_data_for(response, self.form_1)["has_attachments"])
@@ -850,7 +860,9 @@ class FormsAPITestCase(APITestCase):
             .get()
         )
 
-        api_request = Request(APIRequestFactory().get("/api/forms/?fields=id,has_attachments"))
+        api_request = Request(
+            APIRequestFactory().get("/api/forms/", data={"fields": ",".join(["id", "has_attachments"])})
+        )
         api_request.user = self.yoda
 
         with self.assertNumQueries(0):

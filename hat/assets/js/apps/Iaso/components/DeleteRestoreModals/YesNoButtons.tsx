@@ -1,5 +1,5 @@
-import { Button, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Button, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { MESSAGES } from './messages';
 
@@ -12,7 +12,7 @@ type Props = {
 export const YesNoButtons: FunctionComponent<Props> = ({
     closeDialog,
     onConfirm,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+
     onCancel = () => {},
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -26,14 +26,15 @@ export const YesNoButtons: FunctionComponent<Props> = ({
                         closeDialog();
                     }}
                     color="primary"
-                    data-test="cancel-button"
+                    data-testid="cancel-button"
                 >
                     {formatMessage(MESSAGES.no)}
                 </Button>
                 <Button
-                    data-test="confirm-button"
+                    data-testid="confirm-button"
                     onClick={() => {
                         onConfirm();
+                        closeDialog();
                     }}
                     color="primary"
                 >

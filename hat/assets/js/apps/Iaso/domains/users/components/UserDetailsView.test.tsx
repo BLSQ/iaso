@@ -87,10 +87,7 @@ vi.mock('Iaso/domains/users/hooks/useDeleteProfile', () => ({
 
 // mock components
 vi.mock('Iaso/components/errors/Page404', () => ({
-    default: ({
-        customMessage,
-        ...props
-    }: React.ComponentProps<typeof Page404>) => (
+    default: ({ customMessage }: React.ComponentProps<typeof Page404>) => (
         <div data-testid={'page-404'}>{customMessage}</div>
     ),
 }));
@@ -148,13 +145,16 @@ const randomUser = {
     organization: faker.company.name(),
     phone_number: faker.phone.number(),
     home_page: faker.internet.url(),
+    date_joined: faker.date.past().toISOString(),
     color: faker.color.rgb({ format: 'hex' }),
 };
 
+let projectCounter = 0;
 const getRandomProject = () => {
+    projectCounter += 1;
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun(),
+        name: `project_${projectCounter}_${faker.string.alphanumeric(6)}`,
         color: faker.color.rgb({ format: 'hex' }),
         app_id: faker.string.numeric(3),
     };
@@ -163,14 +163,14 @@ const getRandomProject = () => {
 const getRandomOrgUnit = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun(),
+        name: faker.word.noun({ length: 10 }),
     };
 };
 
 const getRandomUserRole = () => {
     return {
         id: faker.string.numeric(3),
-        name: faker.word.noun(),
+        name: faker.word.sample({ length: 10 }),
     };
 };
 
@@ -281,17 +281,17 @@ describe('UsersDetailView unit tests', () => {
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
 
         expect(screen.getByText('General info')).toBeInTheDocument();
-        expect(screen.queryAllByText(textPlaceholder)).toHaveLength(9);
+        expect(screen.queryAllByText(textPlaceholder)).toHaveLength(10);
 
         rerender(<UserDetailsView userId={'1'} />);
         expect(screen.getByText('General info')).toBeInTheDocument();
         expect(screen.queryByText(textPlaceholder)).toBeNull();
         Object.entries(randomUser)
-            .filter(([k, _]) => k !== 'color')
+            .filter(([k, _]) => k !== 'color' && k !== 'date_joined')
             .forEach(([k, v]) => {
-                // @ts-ignore
                 expect(
                     screen.getByText(v),
+                    // @ts-ignore
                     `Field ${k} with value ${v} should be in the document`,
                 ).toBeInTheDocument();
             });
@@ -353,7 +353,7 @@ describe('UsersDetailView unit tests', () => {
         // check that we render some projects
         expect(screen.queryAllByTestId('project-chip')).toHaveLength(2);
         projects.forEach(({ name }) => {
-            expect(screen.getByText(name)).toBeInTheDocument();
+            expect(screen.queryAllByText(name).length).toBeGreaterThan(0);
         });
     });
 
@@ -426,17 +426,21 @@ describe('UsersDetailView unit tests', () => {
                     permissions: permissions,
                 },
                 isLoading: false,
-                error: false,
+                error: null,
             });
 
         const { rerender } = renderWithTheme(<UserDetailsView userId={'1'} />);
         expect(
-            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+            within(screen.getByTestId('permissions-info-box')).getByRole(
+                'alert',
+            ),
         ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);
         expect(
-            within(screen.getByTestId('locations-info-box')).getByRole('alert'),
+            within(screen.getByTestId('permissions-info-box')).getByRole(
+                'alert',
+            ),
         ).toHaveTextContent(MESSAGES.noResultsFound.defaultMessage);
 
         rerender(<UserDetailsView userId={'1'} />);

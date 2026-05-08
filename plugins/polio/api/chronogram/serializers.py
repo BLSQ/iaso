@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatibleMixin
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
 from plugins.polio.permissions import POLIO_CHRONOGRAM_PERMISSION, POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION
 
@@ -14,7 +14,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "full_name"]
 
 
-class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class ChronogramTaskSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer):
     def get_fields(self, *args, **kwargs):
         fields = super().get_fields(*args, **kwargs)
         user = getattr(self.context.get("request", {}), "user", None)
@@ -85,7 +85,7 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
         }
 
 
-class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class ChronogramSerializer(DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer):
     campaign_obr_name = serializers.CharField(source="round.campaign.obr_name")
     round_number = serializers.CharField(source="round.number")
     round_start_date = serializers.CharField(source="round.started_at")
@@ -127,7 +127,9 @@ class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerial
         }
 
 
-class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class ChronogramTemplateTaskSerializer(
+    DynamicFieldsModelSerializerBackwardCompatibleMixin, serializers.ModelSerializer
+):
     class Meta:
         model = ChronogramTemplateTask
         fields = [

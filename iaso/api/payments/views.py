@@ -23,6 +23,7 @@ from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
     potential_payments as potential_payments_filters,
 )
+from iaso.api.payments.pagination import PaymentPagination
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
@@ -102,6 +103,7 @@ class PaymentLotsViewSet(ModelViewSet):
     ordering = ["updated_at"]
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
+    pagination_class = PaymentPagination
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -117,12 +119,17 @@ class PaymentLotsViewSet(ModelViewSet):
         )
         queryset = PaymentLot.objects.filter(id__in=payments)
 
-        change_requests_prefetch = Prefetch(
-            "payments__change_requests",
-            queryset=OrgUnitChangeRequest.objects.all(),
-            to_attr="prefetched_change_requests",
+        payments_prefetch = Prefetch(
+            "payments",
+            queryset=Payment.objects.select_related("user__iaso_profile").prefetch_related(
+                Prefetch(
+                    "change_requests",
+                    queryset=OrgUnitChangeRequest.objects.select_related("org_unit"),
+                    to_attr="prefetched_change_requests",
+                )
+            ),
         )
-        queryset = queryset.prefetch_related("payments", change_requests_prefetch)
+        queryset = queryset.prefetch_related(payments_prefetch)
 
         change_requests_count = (
             OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))
@@ -146,7 +153,11 @@ class PaymentLotsViewSet(ModelViewSet):
             change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
             payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0),
         )
-        queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
+        queryset = (
+            queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            .select_related("created_by__iaso_profile", "task")
+            .distinct()
+        )
 
         return queryset
 
@@ -461,6 +472,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     ordering = ["user__last_name"]
 
     serializer_class = PotentialPaymentSerializer
+    pagination_class = PaymentPagination
 
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
@@ -589,6 +601,7 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
+    pagination_class = PaymentPagination
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
 
     def get_serializer_context(self):

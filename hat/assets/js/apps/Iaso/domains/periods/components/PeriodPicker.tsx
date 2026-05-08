@@ -214,13 +214,13 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                                 !currentPeriod.year)
                                         }
                                         onChange={handleChange}
-                                        clearable
                                         value={
                                             currentPeriod && currentPeriod.month
                                         }
                                         type="select"
                                         options={monthOptions}
                                         label={MESSAGES.month}
+                                        clearable={false}
                                     />
                                 )}
                                 {(periodType === PERIOD_TYPE_QUARTER ||

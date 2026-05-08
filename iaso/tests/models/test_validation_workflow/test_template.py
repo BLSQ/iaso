@@ -1,17 +1,18 @@
-from django.test import TestCase
+from django.db import IntegrityError
+from django.test import TransactionTestCase
 
 from iaso.models import Account, Form, Instance
 from iaso.models.validation_workflow.templates import ValidationWorkflow
 
 
-class TestValidationWorkflow(TestCase):
-    def test_ensure_slug_is_updating(self):
+class TestValidationWorkflow(TransactionTestCase):
+    def test_ensure_slug_is_not_updating(self):
         d1 = ValidationWorkflow.objects.create(name="test", account=Account.objects.create(name="test"))
         slug_1 = d1.slug
         d1.name = "new test"
         d1.save()
         d1.refresh_from_db()
-        self.assertNotEqual(slug_1, d1.slug)
+        self.assertEqual(slug_1, d1.slug)
 
     def test_slug_is_not_none_with_special_characters(self):
         sentences = [
@@ -58,3 +59,20 @@ class TestValidationWorkflow(TestCase):
 
         self.assertFalse(another_workflow.is_artifact_allowed(instance))
         self.assertFalse(another_workflow.is_artifact_allowed(another_instance))
+
+    def test_unique_constraints(self):
+        account = Account.objects.create(name="test")
+        vf = ValidationWorkflow.objects.create(name="test", account=account)
+
+        with self.assertRaises(IntegrityError):
+            ValidationWorkflow.objects.create(name="test", account=account)
+
+        vf.delete()
+
+        vf.refresh_from_db()
+        self.assertIsNotNone(vf.deleted_at)
+
+        vf2 = ValidationWorkflow.objects.create(name="test", account=account)
+
+        self.assertEqual(vf.slug, vf2.slug)
+        self.assertEqual(vf.name, vf2.name)

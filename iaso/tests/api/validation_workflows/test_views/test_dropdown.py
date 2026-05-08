@@ -13,9 +13,9 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("validation_workflows-dropdown"))
         res_json = self.assertJSONResponse(res, 200)
-        self.assertFalse(any(item["value"] == "out-of-account" for item in res_json))
+        self.assertFalse(any(item["value"] == self.out_of_account_vw.pk for item in res_json))
 
-        self.assertTrue(any(item["value"] == "name-1" for item in res_json))
+        self.assertTrue(any(item["value"] == self.vf_pk for item in res_json))
 
     def test_search_filters(self):
         self.client.force_authenticate(self.john_wick)
@@ -128,20 +128,26 @@ class ValidationWorkflowAPIDropdownTestCase(ValidationWorkflowAPIListTestCase):
 
         self.client.force_authenticate(self.john_doe)
         res = self.client.get(reverse("validation_workflows-dropdown"))
-        self.assertJSONResponse(res, 403)
+        self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("validation_workflows-dropdown"))
-        self.assertJSONResponse(res, 200)
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(reverse("validation_workflows-dropdown"))
+        self.assertJSONResponse(res, status.HTTP_200_OK)
 
         self.client.force_authenticate(self.user_without_feature_flag)
         res = self.client.get(reverse("validation_workflows-dropdown"))
         self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
 
     def test_values(self):
-        self.client.force_authenticate(self.john_wick)
-        res = self.client.get(reverse("validation_workflows-dropdown"))
-        res_json = self.assertJSONResponse(res, 200)
-        self.assertValidValidationWorkflowDropdownListData(res_json, 17)
+        for user in [self.john_wick, self.superuser]:
+            with self.subTest(f"with user {user}"):
+                self.client.force_authenticate(user)
+                res = self.client.get(reverse("validation_workflows-dropdown"))
+                res_json = self.assertJSONResponse(res, 200)
+                self.assertValidValidationWorkflowDropdownListData(res_json, 17)
 
-        self.assertIn({"label": "name-0", "value": "name-0"}, res_json)
+                self.assertIn({"label": "name-0", "value": self.vf_pk}, res_json)

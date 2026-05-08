@@ -339,6 +339,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Status',
         id: 'iaso.exportRequest.Status',
     },
+    referenceInstancesFilter: {
+        defaultMessage: 'Reference submission',
+        id: 'iaso.label.orgunitreferenceinstance',
+    },
+    referenceInstancesAll: {
+        defaultMessage: 'All submissions',
+        id: 'iaso.instances.referenceInstancesAll',
+    },
+    referenceInstancesOnlyReference: {
+        defaultMessage: 'Only reference submissions',
+        id: 'iaso.instances.referenceInstancesOnlyReference',
+    },
+    referenceInstancesNotReference: {
+        defaultMessage: 'Only non-reference submissions',
+        id: 'iaso.instances.referenceInstancesNotReference',
+    },
     lastExportSuccessAt: {
         defaultMessage: 'Last export success at',
         id: 'iaso.exportRequest.last_export_success_at',
@@ -769,6 +785,62 @@ const MESSAGES = defineMessages({
     searchToSeeSubmissions: {
         id: 'iaso.forms.searchToSeeSubmissions',
         defaultMessage: 'Click "Search" button to see submissions',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    updated_by: {
+        id: 'iaso.label.updated_by',
+        defaultMessage: 'Updated by',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.label.color',
+    },
+    description: {
+        id: 'iaso.form.label.description',
+        defaultMessage: 'Description',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    create: {
+        defaultMessage: 'Create',
+        id: 'iaso.label.create',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    validateSubmission: {
+        id: 'iaso.submissions.title.validateSubmission',
+        defaultMessage: 'Validate submission',
+    },
+    validate: {
+        id: 'iaso.label.validate',
+        defaultMessage: 'Validate',
+    },
+    comment: {
+        id: 'iaso.label.comment',
+        defaultMessage: 'Comment',
+    },
+    validation: {
+        defaultMessage: 'Validation',
+        id: 'iaso.label.validation',
+    },
+    validationNodeStatusNewVersion: {
+        defaultMessage: 'New version',
+        id: 'iaso.validationNode.status.newVersion',
+    },
+    validationNodeStatusSubmission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.validationNode.status.submission',
     },
 });
 

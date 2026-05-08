@@ -12,7 +12,6 @@ import {
     commonStyles,
     LoadingSpinner,
     formatThousand,
-    Column,
     SortableTable,
     useHumanReadableJsonLogic,
     useGoBack,
@@ -21,7 +20,6 @@ import {
 import { isEqual } from 'lodash';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
-import { useHumanReadableJsonLogicForForm } from 'Iaso/domains/workflows/hooks/useHumanReadableJsonLogicForForm';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -97,7 +95,31 @@ export const Details: FunctionComponent = () => {
         data?: Change[];
     } = useGetWorkflowVersionChanges(params);
 
-    const updateCurrentFollowUps = workflowVersionFollowUps => {
+    const handleSortChange = useCallback((items: FollowUps[]) => {
+        setFollowUps(
+            items.map((item: FollowUps, index: number) => ({
+                ...item,
+                order: index + 1,
+            })),
+        );
+        setIsFollowUpOrderChange(true);
+    }, []);
+
+    const handleResetFollowUpsOrder = useCallback(() => {
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
+        setIsFollowUpOrderChange(false);
+    }, [workflowVersion?.follow_ups]);
+
+    const handleSaveFollowUpsOrder = useCallback(() => {
+        saveFollowUpOrder(
+            followUps.map(fu => ({
+                id: fu.id,
+                order: fu.order - 1,
+            })),
+        );
+    }, [followUps, saveFollowUpOrder]);
+
+    const updateCurrentFollowUps = (workflowVersionFollowUps?: FollowUps[]) => {
         if (workflowVersionFollowUps) {
             const newFollowUps = orderBy(
                 workflowVersionFollowUps,
@@ -154,26 +176,6 @@ export const Details: FunctionComponent = () => {
         workflowVersion,
         fields,
     );
-    const handleSortChange = useCallback((items: any) => {
-        setFollowUps(
-            items.map((item, index) => ({ ...item, order: index + 1 })),
-        );
-        setIsFollowUpOrderChange(true);
-    }, []);
-
-    const handleResetFollowUpsOrder = useCallback(() => {
-        updateCurrentFollowUps(workflowVersion?.follow_ups);
-        setIsFollowUpOrderChange(false);
-    }, [workflowVersion?.follow_ups]);
-
-    const handleSaveFollowUpsOrder = useCallback(() => {
-        saveFollowUpOrder(
-            followUps.map(fu => ({
-                id: fu.id,
-                order: fu.order - 1,
-            })),
-        );
-    }, [followUps, saveFollowUpOrder]);
 
     return (
         <>
@@ -221,6 +223,7 @@ export const Details: FunctionComponent = () => {
                                     {workflowVersion.status === 'DRAFT' && (
                                         <SortableTable
                                             items={followUps}
+                                            // @ts-ignore
                                             onChange={handleSortChange}
                                             columns={
                                                 followUpsColumns as ColumnWithAccessor[]

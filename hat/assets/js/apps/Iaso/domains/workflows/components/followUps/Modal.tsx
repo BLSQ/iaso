@@ -1,10 +1,4 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useMemo,
-    useCallback,
-} from 'react';
-
+import React, { FunctionComponent, useState, useCallback } from 'react';
 import { Grid, Box, useTheme, Tab, Tabs } from '@mui/material';
 import {
     useSafeIntl,
@@ -15,7 +9,6 @@ import {
     AddButton,
     JsonLogicEditor,
 } from 'bluesquare-components';
-
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -24,9 +17,7 @@ import { Popper } from '../../../forms/fields/components/Popper';
 import { parseJson, JSONValue } from '../../../instances/utils/jsonLogicParse';
 import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
 import { useCreateWorkflowFollowUp } from '../../hooks/requests/useCreateWorkflowFollowUp';
-
 import MESSAGES from '../../messages';
-
 import { FollowUps } from '../../types';
 
 type Props = {
@@ -164,6 +155,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                         {tab === 'json' && (
                             <JsonLogicEditor
                                 initialLogic={logic}
+                                // @ts-ignore
                                 changeLogic={(newLogic: JSONValue) =>
                                     setLogic(newLogic)
                                 }

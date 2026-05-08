@@ -10,6 +10,7 @@ import Page404 from 'Iaso/components/errors/Page404';
 import { baseUrls } from 'Iaso/constants/urls';
 import { GeneralInfoWidgetPaper } from 'Iaso/domains/users/components/UserDetailViewComponents/GeneralInfoWidgetPaper';
 import { LocationsInfoWidgetPaper } from 'Iaso/domains/users/components/UserDetailViewComponents/LocationsInfoWidgetPaper';
+import { OrgUnitWriteTypePaper } from 'Iaso/domains/users/components/UserDetailViewComponents/OrgUnitWriteTypePaper';
 import { ProjectsInfoWidgetPaper } from 'Iaso/domains/users/components/UserDetailViewComponents/ProjectsInfoWidgetPaper';
 import { TopActions } from 'Iaso/domains/users/components/UserDetailViewComponents/TopActions';
 import { useDeleteProfile } from 'Iaso/domains/users/hooks/useDeleteProfile';
@@ -116,6 +117,12 @@ export const UserDetailsView = ({ userId }: Props) => {
                             <UserRolesInfoWidgetPaper
                                 profile={profile}
                                 savingProfile={savingProfile}
+                            />
+                        </Box>
+                        <Box>
+                            <OrgUnitWriteTypePaper
+                                savingProfile={savingProfile}
+                                profile={profile}
                             />
                         </Box>
                     </Masonry>

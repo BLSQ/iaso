@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
-import moment from 'moment';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
+import moment from 'moment';
 import { apiDateFormats } from '../../utils/dates';
 import { SubTable } from './SubTable';
 

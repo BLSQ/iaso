@@ -3,7 +3,7 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { IntlProvider } from 'react-intl';
-import { renderWithTheme } from '../../../../../tests/helpers';
+import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 
 import {
     NO_PERIOD,
@@ -116,11 +116,7 @@ vi.mock('Iaso/components/forms/InputComponent', () => ({
 }));
 
 const renderPeriodPicker = (ui: React.ReactElement) =>
-    renderWithTheme(
-        <IntlProvider locale="en" messages={{}}>
-            {ui}
-        </IntlProvider>,
-    );
+    renderWithThemeAndIntlProvider(ui);
 
 describe('PeriodPicker', () => {
     it('renders nothing when periodType is falsy', () => {

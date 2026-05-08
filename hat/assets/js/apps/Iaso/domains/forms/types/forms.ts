@@ -177,6 +177,7 @@ export type FormDataType = {
     label_keys: FieldError<string[]>;
     legend_threshold?: FieldError<ScaleThreshold>;
     change_request_mode: FieldError<ChangeRequestModeType>;
+    validation_workflow?: FieldError<number>;
 };
 export type FormsParams = {
     pageSize: string;

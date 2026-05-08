@@ -35,7 +35,7 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
     instance_id = serializers.CharField(read_only=True, source="uuid")
     created_at = TimestampField(read_only=True)
     history = serializers.SerializerMethodField(read_only=True)
-    validation_status = serializers.CharField(read_only=True, source="get_general_validation_status")
+    validation_status = serializers.CharField(read_only=True, source="general_validation_status")
     rejection_comment = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(label="Timestamp of the last update (history)", read_only=True)
     name = serializers.CharField(read_only=True, source="form.name")
@@ -54,7 +54,7 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
 
     @extend_schema_field({"type": "string", "nullable": True})
     def get_rejection_comment(self, obj):
-        if obj.get_general_validation_status() == ValidationWorkflowArtefactStatus.REJECTED:
+        if obj.general_validation_status == ValidationWorkflowArtefactStatus.REJECTED:
             return (
                 obj.validationnode_set.filter(status=ValidationNodeStatus.REJECTED)
                 .only("status", "comment")

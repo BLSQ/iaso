@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
+import { User } from 'Iaso/utils/usersUtils';
 import InputComponent from '../../../components/forms/InputComponent';
-import { User } from '../../../utils/usersUtils';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import MESSAGES from '../messages';
 import { UserDialogData } from '../types';
 
@@ -38,14 +38,14 @@ export const UsersInfosExtraFields: FunctionComponent<Props> = ({
         <>
             <InputComponent
                 keyValue="projects"
-                onChange={(key, value) =>
+                onChange={(key: string, value) =>
                     setFieldValue(
                         key,
                         value
                             ?.split(',')
                             .map((projectId: string) =>
                                 parseInt(projectId, 10),
-                            ),
+                            ) ?? [],
                     )
                 }
                 value={currentUser.projects.value}

@@ -73,6 +73,7 @@ django-autoslug==1.9.9 # https://github.com/justinmayer/django-autoslug
 python-magic==0.4.27 # https://github.com/ahupp/python-magic
 jsonref==1.1.0 # https://github.com/gazpachoking/jsonref
 django-simple-captcha==0.6.3  # https://github.com/mbi/django-simple-captcha/tags
+environs==14.4.0  # https://github.com/sloria/environs/tags
 
 # Exporting tools.
 # ------------------------------------------------------------------------------

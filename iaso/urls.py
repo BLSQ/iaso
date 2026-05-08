@@ -229,10 +229,14 @@ router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entitydup
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
-router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
+router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
+    r"orgunits",
+    PlanningOrgunitsViewSet,
+    basename="planning-orgunits",
+    parents_query_lookups=["pk"],
+)
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
-router.register(r"microplanning/orgunits", PlanningOrgunitsViewSet, basename="planning-orgunits")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")

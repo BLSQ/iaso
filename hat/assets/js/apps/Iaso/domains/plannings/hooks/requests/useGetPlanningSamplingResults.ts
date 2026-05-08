@@ -3,6 +3,7 @@ import { useApiParams } from 'Iaso/hooks/useApiParams';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { PaginatedResponse } from '../../../app/types';
+import { SAMPLINGS_API_URL } from '../../constants';
 import { SamplingResult } from '../../types';
 
 export const tableDefaults = {
@@ -21,8 +22,7 @@ export const useGetPlanningSamplingResults = (
     const queryString = new URLSearchParams(safeParams).toString();
     return useSnackQuery({
         queryKey: ['planningSamplingResults', safeParams, planningId],
-        queryFn: () =>
-            getRequest(`/api/microplanning/samplings/?${queryString}`),
+        queryFn: () => getRequest(`${SAMPLINGS_API_URL}?${queryString}`),
 
         options: {
             enabled: Boolean(planningId),

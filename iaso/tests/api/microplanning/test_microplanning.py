@@ -9,7 +9,12 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from hat.audit.models import Modification
-from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningWriteSerializer
+from iaso.api.microplanning.serializers import (
+    AssignmentSerializer,
+    PlanningOrgUnitTableAssignmentTeamSerializer,
+    PlanningOrgUnitTableAssignmentUserSerializer,
+    PlanningWriteSerializer,
+)
 from iaso.models import Account, DataSource, Form, Group, OrgUnit, OrgUnitType, SourceVersion, Task
 from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
 from iaso.models.team import Team
@@ -855,12 +860,11 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(r["target_org_unit_type_details"][0]["id"], target_type.id)
         self.assertEqual(r["target_org_unit_type_details"][0]["name"], "Health Post")
 
-    def test_planning_orgunits_children_requires_planning_id(self):
+    def test_planning_orgunits_children_unknown_planning_returns_404(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/microplanning/orgunits/children/", format="json")
-        r = self.assertJSONResponse(response, 400)
-        self.assertIn("planning", r)
+        response = self.client.get("/api/microplanning/plannings/999999999/orgunits/children/", format="json")
+        self.assertEqual(response.status_code, 404)
 
     def test_planning_orgunits_children_missing_scope_raises_error(self):
         """A planning without sampling group or target org unit type should error."""
@@ -874,7 +878,7 @@ class PlanningTestCase(APITestCase):
             ended_at="2025-01-02",
         )
 
-        response = self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json")
         r = self.assertJSONResponse(response, 400)
         self.assertIn("planning", r)
         self.assertEqual(r["planning"][0], "Planning is missing sampling group or target org unit scope")
@@ -915,11 +919,208 @@ class PlanningTestCase(APITestCase):
         )
         planning.target_org_unit_types.set([child_type])
 
-        response = self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json")
         r = self.assertJSONResponse(response, 200)
         ids = [ou["id"] for ou in r]
         self.assertEqual(ids, [child.id])
         self.assertTrue(r[0]["has_geo_json"])
+
+    def test_planning_orgunits_children_search_by_name(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type search")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type search")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-search",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_alpha = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="alpha-clinic",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_beta = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="beta-clinic",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-search",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        base = f"/api/microplanning/plannings/{planning.id}/orgunits/children/"
+        unfiltered = self.assertJSONResponse(self.client.get(base, format="json"), 200)
+        self.assertCountEqual(
+            [ou["id"] for ou in unfiltered],
+            [child_alpha.id, child_beta.id],
+            msg="without ?search=, both descendant org units must be returned (SearchFilter must not hide all rows)",
+        )
+
+        response = self.client.get(f"{base}?search=alpha", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual([ou["id"] for ou in r], [child_alpha.id])
+
+    def test_planning_orgunits_children_only_validation_valid_descendants(self):
+        """children and children-paginated must not return NEW or REJECTED org units (descendants scope)."""
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent validation filter")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child validation filter")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-validation",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_valid = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-valid",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-new",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_NEW,
+            simplified_geom=multipolygon,
+        )
+        OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-rejected",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_REJECTED,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-validation-filter",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        r_map = self.assertJSONResponse(
+            self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in r_map], [child_valid.id])
+
+        r_page = self.assertJSONResponse(
+            self.client.get(
+                f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1",
+                format="json",
+            ),
+            200,
+        )
+        self.assertEqual(r_page["count"], 1)
+        self.assertEqual([ou["id"] for ou in r_page["results"]], [child_valid.id])
+
+    def test_planning_orgunits_children_only_validation_valid_sampling_group(self):
+        """children and children-paginated must not return NEW org units linked via sampling group."""
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent sampling validation")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child sampling validation")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-sampling-val",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        sampled_valid = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="sampled-valid",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        sampled_new = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="sampled-new",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_NEW,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-sampling-validation",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        group = Group.objects.create(name="sampling-group-validation", source_version=self.org_unit.version)
+        group.org_units.add(sampled_valid, sampled_new)
+        sampling = PlanningSamplingResult.objects.create(
+            planning=planning,
+            pipeline_id="pipeline",
+            pipeline_version="v1",
+            group=group,
+            parameters={},
+            created_by=self.user,
+        )
+        planning.selected_sampling_result = sampling
+        planning.save()
+
+        r_map = self.assertJSONResponse(
+            self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json"),
+            200,
+        )
+        self.assertEqual([ou["id"] for ou in r_map], [sampled_valid.id])
+
+        r_page = self.assertJSONResponse(
+            self.client.get(
+                f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=50&page=1",
+                format="json",
+            ),
+            200,
+        )
+        self.assertEqual(r_page["count"], 1)
+        self.assertEqual([ou["id"] for ou in r_page["results"]], [sampled_valid.id])
 
     def test_planning_orgunits_children_with_sampling_group(self):
         self.client.force_authenticate(self.user)
@@ -969,18 +1170,94 @@ class PlanningTestCase(APITestCase):
         planning.selected_sampling_result = sampling
         planning.save()
 
-        response = self.client.get(f"/api/microplanning/orgunits/children/?planning={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/children/", format="json")
         r = self.assertJSONResponse(response, 200)
         ids = [ou["id"] for ou in r]
         self.assertEqual(ids, [sampled_ou.id])
         self.assertTrue(r[0]["has_geo_json"])
 
-    def test_planning_orgunits_root_requires_planning_id(self):
+    def test_planning_orgunits_children_paginated(self):
+        self.client.force_authenticate(self.user)
+        parent_type = OrgUnitType.objects.create(name="Parent type paginated")
+        parent_type.projects.add(self.project1)
+        child_type = OrgUnitType.objects.create(name="Child type paginated")
+        child_type.projects.add(self.project1)
+
+        polygon = Polygon(((0, 0), (0, 1), (1, 1), (0, 0)), srid=4326)
+        multipolygon = MultiPolygon(polygon, srid=4326)
+
+        root = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="root-paginated",
+            org_unit_type=parent_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-paginated-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+        child_team = OrgUnit.objects.create(
+            version=self.org_unit.version,
+            name="child-paginated-team-ou",
+            parent=root,
+            org_unit_type=child_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=multipolygon,
+        )
+
+        planning = Planning.objects.create(
+            project=self.project1,
+            name="planning-orgunits-paginated",
+            team=self.team1,
+            org_unit=root,
+            started_at="2025-01-01",
+            ended_at="2025-01-02",
+        )
+        planning.target_org_unit_types.set([child_type])
+
+        Assignment.objects.create(planning=planning, org_unit=child, user=self.user, created_by=self.user)
+        Assignment.objects.create(planning=planning, org_unit=child_team, team=self.team1, created_by=self.user)
+
+        url = f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?limit=10&page=1"
+        response = self.client.get(url, format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["count"], 2)
+        rows = {ou["id"]: ou for ou in r["results"]}
+        # Expected payloads must use DB-round-tripped rows like the view does; class-level
+        # self.user / self.team1 can otherwise differ on ColorField casing vs JSON.
+        user_from_db = User.objects.select_related("iaso_profile").get(pk=self.user.pk)
+        team_from_db = Team.objects.get(pk=self.team1.pk)
+        self.assertEqual(rows[child.id]["assignment"]["assignment_type"], "user")
+        self.assertEqual(
+            rows[child.id]["assignment"]["user"],
+            PlanningOrgUnitTableAssignmentUserSerializer(user_from_db).data,
+        )
+        self.assertIsNone(rows[child.id]["assignment"]["team"])
+        self.assertEqual(rows[child_team.id]["assignment"]["assignment_type"], "team")
+        self.assertEqual(
+            rows[child_team.id]["assignment"]["team"],
+            PlanningOrgUnitTableAssignmentTeamSerializer(team_from_db).data,
+        )
+        self.assertIsNone(rows[child_team.id]["assignment"]["user"])
+
+        filtered = self.client.get(
+            f"/api/microplanning/plannings/{planning.id}/orgunits/children-paginated/?search=child-paginated-ou",
+            format="json",
+        )
+        rf = self.assertJSONResponse(filtered, 200)
+        self.assertEqual(rf["count"], 1)
+        self.assertEqual(rf["results"][0]["id"], child.id)
+
+    def test_planning_orgunits_root_unknown_planning_returns_404(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/microplanning/orgunits/root/", format="json")
-        r = self.assertJSONResponse(response, 400)
-        self.assertIn("planning", r)
+        response = self.client.get("/api/microplanning/plannings/999999999/orgunits/root/", format="json")
+        self.assertEqual(response.status_code, 404)
 
     def test_planning_orgunits_root_missing_scope_doesnt_raise_error(self):
         """A planning without sampling group or target org unit type should error."""
@@ -994,7 +1271,7 @@ class PlanningTestCase(APITestCase):
             ended_at="2025-01-02",
         )
 
-        response = self.client.get(f"/api/microplanning/orgunits/root/?planning={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/root/", format="json")
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["id"], self.org_unit.id)
 
@@ -1034,7 +1311,7 @@ class PlanningTestCase(APITestCase):
         )
         planning.target_org_unit_types.set([child_type])
 
-        response = self.client.get(f"/api/microplanning/orgunits/root/?planning={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/root/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["id"], root.id)
         self.assertTrue(r["has_geo_json"])
@@ -1087,7 +1364,7 @@ class PlanningTestCase(APITestCase):
         planning.selected_sampling_result = sampling
         planning.save()
 
-        response = self.client.get(f"/api/microplanning/orgunits/root/?planning={planning.id}", format="json")
+        response = self.client.get(f"/api/microplanning/plannings/{planning.id}/orgunits/root/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["id"], root.id)
         self.assertTrue(r["has_geo_json"])

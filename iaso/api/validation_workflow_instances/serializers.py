@@ -1,4 +1,5 @@
-from django.db.models import Exists, FilteredRelation, OuterRef, Prefetch, Q
+from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, When, Window
+from django.db.models.functions import Lag
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -7,7 +8,6 @@ from iaso.api.validation_workflows.serializers.common import UserDisplayNameFiel
 from iaso.models import Instance, UserRole, ValidationNode, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-from iaso.utils.serializer.color import ColorFieldSerializer
 
 
 class NestedUserRoleSerializer(ModelSerializer):
@@ -18,139 +18,216 @@ class NestedUserRoleSerializer(ModelSerializer):
         fields = ["id", "name"]
 
 
-class NestedHistorySerializer(ModelSerializer):
-    color = ColorFieldSerializer(source="node.color", read_only=True)
-    level = serializers.CharField(read_only=True, source="node.name")
+class NestedTimelineSerializer(ModelSerializer):
+    name = serializers.CharField(read_only=True, source="node.name")
     node_template_slug = serializers.CharField(read_only=True, source="node.slug")
-    created_by = UserDisplayNameField()
     updated_by = UserDisplayNameField()
+    type = serializers.SerializerMethodField(read_only=True)
+    user_can_do_actions = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ValidationNode
         fields = [
-            "level",
-            "color",
-            "created_at",
-            "updated_at",
-            "status",
-            "comment",
-            "updated_by",
-            "created_by",
             "id",
+            "name",
             "node_template_slug",
+            "comment",
+            "updated_at",
+            "created_at",
+            "status",
+            "updated_by",
+            "type",
+            "user_can_do_actions",
         ]
 
+    def get_type(self, obj):
+        return "TIMELINE"
 
-class NextTasksSerializer(ModelSerializer):
-    user_roles = NestedUserRoleSerializer(read_only=True, many=True, source="node.roles_required")
-    name = serializers.CharField(read_only=True, source="node.name")
-    node_template_slug = serializers.CharField(read_only=True, source="node.slug")
+    def get_user_can_do_actions(self, obj):
+        user = self.context["request"].user
+        if user.is_superuser:
+            return True
 
-    class Meta:
-        model = ValidationNode
-        fields = ["id", "name", "user_roles", "node_template_slug"]
+        user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
+
+        required_roles_id = obj.node.roles_required.values_list("pk", flat=True)
+
+        if not set(required_roles_id).issubset(set(user_role_ids)):
+            return False
+
+        return True
 
 
-class NextByPassSerializer(ModelSerializer):
-    user_roles = NestedUserRoleSerializer(read_only=True, many=True, source="roles_required")
+class NestedTimelineNextBypassSerializer(ModelSerializer):
+    node_template_slug = serializers.CharField(read_only=True, source="slug")
+    updated_by = serializers.SerializerMethodField(read_only=True)
+    status = serializers.SerializerMethodField(read_only=True)
+    comment = serializers.SerializerMethodField(read_only=True)
+    type = serializers.SerializerMethodField(read_only=True)
+    user_can_do_actions = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ValidationNodeTemplate
-        fields = ["slug", "name", "user_roles"]
+        fields = [
+            "id",
+            "name",
+            "node_template_slug",
+            "comment",
+            "updated_at",
+            "created_at",
+            "status",
+            "updated_by",
+            "type",
+            "user_can_do_actions",
+        ]
+
+    def get_status(self, obj):
+        return None
+
+    def get_updated_by(self, obj):
+        return None
+
+    def get_comment(self, obj):
+        return None
+
+    def get_type(self, obj):
+        return "NEXT_BYPASS"
+
+    def get_user_can_do_actions(self, obj):
+        user = self.context["request"].user
+
+        if user.is_superuser:
+            return True
+
+        user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
+
+        required_roles_id = obj.roles_required.values_list("pk", flat=True)
+
+        if not set(required_roles_id).issubset(set(user_role_ids)):
+            return False
+
+        return True
+
+
+class NestedSubmissionSerializer(serializers.ModelSerializer):
+    general_validation_status = serializers.SerializerMethodField()
+    timeline = serializers.SerializerMethodField()
+    next_created_at = serializers.DateTimeField(read_only=True)
+    created_by = UserDisplayNameField()
+    active_steps = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = ValidationNode
+        fields = [
+            "created_at",
+            "created_by",
+            "next_created_at",
+            "general_validation_status",
+            "timeline",
+            "active_steps",
+        ]
+
+    def get_active_steps(self, obj):
+        return (
+            obj.instance.validationnode_set.exclude(
+                Q(status=ValidationNodeStatus.NEW_VERSION) | Q(status=ValidationNodeStatus.SUBMISSION)
+            )
+            .filter(
+                created_at__gte=obj.created_at, **{"created_at__lt": obj.next_created_at} if obj.next_created_at else {}
+            )
+            .count()
+        )
+
+    def get_general_validation_status(self, obj):
+        if not obj.next_created_at:
+            return obj.instance.general_validation_status
+
+        if (
+            obj.instance.validationnode_set.filter(created_at__gte=obj.created_at, created_at__lt=obj.next_created_at)
+            .filter(status=ValidationNodeStatus.REJECTED)
+            .exists()
+        ):
+            return ValidationWorkflowArtefactStatus.REJECTED
+        return ValidationWorkflowArtefactStatus.PENDING
+
+    def get_timeline(self, obj):
+        # get history
+        data = (
+            obj.instance.validationnode_set.exclude(
+                Q(status=ValidationNodeStatus.NEW_VERSION) | Q(status=ValidationNodeStatus.SUBMISSION)
+            )
+            .filter(
+                created_at__gte=obj.created_at, **{"created_at__lt": obj.next_created_at} if obj.next_created_at else {}
+            )
+            .order_by("-updated_at")
+        )
+
+        next_bypass = None
+        if (
+            not obj.next_created_at
+            and obj.instance.general_validation_status == ValidationWorkflowArtefactStatus.PENDING
+        ):
+            node_order = list(reversed(obj.instance.form.validation_workflow.dump_nodes()))
+
+            ordering = Case(
+                *[When(slug=slug, then=pos) for pos, slug in enumerate(node_order)],
+                output_field=IntegerField(),
+            )
+
+            next_bypass = (
+                ValidationNodeTemplate.objects.filter(
+                    can_skip_previous_nodes=True,
+                    workflow=obj.instance.form.validation_workflow,
+                )
+                .filter(
+                    Q(
+                        ~Exists(
+                            ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
+                                instance=obj.instance,
+                                node=OuterRef("pk"),
+                            )
+                        )
+                    )
+                    & Q(
+                        ~Exists(
+                            ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
+                                instance=obj.instance,
+                                node=OuterRef("pk"),
+                                status=ValidationNodeStatus.UNKNOWN,
+                            )
+                        )
+                    )
+                )
+                .order_by(ordering)
+            )
+
+        return (
+            NestedTimelineNextBypassSerializer(next_bypass, many=True, context=self.context).data
+            + NestedTimelineSerializer(data, context=self.context, many=True).data
+        )
 
 
 class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
     validation_status = serializers.CharField(read_only=True, source="general_validation_status")
-    rejection_comment = serializers.SerializerMethodField(read_only=True)
-    history = serializers.SerializerMethodField(read_only=True)
-    next_tasks = NextTasksSerializer(read_only=True, many=True, source="get_next_pending_nodes")
-    next_bypass = serializers.SerializerMethodField(read_only=True)
+    submissions = serializers.SerializerMethodField(read_only=True)
+    total_steps = serializers.SerializerMethodField(read_only=True)
+
     workflow = serializers.CharField(read_only=True, source="form.validation_workflow.slug")
 
     class Meta:
         model = Instance
-        fields = ["validation_status", "rejection_comment", "history", "next_tasks", "next_bypass", "workflow"]
+        fields = ["workflow", "total_steps", "validation_status", "submissions"]
 
-    @extend_schema_field(NestedHistorySerializer(many=True))
-    def get_history(self, obj):
-        return NestedHistorySerializer(
-            obj.all_validation_nodes
-            if getattr(obj, "all_validation_nodes", None)
-            else obj.get_all_validation_nodes().select_related("created_by", "updated_by", "node"),
-            many=True,
-        ).data
-
-    @extend_schema_field({"type": "string", "nullable": True})
-    def get_rejection_comment(self, obj):
-        if obj.general_validation_status == ValidationWorkflowArtefactStatus.REJECTED:
-            if getattr(obj, "all_validation_nodes", None):
-                rejected_validation_node = next(
-                    (n for n in obj.all_validation_nodes if n.status == ValidationNodeStatus.REJECTED), None
-                )
-                return getattr(rejected_validation_node, "comment", "")
-            return obj.validationnode_set.filter(status=ValidationNodeStatus.REJECTED).first().comment
-        return None
-
-    @extend_schema_field(NextByPassSerializer(many=True))
-    def get_next_bypass(self, obj):
-        qs = ValidationNodeTemplate.objects.none()
-
-        if getattr(obj, "all_validation_nodes", None):
-            most_recent_new_version = next(
-                (n for n in obj.all_validation_nodes if n.status == ValidationNodeStatus.NEW_VERSION), None
+    @extend_schema_field(NestedSubmissionSerializer)
+    def get_submissions(self, obj):
+        data = (
+            obj.validationnode_set.filter(
+                Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION)
             )
-        else:
-            most_recent_new_version = (
-                obj.get_all_validation_nodes().filter(status=ValidationNodeStatus.NEW_VERSION).first()
-            )
+            .annotate(next_created_at=Window(expression=Lag("created_at"), order_by=F("created_at").desc()))
+            .order_by("-created_at")
+        )
+        return NestedSubmissionSerializer(data, many=True, context=self.context).data
 
-        if obj.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
-            if most_recent_new_version:
-                # in case of resubmission, we need to filter out previous nodes
-                qs = (
-                    ValidationNodeTemplate.objects.annotate(
-                        active_nodes=FilteredRelation(
-                            "validationnode",
-                            condition=Q(
-                                validationnode__created_at__gte=most_recent_new_version.created_at,
-                                validationnode__instance=obj,
-                            ),
-                        )
-                    )
-                    .prefetch_related(
-                        "validationnode_set", Prefetch("roles_required", UserRole.objects.select_related("group"))
-                    )
-                    .filter(can_skip_previous_nodes=True, workflow=obj.form.validation_workflow)
-                    .filter(Q(active_nodes__isnull=True) | Q(active_nodes__status=ValidationNodeStatus.UNKNOWN))
-                )
-            else:
-                qs = (
-                    ValidationNodeTemplate.objects.prefetch_related(
-                        "validationnode_set", Prefetch("roles_required", UserRole.objects.select_related("group"))
-                    )
-                    .filter(
-                        can_skip_previous_nodes=True,
-                        workflow=obj.form.validation_workflow,
-                    )
-                    .filter(
-                        Q(
-                            ~Exists(
-                                ValidationNode.objects.filter(
-                                    instance=obj,
-                                    node=OuterRef("pk"),
-                                )
-                            )
-                        )
-                        | Q(
-                            Exists(
-                                ValidationNode.objects.filter(
-                                    instance=obj,
-                                    node=OuterRef("pk"),
-                                    status=ValidationNodeStatus.UNKNOWN,
-                                )
-                            )
-                        )
-                    )
-                )
-
-        return NextByPassSerializer(qs, many=True).data
+    def get_total_steps(self, obj):
+        return obj.form.validation_workflow.node_templates.count()

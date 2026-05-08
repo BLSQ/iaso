@@ -2,11 +2,15 @@ import { useSafeIntl } from 'bluesquare-components';
 import * as yup from 'yup';
 import MESSAGES from '../../messages';
 
-export const useNodeValidationSchema = () => {
+export const useNodeValidationApproveSchema = () => {
+    return yup.object().shape({
+        comment: yup.string().nullable(),
+    });
+};
+
+export const useNodeValidationRejectSchema = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        // TODO force string value
-        approved: yup.string().required(formatMessage(MESSAGES.requiredField)),
-        comment: yup.string().nullable(),
+        comment: yup.string().required(formatMessage(MESSAGES.requiredField)),
     });
 };

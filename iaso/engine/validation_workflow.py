@@ -91,7 +91,18 @@ class ValidationWorkflowEngine:
         if artifact.general_validation_status == ValidationWorkflowArtefactStatus.REJECTED:
             raise ValidationWorkflowEngineException("Already rejected, cannot skip")
 
-        validation_node, created = ValidationNode.objects.get_or_create(node=node, instance=artifact)
+        # check previous submission
+        last_submission = (
+            artifact.validationnode_set.filter(
+                Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION)
+            )
+            .order_by("-created_at")
+            .first()
+        )
+
+        validation_node, created = ValidationNode.objects.exclude(
+            created_at__lt=last_submission.created_at
+        ).get_or_create(node=node, instance=artifact)
         validation_node.updated_by = user
 
         if not created and validation_node.status != ValidationNodeStatus.UNKNOWN:

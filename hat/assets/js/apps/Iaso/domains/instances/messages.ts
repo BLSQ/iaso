@@ -291,6 +291,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Approve',
         id: 'iaso.label.approve',
     },
+    reject: {
+        defaultMessage: 'Reject',
+        id: 'iaso.label.reject',
+    },
     launch: {
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',

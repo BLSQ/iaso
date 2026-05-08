@@ -6,8 +6,7 @@ import {
 } from '@mui/material/Button/Button';
 import { makeStyles } from '@mui/styles';
 import { OverridableStringUnion } from '@mui/types';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../../messages';
+import { commonStyles } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -32,7 +31,7 @@ export const ValidateButton = ({
     ...props
 }: Props) => {
     const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
+
     return (
         <Button
             variant={variant}
@@ -40,7 +39,7 @@ export const ValidateButton = ({
             size={size}
             {...props}
         >
-            {buttonText ?? formatMessage(MESSAGES.validate)}
+            {buttonText}
         </Button>
     );
 };

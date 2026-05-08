@@ -122,8 +122,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             # if update skip the rest of check
             return data
 
-        validation_errors = validate_xls_form(data["xls_file"])
-
+        content = data["xls_file"].read()
+        named_buffer = parsing.NamedBytesIO(content, name=data["xls_file"].name)
+        validation_errors = validate_xls_form(named_buffer)
         if len(validation_errors):
             # TODO: translate the error message
             raise serializers.ValidationError({"xls_file_validation_errors": validation_errors})
@@ -133,8 +134,10 @@ class FormVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
         # handle xls to xml conversion
         try:
             previous_form_version = FormVersion.objects.latest_version(form)
+            content = data["xls_file"].read()
+            named_buffer = parsing.NamedBytesIO(content, name=data["xls_file"].name)
             survey = parsing.parse_xls_form(
-                data["xls_file"],
+                named_buffer,
                 previous_version=previous_form_version.version_id if previous_form_version is not None else None,
             )
         except parsing.ParsingError as e:

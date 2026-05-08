@@ -51,7 +51,7 @@ describe('SubmissionAccordion', () => {
         );
 
         expect(
-            screen.getByText(/By John Doe on 2024-01-01 11:00:00/i),
+            screen.getByText(/By John Doe on 2024-01-01 10:00:00/i),
         ).toBeInTheDocument();
     });
 

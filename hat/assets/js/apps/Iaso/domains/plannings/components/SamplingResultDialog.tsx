@@ -21,10 +21,8 @@ import {
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
-import {
-    flattenHierarchy,
-    useGetOrgUnitTypesHierarchy,
-} from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { ParameterValues } from 'Iaso/domains/plannings/sampling/customForms/LQASForm';
 import { LQASRead } from 'Iaso/domains/plannings/sampling/customForms/LQASRead';
 import { SxStyles } from 'Iaso/types/general';
@@ -84,7 +82,10 @@ const SamplingResultDialog: FunctionComponent<Props> = ({
             planning.org_unit_details?.org_unit_type ?? undefined,
         );
     const orgunitTypes = useMemo(
-        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
+        () =>
+            flattenOrgUnitTypeHierarchy(
+                orgUnitTypeHierarchy?.sub_unit_types || [],
+            ),
         [orgUnitTypeHierarchy],
     );
 

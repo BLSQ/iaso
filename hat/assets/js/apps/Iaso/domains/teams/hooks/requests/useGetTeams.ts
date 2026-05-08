@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
@@ -50,9 +50,7 @@ export const useGetTeam = (teamId?: number): UseQueryResult<Team, Error> => {
     });
 };
 
-type TeamList = Pagination & {
-    results: Team[];
-};
+type TeamList = Paginated<Team>;
 
 const getTeams = async (
     options: TeamParams | TeamFilterParams,

@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { getRequest } from '../../../../libs/Api';
@@ -18,9 +18,7 @@ export type OrgUnitDetails = {
     org_unit_type?: number;
 };
 
-type PlanningList = Pagination & {
-    results: Planning[];
-};
+type PlanningList = Paginated<Planning>;
 
 const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     // assigning the variables allows us to have a params object without the unwanted keys

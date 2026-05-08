@@ -1,30 +1,23 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import {
-    Box,
-    Button,
-    ClickAwayListener,
-    Popper,
-    TextField,
-    Tooltip,
-} from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
+import { Box, Button, ClickAwayListener, Popper, Tooltip } from '@mui/material';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import {
     useSafeIntl,
     useRedirectToReplace,
     convertObjectToUrlParams,
 } from 'bluesquare-components';
-import { Link } from 'react-router-dom';
 import moment, { Moment } from 'moment';
-import { useStyles } from './Styles';
-import { dateFormat } from './constants';
-import MESSAGES from '../../../constants/messages';
-import { GenUrlFunction } from 'Iaso/routing/routing';
+import { Link } from 'react-router-dom';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { GenUrlFunction } from 'Iaso/routing/routing';
+import MESSAGES from '../../../constants/messages';
+import { dateFormat } from './constants';
+import { useStyles } from './Styles';
 
 type Props = {
     currentMonday: Moment;
@@ -139,15 +132,21 @@ export const Nav: FunctionComponent<Props> = ({
                     >
                         <DatePicker
                             label=""
-                            renderInput={props => <TextField {...props} />}
-                            value={currentDate.format(dateFormat)}
-                            onChange={date =>
-                                date
-                                    ? handleDateChange(
-                                          moment(date).format(dateFormat),
-                                      )
-                                    : undefined
-                            }
+                            format={dateFormat}
+                            value={currentDate}
+                            onChange={date => {
+                                if (date && moment(date).isValid()) {
+                                    handleDateChange(
+                                        moment(date).format(dateFormat),
+                                    );
+                                }
+                            }}
+                            slotProps={{
+                                textField: {
+                                    size: 'small',
+                                    variant: 'outlined',
+                                },
+                            }}
                         />
                     </Popper>
                 </ClickAwayListener>

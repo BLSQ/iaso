@@ -1,9 +1,13 @@
-import { userHasPermission } from 'Iaso/domains/users/utils';
+import { userHasAllPermissions } from 'Iaso/domains/users/utils';
 import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { ValidationWorkflowRetrieveResponseItem } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationWorkflows';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
+import {
+    hasFeatureFlag,
+    SUBMISSION_VALIDATION_WORKFLOW,
+} from 'Iaso/utils/featureFlags';
+import { SUBMISSIONS, VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { API_URL } from '../../../validationWorkflowsConfiguration/constants';
 
@@ -15,7 +19,15 @@ const getSubmissionValidationStatus = (
 
 export const useGetSubmissionValidationStatus = (id?: number) => {
     const user = useCurrentUser();
-    const hasPermission = userHasPermission(VALIDATION_WORKFLOWS, user);
+    const hasPermission = userHasAllPermissions(
+        [VALIDATION_WORKFLOWS, SUBMISSIONS],
+        user,
+    );
+    const userHasFeatureFlag = hasFeatureFlag(
+        user,
+        SUBMISSION_VALIDATION_WORKFLOW,
+    );
+
     return useSnackQuery({
         queryKey: ['submission-validation-status', id],
         queryFn: () => getSubmissionValidationStatus(id!),
@@ -24,7 +36,7 @@ export const useGetSubmissionValidationStatus = (id?: number) => {
             cacheTime: Infinity,
             retry: false,
             keepPreviousData: true,
-            enabled: Boolean(id) && hasPermission,
+            enabled: Boolean(id) && hasPermission && userHasFeatureFlag,
         },
     });
 };

@@ -6,20 +6,20 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
-    IconButton,
     Typography,
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
 import { Box } from '@mui/system';
-// import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { SubmissionList } from 'Iaso/domains/instances/components/ValidationWorkflow/timeline/SubmissionList';
-import { ValidationNodeRetrieveResponseSubmission } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { ValidationNodeRetrieveResponseSubmission } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
+import MESSAGES from '../../../messages';
 
 type SubmissionAccordionProps = {
     order: number;
     isMostRecent: boolean;
-    submission: any;
+    submission: ValidationNodeRetrieveResponseSubmission;
     totalSteps: number;
     createdAt: string;
     createdBy: string;
@@ -61,16 +61,12 @@ export const SubmissionAccordion = ({
     createdBy,
     instanceId,
 }: SubmissionAccordionProps) => {
-    // const { formatMessage } = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
 
     return (
         <Accordion defaultExpanded={isMostRecent}>
             <AccordionSummary
-                expandIcon={
-                    <IconButton>
-                        <ExpandMoreIcon />
-                    </IconButton>
-                }
+                expandIcon={<ExpandMoreIcon />}
                 sx={{
                     '& .MuiAccordionSummary-content': {
                         flexDirection: 'column',
@@ -94,15 +90,21 @@ export const SubmissionAccordion = ({
                         sx={{ display: 'flex', flexDirection: 'column', ml: 1 }}
                     >
                         <Typography component={'span'} fontWeight={'bold'}>
-                            Submission {order}
+                            {formatMessage(MESSAGES.submissionOrder, {
+                                number: order,
+                            })}
                         </Typography>
                         <Typography
                             component={'span'}
                             color="text.secondary"
                             sx={{ fontSize: '0.7rem' }}
                         >
-                            by {createdBy} on{' '}
-                            {moment(createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                            {formatMessage(MESSAGES.validationTimelineByOn, {
+                                user: createdBy,
+                                date: moment(createdAt).format(
+                                    'YYYY-MM-DD HH:mm:ss',
+                                ),
+                            })}
                         </Typography>
                     </Box>
                     <Typography
@@ -111,8 +113,18 @@ export const SubmissionAccordion = ({
                         color={getTextColorFromStatus(
                             submission.general_validation_status,
                         )}
+                        sx={{
+                            textTransform: 'uppercase',
+                        }}
                     >
-                        {submission.general_validation_status}
+                        {formatMessage(
+                            MESSAGES[
+                                submission.general_validation_status.toLowerCase() as
+                                    | 'rejected'
+                                    | 'approved'
+                                    | 'pending'
+                            ],
+                        )}
                     </Typography>
                 </Box>
                 <Box sx={{ width: '100%' }}>
@@ -122,7 +134,7 @@ export const SubmissionAccordion = ({
                             submission.general_validation_status,
                         )}
                         value={(submission.active_steps / totalSteps) * 100}
-                        aria-label="Progress"
+                        aria-label={formatMessage(MESSAGES.progress)}
                     />
                 </Box>
             </AccordionSummary>

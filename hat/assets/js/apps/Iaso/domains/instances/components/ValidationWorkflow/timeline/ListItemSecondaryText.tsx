@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import {
     ValidateNodeApproveByPassModal,
     ValidateNodeApproveModal,
     ValidateNodeRejectByPassModal,
     ValidateNodeRejectModal,
 } from 'Iaso/domains/instances/components/ValidationWorkflow/ValidationModal';
-import { Timeline } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
+import MESSAGES from '../../../messages';
 
 type ListItemSecondaryTextProps = {
     timelineItem: Timeline;
@@ -18,6 +21,8 @@ export const ListItemSecondaryText = ({
     isMostRecent,
     instanceId,
 }: ListItemSecondaryTextProps) => {
+    const { formatMessage } = useSafeIntl();
+
     if (
         isMostRecent &&
         (timelineItem.type === 'NEXT_BYPASS' ||
@@ -25,7 +30,9 @@ export const ListItemSecondaryText = ({
     ) {
         return (
             <>
-                <Typography>PENDING</Typography>
+                <Typography sx={{ textTransform: 'uppercase' }}>
+                    {formatMessage(MESSAGES.pending)}
+                </Typography>
                 {timelineItem.user_can_do_actions &&
                     timelineItem.type !== 'NEXT_BYPASS' && (
                         <Box
@@ -40,7 +47,7 @@ export const ListItemSecondaryText = ({
                             <ValidateNodeRejectModal
                                 nodeId={timelineItem.id}
                                 iconProps={{
-                                    buttonText: 'Reject',
+                                    buttonText: formatMessage(MESSAGES.reject),
                                     color: 'error',
                                 }}
                                 instanceId={instanceId}
@@ -48,7 +55,7 @@ export const ListItemSecondaryText = ({
                             <ValidateNodeApproveModal
                                 nodeId={timelineItem.id}
                                 iconProps={{
-                                    buttonText: 'Approve',
+                                    buttonText: formatMessage(MESSAGES.approve),
                                     color: 'success',
                                 }}
                                 instanceId={instanceId}
@@ -69,7 +76,7 @@ export const ListItemSecondaryText = ({
                             <ValidateNodeRejectByPassModal
                                 nodeSlug={timelineItem.node_template_slug}
                                 iconProps={{
-                                    buttonText: 'Reject',
+                                    buttonText: formatMessage(MESSAGES.reject),
                                     color: 'error',
                                 }}
                                 instanceId={instanceId}
@@ -77,7 +84,7 @@ export const ListItemSecondaryText = ({
                             <ValidateNodeApproveByPassModal
                                 nodeSlug={timelineItem.node_template_slug}
                                 iconProps={{
-                                    buttonText: 'Approve',
+                                    buttonText: formatMessage(MESSAGES.approve),
                                     color: 'success',
                                 }}
                                 instanceId={instanceId}
@@ -88,27 +95,40 @@ export const ListItemSecondaryText = ({
         );
     }
     if (timelineItem.status === 'SKIPPED') {
-        return <Typography>Skipped</Typography>;
+        return (
+            <Typography sx={{ textTransform: 'uppercase' }}>
+                {formatMessage(MESSAGES.skipped)}
+            </Typography>
+        );
     } else {
         return (
             <>
                 <Typography color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    By {timelineItem.updated_by} on {timelineItem.updated_at}
+                    {formatMessage(MESSAGES.validationTimelineByOn, {
+                        user: timelineItem.updated_by,
+                        date: moment(timelineItem.updated_at).format(
+                            'YYYY-MM-DD HH:mm:ss',
+                        ),
+                    })}
                 </Typography>
-                {timelineItem?.comment && (
-                    <>
-                        <Typography
-                            fontWeight={'bold'}
-                            component={'span'}
-                            variant={'body2'}
-                        >
-                            Comment
-                        </Typography>
-                        <Typography component={'span'} variant={'body2'}>
-                            : {timelineItem?.comment}
-                        </Typography>
-                    </>
-                )}
+                {timelineItem?.comment &&
+                    formatMessage(MESSAGES.validationTimelineComment, {
+                        firstTag: (chunks: ReactNode[]) => (
+                            <Typography
+                                fontWeight={'bold'}
+                                component={'span'}
+                                variant={'body2'}
+                            >
+                                {chunks}
+                            </Typography>
+                        ),
+                        secondTag: (chunks: ReactNode[]) => (
+                            <Typography component={'span'} variant={'body2'}>
+                                {chunks}
+                            </Typography>
+                        ),
+                        comment: timelineItem.comment,
+                    })}
             </>
         );
     }

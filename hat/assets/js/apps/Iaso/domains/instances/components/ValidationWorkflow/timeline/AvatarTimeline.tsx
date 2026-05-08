@@ -4,12 +4,9 @@ import ClearIcon from '@mui/icons-material/Clear';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import { Avatar } from '@mui/material';
-import { Timeline } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 
-type AvatarTimelineProps = {
-    type: Timeline['type'];
-    status: Timeline['status'];
-};
+type AvatarTimelineProps = Pick<Timeline, 'status' | 'type'>;
 
 export const AvatarTimeline = ({ status, type }: AvatarTimelineProps) => {
     if (type === 'NEXT_BYPASS') {

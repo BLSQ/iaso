@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { ValidationNodeRetrieveResponse } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { SubmissionAccordion } from './timeline/SubmissionAccordion';
 
 type Props = { instanceId: number; data?: ValidationNodeRetrieveResponse };

@@ -1,9 +1,8 @@
 import React from 'react';
 import { List, ListItem, ListItemText } from '@mui/material';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
-// import { useSafeIntl } from 'bluesquare-components';
 import { ListItemSecondaryText } from 'Iaso/domains/instances/components/ValidationWorkflow/timeline/ListItemSecondaryText';
-import { Timeline } from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { AvatarTimeline } from './AvatarTimeline';
 
 type SubmissionListProps = {

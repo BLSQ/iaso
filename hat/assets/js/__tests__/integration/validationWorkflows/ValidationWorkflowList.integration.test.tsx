@@ -205,14 +205,14 @@ describe('Validation workflow list UI integration test', () => {
         expect(screen.getByRole('link', { name: '' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: '' })).toHaveAttribute(
             'href',
-            `/forms/submissions/validation/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
+            `/validation/submissions/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
         );
 
         expect(
             screen.getByTestId('SettingsIcon').parentElement,
         ).toHaveAttribute(
             'href',
-            `/forms/submissions/validation/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
+            `/validation/submissions/detail/slug/${validationWorkFlows?.results?.[0]?.slug}`,
         );
 
         currentUser = currentUserFactory.build({
@@ -318,7 +318,7 @@ describe('Validation workflow list UI integration test', () => {
         ).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Create' })).toHaveAttribute(
             'href',
-            '/forms/submissions/validation/detail/',
+            '/validation/submissions/detail/',
         );
 
         // it shouldn't be disabled as the router handles the perm there

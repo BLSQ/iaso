@@ -17,7 +17,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
         self.account = Account.objects.create(name="account")
         self.other_account = Account.objects.create(name="account2")
 
-        self.group = Group.objects.create(name="group")
+        self.group = Group.objects.create(name=f"{self.account.id}_group")
         self.user_role = UserRole.objects.create(account=self.account, group=self.group)
         self.john_doe = self.create_user_with_profile(
             username="john.doe", account=self.account, first_name="John", last_name="Doe"
@@ -208,7 +208,7 @@ class ValidationWorkflowInstanceAPIRetrieveTestCase(APITestCase):
                             "id": next_task.pk,
                             "name": next_task.node.name,
                             "node_template_slug": "first-node",
-                            "user_roles": [{"id": self.user_role.id, "name": self.user_role.group.name}],
+                            "user_roles": [{"id": self.user_role.id, "name": "group"}],
                         }
                     ],
                 )

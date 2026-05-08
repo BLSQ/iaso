@@ -1,4 +1,5 @@
 import json
+import re
 
 from datetime import date, datetime
 
@@ -75,6 +76,12 @@ class AccountPrefixedSlugRelatedField(serializers.SlugRelatedField):
         account_id = self.context["account_id"]
         prefixed_name = f"{account_id}_{data}"
         return super().to_internal_value(prefixed_name)
+
+
+@extend_schema_field(OpenApiTypes.STR)
+class UserRoleNameField(serializers.CharField):
+    def to_representation(self, value):
+        return re.sub(r"^\d+_", "", value)
 
 
 class SlugOrPrimaryKeyRelatedField(serializers.SlugRelatedField):

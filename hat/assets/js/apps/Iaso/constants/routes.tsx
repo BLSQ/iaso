@@ -8,6 +8,7 @@ import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
 import { StockItems } from 'Iaso/domains/stock/items';
 import { StockRulesVersions } from 'Iaso/domains/stock/versions';
+import { UsersBulkCreate } from 'Iaso/domains/users/bulkCreate';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
 import { Assignments } from '../domains/assignments';
@@ -22,6 +23,7 @@ import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/Duplic
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
+import FormAI from '../domains/formAI';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
@@ -105,6 +107,13 @@ export const formsPath = {
     ],
     element: <Forms />,
     isRootUrl: true,
+};
+
+export const formAIPath = {
+    baseUrl: baseUrls.formAI,
+    routerUrl: `${baseUrls.formAI}/*`,
+    permissions: [Permission.FORMS],
+    element: <FormAI />,
 };
 
 export const pagesPath = {
@@ -271,6 +280,13 @@ export const usersPath = {
     routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
+};
+
+export const usersBulkCreate = {
+    baseUrl: baseUrls.usersBulkCreate,
+    routerUrl: `${baseUrls.usersBulkCreate}/*`,
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+    element: <UsersBulkCreate />,
 };
 
 export const userDetailsPath = {
@@ -537,6 +553,7 @@ export const page500 = {
 
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
+    formAIPath,
     formDetailPath,
     formsStatsPath,
     mappingsPath,
@@ -557,6 +574,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     userDetailsPath,
     usersHistoryPath,
     userRolesPath,
+    usersBulkCreate,
     projectsPath,
     dataSourcesPath,
     dataSourceDetailsPath,

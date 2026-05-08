@@ -6,6 +6,7 @@ from django.utils.text import slugify
 from iaso.modules import MODULES, IasoModule
 from iaso.permissions.base import IasoPermission
 from iaso.utils.models.choice_array_field import ChoiceArrayField
+from iaso.utils.models.encrypted_text_field import EncryptedTextField
 
 
 MODULE_CHOICES = ((module.codename, module.name) for module in MODULES)
@@ -39,6 +40,7 @@ class Account(models.Model):
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
     enforce_password_validation = models.BooleanField(default=True)
+    anthropic_api_key = EncryptedTextField(null=True, blank=True, help_text="Anthropic API key used by the Form AI")
 
     @property
     def short_sanitized_name(self):

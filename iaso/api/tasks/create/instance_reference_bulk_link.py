@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
-from iaso.api.instances.instances import HasInstanceBulkPermission
+from iaso.api.instances.views import HasInstanceBulkPermission
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.api.tasks.utils.link_unlink_allowed_actions import AllowedActions

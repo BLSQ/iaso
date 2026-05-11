@@ -17,7 +17,7 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, safe_api_import
-from iaso.api.instances.instances import InstanceFileSerializer
+from iaso.api.instances.serializers import InstanceFileSerializer
 from iaso.api.org_units import import_org_units
 from iaso.api.permission_checks import (
     AuthenticationEnforcedPermission,

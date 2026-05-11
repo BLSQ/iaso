@@ -21,31 +21,33 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.request import Request
 from rest_framework.response import Response
 from typing_extensions import Annotated, TypedDict
-
-import iaso.periods as periods
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
 from iaso.api import common
-from iaso.api.comment import UserSerializerForComment
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_XLSX,
     FileFormatEnum,
-    TimestampField,
     parse_comma_separated_numeric_values,
     safe_api_import,
 )
-from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.instances.filters import get_form_from_instance_filters, parse_instance_filters
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
-from iaso.api.instances.serializers import FileTypeSerializer, InstanceImportAccuracySerializer
+from iaso.api.instances.permissions import PERMISSION_CLASSES_RW, HasInstanceBulkPermission, HasInstancePermission
+from iaso.api.instances.serializers import (
+    FileTypeSerializer,
+    InstanceFileAttachmentSerializer,
+    InstanceImportAccuracySerializer,
+    InstanceLockSerializer,
+    InstanceSerializer,
+    UnlockSerializer,
+)
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
-from iaso.api.serializers import OrgUnitSerializer
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
@@ -62,141 +64,17 @@ from iaso.models import (
 )
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
-from iaso.permissions.core_permissions import (
-    CORE_FORMS_PERMISSION,
-    CORE_REGISTRY_READ_PERMISSION,
-    CORE_REGISTRY_WRITE_PERMISSION,
-    CORE_SUBMISSIONS_PERMISSION,
-)
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
-from iaso.utils.file_utils import get_file_type
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
 
 
 logger = logging.getLogger(__name__)
 
 
-class InstanceSerializer(serializers.ModelSerializer):
-    org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
-    period = serializers.CharField(max_length=9, allow_blank=True)
-
-    class Meta:
-        model = Instance
-        fields = ["org_unit", "period", "deleted", "last_modified_by"]
-
-    def validate_org_unit(self, value):
-        """Check if user has access to this org_unit."""
-        # Prevent IA-928: Don't revalidate org unit if it's not modified. As the allowed Type on form or the type
-        #  on the org unit can change
-        if self.instance and self.instance.org_unit == value:
-            return value
-        if value.org_unit_type in self.instance.form.org_unit_types.all():
-            try:
-                return OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user, None).get(pk=value.pk)
-            except OrgUnit.DoesNotExist:
-                pass  # that way, if the condition is false, the exception is raised as well
-        raise serializers.ValidationError("Org unit type not assigned to this form or not accessible to this user")
-
-    def validate_period(self, value):
-        """
-        Check if period is of self.instance.form.period_type.
-        """
-
-        if periods.detect(value) == self.instance.form.period_type:
-            return value
-        raise serializers.ValidationError(
-            f"Wrong period type, expecting: {self.instance.form.period_type}. Received type: {periods.detect(value)}"
-        )
-
-
-class HasInstancePermission(permissions.BasePermission):
-    def has_permission(self, request: Request, view):
-        if request.method == "POST":  # to handle anonymous submissions sent by mobile
-            return True
-
-        return request.user.is_authenticated and (
-            request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
-            or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
-            or request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name())
-            or request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name())
-        )
-
-    def has_object_permission(self, request: Request, view, obj: Instance):
-        # Depends on the Queryset having been filtered previously
-        self.has_permission(request, view)
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        # if request.user.has_perm("menupermission.iaso_update_submission") and obj.can_user_modify(request.user):
-        if obj.can_user_modify(request.user):
-            return True
-        return False
-
-
-class HasInstanceBulkPermission(permissions.BasePermission):
-    """
-    Designed for POST endpoints that are not designed to receive new submissions.
-    """
-
-    def has_permission(self, request: Request, view):
-        return request.user.is_authenticated and (
-            request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
-            or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
-            or request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name())
-            or request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name())
-        )
-
-
-class OrgUnitNestedSerializer(OrgUnitSerializer):
-    class Meta:
-        model = OrgUnit
-        fields = [
-            "id",
-            "name",
-        ]
-        ref_name = "OrgUnitNestedSerializerForInstances"
-
-
-class InstanceFileSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    instance_id = serializers.IntegerField()
-    file = serializers.FileField(use_url=True)
-    created_at = TimestampField(read_only=True)
-    file_type = serializers.SerializerMethodField()
-    name = serializers.CharField(read_only=True)
-    submitted_at = TimestampField(source="instance.created_at", read_only=True)
-    org_unit = OrgUnitNestedSerializer(source="instance.org_unit", read_only=True)
-    question_name = serializers.CharField(source="question", read_only=True)
-    question_id = serializers.CharField(source="key_name", read_only=True)
-    form_name = serializers.CharField(source="instance.form.name", read_only=True)
-
-    def get_file_type(self, obj):
-        return get_file_type(obj.file)
-
-
-# For readonly use
-class InstanceLockSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InstanceLock
-        fields = ["id", "top_org_unit", "locked_by", "locked_at", "unlocked_by", "locked_by"]
-        read_only_fields = ["locked_at", "locked_by"]
-
-    # TODO: can we use the generic UserSerializer to keeps things less interleaved?
-    locked_by = UserSerializerForComment(read_only=True)
-    unlocked_by = UserSerializerForComment(read_only=True)
-    top_org_unit = OrgUnitNestedSerializer(read_only=True)
-
-
-class UnlockSerializer(serializers.Serializer):
-    lock = serializers.PrimaryKeyRelatedField(queryset=InstanceLock.objects.all())
-    # we will  check that the user can access from the directly in remove_lock()
-
-
 class LockAnnotation(TypedDict):
     count_lock_applying_to_user: int
     count_active_lock: int
-
-
-PERMISSION_CLASSES_RW = [AuthenticationEnforcedPermission, permissions.IsAuthenticated, HasInstancePermission]
 
 
 @extend_schema(tags=["Instances"])
@@ -298,10 +176,10 @@ class InstancesViewSet(viewsets.ViewSet):
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = InstanceFileSerializer(page, many=True, context={"request": request})
+            serializer = InstanceFileAttachmentSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
 
-        serializer = InstanceFileSerializer(queryset, many=True, context={"request": request})
+        serializer = InstanceFileAttachmentSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
     @action(["GET"], detail=False)
@@ -999,7 +877,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(log_dict)
 
 
-def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[id] = None) -> Entity:
+def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int] = None) -> Entity:
     # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
     # If a non-deleted entity was found, ignore potential duplicates.
     if entity_type_id is not None:

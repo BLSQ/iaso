@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from hat.api_import.models import APIImport
-from iaso.api.instances.instances import import_data as import_instances
+from iaso.api.instances.views import import_data as import_instances
 from iaso.api.org_units import import_org_units
 from iaso.models import Project
 

@@ -368,12 +368,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.confirm',
     },
     planningWarningTitle: {
-        defaultMessage: 'Adapt planning dates or status',
+        defaultMessage: 'Planning edition warning',
         id: 'iaso.planning.label.planningWarningTitle',
     },
     planningWarningMessage: {
         defaultMessage:
-            'Editting dates or status can impact the actual data collection',
+            'Planning seems to be active, editing information might impact the actual data collection',
         id: 'iaso.planning.label.planningWarningMessage',
     },
     planning: {

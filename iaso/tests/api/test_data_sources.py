@@ -286,7 +286,7 @@ class DataSourcesAPITestCase(APITestCase):
         response = self.client.get("/api/datasources/dropdown/?order=name")
         self.assertJSONResponse(response, 403)
 
-     def test_datasource_update_can_unset_read_only(self):
+    def test_datasource_update_can_unset_read_only(self):
         self.client.force_authenticate(self.joe)
         self.data_source.read_only = True
         self.data_source.save()

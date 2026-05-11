@@ -1395,7 +1395,6 @@ class InstancesAPITestCase(TaskAPITestCase):
             ","
             ","
             f"{period},"
-            f"{sourceless_instance.source_updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
             f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
             f"{sourceless_instance.updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
             "yoda (Yo Da),"

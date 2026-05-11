@@ -1,5 +1,4 @@
-from django.db.models import Case, Exists, F, IntegerField, OuterRef, Q, When, Window
-from django.db.models.functions import Lag
+from django.db.models import Case, Exists, IntegerField, OuterRef, Q, When
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -54,18 +53,18 @@ class NestedTimelineSerializer(ModelSerializer):
         if user.is_superuser:
             return True
 
-        user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
+        if "user_roles" in self.context:
+            user_role_ids = self.context["user_roles"]
+        else:
+            user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
 
-        required_roles_id = obj.node.roles_required.values_list("pk", flat=True)
+        required_roles_id = [x.pk for x in obj.node.roles_required.all()]
 
-        if not set(required_roles_id).issubset(set(user_role_ids)):
-            return False
-
-        return True
+        return set(required_roles_id).issubset(set(user_role_ids))
 
     @extend_schema_field(serializers.IntegerField)
     def get_order(self, obj):
-        list_nodes = list(obj.instance.form.validation_workflow.dump_nodes())
+        list_nodes = list(self.context["node_dumps"])
         return list_nodes.index(obj.node.slug) + 1
 
 
@@ -113,9 +112,12 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
         if user.is_superuser:
             return True
 
-        user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
+        if "user_roles" in self.context:
+            user_role_ids = self.context["user_roles"]
+        else:
+            user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
 
-        required_roles_id = obj.roles_required.values_list("pk", flat=True)
+        required_roles_id = [x.pk for x in obj.roles_required.all()]
 
         if not set(required_roles_id).issubset(set(user_role_ids)):
             return False
@@ -124,7 +126,7 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
 
     @extend_schema_field(serializers.IntegerField)
     def get_order(self, obj):
-        list_nodes = list(obj.workflow.dump_nodes())
+        list_nodes = list(self.context["node_dumps"])
         return list_nodes.index(obj.slug) + 1
 
 
@@ -146,50 +148,65 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
             "active_steps",
         ]
 
+    def _get_instance(self, obj):
+        if "instance" in self.context:
+            instance = self.context.get("instance")
+        else:
+            instance = obj.instance
+        return instance
+
     @extend_schema_field(serializers.IntegerField)
     def get_active_steps(self, obj):
-        return (
-            obj.instance.validationnode_set.exclude(
-                Q(status=ValidationNodeStatus.NEW_VERSION) | Q(status=ValidationNodeStatus.SUBMISSION)
-            )
-            .filter(
-                created_at__gte=obj.created_at, **{"created_at__lt": obj.next_created_at} if obj.next_created_at else {}
-            )
-            .count()
-        )
+        instance = self._get_instance(obj)
+        nodes = instance.prefetched_validation_nodes
+
+        nodes = [
+            n
+            for n in nodes
+            if n.status not in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]
+            and n.created_at >= obj.created_at
+        ]
+
+        if obj.next_created_at:
+            nodes = [n for n in nodes if n.created_at < obj.next_created_at]
+        return len(nodes)
 
     @extend_schema_field(serializers.ChoiceField(choices=ValidationWorkflowArtefactStatus.choices))
     def get_general_validation_status(self, obj):
-        if not obj.next_created_at:
-            return obj.instance.general_validation_status
+        instance = self._get_instance(obj)
 
-        if (
-            obj.instance.validationnode_set.filter(created_at__gte=obj.created_at, created_at__lt=obj.next_created_at)
-            .filter(status=ValidationNodeStatus.REJECTED)
-            .exists()
-        ):
+        if not obj.next_created_at:
+            return instance.general_validation_status
+
+        nodes = instance.prefetched_validation_nodes
+        rejected_nodes = [
+            n
+            for n in nodes
+            if n.created_at >= obj.created_at
+            and n.created_at < obj.next_created_at
+            and n.status == ValidationNodeStatus.REJECTED
+        ]
+        if len(rejected_nodes):
             return ValidationWorkflowArtefactStatus.REJECTED
         return ValidationWorkflowArtefactStatus.PENDING
 
     @extend_schema_field(NestedTimelineSerializer(many=True))
     def get_timeline(self, obj):
+        instance = self._get_instance(obj)
+
         # get history
-        data = (
-            obj.instance.validationnode_set.exclude(
-                Q(status=ValidationNodeStatus.NEW_VERSION) | Q(status=ValidationNodeStatus.SUBMISSION)
-            )
-            .filter(
-                created_at__gte=obj.created_at, **{"created_at__lt": obj.next_created_at} if obj.next_created_at else {}
-            )
-            .order_by("-updated_at")
-        )
+        nodes = instance.prefetched_validation_nodes
+        nodes_timeline = [
+            n for n in nodes if n.status not in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]
+        ]
+        nodes_timeline = [n for n in nodes_timeline if n.created_at >= obj.created_at]
+        if obj.next_created_at:
+            nodes_timeline = [n for n in nodes_timeline if n.created_at < obj.next_created_at]
+        nodes_timeline = sorted(nodes_timeline, key=lambda n: n.updated_at, reverse=True)
 
         next_bypass = None
-        if (
-            not obj.next_created_at
-            and obj.instance.general_validation_status == ValidationWorkflowArtefactStatus.PENDING
-        ):
-            node_order = list(reversed(obj.instance.form.validation_workflow.dump_nodes()))
+        if not obj.next_created_at and instance.general_validation_status == ValidationWorkflowArtefactStatus.PENDING:
+            node_order = list(reversed(self.context["node_dumps"]))
 
             ordering = Case(
                 *[When(slug=slug, then=pos) for pos, slug in enumerate(node_order)],
@@ -197,15 +214,16 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
             )
 
             next_bypass = (
-                ValidationNodeTemplate.objects.filter(
+                ValidationNodeTemplate.objects.prefetch_related("roles_required")
+                .filter(
                     can_skip_previous_nodes=True,
-                    workflow=obj.instance.form.validation_workflow,
+                    workflow=instance.form.validation_workflow,
                 )
                 .filter(
                     Q(
                         ~Exists(
                             ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
-                                instance=obj.instance,
+                                instance=instance,
                                 node=OuterRef("pk"),
                             )
                         )
@@ -213,7 +231,7 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
                     & Q(
                         ~Exists(
                             ValidationNode.objects.exclude(created_at__lt=obj.created_at).filter(
-                                instance=obj.instance,
+                                instance=instance,
                                 node=OuterRef("pk"),
                                 status=ValidationNodeStatus.UNKNOWN,
                             )
@@ -225,7 +243,7 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
 
         return (
             NestedTimelineNextBypassSerializer(next_bypass, many=True, context=self.context).data
-            + NestedTimelineSerializer(data, context=self.context, many=True).data
+            + NestedTimelineSerializer(nodes_timeline, context=self.context, many=True).data
         )
 
 
@@ -240,17 +258,21 @@ class ValidationWorkflowInstanceRetrieveSerializer(ModelSerializer):
         model = Instance
         fields = ["workflow", "total_steps", "validation_status", "submissions"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.context["node_dumps"] = self.instance.form.validation_workflow.dump_nodes()
+        request = self.context["request"]
+        if request:
+            user = request.user
+            if user.iaso_profile:
+                self.context["user_roles"] = user.iaso_profile.user_roles.values_list("pk", flat=True)
+
     @extend_schema_field(NestedSubmissionSerializer(many=True))
     def get_submissions(self, obj):
-        data = (
-            obj.validationnode_set.filter(
-                Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION)
-            )
-            .annotate(next_created_at=Window(expression=Lag("created_at"), order_by=F("created_at").desc()))
-            .order_by("-created_at")
-        )
-        return NestedSubmissionSerializer(data, many=True, context=self.context).data
+        nodes = obj.prefetched_submission_nodes
+        return NestedSubmissionSerializer(nodes, many=True, context={**self.context, "instance": obj}).data
 
     @extend_schema_field(serializers.IntegerField)
     def get_total_steps(self, obj):
-        return obj.form.validation_workflow.node_templates.count()
+        return len(self.context.get("node_dumps", []))

@@ -1,10 +1,10 @@
 import datetime
 
-from django.contrib.auth.models import Group
 from django.db.models import (
     BooleanField,
     Case,
     Exists,
+    F,
     Max,
     OuterRef,
     Prefetch,
@@ -12,8 +12,9 @@ from django.db.models import (
     Subquery,
     Value,
     When,
+    Window,
 )
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Lag
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -59,17 +60,52 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
         qs = Instance.objects.filter_for_user(user=self.request.user).filter(form__deleted_at__isnull=True)
 
         if self.action == "retrieve":
-            return qs.select_related("form", "form__validation_workflow", "project__account").prefetch_related(
+            return qs.select_related("form__validation_workflow").prefetch_related(
                 Prefetch(
                     "validationnode_set",
-                    queryset=ValidationNode.objects.select_related("node", "created_by", "updated_by")
-                    .prefetch_related(
-                        "node__roles_required",
-                        Prefetch("node__roles_required__group", queryset=Group.objects.only("id", "name")),
-                    )
+                    queryset=ValidationNode.objects.select_related("instance", "created_by", "updated_by", "node")
+                    .prefetch_related("node__roles_required")
                     .order_by("-created_at"),
-                    to_attr="all_validation_nodes",
-                )
+                    to_attr="prefetched_validation_nodes",
+                ),
+                Prefetch(
+                    "form__validation_workflow__node_templates",
+                    queryset=ValidationNodeTemplate.objects.prefetch_related(
+                        Prefetch(
+                            "next_node_templates",
+                            queryset=ValidationNodeTemplate.objects.order_by("slug"),
+                            to_attr="prefetched_next_nodes",
+                        )
+                    ).annotate(
+                        has_previous=Exists(
+                            ValidationNodeTemplate.previous_node_templates.through.objects.filter(
+                                to_validationnodetemplate_id=OuterRef("pk")
+                            )
+                        )
+                    ),
+                ),
+                Prefetch(
+                    "validationnode_set",
+                    queryset=(
+                        ValidationNode.objects.filter(
+                            Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION)
+                        )
+                        .select_related(
+                            "instance",
+                            "created_by",
+                            "updated_by",
+                            "node",
+                        )
+                        .annotate(
+                            next_created_at=Window(
+                                expression=Lag("created_at"),
+                                order_by=F("created_at").desc(),
+                            )
+                        )
+                        .order_by("-created_at")
+                    ),
+                    to_attr="prefetched_submission_nodes",
+                ),
             )
         if self.action == "list":
             qs = qs.exclude(general_validation_status__isnull=True)

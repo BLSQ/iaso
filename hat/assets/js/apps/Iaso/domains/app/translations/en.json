@@ -1247,6 +1247,8 @@
     "iaso.permissions.iaso_page_write": "Web embedded links management - Read and Write",
     "iaso.permissions.iaso_payments": "Payments page - Read & Write",
     "iaso.permissions.iaso_payments_tooltip": "See and manage payments and payment lots",
+    "iaso.permissions.iaso_pipeline_management": "Pipeline management",
+    "iaso.permissions.iaso_pipeline_management_tooltip": "Allows to manage openhexa pipelines",
     "iaso.permissions.iaso_polio_chronogram": "Polio chronogram - Read and Write",
     "iaso.permissions.iaso_polio_chronogram_restricted_write": "Polio chronogram (user) - Restricted Write",
     "iaso.permissions.iaso_polio_country_plan_permissions": "National Logistics Plan",

@@ -29,7 +29,7 @@ from iaso.utils.tokens import get_user_token
 logger = logging.getLogger(__name__)
 
 
-@extend_schema(tags=["OpenHexa Pipelines", "OpenHexa"])
+@extend_schema(tags=["OpenHexa Pipelines"])
 class OpenHexaPipelinesViewSet(ViewSet):
     """
     OpenHexa Pipelines API

@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { getRequest } from '../../../../libs/Api';
@@ -9,7 +9,7 @@ import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../utils/dates';
-import { endpoint } from '../../constants';
+import { PLANNINGS_API_URL } from '../../constants';
 import { PlanningParams } from '../../types';
 
 export type OrgUnitDetails = {
@@ -18,9 +18,7 @@ export type OrgUnitDetails = {
     org_unit_type?: number;
 };
 
-type PlanningList = Pagination & {
-    results: Planning[];
-};
+type PlanningList = Paginated<Planning>;
 
 const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     // assigning the variables allows us to have a params object without the unwanted keys
@@ -32,7 +30,7 @@ const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     params.ended_at__lte = dateRangePickerToDateApi(options.dateTo);
     params.publishing_status = options.publishingStatus;
 
-    const url = makeUrlWithParams(endpoint, params);
+    const url = makeUrlWithParams(PLANNINGS_API_URL, params);
     return getRequest(url) as Promise<PlanningList>;
 };
 
@@ -76,7 +74,7 @@ const getPlanningsOptions = async (formIds?: string): Promise<Planning[]> => {
     if (formIds) {
         apiParams.form_ids = formIds;
     }
-    const url = makeUrlWithParams(endpoint, apiParams);
+    const url = makeUrlWithParams(PLANNINGS_API_URL, apiParams);
     return getRequest(url) as Promise<Planning[]>;
 };
 export const useGetPlanningsOptions = (

@@ -234,6 +234,7 @@ INSTALLED_APPS += [
     "django_json_widget",
     "phonenumber_field",
     "axes",
+    "captcha",
 ]
 
 if USE_CELERY:
@@ -783,10 +784,9 @@ AUTHENTICATION_BACKENDS = [
 
 # The API will rate limit login attempts based on 2 parameters:
 # - AUTH_RATE_LIMIT_MAX_FAILURES:
-#  Number of failed login attempts allowed before the user is locked out temporarily
+#  Number of failed login attempts before the user is locked out temporarily
 # - AUTH_RATE_LIMIT_COOLOFF_SECONDS:
-#  Sets the duration of the lockout period *and* the TTL of the failure counter
-#  (See AxesCacheHandler for more information)
+#  Sets the duration of the lockout period
 AUTH_RATE_LIMIT_MAX_FAILURES = int(get_env_as_float("AUTH_RATE_LIMIT_MAX_FAILURES", "10"))
 AUTH_RATE_LIMIT_COOLOFF_SECONDS = get_env_as_float("AUTH_RATE_LIMIT_COOLOFF_SECONDS", "30")
 AXES_COOLOFF_TIME = lambda request: timedelta(seconds=AUTH_RATE_LIMIT_COOLOFF_SECONDS)
@@ -794,7 +794,8 @@ AXES_FAILURE_LIMIT = AUTH_RATE_LIMIT_MAX_FAILURES
 AXES_LOCKOUT_PARAMETERS = ["username"]
 AXES_COOLOFF_MESSAGE = "Too many login attempts. Please try again later."
 AXES_HTTP_RESPONSE_CODE = 429
-AXES_HANDLER = "axes.handlers.cache.AxesCacheHandler"
+AXES_HANDLER = "axes.handlers.database.AxesDatabaseHandler"
+AXES_DISABLE_ACCESS_LOG = True
 if IN_TESTS:
     AXES_HANDLER = "axes.handlers.dummy.AxesDummyHandler"
 
@@ -865,6 +866,9 @@ CLAMAV_CONFIGURATION = {
     "stream": True,  # Streaming file content instead of sending files as is
 }
 
+# django-simple-captcha config
+CAPTCHA_CHALLENGE_FUNCT = "captcha.helpers.math_challenge"
+
 # Plugin config
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:
@@ -889,8 +893,8 @@ for plugin_name in PLUGINS:
         if hasattr(plugin_settings, "WEBPACK_LOADER"):
             WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
 
-        if hasattr(plugin_settings, "DATABASES"):
-            DATABASES.update(plugin_settings.DATABASES)
+        if hasattr(plugin_settings, "DEFAULT_THROTTLE_RATES"):
+            REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update(plugin_settings.DEFAULT_THROTTLE_RATES)
 
     except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
         print(
@@ -913,6 +917,7 @@ if IN_TESTS:
     }
     if not ENCRYPTED_TEXT_FIELD_KEY:
         ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="
+    CAPTCHA_TEST_MODE = True
 
 ENABLE_SETUPER_SANDBOX = get_env_var_or_default("ENABLE_SETUPER_SANDBOX", "false").lower() == "true"
 SETUPER_SANDBOX_PASSWORD = get_env_var_or_default("SETUPER_SANDBOX_PASSSWORD", "district")

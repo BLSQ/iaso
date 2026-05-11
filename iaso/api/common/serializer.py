@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 from django.utils.module_loading import import_string
 from rest_framework import serializers
 
+from iaso.models import UserRole
+
+from .serializer_fields import UserRoleNameField
+
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source="get_full_name")
@@ -31,6 +35,14 @@ class ModelSerializerFieldMappingMixin:
 
 class ModelSerializer(ModelSerializerFieldMappingMixin, serializers.ModelSerializer):
     pass
+
+
+class UserRoleNameSerializer(ModelSerializer):
+    name = UserRoleNameField(source="group.name", read_only=True)
+
+    class Meta:
+        model = UserRole
+        fields = ["name", "id"]
 
 
 class DropdownOptionsSerializer(serializers.Serializer):

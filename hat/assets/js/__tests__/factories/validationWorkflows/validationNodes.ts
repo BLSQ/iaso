@@ -6,7 +6,7 @@ import {
     NextByPass,
     NextTasks,
     ValidationNodeRetrieveResponse,
-} from 'Iaso/domains/instances/validationWorkflow/types/validationNodes';
+} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { apiMobileDateFormat } from 'Iaso/utils/dates';
 
 type ValidationNodeRetrieveResponseFactoryTransientParams = {

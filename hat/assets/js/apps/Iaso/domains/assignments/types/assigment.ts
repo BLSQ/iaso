@@ -2,6 +2,11 @@ import { Shape } from '../../orgUnits/types/shapes';
 
 export type AssignmentParams = {
     planningId: string;
+    tab: 'list' | 'map';
+    pageSize?: string;
+    page?: string;
+    order?: string;
+    search?: string;
 };
 
 type OrgUnitDetails = {

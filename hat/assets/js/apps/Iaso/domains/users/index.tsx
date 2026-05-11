@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import Add from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Settings';
-import { Box, Grid } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
@@ -23,14 +24,12 @@ import TopBar from '../../components/nav/TopBarComponent';
 import * as Permission from '../../utils/permissions';
 import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
-import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
 import Filters from './components/Filters';
 
 import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useUsersTableColumns } from './config';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
 import { useCreateExportMobileSetup } from './hooks/useCreateExportMobileSetup';
-import { useCreateProfile } from './hooks/useCreateProfile';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import {
     useGetProfilesApiParams,
@@ -172,7 +171,15 @@ export const Users = () => {
                         />
                         <Box ml={2}>
                             {/* @ts-ignore */}
-                            <BulkImportUsersDialog />
+                            <Button
+                                color="primary"
+                                variant="contained"
+                                className={classes.button}
+                                href={`/dashboard/${baseUrls.usersBulkCreate}`}
+                            >
+                                <Add className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.createFromFile)}
+                            </Button>
                         </Box>
                         <DownloadButtonsComponent
                             csvUrl={exportCsvURL}

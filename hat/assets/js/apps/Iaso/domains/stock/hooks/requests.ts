@@ -1,4 +1,4 @@
-import { Pagination } from 'bluesquare-components';
+import { Paginated } from 'bluesquare-components';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import MESSAGES from 'Iaso/domains/stock/messages';
 import { Params } from 'Iaso/domains/stock/types/filters';
@@ -14,9 +14,7 @@ import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 
-export interface PaginatedStockKeepingUnits extends Pagination {
-    results: Array<StockKeepingUnit>;
-}
+export type PaginatedStockKeepingUnits = Paginated<StockKeepingUnit>;
 
 type ApiParams = {
     limit?: string;

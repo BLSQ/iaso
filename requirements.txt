@@ -25,6 +25,7 @@ drf-spectacular[sidecar]==0.29.0  # https://github.com/tfranzel/drf-spectacular
 pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 nested-multipart-parser==1.5.0 # https://github.com/remigermain/nested-multipart-parser
 drf-extensions==0.8.0 # https://github.com/chibisov/drf-extensions
+drf-excel==2.5.3
 
 # Redis.
 # ------------------------------------------------------------------------------
@@ -71,6 +72,7 @@ names-generator==0.2.0 # https://github.com/glentner/names_generator
 django-autoslug==1.9.9 # https://github.com/justinmayer/django-autoslug
 python-magic==0.4.27 # https://github.com/ahupp/python-magic
 jsonref==1.1.0 # https://github.com/gazpachoking/jsonref
+django-simple-captcha==0.6.3  # https://github.com/mbi/django-simple-captcha/tags
 
 # Exporting tools.
 # ------------------------------------------------------------------------------
@@ -165,7 +167,7 @@ azure-storage-blob==12.19.0
 
 # SNT Malaria plugin.
 # ------------------------------------------------------------------------------
-snt-malaria-budgeting==0.9.1
+snt-malaria-budgeting==0.10.1
 django-countries==8.2.0  # https://github.com/SmileyChris/django-countries/tags
 
 # Sass compiler for template styles.

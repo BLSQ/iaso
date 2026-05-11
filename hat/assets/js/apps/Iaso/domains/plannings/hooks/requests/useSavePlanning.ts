@@ -6,7 +6,7 @@ import {
     dateRangePickerToDateApi,
     getApiParamDateTimeString,
 } from '../../../../utils/dates';
-import { endpoint } from '../../constants';
+import { PLANNINGS_API_URL } from '../../constants';
 import { Planning } from '../../types';
 
 export type SavePlanningQuery = {
@@ -106,13 +106,13 @@ export const convertAPIErrorsToState = data => {
 };
 
 const patchPlanning = async (body: Partial<SavePlanningQuery>) => {
-    const url = `${endpoint}${body.id}/`;
+    const url = `${PLANNINGS_API_URL}${body.id}/`;
     return patchRequest(url, convertToApi(body));
 };
 
 const postPlanning = async (body: SavePlanningQuery) => {
     return postRequest({
-        url: endpoint,
+        url: PLANNINGS_API_URL,
         data: convertToApi(body),
     });
 };

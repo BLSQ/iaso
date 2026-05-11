@@ -13,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from iaso.api.openhexa.permission import HasPipelineManagementPermission
 from iaso.api.openhexa.serializers import (
     PipelineLaunchSerializer,
     TaskResponseSerializer,
@@ -41,6 +42,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
     PATCH /api/openhexa/pipelines/{id}/             - Update task status
     GET /api/openhexa/config/                       - Check if OpenHexa config exists
     """
+
+    permission_classes = [HasPipelineManagementPermission]
 
     @require_openhexa_config
     def list(self, request, openhexa_config=None):

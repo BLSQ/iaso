@@ -1,5 +1,7 @@
-from django.contrib.auth.views import PasswordResetView
+from django.conf import settings
+from django.contrib.auth.views import LogoutView, PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from iaso.mail.branding import core_email_branding_context
 
@@ -12,3 +14,36 @@ class IasoPasswordResetView(PasswordResetView):
         domain = get_current_site(self.request).domain
         self.extra_email_context = core_email_branding_context(protocol=protocol, domain=domain)
         return super().form_valid(form)
+
+
+class IasoLogoutView(LogoutView):
+    """LogoutView that honours ``?next=<path>`` only when it appears in
+    ``settings.LOGOUT_NEXT_ALLOWED_PATHS`` (and is a same-host relative URL).
+    Anything else falls back to ``next_page``.
+
+    Strict allow-listing (rather than just a same-host check) closes
+    CWE-601 / OWASP "Unvalidated Redirects and Forwards": an internal page
+    on the same host can still be weaponised for phishing.
+
+    Plugins extend the allow-list via their ``plugin_settings.CONSTANTS``.
+    """
+
+    def get_redirect_url(self):
+        candidate = (
+            self.request.POST.get(self.redirect_field_name) or self.request.GET.get(self.redirect_field_name) or ""
+        )
+        if candidate and self._is_allowed(candidate):
+            return candidate
+        # Returning "" makes ``get_success_url`` fall through to
+        # ``get_default_redirect_url`` (which uses ``next_page``).
+        return ""
+
+    def _is_allowed(self, candidate: str) -> bool:
+        allowed = set(getattr(settings, "LOGOUT_NEXT_ALLOWED_PATHS", []))
+        if candidate not in allowed:
+            return False
+        return url_has_allowed_host_and_scheme(
+            candidate,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        )

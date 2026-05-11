@@ -13,7 +13,7 @@ from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from iaso.auth.views import IasoPasswordResetView
+from iaso.auth.views import IasoLogoutView, IasoPasswordResetView
 from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 
 
@@ -95,7 +95,7 @@ else:
         path("api/etl/", include(("iaso.urls_etl", "api-etl"), namespace="api-etl")),
         path("pages/<page_slug>/", page, name="pages"),
         path("i18n/", include("django.conf.urls.i18n")),
-        path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),
+        path("logout-iaso", IasoLogoutView.as_view(next_page="/login/"), name="logout-iaso"),
         path(
             "forgot-password/",
             IasoPasswordResetView.as_view(

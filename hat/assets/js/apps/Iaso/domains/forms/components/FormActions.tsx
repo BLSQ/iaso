@@ -195,7 +195,7 @@ export const FormActions: FunctionComponent<Props> = ({
                     )}
                 </>
             )}
-            {settings.row.original.latest_form_version != null && (
+            {settings.row.original.latest_form_version !== null && (
                 <>
                     <IconButton
                         onClick={handleClick as () => void}

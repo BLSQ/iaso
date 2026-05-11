@@ -30,6 +30,7 @@ import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import RuleIcon from '@mui/icons-material/Rule';
 import SchemaIcon from '@mui/icons-material/Schema';
+import ScienceIcon from '@mui/icons-material/Science';
 import SearchIcon from '@mui/icons-material/Search';
 import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -181,6 +182,18 @@ const menuItems = (
             permissions: paths.devicesPath.permissions,
             icon: props => <ImportantDevicesRoundedIcon {...props} />,
         },
+        {
+            label: formatMessage(MESSAGES.apiImport),
+            key: 'apiImports',
+            permissions: paths.adminApiImportPath.permissions,
+            icon: props => <InventoryIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.pipelines),
+            key: 'pipelines',
+            permissions: paths.pipelineListPath.permissions,
+            icon: props => <ScienceIcon {...props} />,
+        },
     ];
     if (currentUser.is_staff || currentUser.is_superuser) {
         settingsSubMenu.push({
@@ -190,12 +203,6 @@ const menuItems = (
             icon: props => <ManageAccountsIcon {...props} />,
         });
     }
-    settingsSubMenu.push({
-        label: formatMessage(MESSAGES.apiImport),
-        key: 'apiImports',
-        permissions: paths.adminApiImportPath.permissions,
-        icon: props => <InventoryIcon {...props} />,
-    });
     return [
         {
             label: formatMessage(MESSAGES.formsTitle),

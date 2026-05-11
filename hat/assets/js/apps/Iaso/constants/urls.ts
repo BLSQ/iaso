@@ -71,11 +71,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId'],
     },
     pipelineList: {
-        url: 'pipelines/',
+        url: 'settings/pipelines/',
         params: ['accountId'],
     },
     pipelineDetails: {
-        url: 'pipelines/details',
+        url: 'settings/pipelines/details',
         params: ['accountId', 'pipelineId'],
     },
     formDetail: {
@@ -775,6 +775,7 @@ type IasoBaseUrls = {
     login: string;
     apiLogs: string;
     adminApiImport: string;
+    pipelines: string;
     validationWorkflowsConfiguration: string;
     validationWorkflowsConfigurationDetail: string;
     validationWorkflowInstances: string;

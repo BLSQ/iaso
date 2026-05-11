@@ -53,6 +53,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: List of pipelines with id, name, and currentVersion
         """
+        assert openhexa_config is not None  # injected by @require_openhexa_config
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
@@ -103,6 +104,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: Pipeline details including parameters
         """
+        assert openhexa_config is not None  # injected by @require_openhexa_config
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
@@ -189,6 +191,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+        assert openhexa_config is not None  # injected by @require_openhexa_config
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:

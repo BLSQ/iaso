@@ -728,6 +728,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "ended_at",
                     "pipeline_uuids",
                     "selected_sampling_result",
+                    "target_org_unit_types",
                 ),
             },
         ),

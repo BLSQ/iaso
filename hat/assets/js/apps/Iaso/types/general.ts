@@ -44,14 +44,6 @@ export type Router = {
     transitionTo: (nextLocation: unknown) => unknown;
     unsubscribe: () => unknown;
 };
-export type Pagination = {
-    pages: number;
-    page: number;
-    count: number;
-    limit: number;
-    has_next: boolean;
-    has_previous: boolean;
-};
 
 export type PaginationParams = {
     pageSize: string;

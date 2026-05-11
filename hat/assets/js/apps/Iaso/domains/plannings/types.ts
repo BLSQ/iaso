@@ -1,7 +1,7 @@
 import { UrlParams } from 'bluesquare-components';
+import { PaginationType } from 'bluesquare-components';
 import { GeoJson } from 'Iaso/components/maps/types';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
-import { Pagination } from 'Iaso/types/general';
 
 export type PublishingStatus = 'all' | 'draft' | 'published';
 
@@ -130,6 +130,6 @@ export type PaginatedPlanningOrgUnit = {
     name: string;
     assignment: PaginatedAssignment | null;
 };
-export interface PaginatedPlanningOrgUnits extends Pagination {
+export interface PaginatedPlanningOrgUnits extends PaginationType {
     results: Array<PaginatedPlanningOrgUnit>;
 }

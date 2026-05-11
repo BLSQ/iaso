@@ -18,7 +18,7 @@ import {
     ConfirmCancelModal,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
-import { isEqual } from 'lodash';
+import { isEqual, pick } from 'lodash';
 import moment from 'moment';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
@@ -59,6 +59,18 @@ import { usePlanningValidation } from '../hooks/validation';
 import MESSAGES from '../messages';
 import { Planning, PageMode } from '../types';
 import { canAssignPlanning } from '../utils';
+
+/** Fields that trigger the published active planning edit warning when changed */
+const PUBLISHED_ACTIVE_PLANNING_WARNING_FIELDS = [
+    'startDate',
+    'endDate',
+    'publishingStatus',
+    'project',
+    'forms',
+    'selectedOrgUnit',
+    'selectedTeam',
+    'targetOrgUnitTypes',
+] as const;
 
 const styles: SxStyles = {
     paper: {
@@ -179,12 +191,16 @@ export const PlanningForm: FunctionComponent<Props> = ({
         onSubmit: save,
     });
     const isPublished = publishingStatus === 'published';
-    const hasStarted = Boolean(
-        startDate && moment().isAfter(moment(startDate, 'DD/MM/YYYY'), 'day'),
+    const isActive = Boolean(
+        startDate &&
+        endDate &&
+        moment().isBetween(
+            moment(startDate, 'DD/MM/YYYY'),
+            moment(endDate, 'DD/MM/YYYY'),
+            'day',
+        ),
     );
-    const isEditingDisabled = Boolean(
-        (isPublished || hasStarted) && mode === 'edit',
-    );
+
     const {
         values,
         setFieldValue,
@@ -196,13 +212,22 @@ export const PlanningForm: FunctionComponent<Props> = ({
         handleSubmit,
         validateField,
     } = formik;
+    const shouldDisplayWarning = useMemo(() => {
+        if (mode !== 'edit' || !isActive || !isPublished) {
+            return false;
+        }
+        return !isEqual(
+            pick(values, PUBLISHED_ACTIVE_PLANNING_WARNING_FIELDS),
+            pick(initialValues, PUBLISHED_ACTIVE_PLANNING_WARNING_FIELDS),
+        );
+    }, [mode, isActive, isPublished, values, initialValues]);
     const handleSubmitWithWarning = useCallback(() => {
-        if (isEditingDisabled) {
+        if (shouldDisplayWarning) {
             setDisplayWarning(true);
         } else {
             handleSubmit();
         }
-    }, [handleSubmit, isEditingDisabled]);
+    }, [handleSubmit, shouldDisplayWarning]);
     const allowConfirm =
         isValid && (!isEqual(values, initialValues) || mode === 'copy');
     const { data: formsDropdown, isFetching: isFetchingForms } =
@@ -339,7 +364,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
                             label={MESSAGES.name}
                             required
                             withMarginTop={false}
-                            disabled={isEditingDisabled}
                         />
 
                         <DatesRange
@@ -363,7 +387,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
                             errors={getErrors('description')}
                             type="textarea"
                             label={MESSAGES.description}
-                            disabled={isEditingDisabled}
                         />
                     </Grid>
 
@@ -390,7 +413,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             required
                                             options={projectsDropdown}
                                             loading={isFetchingProjects}
-                                            disabled={isEditingDisabled}
                                         />
                                     </Grid>
                                     <Grid xs={6} item>
@@ -404,10 +426,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             required
                                             options={teamsDropdown || []}
                                             loading={isFetchingTeams}
-                                            disabled={
-                                                !values.project ||
-                                                isEditingDisabled
-                                            }
+                                            disabled={!values.project}
                                         />
                                     </Grid>
                                 </Grid>
@@ -427,9 +446,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     multi
                                     options={formsDropdown}
                                     loading={isFetchingForms}
-                                    disabled={
-                                        !values.project || isEditingDisabled
-                                    }
+                                    disabled={!values.project}
                                 />
                             </Box>
                         </InputWithInfos>
@@ -450,7 +467,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                 value={values.pipelineUuids}
                                 errors={getErrors('pipelineUuids')}
                                 label={MESSAGES.pipelines}
-                                disabled={isEditingDisabled}
                             />
                         )}
                     </Grid>
@@ -470,7 +486,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     )}
                                     name="selectedOrgUnit"
                                     errors={getErrors('selectedOrgUnit')}
-                                    disabled={isEditingDisabled}
                                 />
                                 <InputComponent
                                     type="select"
@@ -490,10 +505,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             ? undefined
                                             : values.targetOrgUnitTypes
                                     }
-                                    disabled={
-                                        !values.selectedOrgUnit ||
-                                        isEditingDisabled
-                                    }
+                                    disabled={!values.selectedOrgUnit}
                                     options={orgunitTypes || []}
                                     loading={
                                         isFetchingOrgunitTypes ||
@@ -569,9 +581,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                                             onClick={onClick}
                                                             startIcon={
                                                                 <DeleteIcon />
-                                                            }
-                                                            disabled={
-                                                                isEditingDisabled
                                                             }
                                                         >
                                                             {formatMessage(

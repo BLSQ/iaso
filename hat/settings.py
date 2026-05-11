@@ -633,7 +633,7 @@ WEBPACK_LOADER = {
             "assets/webpack",
             (
                 "webpack-stats.json"
-                if (DEBUG and not env.str("TEST_PROD", default=None) and not USE_S3)
+                if (DEBUG and not env.bool("TEST_PROD", default=False) and not USE_S3)
                 else "webpack-stats-prod.json"
             ),
         ),

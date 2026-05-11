@@ -15,7 +15,25 @@ class BaseProfileUpdateSerializer(ModelSerializer):
 
 
 class ProfileMeUpdateSerializer(BaseProfileUpdateSerializer):
-    pass
+    """
+    Serializer used by `PATCH /api/profiles/me/`.
+
+    Any logged-in user can update a small set of self-service fields without
+    holding any user-admin permission (see `HasProfilePermission`, which
+    short-circuits when `pk == PK_ME`).
+
+    `first_name`, `last_name` and `email` live on the `User` model rather than
+    on `Profile`. They are declared here as plain serializer fields (matching
+    the pattern in `ProfileUpdateSerializer`) and written back to the user by
+    `ProfilesViewSet._post_update_user` when they appear in `validated_data`.
+    """
+
+    email = serializers.EmailField(required=False, allow_blank=True, write_only=True)
+    first_name = serializers.CharField(required=False, allow_blank=True, write_only=True, max_length=150)
+    last_name = serializers.CharField(required=False, allow_blank=True, write_only=True, max_length=150)
+
+    class Meta(BaseProfileUpdateSerializer.Meta):
+        fields = BaseProfileUpdateSerializer.Meta.fields + ["first_name", "last_name", "email"]
 
 
 class ProfileUpdateSerializer(BaseProfileUpdateSerializer):

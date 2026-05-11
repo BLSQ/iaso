@@ -109,7 +109,9 @@ export const Entities: FunctionComponent = () => {
         useGetEntitiesCount(params, requiresCount);
 
     const lengthResults = data?.result?.length ?? 0;
-    const totalCount = countData?.count ?? lengthResults;
+    const totalCount = hasCursor
+        ? (countData?.count ?? lengthResults)
+        : lengthResults;
 
     const handleNextPage = () => {
         if (next) {

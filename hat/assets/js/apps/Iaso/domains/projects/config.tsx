@@ -34,6 +34,21 @@ export const useColumns = (
                 },
             },
             {
+                Header: formatMessage(MESSAGES.description),
+                accessor: 'description',
+                width: 300,
+                Cell: settings => {
+                    const description = settings.row.original.description;
+                    if (!description) return textPlaceholder;
+                    if (description.length <= 80) return description;
+                    return (
+                        <span title={description}>
+                            {`${description.slice(0, 80)}...`}
+                        </span>
+                    );
+                },
+            },
+            {
                 Header: formatMessage(MESSAGES.featureFlags),
                 accessor: 'feature_flags',
                 sortable: false,

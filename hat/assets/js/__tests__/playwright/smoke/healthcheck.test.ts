@@ -8,7 +8,9 @@ const ENV = {
     'iaso-demo': 'https://demo.openiaso.com',
 };
 
-let envToCheck = process.env?.HEALTH_ENV?.split(',') || [];
+let envToCheck = process.env?.HEALTH_ENV
+    ? process.env?.HEALTH_ENV?.split(',')
+    : ['all'];
 
 if (envToCheck.some(env => env === 'all')) {
     envToCheck = Object.keys(ENV);

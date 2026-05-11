@@ -1,4 +1,4 @@
-import { UseQueryResult } from 'react-query';
+import { QueryKey, UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
@@ -16,38 +16,17 @@ export type OrgUnitTypeHierarchyDropdownValues = DropdownOptionsWithOriginal<
     OrgUnitTypeHierarchy
 >[];
 
-export const flattenHierarchy = (
-    items: any[],
+/**
+ * Fetch org unit types hierarchy as a tree.
+ *
+ * For dropdowns, flatten this hierarchy with `flattenOrgUnitTypeHierarchy`.
+ */
+export const useGetOrgUnitTypesHierarchy = <TSelected = OrgUnitTypeHierarchy>(
     orgUnitTypeId?: number,
-    selectedOrgUnitTypeIds?: number[],
-): any[] => {
-    return items.flatMap(item => {
-        if (
-            selectedOrgUnitTypeIds?.includes(item.id) &&
-            orgUnitTypeId &&
-            item.id !== orgUnitTypeId
-        ) {
-            return [];
-        }
-        const currentItem = {
-            value: item.id,
-            label: item.name,
-            original: item,
-        };
-        const children = flattenHierarchy(
-            item.sub_unit_types ?? [],
-            orgUnitTypeId,
-            selectedOrgUnitTypeIds,
-        );
-        return [currentItem, ...children];
-    });
-};
-
-export const useGetOrgUnitTypesHierarchy = (
-    orgUnitTypeId?: number,
-): UseQueryResult<OrgUnitTypeHierarchy, Error> => {
-    const queryKey: any[] = ['orgUnitTypeHierarchy', orgUnitTypeId];
-    return useSnackQuery({
+    select?: (data: OrgUnitTypeHierarchy) => TSelected,
+): UseQueryResult<TSelected, Error> => {
+    const queryKey: QueryKey = ['orgUnitTypeHierarchy', orgUnitTypeId, select];
+    return useSnackQuery<OrgUnitTypeHierarchy, Error, TSelected>({
         queryKey,
         queryFn: () =>
             getRequest(`/api/v2/orgunittypes/${orgUnitTypeId}/hierarchy/`),
@@ -57,6 +36,7 @@ export const useGetOrgUnitTypesHierarchy = (
             cacheTime: 60000,
             staleTime: Infinity,
             retry: false,
+            ...(select ? { select } : {}),
         },
     });
 };

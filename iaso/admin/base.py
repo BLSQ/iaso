@@ -31,7 +31,7 @@ from ..models import (
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
-    BulkCreateUserCsvFile,
+    BulkCreateUserFile,
     DataSource,
     DataSourceVersionsSynchronization,
     Device,
@@ -1344,6 +1344,6 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
 admin.site.register(DevicePosition)
-admin.site.register(BulkCreateUserCsvFile)
+admin.site.register(BulkCreateUserFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)

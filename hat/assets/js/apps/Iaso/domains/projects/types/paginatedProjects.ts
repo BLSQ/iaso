@@ -1,6 +1,6 @@
-import { Pagination } from 'bluesquare-components';
+import { PaginationType } from 'bluesquare-components';
 import { Project } from './project';
 
-export interface PaginatedProjects extends Pagination {
+export interface PaginatedProjects extends PaginationType {
     projects: Array<Project>;
 }

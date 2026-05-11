@@ -1,4 +1,5 @@
 import { UrlParams } from 'bluesquare-components';
+import { PaginationType } from 'bluesquare-components';
 import { GeoJson } from 'Iaso/components/maps/types';
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 
@@ -102,3 +103,33 @@ export type PlanningOrgUnits = {
     longitude: number;
     org_unit_type_id: number;
 };
+
+export type User = {
+    id: number;
+    username: string;
+    first_name: string;
+    last_name: string;
+    color: string;
+};
+export type Team = {
+    id: number;
+    name: string;
+    color: string;
+};
+export type PlanningOrgUnitAssignmentType = 'team' | 'user';
+
+export type PaginatedAssignment = {
+    id: number;
+    user: User | null;
+    team: Team | null;
+    assignment_type: PlanningOrgUnitAssignmentType | null;
+};
+
+export type PaginatedPlanningOrgUnit = {
+    id: number;
+    name: string;
+    assignment: PaginatedAssignment | null;
+};
+export interface PaginatedPlanningOrgUnits extends PaginationType {
+    results: Array<PaginatedPlanningOrgUnit>;
+}

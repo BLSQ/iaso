@@ -27,6 +27,17 @@ class ProfileListAPITestCase(BaseProfileAPITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response_data, 7)
 
+    def test_profile_list_user_roles_do_not_include_account_prefix(self):
+        group = Group.objects.create(name=f"{self.account.id}_Data manager")
+        user_role = UserRole.objects.create(group=group, account=self.account)
+        self.jane.iaso_profile.user_roles.set([user_role])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(reverse("profiles-list"), {"fields": ":all", "search": self.jane.username})
+        response_data = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(response_data["results"][0]["user_roles"], [{"id": user_role.id, "name": "Data manager"}])
+
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""
         self.client.force_authenticate(self.jim)

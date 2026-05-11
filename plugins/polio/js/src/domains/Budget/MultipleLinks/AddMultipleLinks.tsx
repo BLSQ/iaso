@@ -1,13 +1,13 @@
+import React, { FunctionComponent, useMemo } from 'react';
+import AddIcon from '@mui/icons-material/Add';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useFormikContext } from 'formik';
-import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl, IconButton } from 'bluesquare-components';
-import AddIcon from '@mui/icons-material/Add';
 import classNames from 'classnames';
+import { useFormikContext } from 'formik';
 import MESSAGES from '../../../constants/messages';
-import { NamedLink } from './NamedLink';
 import { StepForm } from '../types';
+import { NamedLink } from './NamedLink';
 
 type Props = { required?: boolean };
 const useStyles = makeStyles(theme => ({

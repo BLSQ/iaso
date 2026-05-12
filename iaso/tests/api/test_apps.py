@@ -253,7 +253,7 @@ class AppsAPITestCase(APITestCase):
 
         project = m.Project.objects.get(app_id=candidate_app["app_id"])
         self.assertEqual("", project.description)
-        
+
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
         candidate_app = {
             "name": "This is a new app",

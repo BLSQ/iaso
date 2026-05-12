@@ -45,6 +45,8 @@ export const useColumns = (
                         <Box
                             title={description}
                             sx={{
+                                maxWidth: 300,
+                                mx: 'auto',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
@@ -53,7 +55,7 @@ export const useColumns = (
                             {description}
                         </Box>
                     );
-                }
+                },
             },
             {
                 Header: formatMessage(MESSAGES.featureFlags),

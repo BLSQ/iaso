@@ -64,6 +64,7 @@ DNS_DOMAIN = env.str("DNS_DOMAIN", default="localhost:8081")
 TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
+ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -623,6 +624,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
 ]
+for plugin_name in PLUGINS:
+    plugin_name = (plugin_name or "").strip()
+    if not plugin_name:
+        continue
+    plugin_static = os.path.join(BASE_DIR, "plugins", plugin_name, "static")
+    if os.path.isdir(plugin_static):
+        STATICFILES_DIRS.append(plugin_static)
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -896,6 +904,7 @@ for plugin_name in PLUGINS:
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
+XLSFORM_VALIDATOR_TEMP_DIR = "/tmp"
 INSTALLED_APPS.append("dynamic_fields")
 
 # Making sure that files are not stored on disk while running tests

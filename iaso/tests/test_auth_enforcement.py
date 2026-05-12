@@ -1,7 +1,12 @@
+import importlib
 import re
 
+from importlib import reload
+from types import SimpleNamespace
+from unittest.mock import patch
+
 from django.test import Client, TestCase, override_settings
-from django.urls import get_resolver
+from django.urls import URLPattern, URLResolver, get_resolver
 from rest_framework import status
 
 
@@ -74,9 +79,6 @@ PUBLIC_ENDPOINTS = {
     # okish
     ("/sync/form_upload/", "POST"),
 }
-
-
-from django.urls import URLPattern, URLResolver, get_resolver
 
 
 CONVERTER_SAMPLES = {
@@ -249,3 +251,63 @@ class TestAuthEnforcement(TestCase):
                     public_endpoints.append((key, "\t", e))
 
         self.assertEqual(public_endpoints, [])
+
+
+class TestRootRedirect(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def _reload_urls(self):
+        import hat.urls
+
+        return reload(hat.urls)
+
+    def _get_index_redirect_pattern_name(self, urls_module):
+        index_pattern = next(pattern for pattern in urls_module.urlpatterns if pattern.name == "index")
+        return index_pattern.callback.view_initkwargs["pattern_name"]
+
+    @override_settings(PLUGINS=[], ROOT_REDIRECT_PATTERN_NAME="dashboard:home_iaso")
+    def test_root_redirect_uses_default_setting_without_plugin_hook(self):
+        urls_module = self._reload_urls()
+        self.assertEqual(urls_module.ROOT_REDIRECT_PATTERN_NAME, "dashboard:home_iaso")
+        self.assertEqual(self._get_index_redirect_pattern_name(urls_module), "dashboard:home_iaso")
+
+    @override_settings(PLUGINS=["plugin"], ROOT_REDIRECT_PATTERN_NAME="dashboard:home_iaso")
+    @patch("importlib.import_module")
+    def test_root_redirect_uses_plugin_settings_hook_when_present(self, import_module_mock):
+        import_module_mock.return_value = SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="dashboard:iaso")
+        with patch("importlib.util.find_spec", return_value=None):
+            urls_module = self._reload_urls()
+        self.assertEqual(urls_module.ROOT_REDIRECT_PATTERN_NAME, "dashboard:iaso")
+        self.assertEqual(self._get_index_redirect_pattern_name(urls_module), "dashboard:iaso")
+
+    @override_settings(PLUGINS=["p_a", "p_b"], ROOT_REDIRECT_PATTERN_NAME="dashboard:home_iaso")
+    def test_root_redirect_last_plugin_settings_hook_wins(self):
+        original_import_module = importlib.import_module
+
+        def fake_import(name, package=None):
+            if name == "plugins.p_a.plugin_settings":
+                return SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="a:home")
+            if name == "plugins.p_b.plugin_settings":
+                return SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="b:home")
+            return original_import_module(name, package)
+
+        with patch("importlib.import_module", side_effect=fake_import):
+            with patch("importlib.util.find_spec", return_value=None):
+                urls_module = self._reload_urls()
+        self.assertEqual(urls_module.ROOT_REDIRECT_PATTERN_NAME, "b:home")
+        self.assertEqual(self._get_index_redirect_pattern_name(urls_module), "b:home")
+
+    @override_settings(PLUGINS=["plugin"], ROOT_REDIRECT_PATTERN_NAME="dashboard:home_iaso")
+    @patch("importlib.import_module")
+    def test_plugin_redirect_pattern_name_is_different_from_default(self, import_module_mock):
+        default_pattern_name = "dashboard:home_iaso"
+        plugin_pattern_name = "somepath:iaso"
+        import_module_mock.return_value = SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME=plugin_pattern_name)
+
+        with patch("importlib.util.find_spec", return_value=None):
+            urls_module = self._reload_urls()
+        resolved_pattern_name = self._get_index_redirect_pattern_name(urls_module)
+
+        self.assertEqual(resolved_pattern_name, plugin_pattern_name)
+        self.assertNotEqual(resolved_pattern_name, default_pattern_name)

@@ -12,3 +12,10 @@ cron:
     - name: 'setuper_sandbox'
       url: '/tasks/launch_task/iaso.tasks.setuper_sandbox.setuper_sandbox/cron_task_sandbox_user/'
       schedule: '0 4 * * *'
+    - name: "export_entities_to_records"
+      url: "/tasks/launch_task/plugins.active_list.tasks.export_entities_to_records.export_entities_to_records/demo/"
+      schedule: "*/4 * * * *"
+    - name: "export_records_to_entities"
+      url: "/tasks/launch_task/plugins.active_list.tasks.export_records_to_entities.export_records_to_entities/demo/"
+      schedule: "*/4 * * * *"
+

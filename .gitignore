@@ -215,3 +215,5 @@ iaso-enketo/
 # eslint
 .eslintcache
 .claude
+
+plugins/active_list

@@ -625,7 +625,12 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "hat/assets/webpack"),
 ]
 for plugin_name in PLUGINS:
-    STATICFILES_DIRS.append(os.path.join(BASE_DIR, "plugins/%s/static" % plugin_name))
+    plugin_name = (plugin_name or "").strip()
+    if not plugin_name:
+        continue
+    plugin_static = os.path.join(BASE_DIR, "plugins", plugin_name, "static")
+    if os.path.isdir(plugin_static):
+        STATICFILES_DIRS.append(plugin_static)
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {

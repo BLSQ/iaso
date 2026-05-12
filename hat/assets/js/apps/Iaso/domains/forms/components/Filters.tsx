@@ -53,9 +53,9 @@ const Filters: FunctionComponent<Props> = ({
         searchAlwaysEnabled: true,
     });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const handleShowDeleted = useCallback(
+    const handleOnlyDeleted = useCallback(
         (key, value) => {
-            const valueForParam = value ? 'true' : undefined;
+            const valueForParam = value ? '1' : undefined;
             handleChange(key, valueForParam);
         },
         [handleChange],
@@ -148,15 +148,16 @@ const Filters: FunctionComponent<Props> = ({
             </Grid>
             <Grid container item xs={12} spacing={2}>
                 <Grid item xs={12} md={3}>
-                    {hasPlanningPermission && (
-                        <InputComponent
-                            keyValue="showDeleted"
-                            onChange={handleShowDeleted}
-                            value={filters.showDeleted === 'true'}
-                            type="checkbox"
-                            label={MESSAGES.showDeleted}
-                        />
-                    )}
+                  {hasPlanningPermission && (
+                      <InputComponent
+                        keyValue="onlyDeleted"
+                        onChange={handleOnlyDeleted}
+                        value={filters.onlyDeleted === '1'}
+                        type="checkbox"
+                        label={MESSAGES.onlyDeleted}
+                      />
+                   )}
+
                 </Grid>
                 <Grid item xs={12} md={9}>
                     <Box

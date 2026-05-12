@@ -13,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from iaso.api.openhexa.permission import HasPipelineManagementPermission
 from iaso.api.openhexa.serializers import (
     PipelineLaunchSerializer,
     TaskResponseSerializer,
@@ -28,7 +29,7 @@ from iaso.utils.tokens import get_user_token
 logger = logging.getLogger(__name__)
 
 
-@extend_schema(tags=["OpenHexa Pipelines", "OpenHexa"])
+@extend_schema(tags=["OpenHexa Pipelines"])
 class OpenHexaPipelinesViewSet(ViewSet):
     """
     OpenHexa Pipelines API
@@ -42,6 +43,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
     GET /api/openhexa/config/                       - Check if OpenHexa config exists
     """
 
+    permission_classes = [HasPipelineManagementPermission]
+
     @require_openhexa_config
     def list(self, request, openhexa_config=None):
         """
@@ -50,6 +53,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: List of pipelines with id, name, and currentVersion
         """
+        assert openhexa_config is not None  # injected by @require_openhexa_config
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
@@ -100,6 +104,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: Pipeline details including parameters
         """
+        assert openhexa_config is not None  # injected by @require_openhexa_config
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
@@ -186,6 +191,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+        assert openhexa_config is not None  # injected by @require_openhexa_config
         openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:

@@ -1,6 +1,8 @@
 import logging
 import time
 
+from typing import Any, Optional
+
 from django.utils import timezone
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
@@ -211,8 +213,10 @@ def launch_openhexa_pipeline(
     version: str,
     config: dict,
     delay: int = 2,
-    task: Task = None,
+    task: Optional[Task] = None,
     max_polling_duration_minutes: int = 200,
+    _immediate: bool = False,
+    user: Any = None,
 ):
     """
     Background task to launch OpenHEXA pipeline and monitor its status.
@@ -225,6 +229,8 @@ def launch_openhexa_pipeline(
         config: Pipeline configuration
         delay: Delay between polling attempts in seconds
         max_polling_duration_minutes: Maximum duration to poll for pipeline completion (default: 200 minutes)
+        _immediate: If True, run synchronously (handled by ``@task_decorator``; not used in task body).
+        user: Launching user for queued runs (handled by ``@task_decorator``; not used in task body).
     """
     logger.info(f"Starting OpenHEXA pipeline launch and monitoring for pipeline {pipeline_id}")
 

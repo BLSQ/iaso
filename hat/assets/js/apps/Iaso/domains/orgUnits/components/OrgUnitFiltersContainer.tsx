@@ -167,7 +167,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     );
     const defaultItem = useMemo(
         () => ({
-            validation_status: 'all',
+            validation_status: 'VALID',
             color: defaultColor.replace('#', ''),
             source: defaultSource && defaultSource.id,
             version: defaultVersion?.id,

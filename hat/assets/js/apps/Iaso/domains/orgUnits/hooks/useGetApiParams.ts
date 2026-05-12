@@ -34,6 +34,8 @@ export const useGetApiParams = (
             getFromDateString(activeSearches[i].dateFrom) || undefined;
         tempSearches[i].dateTo =
             getToDateString(activeSearches[i].dateTo) || undefined;
+        tempSearches[i].validation_status =
+            tempSearches[i].validation_status ?? 'VALID';
     });
 
     const apiParams: ApiParams = {

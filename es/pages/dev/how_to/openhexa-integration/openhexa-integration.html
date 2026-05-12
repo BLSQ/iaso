@@ -1065,6 +1065,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#permissions-pipeline-management" class="md-nav__link">
+    Permissions (Pipeline management)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#1-configuration-check-api" class="md-nav__link">
     1. Configuration Check API
   </a>
@@ -1079,22 +1086,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-pipeline-details-api" class="md-nav__link">
-    2. Pipeline Details API
+  <a href="#3-pipeline-details-api" class="md-nav__link">
+    3. Pipeline Details API
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-launch-pipeline-api" class="md-nav__link">
-    3. Launch Pipeline API
+  <a href="#4-launch-pipeline-api" class="md-nav__link">
+    4. Launch Pipeline API
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-update-task-status-api" class="md-nav__link">
-    4. Update Task Status API
+  <a href="#5-update-task-status-api" class="md-nav__link">
+    5. Update Task Status API
   </a>
   
 </li>
@@ -1148,36 +1155,43 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-no-openhexa-workspace-configured-for-your-account" class="md-nav__link">
-    1. "No OpenHEXA workspace configured for your account"
+  <a href="#1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard" class="md-nav__link">
+    1. 403 Forbidden on /api/openhexa/pipelines/ or the pipelines dashboard
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-user-profile-not-found" class="md-nav__link">
-    2. "User profile not found"
+  <a href="#2-no-openhexa-workspace-configured-for-your-account" class="md-nav__link">
+    2. "No OpenHEXA workspace configured for your account"
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-the-provided-config-contains-invalid-keys" class="md-nav__link">
-    3. "The provided config contains invalid key(s)"
+  <a href="#3-user-profile-not-found" class="md-nav__link">
+    3. "User profile not found"
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-openhexa-url-must-contain-graphql" class="md-nav__link">
-    4. "OpenHEXA URL must contain 'graphql'"
+  <a href="#4-the-provided-config-contains-invalid-keys" class="md-nav__link">
+    4. "The provided config contains invalid key(s)"
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-local-development-issues" class="md-nav__link">
-    5. Local Development Issues
+  <a href="#5-openhexa-url-must-contain-graphql" class="md-nav__link">
+    5. "OpenHEXA URL must contain 'graphql'"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-local-development-issues" class="md-nav__link">
+    6. Local Development Issues
   </a>
   
 </li>
@@ -1601,6 +1615,7 @@ task = Task.objects.create(
     &quot;result&quot;: {&quot;key&quot;: &quot;value&quot;}
 }
 </code></pre>
+<p>Use an Iaso API token for a user who has <strong>Pipeline management</strong> (<code>iaso.iaso_pipeline_management</code>); the launch flow’s <code>connection_token</code> satisfies this when the launcher has the permission.</p>
 <h3 id="3-task-status-values">3. Task Status Values<a class="headerlink" href="#3-task-status-values" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -1709,6 +1724,17 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
     # Process export
 </code></pre>
 <h2 id="api-integration">API Integration<a class="headerlink" href="#api-integration" title="Permanent link">#</a></h2>
+<h3 id="permissions-pipeline-management">Permissions (Pipeline management)<a class="headerlink" href="#permissions-pipeline-management" title="Permanent link">#</a></h3>
+<p>All endpoints under <code>/api/openhexa/pipelines/</code> are guarded by the <strong>Pipeline management</strong> permission (<code>iaso.iaso_pipeline_management</code> in Django; codename <code>iaso_pipeline_management</code> on the core permission model). That includes:</p>
+<ul>
+<li><code>GET /api/openhexa/pipelines/config/</code></li>
+<li><code>GET /api/openhexa/pipelines/</code></li>
+<li><code>GET /api/openhexa/pipelines/{pipeline_id}/</code></li>
+<li><code>POST /api/openhexa/pipelines/{pipeline_id}/launch/</code></li>
+<li><code>PATCH /api/openhexa/pipelines/{pipeline_id}/</code></li>
+</ul>
+<p>Users who are authenticated but do not have this permission receive <strong>403 Forbidden</strong>. Unauthenticated requests receive <strong>401 Unauthorized</strong>.</p>
+<p>Grant <strong>Pipeline management</strong> to any user or role that should open the pipelines UI or call these APIs. Pipelines that call back into Iaso (for example <code>PATCH</code> to update task status) must use an API token for a user who has this permission—typically the launcher, via the <code>connection_token</code> (and host) injected into the launch <code>config</code> by Iaso.</p>
 <h3 id="1-configuration-check-api">1. Configuration Check API<a class="headerlink" href="#1-configuration-check-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/config/</code></p>
 <p><strong>Description</strong>: Check if OpenHexa is configured for the current user's account and retrieve the <strong>full workspace config</strong> (including account-level pipeline parameters). The frontend uses this to pre-fill or hardcode parameters when launching pipelines so users do not have to enter them.</p>
@@ -1731,11 +1757,14 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 }
 </code></pre>
 <p>When the workspace has no config stored, <code>config</code> is an empty object: <code>"config": {}</code>. The full <code>config</code> object is whatever is stored on the workspace (e.g. <code>lqas_pipeline_code</code>, <code>pipelines</code>, or any other keys).</p>
-<p><strong>Behavior</strong>:
-- Returns <code>configured: false</code> (and no <code>config</code> key) if user has no profile or configuration is missing
-- Returns <code>configured: true</code> and <code>config</code> (the full <code>OpenHEXAWorkspace.config</code> JSON) when properly configured
-- Does not return error for missing configuration (graceful degradation)
-- The frontend looks up the current pipeline by ID in <code>config.pipelines</code> to get <code>parameters</code> for that pipeline and uses them as defaults when launching</p>
+<p><strong>Behavior</strong> (caller must have <strong>Pipeline management</strong>; see <a href="#permissions-pipeline-management">Permissions</a> above):</p>
+<ul>
+<li><strong>401</strong> if the request is not authenticated</li>
+<li><strong>403</strong> if the user does not have Pipeline management</li>
+<li>Returns <code>{"configured": false}</code> (HTTP 200) if the user has no Iaso profile or OpenHexa is not configured / invalid for the account</li>
+<li>Returns <code>configured: true</code> and <code>config</code> (the full <code>OpenHEXAWorkspace.config</code> JSON) when the account’s OpenHexa setup is valid</li>
+<li>The frontend looks up the current pipeline by ID in <code>config.pipelines</code> to get <code>parameters</code> for that pipeline and uses them as defaults when launching</li>
+</ul>
 <h3 id="2-pipeline-list-api">2. Pipeline List API<a class="headerlink" href="#2-pipeline-list-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/</code></p>
 <p><strong>Response</strong>:</p>
@@ -1751,7 +1780,7 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
     ]
 }
 </code></pre>
-<h3 id="2-pipeline-details-api">2. Pipeline Details API<a class="headerlink" href="#2-pipeline-details-api" title="Permanent link">#</a></h3>
+<h3 id="3-pipeline-details-api">3. Pipeline Details API<a class="headerlink" href="#3-pipeline-details-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/{pipeline_id}/</code></p>
 <p><strong>Response</strong>:</p>
 <pre><code class="language-json">{
@@ -1772,7 +1801,7 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
     }
 }
 </code></pre>
-<h3 id="3-launch-pipeline-api">3. Launch Pipeline API<a class="headerlink" href="#3-launch-pipeline-api" title="Permanent link">#</a></h3>
+<h3 id="4-launch-pipeline-api">4. Launch Pipeline API<a class="headerlink" href="#4-launch-pipeline-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>POST /api/openhexa/pipelines/{pipeline_id}/launch/</code></p>
 <p><strong>Request Body</strong>:</p>
 <pre><code class="language-json">{
@@ -1798,7 +1827,7 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
     }
 }
 </code></pre>
-<h3 id="4-update-task-status-api">4. Update Task Status API<a class="headerlink" href="#4-update-task-status-api" title="Permanent link">#</a></h3>
+<h3 id="5-update-task-status-api">5. Update Task Status API<a class="headerlink" href="#5-update-task-status-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>PATCH /api/openhexa/pipelines/{pipeline_id}/</code></p>
 <p><strong>Request Body</strong>:</p>
 <pre><code class="language-json">{
@@ -1815,6 +1844,7 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 </code></pre>
 <h2 id="frontend-integration">Frontend Integration<a class="headerlink" href="#frontend-integration" title="Permanent link">#</a></h2>
 <p>Iaso includes a simple frontend integration for OpenHexa pipelines that provides:</p>
+<p>Users need the <strong>Pipeline management</strong> permission to use the pipelines screens and the underlying <code>/api/openhexa/pipelines/</code> APIs (see <a href="#permissions-pipeline-management">Permissions (Pipeline management)</a> under API Integration).</p>
 <h3 id="pipeline-management-interface">Pipeline Management Interface<a class="headerlink" href="#pipeline-management-interface" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Pipeline List</strong>: View all available OpenHexa pipelines at <code>/dashboard/pipelines/</code></li>
@@ -1832,7 +1862,11 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 </ul>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
 <h3 id="common-issues">Common Issues<a class="headerlink" href="#common-issues" title="Permanent link">#</a></h3>
-<h4 id="1-no-openhexa-workspace-configured-for-your-account">1. "No OpenHEXA workspace configured for your account"<a class="headerlink" href="#1-no-openhexa-workspace-configured-for-your-account" title="Permanent link">#</a></h4>
+<h4 id="1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard">1. 403 Forbidden on <code>/api/openhexa/pipelines/</code> or the pipelines dashboard<a class="headerlink" href="#1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The authenticated user does not have the <strong>Pipeline management</strong> permission (<code>iaso.iaso_pipeline_management</code>).</p>
+<p><strong>Solution</strong>: Grant <strong>Pipeline management</strong> to the user (or to a role assigned to the user) in the account admin / permissions UI, then retry.</p>
+<p>For pipeline code that calls Iaso (e.g. task status <code>PATCH</code>), ensure the token is for a user with this permission—use the launcher token from <code>connection_token</code> in the launch payload when possible.</p>
+<h4 id="2-no-openhexa-workspace-configured-for-your-account">2. "No OpenHEXA workspace configured for your account"<a class="headerlink" href="#2-no-openhexa-workspace-configured-for-your-account" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The account has no associated OpenHEXA workspace or the workspace configuration is incomplete.</p>
 <p><strong>Solution</strong>: Create or update the OpenHEXA configuration:</p>
 <pre><code class="language-python">from iaso.models import Account
@@ -1873,8 +1907,8 @@ workspace, created = OpenHEXAWorkspace.objects.get_or_create(
 - ✅ OpenHEXAWorkspace exists for the account
 - ✅ Workspace has a non-empty slug
 - ✅ Workspace is linked to an OpenHEXAInstance</p>
-<h4 id="2-user-profile-not-found">2. "User profile not found"<a class="headerlink" href="#2-user-profile-not-found" title="Permanent link">#</a></h4>
-<p><strong>Cause</strong>: The user doesn't have an associated <code>iaso_profile</code>.</p>
+<h4 id="3-user-profile-not-found">3. "User profile not found"<a class="headerlink" href="#3-user-profile-not-found" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: On endpoints that use <code>@require_openhexa_config</code> (list, detail, launch), the authenticated user has no <code>iaso_profile</code>. Note: without <strong>Pipeline management</strong> you get <strong>403</strong> before this message; this case applies once the user has the permission but still lacks a profile.</p>
 <p><strong>Solution</strong>: Ensure all users who need to access OpenHexa have an Iaso profile:</p>
 <pre><code class="language-python">from django.contrib.auth.models import User
 from iaso.models import Profile, Account
@@ -1888,13 +1922,13 @@ profile, created = Profile.objects.get_or_create(
     defaults={&quot;account&quot;: account}
 )
 </code></pre>
-<h4 id="3-the-provided-config-contains-invalid-keys">3. "The provided config contains invalid key(s)"<a class="headerlink" href="#3-the-provided-config-contains-invalid-keys" title="Permanent link">#</a></h4>
+<h4 id="4-the-provided-config-contains-invalid-keys">4. "The provided config contains invalid key(s)"<a class="headerlink" href="#4-the-provided-config-contains-invalid-keys" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The pipeline parameters don't match the expected parameter names.</p>
 <p><strong>Solution</strong>: Ensure all parameters in your pipeline are properly defined with <code>@parameter</code> decorators:</p>
 <pre><code class="language-python">@parameter(&quot;task_id&quot;, type=str, name=&quot;Task ID&quot;, required=True)
 @parameter(&quot;pipeline_id&quot;, type=str, name=&quot;Pipeline ID&quot;, required=True)
 </code></pre>
-<h4 id="4-openhexa-url-must-contain-graphql">4. "OpenHEXA URL must contain 'graphql'"<a class="headerlink" href="#4-openhexa-url-must-contain-graphql" title="Permanent link">#</a></h4>
+<h4 id="5-openhexa-url-must-contain-graphql">5. "OpenHEXA URL must contain 'graphql'"<a class="headerlink" href="#5-openhexa-url-must-contain-graphql" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The OpenHEXA instance URL doesn't contain the required 'graphql' keyword.</p>
 <p><strong>Solution</strong>: Update the instance URL to include the GraphQL endpoint:</p>
 <pre><code class="language-python">from iaso.models.openhexa import OpenHEXAInstance
@@ -1903,7 +1937,7 @@ instance = OpenHEXAInstance.objects.get(name=&quot;Production OpenHEXA&quot;)
 instance.url = &quot;https://your-openhexa-instance.com/graphql/&quot;  # Must contain 'graphql'
 instance.save()
 </code></pre>
-<h4 id="5-local-development-issues">5. Local Development Issues<a class="headerlink" href="#5-local-development-issues" title="Permanent link">#</a></h4>
+<h4 id="6-local-development-issues">6. Local Development Issues<a class="headerlink" href="#6-local-development-issues" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: OpenHexa can't reach your local Iaso instance.</p>
 <p><strong>Solution</strong>: 
 1. Use ngrok to create a public tunnel: <code>ngrok http 8081</code>

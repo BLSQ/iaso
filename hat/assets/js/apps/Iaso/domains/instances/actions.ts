@@ -15,6 +15,8 @@ export const createInstance = payload => {
         org_unit_id: payload.org_unit,
         form_id: payload.currentInstance.id,
         period: payload.period,
+        entity_id: payload.entity_id,
+        injectedValues: payload.injectedValues,
     }).then(
         // Redirect the browser to Enketo
         createRequest => {

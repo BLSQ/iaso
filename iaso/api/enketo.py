@@ -85,12 +85,18 @@ def _enketo_url_for_creation(form, instance, request, return_url):
 
 # Used by Create submission in Iaso Dashboard
 @api_view(["POST"])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([HasPermission(CORE_SUBMISSIONS_UPDATE_PERMISSION)])
 def enketo_create_url(request):
     form_id = request.data.get("form_id")
     period = request.data.get("period", None)
     org_unit_id = request.data.get("org_unit_id")
     return_url = request.data.get("return_url", None)
+    entity_id = request.data.get("entity_id", None)
+    injected_values = request.data.get("injectedValues", {})
+
+    if "trypelim_profile" in injected_values:
+        if injected_values["trypelim_profile"] not in ["UM", "MUM", "CPLTHA", "FIXED_STRUCTURE"]:
+            return JsonResponse({"error": "Invalid trypelim_profile"}, status=400)
 
     uuid = str(uuid4())
     now = timezone.now()
@@ -108,6 +114,8 @@ def enketo_create_url(request):
         last_modified_by=request.user,
         source_created_at=now,
         source_updated_at=now,
+        entity_id=entity_id,
+        json=injected_values,
     )  # warning for access rights here
     instance.save()
 

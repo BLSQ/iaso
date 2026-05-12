@@ -297,6 +297,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.residence',
         defaultMessage: 'Residence',
     },
+    createSubmission: {
+        id: 'iaso.entities.createSubmission',
+        defaultMessage: 'Create submission',
+    },
+    ok: {
+        id: 'iaso.label.ok',
+        defaultMessage: 'OK',
+    },
+    period: {
+        id: 'iaso.instance.period',
+        defaultMessage: 'Period',
+    },
+    selectedOrgUnit: {
+        id: 'iaso.instance.selectedOrgUnit',
+        defaultMessage: 'Selected Org Unit',
+    },
 });
 
 export default MESSAGES;

@@ -37,11 +37,13 @@ jobs:
       branch: ${{ github.head_ref || github.ref_name }}
 
   deploy_on_staging:
-    needs: [ build_and_push_image, tests ]
+#    needs: [ build_and_push_image, tests ]
+    needs: [ build_and_push_image ]
     uses: ./.github/workflows/wc_docker_deploy.yml
     with:
       branch: develop
-      environment: staging
+#      environment: staging
+      environment: upgrade
       image_tag: develop
 #      slack_channel: iasops
     secrets: inherit

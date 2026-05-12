@@ -7,7 +7,7 @@ import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 
 import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
-import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { OpenhexaIntegrationDrawer } from 'Iaso/domains/plannings/sampling/OpenhexaIntegrationDrawer';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { SxStyles } from 'Iaso/types/general';
@@ -49,7 +49,10 @@ export const SamplingResults: FunctionComponent<Props> = ({ planning }) => {
             planning?.org_unit_details?.org_unit_type || 0,
         );
     const orgunitTypes = useMemo(
-        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
+        () =>
+            flattenOrgUnitTypeHierarchy(
+                orgUnitTypeHierarchy?.sub_unit_types || [],
+            ),
         [orgUnitTypeHierarchy],
     );
     const { mutateAsync: savePlanning, isLoading: isSavingPlanningResults } =

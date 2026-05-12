@@ -181,6 +181,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.showDeleted',
         defaultMessage: 'Show deleted',
     },
+    onlyDeleted: {
+        id: 'iaso.forms.onlyDeleted',
+        defaultMessage: 'Show only Deleted',
+    },
     hasInstances: {
         id: 'iaso.forms.hasInstances',
         defaultMessage: 'Form submissions',

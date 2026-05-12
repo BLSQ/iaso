@@ -59,6 +59,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'search',
             'showDeleted',
+            'onlyDeleted',
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
@@ -71,11 +72,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId'],
     },
     pipelineList: {
-        url: 'pipelines/',
+        url: 'settings/pipelines/',
         params: ['accountId'],
     },
     pipelineDetails: {
-        url: 'pipelines/details',
+        url: 'settings/pipelines/details',
         params: ['accountId', 'pipelineId'],
     },
     formDetail: {
@@ -520,6 +521,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'managers',
             'types',
             'projects',
+            'fields',
             ...paginationPathParams,
         ],
     },
@@ -774,6 +776,7 @@ type IasoBaseUrls = {
     login: string;
     apiLogs: string;
     adminApiImport: string;
+    pipelines: string;
     validationWorkflowsConfiguration: string;
     validationWorkflowsConfigurationDetail: string;
     validationWorkflowInstances: string;

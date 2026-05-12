@@ -48,6 +48,10 @@ PUBLIC_ENDPOINTS = {
     # verify signature but return 400 to not interfere with enketo
     ("/api/forms/1/manifest_enketo/", "GET"),
     ("/api/mobile/forms/1/manifest_enketo/", "GET"),
+    # captchas
+    *any_methods("/api/captcha/image/"),
+    *any_methods("/api/captcha/audio/"),
+    *any_methods("/api/captcha/refresh/"),
     # task worker endpoints
     *any_methods("/tasks/launch_task/export_task/my_user_name/"),
     *any_methods("/tasks/cron/"),
@@ -100,6 +104,7 @@ CONVERTER_SAMPLES = {
     "token": "456fdg-sdf546sdf-dsf54",
     "task_name": "export_task",
     "user_name": "my_user_name",
+    "key": "1",  # used by captchas URLs
 }
 
 DEFAULT_SAMPLE = "1"

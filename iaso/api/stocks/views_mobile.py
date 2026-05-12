@@ -50,8 +50,8 @@ class StockKeepingUnitMobileViewSet(viewsets.ModelViewSet):
             StockKeepingUnit.objects.filter_for_project(project)
             .filter(deleted_at=None)
             .prefetch_related(
-                Prefetch("org_unit_types", OrgUnitType.objects.filter_for_project(project).only("id")),
-                Prefetch("forms", Form.objects.filter_for_project(project).only("id")),
+                Prefetch("org_unit_types", OrgUnitType.objects.filter_for_project(project).only("id").order_by("id")),
+                Prefetch("forms", Form.objects.filter_for_project(project).only("id").order_by("id")),
             )
             .order_by("id")
         )

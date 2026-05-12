@@ -712,6 +712,13 @@ Once the environment variables are configured, you can create embedded Superset 
 
 The embedded dashboard will be accessible at `/pages/{your-slug}/` and will use guest token authentication for secure access.
 
+## Captchas
+
+Captchas are generated with [django-simple-captcha](https://github.com/mbi/django-simple-captcha/).
+To generate a new captcha, you need to make a GET call to `/api/captcha/refresh/` with a specific header: `"x-requested-with": "XMLHttpRequest"`.
+This will return the new captcha identifier, as well as a path to visualize it.
+
+
 # Contributing
 
 If you are not using the Docker container for development, please ensure that

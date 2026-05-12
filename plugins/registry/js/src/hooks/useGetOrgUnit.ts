@@ -1,11 +1,9 @@
+import { PaginationType } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
-
-import { Pagination } from 'bluesquare-components';
-import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-
 import { OrgUnit } from '../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
+import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
 import { RegistryParams } from '../types';
 
@@ -28,7 +26,7 @@ export const useGetOrgUnit = (
     });
 };
 
-export type OrgUnitListChildren = Pagination & {
+export type OrgUnitListChildren = PaginationType & {
     orgunits: OrgUnit[];
 };
 

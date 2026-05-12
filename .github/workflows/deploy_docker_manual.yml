@@ -33,6 +33,18 @@ jobs:
           echo "GIT_REFERENCE=${{ github.event.inputs.branch || github.ref_name || env.DEFAULT_GIT_REFERENCE }}" >> $GITHUB_OUTPUT
           echo "ENVIRONMENT=${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}" >> $GITHUB_OUTPUT
           echo "SLACK_CHANNEL=${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
+      - name: Display banner
+        run: |
+          echo "
+          ___    _    ____   ___
+          |_ _|  / \  / ___| / _ \\
+          | |  / _ \ \___ \| | | |
+          | | / ___ \ ___) | |_| |
+          |___/_/   \_\____/ \___/
+          ------------------------
+          Deploying to ${{ steps.config.outputs.ENVIRONMENT }}
+          $(date)
+          "
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.config.outputs.GIT_REFERENCE }}
@@ -64,17 +76,21 @@ jobs:
 
       - name: Swap to prod docker config
         run: |
-          # Replace docker-compose with prod version
+          
+          echo "Replace docker-compose with prod version"
           cp docker/prod/docker-compose.prod.yml docker-compose.yml
           git add -f docker-compose.yml
 
-          # Move Dockerfile to root
+          echo "Move Dockerfile to root"
           cp docker/prod/Dockerfile .
 
-          # Replace .platform with prod version
+          echo "Replace .platform with prod version"
           rm -rf .platform
           cp -r docker/prod/.platform .platform
           git add -f .platform
+
+          echo "Remove dev eb extensions from git stage"
+          git rm -r --cached --quiet .ebextensions
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -99,8 +115,8 @@ jobs:
           cp .elasticbeanstalk/config.upgrade.yml .elasticbeanstalk/config.yml
           pip install awsebcli==3.27.1 botocore==1.42.92 boto3==1.42.92
 
-      - name: Deploy to beanstalk (docker)
-        run: bash scripts/deploy_prod_docker.sh ${{ steps.config.outputs.ENVIRONMENT }}
+      - name: Deploy to beanstalk (Docker) using scripts/eb_deploy.py
+        run: python scripts/eb_deploy.py ${{ steps.config.outputs.ENVIRONMENT }}
         env:
           IMAGE_TAG: ${{ steps.version.outputs.VERSION_NAME }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

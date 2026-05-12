@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import AddLinkIcon from '@mui/icons-material/AddLink';
-import { Box, Button, TextField } from '@mui/material';
+import { Box, Button, TextField, Tooltip } from '@mui/material';
 import {
     ConfirmCancelModal,
     makeFullModal,
@@ -27,7 +27,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.duplicates.manual.targetLabel',
         defaultMessage: 'Target Entity ID or UUID',
     },
-    buttonLabel: {
+    addDuplicateLabel: {
         id: 'iaso.duplicates.manual.button',
         defaultMessage: 'Add Duplicate',
     },
@@ -155,15 +155,17 @@ type ButtonProps = {
 const ManualDuplicateButton: FunctionComponent<ButtonProps> = ({ onClick }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <Button
-            variant="outlined"
-            color="primary"
-            onClick={onClick}
-            size="small"
-            startIcon={<AddLinkIcon />}
-        >
-            {formatMessage(MESSAGES.buttonLabel)}
-        </Button>
+        <Tooltip title={formatMessage(MESSAGES.addDuplicateLabel)} arrow>
+            <Button
+                variant="outlined"
+                color="primary"
+                onClick={onClick}
+                size="small"
+                sx={{ minWidth: 'auto' }}
+            >
+                <AddLinkIcon />
+            </Button>
+        </Tooltip>
     );
 };
 

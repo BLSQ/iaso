@@ -108,7 +108,65 @@ They are usually generated via `AlgorithmRun`, or the matching is done in a Note
 
 # Development environment
 
-## Setup
+## Local setup with uv (without Docker)
+
+[uv](https://docs.astral.sh/uv/) is a fast Python package manager that can replace pip/virtualenv. Use it to run the backend locally without Docker.
+
+### Install uv
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Or via Homebrew on macOS:
+
+```bash
+brew install uv
+```
+
+### Create a virtual environment and sync dependencies
+
+```bash
+# Create a venv pinned to the project's Python version
+uv venv
+
+# Activate it
+source .venv/bin/activate
+
+# Install all dependencies from pyproject.toml (and lock file if present)
+uv sync
+```
+
+`uv sync` reads `pyproject.toml` (and `uv.lock` if it exists), resolves dependencies and installs them into the active venv. Run it again whenever `pyproject.toml` changes.
+
+### Migrating a requirements.txt into pyproject.toml
+
+If you have dependencies listed in a `requirements.txt` (or any `-r` file) that are not yet in `pyproject.toml`, you can migrate them in one command:
+
+```bash
+uv add -r requirements.txt
+```
+
+This parses the requirements file, adds each package to the `[project.dependencies]` table in `pyproject.toml`, and resolves/installs them. For dev-only dependencies:
+
+```bash
+uv add --dev -r requirements-dev.txt
+```
+
+### Running the Django server locally
+
+Once dependencies are synced, you can run Django commands directly:
+
+```bash
+uv run ./manage.py migrate
+uv run ./manage.py runserver
+```
+
+> **Note:** You still need a running PostgreSQL (with PostGIS) database. You can either use the Docker `db` service (`docker compose up db`) or a locally installed PostgreSQL.
+
+---
+
+## Setup (Docker)
 
 A running local instance for development can be spin up via docker compose which will install and
 configure all dep in separate container. As such your computer should only need:

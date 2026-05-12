@@ -1,19 +1,20 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
+import AddIcon from '@mui/icons-material/Add';
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
+    IconButton,
     LoadingSpinner,
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import { CsvButton } from '../../components/Buttons/CsvButton';
-import { XlsxButton } from '../../components/Buttons/XslxButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useFindCustomComponent } from '../../plugins/hooks/customComponents';
 import { EntityBaseInfo } from './components/EntityBaseInfo';
 import { useEntitiesDetailsColumns } from './config';
 import { useGetEntity, useGetSubmissions } from './hooks/requests';
@@ -29,10 +30,15 @@ const useStyles = makeStyles(theme => ({
 
 export const Details: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.entityDetails);
+    const CreateSubmissionDialog = useFindCustomComponent(
+        'entities.create_submission_dialog',
+    );
     const goBack = useGoBack(baseUrls.entities);
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;
     const { formatMessage } = useSafeIntl();
+    const [isCreateSubmissionModalOpen, setIsCreateSubmissionModalOpen] =
+        useState(false);
 
     const {
         data: entity,
@@ -84,6 +90,13 @@ export const Details: FunctionComponent = () => {
                             <WidgetPaper
                                 className={classes.fullWidth}
                                 title={formatMessage(MESSAGES.submissions)}
+                                IconButton={IconButton}
+                                iconButtonProps={{
+                                    overrideIcon: AddIcon,
+                                    tooltipMessage: MESSAGES.createSubmission,
+                                    onClick: () =>
+                                        setIsCreateSubmissionModalOpen(true),
+                                }}
                             >
                                 <Divider />
                                 <TableWithDeepLink
@@ -104,6 +117,19 @@ export const Details: FunctionComponent = () => {
                                 />
                                 <Divider />
                             </WidgetPaper>
+                            {isCreateSubmissionModalOpen &&
+                                CreateSubmissionDialog && (
+                                    <CreateSubmissionDialog
+                                        isOpen={isCreateSubmissionModalOpen}
+                                        closeDialog={() =>
+                                            setIsCreateSubmissionModalOpen(
+                                                false,
+                                            )
+                                        }
+                                        entityId={entityId as string}
+                                        entityTypeId={entity?.entity_type.toString()}
+                                    />
+                                )}
                         </Grid>
                     </Grid>
                 </Box>

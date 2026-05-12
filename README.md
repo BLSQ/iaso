@@ -804,7 +804,7 @@ python manage.py shell_plus --notebook
 
 You will need to populate at least these environment variables with your own values in a `.env` file:
 
-```
+```bash
 # PostgreSQL Database connection details
 RDS_DB_NAME=
 RDS_HOSTNAME=
@@ -812,7 +812,6 @@ RDS_PASSWORD=
 RDS_USERNAME=
 DB_READONLY_PASSWORD=
 DB_READONLY_USERNAME=
-
 # Used for encryption and authorisation
 ENCRYPTED_TEXT_FIELD_KEY=
 SECRET_KEY=
@@ -823,7 +822,6 @@ SECRET_KEY_FALLBACKS=
 # To interact with Enketo/ODK
 ENKETO_API_TOKEN=
 ENKETO_SIGNING_SECRET=
-
 # Docker image tag (defaults to "latest" if not set)
 IMAGE_TAG=
 ```
@@ -836,7 +834,7 @@ Note: for production deployments you need an external PostgreSQL database. The `
 
 Proceed to run docker compose on your server:
 
-```
+```bash
 docker compose -f docker-compose.prod.yml up
 ```
 
@@ -856,6 +854,35 @@ use `SECRET_KEY_FALLBACKS`, which lists old keys Django still uses to *verify* (
    the fallback key, while new data is signed with the new key.
 4. Once the oldest signed data has expired (e.g. past `SESSION_COOKIE_AGE` /
    `PASSWORD_RESET_TIMEOUT`), remove the old key from `SECRET_KEY_FALLBACKS`.
+
+
+## Building locally
+
+The production image uses a multi-stage Dockerfile at `docker/prod/Dockerfile`.
+
+Log in to Docker Hub first:
+
+```bash
+docker login
+```
+
+Build and push:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest --push .
+```
+
+To tag a specific version instead of `latest`:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:your-tag-here --push .
+```
+
+Build locally only (no push):
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest .
+```
 
 
 ## System requirements

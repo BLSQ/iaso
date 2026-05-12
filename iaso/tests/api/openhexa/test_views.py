@@ -8,7 +8,7 @@ from rest_framework import status
 from iaso import models as m
 from iaso.models.base import QUEUED, RUNNING, SUCCESS
 from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
-from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
+from iaso.permissions.core_permissions import CORE_PIPELINE_MANAGEMENT_PERMISSION
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.test import APITestCase
 
@@ -25,7 +25,7 @@ class OpenHexaAPITestCase(APITestCase):
 
         # Create user with permissions
         cls.user = cls.create_user_with_profile(
-            username="testuser", account=cls.account, permissions=[CORE_DATA_TASKS_PERMISSION]
+            username="testuser", account=cls.account, permissions=[CORE_PIPELINE_MANAGEMENT_PERMISSION]
         )
 
         # Create OpenHEXA instance and workspace
@@ -130,9 +130,7 @@ class PipelineListViewTestCase(OpenHexaAPITestCase):
 
         response = self.client.get("/api/openhexa/pipelines/")
 
-        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
-        self.assertIn("error", response.json())
-        self.assertIn("profile", response.json()["error"].lower())
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_pipelines_invalid_url_format(self):
         """Test pipeline list when OpenHexa URL format is invalid."""
@@ -552,9 +550,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
 
         response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
-        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
-        self.assertIn("error", response.json())
-        self.assertIn("profile", response.json()["error"].lower())
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_post_launch_pipeline_user_without_profile(self):
         """Test pipeline launch with user without iaso_profile."""
@@ -573,9 +569,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
-        self.assertIn("error", response.json())
-        self.assertIn("profile", response.json()["error"].lower())
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class BackgroundTaskTestCase(OpenHexaAPITestCase):
@@ -1373,8 +1367,4 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
-        # Config endpoint should gracefully return configured: false for users without profile
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertIn("configured", data)
-        self.assertFalse(data["configured"])
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

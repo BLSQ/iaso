@@ -379,6 +379,8 @@ Pipelines can update task status through the API:
 }
 ```
 
+Use an Iaso API token for a user who has **Pipeline management** (`iaso.iaso_pipeline_management`); the launch flow’s `connection_token` satisfies this when the launcher has the permission.
+
 ### 3. Task Status Values
 
 | Status | Description |
@@ -493,6 +495,20 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 
 ## API Integration
 
+### Permissions (Pipeline management)
+
+All endpoints under `/api/openhexa/pipelines/` are guarded by the **Pipeline management** permission (`iaso.iaso_pipeline_management` in Django; codename `iaso_pipeline_management` on the core permission model). That includes:
+
+- `GET /api/openhexa/pipelines/config/`
+- `GET /api/openhexa/pipelines/`
+- `GET /api/openhexa/pipelines/{pipeline_id}/`
+- `POST /api/openhexa/pipelines/{pipeline_id}/launch/`
+- `PATCH /api/openhexa/pipelines/{pipeline_id}/`
+
+Users who are authenticated but do not have this permission receive **403 Forbidden**. Unauthenticated requests receive **401 Unauthorized**.
+
+Grant **Pipeline management** to any user or role that should open the pipelines UI or call these APIs. Pipelines that call back into Iaso (for example `PATCH` to update task status) must use an API token for a user who has this permission—typically the launcher, via the `connection_token` (and host) injected into the launch `config` by Iaso.
+
 ### 1. Configuration Check API
 
 **Endpoint**: `GET /api/openhexa/pipelines/config/`
@@ -522,10 +538,12 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 
 When the workspace has no config stored, `config` is an empty object: `"config": {}`. The full `config` object is whatever is stored on the workspace (e.g. `lqas_pipeline_code`, `pipelines`, or any other keys).
 
-**Behavior**:
-- Returns `configured: false` (and no `config` key) if user has no profile or configuration is missing
-- Returns `configured: true` and `config` (the full `OpenHEXAWorkspace.config` JSON) when properly configured
-- Does not return error for missing configuration (graceful degradation)
+**Behavior** (caller must have **Pipeline management**; see [Permissions](#permissions-pipeline-management) above):
+
+- **401** if the request is not authenticated
+- **403** if the user does not have Pipeline management
+- Returns `{"configured": false}` (HTTP 200) if the user has no Iaso profile or OpenHexa is not configured / invalid for the account
+- Returns `configured: true` and `config` (the full `OpenHEXAWorkspace.config` JSON) when the account’s OpenHexa setup is valid
 - The frontend looks up the current pipeline by ID in `config.pipelines` to get `parameters` for that pipeline and uses them as defaults when launching
 
 ### 2. Pipeline List API
@@ -547,7 +565,7 @@ When the workspace has no config stored, `config` is an empty object: `"config":
 }
 ```
 
-### 2. Pipeline Details API
+### 3. Pipeline Details API
 
 **Endpoint**: `GET /api/openhexa/pipelines/{pipeline_id}/`
 
@@ -572,7 +590,7 @@ When the workspace has no config stored, `config` is an empty object: `"config":
 }
 ```
 
-### 3. Launch Pipeline API
+### 4. Launch Pipeline API
 
 **Endpoint**: `POST /api/openhexa/pipelines/{pipeline_id}/launch/`
 
@@ -604,7 +622,7 @@ When the workspace has no config stored, `config` is an empty object: `"config":
 }
 ```
 
-### 4. Update Task Status API
+### 5. Update Task Status API
 
 **Endpoint**: `PATCH /api/openhexa/pipelines/{pipeline_id}/`
 
@@ -627,6 +645,8 @@ When the workspace has no config stored, `config` is an empty object: `"config":
 
 Iaso includes a simple frontend integration for OpenHexa pipelines that provides:
 
+Users need the **Pipeline management** permission to use the pipelines screens and the underlying `/api/openhexa/pipelines/` APIs (see [Permissions (Pipeline management)](#permissions-pipeline-management) under API Integration).
+
 ### Pipeline Management Interface
 
 - **Pipeline List**: View all available OpenHexa pipelines at `/dashboard/pipelines/`
@@ -647,7 +667,15 @@ Iaso includes a simple frontend integration for OpenHexa pipelines that provides
 
 ### Common Issues
 
-#### 1. "No OpenHEXA workspace configured for your account"
+#### 1. 403 Forbidden on `/api/openhexa/pipelines/` or the pipelines dashboard
+
+**Cause**: The authenticated user does not have the **Pipeline management** permission (`iaso.iaso_pipeline_management`).
+
+**Solution**: Grant **Pipeline management** to the user (or to a role assigned to the user) in the account admin / permissions UI, then retry.
+
+For pipeline code that calls Iaso (e.g. task status `PATCH`), ensure the token is for a user with this permission—use the launcher token from `connection_token` in the launch payload when possible.
+
+#### 2. "No OpenHEXA workspace configured for your account"
 
 **Cause**: The account has no associated OpenHEXA workspace or the workspace configuration is incomplete.
 
@@ -694,9 +722,9 @@ workspace, created = OpenHEXAWorkspace.objects.get_or_create(
 - ✅ Workspace has a non-empty slug
 - ✅ Workspace is linked to an OpenHEXAInstance
 
-#### 2. "User profile not found"
+#### 3. "User profile not found"
 
-**Cause**: The user doesn't have an associated `iaso_profile`.
+**Cause**: On endpoints that use `@require_openhexa_config` (list, detail, launch), the authenticated user has no `iaso_profile`. Note: without **Pipeline management** you get **403** before this message; this case applies once the user has the permission but still lacks a profile.
 
 **Solution**: Ensure all users who need to access OpenHexa have an Iaso profile:
 
@@ -714,7 +742,7 @@ profile, created = Profile.objects.get_or_create(
 )
 ```
 
-#### 3. "The provided config contains invalid key(s)"
+#### 4. "The provided config contains invalid key(s)"
 
 **Cause**: The pipeline parameters don't match the expected parameter names.
 
@@ -724,7 +752,7 @@ profile, created = Profile.objects.get_or_create(
 @parameter("pipeline_id", type=str, name="Pipeline ID", required=True)
 ```
 
-#### 4. "OpenHEXA URL must contain 'graphql'"
+#### 5. "OpenHEXA URL must contain 'graphql'"
 
 **Cause**: The OpenHEXA instance URL doesn't contain the required 'graphql' keyword.
 
@@ -737,7 +765,7 @@ instance.url = "https://your-openhexa-instance.com/graphql/"  # Must contain 'gr
 instance.save()
 ```
 
-#### 5. Local Development Issues
+#### 6. Local Development Issues
 
 **Cause**: OpenHexa can't reach your local Iaso instance.
 

@@ -513,13 +513,13 @@ export const validationWorkflowInstancesPath = {
 export const pipelineListPath = {
     baseUrl: baseUrls.pipelineList,
     routerUrl: `${baseUrls.pipelineList}/*`,
-    permissions: [],
+    permissions: [Permission.PIPELINE_MANAGEMENT],
     element: <PipelineList />,
 };
 export const pipelineDetailsPath = {
     baseUrl: baseUrls.pipelineDetails,
     routerUrl: `${baseUrls.pipelineDetails}/*`,
-    permissions: [],
+    permissions: [Permission.PIPELINE_MANAGEMENT],
     element: <PipelineDetails />,
 };
 export const adminApiImportPath = {

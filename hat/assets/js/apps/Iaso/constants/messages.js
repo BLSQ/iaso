@@ -262,6 +262,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validation workflows',
         id: 'iaso.label.validationWorkflows',
     },
+    pipelines: {
+        defaultMessage: 'Pipelines',
+        id: 'iaso.label.pipelines',
+    },
 });
 
 export default MESSAGES;

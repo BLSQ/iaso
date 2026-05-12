@@ -10,7 +10,7 @@ WORKDIR /opt/app
 
 # Copy package files
 COPY ../../package.json package-lock.json ./
-RUN npm install -g npm@11.13.0 && \
+RUN npm install -g npm@10.9.3 && \
     rm -rf node_modules && \
     npm cache clean --force && \
     npm ci
@@ -27,7 +27,7 @@ RUN npm run webpack-prod
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
 # Full Bullseye image to compile C extensions
-# Only the resulting /venv is carried forward.
+# Only the resulting /.venv is carried forward.
 FROM python:3.9-bullseye AS pybuilder
 
 # Set working directory
@@ -38,21 +38,22 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     libgdal-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Create virtual environment
-RUN python -m venv /venv
-ENV PATH="/venv/bin:$PATH"
-
 # Install python dependencies + gunicorn
-COPY ../../requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir gunicorn
+COPY ../../pyproject.toml ./
+RUN pip install uv
+# Use python from the system, not from uv
+# https://docs.astral.sh/uv/reference/environment/#uv_python_preference
+ENV UV_PYTHON_PREFERENCE=only-system
+RUN uv sync --python "$(which python3)"
+RUN uv add gunicorn==23.0.0
 
 # Strip the venv: remove caches and debug symbols
-RUN find /venv -type d -name "__pycache__" -exec rm -rf {} + && \
-    find /venv -type f -name "*.pyc" -delete && \
-    find /venv -type f -name "*.pyo" -delete && \
-    find /venv -type f -name "*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true && \
-    find /venv -type f -name "*.so" -exec strip --strip-debug {} + 2>/dev/null || true
+RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
+    find ./.venv -type f -name "*.pyc" -delete && \
+    find ./.venv -type f -name "*.pyo" -delete && \
+    find ./.venv -type f -name "*.dist-info" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find ././.venv -type f -name "*.so" -exec strip --strip-debug {} + 2>/dev/null || true
+
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
@@ -79,12 +80,12 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the virtualenv from builder
-COPY --from=pybuilder --chown=appuser:appuser /venv /venv
-ENV PATH="/venv/bin:$PATH"
-ENV VIRTUAL_ENV="/venv"
-
 WORKDIR /opt/app
+
+# Copy the virtualenv from builder
+COPY --from=pybuilder --chown=appuser:appuser /opt/app/.venv .venv
+ENV VIRTUAL_ENV=/opt/app/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy webpack assets
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets

@@ -286,9 +286,9 @@ class TestRootRedirect(TestCase):
         original_import_module = importlib.import_module
 
         def fake_import(name, package=None):
-            if name == "plugins.p_a.settings":
+            if name == "plugins.p_a.plugin_settings":
                 return SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="a:home")
-            if name == "plugins.p_b.settings":
+            if name == "plugins.p_b.plugin_settings":
                 return SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="b:home")
             return original_import_module(name, package)
 

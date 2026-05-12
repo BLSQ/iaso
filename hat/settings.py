@@ -459,6 +459,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login/"
 
 AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",

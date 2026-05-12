@@ -19,7 +19,8 @@ class IasoPasswordResetView(PasswordResetView):
 class IasoLogoutView(LogoutView):
     """LogoutView that honours ``?next=<path>`` only when it appears in
     ``settings.LOGOUT_NEXT_ALLOWED_PATHS`` (and is a same-host relative URL).
-    Anything else falls back to ``next_page``.
+    Anything else falls back to the default redirect (``next_page`` or
+    ``settings.LOGOUT_REDIRECT_URL``).
 
     Strict allow-listing (rather than just a same-host check) closes
     CWE-601 / OWASP "Unvalidated Redirects and Forwards": an internal page

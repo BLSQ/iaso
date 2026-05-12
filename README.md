@@ -833,6 +833,34 @@ docker compose -f docker-compose.prod.yml up
 This will pull the necessary containers (iaso & nginx) and spin up the service at port 80.
 
 
+## Building locally
+
+The production image uses a multi-stage Dockerfile at `docker/prod/Dockerfile`.
+
+Log in to Docker Hub first:
+
+```bash
+docker login
+```
+
+Build and push:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest --push .
+```
+
+To tag a specific version instead of `latest`:
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:your-tag-here --push .
+```
+
+Build locally only (no push):
+
+```bash
+docker build -f ./docker/prod/Dockerfile -t blsq/iaso:latest .
+```
+
 ## System requirements
 
 Recommended:

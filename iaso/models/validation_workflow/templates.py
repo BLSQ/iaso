@@ -232,7 +232,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):
             node_templates = self._prefetched_objects_cache["node_templates"]
         else:
-            node_templates = self.node_templates.all().order_by("slug")
+            node_templates = self.node_templates.all().order_by("id")
 
         flatten_graph = {x.pk: getattr(x, "prefetched_next_nodes", x.next_node_templates.all()) for x in node_templates}
 

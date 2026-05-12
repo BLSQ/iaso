@@ -6,13 +6,18 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
+
 import InputComponent from 'Iaso/components/forms/InputComponent';
+
 import MESSAGES from '../../messages';
+
 import {
     useNodeValidationApproveSchema,
     useNodeValidationRejectSchema,
 } from './useNodeValidationSchema';
+
 import { useCompleteNode, useCompleteNodeByPass } from './useSaveNode';
+
 import { ValidateButton } from './ValidateButton';
 
 type BaseModalProps = {
@@ -20,6 +25,7 @@ type BaseModalProps = {
     closeDialog: () => void;
     isOpen: boolean;
 };
+
 type ModalProps = BaseModalProps & {
     nodeId: number;
 };
@@ -28,28 +34,60 @@ type ByPassModalProps = BaseModalProps & {
     nodeSlug: string;
 };
 
-export const ValidationApproveModal = ({
-    instanceId,
-    nodeId,
-    closeDialog,
-    isOpen,
-}: ModalProps) => {
-    const { formatMessage } = useSafeIntl();
-    const { mutateAsync: save } = useCompleteNode({ instanceId, nodeId });
+type ValidationFormValues = {
+    comment: string;
+};
 
-    const validationSchema = useNodeValidationApproveSchema();
-    const formik = useFormik<{
-        comment?: string;
-        node?: string;
-    }>({
+type BaseValidationModalProps = {
+    isOpen: boolean;
+    closeDialog: () => void;
+    titleMessage: any;
+    modalId: string;
+    approved: boolean;
+    requiredComment?: boolean;
+    validationSchema: any;
+    onSubmit: (values: ValidationFormValues) => Promise<unknown>;
+};
+
+const useValidationFormik = ({
+    approved,
+    validationSchema,
+    onSubmit,
+}: {
+    approved: boolean;
+    validationSchema: any;
+    onSubmit: (values: ValidationFormValues) => Promise<unknown>;
+}) => {
+    return useFormik<ValidationFormValues>({
         initialValues: {
             comment: '',
         },
         enableReinitialize: true,
         validateOnBlur: true,
+        validateOnMount: !approved,
         validationSchema,
-        onSubmit: values => save({ approved: true, ...values }),
+        onSubmit,
     });
+};
+
+const BaseValidationModal = ({
+    isOpen,
+    closeDialog,
+    titleMessage,
+    modalId,
+    approved,
+    requiredComment = false,
+    validationSchema,
+    onSubmit,
+}: BaseValidationModalProps) => {
+    const { formatMessage } = useSafeIntl();
+
+    const formik = useValidationFormik({
+        approved,
+        validationSchema,
+        onSubmit,
+    });
+
     const onChange = useCallback(
         (keyValue: string, value: any) => {
             formik.setFieldTouched(keyValue, true);
@@ -62,12 +100,13 @@ export const ValidationApproveModal = ({
         <FormikProvider value={formik}>
             <ConfirmCancelModal
                 open={isOpen}
-                id={'approve-node'}
-                dataTestId={'approve-node'}
+                allowConfirm={approved || formik.isValid}
+                id={modalId}
+                dataTestId={modalId}
                 closeDialog={closeDialog}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
-                titleMessage={MESSAGES.approve}
+                titleMessage={titleMessage}
                 onConfirm={() => formik.handleSubmit()}
                 onCancel={() => formik.resetForm()}
                 onClose={() => null}
@@ -80,69 +119,68 @@ export const ValidationApproveModal = ({
                         labelString={formatMessage(MESSAGES.comment)}
                         onChange={onChange}
                         withMarginTop
+                        required={requiredComment}
                     />
                 </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );
 };
+
+export const ValidationApproveModal = ({
+    instanceId,
+    nodeId,
+    closeDialog,
+    isOpen,
+}: ModalProps) => {
+    const validationSchema = useNodeValidationApproveSchema();
+
+    const { mutateAsync: save } = useCompleteNode(instanceId, nodeId);
+
+    return (
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved
+            modalId="approve-node"
+            titleMessage={MESSAGES.approve}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: true,
+                    ...values,
+                })
+            }
+        />
+    );
+};
+
 export const ValidationRejectModal = ({
     instanceId,
     nodeId,
     closeDialog,
     isOpen,
 }: ModalProps) => {
-    const { formatMessage } = useSafeIntl();
-    const { mutateAsync: save } = useCompleteNode({ instanceId, nodeId });
     const validationSchema = useNodeValidationRejectSchema();
-    const formik = useFormik<{
-        comment?: string;
-    }>({
-        initialValues: {
-            comment: '',
-        },
-        validateOnMount: true,
-        enableReinitialize: true,
-        validateOnBlur: true,
-        validationSchema,
-        onSubmit: values => save({ approved: false, ...values }),
-    });
-    const onChange = useCallback(
-        (keyValue: string, value: any) => {
-            formik.setFieldTouched(keyValue, true);
-            formik.setFieldValue(keyValue, value);
-        },
-        [formik],
-    );
+
+    const { mutateAsync: save } = useCompleteNode(instanceId, nodeId);
 
     return (
-        <FormikProvider value={formik}>
-            <ConfirmCancelModal
-                allowConfirm={formik.isValid}
-                open={isOpen}
-                id={'reject-node'}
-                dataTestId={'reject-node'}
-                closeDialog={closeDialog}
-                confirmMessage={MESSAGES.save}
-                cancelMessage={MESSAGES.cancel}
-                titleMessage={MESSAGES.reject}
-                onConfirm={() => formik.handleSubmit()}
-                onCancel={() => formik.resetForm()}
-                onClose={() => null}
-                maxWidth="md"
-            >
-                <Box>
-                    <InputComponent
-                        keyValue="comment"
-                        type="textarea"
-                        labelString={formatMessage(MESSAGES.comment)}
-                        onChange={onChange}
-                        withMarginTop
-                        required
-                    />
-                </Box>
-            </ConfirmCancelModal>
-        </FormikProvider>
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved={false}
+            requiredComment
+            modalId="reject-node"
+            titleMessage={MESSAGES.reject}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: false,
+                    ...values,
+                })
+            }
+        />
     );
 };
 
@@ -152,139 +190,75 @@ export const ValidationApproveByPassModal = ({
     closeDialog,
     isOpen,
 }: ByPassModalProps) => {
-    const { formatMessage } = useSafeIntl();
-    const { mutateAsync: save } = useCompleteNodeByPass({ instanceId });
-
     const validationSchema = useNodeValidationApproveSchema();
-    const formik = useFormik<{
-        comment?: string;
-    }>({
-        initialValues: {
-            comment: '',
-        },
-        enableReinitialize: true,
-        validateOnBlur: true,
-        validationSchema,
-        onSubmit: values => save({ approved: true, node: nodeSlug, ...values }),
-    });
-    const onChange = useCallback(
-        (keyValue: string, value: any) => {
-            formik.setFieldTouched(keyValue, true);
-            formik.setFieldValue(keyValue, value);
-        },
-        [formik],
-    );
+
+    const { mutateAsync: save } = useCompleteNodeByPass(instanceId);
 
     return (
-        <FormikProvider value={formik}>
-            <ConfirmCancelModal
-                open={isOpen}
-                id={'approve-bypass-node'}
-                dataTestId={'approve-bypass-node'}
-                closeDialog={closeDialog}
-                confirmMessage={MESSAGES.save}
-                cancelMessage={MESSAGES.cancel}
-                titleMessage={MESSAGES.approve}
-                onConfirm={() => formik.handleSubmit()}
-                onCancel={() => formik.resetForm()}
-                onClose={() => null}
-                maxWidth="md"
-            >
-                <Box>
-                    <InputComponent
-                        keyValue="comment"
-                        type="textarea"
-                        labelString={formatMessage(MESSAGES.comment)}
-                        onChange={onChange}
-                        withMarginTop
-                    />
-                </Box>
-            </ConfirmCancelModal>
-        </FormikProvider>
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved
+            modalId="approve-bypass-node"
+            titleMessage={MESSAGES.approve}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: true,
+                    node: nodeSlug,
+                    ...values,
+                })
+            }
+        />
     );
 };
+
 export const ValidationRejectByPassModal = ({
     instanceId,
     nodeSlug,
     closeDialog,
     isOpen,
 }: ByPassModalProps) => {
-    const { formatMessage } = useSafeIntl();
-    const { mutateAsync: save } = useCompleteNodeByPass({ instanceId });
     const validationSchema = useNodeValidationRejectSchema();
-    const formik = useFormik<{
-        comment?: string;
-    }>({
-        initialValues: {
-            comment: '',
-        },
-        validateOnMount: true,
-        enableReinitialize: true,
-        validateOnBlur: true,
-        validationSchema,
-        onSubmit: values =>
-            save({ approved: false, node: nodeSlug, ...values }),
-    });
-    const onChange = useCallback(
-        (keyValue: string, value: any) => {
-            formik.setFieldTouched(keyValue, true);
-            formik.setFieldValue(keyValue, value);
-        },
-        [formik],
-    );
+
+    const { mutateAsync: save } = useCompleteNodeByPass(instanceId);
 
     return (
-        <FormikProvider value={formik}>
-            <ConfirmCancelModal
-                open={isOpen}
-                allowConfirm={formik.isValid}
-                id={'reject-bypass-node'}
-                dataTestId={'reject-bypass-node'}
-                closeDialog={closeDialog}
-                confirmMessage={MESSAGES.save}
-                cancelMessage={MESSAGES.cancel}
-                titleMessage={MESSAGES.reject}
-                onConfirm={() => formik.handleSubmit()}
-                onCancel={() => formik.resetForm()}
-                onClose={() => null}
-                maxWidth="md"
-            >
-                <Box>
-                    <InputComponent
-                        keyValue="comment"
-                        type="textarea"
-                        labelString={formatMessage(MESSAGES.comment)}
-                        onChange={onChange}
-                        withMarginTop
-                        required
-                    />
-                </Box>
-            </ConfirmCancelModal>
-        </FormikProvider>
+        <BaseValidationModal
+            isOpen={isOpen}
+            closeDialog={closeDialog}
+            approved={false}
+            requiredComment
+            modalId="reject-bypass-node"
+            titleMessage={MESSAGES.reject}
+            validationSchema={validationSchema}
+            onSubmit={values =>
+                save({
+                    approved: false,
+                    node: nodeSlug,
+                    ...values,
+                })
+            }
+        />
     );
 };
 
-const modalRejectWithButton = makeFullModal(
+export const ValidateNodeRejectModal = makeFullModal(
     ValidationRejectModal,
     ValidateButton,
 );
-const modalApproveWithButton = makeFullModal(
+
+export const ValidateNodeApproveModal = makeFullModal(
     ValidationApproveModal,
     ValidateButton,
 );
 
-const modalRejectByPassWithButton = makeFullModal(
+export const ValidateNodeRejectByPassModal = makeFullModal(
     ValidationRejectByPassModal,
     ValidateButton,
 );
-const modalApproveByPassWithButton = makeFullModal(
+
+export const ValidateNodeApproveByPassModal = makeFullModal(
     ValidationApproveByPassModal,
     ValidateButton,
 );
-
-export {
-    modalRejectWithButton as ValidateNodeRejectModal,
-    modalApproveWithButton as ValidateNodeApproveModal,
-    modalRejectByPassWithButton as ValidateNodeRejectByPassModal,
-    modalApproveByPassWithButton as ValidateNodeApproveByPassModal,
-};

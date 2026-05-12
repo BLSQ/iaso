@@ -20,29 +20,24 @@ type CompleteNodeByPassBody =
     | { approved: false; comment: string; node: string };
 
 const completeNode =
-    ({ instanceId, nodeId }: { instanceId: number; nodeId: number }) =>
-    (body: CompleteNodeBody) =>
+    (instanceId: number, nodeId: number) => (body: CompleteNodeBody) =>
         postRequest(
             `${API_URL}instance/${instanceId}/nodes/${nodeId}/complete/`,
             body,
         );
 const completeNodeByPass =
-    ({ instanceId }: { instanceId: number }) =>
-    (body: CompleteNodeByPassBody) =>
+    (instanceId: number) => (body: CompleteNodeByPassBody) =>
         postRequest(
             `${API_URL}instance/${instanceId}/nodes/complete-bypass/`,
             body,
         );
 
-export const useCompleteNode = ({
-    instanceId,
-    nodeId,
-}: {
-    instanceId: number;
-    nodeId: number;
-}): UseMutationResult<any, any> => {
+export const useCompleteNode = (
+    instanceId: number,
+    nodeId: number,
+): UseMutationResult<any, any> => {
     const save = useMemo(
-        () => completeNode({ instanceId, nodeId }),
+        () => completeNode(instanceId, nodeId),
         [instanceId, nodeId],
     );
     return useSnackMutation({
@@ -51,15 +46,10 @@ export const useCompleteNode = ({
     });
 };
 
-export const useCompleteNodeByPass = ({
-    instanceId,
-}: {
-    instanceId: number;
-}): UseMutationResult<any, any> => {
-    const save = useMemo(
-        () => completeNodeByPass({ instanceId }),
-        [instanceId],
-    );
+export const useCompleteNodeByPass = (
+    instanceId: number,
+): UseMutationResult<any, any> => {
+    const save = useMemo(() => completeNodeByPass(instanceId), [instanceId]);
     return useSnackMutation({
         mutationFn: save,
         invalidateQueryKey: ['instance', instanceId],

@@ -29,7 +29,7 @@ class ValidationNodeViewSet(GenericViewSet):
                 .filter_for_user(self.request.user)
                 .filter(form__deleted_at__isnull=True)
                 .annotate(
-                    annotate_last_submission=Subquery(
+                    annotate_last_submission_created_at=Subquery(
                         ValidationNode.objects.filter(instance=OuterRef("pk"))
                         .filter(Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION))
                         .order_by("-created_at")

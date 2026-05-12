@@ -113,10 +113,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
 
     @staticmethod
     def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag, _ = AccountFeatureFlag.objects.get_or_create(
-            code="SUBMISSION_VALIDATION_WORKFLOW",
-            defaults={"name": "Web: Enable validation workflow"},
-        )
+        feature_flag = AccountFeatureFlag.objects.get(code="SUBMISSION_VALIDATION_WORKFLOW")
         for account in accounts:
             account.feature_flags.add(feature_flag)
 

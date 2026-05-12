@@ -17,7 +17,7 @@ class HasValidationWorkflowInstancePermission(BasePermission):
         )
 
 
-class HasAccountFeatureFlag(BasePermission):
+class HasSubmissionValidationWorkflowAccountFeatureFlag(BasePermission):
     message = _("This feature is disabled for your account.")
 
     def has_permission(self, request, view):

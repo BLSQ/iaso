@@ -28,7 +28,7 @@ from iaso.api.common.mixin import CustomPaginationListModelMixin
 from iaso.api.validation_workflow_instances.filters import ValidationWorkflowInstancesListFilters
 from iaso.api.validation_workflow_instances.pagination import ValidationWorkflowInstancePagination
 from iaso.api.validation_workflow_instances.permissions import (
-    HasAccountFeatureFlag,
+    HasSubmissionValidationWorkflowAccountFeatureFlag,
     HasValidationWorkflowInstancePermission,
 )
 from iaso.api.validation_workflow_instances.serializers.list import ValidationWorkflowInstanceListSerializer
@@ -42,7 +42,11 @@ from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationListModelMixin, GenericViewSet):
     methods = ["get"]
     serializer_class = ValidationWorkflowInstanceRetrieveSerializer
-    permission_classes = [IsAuthenticated, HasValidationWorkflowInstancePermission, HasAccountFeatureFlag]
+    permission_classes = [
+        IsAuthenticated,
+        HasValidationWorkflowInstancePermission,
+        HasSubmissionValidationWorkflowAccountFeatureFlag,
+    ]
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     filterset_class = ValidationWorkflowInstancesListFilters
     pagination_class = ValidationWorkflowInstancePagination
@@ -76,7 +80,7 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
                     queryset=ValidationNodeTemplate.objects.prefetch_related(
                         Prefetch(
                             "next_node_templates",
-                            queryset=ValidationNodeTemplate.objects.order_by("slug"),
+                            queryset=ValidationNodeTemplate.objects.order_by("id"),
                             to_attr="prefetched_next_nodes",
                         )
                     ).annotate(

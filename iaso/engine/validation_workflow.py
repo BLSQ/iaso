@@ -93,7 +93,7 @@ class ValidationWorkflowEngine:
 
         # check previous submission
         last_submission = (
-            getattr(artifact, "annotate_last_submission", None)
+            getattr(artifact, "annotate_last_submission_created_at", None)
             or artifact.validationnode_set.filter(
                 Q(status=ValidationNodeStatus.SUBMISSION) | Q(status=ValidationNodeStatus.NEW_VERSION)
             )

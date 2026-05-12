@@ -17,13 +17,43 @@ class NestedUserRoleSerializer(ModelSerializer):
         fields = ["id", "name"]
 
 
-class NestedTimelineSerializer(ModelSerializer):
+class BaseNestedTimelineSerializer(ModelSerializer):
+    user_can_do_actions = serializers.SerializerMethodField(read_only=True)
+    order = serializers.SerializerMethodField(read_only=True)
+
+    def get_required_roles(self, obj):
+        raise NotImplementedError
+
+    def get_node_slug(self, obj):
+        raise NotImplementedError
+
+    @extend_schema_field(serializers.BooleanField)
+    def get_user_can_do_actions(self, obj):
+        user = self.context["request"].user
+
+        if user.is_superuser:
+            return True
+
+        user_role_ids = self.context.get(
+            "user_roles",
+            user.iaso_profile.user_roles.values_list("pk", flat=True),
+        )
+
+        required_role_ids = self.get_required_roles(obj)
+
+        return set(required_role_ids).issubset(set(user_role_ids))
+
+    @extend_schema_field(serializers.IntegerField)
+    def get_order(self, obj):
+        list_nodes = list(self.context["node_dumps"])
+        return list_nodes.index(self.get_node_slug(obj)) + 1
+
+
+class NestedTimelineSerializer(BaseNestedTimelineSerializer):
     name = serializers.CharField(read_only=True, source="node.name")
     node_template_slug = serializers.CharField(read_only=True, source="node.slug")
     updated_by = UserDisplayNameField(allow_null=True)
     type = serializers.SerializerMethodField(read_only=True)
-    user_can_do_actions = serializers.SerializerMethodField(read_only=True)
-    order = serializers.SerializerMethodField(read_only=True)
     comment = serializers.CharField(read_only=True, allow_null=True, allow_blank=True)
     status = serializers.ChoiceField(choices=ValidationNodeStatus.choices, read_only=True, allow_null=True)
 
@@ -47,35 +77,23 @@ class NestedTimelineSerializer(ModelSerializer):
     def get_type(self, obj):
         return "TIMELINE"
 
-    @extend_schema_field(serializers.BooleanField)
-    def get_user_can_do_actions(self, obj):
-        user = self.context["request"].user
-        if user.is_superuser:
-            return True
+    def get_node_slug(self, obj):
+        return obj.node.slug
 
-        if "user_roles" in self.context:
-            user_role_ids = self.context["user_roles"]
-        else:
-            user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
-
-        required_roles_id = [x.pk for x in obj.node.roles_required.all()]
-
-        return set(required_roles_id).issubset(set(user_role_ids))
-
-    @extend_schema_field(serializers.IntegerField)
-    def get_order(self, obj):
-        list_nodes = list(self.context["node_dumps"])
-        return list_nodes.index(obj.node.slug) + 1
+    def get_required_roles(self, obj):
+        return [x.pk for x in obj.node.roles_required.all()]
 
 
-class NestedTimelineNextBypassSerializer(ModelSerializer):
+class NestedTimelineNextBypassSerializer(BaseNestedTimelineSerializer):
+    """
+    Must be similar to NestedTimelineSerializer for swagger compliance (see get_timeline method) hence the get_methods that return None
+    """
+
     node_template_slug = serializers.CharField(read_only=True, source="slug")
     updated_by = serializers.SerializerMethodField(read_only=True)
     status = serializers.SerializerMethodField(read_only=True)
     comment = serializers.SerializerMethodField(read_only=True)
     type = serializers.SerializerMethodField(read_only=True)
-    user_can_do_actions = serializers.SerializerMethodField(read_only=True)
-    order = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ValidationNodeTemplate
@@ -105,32 +123,14 @@ class NestedTimelineNextBypassSerializer(ModelSerializer):
     def get_type(self, obj):
         return "NEXT_BYPASS"
 
-    @extend_schema_field(serializers.BooleanField)
-    def get_user_can_do_actions(self, obj):
-        user = self.context["request"].user
+    def get_node_slug(self, obj):
+        return obj.slug
 
-        if user.is_superuser:
-            return True
-
-        if "user_roles" in self.context:
-            user_role_ids = self.context["user_roles"]
-        else:
-            user_role_ids = user.iaso_profile.user_roles.values_list("pk", flat=True)
-
-        required_roles_id = [x.pk for x in obj.roles_required.all()]
-
-        if not set(required_roles_id).issubset(set(user_role_ids)):
-            return False
-
-        return True
-
-    @extend_schema_field(serializers.IntegerField)
-    def get_order(self, obj):
-        list_nodes = list(self.context["node_dumps"])
-        return list_nodes.index(obj.slug) + 1
+    def get_required_roles(self, obj):
+        return [x.pk for x in obj.roles_required.all()]
 
 
-class NestedSubmissionSerializer(serializers.ModelSerializer):
+class NestedSubmissionSerializer(ModelSerializer):
     general_validation_status = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
     next_created_at = serializers.DateTimeField(read_only=True, allow_null=True)
@@ -155,6 +155,12 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
             instance = obj.instance
         return instance
 
+    def _get_nodes_inside_submission_window(self, nodes, obj):
+        nodes = [n for n in nodes if n.created_at >= obj.created_at]
+        if obj.next_created_at:
+            return [n for n in nodes if n.created_at < obj.next_created_at]
+        return nodes
+
     @extend_schema_field(serializers.IntegerField)
     def get_active_steps(self, obj):
         instance = self._get_instance(obj)
@@ -162,13 +168,10 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
 
         nodes = [
             n
-            for n in nodes
+            for n in self._get_nodes_inside_submission_window(nodes, obj)
             if n.status not in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]
-            and n.created_at >= obj.created_at
         ]
 
-        if obj.next_created_at:
-            nodes = [n for n in nodes if n.created_at < obj.next_created_at]
         return len(nodes)
 
     @extend_schema_field(serializers.ChoiceField(choices=ValidationWorkflowArtefactStatus.choices))
@@ -180,11 +183,7 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
 
         nodes = instance.prefetched_validation_nodes
         rejected_nodes = [
-            n
-            for n in nodes
-            if n.created_at >= obj.created_at
-            and n.created_at < obj.next_created_at
-            and n.status == ValidationNodeStatus.REJECTED
+            n for n in self._get_nodes_inside_submission_window(nodes, obj) if n.status == ValidationNodeStatus.REJECTED
         ]
         if len(rejected_nodes):
             return ValidationWorkflowArtefactStatus.REJECTED
@@ -197,11 +196,10 @@ class NestedSubmissionSerializer(serializers.ModelSerializer):
         # get history
         nodes = instance.prefetched_validation_nodes
         nodes_timeline = [
-            n for n in nodes if n.status not in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]
+            n
+            for n in self._get_nodes_inside_submission_window(nodes, obj)
+            if n.status not in [ValidationNodeStatus.NEW_VERSION, ValidationNodeStatus.SUBMISSION]
         ]
-        nodes_timeline = [n for n in nodes_timeline if n.created_at >= obj.created_at]
-        if obj.next_created_at:
-            nodes_timeline = [n for n in nodes_timeline if n.created_at < obj.next_created_at]
         nodes_timeline = sorted(nodes_timeline, key=lambda n: n.updated_at, reverse=True)
 
         next_bypass = None

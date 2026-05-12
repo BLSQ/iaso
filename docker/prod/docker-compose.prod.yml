@@ -1,6 +1,6 @@
 services:
     iaso:
-      image: blsq/iaso:${PROD_BUILD_IMAGE_TAG:-latest}
+      image: blsq/iaso:${PROD_IMAGE_TAG:-latest}
       ## If you want to run the prod docker compose locally
       ## Comment the image line and uncomment the build line
       # build:
@@ -45,6 +45,8 @@ services:
         - DEBUG
         - DEBUG_SQL
         - DEFAULT_FROM_EMAIL
+        - DEPLOYED_BY
+        - DEPLOYED_ON
         - DISABLE_PASSWORD_LOGINS
         - DISABLE_SSL_REDIRECT
         - DJANGO_LOGGING_LEVEL
@@ -74,6 +76,9 @@ services:
         - LOGO_PATH
         - MAINTENANCE_MODE
         - PLUGINS
+        - PROD_IMAGE_CREATION
+        - PROD_IMAGE_DIGEST
+        - PROD_IMAGE_TAG
         - PRODUCT_FRUITS_WORKSPACE_CODE
         - PYTHONUNBUFFERED
         - RDS_DB_NAME

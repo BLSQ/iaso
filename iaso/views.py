@@ -9,7 +9,7 @@ from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
 
-from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
+from hat.__version__ import VERSION
 from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION
 from iaso.utils.powerbi import get_powerbi_report_token
@@ -148,8 +148,11 @@ def health(request):
         "up": "ok",
         "env": settings.ENVIRONMENT,
         "database": settings.DATABASES["default"]["NAME"],
-        "DEPLOYED_ON": DEPLOYED_ON,
-        "DEPLOYED_BY": DEPLOYED_BY,
+        "DEPLOYED_ON": settings.DEPLOYED_ON,
+        "DEPLOYED_BY": settings.DEPLOYED_BY,
+        "PROD_IMAGE_DIGEST": settings.PROD_IMAGE_DIGEST,
+        "PROD_IMAGE_CREATION": settings.PROD_IMAGE_CREATION,
+        "PROD_IMAGE_TAG": settings.PROD_IMAGE_TAG,
         "VERSION": VERSION,
     }
     # noinspection PyBroadException

@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       slack_channel: ${{ steps.vars.outputs.slack_channel }}
+      short_sha: ${{ steps.vars.outputs.short_sha }}
     steps:
       - name: Set configs
         id: vars
@@ -37,9 +38,17 @@ jobs:
           DEFAULT_SLACK_CHANNEL: cloud-alerts
         run: |
           echo "slack_channel=${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}" >> $GITHUB_OUTPUT
+          if [ -n "$GITHUB_SHA" ]; then
+            echo "short_sha=${GITHUB_SHA:0:12}" >> $GITHUB_OUTPUT
+          else
+            echo "short_sha=manual-$(openssl rand -hex 3)" >> $GITHUB_OUTPUT
+          fi
 
   check_image:
     runs-on: ubuntu-24.04
+    outputs:
+      image_digest: ${{ steps.image_data.outputs.image_digest }}
+      image_timestamp: ${{ steps.image_data.outputs.image_timestamp }}
     steps:
       - name: Check if image blsq/iaso:${{ inputs.image_tag }} exists on Docker Hub
         run: |
@@ -51,9 +60,25 @@ jobs:
           fi
           echo "Image blsq/iaso:${{ inputs.image_tag }} found"
 
+      - name: Pull the image and inspect it to get the digest and timestamp
+        id: image_data
+        run: |
+          docker pull blsq/iaso:${{ inputs.image_tag }}
+          echo "image_digest=$(docker image inspect blsq/iaso:${{ inputs.image_tag }} --format='{{index .RepoDigests 0}}' | cut -d ':' -f2)" >> $GITHUB_OUTPUT
+          echo "image_timestamp=$(docker image inspect blsq/iaso:${{ inputs.image_tag }} --format='{{ index .Created }}')" >> $GITHUB_OUTPUT
+
   deploy:
     needs: [ config, check_image ]
     runs-on: ubuntu-24.04
+    env:
+      MSG_MINIMAL: true
+      SLACK_CHANNEL: ${{ needs.config.outputs.slack_channel }}
+      SLACK_ICON_EMOJI: ":robot_face:"
+      SLACK_USERNAME: ${{ inputs.environment }}
+      SLACK_WEBHOOK: ${{ secrets.TEST_SLACK_WEBHOOK }}
+      SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
+      SLACK_FOOTER: "-"
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
@@ -61,16 +86,10 @@ jobs:
       - name: Slack deployment start
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK: ${{ secrets.TEST_SLACK_WEBHOOK }}
-          SLACK_CHANNEL: ${{ needs.config.outputs.slack_channel }}
           SLACK_COLOR: ""
-          SLACK_USERNAME: ${{ needs.config.outputs.environment }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Started deployment of ${{ steps.version.outputs.VERSION_NAME }} on ${{ needs.config.outputs.environment }} ...
-          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-          MSG_MINIMAL: true
+          SLACK_TITLE: Started deployment of ${{ inputs.image_tag }} on ${{ inputs.environment }} ...
 
-      - name: Display banner
+      - name: Deploying ${{ inputs.image_tag }} to ${{ inputs.environment }}, using branch ${{ inputs.branch }}
         run: |
           echo "
            ___    _    ____   ___
@@ -83,23 +102,19 @@ jobs:
           $(date)
           "
 
-      - name: Swap to prod docker config
+      - name: Gather required files for deployment
         run: |
-          echo "Replace docker-compose with prod version"
-          mv docker-compose.yml docker-compose.bak.yml
-          cp docker/prod/docker-compose.prod.yml docker-compose.yml
-          git add -f docker-compose.yml
+          mv docker/prod/docker-compose.prod.yml deployment/docker-compose.yml
+          mv cron.yaml deployment/cron.yaml
 
-          echo "Move Dockerfile to root"
-          cp docker/prod/Dockerfile .
-
-          echo "Replace .platform with prod version"
-          mv .platform .platform.bak
-          cp -r docker/prod/.platform .platform
-          git add -f .platform
-
-          echo "Remove dev eb extensions from git stage"
-          git rm -r --cached --quiet .ebextensions
+      - name: Set env vars in beanstalk config
+        run: |
+          sed -i s/deployed_by_value/${GITHUB_ACTOR}/g ./deployment/.ebextensions/environment.config
+          sed -i "s/deployed_on_value/$(date --rfc-3339=seconds)/g" ./deployment/.ebextensions/environment.config
+          sed -i s/prod_image_digest_value/${{ needs.check_image.outputs.image_digest }}/g ./deployment/.ebextensions/environment.config
+          sed -i s/prod_image_creation_value/${{ needs.check_image.outputs.image_timestamp }}/g ./deployment/.ebextensions/environment.config
+          sed -i s/prod_image_tag_value/${{ inputs.image_tag }}/g ./deployment/.ebextensions/environment.config
+          cat ./deployment/.ebextensions/environment.config
 
       - name: Set up Python 3.14
         uses: actions/setup-python@v5
@@ -108,13 +123,21 @@ jobs:
 
       - name: Setup beanstalk
         run: |
-          cp .elasticbeanstalk/config.upgrade.yml .elasticbeanstalk/config.yml
           pip install awsebcli==3.27.1 botocore==1.42.92 boto3==1.42.92
 
+      - name: Determine EBS version name
+        id: version
+        run: |
+          echo "VERSION_NAME=${{ inputs.image_tag }}-${{ needs.config.outputs.short_sha }}" >> $GITHUB_OUTPUT
+
       - name: Deploy to beanstalk (Docker) using scripts/eb_deploy.py
-        run: python scripts/eb_deploy.py ${{ inputs.environment }}
+        run: |
+          cd deployment
+          git add .
+          git status
+          python ../scripts/eb_deploy.py ${{ inputs.environment }}
         env:
-          IMAGE_TAG: ${{ steps.version.outputs.VERSION_NAME }}
+          # VERSION_NAME is the ID of the package generated by EBS that's gonna be deployed. It needs to be unique, otherwise an old package will be reployed
           VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -123,27 +146,13 @@ jobs:
       - name: Slack deployment success notification
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK: ${{ secrets.TEST_SLACK_WEBHOOK }}
-          SLACK_CHANNEL: ${{ needs.config.outputs.slack_channel }}
           SLACK_COLOR: ${{ job.status }}
-          SLACK_USERNAME: ${{ needs.config.outputs.environment }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Iaso ${{ steps.version.outputs.VERSION_NAME }} successfully deployed on ${{ needs.config.outputs.environment }}
-          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-          SLACK_FOOTER: "-"
-          MSG_MINIMAL: true
+          SLACK_TITLE: Iaso ${{ inputs.image_tag }} successfully deployed on ${{ inputs.environment }}
         if: success()
 
       - name: Slack deployment failure notification
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK: ${{ secrets.TEST_SLACK_WEBHOOK }}
-          SLACK_CHANNEL: ${{ needs.config.outputs.slack_channel }}
-          SLACK_USERNAME: ${{ needs.config.outputs.environment }}
           SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_TITLE: Deployment failure Iaso ${{ steps.version.outputs.VERSION_NAME }} - ${{ needs.config.outputs.environment }}
-          SLACK_MESSAGE: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-          SLACK_FOOTER: "-"
-          MSG_MINIMAL: true
+          SLACK_TITLE: Deployment failure Iaso ${{ inputs.image_tag }} - ${{ inputs.environment }}
         if: failure()

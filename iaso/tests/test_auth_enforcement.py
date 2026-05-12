@@ -1,3 +1,4 @@
+import importlib
 import re
 
 from importlib import reload
@@ -268,12 +269,29 @@ class TestRootRedirect(TestCase):
 
     @override_settings(PLUGINS=["plugin"], ROOT_REDIRECT_PATTERN_NAME="dashboard:home_iaso")
     @patch("importlib.import_module")
-    def test_root_redirect_uses_first_plugin_hook_when_present(self, import_module_mock):
+    def test_root_redirect_uses_plugin_settings_hook_when_present(self, import_module_mock):
         import_module_mock.return_value = SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="dashboard:iaso")
         with patch("importlib.util.find_spec", return_value=None):
             urls_module = self._reload_urls()
         self.assertEqual(urls_module.ROOT_REDIRECT_PATTERN_NAME, "dashboard:iaso")
         self.assertEqual(self._get_index_redirect_pattern_name(urls_module), "dashboard:iaso")
+
+    @override_settings(PLUGINS=["p_a", "p_b"], ROOT_REDIRECT_PATTERN_NAME="dashboard:home_iaso")
+    def test_root_redirect_last_plugin_settings_hook_wins(self):
+        original_import_module = importlib.import_module
+
+        def fake_import(name, package=None):
+            if name == "plugins.p_a.settings":
+                return SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="a:home")
+            if name == "plugins.p_b.settings":
+                return SimpleNamespace(ROOT_REDIRECT_PATTERN_NAME="b:home")
+            return original_import_module(name, package)
+
+        with patch("importlib.import_module", side_effect=fake_import):
+            with patch("importlib.util.find_spec", return_value=None):
+                urls_module = self._reload_urls()
+        self.assertEqual(urls_module.ROOT_REDIRECT_PATTERN_NAME, "b:home")
+        self.assertEqual(self._get_index_redirect_pattern_name(urls_module), "b:home")
 
     @override_settings(PLUGINS=["plugin"], ROOT_REDIRECT_PATTERN_NAME="dashboard:home_iaso")
     @patch("importlib.import_module")

@@ -129,6 +129,9 @@ module.exports = {
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
         }),
+        new webpack.DefinePlugin({
+           'process.env.ORVAL_API_BASE_URL': JSON.stringify(process.env?.ORVAL_API_BASE_URL ?? "")
+        }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
         new webpack.IgnorePlugin({

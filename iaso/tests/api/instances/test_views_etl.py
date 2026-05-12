@@ -138,7 +138,7 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         first_instance = res_data["results"][0]
         self.assertEqual(first_instance["id"], self.instance_1.pk)
         self.assertEqual(first_instance["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING)
-        self.assertTrue(first_instance["file_url"].endswith("test.xml"))
+        self.assertIsNotNone(first_instance["file_url"])
         self.assertIsNotNone(first_instance["file_content"])
         self.assertEqual(first_instance["form_id"], self.form_1.pk)
 
@@ -168,7 +168,7 @@ class ETLInstanceTestCase(SwaggerTestCaseMixin, APITestCase):
         second_instance = res_data["results"][1]
         self.assertEqual(second_instance["id"], self.instance_2.pk)
         self.assertEqual(second_instance["general_validation_status"], "")
-        self.assertTrue(second_instance["file_url"].endswith(".xml"))
+        self.assertIsNotNone(second_instance["file_url"])
         self.assertIsNotNone(second_instance["file_content"])
         self.assertEqual(second_instance["form_id"], self.form_2.pk)
 

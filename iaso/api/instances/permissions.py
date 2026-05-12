@@ -34,6 +34,19 @@ class HasInstancePermission(permissions.BasePermission):
         return False
 
 
+class HasInstanceETLPermission(permissions.BasePermission):
+    def has_permission(self, request: Request, view):
+        if request.user.is_authenticated and request.user.is_superuser:
+            return True
+
+        return request.user.is_authenticated and (
+            request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name())
+        )
+
+
 class HasInstanceBulkPermission(permissions.BasePermission):
     """
     Designed for POST endpoints that are not designed to receive new submissions.

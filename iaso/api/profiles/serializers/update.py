@@ -9,39 +9,29 @@ from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, User
 
 
 class BaseProfileUpdateSerializer(ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ["language", "home_page"]
-
-
-class ProfileMeUpdateSerializer(BaseProfileUpdateSerializer):
     """
-    Serializer used by `PATCH /api/profiles/me/`.
+    Base for profile PATCH serializers.
 
-    Any logged-in user can update a small set of self-service fields without
-    holding any user-admin permission (see `HasProfilePermission`, which
-    short-circuits when `pk == PK_ME`).
+    Used directly for ``PATCH /api/profiles/me/``: any authenticated user may
+    update this field set without user-admin permissions (see
+    ``HasProfilePermission`` when ``pk == PK_ME``).
 
-    `first_name`, `last_name` and `email` live on the `User` model rather than
-    on `Profile`. They are declared here as plain serializer fields (matching
-    the pattern in `ProfileUpdateSerializer`) and written back to the user by
-    `ProfilesViewSet._post_update_user` when they appear in `validated_data`.
+    ``first_name``, ``last_name`` and ``email`` live on ``User``;
+    ``ProfilesViewSet._post_update_user`` applies them when present in
+    ``validated_data``.
     """
 
     email = serializers.EmailField(required=False, allow_blank=True, write_only=True)
     first_name = serializers.CharField(required=False, allow_blank=True, write_only=True, max_length=150)
     last_name = serializers.CharField(required=False, allow_blank=True, write_only=True, max_length=150)
 
-    class Meta(BaseProfileUpdateSerializer.Meta):
-        fields = BaseProfileUpdateSerializer.Meta.fields + ["first_name", "last_name", "email"]
+    class Meta:
+        model = Profile
+        fields = ["language", "home_page", "first_name", "last_name", "email"]
 
 
 class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     _org_units_unchanged = False
-
-    email = serializers.EmailField(required=False, allow_blank=True, write_only=True)
-    first_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
-    last_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     user_name = serializers.CharField(required=False, write_only=True)
 
@@ -78,11 +68,8 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
     class Meta(BaseProfileUpdateSerializer.Meta):
         model = Profile
         fields = BaseProfileUpdateSerializer.Meta.fields + [
-            "first_name",
             "organization",
-            "last_name",
             "user_name",
-            "email",
             "color",
             "phone_number",
             "country_code",

@@ -238,6 +238,22 @@ class AppsAPITestCase(APITestCase):
         response = self.client.post("/api/apps/", candidate_app, format="json")
         self.assertJSONResponse(response, 201)
 
+    def test_app_create_ok_without_description(self):
+        candidate_app = {
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [],
+            "needs_authentication": False,
+        }
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post("/api/apps/", candidate_app, format="json")
+        response_data = response.json()
+        self.assertValidAppData(response_data)
+        self.assertEqual("", response_data["description"])
+
+        project = m.Project.objects.get(app_id=candidate_app["app_id"])
+        self.assertEqual("", project.description)
+        
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
         candidate_app = {
             "name": "This is a new app",

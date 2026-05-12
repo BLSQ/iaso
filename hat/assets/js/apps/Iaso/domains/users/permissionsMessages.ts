@@ -4,6 +4,14 @@ import { defineMessages } from 'react-intl';
 // List of translations for Iaso permissions used all along the project
 
 const PERMISSIONS_MESSAGES = defineMessages({
+    iaso_pipeline_management: {
+        id: 'iaso.permissions.iaso_pipeline_management',
+        defaultMessage: 'Pipeline management',
+    },
+    iaso_pipeline_management_tooltip: {
+        id: 'iaso.permissions.iaso_pipeline_management_tooltip',
+        defaultMessage: 'Allows to manage openhexa pipelines',
+    },
     iaso_account_management: {
         id: 'iaso.permissions.iaso_account_management',
         defaultMessage: 'Account management',

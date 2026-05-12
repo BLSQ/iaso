@@ -25,7 +25,13 @@ class StockKeepingUnitMobileSerializerTestCase(TestCase):
         self.org_unit_type_3 = m.OrgUnitType.objects.create(name="Org unit type 3")
         self.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
         self.project_2 = project_2 = m.Project.objects.create(name="Project 2", account=account_1)
-        self.project_3 = m.Project.objects.create(name="Project 3", account=account_2)
+        self.project_3 = project_3 = m.Project.objects.create(name="Project 3", account=account_2)
+        self.form_1 = form_1 = m.Form.objects.create(name="Form 1")
+        form_1.projects.set([project_1])
+        self.form_2 = form_2 = m.Form.objects.create(name="Form 2")
+        form_2.projects.set([project_2])
+        self.form_3 = form_3 = m.Form.objects.create(name="Form 3")
+        form_3.projects.set([project_3])
 
         self.user = user = m.User.objects.create(username="User 1")
         m.Profile.objects.create(user=user, account=account_1)
@@ -47,6 +53,7 @@ class StockKeepingUnitMobileSerializerTestCase(TestCase):
         )
         parent_sku.projects.set([project_1, project_2])
         parent_sku.org_unit_types.set([org_unit_type_1, org_unit_type_2])
+        parent_sku.forms.set([form_1, form_2])
 
         m.StockKeepingUnitChildren.objects.create(
             child=sku,
@@ -66,7 +73,10 @@ class StockKeepingUnitMobileSerializerTestCase(TestCase):
                     self.org_unit_type_1.pk,
                     self.org_unit_type_2.pk,
                 ],
-                "forms": [],
+                "forms": [
+                    self.form_1.pk,
+                    self.form_2.pk,
+                ],
                 "display_unit": "",
                 "display_precision": 1,
                 "created_at": 1755608400.0,

@@ -65,6 +65,7 @@ const PAYMENTS = 'iaso_payments';
 const STOCK_MANAGEMENT = 'iaso_stock_management';
 const METRIC_TYPES = 'iaso_metric_types';
 const VALIDATION_WORKFLOWS = 'iaso_validation_workflows';
+const PIPELINE_MANAGEMENT = 'iaso_pipeline_management';
 
 export {
     ACCOUNT_MANAGEMENT,
@@ -95,6 +96,7 @@ export {
     PAYMENTS,
     PLANNING_READ,
     PLANNING_WRITE,
+    PIPELINE_MANAGEMENT,
     POLIO,
     POLIO_CHRONOGRAM,
     POLIO_CHRONOGRAM_RESTRICTED_WRITE,

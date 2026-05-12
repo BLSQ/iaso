@@ -15,5 +15,5 @@ export const useGetOrgunitsExtraPath = (): string => {
         sourceOrVersionParam = `,"source":${defaultSourceVersion.source.id}`;
     }
 
-    return `/locationLimit/${locationLimitMax}/order/id/pageSize/20/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${defaultColor}"${sourceOrVersionParam}}]`;
+    return `/locationLimit/${locationLimitMax}/order/id/pageSize/20/page/1/searchTabIndex/0/searches/[{"validation_status":"VALID","color":"${defaultColor}"${sourceOrVersionParam}}]`;
 };

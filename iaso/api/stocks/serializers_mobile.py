@@ -33,12 +33,6 @@ class StockKeepingUnitMobileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "updated_at"]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["org_unit_types"] = sorted(data["org_unit_types"])
-        data["forms"] = sorted(data["forms"])
-        return data
-
 
 class StockItemRuleMobileSerializer(serializers.ModelSerializer):
     created_at = TimestampField()

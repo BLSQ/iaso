@@ -103,14 +103,6 @@ class StockKeepingUnitSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "updated_at", "created_by", "updated_by", "deleted_at"]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["projects"] = sorted(data["projects"], key=lambda p: p["id"])
-        data["org_unit_types"] = sorted(data["org_unit_types"], key=lambda o: o["id"])
-        data["forms"] = sorted(data["forms"], key=lambda f: f["id"])
-        data["children"] = sorted(data["children"], key=lambda c: c["id"])
-        return data
-
 
 class StockKeepingUnitWriteSerializer(serializers.ModelSerializer):
     projects = PrimaryKeyRelatedField(

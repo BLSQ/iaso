@@ -121,7 +121,7 @@ psutil==7.2.2 # https://pypi.org/project/psutil/
 # ------------------------------------------------------------------------------
 https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz#egg=django_webpack_loader
 
-git+https://github.com/BLSQ/spreadsheet-xlsform-validator
+https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip
 
 # ODK-specific libraries.
 # ------------------------------------------------------------------------------

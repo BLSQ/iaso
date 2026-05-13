@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from iaso.api.validation_workflows_node_templates.permissions import HasAccountFeatureFlag
+from iaso.api.common.permissions import HasAccountFeatureFlag
 from iaso.api.validation_workflows_nodes.permissions import HasValidationWorkflowPermission
 from iaso.api.validation_workflows_nodes.serializers.complete import ValidationNodeCompleteSerializer
 from iaso.api.validation_workflows_nodes.serializers.complete_bypass import ValidationNodeCompleteBypassSerializer
@@ -18,7 +18,11 @@ from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 
 @extend_schema(tags=["Validation nodes"])
 class ValidationNodeViewSet(GenericViewSet):
-    permission_classes = [IsAuthenticated, HasValidationWorkflowPermission, HasAccountFeatureFlag]
+    permission_classes = [
+        IsAuthenticated,
+        HasValidationWorkflowPermission,
+        HasAccountFeatureFlag("SUBMISSION_VALIDATION_WORKFLOW"),
+    ]
     http_method_names = ["get", "post"]
     pagination_class = None
 

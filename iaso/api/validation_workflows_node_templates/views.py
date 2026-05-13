@@ -9,9 +9,9 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from iaso.api.common import ModelViewSet
+from iaso.api.common.permissions import HasAccountFeatureFlag
 from iaso.api.validation_workflows_node_templates.pagination import ValidationNodeTemplatePagination
 from iaso.api.validation_workflows_node_templates.permissions import (
-    HasAccountFeatureFlag,
     HasValidationNodeTemplatePermission,
 )
 from iaso.api.validation_workflows_node_templates.serializers.bulk_create import (
@@ -32,7 +32,11 @@ from iaso.models import UserRole, ValidationNodeTemplate
 class ValidationNodeTemplatesView(NestedViewSetMixin, ModelViewSet):
     lookup_field = "slug"
     lookup_url_kwarg = "slug"
-    permission_classes = [IsAuthenticated, HasValidationNodeTemplatePermission, HasAccountFeatureFlag]
+    permission_classes = [
+        IsAuthenticated,
+        HasValidationNodeTemplatePermission,
+        HasAccountFeatureFlag("SUBMISSION_VALIDATION_WORKFLOW"),
+    ]
     model = ValidationNodeTemplate
     filter_backends = [OrderingFilter]
     pagination_class = ValidationNodeTemplatePagination

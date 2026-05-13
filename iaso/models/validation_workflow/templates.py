@@ -229,27 +229,37 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         )
 
     def dump_nodes(self):
-        start = self.get_starting_node()
+        if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):
+            node_templates = self._prefetched_objects_cache["node_templates"]
+        else:
+            node_templates = self.node_templates.all().order_by("id")
+
+        flatten_graph = {x.pk: getattr(x, "prefetched_next_nodes", x.next_node_templates.all()) for x in node_templates}
+
+        if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):
+            start = [x for x in self._prefetched_objects_cache["node_templates"] if not x.has_previous][0]
+        else:
+            start = self.get_starting_node()
 
         def walk(node, visited):
             path = []
             current = node
 
             while True:
-                if current in visited:
+                if current.pk in visited:
                     path.append(f"[cycle:{current.slug}]")
                     return path
 
-                visited.add(current)
+                visited.add(current.pk)
                 path.append(current.slug)
 
-                next_nodes = current.next_node_templates.all().order_by("slug")
+                next_nodes = flatten_graph[current.pk]
 
-                if not next_nodes.exists():
+                if not next_nodes:
                     # end node there
                     return path
 
-                if next_nodes.count() > 1:
+                if len(next_nodes) > 1:
                     # split in branches
                     branches = [walk(next_node, visited.copy()) for next_node in next_nodes]
                     path.append(branches)

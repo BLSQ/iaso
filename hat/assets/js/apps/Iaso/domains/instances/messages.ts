@@ -291,6 +291,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Approve',
         id: 'iaso.label.approve',
     },
+    reject: {
+        defaultMessage: 'Reject',
+        id: 'iaso.label.reject',
+    },
     launch: {
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',
@@ -841,6 +845,40 @@ const MESSAGES = defineMessages({
     validationNodeStatusSubmission: {
         defaultMessage: 'Submission',
         id: 'iaso.validationNode.status.submission',
+    },
+    featureDisabled: {
+        defaultMessage: 'This feature is disabled for your account',
+        id: 'iaso.label.featureDisabled',
+    },
+    missingPermissions: {
+        defaultMessage:
+            'Missing one of the following permission(s): {permissions}',
+        id: 'iaso.label.missingPermissions',
+    },
+    pending: {
+        defaultMessage: 'Pending',
+        id: 'iaso.label.pending',
+    },
+    skipped: {
+        defaultMessage: 'Skipped',
+        id: 'iaso.label.skipped',
+    },
+    validationTimelineByOn: {
+        defaultMessage: 'by {user} on {date}',
+        id: 'iaso.validationTimeline.byOn',
+    },
+    validationTimelineComment: {
+        defaultMessage:
+            '<firstTag>Comment</firstTag>: <secondTag>{comment}</secondTag>',
+        id: 'iaso.validationTimeline.comment',
+    },
+    submissionOrder: {
+        defaultMessage: 'Submission {number}',
+        id: 'iaso.validationTimeline.submissionOrder',
+    },
+    progress: {
+        defaultMessage: 'Progress',
+        id: 'iaso.label.progress',
     },
 });
 

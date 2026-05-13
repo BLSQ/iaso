@@ -136,6 +136,7 @@ export const Details: FunctionComponent = () => {
                                         }
                                         entityId={entityId as string}
                                         entityTypeId={entity?.entity_type.toString()}
+                                        initialOrgUnit={entity?.org_unit}
                                     />
                                 )}
                         </Grid>

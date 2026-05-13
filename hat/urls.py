@@ -13,7 +13,6 @@ from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from hat.root_redirect import resolve_root_redirect_pattern_name
 from iaso.auth.views import IasoPasswordResetView
 from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 
@@ -21,9 +20,6 @@ from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
-
-
-ROOT_REDIRECT_PATTERN_NAME = resolve_root_redirect_pattern_name()
 
 
 if settings.MAINTENANCE_MODE:
@@ -87,7 +83,7 @@ else:
         path("robots.txt", robots_txt),
         path(
             "",
-            RedirectView.as_view(pattern_name=ROOT_REDIRECT_PATTERN_NAME, permanent=False),
+            RedirectView.as_view(pattern_name=settings.ROOT_REDIRECT_PATTERN_NAME, permanent=False),
             name="index",
         ),
         path("_health/", health),

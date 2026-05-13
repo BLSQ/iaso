@@ -33,18 +33,26 @@ class IasoLogoutView(LogoutView):
         candidate = (
             self.request.POST.get(self.redirect_field_name) or self.request.GET.get(self.redirect_field_name) or ""
         )
-        if candidate and self._is_allowed(candidate):
-            return candidate
+        if candidate:
+            allowed_path = self._get_allowed_path(candidate)
+            if allowed_path:
+                return allowed_path
         # Returning "" makes ``get_success_url`` fall through to
         # ``get_default_redirect_url`` (which uses ``next_page``).
         return ""
 
-    def _is_allowed(self, candidate: str) -> bool:
-        allowed = set(getattr(settings, "LOGOUT_NEXT_ALLOWED_PATHS", []))
-        if candidate not in allowed:
-            return False
-        return url_has_allowed_host_and_scheme(
-            candidate,
-            allowed_hosts={self.request.get_host()},
-            require_https=self.request.is_secure(),
-        )
+    def _get_allowed_path(self, candidate: str) -> str:
+        """Return the matching allowlisted path, or empty string if not allowed.
+
+        Strips trailing slashes before comparison; returns the configured path.
+        """
+        normalized = candidate.rstrip("/")
+        allowed_paths = getattr(settings, "LOGOUT_NEXT_ALLOWED_PATHS", [])
+        for allowed_path in allowed_paths:
+            if normalized == allowed_path.rstrip("/") and url_has_allowed_host_and_scheme(
+                allowed_path,
+                allowed_hosts={self.request.get_host()},
+                require_https=self.request.is_secure(),
+            ):
+                return allowed_path
+        return ""

@@ -50,6 +50,20 @@ class IasoLogoutViewTestCase(TestCase):
         response = self.client.get("/api/profiles/me/")
         self.assertIn(response.status_code, (401, 403))
 
+    # Edge cases: paths are normalized before matching.
+    def test_trailing_slash_normalized(self):
+        """Trailing slashes are stripped before matching."""
+        response = self.client.get(self.logout_url, {"next": "/example/allowed-target/"})
+        self.assertRedirects(response, "/example/allowed-target", fetch_redirect_response=False)
+
+    def test_query_params_not_matched(self):
+        response = self.client.get(self.logout_url, {"next": "/example/allowed-target?foo=bar"})
+        self.assertRedirects(response, "/login/", fetch_redirect_response=False)
+
+    def test_fragment_not_matched(self):
+        response = self.client.get(self.logout_url, {"next": "/example/allowed-target#section"})
+        self.assertRedirects(response, "/login/", fetch_redirect_response=False)
+
 
 @override_settings(LOGOUT_NEXT_ALLOWED_PATHS=[])
 class IasoLogoutViewWithoutAllowlistTestCase(TestCase):

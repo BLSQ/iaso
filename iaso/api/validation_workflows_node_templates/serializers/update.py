@@ -15,7 +15,6 @@ class ValidationNodeTemplateUpdateSerializer(ModelSerializer):
         fields = [
             "name",
             "description",
-            "color",
             "roles_required",
             "can_skip_previous_nodes",
             "slug",
@@ -24,7 +23,6 @@ class ValidationNodeTemplateUpdateSerializer(ModelSerializer):
         extra_kwargs = {
             "name": {"write_only": True},
             "description": {"write_only": True},
-            "color": {"write_only": True},
             "roles_required": {"write_only": True},
             "can_skip_previous_nodes": {"write_only": True},
             "slug": {"read_only": True},

@@ -25,17 +25,13 @@ class BaseAPITestCase(APITestCase):
             name="Validation workflow", account=self.account, description="Description"
         )
 
-        self.first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
-        )
+        self.first_node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
 
-        self.second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#12fa4b"
-        )
+        self.second_node = ValidationNodeTemplate.objects.create(name="Second node", workflow=self.validation_workflow)
         self.second_node.previous_node_templates.add(self.first_node)
 
         self.third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#6e6593", can_skip_previous_nodes=True
+            name="Third node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.third_node.previous_node_templates.add(self.second_node)
         self.form = Form.objects.create(name="Form")

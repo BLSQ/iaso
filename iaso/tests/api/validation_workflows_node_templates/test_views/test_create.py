@@ -114,7 +114,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 data={
                     "name": "Random name 2",
                     "description": "Random description",
-                    "color": "#377760",
                     "roles_required": [self.user_role.pk],
                     "position": PositionChoices.first,
                     "can_skip_previous_nodes": True,
@@ -135,7 +134,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 data={
                     "name": "Random name 3",
                     "description": "Random description",
-                    "color": "#377760",
                     "roles_required": [self.user_role.pk],
                     "position": PositionChoices.last,
                     "can_skip_previous_nodes": True,
@@ -155,7 +153,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 data={
                     "name": "Random name",
                     "description": "Random description",
-                    "color": "#377760",
                     "roles_required": [self.user_role.pk],
                     "position": PositionChoices.child_of,
                     "parent_node_templates": [self.first_node.slug],
@@ -180,7 +177,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             data={
                 "name": "Random node",
                 "description": "Random description",
-                "color": "#377760",
                 "roles_required": [self.user_role.pk],
                 "position": PositionChoices.child_of,
                 "parent_node_templates": [self.first_node.slug],
@@ -197,7 +193,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
         self.assertEqual(created_node.workflow, self.validation_workflow)
         self.assertEqual(created_node.name, "Random node")
         self.assertEqual(created_node.description, "Random description")
-        self.assertEqual(created_node.color, "#377760")
         self.assertTrue(created_node.can_skip_previous_nodes)
         self.assertEqual(list(created_node.previous_node_templates.values_list("pk", flat=True)), [self.first_node.pk])
         self.assertEqual(list(created_node.next_node_templates.values_list("pk", flat=True)), [self.second_node.pk])
@@ -222,7 +217,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 data={
                     "name": "Random starting node",
                     "description": "Random description",
-                    "color": "#377760",
                     "position": PositionChoices.first,
                     "can_skip_previous_nodes": True,
                 },
@@ -235,7 +229,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(second_created_node.workflow, self.validation_workflow)
             self.assertEqual(second_created_node.name, "Random starting node")
             self.assertEqual(second_created_node.description, "Random description")
-            self.assertEqual(second_created_node.color, "#377760")
             self.assertTrue(second_created_node.can_skip_previous_nodes)
             self.assertFalse(second_created_node.previous_node_templates.exists())
             self.assertEqual(
@@ -247,7 +240,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(created_node.workflow, self.validation_workflow)
             self.assertEqual(created_node.name, "Random node")
             self.assertEqual(created_node.description, "Random description")
-            self.assertEqual(created_node.color, "#377760")
             self.assertTrue(created_node.can_skip_previous_nodes)
             self.assertEqual(
                 list(created_node.previous_node_templates.values_list("pk", flat=True)), [self.first_node.pk]
@@ -281,7 +273,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
                 data={
                     "name": "Random last node",
                     "description": "Random description",
-                    "color": "#377760",
                     "position": PositionChoices.last,
                     "can_skip_previous_nodes": True,
                 },
@@ -293,7 +284,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(last_created_node.workflow, self.validation_workflow)
             self.assertEqual(last_created_node.name, "Random last node")
             self.assertEqual(last_created_node.description, "Random description")
-            self.assertEqual(last_created_node.color, "#377760")
             self.assertTrue(last_created_node.can_skip_previous_nodes)
             self.assertFalse(last_created_node.next_node_templates.exists())
             self.assertEqual(
@@ -304,7 +294,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(second_created_node.workflow, self.validation_workflow)
             self.assertEqual(second_created_node.name, "Random starting node")
             self.assertEqual(second_created_node.description, "Random description")
-            self.assertEqual(second_created_node.color, "#377760")
             self.assertTrue(second_created_node.can_skip_previous_nodes)
             self.assertFalse(second_created_node.previous_node_templates.exists())
             self.assertEqual(
@@ -316,7 +305,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(created_node.workflow, self.validation_workflow)
             self.assertEqual(created_node.name, "Random node")
             self.assertEqual(created_node.description, "Random description")
-            self.assertEqual(created_node.color, "#377760")
             self.assertTrue(created_node.can_skip_previous_nodes)
             self.assertEqual(
                 list(created_node.previous_node_templates.values_list("pk", flat=True)), [self.first_node.pk]
@@ -351,7 +339,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             data={
                 "name": "Random node",
                 "description": "Random description",
-                "color": "#377760",
                 "roles_required": [self.user_role.pk],
                 "position": PositionChoices.child_of,
                 "parent_node_templates": [self.first_node.slug],
@@ -368,7 +355,6 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             data={
                 "name": "Random node",
                 "description": "Random description",
-                "color": "#377760",
                 "roles_required": [self.user_role.pk],
                 "position": PositionChoices.child_of,
                 "parent_node_templates": [self.first_node.slug],

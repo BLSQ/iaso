@@ -45,7 +45,6 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
         self.second_node = ValidationNodeTemplate.objects.create(
             name="Second node",
             workflow=self.validation_workflow,
-            color="#ffffff",
             description="some description",
             can_skip_previous_nodes=True,
         )
@@ -136,7 +135,7 @@ class ValidationNodeTemplateAPIListTestCase(BaseApiTestCase):
 
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=3)
 
-        fields = ["slug", "name", "description", "color", "roles_required", "can_skip_previous_nodes"]
+        fields = ["slug", "name", "description", "roles_required", "can_skip_previous_nodes"]
 
         for data in res_data["results"]:
             for field in fields:

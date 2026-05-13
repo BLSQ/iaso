@@ -5,13 +5,11 @@ from iaso.api.validation_workflows.serializers.common import UserDisplayNameFiel
 from iaso.models import Instance, ValidationNode
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
-from iaso.utils.serializer.color import ColorFieldSerializer
 
 
 class NestedHistorySerializer(ModelSerializer):
     updated_at = TimestampField()
     created_at = TimestampField()
-    color = ColorFieldSerializer(source="node.color", read_only=True)
     level = serializers.CharField(read_only=True, source="node.name")
     created_by = UserDisplayNameField()
     updated_by = UserDisplayNameField()
@@ -20,7 +18,6 @@ class NestedHistorySerializer(ModelSerializer):
         model = ValidationNode
         fields = [
             "level",
-            "color",
             "created_at",
             "updated_at",
             "status",

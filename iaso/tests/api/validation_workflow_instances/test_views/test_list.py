@@ -52,16 +52,16 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         self.validation_workflow.form_set.add(self.form)
 
         self.first_vf_first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, color="#ffffff"
+            name="First node", workflow=self.validation_workflow
         )
         self.first_vf_second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.validation_workflow, color="#ffffff"
+            name="Second node", workflow=self.validation_workflow
         )
         self.first_vf_second_node.roles_required.add(self.user_role)
         self.first_vf_second_node.previous_node_templates.add(self.first_vf_first_node)
 
         self.first_vf_third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, color="#ffffff", can_skip_previous_nodes=True
+            name="Third node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.first_vf_third_node.previous_node_templates.add(self.first_vf_second_node)
 
@@ -77,16 +77,16 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         self.other_validation_workflow.form_set.add(self.other_form)
 
         self.second_vf_first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.other_validation_workflow, color="#ffffff"
+            name="First node", workflow=self.other_validation_workflow
         )
         self.second_vf_second_node = ValidationNodeTemplate.objects.create(
-            name="Second node", workflow=self.other_validation_workflow, color="#ffffff"
+            name="Second node", workflow=self.other_validation_workflow
         )
         self.second_vf_second_node.roles_required.add(self.user_role)
         self.second_vf_second_node.previous_node_templates.add(self.second_vf_first_node)
 
         self.second_vf_third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.other_validation_workflow, color="#ffffff", can_skip_previous_nodes=True
+            name="Third node", workflow=self.other_validation_workflow, can_skip_previous_nodes=True
         )
         self.second_vf_third_node.previous_node_templates.add(self.second_vf_second_node)
         self.second_vf_third_node.roles_required.add(self.user_role)

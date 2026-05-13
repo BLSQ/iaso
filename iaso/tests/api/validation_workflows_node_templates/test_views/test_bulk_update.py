@@ -43,17 +43,16 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
 
         # create some nodes
         self.first_node = ValidationNodeTemplate.objects.create(
-            name="First node", workflow=self.validation_workflow, description="first node desc", color="#ffffff"
+            name="First node", workflow=self.validation_workflow, description="first node desc"
         )
         self.second_node = ValidationNodeTemplate.objects.create(
             name="Second node",
             workflow=self.validation_workflow,
-            color="#ffffff",
             description="some description",
             can_skip_previous_nodes=True,
         )
         self.third_node = ValidationNodeTemplate.objects.create(
-            name="Third node", workflow=self.validation_workflow, description="third node desc", color="#ffffff"
+            name="Third node", workflow=self.validation_workflow, description="third node desc"
         )
         self.second_node.previous_node_templates.add(self.first_node)
         self.second_node.next_node_templates.add(self.third_node)
@@ -75,7 +74,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     "slug": self.second_node.slug,
                     "name": "new third node",
                     "description": "some description",
-                    "color": "#ebebeb",
                 },
             ],
         )
@@ -115,7 +113,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     "slug": self.second_node.slug,
                     "name": "new third node",
                     "description": "some description",
-                    "color": "#ebebeb",
                 },
             ],
         )
@@ -143,7 +140,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     "slug": self.second_node.slug,
                     "name": "new third node",
                     "description": "some description",
-                    "color": "#ebebeb",
                 },
             ],
         )
@@ -160,7 +156,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.assertEqual(self.third_node.name, "new first node")
         self.assertEqual(self.third_node.description, "third node desc")
         self.assertEqual(list(self.third_node.roles_required.all()), [self.user_role])
-        self.assertEqual(self.third_node.color, "#FFFFFF")
         self.assertFalse(self.third_node.can_skip_previous_nodes)
 
         self.second_node.refresh_from_db()
@@ -169,7 +164,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.assertEqual(self.second_node.name, "new third node")
         self.assertEqual(self.second_node.description, "some description")
         self.assertEqual(list(self.second_node.roles_required.all()), [self.user_role])
-        self.assertEqual(self.second_node.color, "#EBEBEB")
         self.assertTrue(self.second_node.can_skip_previous_nodes)
 
         self.first_node.refresh_from_db()
@@ -178,7 +172,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
         self.assertEqual(self.first_node.name, "new second node")
         self.assertEqual(self.first_node.description, "first node desc")
         self.assertEqual(list(self.first_node.roles_required.all()), [])
-        self.assertEqual(self.first_node.color, "#FFFFFF")
         self.assertTrue(self.first_node.can_skip_previous_nodes)
 
     def test_permissions(self):
@@ -383,7 +376,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                         "slug": self.second_node.slug,
                         "name": "new third node",
                         "description": "some description",
-                        "color": "#ebebeb",
                     },
                 ],
             )
@@ -403,7 +395,6 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                     "slug": self.second_node.slug,
                     "name": "new third node",
                     "description": "some description",
-                    "color": "#ebebeb",
                 },
             ],
         )

@@ -18,7 +18,6 @@ import typing
 import uuid
 
 from copy import copy
-from itertools import chain
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
@@ -311,15 +310,20 @@ class Entity(SoftDeletableModel):
 
     def get_pending_duplicate_ids(self):
         """Retrieve the id list of related pending duplicate entities."""
-        if hasattr(self, "pending_duplicates1") and hasattr(self, "pending_duplicates2"):
-            return list(set(duplicate.id for duplicate in chain(self.pending_duplicates1, self.pending_duplicates2)))
-
         results = set()
-        e1qs = self.duplicates1.all()
-        e2qs = self.duplicates2.all()
-        for duplicate in chain(e1qs, e2qs):
-            if duplicate.validation_status == ValidationStatus.PENDING:
-                results.add(duplicate.id)
+        if hasattr(self, "pending_duplicates1") and hasattr(self, "pending_duplicates2"):
+            for duplicate in self.pending_duplicates1:
+                results.add(duplicate.entity2_id)
+            for duplicate in self.pending_duplicates2:
+                results.add(duplicate.entity1_id)
+            return list(results)
+
+        e1qs = self.duplicates1.filter(validation_status=ValidationStatus.PENDING)
+        e2qs = self.duplicates2.filter(validation_status=ValidationStatus.PENDING)
+        for duplicate in e1qs:
+            results.add(duplicate.entity2_id)
+        for duplicate in e2qs:
+            results.add(duplicate.entity1_id)
         return list(results)
 
     def get_latest_instance_created_at(self):

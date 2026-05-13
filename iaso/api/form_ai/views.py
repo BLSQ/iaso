@@ -92,14 +92,15 @@ def form_ai_chat(request):
         xform_xml = None
         if form is not None:
             xlsform_buffer = build_xlsform(form)
-            xform_xml = convert_to_xform_xml(xlsform_buffer)
+            # Snapshot bytes before XML conversion: pyxform may close the stream it reads.
+            xlsform_bytes = xlsform_buffer.getvalue()
+            xform_xml = convert_to_xform_xml(io.BytesIO(xlsform_bytes))
             temporary_form = TemporaryForm(
                 user=request.user,
                 account=request.user.iaso_profile.account,
             )
             temporary_form.save()
-            xlsform_buffer.seek(0)
-            temporary_form.xls_file.save("form.xlsx", ContentFile(xlsform_buffer.read()))
+            temporary_form.xls_file.save("form.xlsx", ContentFile(xlsform_bytes))
             xlsform_uuid = str(temporary_form.uuid)
 
         result["xlsform_uuid"] = xlsform_uuid
@@ -117,8 +118,8 @@ def form_ai_chat(request):
             {"error": "Failed to generate form. Please try again."},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    except Exception:
-        logger.exception("Form AI error")
+    except Exception as e:
+        logger.exception("Form AI error: %s", e)
         return Response(
             {"error": "Failed to generate form. Please try again."},
             status=status.HTTP_400_BAD_REQUEST,

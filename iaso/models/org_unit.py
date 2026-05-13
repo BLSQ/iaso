@@ -140,6 +140,9 @@ class OrgUnitType(models.Model):
 
     objects = OrgUnitTypeManager()
 
+    class Meta:
+        ordering = ["id"]
+
     def __str__(self):
         return f"#{self.pk} {self.name}"
 

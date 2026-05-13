@@ -56,6 +56,7 @@ from .api.entities.views import EntityViewSet
 from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.fhir.views import FHIRLocationViewSet
 from .api.form_ai.views import (
     form_ai_chat,
     form_ai_download,
@@ -293,7 +294,7 @@ router.register(
     basename="validation_workflow_nodes",
 )
 router.register(r"mobile/validation-workflows", ValidationWorkflowMobileViewSet, basename="mobile_validation_workflows")
-
+router.register(r"fhir/Location", FHIRLocationViewSet, basename="fhir-location")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

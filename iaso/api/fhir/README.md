@@ -1,6 +1,6 @@
-# FHIR Location API
+# FHIR (Fast Healthcare Interoperability Resources) Location API
 
-This module provides a FHIR R4 compliant Location resource API that maps Iaso OrgUnit objects to FHIR Location resources.
+This module provides a [FHIR R4 compliant Location resource API](https://build.fhir.org/location.html) that maps Iaso OrgUnit objects to FHIR Location resources.
 
 ## Overview
 
@@ -255,5 +255,5 @@ Comprehensive test suite includes:
 
 Run tests with:
 ```bash
-python manage.py test iaso.api.fhir.tests
+python manage.py test iaso.tests.api.fhir.test_location
 ```

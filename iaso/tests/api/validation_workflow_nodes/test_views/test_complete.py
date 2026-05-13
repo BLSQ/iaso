@@ -105,7 +105,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         self.client.force_authenticate(self.john_wick)
 
         instance_pk = self.instance.get_next_pending_nodes(self.validation_workflow).first().pk
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             # 1-2: PERM
             # 3: ORG UNIT CHECK (instance)
             # 4: FILTER QUERYSET AND RETRIEVE

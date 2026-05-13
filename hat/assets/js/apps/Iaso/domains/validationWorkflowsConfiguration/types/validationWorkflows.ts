@@ -17,7 +17,6 @@ export type NestedNodeTemplate = {
     slug: string;
     name: string;
     description?: string;
-    color: `#${string}`;
     roles_required?: Array<{
         name: string;
         id: number;

@@ -1,7 +1,6 @@
 export type History = {
     id: number;
     level: string;
-    color: `#${string}`;
     created_at: string;
     updated_at: string;
     status:

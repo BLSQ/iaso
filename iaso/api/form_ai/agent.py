@@ -265,8 +265,11 @@ def convert_to_xform_xml(xlsform_buffer: io.BytesIO) -> Optional[str]:
     """Convert an XLSForm to XForm XML using pyxform."""
     try:
         xlsform_buffer.seek(0)
-        xlsform_buffer.name = "form.xlsx"
-        survey = create_survey_from_xls(xlsform_buffer, default_name="data")
+        # pyxform closes the file-like object it receives, so pass a copy to
+        # avoid invalidating the caller's buffer.
+        copy = io.BytesIO(xlsform_buffer.read())
+        copy.name = "form.xlsx"
+        survey = create_survey_from_xls(copy, default_name="data")
         return survey.to_xml(validate=False)
     except Exception as e:
         logger.error("Failed to convert XLSForm to XForm XML: %s", e)

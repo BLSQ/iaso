@@ -365,7 +365,6 @@ CORE_PIPELINE_MANAGEMENT_PERMISSION = CorePermission(
     ui_group=PERMISSION_GROUP_ADMIN,
 )
 
-
 permissions = {
     perm.codename: perm
     for variable_name, perm in globals().items()

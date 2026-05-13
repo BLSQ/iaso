@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
@@ -53,7 +53,11 @@ const EntityTitle: FunctionComponent<{
             >
                 {hasDuplicates && duplicateUrl && (
                     <Grid item>
-                        <LinkButton to={duplicateUrl} size="small">
+                        <LinkButton
+                            to={duplicateUrl}
+                            size="small"
+                            variant="outlined"
+                        >
                             {formatMessage(MESSAGES.seeDuplicates)}
                         </LinkButton>
                     </Grid>
@@ -78,13 +82,6 @@ export const EntityBaseInfo: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const widgetContents = <EntityBaseInfoContents fields={fields} />;
-
-    const openMigratedToInstance = () => {
-        window.open(
-            `/old-trypelim-dashboard/datas/register/detail/patient_id/${entity.migration_source}/order/last_name/pageSize/50/page/1`,
-            '_blank',
-        );
-    };
 
     const title = (
         <EntityTitle
@@ -116,15 +113,6 @@ export const EntityBaseInfo: FunctionComponent<Props> = ({
             <WidgetPaper className={classes.infoPaper} title={title}>
                 {widgetContents}
             </WidgetPaper>
-            {entity.migration_source && (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => openMigratedToInstance()}
-                >
-                    Open patient
-                </Button>
-            )}
         </Box>
     );
 };

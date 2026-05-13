@@ -243,8 +243,8 @@
     "iaso.entities.program": "Programme",
     "iaso.entities.registrationDate": "Date d'enregistrement",
     "iaso.entities.searchToSeeEntities": "Cliquez sur  \"Rechercher\" pour voir les entités",
-    "iaso.entities.seeDuplicate": "Voir doublon",
-    "iaso.entities.seeDuplicates": "Voir doublons",
+    "iaso.entities.seeDuplicate": "Doublon",
+    "iaso.entities.seeDuplicates": "Doublons",
     "iaso.entities.selectForm": "Sélectionner un formulaire",
     "iaso.entities.title": "Entités",
     "iaso.entities.type": "Type",
@@ -255,6 +255,7 @@
     "iaso.entities.locationType": "Type de localisation",
     "iaso.entities.registration": "Lieu d'enregistrement",
     "iaso.entities.residence": "Lieu de résidence",
+    "iaso.entities.enketoCreateSuccess": "Redirection vers Enketo...",
     "iaso.entity.label.noSubmissionFound": "Aucune soumission trouvée",
     "iaso.entity.label.submissionsForEntity": "Soumissions Entité {entity}",
     "iaso.entityTypes.count": "Nombre d'entités",
@@ -1870,5 +1871,4 @@
     "iaso.duplicates.manual.title": "Spécifier manuellement un doublon",
     "iaso.duplicates.manual.button": "Ajout doublon",
     "iaso.duplicates.manual.targetLabel": "Identifiant (id ou uuid) de l'entité cible"
-
 }

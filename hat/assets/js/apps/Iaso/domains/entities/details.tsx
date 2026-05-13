@@ -33,6 +33,9 @@ export const Details: FunctionComponent = () => {
     const CreateSubmissionDialog = useFindCustomComponent(
         'entities.create_submission_dialog',
     );
+    const TrypelimEntityDetails = useFindCustomComponent(
+        'entities.details.info_extra',
+    );
     const goBack = useGoBack(baseUrls.entities);
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;
@@ -84,6 +87,11 @@ export const Details: FunctionComponent = () => {
                                 hasDuplicates={duplicates.length > 0}
                                 duplicateUrl={duplicateUrl}
                             />
+                            {TrypelimEntityDetails && (
+                                <TrypelimEntityDetails
+                                    entityId={entityId as string}
+                                />
+                            )}
                         </Grid>
 
                         <Grid item xs={12} md={8}>

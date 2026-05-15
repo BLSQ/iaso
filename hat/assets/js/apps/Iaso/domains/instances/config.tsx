@@ -4,13 +4,7 @@ import orderBy from 'lodash/orderBy';
 import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 
-const instancesTableColumns = (
-    formatMessage: (
-        key: string,
-        messages: Record<string, IntlMessage>,
-        values?: any,
-    ) => string,
-) => {
+const instancesTableColumns = (formatMessage: (msg: IntlMessage) => string) => {
     const columns: Array<
         ColumnWithAccessor & { sortable?: boolean; align?: string }
     > = [];
@@ -18,7 +12,7 @@ const instancesTableColumns = (
     metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
     metaFields.forEach(f => {
         columns.push({
-            Header: formatMessage(f.key, MESSAGES),
+            Header: formatMessage(MESSAGES[f.key]),
             accessor: f.accessor || f.key,
             sortable: f.sortable !== false,
             align: 'center',

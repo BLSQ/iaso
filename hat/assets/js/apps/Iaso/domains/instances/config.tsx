@@ -12,7 +12,9 @@ const instancesTableColumns = (formatMessage: (msg: IntlMessage) => string) => {
     metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
     metaFields.forEach(f => {
         columns.push({
-            Header: formatMessage(MESSAGES[f.key]),
+            Header: MESSAGES[f.key as keyof typeof MESSAGES]
+                ? formatMessage(MESSAGES[f.key as keyof typeof MESSAGES])
+                : f.key,
             accessor: f.accessor || f.key,
             sortable: f.sortable !== false,
             align: 'center',

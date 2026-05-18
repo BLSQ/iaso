@@ -129,7 +129,7 @@ describe('DatesRange', () => {
         expect(onChangeDate).toHaveBeenNthCalledWith(2, 'dateTo', '30-04-2026');
     });
 
-    it('emits undefined for invalid date when blockInvalidDates is true', async () => {
+    it('does not emit invalid date changes when blockInvalidDates is true', async () => {
         const user = userEvent.setup();
         const onChangeDate = vi.fn();
         setNextDate('start-date', {
@@ -144,7 +144,7 @@ describe('DatesRange', () => {
         await act(async () => {
             await user.click(screen.getByTestId('start-date'));
         });
-        expect(onChangeDate).toHaveBeenCalledWith('dateFrom', undefined);
+        expect(onChangeDate).not.toHaveBeenCalled();
     });
 
     it('emits formatted date when blockInvalidDates is false', async () => {

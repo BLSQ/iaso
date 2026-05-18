@@ -104,14 +104,13 @@ class AppSerializer(ProjectSerializer):
         forms = validated_data.pop(self.FORMS, None)
         app_id = validated_data.pop(self.APP_ID, None)
         name = validated_data.pop(self.NAME, None)
-        has_description = self.DESCRIPTION in validated_data
         description = validated_data.pop(self.DESCRIPTION, "")
         color = validated_data.pop(self.COLOR, None)
         if app_id is not None:
             instance.app_id = app_id
         if name is not None:
             instance.name = name
-        if has_description:
+        if self.DESCRIPTION in validated_data:
             instance.description = description
         if color is not None:
             instance.color = color

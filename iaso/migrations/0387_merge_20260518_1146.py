@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0386_alter_form_options_alter_orgunittype_options_and_more'),
-        ('iaso', '0386_remove_validationnodetemplate_color'),
+        ("iaso", "0386_alter_form_options_alter_orgunittype_options_and_more"),
+        ("iaso", "0386_remove_validationnodetemplate_color"),
     ]
 
-    operations = [
-    ]
+    operations = []

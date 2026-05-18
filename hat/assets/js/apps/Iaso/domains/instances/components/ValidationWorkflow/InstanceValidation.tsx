@@ -1,11 +1,20 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Alert, Box } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from 'Iaso/domains/instances/messages';
 import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { SubmissionAccordion } from './timeline/SubmissionAccordion';
 
 type Props = { instanceId: number; data?: ValidationNodeRetrieveResponse };
 
 export const InstanceValidation = ({ instanceId, data }: Props) => {
+    const { formatMessage } = useSafeIntl();
+
+    if (!data?.validation_status) {
+        return (
+            <Alert severity={'info'}>{formatMessage(MESSAGES.noData)}</Alert>
+        );
+    }
     return (
         <Box
             sx={{

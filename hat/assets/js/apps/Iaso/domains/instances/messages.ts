@@ -880,6 +880,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Progress',
         id: 'iaso.label.progress',
     },
+    noData: {
+        defaultMessage: 'No data found.',
+        id: 'iaso.label.noData',
+    },
 });
 
 export default MESSAGES;

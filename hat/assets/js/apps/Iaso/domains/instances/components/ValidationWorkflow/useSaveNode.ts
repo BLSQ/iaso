@@ -42,7 +42,11 @@ export const useCompleteNode = (
     );
     return useSnackMutation({
         mutationFn: save,
-        invalidateQueryKey: ['instance', instanceId],
+        invalidateQueryKey: [
+            'instance',
+            'submission-validation-status',
+            instanceId,
+        ],
     });
 };
 
@@ -52,6 +56,10 @@ export const useCompleteNodeByPass = (
     const save = useMemo(() => completeNodeByPass(instanceId), [instanceId]);
     return useSnackMutation({
         mutationFn: save,
-        invalidateQueryKey: ['instance', instanceId],
+        invalidateQueryKey: [
+            'instance',
+            'submission-validation-status',
+            instanceId,
+        ],
     });
 };

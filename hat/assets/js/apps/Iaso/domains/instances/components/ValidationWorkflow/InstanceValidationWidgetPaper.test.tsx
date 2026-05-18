@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { useGetSubmissionValidationStatus } from 'Iaso/domains/instances/components/ValidationWorkflow/useGetSubmissionValidationStatus';
-import { SUBMISSION_VALIDATION_WORKFLOW } from 'Iaso/utils/featureFlags';
+import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { SUBMISSIONS, VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import MESSAGES from '../../messages';
@@ -54,11 +54,11 @@ describe('InstanceValidationWidgetPaper', () => {
         'does not call API when permissions and/or feature flag is missing',
     );
 
-    it('shows feature disabled alert when feature flag is missing', () => {
+    it('shows module disabled alert when module is missing', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
             account: {
-                feature_flags: [],
+                modules: [],
             },
             is_superuser: true,
         });
@@ -68,7 +68,7 @@ describe('InstanceValidationWidgetPaper', () => {
         );
 
         expect(
-            screen.getByText(MESSAGES.featureDisabled.defaultMessage),
+            screen.getByText(MESSAGES.moduleDisabled.defaultMessage),
         ).toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
@@ -77,7 +77,7 @@ describe('InstanceValidationWidgetPaper', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
             account: {
-                feature_flags: [SUBMISSION_VALIDATION_WORKFLOW],
+                modules: [VALIDATION_WORKFLOW_MODULE],
             },
             is_superuser: false,
         });
@@ -101,7 +101,7 @@ describe('InstanceValidationWidgetPaper', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
             account: {
-                feature_flags: [SUBMISSION_VALIDATION_WORKFLOW],
+                modules: [VALIDATION_WORKFLOW_MODULE],
             },
             is_superuser: true,
         });
@@ -129,7 +129,7 @@ describe('InstanceValidationWidgetPaper', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
             account: {
-                feature_flags: [SUBMISSION_VALIDATION_WORKFLOW],
+                modules: [VALIDATION_WORKFLOW_MODULE],
             },
             is_superuser: true,
         });
@@ -146,7 +146,7 @@ describe('InstanceValidationWidgetPaper', () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
             account: {
-                feature_flags: [SUBMISSION_VALIDATION_WORKFLOW],
+                modules: [VALIDATION_WORKFLOW_MODULE],
             },
             permissions: [VALIDATION_WORKFLOWS, SUBMISSIONS],
         });

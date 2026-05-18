@@ -102,6 +102,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Form AI',
         id: 'iaso.modules.form_ai',
     },
+    validation_workflow: {
+        defaultMessage: 'Validation workflows',
+        id: 'iaso.modules.validation_workflow',
+    },
 });
 
 export default MESSAGES;

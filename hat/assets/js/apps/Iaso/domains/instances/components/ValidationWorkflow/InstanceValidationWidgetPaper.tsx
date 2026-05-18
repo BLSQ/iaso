@@ -6,11 +6,11 @@ import { InstanceValidation } from 'Iaso/domains/instances/components/Validation
 import { useGetSubmissionValidationStatus } from 'Iaso/domains/instances/components/ValidationWorkflow/useGetSubmissionValidationStatus';
 import MESSAGES from 'Iaso/domains/instances/messages';
 import PERMISSIONS_MESSAGES from 'Iaso/domains/users/permissionsMessages';
-import { userHasAllPermissions } from 'Iaso/domains/users/utils';
 import {
-    hasFeatureFlag,
-    SUBMISSION_VALIDATION_WORKFLOW,
-} from 'Iaso/utils/featureFlags';
+    userHasAccessToModule,
+    userHasAllPermissions,
+} from 'Iaso/domains/users/utils';
+import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { SUBMISSIONS, VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
@@ -25,14 +25,14 @@ export const InstanceValidationWidgetPaper = ({
     const { data: validationWorkflow, isLoading: isLoadingValidationStatus } =
         useGetSubmissionValidationStatus(currentInstanceId);
 
-    if (!hasFeatureFlag(currentUser, SUBMISSION_VALIDATION_WORKFLOW)) {
+    if (!userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, currentUser)) {
         return (
             <WidgetPaper
                 title={formatMessage(MESSAGES.validation)}
                 id="validation"
             >
                 <Alert severity={'info'}>
-                    {formatMessage(MESSAGES.featureDisabled)}
+                    {formatMessage(MESSAGES.moduleDisabled)}
                 </Alert>
             </WidgetPaper>
         );

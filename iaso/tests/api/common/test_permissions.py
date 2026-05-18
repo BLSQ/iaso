@@ -44,7 +44,7 @@ class TestHasModulePermission(TestCase):
 
         self.assertFalse(HasModulePermission(self.module_1)().has_permission(request, None))
 
-        self.account.modules = [self.module_1]
+        self.account.modules = [self.module_1.codename]
         self.account.save()
 
         self.assertFalse(HasModulePermission(self.module_2)().has_permission(request, None))
@@ -59,12 +59,12 @@ class TestHasModulePermission(TestCase):
 
         self.assertFalse(HasModulePermission(self.module_1, self.module_2)().has_permission(request, None))
 
-        self.account.modules = [self.module_2]
+        self.account.modules = [self.module_2.codename]
         self.account.save()
 
         self.assertFalse(HasModulePermission(self.module_1, self.module_2)().has_permission(request, None))
 
-        self.account.modules = [self.module_2, self.module_1]
+        self.account.modules = [self.module_2.codename, self.module_1.codename]
         self.account.save()
 
         self.assertTrue(HasModulePermission(self.module_1, self.module_2)().has_permission(request, None))

@@ -106,7 +106,7 @@ class HasModulePermission:
 
                 if modules:
                     account = request.user.iaso_profile.account
-                    account_modules = set([x.codename for x in getattr(account, "modules", [])])
+                    account_modules = set([x for x in getattr(account, "modules", [])])
                     return set([module.codename for module in modules]).issubset(account_modules)
 
                 return True

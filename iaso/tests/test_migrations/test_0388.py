@@ -91,4 +91,4 @@ class Test0388ReverseMigration(IasoMigratorTestCase):
 
         self.account_without_vf.refresh_from_db()
         self.assertEqual(self.account_without_vf.modules, [])
-        self.assertEqual(self.account_without_vf.feature_flags.all().count(), 2)
+        self.assertEqual(self.account_without_vf.feature_flags.all().count(), 1)

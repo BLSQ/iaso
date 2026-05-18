@@ -75,7 +75,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         for account in accounts:
             account_modules = account.modules or []
             if MODULE_VALIDATION_WORKFLOW not in account_modules:
-                account_modules.append(MODULE_VALIDATION_WORKFLOW)
+                account_modules.append(MODULE_VALIDATION_WORKFLOW.codename)
                 account.modules = account_modules
                 account.save()
 

@@ -107,7 +107,7 @@ class ValidationWorkflowAPIPartialUpdateTestCase(BaseValidationWorkflowAPITestCa
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(6):
             res = self.client.patch(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug}),
                 data={"name": "Random new name", "description": "Random new description"},

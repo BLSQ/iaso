@@ -1,7 +1,8 @@
 import uuid
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, AccountFeatureFlag, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
@@ -47,7 +48,7 @@ class BaseAPITestCase(APITestCase):
             uuid=str(uuid.uuid4()),
         )
 
-        self.enable_validation_workflow_feature_flag(self.account)
+        self.add_validation_workflow_module(self.account)
 
         self.setup_start()
 
@@ -55,7 +56,10 @@ class BaseAPITestCase(APITestCase):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(code="SUBMISSION_VALIDATION_WORKFLOW")
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW)
+                account.modules = account_modules
+                account.save()

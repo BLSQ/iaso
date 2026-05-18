@@ -1,4 +1,5 @@
-from iaso.models import Account, AccountFeatureFlag, ValidationWorkflow
+from iaso.models import Account, ValidationWorkflow
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
@@ -27,7 +28,7 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
             self.validation_workflow_without_feature_flag,
         ) = self.create_no_feature_flag_data()
 
-        self.enable_validation_workflow_feature_flag(self.account)
+        self.add_validation_workflow_module(self.account)
 
     def create_no_feature_flag_data(self):
         account_without_feature_flag = Account.objects.create(name="account_without_feature_flag")
@@ -44,12 +45,13 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
         return account_without_feature_flag, user_without_feature_flag, validation_workflow_without_feature_flag
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(
-            code="SUBMISSION_VALIDATION_WORKFLOW",
-        )
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW)
+                account.modules = account_modules
+                account.save()
 
     def assertValidValidationWorkflowListData(self, list_data, expected_length, paginated=True):
         results_key = "results"

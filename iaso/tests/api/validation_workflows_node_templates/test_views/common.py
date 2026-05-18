@@ -1,4 +1,5 @@
-from iaso.models import Account, AccountFeatureFlag, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, ValidationNodeTemplate, ValidationWorkflow
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
@@ -44,9 +45,10 @@ class BaseApiTestCase(APITestCase):
         )
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(
-            code="SUBMISSION_VALIDATION_WORKFLOW",
-        )
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW)
+                account.modules = account_modules
+                account.save()

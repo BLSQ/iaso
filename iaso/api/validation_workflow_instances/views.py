@@ -25,10 +25,10 @@ from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common.mixin import CustomPaginationListModelMixin
+from iaso.api.common.permissions import HasModulePermission
 from iaso.api.validation_workflow_instances.filters import ValidationWorkflowInstancesListFilters
 from iaso.api.validation_workflow_instances.pagination import ValidationWorkflowInstancePagination
 from iaso.api.validation_workflow_instances.permissions import (
-    HasSubmissionValidationWorkflowAccountFeatureFlag,
     HasValidationWorkflowInstancePermission,
 )
 from iaso.api.validation_workflow_instances.serializers.list import ValidationWorkflowInstanceListSerializer
@@ -36,6 +36,7 @@ from iaso.api.validation_workflow_instances.serializers.retrieve import Validati
 from iaso.models import Instance, ValidationNode, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 
 
 @extend_schema(tags=["Validation nodes"])
@@ -44,8 +45,8 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
     serializer_class = ValidationWorkflowInstanceRetrieveSerializer
     permission_classes = [
         IsAuthenticated,
+        HasModulePermission(MODULE_VALIDATION_WORKFLOW),
         HasValidationWorkflowInstancePermission,
-        HasSubmissionValidationWorkflowAccountFeatureFlag,
     ]
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     filterset_class = ValidationWorkflowInstancesListFilters

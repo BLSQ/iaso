@@ -7,9 +7,10 @@ from rest_framework import status
 
 from iaso.api.validation_workflows.constants import DEFAULT_COLOR, MOBILE_STATUS_TO_COLOR
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, AccountFeatureFlag, Form, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Account, Form, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.test import APITestCase
 
 
@@ -19,7 +20,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.other_account = Account.objects.create(name="account2")
         self.another_account = Account.objects.create(name="account3")
 
-        self.enable_validation_workflow_feature_flag(self.account, self.other_account)
+        self.add_validation_workflow_module(self.account, self.other_account)
         self.john_doe = self.create_user_with_profile(
             username="user.without.feature.flag", account=self.another_account, first_name="User", last_name="NoFlag"
         )
@@ -70,12 +71,13 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         )
 
     @staticmethod
-    def enable_validation_workflow_feature_flag(*accounts):
-        feature_flag = AccountFeatureFlag.objects.get(
-            code="SUBMISSION_VALIDATION_WORKFLOW",
-        )
+    def add_validation_workflow_module(*accounts):
         for account in accounts:
-            account.feature_flags.add(feature_flag)
+            account_modules = account.modules or []
+            if MODULE_VALIDATION_WORKFLOW not in account_modules:
+                account_modules.append(MODULE_VALIDATION_WORKFLOW)
+                account.modules = account_modules
+                account.save()
 
     def setup_start(self):
         ValidationWorkflowEngine.start(self.validation_workflow, self.john_wick, self.instance)
@@ -116,7 +118,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.client.force_authenticate(self.john_doe)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
         res_data = self.assertJSONResponse(res, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(res_data["detail"], "This feature is disabled for your account.")
+        self.assertEqual(res_data["detail"], "The related module(s) are not activated for your account.")
 
         self.client.force_authenticate(self.john_wick)
         res = self.client.get(reverse("mobile_validation_workflows-list"))
@@ -576,7 +578,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
         self.setup_approve()
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             # 1: PERM
             # 3 ORGUNIT
             # 4-5: QUERYSET + FILTER

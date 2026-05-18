@@ -41,7 +41,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
         instance_id = self.instance.id
         self.client.force_authenticate(self.john_wick)
         # todo : optimize later
-        with self.assertNumQueries(36):
+        with self.assertNumQueries(35):
             res = self.client.post(
                 reverse("validation_workflow_nodes-complete-bypass", kwargs={"instance_id": instance_id}),
                 data={"node": "third-node", "approved": True, "comment": "OK"},

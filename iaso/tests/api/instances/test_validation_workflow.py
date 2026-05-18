@@ -146,7 +146,7 @@ class InstancesAPITestCase(APITestCase):
             }
         ]
 
-        with self.assertLogs(logging.getLogger("iaso.api.instances.instances"), level="ERROR") as msg:
+        with self.assertLogs(logging.getLogger("iaso.api.instances.views"), level="ERROR") as msg:
             self.client.post("/api/instances/?app_id=agriculture.hydroponics", data=body, format="json")
 
         self.assertEqual(len(msg.output), 1)

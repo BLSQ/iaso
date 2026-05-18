@@ -28,7 +28,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const useCurrentBreakPointSpacing = (xs, sm, md, lg) => {
+const useCurrentBreakPointSpacing = (
+    xs: number,
+    sm: number,
+    md: number,
+    lg: number,
+): number => {
     const theme = useTheme();
     const isXs = useMediaQuery(
         theme.breakpoints.down('xs') || theme.breakpoints.between('xs', 'sm'),
@@ -102,17 +107,11 @@ const DatesRange: FunctionComponent<Props> = ({
     const [to, setTo] = useState<string | Moment | null>(dateTo);
 
     const handleChange = useCallback(
-        (keyValue: string, date) => {
-            if (blockInvalidDates) {
-                onChangeDate(
-                    keyValue,
-                    date && date.isValid()
-                        ? date.format(dateFormat)
-                        : undefined,
-                );
-            } else {
-                onChangeDate(keyValue, date?.format(dateFormat));
+        (keyValue: string, date: Moment | null) => {
+            if (blockInvalidDates && date && !date.isValid()) {
+                return;
             }
+            onChangeDate(keyValue, date?.format(dateFormat));
         },
         [blockInvalidDates, onChangeDate],
     );

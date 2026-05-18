@@ -25,7 +25,7 @@ const setSubmitTooltip = message => {
     submitTooltip.value = message;
     document.documentElement.style.setProperty(
         '--preview-submit-tooltip',
-        `"${message.replace(/"/g, '\\"')}"`,
+        JSON.stringify(message),
     );
 };
 

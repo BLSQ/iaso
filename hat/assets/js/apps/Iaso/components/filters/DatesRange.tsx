@@ -28,7 +28,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const useCurrentBreakPointSpacing = (xs, sm, md, lg): number => {
+const useCurrentBreakPointSpacing = (
+    xs: number,
+    sm: number,
+    md: number,
+    lg: number,
+): number => {
     const theme = useTheme();
     const isXs = useMediaQuery(
         theme.breakpoints.down('xs') || theme.breakpoints.between('xs', 'sm'),

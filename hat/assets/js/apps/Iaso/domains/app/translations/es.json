@@ -198,6 +198,7 @@
     "iaso.duplicate.messageErrorMissingFields": "No hay campos para analizar. Puede configurarlos en la página de tipos de entidades",
     "iaso.duplicate.noAnalysis": "No se encontró análisis",
     "iaso.duplicate.relaunchAnalysis": "Reiniciar análisis",
+    "iaso.duplicate.notFound": "Par de entidades duplicadas no encontrado o ya procesado",
     "iaso.entities.create": "Crear entidad",
     "iaso.entities.dialog.deleteTitle": "¿Está seguro de que desea eliminar esta entidad?",
     "iaso.entities.female": "Femenino",

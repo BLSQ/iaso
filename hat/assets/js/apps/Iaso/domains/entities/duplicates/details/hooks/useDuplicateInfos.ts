@@ -25,12 +25,14 @@ type UseDuplicateInfosArgs = {
     tableState: Record<string, any>[];
     duplicatesInfos: { results: DuplicateData[] };
     params: { accountId?: string; entities: string };
+    isFetching: boolean;
 };
 
 export const useDuplicateInfos = ({
     tableState,
     duplicatesInfos,
     params,
+    isFetching,
 }: UseDuplicateInfosArgs): DuplicateInfos => {
     return useMemo(() => {
         const ids = params?.entities ?? '';
@@ -43,9 +45,9 @@ export const useDuplicateInfos = ({
                 duplicatesInfos?.results?.[0]?.analyzis ?? [],
             ),
             similarityScore: duplicatesInfos?.results?.[0]?.similarity_star,
-            isLoading: (duplicatesInfos?.results ?? []).length === 0,
+            isLoading: isFetching,
             // TODO prevent longer arrays of ids
             entityIds: entityIds as [number, number],
         };
-    }, [duplicatesInfos, params?.entities, tableState]);
+    }, [duplicatesInfos, isFetching, params?.entities, tableState]);
 };

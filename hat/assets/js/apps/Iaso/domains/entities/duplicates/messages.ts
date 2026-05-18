@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.duplicateAnalyses',
         defaultMessage: 'Duplicate Analyses',
     },
+    duplicateNotFound: {
+        id: 'iaso.duplicate.notFound',
+        defaultMessage: 'Duplicate not found or already processed',
+    },
     duplicates: {
         id: 'iaso.label.duplicates',
         defaultMessage: 'Duplicates',

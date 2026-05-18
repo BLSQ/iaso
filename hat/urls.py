@@ -92,6 +92,7 @@ else:
         path("health-clamav/", health_clamav),
         path("admin/", admin.site.urls),
         path("api/", include("iaso.urls")),
+        path("api/etl/", include(("iaso.urls_etl", "api-etl"), namespace="api-etl")),
         path("pages/<page_slug>/", page, name="pages"),
         path("i18n/", include("django.conf.urls.i18n")),
         path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),

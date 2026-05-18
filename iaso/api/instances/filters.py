@@ -4,10 +4,13 @@ from typing import Any, Dict, Optional
 
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import FilterSet
+from django_filters.widgets import QueryArrayWidget
 from rest_framework.exceptions import ValidationError
 
 from iaso.api import query_params as query
-from iaso.models import Form
+from iaso.api.common import NumberInFilter
+from iaso.models import Form, Instance
 from iaso.periods import DayPeriod, Period
 from iaso.utils.dates import get_beginning_of_day, get_end_of_day
 
@@ -108,3 +111,11 @@ def get_form_from_instance_filters(instance_filters: Dict[str, Any]) -> Optional
             form = get_object_or_404(Form, pk=form_ids[0])
 
     return form
+
+
+class ETLInstanceFilter(FilterSet):
+    form_ids = NumberInFilter(field_name="form_id", widget=QueryArrayWidget)
+
+    class Meta:
+        model = Instance
+        fields = []

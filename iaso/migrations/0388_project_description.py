@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0387_merge_20260518_0937'),
+        ("iaso", "0387_merge_20260518_0937"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='description',
-            field=models.TextField(blank=True, default=''),
+            model_name="project",
+            name="description",
+            field=models.TextField(blank=True, default=""),
         ),
     ]
